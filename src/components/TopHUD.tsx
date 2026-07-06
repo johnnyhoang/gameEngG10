@@ -88,27 +88,27 @@ export const TopHUD: React.FC<TopHUDProps> = ({
 
         {/* Stats */}
         {currentUser?.role !== 'admin' && (
-          <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-center">
+          <div className="grid grid-cols-6 md:flex md:items-center gap-2 md:gap-3 w-full md:w-auto justify-center">
             {/* Energy */}
             <div 
               onClick={() => showHelp('energy')}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-synth-blue/40 border border-synth-cyan/20 cursor-pointer hover:bg-synth-blue/60 transition-all" 
+              className="col-span-2 md:col-span-1 flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg bg-synth-blue/40 border border-synth-cyan/20 cursor-pointer hover:bg-synth-blue/60 transition-all" 
               title="Năng lượng làm bài - Nhấp để xem hướng dẫn"
             >
               <Zap className="w-4 h-4 text-synth-cyan fill-synth-cyan animate-pulse" />
               <div className="flex flex-col">
                 <span className="text-[8px] text-synth-cyan font-orbitron font-bold uppercase tracking-wider hidden sm:inline">Energy</span>
-                <span className="text-xs font-semibold font-orbitron">{player.energy}/100 <span className="text-[8px] opacity-50">?</span></span>
+                <span className="text-xs font-semibold font-orbitron text-white">{player.energy}/100 <span className="text-[8px] opacity-50">?</span></span>
               </div>
             </div>
 
             {/* Hearts */}
             <div 
               onClick={() => showHelp('hearts')}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-synth-blue/40 border border-synth-cyan/20 cursor-pointer hover:bg-synth-blue/60 transition-all" 
+              className="col-span-2 md:col-span-1 flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg bg-synth-blue/40 border border-synth-cyan/20 cursor-pointer hover:bg-synth-blue/60 transition-all" 
               title="Mạng chơi - Nhấp để xem hướng dẫn"
             >
-              <div className="flex gap-0.5 items-center">
+              <div className="flex gap-0.5 items-center justify-center">
                 {[...Array(3)].map((_, i) => (
                   <Heart 
                     key={i} 
@@ -123,38 +123,40 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             {/* Coins */}
             <div 
               onClick={() => showHelp('nanite')}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-synth-blue/40 border border-synth-cyan/20 cursor-pointer hover:bg-synth-blue/60 transition-all" 
+              className="col-span-2 md:col-span-1 flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg bg-synth-blue/40 border border-synth-cyan/20 cursor-pointer hover:bg-synth-blue/60 transition-all" 
               title="Tiền vàng Nanite NP - Nhấp để xem hướng dẫn"
             >
               <Coins className="w-4 h-4 text-synth-orange fill-synth-orange" />
               <div className="flex flex-col">
                 <span className="text-[8px] text-synth-orange font-orbitron font-bold uppercase tracking-wider hidden sm:inline">Nanite NP</span>
-                <span className="text-xs font-semibold font-orbitron">{player.coins} <span className="text-[8px] opacity-50">?</span></span>
+                <span className="text-xs font-semibold font-orbitron text-white">{player.coins} <span className="text-[8px] opacity-50">?</span></span>
               </div>
             </div>
 
             {/* Streak */}
             <div 
               onClick={() => showHelp('streak')}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-synth-blue/40 border border-synth-cyan/20 cursor-pointer hover:bg-synth-blue/60 transition-all" 
+              className="col-span-3 md:col-span-1 flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg bg-synth-blue/40 border border-synth-cyan/20 cursor-pointer hover:bg-synth-blue/60 transition-all relative" 
               title="Chuỗi ngày liên tục học - Nhấp để xem hướng dẫn"
             >
-              <Flame className={`w-4 h-4 ${player.streak > 0 ? 'text-orange-500 fill-orange-500 animate-bounce' : 'text-synth-gray'}`} />
-              <div className="flex flex-col">
-                <span className="text-[8px] text-orange-400 font-orbitron font-bold uppercase tracking-wider hidden sm:inline">Streak</span>
-                <span className="text-xs font-semibold font-orbitron">{player.streak}d <span className="text-[8px] opacity-50">?</span></span>
+              <div className="flex items-center justify-center gap-1.5">
+                <Flame className={`w-4 h-4 ${player.streak > 0 ? 'text-orange-500 fill-orange-500 animate-bounce' : 'text-synth-gray'}`} />
+                <div className="flex flex-col">
+                  <span className="text-[8px] text-orange-400 font-orbitron font-bold uppercase tracking-wider hidden sm:inline">Streak</span>
+                  <span className="text-xs font-semibold font-orbitron text-white">{player.streak}d <span className="text-[8px] opacity-50">?</span></span>
+                </div>
+                {hasShield && (
+                  <span title="Khiên bảo vệ Streak đang hoạt động!">
+                    <Shield className="w-3.5 h-3.5 text-synth-cyan fill-synth-cyan/20 animate-pulse ml-0.5" />
+                  </span>
+                )}
               </div>
-              {hasShield && (
-                <span title="Khiên bảo vệ Streak đang hoạt động!">
-                  <Shield className="w-3.5 h-3.5 text-synth-cyan fill-synth-cyan/20 animate-pulse ml-0.5" />
-                </span>
-              )}
             </div>
 
             {/* Virtual Wallet */}
             <div 
               onClick={() => showHelp('wallet')}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-synth-blue/40 border border-synth-magenta/30 cursor-pointer hover:bg-synth-blue/60 transition-all" 
+              className="col-span-3 md:col-span-1 flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg bg-synth-blue/40 border border-synth-magenta/30 cursor-pointer hover:bg-synth-blue/60 transition-all" 
               title="Ví thưởng VND - Nhấp để xem hướng dẫn"
             >
               <Award className="w-4 h-4 text-synth-magenta" />
