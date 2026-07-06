@@ -448,10 +448,8 @@ app.post('/api/ai/ingest', authMiddleware, async (req: any, res) => {
   }
 });
 
-if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
-  app.listen(PORT, () => {
-    console.log(`CyberEnglish API Server booting on port ${PORT}...`);
-  });
-}
+app.listen(PORT, () => {
+  console.log(`CyberEnglish API Server booting on port ${PORT}...`);
+});
 
 export default app;
