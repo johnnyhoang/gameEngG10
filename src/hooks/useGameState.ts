@@ -48,6 +48,8 @@ interface GameState {
   fetchAdminStudents: () => Promise<void>;
   promoteUser: (targetUserId: string, newRole: string) => Promise<void>;
   fetchStudentProfile: (studentUserId: string) => Promise<void>;
+  adminApproveReward: (studentUserId: string, rewardId: string) => Promise<void>;
+  adminRejectReward: (studentUserId: string, rewardId: string) => Promise<void>;
 
   // Player Actions
   answerQuestion: (
@@ -663,6 +665,54 @@ export const useGameState = create<GameState>()(
             }
           } catch (e) {
             console.error('Error fetching student profile:', e);
+          }
+        },
+
+        adminApproveReward: async (studentUserId: string, rewardId: string) => {
+          try {
+            const session = (await supabase.auth.getSession()).data.session;
+            const token = session?.access_token;
+            if (!token) return;
+
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+            const res = await fetch(`${backendUrl}/api/admin/approve-reward`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+              },
+              body: JSON.stringify({ studentUserId, rewardId })
+            });
+            if (res.ok) {
+              // Reload profile
+              await get().fetchStudentProfile(studentUserId);
+            }
+          } catch (e) {
+            console.error('Error approving student reward:', e);
+          }
+        },
+
+        adminRejectReward: async (studentUserId: string, rewardId: string) => {
+          try {
+            const session = (await supabase.auth.getSession()).data.session;
+            const token = session?.access_token;
+            if (!token) return;
+
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+            const res = await fetch(`${backendUrl}/api/admin/reject-reward`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+              },
+              body: JSON.stringify({ studentUserId, rewardId })
+            });
+            if (res.ok) {
+              // Reload profile
+              await get().fetchStudentProfile(studentUserId);
+            }
+          } catch (e) {
+            console.error('Error rejecting student reward:', e);
           }
         },
 

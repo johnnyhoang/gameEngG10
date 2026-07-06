@@ -7,8 +7,6 @@ import { supabase } from '../utils/supabaseClient';
 
 export const ParentConsole: React.FC = () => {
   const player = useGameState(state => state.player);
-  const rewards = useGameState(state => state.rewards);
-  const categoryStats = useGameState(state => state.categoryStats);
   const verifyPIN = useGameState(state => state.verifyPIN);
   const approveReward = useGameState(state => state.approveReward);
   const rejectReward = useGameState(state => state.rejectReward);
@@ -23,6 +21,8 @@ export const ParentConsole: React.FC = () => {
   const fetchAdminStudents = useGameState(state => state.fetchAdminStudents);
   const promoteUser = useGameState(state => state.promoteUser);
   const fetchStudentProfile = useGameState(state => state.fetchStudentProfile);
+  const adminApproveReward = useGameState(state => state.adminApproveReward);
+  const adminRejectReward = useGameState(state => state.adminRejectReward);
 
   // PIN Lock States
   const [pin, setPin] = useState('');
@@ -41,8 +41,15 @@ export const ParentConsole: React.FC = () => {
   const [rewardCash, setRewardCash] = useState(20000);
 
   // Active Tab
-  const [activeTab, setActiveTab] = useState<'analytics' | 'rewards' | 'ingestion' | 'members' | 'settings'>('analytics');
+  const [activeTab, setActiveTab] = useState<'analytics' | 'rewards' | 'ingestion' | 'members' | 'settings'>('members');
   const [viewingStudentId, setViewingStudentId] = useState<string | null>(null);
+
+  // Load students list on mount for admin users
+  React.useEffect(() => {
+    if (currentUser?.role === 'admin') {
+      fetchAdminStudents();
+    }
+  }, []);
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
@@ -108,16 +115,21 @@ export const ParentConsole: React.FC = () => {
     alert('Đã nhập câu hỏi thành công!');
   };
 
+  // Active Data bindings: if viewing a student, use their loaded data. Otherwise fall back to parent.
+  const activePlayer = selectedStudentProfile?.player || player;
+  const activeCategoryStats = selectedStudentProfile?.categoryStats || {};
+  const activeRewards = selectedStudentProfile?.rewards || [];
+
   // Prediction calculations
   const calculatePrediction = () => {
-    const totalQuestionsSolved = Object.values(categoryStats).reduce((acc, current) => acc + current.totalAnswered, 0);
+    const totalQuestionsSolved = Object.values(activeCategoryStats).reduce((acc: number, current: any) => acc + current.totalAnswered, 0);
     if (totalQuestionsSolved < 20) {
       return { score: 'Đang tích lũy...', range: 'Cần làm ít nhất 20 câu để AI dự đoán' };
     }
 
     // Calculate rolling average accuracy
-    const activeStats = Object.values(categoryStats);
-    const totalAccuracy = activeStats.reduce((acc, current) => acc + current.rollingAccuracy, 0);
+    const activeStats = Object.values(activeCategoryStats);
+    const totalAccuracy = activeStats.reduce((acc: number, current: any) => acc + current.rollingAccuracy, 0);
     const avgAccuracy = totalAccuracy / activeStats.length;
 
     // Map accuracy to entrance score (10.0 scale)
@@ -172,7 +184,7 @@ export const ParentConsole: React.FC = () => {
   };
 
   // Prepare chart data
-  const chartData = Object.values(categoryStats).map(stat => ({
+  const chartData = Object.values(activeCategoryStats).map((stat: any) => ({
     name: stat.category.toUpperCase().replace('-', ' '),
     'Tỷ Lệ Đúng (%)': Math.round(stat.rollingAccuracy * 100),
     'Đã làm': stat.totalAnswered
@@ -262,192 +274,260 @@ export const ParentConsole: React.FC = () => {
         </div>
       </div>
 
+      {/* Inspected Student Banner */}
+      {viewingStudentId && selectedStudentProfile && (
+        <div className="glass-panel rounded-xl border border-synth-cyan/30 p-4 flex justify-between items-center bg-gradient-to-r from-synth-cyan/5 to-transparent">
+          <div className="flex items-center gap-3">
+            <img 
+              src={selectedStudentProfile.studentUser?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'} 
+              alt={selectedStudentProfile.studentUser?.name}
+              className="w-9 h-9 rounded-full border border-synth-cyan/40"
+            />
+            <div>
+              <span className="text-[10px] text-synth-cyan uppercase font-bold tracking-wider font-orbitron">Đang quản trị tài khoản</span>
+              <h4 className="font-bold text-white text-sm leading-tight mt-0.5">
+                {selectedStudentProfile.studentUser?.name} ({selectedStudentProfile.studentUser?.email})
+              </h4>
+            </div>
+          </div>
+          <button
+            onClick={() => {
+              setViewingStudentId(null);
+              setActiveTab('members');
+            }}
+            className="px-3 py-1.5 rounded bg-synth-gray/30 border border-white/10 text-xs text-white hover:bg-white/10 font-bold cursor-pointer transition-colors"
+          >
+            Đổi học sinh khác
+          </button>
+        </div>
+      )}
+
       {/* Analytics Tab */}
       {activeTab === 'analytics' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Prediction Metric */}
-          <div className="glass-panel rounded-2xl border border-synth-cyan/20 p-5 flex flex-col justify-between min-h-[160px]">
-            <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
-              <Award className="w-4 h-4" /> Dự đoán điểm thi vào lớp 10
-            </h4>
-            <div className="py-4 text-center">
-              <span className="text-4xl font-black font-orbitron text-white">
-                {prediction.score}
-              </span>
-              <span className="text-sm font-semibold text-synth-cyan font-orbitron ml-1">
-                {prediction.range !== 'Cần làm ít nhất 20 câu để AI dự đoán' && prediction.range}
-              </span>
-            </div>
-            <p className="text-[10px] text-synth-text-muted leading-relaxed">
-              Dự đoán dựa trên tỷ lệ làm đúng trên từng chuyên đề thực tế. {prediction.range}
+        !viewingStudentId ? (
+          <div className="glass-panel rounded-2xl border border-white/5 p-12 text-center space-y-4">
+            <p className="text-sm text-synth-text-muted">
+              Vui lòng chọn một tài khoản con từ danh sách <strong>Thành viên</strong> để xem thống kê năng lực học tập.
             </p>
+            <button
+              onClick={() => setActiveTab('members')}
+              className="px-4 py-2 rounded-lg font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-magenta text-black hover:synth-glow-magenta cursor-pointer transition-all duration-300"
+            >
+              Xem danh sách Thành viên
+            </button>
           </div>
-
-          {/* Core Volume */}
-          <div className="glass-panel rounded-2xl border border-synth-orange/20 p-5 flex flex-col justify-between min-h-[160px]">
-            <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider flex items-center gap-1.5">
-              <BarChart2 className="w-4 h-4" /> Tổng quan kết quả làm bài
-            </h4>
-            <div className="py-4 text-center">
-              <span className="text-4xl font-black font-orbitron text-white">
-                {chartData.reduce((acc, cur) => acc + cur['Đã làm'], 0)}
-              </span>
-              <span className="text-xs text-synth-text-muted font-bold uppercase ml-2">Câu Hỏi</span>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Prediction Metric */}
+            <div className="glass-panel rounded-2xl border border-synth-cyan/20 p-5 flex flex-col justify-between min-h-[160px]">
+              <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
+                <Award className="w-4 h-4" /> Dự đoán điểm thi vào lớp 10
+              </h4>
+              <div className="py-4 text-center">
+                <span className="text-4xl font-black font-orbitron text-white">
+                  {prediction.score}
+                </span>
+                <span className="text-sm font-semibold text-synth-cyan font-orbitron ml-1">
+                  {prediction.range !== 'Cần làm ít nhất 20 câu để AI dự đoán' && prediction.range}
+                </span>
+              </div>
+              <p className="text-[10px] text-synth-text-muted leading-relaxed">
+                Dự đoán dựa trên tỷ lệ làm đúng trên từng chuyên đề thực tế. {prediction.range}
+              </p>
             </div>
-            <p className="text-[10px] text-synth-text-muted leading-relaxed">
-              Số câu đã trả lời. Luyện tập trên 2000 câu giúp dự đoán chính xác điểm tới 98%.
-            </p>
-          </div>
 
-          {/* Current Wallet Approved */}
-          <div className="glass-panel rounded-2xl border border-synth-magenta/20 p-5 flex flex-col justify-between min-h-[160px]">
-            <h4 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-1.5">
-              <Database className="w-4 h-4" /> Số dư Ví đổi quà của con
-            </h4>
-            <div className="py-4 text-center">
-              <span className="text-4xl font-black font-orbitron text-synth-magenta">
-                {player.walletVND.toLocaleString()}đ
-              </span>
+            {/* Core Volume */}
+            <div className="glass-panel rounded-2xl border border-synth-orange/20 p-5 flex flex-col justify-between min-h-[160px]">
+              <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider flex items-center gap-1.5">
+                <BarChart2 className="w-4 h-4" /> Tổng quan kết quả làm bài
+              </h4>
+              <div className="py-4 text-center">
+                <span className="text-4xl font-black font-orbitron text-white">
+                  {chartData.reduce((acc, cur) => acc + cur['Đã làm'], 0)}
+                </span>
+                <span className="text-xs text-synth-text-muted font-bold uppercase ml-2">Câu Hỏi</span>
+              </div>
+              <p className="text-[10px] text-synth-text-muted leading-relaxed">
+                Số câu đã trả lời. Luyện tập trên 2000 câu giúp dự đoán chính xác điểm tới 98%.
+              </p>
             </div>
-            <p className="text-[10px] text-synth-text-muted leading-relaxed">
-              Khoản thưởng tích lũy của con chưa quy đổi. Con tích lũy từ nhiệm vụ ngày hoặc đấu Boss.
-            </p>
-          </div>
 
-          {/* Category Bar Chart */}
-          <div className="glass-panel rounded-2xl border border-white/5 p-5 md:col-span-3">
-            <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider mb-4">
-              Biểu đồ tỷ lệ đúng theo chuyên đề
-            </h4>
-            <div className="h-64 w-full">
-              {chartData.length > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <XAxis dataKey="name" stroke="#95a5a6" fontSize={10} tickLine={false} />
-                    <YAxis stroke="#95a5a6" fontSize={10} domain={[0, 100]} />
-                    <Tooltip contentStyle={{ backgroundColor: '#141722', borderColor: '#ff007f' }} />
-                    <Bar dataKey="Tỷ Lệ Đúng (%)" fill="#00f0ff" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="flex items-center justify-center h-full text-xs text-synth-text-muted">
-                  Con chưa làm bài luyện tập nào để kết xuất biểu đồ.
-                </div>
-              )}
+            {/* Current Wallet Approved */}
+            <div className="glass-panel rounded-2xl border border-synth-magenta/20 p-5 flex flex-col justify-between min-h-[160px]">
+              <h4 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-1.5">
+                <Database className="w-4 h-4" /> Số dư Ví đổi quà của con
+              </h4>
+              <div className="py-4 text-center">
+                <span className="text-4xl font-black font-orbitron text-synth-magenta">
+                  {(activePlayer?.walletVND || 0).toLocaleString()}đ
+                </span>
+              </div>
+              <p className="text-[10px] text-synth-text-muted leading-relaxed">
+                Khoản thưởng tích lũy của con chưa quy đổi. Con tích lũy từ nhiệm vụ ngày hoặc đấu Boss.
+              </p>
+            </div>
+
+            {/* Category Bar Chart */}
+            <div className="glass-panel rounded-2xl border border-white/5 p-5 md:col-span-3">
+              <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider mb-4">
+                Biểu đồ tỷ lệ đúng theo chuyên đề
+              </h4>
+              <div className="h-64 w-full">
+                {chartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData}>
+                      <XAxis dataKey="name" stroke="#95a5a6" fontSize={10} tickLine={false} />
+                      <YAxis stroke="#95a5a6" fontSize={10} domain={[0, 100]} />
+                      <Tooltip contentStyle={{ backgroundColor: '#141722', borderColor: '#ff007f' }} />
+                      <Bar dataKey="Tỷ Lệ Đúng (%)" fill="#00f0ff" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="flex items-center justify-center h-full text-xs text-synth-text-muted">
+                    Con chưa làm bài luyện tập nào để kết xuất biểu đồ.
+                  </div>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )
       )}
 
       {/* Rewards tab */}
       {activeTab === 'rewards' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Create Reward Form */}
-          <div className="glass-panel rounded-2xl border border-synth-orange/20 p-5 h-fit">
-            <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider mb-4 flex items-center gap-1.5">
-              <Plus className="w-4 h-4" /> Thêm Quà tặng mới
-            </h4>
-
-            <form onSubmit={handleCreateReward} className="space-y-4">
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-synth-text-muted uppercase">Tên Quà Tặng</label>
-                <input
-                  type="text"
-                  value={rewardTitle}
-                  onChange={(e) => setRewardTitle(e.target.value)}
-                  placeholder="Ví dụ: Ly trà sữa, 1h chơi iPad"
-                  className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-synth-text-muted uppercase">Giá Coins (NP)</label>
-                  <input
-                    type="number"
-                    value={rewardCost}
-                    onChange={(e) => setRewardCost(Number(e.target.value))}
-                    className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-synth-text-muted uppercase">Giá trị VNĐ (Mặt)</label>
-                  <input
-                    type="number"
-                    value={rewardCash}
-                    onChange={(e) => setRewardCash(Number(e.target.value))}
-                    className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-orange text-black hover:synth-glow-orange cursor-pointer transition-all duration-300"
-              >
-                Tạo Phần Thưởng
-              </button>
-            </form>
+        !viewingStudentId ? (
+          <div className="glass-panel rounded-2xl border border-white/5 p-12 text-center space-y-4">
+            <p className="text-sm text-synth-text-muted">
+              Vui lòng chọn một tài khoản con từ danh sách <strong>Thành viên</strong> để duyệt và quản lý quy đổi phần thưởng.
+            </p>
+            <button
+              onClick={() => setActiveTab('members')}
+              className="px-4 py-2 rounded-lg font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-magenta text-black hover:synth-glow-magenta cursor-pointer transition-all duration-300"
+            >
+              Xem danh sách Thành viên
+            </button>
           </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Create Reward Form */}
+            <div className="glass-panel rounded-2xl border border-synth-orange/20 p-5 h-fit">
+              <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                <Plus className="w-4 h-4" /> Thêm Quà tặng mới
+              </h4>
 
-          {/* Approvals ledger */}
-          <div className="glass-panel rounded-2xl border border-white/5 p-5 md:col-span-2 space-y-4">
-            <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
-              <Award className="w-4 h-4" /> Danh sách duyệt quy đổi phần thưởng của con
-            </h4>
+              <form onSubmit={handleCreateReward} className="space-y-4">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[10px] text-synth-text-muted uppercase">Tên Quà Tặng</label>
+                  <input
+                    type="text"
+                    value={rewardTitle}
+                    onChange={(e) => setRewardTitle(e.target.value)}
+                    placeholder="Ví dụ: Ly trà sữa, 1h chơi iPad"
+                    className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange"
+                  />
+                </div>
 
-            <div className="space-y-2 overflow-y-auto max-h-[300px]">
-              {rewards.length > 0 ? (
-                rewards.map(reward => (
-                  <div
-                    key={reward.id}
-                    className="bg-synth-gray/20 rounded-xl p-4 border border-white/5 flex justify-between items-center"
-                  >
-                    <div>
-                      <h5 className="text-sm font-bold text-white">{reward.title}</h5>
-                      <div className="flex items-center gap-3 text-xs mt-1">
-                        <span className="text-synth-orange font-bold font-orbitron">{reward.costCoins} NP</span>
-                        {reward.cashValueVND > 0 && (
-                          <span className="text-synth-green font-bold font-orbitron">{reward.cashValueVND.toLocaleString()}đ mặt</span>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] text-synth-text-muted uppercase">Giá Coins (NP)</label>
+                    <input
+                      type="number"
+                      value={rewardCost}
+                      onChange={(e) => setRewardCost(Number(e.target.value))}
+                      className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] text-synth-text-muted uppercase">Giá trị VNĐ (Mặt)</label>
+                    <input
+                      type="number"
+                      value={rewardCash}
+                      onChange={(e) => setRewardCash(Number(e.target.value))}
+                      className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-orange text-black hover:synth-glow-orange cursor-pointer transition-all duration-300"
+                >
+                  Tạo Phần Thưởng
+                </button>
+              </form>
+            </div>
+
+            {/* Approvals ledger */}
+            <div className="glass-panel rounded-2xl border border-white/5 p-5 md:col-span-2 space-y-4">
+              <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
+                <Award className="w-4 h-4" /> Danh sách duyệt quy đổi phần thưởng của con
+              </h4>
+
+              <div className="space-y-2 overflow-y-auto max-h-[300px]">
+                {activeRewards.length > 0 ? (
+                  activeRewards.map((reward: any) => (
+                    <div
+                      key={reward.id}
+                      className="bg-synth-gray/20 rounded-xl p-4 border border-white/5 flex justify-between items-center"
+                    >
+                      <div>
+                        <h5 className="text-sm font-bold text-white">{reward.title}</h5>
+                        <div className="flex items-center gap-3 text-xs mt-1">
+                          <span className="text-synth-orange font-bold font-orbitron">{reward.costCoins} NP</span>
+                          {reward.cashValueVND > 0 && (
+                            <span className="text-synth-green font-bold font-orbitron">{reward.cashValueVND.toLocaleString()}đ mặt</span>
+                          )}
+                          <span className="text-synth-text-muted">{new Date(reward.timestamp).toLocaleDateString()}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-2">
+                        {reward.status === 'approved' ? (
+                          <>
+                            <button
+                              onClick={() => {
+                                if (viewingStudentId) {
+                                  adminApproveReward(viewingStudentId, reward.id);
+                                } else {
+                                  approveReward(reward.id);
+                                }
+                              }}
+                              className="p-2 rounded-lg bg-synth-green text-black cursor-pointer hover:synth-glow-green transition-all"
+                              title="Xác nhận đã chi quà thật cho con"
+                            >
+                              <Check className="w-4 h-4" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (viewingStudentId) {
+                                  adminRejectReward(viewingStudentId, reward.id);
+                                } else {
+                                  rejectReward(reward.id);
+                                }
+                              }}
+                              className="p-2 rounded-lg border border-synth-magenta text-synth-magenta cursor-pointer hover:bg-synth-magenta/10 transition-all"
+                              title="Hủy bỏ yêu cầu, hoàn lại coins cho con"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </>
+                        ) : (
+                          <span className="text-xs text-synth-text-muted italic px-3 py-1 bg-synth-gray/50 rounded-lg">
+                            {reward.status === 'claimed' ? 'Đã trao quà' : 'Chưa quy đổi'}
+                          </span>
                         )}
-                        <span className="text-synth-text-muted">{new Date(reward.timestamp).toLocaleDateString()}</span>
                       </div>
                     </div>
-
-                    <div className="flex gap-2">
-                      {reward.status === 'approved' ? (
-                        <>
-                          <button
-                            onClick={() => approveReward(reward.id)}
-                            className="p-2 rounded-lg bg-synth-green text-black cursor-pointer hover:synth-glow-green transition-all"
-                            title="Xác nhận đã chi quà thật cho con"
-                          >
-                            <Check className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => rejectReward(reward.id)}
-                            className="p-2 rounded-lg border border-synth-magenta text-synth-magenta cursor-pointer hover:bg-synth-magenta/10 transition-all"
-                            title="Hủy bỏ yêu cầu, hoàn lại coins cho con"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </>
-                      ) : (
-                        <span className="text-xs text-synth-text-muted italic px-3 py-1 bg-synth-gray/50 rounded-lg">
-                          {reward.status === 'claimed' ? 'Đã trao quà' : 'Chưa quy đổi'}
-                        </span>
-                      )}
-                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-xs text-synth-text-muted">
+                    Chưa có phần thưởng nào đang chờ duyệt.
                   </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-xs text-synth-text-muted">
-                  Chưa có phần thưởng nào.
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )
       )}
 
       {/* Ingestion tab */}
@@ -824,17 +904,36 @@ Answer: politely"
                                   {new Date(rew.timestamp).toLocaleString('vi-VN')}
                                 </span>
                               </div>
-                              <div className="text-right">
+                              <div className="text-right flex flex-col items-end gap-1">
                                 <span className="font-bold block text-synth-magenta">{rew.cashValueVND.toLocaleString()}đ</span>
-                                <span className={`text-[9px] px-1.5 py-0.5 rounded font-black uppercase font-orbitron ${
-                                  rew.status === 'approved'
-                                    ? 'bg-green-500/20 text-green-400'
-                                    : rew.status === 'rejected'
-                                      ? 'bg-red-500/20 text-red-400'
-                                      : 'bg-yellow-500/20 text-yellow-400 animate-pulse'
-                                }`}>
-                                  {rew.status === 'approved' ? 'Đã trao' : rew.status === 'rejected' ? 'Từ chối' : 'Đang duyệt'}
-                                </span>
+                                {rew.status === 'approved' ? (
+                                  <div className="flex gap-1 mt-1">
+                                    <button
+                                      onClick={() => adminApproveReward(viewingStudentId!, rew.id)}
+                                      className="p-1 rounded bg-synth-green text-black cursor-pointer hover:synth-glow-green transition-all"
+                                      title="Xác nhận đã chi quà thật cho con (Cộng vào ví thưởng)"
+                                    >
+                                      <Check className="w-3.5 h-3.5" />
+                                    </button>
+                                    <button
+                                      onClick={() => adminRejectReward(viewingStudentId!, rew.id)}
+                                      className="p-1 rounded border border-synth-magenta text-synth-magenta cursor-pointer hover:bg-synth-magenta/10 transition-all"
+                                      title="Từ chối yêu cầu, hoàn trả xu NP lại cho con"
+                                    >
+                                      <X className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                ) : (
+                                  <span className={`text-[9px] px-1.5 py-0.5 rounded font-black uppercase font-orbitron ${
+                                    rew.status === 'claimed'
+                                      ? 'bg-green-500/20 text-green-400'
+                                      : rew.status === 'rejected'
+                                        ? 'bg-red-500/20 text-red-400'
+                                        : 'bg-yellow-500/20 text-yellow-400'
+                                  }`}>
+                                    {rew.status === 'claimed' ? 'Đã nhận' : rew.status === 'rejected' ? 'Từ chối' : 'Chưa quy đổi'}
+                                  </span>
+                                )}
                               </div>
                             </div>
                           ))

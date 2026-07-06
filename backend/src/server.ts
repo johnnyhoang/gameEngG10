@@ -512,6 +512,156 @@ app.post('/api/admin/promote', authMiddleware, async (req: any, res) => {
   }
 });
 
+// POST /api/admin/approve-reward: Approves a student's pending reward, adding cash to their wallet
+app.post('/api/admin/approve-reward', authMiddleware, async (req: any, res) => {
+  const adminId = req.user.sub;
+  try {
+    const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
+    if (adminCheck.rowCount === 0 || adminCheck.rows[0].role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin access only.' });
+    }
+
+    const { studentUserId, rewardId } = req.body;
+    if (!studentUserId || !rewardId) {
+      return res.status(400).json({ error: 'Missing studentUserId or rewardId.' });
+    }
+
+    // Check if the reward exists and is pending
+    const rewardRes = await pool.query(
+      'SELECT title, cash_value_vnd FROM ge10_parent_rewards WHERE id = $1 AND user_id = $2 AND status = \'pending\'',
+      [rewardId, studentUserId]
+    );
+
+    if (rewardRes.rowCount === 0) {
+      return res.status(404).json({ error: 'Pending reward not found.' });
+    }
+
+    const { title, cash_value_vnd } = rewardRes.rows[0];
+
+    // Begin Transaction to ensure atomic update
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      // Update reward status
+      await client.query(
+        'UPDATE ge10_parent_rewards SET status = \'approved\' WHERE id = $1 AND user_id = $2',
+        [rewardId, studentUserId]
+      );
+
+      // Increase wallet balance
+      await client.query(
+        'UPDATE ge10_player_profiles SET wallet_vnd = wallet_vnd + $1 WHERE user_id = $2',
+        [cash_value_vnd, studentUserId]
+      );
+
+      // Log activity
+      const logId = `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      await client.query(
+        `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, coins_changed, xp_changed, wallet_changed)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [
+          logId,
+          studentUserId,
+          Date.now(),
+          'energy_refill',
+          `Ví thưởng +${cash_value_vnd.toLocaleString()}đ`,
+          `Ba mẹ đã duyệt đổi phần quà: ${title}`,
+          0,
+          0,
+          cash_value_vnd
+        ]
+      );
+
+      await client.query('COMMIT');
+      res.json({ success: true });
+    } catch (txErr) {
+      await client.query('ROLLBACK');
+      throw txErr;
+    } finally {
+      client.release();
+    }
+  } catch (error: any) {
+    console.error('Error approving reward:', error.message);
+    res.status(500).json({ error: 'Failed to approve reward.' });
+  }
+});
+
+// POST /api/admin/reject-reward: Rejects a student's pending reward, refunding their coins
+app.post('/api/admin/reject-reward', authMiddleware, async (req: any, res) => {
+  const adminId = req.user.sub;
+  try {
+    const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
+    if (adminCheck.rowCount === 0 || adminCheck.rows[0].role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin access only.' });
+    }
+
+    const { studentUserId, rewardId } = req.body;
+    if (!studentUserId || !rewardId) {
+      return res.status(400).json({ error: 'Missing studentUserId or rewardId.' });
+    }
+
+    // Check if the reward exists and is pending
+    const rewardRes = await pool.query(
+      'SELECT title, cost_coins FROM ge10_parent_rewards WHERE id = $1 AND user_id = $2 AND status = \'pending\'',
+      [rewardId, studentUserId]
+    );
+
+    if (rewardRes.rowCount === 0) {
+      return res.status(404).json({ error: 'Pending reward not found.' });
+    }
+
+    const { title, cost_coins } = rewardRes.rows[0];
+
+    // Begin Transaction
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      // Update reward status
+      await client.query(
+        'UPDATE ge10_parent_rewards SET status = \'rejected\' WHERE id = $1 AND user_id = $2',
+        [rewardId, studentUserId]
+      );
+
+      // Refund coins
+      await client.query(
+        'UPDATE ge10_player_profiles SET coins = coins + $1 WHERE user_id = $2',
+        [cost_coins, studentUserId]
+      );
+
+      // Log activity
+      const logId = `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      await client.query(
+        `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, coins_changed, xp_changed, wallet_changed)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        [
+          logId,
+          studentUserId,
+          Date.now(),
+          'energy_refill',
+          `Hoàn trả +${cost_coins} NP`,
+          `Ba mẹ từ chối phần quà: ${title}. Hoàn lại xu.`,
+          cost_coins,
+          0,
+          0
+        ]
+      );
+
+      await client.query('COMMIT');
+      res.json({ success: true });
+    } catch (txErr) {
+      await client.query('ROLLBACK');
+      throw txErr;
+    } finally {
+      client.release();
+    }
+  } catch (error: any) {
+    console.error('Error rejecting reward:', error.message);
+    res.status(500).json({ error: 'Failed to reject reward.' });
+  }
+});
+
 // GET /api/admin/student-profile: Retrieves another student's profile statistics, logs, and pet state
 app.get('/api/admin/student-profile', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
