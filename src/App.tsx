@@ -8,6 +8,8 @@ import { PlayArea } from './components/PlayArea';
 import { ItemShop } from './components/ItemShop';
 import { ParentConsole } from './components/ParentConsole';
 import { GoogleLoginScreen } from './components/GoogleLoginScreen';
+import { supabase } from './utils/supabaseClient';
+import type { UserProfile } from './types/game';
 
 function App() {
   const currentUser = useGameState(state => state.currentUser);
@@ -44,6 +46,34 @@ function App() {
       clearInterval(interval);
     };
   }, [currentUser]);
+
+  // Listen for Supabase Auth state changes globally immediately on app mount
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (session && session.user) {
+        const user: UserProfile = {
+          id: session.user.id,
+          name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+          email: session.user.email || '',
+          avatar: session.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
+        };
+
+        const current = useGameState.getState().currentUser;
+        if (!current || current.id !== user.id) {
+          await useGameState.getState().login(user);
+        }
+      } else {
+        const current = useGameState.getState().currentUser;
+        if (current && !current.id.startsWith('mock-')) {
+          useGameState.getState().logout();
+        }
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   if (!currentUser) {
     return <GoogleLoginScreen />;

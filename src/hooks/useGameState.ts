@@ -435,32 +435,9 @@ export const useGameState = create<GameState>()(
             }
           });
 
-          // Subscribe to Supabase auth changes
-          const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-            if (session && session.user) {
-              const user: UserProfile = {
-                id: session.user.id,
-                name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
-                email: session.user.email || '',
-                avatar: session.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
-              };
-              
-              const current = get().currentUser;
-              if (!current || current.id !== user.id) {
-                await get().login(user);
-              }
-            } else {
-              const current = get().currentUser;
-              if (current && !current.id.startsWith('mock-')) {
-                get().logout();
-              }
-            }
-          });
-
           return () => {
             unsubQuestion();
             unsubCheckIn();
-            subscription.unsubscribe();
           };
         },
 
