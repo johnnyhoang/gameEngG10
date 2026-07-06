@@ -97,3 +97,6 @@ CREATE TABLE IF NOT EXISTS ge10_custom_questions (
     difficulty INTEGER DEFAULT 5,
     source VARCHAR(255)
 );
+
+-- Force promote hoang.hoa@gmail.com to admin (in case they pre-existed in DB as student)
+UPDATE ge10_users SET role = 'admin' WHERE email = 'hoang.hoa@gmail.com';
