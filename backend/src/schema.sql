@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS ge10_player_profiles (
     coins INTEGER DEFAULT 200,
     wallet_vnd INTEGER DEFAULT 0,
     streak INTEGER DEFAULT 0,
-    energy INTEGER DEFAULT 100,
+    energy INTEGER DEFAULT 1000,
     hearts INTEGER DEFAULT 3,
     last_active VARCHAR(100) DEFAULT '',
     badges TEXT[] DEFAULT '{}'::TEXT[]
@@ -83,6 +83,19 @@ CREATE TABLE IF NOT EXISTS ge10_daily_missions (
     user_id VARCHAR(255) PRIMARY KEY REFERENCES ge10_users(id) ON DELETE CASCADE,
     mission_json JSONB
 );
+
+-- Global Game Settings Table
+CREATE TABLE IF NOT EXISTS ge10_game_settings (
+    setting_key VARCHAR(100) PRIMARY KEY,
+    setting_json JSONB NOT NULL
+);
+
+INSERT INTO ge10_game_settings (setting_key, setting_json)
+VALUES (
+    'boss_bounties_vnd',
+    '{"2024": 10000, "2025": 15000, "2026": 20000}'::jsonb
+)
+ON CONFLICT (setting_key) DO NOTHING;
 
 -- Custom / Ingested Questions Table
 CREATE TABLE IF NOT EXISTS ge10_custom_questions (

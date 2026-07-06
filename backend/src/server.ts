@@ -15,6 +15,8 @@ const __dirname = path.dirname(__filename);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const PLAYER_ENERGY_MAX = 1000;
+const DEFAULT_BOSS_BOUNTIES_VND: [number, number, number] = [10000, 15000, 20000];
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
@@ -72,6 +74,33 @@ const authMiddleware = async (req: any, res: any, next: any) => {
     console.error('JWT Verification Error:', error.message);
     return res.status(401).json({ error: 'Unauthorized: Invalid token.' });
   }
+};
+
+const loadBossBounties = async (): Promise<[number, number, number]> => {
+  const res = await pool.query(
+    "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'boss_bounties_vnd'"
+  );
+  const raw = res.rows[0]?.setting_json;
+  const values = [
+    Number(raw?.['2024']),
+    Number(raw?.['2025']),
+    Number(raw?.['2026'])
+  ];
+
+  if (values.every(v => Number.isFinite(v) && v >= 0)) {
+    return [values[0], values[1], values[2]];
+  }
+
+  return DEFAULT_BOSS_BOUNTIES_VND;
+};
+
+const saveBossBounties = async (bossBountiesVnd: [number, number, number]) => {
+  await pool.query(
+    `INSERT INTO ge10_game_settings (setting_key, setting_json)
+     VALUES ('boss_bounties_vnd', $1::jsonb)
+     ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
+    [JSON.stringify({ 2024: bossBountiesVnd[0], 2025: bossBountiesVnd[1], 2026: bossBountiesVnd[2] })]
+  );
 };
 
 // Health Check API
@@ -161,6 +190,7 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
     const missionRes = await pool.query('SELECT * FROM ge10_daily_missions WHERE user_id = $1', [userId]);
     // 9. Fetch custom questions
     const questionsRes = await pool.query('SELECT * FROM ge10_custom_questions WHERE user_id = $1', [userId]);
+    const bossBountiesVnd = await loadBossBounties();
 
     // Format category stats array into record mapping
     const categoryStats: any = {};
@@ -250,6 +280,9 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
       rewards,
       challenges,
       dailyMission,
+      gameSettings: {
+        bossBountiesVnd
+      },
       customQuestions
     });
   } catch (error) {
@@ -792,6 +825,92 @@ app.post('/api/admin/deduct-wallet', authMiddleware, async (req: any, res: any) 
   } catch (error: any) {
     console.error('Error deducting wallet:', error.message);
     res.status(500).json({ error: 'Failed to deduct wallet.' });
+  }
+});
+
+// POST /api/admin/refill-energy: Sets a student's energy to a percentage of the max when parent clicks "⚡ Nạp Năng Lượng"
+app.post('/api/admin/refill-energy', authMiddleware, async (req: any, res: any) => {
+  const adminId = req.user.sub;
+  try {
+    const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
+    if (adminCheck.rowCount === 0 || adminCheck.rows[0].role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin access only.' });
+    }
+
+    const { studentUserId } = req.body;
+    if (!studentUserId) {
+      return res.status(400).json({ error: 'Invalid parameters: studentUserId.' });
+    }
+
+    const currentRes = await pool.query('SELECT energy FROM ge10_player_profiles WHERE user_id = $1', [studentUserId]);
+    if (currentRes.rowCount === 0) {
+      return res.status(404).json({ error: 'Student profile not found.' });
+    }
+
+    const rawPercent = Number(req.body.energyPercent);
+    const rawEnergyValue = Number(req.body.energyValue);
+    let targetEnergy = PLAYER_ENERGY_MAX;
+    if (Number.isFinite(rawPercent)) {
+      const clampedPercent = Math.max(0, Math.min(100, rawPercent));
+      targetEnergy = Math.round((PLAYER_ENERGY_MAX * clampedPercent) / 100);
+    } else if (Number.isFinite(rawEnergyValue)) {
+      targetEnergy = Math.max(0, Math.min(PLAYER_ENERGY_MAX, Math.round(rawEnergyValue)));
+    }
+
+    await pool.query(
+      'UPDATE ge10_player_profiles SET energy = $2 WHERE user_id = $1',
+      [studentUserId, targetEnergy]
+    );
+
+    // Log the energy refill log
+    const logId = `log-refill-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    await pool.query(
+      `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, coins_changed, xp_changed, wallet_changed)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [
+        logId,
+        studentUserId,
+        Date.now(),
+        'exercise',
+        '⚡ Bơm Năng Lượng',
+        `Ba Mẹ đã cập nhật năng lượng cho bé lên ${targetEnergy}/${PLAYER_ENERGY_MAX} (${Math.round((targetEnergy / PLAYER_ENERGY_MAX) * 100)}%).`,
+        0,
+        0,
+        0
+      ]
+    );
+
+    res.json({ success: true, energy: targetEnergy, maxEnergy: PLAYER_ENERGY_MAX });
+  } catch (error: any) {
+    console.error('Error refilling energy:', error.message);
+    res.status(500).json({ error: 'Failed to refill energy.' });
+  }
+});
+
+// PUT /api/admin/game-settings: Updates global boss bounty amounts
+app.put('/api/admin/game-settings', authMiddleware, async (req: any, res: any) => {
+  const adminId = req.user.sub;
+  try {
+    const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
+    if (adminCheck.rowCount === 0 || adminCheck.rows[0].role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin access only.' });
+    }
+
+    const { bossBountiesVnd } = req.body || {};
+    if (!Array.isArray(bossBountiesVnd) || bossBountiesVnd.length !== 3) {
+      return res.status(400).json({ error: 'Invalid parameters: bossBountiesVnd must contain 3 values.' });
+    }
+
+    const normalized = bossBountiesVnd.map((value: any) => Math.max(0, Math.round(Number(value)))) as [number, number, number];
+    if (normalized.some(v => !Number.isFinite(v))) {
+      return res.status(400).json({ error: 'Invalid boss bounty values.' });
+    }
+
+    await saveBossBounties(normalized);
+    res.json({ success: true, bossBountiesVnd: normalized });
+  } catch (error: any) {
+    console.error('Error updating boss bounties:', error.message);
+    res.status(500).json({ error: 'Failed to update boss bounties.' });
   }
 });
 

@@ -143,7 +143,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
               <Zap className="w-4 h-4 text-synth-cyan fill-synth-cyan animate-pulse" />
               <div className="flex flex-col">
                 <span className="text-[8px] text-synth-cyan font-orbitron font-bold uppercase tracking-wider hidden sm:inline">Energy</span>
-                <span className="text-xs font-semibold font-orbitron text-white">{player.energy}/100 <span className="text-[8px] opacity-50">?</span></span>
+                <span className="text-xs font-semibold font-orbitron text-white">{player.energy}/1000 <span className="text-[8px] opacity-50">?</span></span>
               </div>
             </div>
 

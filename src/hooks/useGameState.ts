@@ -13,7 +13,8 @@ import type {
   HistoryLog,
   Challenge,
   DailyMission,
-  UiThemeId
+  UiThemeId,
+  GameSettings
 } from '../types/game';
 import { DEFAULT_UI_THEME } from '../theme/uiThemes';
 
@@ -29,7 +30,7 @@ const HELP_TOPICS: Record<string, { title: string; bullets: string[] }> = {
   energy: {
     title: 'Chỉ số Năng lượng (Energy)',
     bullets: [
-      '• Giới hạn 100 Energy mỗi ngày, tự động nạp đầy 100% vào lúc 0h sáng.',
+      '• Giới hạn 1000 Energy mỗi ngày, tự động nạp đầy 100% vào lúc 0h sáng.',
       '• Mỗi lần làm bài luyện tập thường tiêu hao 10 Energy.',
       '• Các trận đấu Boss hoặc khiêu chiến Dungeon tiêu hao 20 Energy.',
       '• Giới hạn này giúp bảo vệ mắt và sức khỏe của con, tránh học tập quá sức.'
@@ -137,6 +138,7 @@ interface GameState {
   profiles: Record<string, PlayerProfile>;
   petStates: Record<string, PetState>;
   categoryStatsAll: Record<string, Record<string, CategoryStat>>;
+  gameSettings: GameSettings;
   uiTheme: UiThemeId;
   uiThemesByUser: Record<string, UiThemeId>;
   setUiTheme: (themeId: UiThemeId) => void;
@@ -153,6 +155,8 @@ interface GameState {
   adminApproveReward: (studentUserId: string, rewardId: string) => Promise<void>;
   adminRejectReward: (studentUserId: string, rewardId: string) => Promise<void>;
   adminDeductWallet: (studentUserId: string, amount: number) => Promise<void>;
+  adminSetEnergy: (studentUserId: string, energyPercent: number) => Promise<void>;
+  updateBossBounties: (bossBountiesVnd: [number, number, number]) => Promise<void>;
 
   // Player Actions
   answerQuestion: (
@@ -190,6 +194,10 @@ interface GameState {
 }
 
 const DEFAULT_PIN = '1234';
+const PLAYER_ENERGY_MAX = 1000;
+const DEFAULT_GAME_SETTINGS: GameSettings = {
+  bossBountiesVnd: [10000, 15000, 20000]
+};
 
 const INITIAL_PLAYER: PlayerProfile = {
   id: 'student-1',
@@ -200,7 +208,7 @@ const INITIAL_PLAYER: PlayerProfile = {
   coins: 200,
   walletVND: 0,
   streak: 0,
-  energy: 100,
+  energy: PLAYER_ENERGY_MAX,
   hearts: 3,
   lastActive: new Date().toISOString(),
   badges: []
@@ -344,6 +352,7 @@ export const useGameState = create<GameState>()(
         questions: INITIAL_QUESTIONS,
         currentSubject: 'english',
         categoryStats: {},
+        gameSettings: DEFAULT_GAME_SETTINGS,
         pet: INITIAL_PET,
         rewards: DEFAULT_REWARDS,
         challenges: INITIAL_CHALLENGES,
@@ -578,7 +587,7 @@ export const useGameState = create<GameState>()(
                 coins: 200,
                 walletVND: 0,
                 streak: 0,
-                energy: 100,
+                energy: PLAYER_ENERGY_MAX,
                 hearts: 3,
                 lastActive: new Date().toISOString(),
                 badges: []
@@ -601,6 +610,7 @@ export const useGameState = create<GameState>()(
                 player: newPlayer,
                 pet: newPet,
                 categoryStats: newStats,
+                gameSettings: state.gameSettings || DEFAULT_GAME_SETTINGS,
                 uiTheme: resolvedTheme
               };
             });
@@ -657,7 +667,7 @@ export const useGameState = create<GameState>()(
                     coins: 200,
                     walletVND: 0,
                     streak: 0,
-                    energy: 100,
+                    energy: PLAYER_ENERGY_MAX,
                     hearts: 3,
                     lastActive: new Date().toISOString(),
                     badges: []
@@ -676,6 +686,7 @@ export const useGameState = create<GameState>()(
                   rewards: data.rewards || [],
                   challenges: data.challenges || INITIAL_CHALLENGES,
                   dailyMission: data.dailyMission || null,
+                  gameSettings: data.gameSettings || DEFAULT_GAME_SETTINGS,
                   questions: mergedQuestions
                 };
               });
@@ -699,12 +710,17 @@ export const useGameState = create<GameState>()(
                 coins: 200,
                 walletVND: 0,
                 streak: 0,
-                energy: 100,
+                energy: PLAYER_ENERGY_MAX,
                 hearts: 3,
                 lastActive: new Date().toISOString(),
                 badges: []
               };
-              return { currentUser: updatedUser, player: newPlayer, uiTheme: resolvedTheme };
+              return {
+                currentUser: updatedUser,
+                player: newPlayer,
+                uiTheme: resolvedTheme,
+                gameSettings: state.gameSettings || DEFAULT_GAME_SETTINGS
+              };
             });
           }
         },
@@ -716,6 +732,7 @@ export const useGameState = create<GameState>()(
             player: INITIAL_PLAYER,
             pet: INITIAL_PET,
             categoryStats: {},
+            gameSettings: DEFAULT_GAME_SETTINGS,
             activeCombo: 0,
             adminStudents: [],
             selectedStudentProfile: null,
@@ -882,6 +899,63 @@ export const useGameState = create<GameState>()(
           }
         },
 
+        adminSetEnergy: async (studentUserId: string, energyPercent: number) => {
+          try {
+            const session = (await supabase.auth.getSession()).data.session;
+            const token = session?.access_token;
+            if (!token) return;
+
+            const clampedPercent = Math.max(0, Math.min(100, Math.round(energyPercent)));
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+            const res = await fetch(`${backendUrl}/api/admin/refill-energy`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+              },
+              body: JSON.stringify({ studentUserId, energyPercent: clampedPercent })
+            });
+            if (!res.ok) {
+              const errData = await res.json();
+              alert(errData.error || 'Lỗi khi cập nhật năng lượng.');
+              return;
+            }
+            await get().fetchStudentProfile(studentUserId);
+            alert(`Đã cập nhật năng lượng của bé lên ${clampedPercent}%.`);
+          } catch (e) {
+            console.error('Error updating student energy:', e);
+            alert('Lỗi kết nối khi cập nhật năng lượng.');
+          }
+        },
+
+        updateBossBounties: async (bossBountiesVnd: [number, number, number]) => {
+          try {
+            const session = (await supabase.auth.getSession()).data.session;
+            const token = session?.access_token;
+            if (!token) return;
+
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+            const res = await fetch(`${backendUrl}/api/admin/game-settings`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+              },
+              body: JSON.stringify({ bossBountiesVnd })
+            });
+            if (!res.ok) {
+              const errData = await res.json();
+              alert(errData.error || 'Lỗi khi cập nhật vàng săn thưởng.');
+              return;
+            }
+            set({ gameSettings: { bossBountiesVnd } });
+            alert('Đã cập nhật vàng săn thưởng cho Boss Arena.');
+          } catch (e) {
+            console.error('Error updating boss bounties:', e);
+            alert('Lỗi kết nối khi cập nhật vàng săn thưởng.');
+          }
+        },
+
         // Student Actions
         answerQuestion: (questionId, isCorrect, _timeSpent, gameMode) => {
           const state = get();
@@ -1021,7 +1095,7 @@ export const useGameState = create<GameState>()(
           set(state => ({
             player: {
               ...state.player,
-              energy: Math.min(100, state.player.energy + amount)
+              energy: Math.min(PLAYER_ENERGY_MAX, state.player.energy + amount)
             }
           }));
         },
@@ -1321,7 +1395,7 @@ export const useGameState = create<GameState>()(
             player: {
               ...state.player,
               streak: newStreak,
-              energy: 100, // Refill energy daily
+              energy: PLAYER_ENERGY_MAX, // Refill energy daily
               hearts: 3, // Refill hearts daily
               lastActive: new Date().toISOString()
             },

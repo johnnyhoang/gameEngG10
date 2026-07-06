@@ -5,6 +5,10 @@ export type PetStage = 'egg' | 'baby' | 'dragon' | 'legend';
 export type PetMood = 'happy' | 'neutral' | 'sad' | 'sleeping';
 export type UiThemeId = 'current' | 'cute-pink-pastel' | 'space-adventure' | 'fantasy-forest' | 'pixel-arcade';
 
+export interface GameSettings {
+  bossBountiesVnd: [number, number, number];
+}
+
 export interface UserProfile {
   id: string; // unique google id or email
   name: string;
@@ -22,7 +26,7 @@ export interface PlayerProfile {
   coins: number;
   walletVND: number;
   streak: number;
-  energy: number; // 0 - 100
+  energy: number; // 0 - 1000
   hearts: number; // 0 - 3 (or max hearts)
   lastActive: string; // ISO String date
   badges: string[];

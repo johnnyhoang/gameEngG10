@@ -18,6 +18,7 @@ export const GameMap: React.FC<GameMapProps> = ({ onStartPlay, onOpenMysteryBox,
   const dailyMission = useGameState(state => state.dailyMission);
   const useEnergy = useGameState(state => state.useEnergy);
   const currentSubject = useGameState(state => state.currentSubject);
+  const bossBountiesVnd = useGameState(state => state.gameSettings.bossBountiesVnd);
 
   // Check if weekend for Lucky Wheel
   const isWeekend = () => {
@@ -188,17 +189,17 @@ export const GameMap: React.FC<GameMapProps> = ({ onStartPlay, onOpenMysteryBox,
   ];
 
   const bosses = currentSubject === 'math' ? [
-    { id: 'b-2024', name: 'Đại Ca Toán HCMC 2024', year: '2024', bounty: '10.000đ', energy: 20 },
-    { id: 'b-2025', name: 'Cự Long Toán HCMC 2025', year: '2025', bounty: '15.000đ', energy: 20 },
-    { id: 'b-2026', name: 'Cổ Long Toán HCMC 2026 (Mock)', year: '2026', bounty: '20.000đ', energy: 25 }
+    { id: 'b-2024', name: 'Đại Ca Toán HCMC 2024', year: '2024', energy: 20 },
+    { id: 'b-2025', name: 'Cự Long Toán HCMC 2025', year: '2025', energy: 20 },
+    { id: 'b-2026', name: 'Cổ Long Toán HCMC 2026 (Mock)', year: '2026', energy: 25 }
   ] : currentSubject === 'literature' ? [
-    { id: 'b-2024', name: 'Đại Ca Văn HCMC 2024', year: '2024', bounty: '10.000đ', energy: 20 },
-    { id: 'b-2025', name: 'Cự Long Văn HCMC 2025', year: '2025', bounty: '15.000đ', energy: 20 },
-    { id: 'b-2026', name: 'Cổ Long Văn HCMC 2026 (Mock)', year: '2026', bounty: '20.000đ', energy: 25 }
+    { id: 'b-2024', name: 'Đại Ca Văn HCMC 2024', year: '2024', energy: 20 },
+    { id: 'b-2025', name: 'Cự Long Văn HCMC 2025', year: '2025', energy: 20 },
+    { id: 'b-2026', name: 'Cổ Long Văn HCMC 2026 (Mock)', year: '2026', energy: 25 }
   ] : [
-    { id: 'b-2024', name: 'Đại Ca HCMC 2024', year: '2024', bounty: '10.000đ', energy: 20 },
-    { id: 'b-2025', name: 'Cự Long HCMC 2025', year: '2025', bounty: '15.000đ', energy: 20 },
-    { id: 'b-2026', name: 'Cổ Long HCMC 2026 (Mock)', year: '2026', bounty: '20.000đ', energy: 25 }
+    { id: 'b-2024', name: 'Đại Ca HCMC 2024', year: '2024', energy: 20 },
+    { id: 'b-2025', name: 'Cự Long HCMC 2025', year: '2025', energy: 20 },
+    { id: 'b-2026', name: 'Cổ Long HCMC 2026 (Mock)', year: '2026', energy: 25 }
   ];
 
   return (
@@ -294,7 +295,7 @@ export const GameMap: React.FC<GameMapProps> = ({ onStartPlay, onOpenMysteryBox,
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {bosses.map(boss => (
+          {bosses.map((boss, index) => (
             <div
               key={boss.id}
               onClick={() => handleLaunchZone('boss', boss.energy, boss.id)}
@@ -319,7 +320,7 @@ export const GameMap: React.FC<GameMapProps> = ({ onStartPlay, onOpenMysteryBox,
               <div className="border-t border-synth-gray/50 pt-3 mt-3 flex justify-between items-center text-xs font-semibold">
                 <span className="text-synth-text-muted">Vàng săn thưởng:</span>
                 <span className="text-synth-green font-orbitron font-bold flex items-center gap-1">
-                  +{boss.bounty} VNĐ
+                  +{(bossBountiesVnd[index] ?? [10000, 15000, 20000][index]).toLocaleString('vi-VN')}đ
                 </span>
               </div>
             </div>

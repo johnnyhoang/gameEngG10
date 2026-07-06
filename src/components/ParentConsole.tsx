@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import type { Question } from '../types/game';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { Lock, Unlock, Check, X, Award, FileText, Database, Plus, BarChart2 } from 'lucide-react';
+import { Lock, Unlock, Check, X, Award, FileText, Database, Plus, BarChart2, SlidersHorizontal } from 'lucide-react';
 import { supabase } from '../utils/supabaseClient';
 
 export const ParentConsole: React.FC = () => {
@@ -24,6 +24,9 @@ export const ParentConsole: React.FC = () => {
   const adminRejectReward = useGameState(state => state.adminRejectReward);
   const showHelp = useGameState(state => state.showHelp);
   const adminDeductWallet = useGameState(state => state.adminDeductWallet);
+  const adminSetEnergy = useGameState(state => state.adminSetEnergy);
+  const updateBossBounties = useGameState(state => state.updateBossBounties);
+  const gameSettings = useGameState(state => state.gameSettings);
 
   // PIN Lock States
   const [pin, setPin] = useState('');
@@ -41,6 +44,10 @@ export const ParentConsole: React.FC = () => {
   const [rewardTitle, setRewardTitle] = useState('');
   const [rewardCost, setRewardCost] = useState(200);
   const [rewardCash, setRewardCash] = useState(20000);
+  const [studentEnergyPercent, setStudentEnergyPercent] = useState(100);
+  const [bossBounty2024, setBossBounty2024] = useState(10000);
+  const [bossBounty2025, setBossBounty2025] = useState(15000);
+  const [bossBounty2026, setBossBounty2026] = useState(20000);
 
   // Active Tab
   const [activeTab, setActiveTab] = useState<'analytics' | 'rewards' | 'ingestion' | 'members' | 'settings'>('members');
@@ -52,6 +59,18 @@ export const ParentConsole: React.FC = () => {
       fetchAdminStudents();
     }
   }, []);
+
+  useEffect(() => {
+    if (!selectedStudentProfile?.player) return;
+    setStudentEnergyPercent(Math.round((selectedStudentProfile.player.energy / 1000) * 100));
+  }, [selectedStudentProfile?.player?.energy]);
+
+  useEffect(() => {
+    const [b2024, b2025, b2026] = gameSettings.bossBountiesVnd;
+    setBossBounty2024(b2024);
+    setBossBounty2025(b2025);
+    setBossBounty2026(b2026);
+  }, [gameSettings.bossBountiesVnd]);
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
@@ -214,12 +233,13 @@ export const ParentConsole: React.FC = () => {
 
         {/* Tab Controls */}
         <div className="hidden md:flex gap-2 flex-wrap">
-          {['members', 'analytics', 'rewards', 'ingestion'].map(tab => {
+          {['members', 'analytics', 'rewards', 'ingestion', 'settings'].map(tab => {
             const tabNames: Record<string, string> = {
               members: 'Thành viên',
               analytics: 'Thống kê',
               rewards: 'Phần thưởng',
-              ingestion: 'AI Ingest'
+              ingestion: 'AI Ingest',
+              settings: 'Cấu hình'
             };
             return (
               <button
@@ -760,7 +780,7 @@ Answer: politely"
               ) : (
                 <div className="space-y-6">
                   {/* Student Stats Summary Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     <div className="glass-panel rounded-xl border border-white/5 p-4 flex flex-col justify-between">
                       <span className="text-[10px] uppercase text-synth-cyan font-bold font-orbitron">Cấp độ & EXP</span>
                       <span className="text-2xl font-black text-white font-orbitron mt-1">
@@ -821,7 +841,36 @@ Answer: politely"
                       <span className="text-2xl font-black text-orange-500 font-orbitron mt-1">
                         {selectedStudentProfile.player?.streak || 0} Ngày
                       </span>
-                      <span className="text-[10px] text-synth-text-muted mt-1">Năng lượng còn lại: {selectedStudentProfile.player?.energy || 0}/100</span>
+                      <span className="text-[10px] text-synth-text-muted mt-1">Năng lượng còn lại: {selectedStudentProfile.player?.energy || 0}/1000</span>
+                    </div>
+
+                    <div className="glass-panel rounded-xl border border-white/5 p-4 flex flex-col justify-between gap-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] uppercase text-synth-cyan font-bold font-orbitron">Energy (% max)</span>
+                        <span className="text-xs font-black text-white font-orbitron">{studentEnergyPercent}%</span>
+                      </div>
+                      <input
+                        type="range"
+                        min={0}
+                        max={100}
+                        value={studentEnergyPercent}
+                        onChange={(e) => setStudentEnergyPercent(Number(e.target.value))}
+                        className="w-full accent-cyan-400"
+                      />
+                      <div className="flex items-center justify-between text-[10px] text-synth-text-muted font-bold">
+                        <span>0%</span>
+                        <span>{Math.round((studentEnergyPercent / 100) * 1000)}/1000</span>
+                        <span>100%</span>
+                      </div>
+                      <button
+                        onClick={async () => {
+                          if (!selectedStudentProfile?.studentUser?.id) return;
+                          await adminSetEnergy(selectedStudentProfile.studentUser.id, studentEnergyPercent);
+                        }}
+                        className="w-full py-2 rounded-lg bg-synth-cyan text-black font-orbitron font-bold text-[10px] uppercase tracking-wider hover:synth-glow-cyan transition-all"
+                      >
+                        Cập nhật Energy
+                      </button>
                     </div>
                   </div>
 
@@ -989,8 +1038,53 @@ Answer: politely"
         </div>
       )}
 
+      {activeTab === 'settings' && (
+        <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5">
+          <div className="flex items-center gap-2">
+            <SlidersHorizontal className="w-4 h-4 text-synth-cyan" />
+            <h3 className="font-orbitron font-bold text-sm text-synth-cyan uppercase tracking-wider">
+              Cấu hình Game
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              { label: 'Boss 2024', value: bossBounty2024, setter: setBossBounty2024 },
+              { label: 'Boss 2025', value: bossBounty2025, setter: setBossBounty2025 },
+              { label: 'Boss 2026', value: bossBounty2026, setter: setBossBounty2026 }
+            ].map(item => (
+              <label key={item.label} className="space-y-2 text-xs">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">{item.label} bounty (VND)</span>
+                <input
+                  type="number"
+                  min={0}
+                  step={1000}
+                  value={item.value}
+                  onChange={(e) => item.setter(Number(e.target.value) || 0)}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                />
+              </label>
+            ))}
+          </div>
+
+          <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between bg-white/5 rounded-xl border border-white/5 p-4">
+            <p className="text-xs text-synth-text-muted leading-relaxed">
+              Các mức này sẽ hiển thị ở Boss Arena trên toàn bộ game. Có thể đổi về 10.000đ / 15.000đ / 20.000đ hoặc tăng giảm tùy nhu cầu.
+            </p>
+            <button
+              onClick={async () => {
+                await updateBossBounties([bossBounty2024, bossBounty2025, bossBounty2026]);
+              }}
+              className="px-4 py-2.5 rounded-xl bg-synth-magenta text-black font-orbitron font-bold text-[10px] uppercase tracking-wider hover:synth-glow-magenta transition-all shrink-0"
+            >
+              Lưu cấu hình
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Mobile Admin Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-3 py-2.5 pb-3 flex justify-around items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-3 py-2.5 pb-3 grid grid-cols-5 gap-1.5 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)]">
         <button
           onClick={() => {
             setActiveTab('members');
@@ -1032,6 +1126,16 @@ Answer: politely"
         >
           <span className="text-lg">🤖</span>
           <span>AI Ingest</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('settings')}
+          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
+            activeTab === 'settings' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
+          }`}
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+          <span>Cấu hình</span>
         </button>
       </nav>
     </div>
