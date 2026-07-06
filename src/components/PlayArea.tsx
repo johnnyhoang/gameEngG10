@@ -382,13 +382,13 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
       )}
 
       {/* Bottom Controls */}
-      <div className="flex gap-4 border-t border-synth-gray/50 pt-4">
+      <div className="flex flex-col sm:flex-row gap-3 border-t border-synth-gray/50 pt-4">
         {/* Hint button */}
         {!checked && (
           <button
             onClick={handleUseHint}
             disabled={hintUsed}
-            className="px-4 py-3 rounded-xl border border-synth-orange/40 hover:bg-synth-orange/5 text-synth-orange font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40"
+            className="px-4 py-3 rounded-xl border border-synth-orange/40 hover:bg-synth-orange/5 text-synth-orange font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 w-full sm:w-auto text-center"
           >
             Mua Gợi Ý (50 NP)
           </button>
@@ -399,14 +399,14 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
           <button
             onClick={handleCheckAnswer}
             disabled={activeQuestion.type === 'mcq' ? !selectedAnswer : !typedAnswer.trim()}
-            className="flex-1 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 disabled:opacity-40"
+            className="flex-1 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 disabled:opacity-40 text-center"
           >
             Kiểm Tra Đáp Án
           </button>
         ) : (
           <button
             onClick={handleNextQuestion}
-            className="flex-1 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-magenta text-black hover:synth-glow-magenta cursor-pointer transition-all duration-300 flex items-center justify-center gap-2"
+            className="flex-1 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-magenta text-black hover:synth-glow-magenta cursor-pointer transition-all duration-300 flex items-center justify-center gap-2 text-center"
           >
             Câu Tiếp Theo <ArrowRight className="w-4 h-4" />
           </button>
@@ -414,7 +414,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
 
         <button
           onClick={onFinish}
-          className="px-4 py-3 rounded-xl border border-synth-gray hover:bg-synth-gray/20 text-synth-text-muted font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300"
+          className="px-4 py-3 rounded-xl border border-synth-gray hover:bg-synth-gray/20 text-synth-text-muted font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 w-full sm:w-auto text-center"
         >
           Trốn Chạy (Thoát)
         </button>
