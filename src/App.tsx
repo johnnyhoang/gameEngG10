@@ -21,7 +21,7 @@ function App() {
   const closeHelp = useGameState(state => state.closeHelp);
 
   // Screen routing state
-  const [screen, setScreen] = useState<'map' | 'play' | 'shop' | 'parent'>('map');
+  const [screen, setScreen] = useState<'map' | 'play' | 'shop' | 'parent' | 'pet' | 'logs'>('map');
   const [playMode, setPlayMode] = useState<'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss'>('mixed');
   const [bossId, setBossId] = useState<string | undefined>(undefined);
 
@@ -132,11 +132,11 @@ function App() {
       />
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:py-8 flex flex-col lg:flex-row gap-6 items-stretch">
+      <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:py-8 flex flex-col lg:flex-row gap-6 items-stretch pb-20 lg:pb-8">
         
-        {/* Left Companion Panel (Hidden in play area) */}
+        {/* Left Companion Panel (Hidden in play area, hidden on mobile) */}
         {!isDungeonScreen && currentUser?.role !== 'admin' && (
-          <aside className="w-full lg:w-72 shrink-0 h-fit lg:sticky lg:top-24">
+          <aside className="hidden lg:block w-72 shrink-0 h-fit lg:sticky lg:top-24">
             <PetSanctuary />
           </aside>
         )}
@@ -162,11 +162,23 @@ function App() {
           {screen === 'shop' && <ItemShop />}
 
           {screen === 'parent' && <ParentConsole />}
+
+          {screen === 'pet' && (
+            <div className="lg:hidden">
+              <PetSanctuary />
+            </div>
+          )}
+
+          {screen === 'logs' && (
+            <div className="lg:hidden">
+              <ActivityLog />
+            </div>
+          )}
         </section>
 
-        {/* Right Info Ledger (Hidden in play area) */}
+        {/* Right Info Ledger (Hidden in play area, hidden on mobile) */}
         {!isDungeonScreen && currentUser?.role !== 'admin' && (
-          <aside className="w-full lg:w-80 shrink-0 h-fit lg:sticky lg:top-24">
+          <aside className="hidden lg:block w-80 shrink-0 h-fit lg:sticky lg:top-24">
             <ActivityLog />
           </aside>
         )}
@@ -222,6 +234,61 @@ function App() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* Mobile Bottom Navigation Bar */}
+      {currentUser && currentUser.role !== 'admin' && screen !== 'play' && (
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-cyan/20 px-3 py-2.5 pb-3 flex justify-around items-center z-50 shadow-[0_-4px_20px_rgba(0,240,255,0.15)]">
+          <button
+            onClick={() => setScreen('map')}
+            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
+              screen === 'map' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
+            }`}
+          >
+            <span className="text-lg">🗺️</span>
+            <span>Bản đồ</span>
+          </button>
+
+          <button
+            onClick={() => setScreen('pet')}
+            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
+              screen === 'pet' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
+            }`}
+          >
+            <span className="text-lg">🐉</span>
+            <span>Pet</span>
+          </button>
+
+          <button
+            onClick={() => setScreen('shop')}
+            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
+              screen === 'shop' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
+            }`}
+          >
+            <span className="text-lg">🛒</span>
+            <span>Shop</span>
+          </button>
+
+          <button
+            onClick={() => setScreen('logs')}
+            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
+              screen === 'logs' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
+            }`}
+          >
+            <span className="text-lg">📊</span>
+            <span>Nhật ký</span>
+          </button>
+
+          <button
+            onClick={() => setScreen('parent')}
+            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
+              screen === 'parent' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
+            }`}
+          >
+            <span className="text-lg">🔒</span>
+            <span>Ba Mẹ</span>
+          </button>
+        </nav>
       )}
 
       {/* Footer */}

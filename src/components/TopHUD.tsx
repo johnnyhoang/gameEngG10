@@ -3,7 +3,7 @@ import { useGameState } from '../hooks/useGameState';
 import { Zap, Heart, Coins, Flame, Shield, Award, LogOut } from 'lucide-react';
 
 interface TopHUDProps {
-  currentScreen: 'map' | 'play' | 'shop' | 'parent';
+  currentScreen: 'map' | 'play' | 'shop' | 'parent' | 'pet' | 'logs';
   onOpenShop: () => void;
   onOpenParent: () => void;
   onBackToMap: () => void;
@@ -174,7 +174,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             <>
               <button 
                 onClick={onOpenShop}
-                className={`px-4 py-2 font-orbitron font-bold text-xs rounded-lg uppercase tracking-wider border cursor-pointer transition-all duration-300 ${
+                className={`hidden sm:inline-block px-4 py-2 font-orbitron font-bold text-xs rounded-lg uppercase tracking-wider border cursor-pointer transition-all duration-300 ${
                   currentScreen === 'shop' 
                     ? 'bg-synth-orange border-synth-orange text-black shadow-[0_0_12px_#ff9f1c]' 
                     : 'bg-transparent border-synth-orange/50 text-synth-orange hover:bg-synth-orange/10'
