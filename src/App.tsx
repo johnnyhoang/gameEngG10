@@ -283,7 +283,7 @@ function App() {
 
       {/* Footer */}
       <footer className="py-6 border-t border-synth-gray/30 text-center text-[10px] text-synth-text-muted font-semibold tracking-wider uppercase font-orbitron">
-        © 2026 MICA ENGLISH GRADE 10. ALL RIGHTS RESERVED. RUNNING_LOCAL_LOCALFORAGE_INDEXEDDB.
+        © 2026 MIKAWAII ENGLISH GRADE 10. ALL RIGHTS RESERVED. RUNNING_LOCAL_LOCALFORAGE_INDEXEDDB.
       </footer>
     </div>
   );

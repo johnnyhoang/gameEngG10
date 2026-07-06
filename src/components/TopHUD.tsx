@@ -33,7 +33,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             className="flex items-center gap-2 cursor-pointer group"
           >
             <span className="font-orbitron text-2xl font-black bg-gradient-to-r from-synth-cyan to-synth-magenta bg-clip-text text-transparent group-hover:synth-glow-cyan transition-all duration-300">
-              MICA
+              MIKAWAII
             </span>
             <span className="text-xs font-semibold px-2 py-0.5 rounded border border-synth-magenta text-synth-magenta uppercase font-orbitron animate-pulse">
               ENGLISH
