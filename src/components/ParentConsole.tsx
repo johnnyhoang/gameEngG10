@@ -3,6 +3,7 @@ import { useGameState } from '../hooks/useGameState';
 import type { Question } from '../types/game';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Lock, Unlock, Check, X, ShieldAlert, Award, FileText, Database, Plus, BarChart2 } from 'lucide-react';
+import { supabase } from '../utils/supabaseClient';
 
 export const ParentConsole: React.FC = () => {
   const player = useGameState(state => state.player);
@@ -24,6 +25,7 @@ export const ParentConsole: React.FC = () => {
   const [rawText, setRawText] = useState('');
   const [importPreview, setImportPreview] = useState<Question[]>([]);
   const [showImportPreview, setShowImportPreview] = useState(false);
+  const [loadingIngest, setLoadingIngest] = useState(false);
 
   // Create Reward States
   const [rewardTitle, setRewardTitle] = useState('');
@@ -52,61 +54,40 @@ export const ParentConsole: React.FC = () => {
     alert('Thêm quà tặng mới thành công!');
   };
 
-  // Raw text parsing to JSON question simulation
-  const handleParseQuestions = () => {
+  // Raw text parsing to JSON question using Gemini AI on backend
+  const handleParseQuestions = async () => {
     if (!rawText.trim()) return;
 
-    // Simple parser: Split questions by double newline
-    const blocks = rawText.split('\n\n').filter(b => b.trim());
-    const parsedList: Question[] = [];
+    setLoadingIngest(true);
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const token = session?.access_token;
+      if (!token) throw new Error('Cần đăng nhập qua Supabase để sử dụng AI.');
 
-    blocks.forEach((block, idx) => {
-      const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
-      if (lines.length < 2) return;
-
-      const prompt = lines[0];
-      const category = prompt.toLowerCase().includes('form') ? 'wordform' : 'grammar';
-      
-      // Look for MCQ choices starting with A, B, C, D
-      const options: string[] = [];
-      let correctAnswer = '';
-      
-      lines.slice(1).forEach(line => {
-        if (/^[A-D]\./i.test(line)) {
-          const content = line.replace(/^[A-D]\.\s*/i, '');
-          options.push(content);
-          // Check if correct indicator like (Correct) or * is in text
-          if (line.includes('*') || line.includes('(correct)')) {
-            correctAnswer = content.replace(/\s*\*|\s*\(correct\)/gi, '');
-          }
-        }
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+      const res = await fetch(`${backendUrl}/api/ai/ingest`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ rawText })
       });
 
-      // If wordform, answer is usually in bracket or separate line
-      if (category === 'wordform' && lines[1]) {
-        correctAnswer = lines[1].replace(/Answer:\s*/i, '');
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error || 'Lỗi server.');
       }
 
-      // Default fallback for MCQ correct answer if not marked
-      if (options.length > 0 && !correctAnswer) {
-        correctAnswer = options[0]; // fallback
-      }
-
-      parsedList.push({
-        id: `custom-q-${Date.now()}-${idx}`,
-        type: options.length > 0 ? 'mcq' : (category === 'wordform' ? 'wordform' : 'rewrite'),
-        category,
-        prompt,
-        options: options.length > 0 ? options : undefined,
-        correctAnswer: correctAnswer,
-        explanation: 'Câu hỏi được nhập thủ công bởi phụ huynh.',
-        difficulty: 5,
-        source: 'Đề Phụ Huynh Nhập'
-      });
-    });
-
-    setImportPreview(parsedList);
-    setShowImportPreview(true);
+      const data = await res.json();
+      setImportPreview(data.questions);
+      setShowImportPreview(true);
+    } catch (e: any) {
+      console.error('Lỗi phân tích AI:', e);
+      alert('Không thể phân tích đề thi bằng AI: ' + e.message);
+    } finally {
+      setLoadingIngest(false);
+    }
   };
 
   const handleConfirmImport = () => {
@@ -478,10 +459,10 @@ Answer: politely"
             <div className="flex gap-3 justify-end">
               <button
                 onClick={handleParseQuestions}
-                disabled={!rawText.trim()}
+                disabled={!rawText.trim() || loadingIngest}
                 className="px-6 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-magenta text-black hover:synth-glow-magenta cursor-pointer transition-all duration-300 disabled:opacity-40"
               >
-                Phân Tích Đề Thi
+                {loadingIngest ? 'Đang phân tích (AI)...' : 'Phân Tích Đề Thi (AI)'}
               </button>
             </div>
           </div>

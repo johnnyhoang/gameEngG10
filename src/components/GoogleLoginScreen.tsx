@@ -1,78 +1,24 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useGameState } from '../hooks/useGameState';
+import { supabase } from '../utils/supabaseClient';
 import type { UserProfile } from '../types/game';
 import { Sparkles, Shield, User, HelpCircle, LogIn } from 'lucide-react';
 
-interface GoogleLoginScreenProps {
-  googleClientId?: string; // Optional: can be configured
-}
-
-export const GoogleLoginScreen: React.FC<GoogleLoginScreenProps> = ({ googleClientId }) => {
+export const GoogleLoginScreen: React.FC = () => {
   const login = useGameState(state => state.login);
-  const [loadingGis, setLoadingGis] = useState(false);
 
-  // Default Client ID if none provided, or mock behavior
-  const clientId = googleClientId || 'YOUR_GOOGLE_CLIENT_ID.apps.googleusercontent.com';
-
-  useEffect(() => {
-    // Only load Google GIS if clientId is actually configured and is not placeholder
-    if (googleClientId && !googleClientId.includes('YOUR_GOOGLE_CLIENT_ID')) {
-      setLoadingGis(true);
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      script.onload = () => {
-        setLoadingGis(false);
-        try {
-          /* global google */
-          // @ts-ignore
-          google.accounts.id.initialize({
-            client_id: clientId,
-            callback: handleGoogleCredentialResponse
-          });
-          // @ts-ignore
-          google.accounts.id.renderButton(
-            document.getElementById('google-btn-container'),
-            { theme: 'dark', size: 'large', width: '320' }
-          );
-        } catch (e) {
-          console.error('Lỗi khởi tạo Google GIS:', e);
-        }
-      };
-      document.body.appendChild(script);
-
-      return () => {
-        document.body.removeChild(script);
-      };
-    }
-  }, [clientId, googleClientId]);
-
-  // Decode Google JWT token helper
-  const handleGoogleCredentialResponse = (response: any) => {
+  const handleSupabaseGoogleLogin = async () => {
     try {
-      const jwt = response.credential;
-      const base64Url = jwt.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split('')
-          .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-          .join('')
-      );
-      const decoded = JSON.parse(jsonPayload);
-
-      const user: UserProfile = {
-        id: decoded.email || decoded.sub,
-        name: decoded.name || 'Học viên Google',
-        email: decoded.email,
-        avatar: decoded.picture || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
-      };
-
-      login(user);
-    } catch (error) {
-      console.error('Lỗi giải mã Google Token:', error);
-      alert('Đăng nhập thất bại. Vui lòng thử lại hoặc chọn Đăng nhập nhanh.');
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin
+        }
+      });
+      if (error) throw error;
+    } catch (error: any) {
+      console.error('Lỗi đăng nhập Google Supabase:', error.message);
+      alert('Không thể kết nối với Supabase Google Auth: ' + error.message);
     }
   };
 
@@ -134,18 +80,12 @@ export const GoogleLoginScreen: React.FC<GoogleLoginScreenProps> = ({ googleClie
 
         {/* Active Google Button */}
         <div className="py-4 flex justify-center">
-          {googleClientId && !googleClientId.includes('YOUR_GOOGLE_CLIENT_ID') ? (
-            <div id="google-btn-container" className="shadow-[0_0_15px_rgba(0,240,255,0.2)] rounded-lg overflow-hidden">
-              {loadingGis && <span className="text-xs text-synth-cyan font-orbitron">Loading Google auth SDK...</span>}
-            </div>
-          ) : (
-            <button
-              onClick={() => handleMockLogin('minh')}
-              className="w-full py-3.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 shadow-[0_0_12px_rgba(0,240,255,0.3)] flex items-center justify-center gap-2"
-            >
-              <LogIn className="w-4 h-4" /> Đăng nhập bằng Google
-            </button>
-          )}
+          <button
+            onClick={handleSupabaseGoogleLogin}
+            className="w-full py-3.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 shadow-[0_0_12px_rgba(0,240,255,0.3)] flex items-center justify-center gap-2"
+          >
+            <LogIn className="w-4 h-4" /> Đăng nhập qua Supabase Google
+          </button>
         </div>
 
         {/* Divider */}
@@ -216,7 +156,7 @@ export const GoogleLoginScreen: React.FC<GoogleLoginScreenProps> = ({ googleClie
         <div className="flex gap-2 text-[10px] text-synth-text-muted text-left border-t border-synth-gray/50 pt-4 items-start leading-relaxed">
           <HelpCircle className="w-4 h-4 shrink-0 text-synth-cyan" />
           <span>
-            Đăng nhập offline cho phép chạy thử ngay lập tức. Mọi thông tin, pet và coins được lưu biệt lập theo từng địa chỉ email của mỗi con!
+            Đăng nhập bằng Supabase đồng bộ hóa chỉ số của con lên Đám mây PostgreSQL theo thời gian thực!
           </span>
         </div>
       </div>

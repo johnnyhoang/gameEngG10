@@ -46,7 +46,7 @@ function App() {
   }, [currentUser]);
 
   if (!currentUser) {
-    return <GoogleLoginScreen googleClientId={import.meta.env.VITE_GOOGLE_CLIENT_ID} />;
+    return <GoogleLoginScreen />;
   }
 
   const triggerMysteryBox = () => {

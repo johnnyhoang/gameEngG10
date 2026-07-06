@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { INITIAL_QUESTIONS } from '../data/questions';
 import { eventBus } from '../utils/EventBus';
+import { supabase } from '../utils/supabaseClient';
 import type {
   UserProfile,
   PlayerProfile,
@@ -124,6 +125,45 @@ export const useGameState = create<GameState>()(
   persist(
     (originalSet, get) => {
       // Intercept set updates to automatically keep profiles in sync
+      let syncTimeout: any = null;
+      const triggerDebouncedSync = () => {
+        const user = get().currentUser;
+        if (!user || user.id.startsWith('mock-')) return;
+
+        if (syncTimeout) clearTimeout(syncTimeout);
+
+        syncTimeout = setTimeout(async () => {
+          try {
+            const state = get();
+            const session = (await supabase.auth.getSession()).data.session;
+            const token = session?.access_token;
+            if (!token) return;
+
+            const syncPayload = {
+              player: state.player,
+              pet: state.pet,
+              categoryStats: state.categoryStats,
+              logs: state.logs,
+              rewards: state.rewards,
+              challenges: state.challenges,
+              dailyMission: state.dailyMission
+            };
+
+            await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}/api/profile/sync`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify(syncPayload)
+            });
+            console.log('Profile synced with Supabase Postgres.');
+          } catch (error) {
+            console.error('Lỗi đồng bộ Supabase:', error);
+          }
+        }, 3000);
+      };
+
       const set = (
         fn: GameState | Partial<GameState> | ((state: GameState) => GameState | Partial<GameState>),
         replace?: any
@@ -144,6 +184,7 @@ export const useGameState = create<GameState>()(
           }
           return { ...nextState, ...extra };
         }, replace);
+        triggerDebouncedSync();
       };
       // Helper to log audit trail
       const logActivity = (
@@ -394,53 +435,161 @@ export const useGameState = create<GameState>()(
             }
           });
 
+          // Subscribe to Supabase auth changes
+          const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+            if (session && session.user) {
+              const user: UserProfile = {
+                id: session.user.id,
+                name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+                email: session.user.email || '',
+                avatar: session.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
+              };
+              
+              const current = get().currentUser;
+              if (!current || current.id !== user.id) {
+                await get().login(user);
+              }
+            } else {
+              const current = get().currentUser;
+              if (current && !current.id.startsWith('mock-')) {
+                get().logout();
+              }
+            }
+          });
+
           return () => {
             unsubQuestion();
             unsubCheckIn();
+            subscription.unsubscribe();
           };
         },
 
         // Auth Actions
-        login: (user) => {
-          set(state => {
-            const newPlayer = state.profiles[user.id] || {
-              id: user.id,
-              name: user.name,
-              role: 'student',
-              level: 1,
-              xp: 0,
-              coins: 200,
-              walletVND: 0,
-              streak: 0,
-              energy: 100,
-              hearts: 3,
-              lastActive: new Date().toISOString(),
-              badges: []
-            };
+        login: async (user) => {
+          set({ currentUser: user });
 
-            const newPet = state.petStates[user.id] || {
-              name: 'Rồng Con',
-              stage: 'egg',
-              level: 1,
-              exp: 0,
-              energy: 100,
-              mood: 'neutral',
-              lastFed: new Date().toISOString()
-            };
+          if (user.id.startsWith('mock-')) {
+            set(state => {
+              const newPlayer = state.profiles[user.id] || {
+                id: user.id,
+                name: user.name,
+                role: 'student',
+                level: 1,
+                xp: 0,
+                coins: 200,
+                walletVND: 0,
+                streak: 0,
+                energy: 100,
+                hearts: 3,
+                lastActive: new Date().toISOString(),
+                badges: []
+              };
 
-            const newStats = state.categoryStatsAll[user.id] || {};
+              const newPet = state.petStates[user.id] || {
+                name: 'Rồng Con',
+                stage: 'egg',
+                level: 1,
+                exp: 0,
+                energy: 100,
+                mood: 'neutral',
+                lastFed: new Date().toISOString()
+              };
 
-            return {
-              currentUser: user,
-              player: newPlayer,
-              pet: newPet,
-              categoryStats: newStats
-            };
-          });
-          logActivity('energy_refill', 'Đăng nhập thành công', `Chào mừng ${user.name} đã gia nhập CyberEnglish!`);
+              const newStats = state.categoryStatsAll[user.id] || {};
+
+              return {
+                player: newPlayer,
+                pet: newPet,
+                categoryStats: newStats
+              };
+            });
+            logActivity('energy_refill', 'Đăng nhập thành công', `Chào mừng ${user.name} đã gia nhập CyberEnglish!`);
+            return;
+          }
+
+          // Real Supabase login
+          try {
+            const session = (await supabase.auth.getSession()).data.session;
+            const token = session?.access_token;
+            if (!token) return;
+
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+
+            // Sync user details to backend pg first
+            await fetch(`${backendUrl}/api/auth/sync-user`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              }
+            });
+
+            // Retrieve profile
+            const res = await fetch(`${backendUrl}/api/profile`, {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+
+            if (res.ok) {
+              const data = await res.json();
+              set({
+                player: data.player || {
+                  id: user.id,
+                  name: user.name,
+                  role: 'student',
+                  level: 1,
+                  xp: 0,
+                  coins: 200,
+                  walletVND: 0,
+                  streak: 0,
+                  energy: 100,
+                  hearts: 3,
+                  lastActive: new Date().toISOString(),
+                  badges: []
+                },
+                pet: data.pet || {
+                  name: 'Rồng Con',
+                  stage: 'egg',
+                  level: 1,
+                  exp: 0,
+                  energy: 100,
+                  mood: 'neutral',
+                  lastFed: new Date().toISOString()
+                },
+                categoryStats: data.categoryStats || {},
+                logs: data.logs || [],
+                rewards: data.rewards || [],
+                challenges: data.challenges || INITIAL_CHALLENGES,
+                dailyMission: data.dailyMission || null
+              });
+              logActivity('energy_refill', 'Đồng bộ Đám mây', `Tải dữ liệu học tập thành công cho ${user.name}!`);
+            }
+          } catch (e) {
+            console.error('Lỗi khi tải thông tin từ backend Supabase:', e);
+            // Fallback to local profile if offline
+            set(state => {
+              const newPlayer = state.profiles[user.id] || {
+                id: user.id,
+                name: user.name,
+                role: 'student',
+                level: 1,
+                xp: 0,
+                coins: 200,
+                walletVND: 0,
+                streak: 0,
+                energy: 100,
+                hearts: 3,
+                lastActive: new Date().toISOString(),
+                badges: []
+              };
+              return { player: newPlayer };
+            });
+          }
         },
 
-        logout: () => {
+        logout: async () => {
+          await supabase.auth.signOut();
           set({
             currentUser: null,
             player: INITIAL_PLAYER,
