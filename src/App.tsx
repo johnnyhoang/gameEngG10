@@ -23,6 +23,15 @@ function App() {
   const [playMode, setPlayMode] = useState<'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss'>('mixed');
   const [bossId, setBossId] = useState<string | undefined>(undefined);
 
+  // Auto-switch screen for admin users on login
+  useEffect(() => {
+    if (currentUser?.role === 'admin') {
+      setScreen('parent');
+    } else {
+      setScreen('map');
+    }
+  }, [currentUser]);
+
   // Modal alert animations
   const [modalData, setModalData] = useState<{ isOpen: boolean; title: string; message: string; type: string } | null>(null);
 
@@ -124,7 +133,7 @@ function App() {
       <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:py-8 flex flex-col lg:flex-row gap-6 items-stretch">
         
         {/* Left Companion Panel (Hidden in play area) */}
-        {!isDungeonScreen && (
+        {!isDungeonScreen && currentUser?.role !== 'admin' && (
           <aside className="w-full lg:w-72 shrink-0 h-fit lg:sticky lg:top-24">
             <PetSanctuary />
           </aside>
@@ -154,7 +163,7 @@ function App() {
         </section>
 
         {/* Right Info Ledger (Hidden in play area) */}
-        {!isDungeonScreen && (
+        {!isDungeonScreen && currentUser?.role !== 'admin' && (
           <aside className="w-full lg:w-80 shrink-0 h-fit lg:sticky lg:top-24">
             <ActivityLog />
           </aside>
