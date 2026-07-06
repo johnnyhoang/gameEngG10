@@ -137,11 +137,11 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
     let rewardsRes = await pool.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
     if (rewardsRes.rowCount === 0) {
       const defaultRewards = [
-        { id: `default-rew-1-${userId}`, title: 'Ly trà sữa đặc biệt', cost_coins: 100, cash_value_vnd: 30000 },
-        { id: `default-rew-2-${userId}`, title: '1 giờ chơi iPad/Game', cost_coins: 250, cash_value_vnd: 50000 },
-        { id: `default-rew-3-${userId}`, title: 'Bữa gà rán KFC/Jollibee', cost_coins: 400, cash_value_vnd: 100000 },
-        { id: `default-rew-4-${userId}`, title: 'Một cuốn truyện tranh tự chọn', cost_coins: 300, cash_value_vnd: 60000 },
-        { id: `default-rew-5-${userId}`, title: 'Vé xem phim cuối tuần', cost_coins: 500, cash_value_vnd: 120000 }
+        { id: `default-rew-1-${userId}`, title: '1 giờ chơi iPad/Game', cost_coins: 100, cash_value_vnd: 10000 },
+        { id: `default-rew-2-${userId}`, title: 'Ly trà sữa đặc biệt', cost_coins: 150, cash_value_vnd: 15000 },
+        { id: `default-rew-3-${userId}`, title: 'Một cuốn truyện tranh tự chọn', cost_coins: 150, cash_value_vnd: 15000 },
+        { id: `default-rew-4-${userId}`, title: 'Bữa gà rán KFC/Jollibee', cost_coins: 200, cash_value_vnd: 20000 },
+        { id: `default-rew-5-${userId}`, title: 'Vé xem phim cuối tuần', cost_coins: 200, cash_value_vnd: 20000 }
       ];
 
       for (const dr of defaultRewards) {
@@ -681,6 +681,60 @@ app.post('/api/admin/reject-reward', authMiddleware, async (req: any, res) => {
   }
 });
 
+// POST /api/admin/deduct-wallet: Deducts cash from a student's virtual wallet when parent pays out real cash
+app.post('/api/admin/deduct-wallet', authMiddleware, async (req: any, res: any) => {
+  const adminId = req.user.sub;
+  try {
+    const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
+    if (adminCheck.rowCount === 0 || adminCheck.rows[0].role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin access only.' });
+    }
+
+    const { studentUserId, amount } = req.body;
+    if (!studentUserId || !amount || amount <= 0) {
+      return res.status(400).json({ error: 'Invalid parameters: studentUserId or amount.' });
+    }
+
+    const currentRes = await pool.query('SELECT wallet_vnd FROM ge10_player_profiles WHERE user_id = $1', [studentUserId]);
+    if (currentRes.rowCount === 0) {
+      return res.status(404).json({ error: 'Student profile not found.' });
+    }
+
+    const currentWallet = currentRes.rows[0].wallet_vnd;
+    if (currentWallet < amount) {
+      return res.status(400).json({ error: `Số tiền khấu trừ (${amount.toLocaleString()}đ) vượt quá số dư hiện có (${currentWallet.toLocaleString()}đ)!` });
+    }
+
+    await pool.query(
+      'UPDATE ge10_player_profiles SET wallet_vnd = wallet_vnd - $1 WHERE user_id = $2',
+      [amount, studentUserId]
+    );
+
+    // Log the pocket money payout log
+    const logId = `log-deduct-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    await pool.query(
+      `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, coins_changed, xp_changed, wallet_changed)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+      [
+        logId,
+        studentUserId,
+        Date.now(),
+        'reward',
+        'Rút tiền mặt / Khấu trừ Ví',
+        `Ba Mẹ đã thanh toán ${amount.toLocaleString()}đ tiền mặt và khấu trừ vào Ví Thưởng.`,
+        0,
+        0,
+        -amount
+      ]
+    );
+
+    res.json({ success: true, newBalance: currentWallet - amount });
+  } catch (error: any) {
+    console.error('Error deducting wallet:', error.message);
+    res.status(500).json({ error: 'Failed to deduct wallet.' });
+  }
+});
+
 // GET /api/admin/student-profile: Retrieves another student's profile statistics, logs, and pet state
 app.get('/api/admin/student-profile', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
@@ -708,11 +762,11 @@ app.get('/api/admin/student-profile', authMiddleware, async (req: any, res) => {
     let rewardsRes = await pool.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [studentUserId]);
     if (rewardsRes.rowCount === 0) {
       const defaultRewards = [
-        { id: `default-rew-1-${studentUserId}`, title: 'Ly trà sữa đặc biệt', cost_coins: 100, cash_value_vnd: 30000 },
-        { id: `default-rew-2-${studentUserId}`, title: '1 giờ chơi iPad/Game', cost_coins: 250, cash_value_vnd: 50000 },
-        { id: `default-rew-3-${studentUserId}`, title: 'Bữa gà rán KFC/Jollibee', cost_coins: 400, cash_value_vnd: 100000 },
-        { id: `default-rew-4-${studentUserId}`, title: 'Một cuốn truyện tranh tự chọn', cost_coins: 300, cash_value_vnd: 60000 },
-        { id: `default-rew-5-${studentUserId}`, title: 'Vé xem phim cuối tuần', cost_coins: 500, cash_value_vnd: 120000 }
+        { id: `default-rew-1-${studentUserId}`, title: '1 giờ chơi iPad/Game', cost_coins: 100, cash_value_vnd: 10000 },
+        { id: `default-rew-2-${studentUserId}`, title: 'Ly trà sữa đặc biệt', cost_coins: 150, cash_value_vnd: 15000 },
+        { id: `default-rew-3-${studentUserId}`, title: 'Một cuốn truyện tranh tự chọn', cost_coins: 150, cash_value_vnd: 15000 },
+        { id: `default-rew-4-${studentUserId}`, title: 'Bữa gà rán KFC/Jollibee', cost_coins: 200, cash_value_vnd: 20000 },
+        { id: `default-rew-5-${studentUserId}`, title: 'Vé xem phim cuối tuần', cost_coins: 200, cash_value_vnd: 20000 }
       ];
 
       for (const dr of defaultRewards) {

@@ -23,6 +23,7 @@ export const ParentConsole: React.FC = () => {
   const adminApproveReward = useGameState(state => state.adminApproveReward);
   const adminRejectReward = useGameState(state => state.adminRejectReward);
   const showHelp = useGameState(state => state.showHelp);
+  const adminDeductWallet = useGameState(state => state.adminDeductWallet);
 
   // PIN Lock States
   const [pin, setPin] = useState('');
@@ -736,7 +737,36 @@ Answer: politely"
                     </div>
 
                     <div className="glass-panel rounded-xl border border-white/5 p-4 flex flex-col justify-between">
-                      <span className="text-[10px] uppercase text-synth-magenta font-bold font-orbitron">Ví tích lũy</span>
+                      <div className="flex justify-between items-start">
+                        <span className="text-[10px] uppercase text-synth-magenta font-bold font-orbitron">Ví tích lũy</span>
+                        <button
+                          onClick={async () => {
+                            const currentVal = selectedStudentProfile.player?.walletVND || 0;
+                            if (currentVal <= 0) {
+                              alert('Ví tích lũy của bé đang bằng 0đ, không thể rút tiền!');
+                              return;
+                            }
+                            const rawAmount = window.prompt(`Nhập số tiền mặt ba đã đưa cho bé ở ngoài để khấu trừ vào Ví (Số dư hiện tại: ${currentVal.toLocaleString()}đ):`);
+                            if (rawAmount === null) return; // Cancelled
+                            const amount = parseInt(rawAmount.replace(/\D/g, ''), 10);
+                            if (isNaN(amount) || amount <= 0) {
+                              alert('Số tiền nhập vào không hợp lệ!');
+                              return;
+                            }
+                            if (amount > currentVal) {
+                              alert(`Số tiền khấu trừ không được vượt quá số dư hiện có (${currentVal.toLocaleString()}đ)!`);
+                              return;
+                            }
+                            if (window.confirm(`Xác nhận khấu trừ ${amount.toLocaleString()}đ khỏi ví thưởng của bé?`)) {
+                              await adminDeductWallet(selectedStudentProfile.studentUser.id, amount);
+                            }
+                          }}
+                          className="text-[9px] px-1.5 py-0.5 rounded bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta font-bold hover:bg-synth-magenta/35 cursor-pointer transition-colors"
+                          title="Trừ tiền trong ví khi đã đưa tiền mặt cho con ở ngoài"
+                        >
+                          Rút Tiền 💸
+                        </button>
+                      </div>
                       <span className="text-2xl font-black text-synth-magenta font-orbitron mt-1">
                         {(selectedStudentProfile.player?.walletVND || 0).toLocaleString()}đ
                       </span>

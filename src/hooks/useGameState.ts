@@ -143,6 +143,7 @@ interface GameState {
   fetchStudentProfile: (studentUserId: string) => Promise<void>;
   adminApproveReward: (studentUserId: string, rewardId: string) => Promise<void>;
   adminRejectReward: (studentUserId: string, rewardId: string) => Promise<void>;
+  adminDeductWallet: (studentUserId: string, amount: number) => Promise<void>;
 
   // Player Actions
   answerQuestion: (
@@ -817,6 +818,35 @@ export const useGameState = create<GameState>()(
             }
           } catch (e) {
             console.error('Error rejecting student reward:', e);
+          }
+        },
+
+        adminDeductWallet: async (studentUserId: string, amount: number) => {
+          try {
+            const session = (await supabase.auth.getSession()).data.session;
+            const token = session?.access_token;
+            if (!token) return;
+
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+            const res = await fetch(`${backendUrl}/api/admin/deduct-wallet`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+              },
+              body: JSON.stringify({ studentUserId, amount })
+            });
+            if (!res.ok) {
+              const errData = await res.json();
+              alert(errData.error || 'Lỗi khi khấu trừ ví.');
+              return;
+            }
+            // Reload profile
+            await get().fetchStudentProfile(studentUserId);
+            alert(`Đã khấu trừ thành công ${amount.toLocaleString()}đ khỏi ví thưởng của bé.`);
+          } catch (e) {
+            console.error('Error deducting student wallet:', e);
+            alert('Lỗi kết nối khi khấu trừ ví.');
           }
         },
 
