@@ -1,5 +1,5 @@
 -- Users Table (linked with Supabase Auth)
-CREATE TABLE IF NOT EXISTS users (
+CREATE TABLE IF NOT EXISTS ge10_users (
     id VARCHAR(255) PRIMARY KEY, -- Google/Supabase User ID
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -8,8 +8,8 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Player Profiles Table
-CREATE TABLE IF NOT EXISTS player_profiles (
-    user_id VARCHAR(255) PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS ge10_player_profiles (
+    user_id VARCHAR(255) PRIMARY KEY REFERENCES ge10_users(id) ON DELETE CASCADE,
     level INTEGER DEFAULT 1,
     xp INTEGER DEFAULT 0,
     coins INTEGER DEFAULT 200,
@@ -22,8 +22,8 @@ CREATE TABLE IF NOT EXISTS player_profiles (
 );
 
 -- Pet States Table
-CREATE TABLE IF NOT EXISTS pet_states (
-    user_id VARCHAR(255) PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS ge10_pet_states (
+    user_id VARCHAR(255) PRIMARY KEY REFERENCES ge10_users(id) ON DELETE CASCADE,
     name VARCHAR(255) DEFAULT 'Rồng Con',
     stage VARCHAR(50) DEFAULT 'egg',
     level INTEGER DEFAULT 1,
@@ -34,9 +34,9 @@ CREATE TABLE IF NOT EXISTS pet_states (
 );
 
 -- Category rolling stats Table
-CREATE TABLE IF NOT EXISTS category_stats (
+CREATE TABLE IF NOT EXISTS ge10_category_stats (
     id SERIAL PRIMARY KEY,
-    user_id VARCHAR(255) REFERENCES users(id) ON DELETE CASCADE,
+    user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
     category VARCHAR(255) NOT NULL,
     total_answered INTEGER DEFAULT 0,
     total_correct INTEGER DEFAULT 0,
@@ -45,9 +45,9 @@ CREATE TABLE IF NOT EXISTS category_stats (
 );
 
 -- History Logs Table
-CREATE TABLE IF NOT EXISTS history_logs (
+CREATE TABLE IF NOT EXISTS ge10_history_logs (
     id VARCHAR(255) PRIMARY KEY,
-    user_id VARCHAR(255) REFERENCES users(id) ON DELETE CASCADE,
+    user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
     timestamp BIGINT NOT NULL,
     activity_type VARCHAR(100) NOT NULL,
     title VARCHAR(255) NOT NULL,
@@ -58,9 +58,9 @@ CREATE TABLE IF NOT EXISTS history_logs (
 );
 
 -- Parent Payout Rewards Table
-CREATE TABLE IF NOT EXISTS parent_rewards (
+CREATE TABLE IF NOT EXISTS ge10_parent_rewards (
     id VARCHAR(255) PRIMARY KEY,
-    user_id VARCHAR(255) REFERENCES users(id) ON DELETE CASCADE,
+    user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
     cost_coins INTEGER NOT NULL,
     cash_value_vnd INTEGER NOT NULL,
@@ -69,21 +69,21 @@ CREATE TABLE IF NOT EXISTS parent_rewards (
 );
 
 -- Active Challenges Table (JSONB format for flexibility)
-CREATE TABLE IF NOT EXISTS user_challenges (
-    user_id VARCHAR(255) PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS ge10_user_challenges (
+    user_id VARCHAR(255) PRIMARY KEY REFERENCES ge10_users(id) ON DELETE CASCADE,
     challenges_json JSONB NOT NULL
 );
 
 -- Daily Missions Table
-CREATE TABLE IF NOT EXISTS daily_missions (
-    user_id VARCHAR(255) PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+CREATE TABLE IF NOT EXISTS ge10_daily_missions (
+    user_id VARCHAR(255) PRIMARY KEY REFERENCES ge10_users(id) ON DELETE CASCADE,
     mission_json JSONB
 );
 
 -- Custom / Ingested Questions Table
-CREATE TABLE IF NOT EXISTS custom_questions (
+CREATE TABLE IF NOT EXISTS ge10_custom_questions (
     id VARCHAR(255) PRIMARY KEY,
-    user_id VARCHAR(255) REFERENCES users(id) ON DELETE CASCADE,
+    user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
     type VARCHAR(50) NOT NULL,
     category VARCHAR(255) NOT NULL,
     prompt TEXT NOT NULL,

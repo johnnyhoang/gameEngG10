@@ -74,7 +74,7 @@ app.post('/api/auth/sync-user', authMiddleware, async (req: any, res) => {
 
   try {
     await pool.query(
-      `INSERT INTO users (id, name, email, avatar_url)
+      `INSERT INTO ge10_users (id, name, email, avatar_url)
        VALUES ($1, $2, $3, $4)
        ON CONFLICT (id) DO UPDATE SET
          name = EXCLUDED.name,
@@ -95,28 +95,28 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
 
   try {
     // 1. Fetch user metadata
-    const userRes = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
+    const userRes = await pool.query('SELECT * FROM ge10_users WHERE id = $1', [userId]);
     if (userRes.rowCount === 0) {
       return res.status(404).json({ error: 'User profile not found. Call sync-user first.' });
     }
     const userRow = userRes.rows[0];
 
     // 2. Fetch player profile stats
-    const playerRes = await pool.query('SELECT * FROM player_profiles WHERE user_id = $1', [userId]);
+    const playerRes = await pool.query('SELECT * FROM ge10_player_profiles WHERE user_id = $1', [userId]);
     // 3. Fetch pet state
-    const petRes = await pool.query('SELECT * FROM pet_states WHERE user_id = $1', [userId]);
+    const petRes = await pool.query('SELECT * FROM ge10_pet_states WHERE user_id = $1', [userId]);
     // 4. Fetch category stats
-    const statsRes = await pool.query('SELECT * FROM category_stats WHERE user_id = $1', [userId]);
+    const statsRes = await pool.query('SELECT * FROM ge10_category_stats WHERE user_id = $1', [userId]);
     // 5. Fetch logs (last 200)
-    const logsRes = await pool.query('SELECT * FROM history_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 200', [userId]);
+    const logsRes = await pool.query('SELECT * FROM ge10_history_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 200', [userId]);
     // 6. Fetch rewards
-    const rewardsRes = await pool.query('SELECT * FROM parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
+    const rewardsRes = await pool.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
     // 7. Fetch challenges
-    const challengesRes = await pool.query('SELECT * FROM user_challenges WHERE user_id = $1', [userId]);
+    const challengesRes = await pool.query('SELECT * FROM ge10_user_challenges WHERE user_id = $1', [userId]);
     // 8. Fetch daily mission
-    const missionRes = await pool.query('SELECT * FROM daily_missions WHERE user_id = $1', [userId]);
+    const missionRes = await pool.query('SELECT * FROM ge10_daily_missions WHERE user_id = $1', [userId]);
     // 9. Fetch custom questions
-    const questionsRes = await pool.query('SELECT * FROM custom_questions WHERE user_id = $1', [userId]);
+    const questionsRes = await pool.query('SELECT * FROM ge10_custom_questions WHERE user_id = $1', [userId]);
 
     // Format category stats array into record mapping
     const categoryStats: any = {};
@@ -225,7 +225,7 @@ app.post('/api/profile/sync', authMiddleware, async (req: any, res) => {
     // 1. Sync player profile
     if (player) {
       await client.query(
-        `INSERT INTO player_profiles (user_id, level, xp, coins, wallet_vnd, streak, energy, hearts, last_active, badges)
+        `INSERT INTO ge10_player_profiles (user_id, level, xp, coins, wallet_vnd, streak, energy, hearts, last_active, badges)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
          ON CONFLICT (user_id) DO UPDATE SET
            level = EXCLUDED.level,
@@ -255,7 +255,7 @@ app.post('/api/profile/sync', authMiddleware, async (req: any, res) => {
     // 2. Sync pet state
     if (pet) {
       await client.query(
-        `INSERT INTO pet_states (user_id, name, stage, level, exp, energy, mood, last_fed)
+        `INSERT INTO ge10_pet_states (user_id, name, stage, level, exp, energy, mood, last_fed)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
          ON CONFLICT (user_id) DO UPDATE SET
            name = EXCLUDED.name,
@@ -283,7 +283,7 @@ app.post('/api/profile/sync', authMiddleware, async (req: any, res) => {
       for (const cat of Object.keys(categoryStats)) {
         const item = categoryStats[cat];
         await client.query(
-          `INSERT INTO category_stats (user_id, category, total_answered, total_correct, rolling_accuracy)
+          `INSERT INTO ge10_category_stats (user_id, category, total_answered, total_correct, rolling_accuracy)
            VALUES ($1, $2, $3, $4, $5)
            ON CONFLICT (user_id, category) DO UPDATE SET
              total_answered = EXCLUDED.total_answered,
@@ -299,7 +299,7 @@ app.post('/api/profile/sync', authMiddleware, async (req: any, res) => {
       // Upsert current logs list
       for (const log of logs) {
         await client.query(
-          `INSERT INTO history_logs (id, user_id, timestamp, activity_type, title, detail, coins_changed, xp_changed, wallet_changed)
+          `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, coins_changed, xp_changed, wallet_changed)
            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
            ON CONFLICT (id) DO NOTHING`,
           [log.id, userId, log.timestamp, log.activityType, log.title, log.detail, log.coinsChanged, log.xpChanged, log.walletChanged]
@@ -311,7 +311,7 @@ app.post('/api/profile/sync', authMiddleware, async (req: any, res) => {
     if (rewards && Array.isArray(rewards)) {
       for (const r of rewards) {
         await client.query(
-          `INSERT INTO parent_rewards (id, user_id, title, cost_coins, cash_value_vnd, status, timestamp)
+          `INSERT INTO ge10_parent_rewards (id, user_id, title, cost_coins, cash_value_vnd, status, timestamp)
            VALUES ($1, $2, $3, $4, $5, $6, $7)
            ON CONFLICT (id) DO UPDATE SET
              status = EXCLUDED.status`,
@@ -323,7 +323,7 @@ app.post('/api/profile/sync', authMiddleware, async (req: any, res) => {
     // 6. Sync challenges list JSON
     if (challenges) {
       await client.query(
-        `INSERT INTO user_challenges (user_id, challenges_json)
+        `INSERT INTO ge10_user_challenges (user_id, challenges_json)
          VALUES ($1, $2)
          ON CONFLICT (user_id) DO UPDATE SET
            challenges_json = EXCLUDED.challenges_json`,
@@ -334,7 +334,7 @@ app.post('/api/profile/sync', authMiddleware, async (req: any, res) => {
     // 7. Sync daily mission JSON
     if (dailyMission !== undefined) {
       await client.query(
-        `INSERT INTO daily_missions (user_id, mission_json)
+        `INSERT INTO ge10_daily_missions (user_id, mission_json)
          VALUES ($1, $2)
          ON CONFLICT (user_id) DO UPDATE SET
            mission_json = EXCLUDED.mission_json`,
@@ -357,7 +357,7 @@ app.post('/api/profile/sync', authMiddleware, async (req: any, res) => {
 app.get('/api/questions/custom', authMiddleware, async (req: any, res) => {
   const userId = req.user.sub;
   try {
-    const qRes = await pool.query('SELECT * FROM custom_questions WHERE user_id = $1', [userId]);
+    const qRes = await pool.query('SELECT * FROM ge10_custom_questions WHERE user_id = $1', [userId]);
     res.json(qRes.rows);
   } catch (error) {
     console.error('Error loading custom questions:', error);
@@ -423,7 +423,7 @@ app.post('/api/ai/ingest', authMiddleware, async (req: any, res) => {
     // Save custom questions to PG custom_questions table
     for (const q of questions) {
       await pool.query(
-        `INSERT INTO custom_questions (id, user_id, type, category, prompt, options, correct_answer, explanation, difficulty, source)
+        `INSERT INTO ge10_custom_questions (id, user_id, type, category, prompt, options, correct_answer, explanation, difficulty, source)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
          ON CONFLICT (id) DO NOTHING`,
         [
