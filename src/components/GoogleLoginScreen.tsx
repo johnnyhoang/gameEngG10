@@ -34,7 +34,7 @@ export const GoogleLoginScreen: React.FC = () => {
         {/* Title */}
         <div className="space-y-1">
           <h1 className="font-orbitron font-black text-3xl text-white uppercase tracking-wider bg-gradient-to-r from-synth-cyan to-synth-magenta bg-clip-text text-transparent">
-            CYBER_ENGLISH
+            MICA
           </h1>
           <p className="text-xs text-synth-cyan font-bold uppercase tracking-widest font-orbitron">
             Luyện thi Tiếng Anh vào lớp 10
