@@ -50,7 +50,7 @@ const authMiddleware = (req: any, res: any, next: any) => {
     }
     // Supabase JWT secret is base64-encoded, so we must decode it to a Buffer
     const secret = Buffer.from(secretStr, 'base64');
-    const decoded = jwt.verify(token, secret) as any;
+    const decoded = jwt.verify(token, secret, { algorithms: ['HS256'] }) as any;
     req.user = decoded; // payload contains user details like sub, email, user_metadata
     next();
   } catch (error: any) {
