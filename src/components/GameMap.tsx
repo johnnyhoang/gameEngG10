@@ -89,9 +89,9 @@ export const GameMap: React.FC<GameMapProps> = ({ onStartPlay, onOpenMysteryBox,
   ];
 
   const bosses = [
-    { id: 'b-2024', name: 'Đại Ca HCMC 2024', year: '2024', bounty: '20.000đ', energy: 20 },
-    { id: 'b-2025', name: 'Cự Long HCMC 2025', year: '2025', bounty: '30.000đ', energy: 20 },
-    { id: 'b-2026', name: 'Cổ Long HCMC 2026 (Mock)', year: '2026', bounty: '50.000đ', energy: 25 }
+    { id: 'b-2024', name: 'Đại Ca HCMC 2024', year: '2024', bounty: '10.000đ', energy: 20 },
+    { id: 'b-2025', name: 'Cự Long HCMC 2025', year: '2025', bounty: '15.000đ', energy: 20 },
+    { id: 'b-2026', name: 'Cổ Long HCMC 2026 (Mock)', year: '2026', bounty: '20.000đ', energy: 25 }
   ];
 
   return (
