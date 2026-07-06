@@ -134,7 +134,26 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
     // 5. Fetch logs (last 200)
     const logsRes = await pool.query('SELECT * FROM ge10_history_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 200', [userId]);
     // 6. Fetch rewards
-    const rewardsRes = await pool.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
+    let rewardsRes = await pool.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
+    if (rewardsRes.rowCount === 0) {
+      const defaultRewards = [
+        { id: `default-rew-1-${userId}`, title: 'Ly trà sữa đặc biệt', cost_coins: 100, cash_value_vnd: 30000 },
+        { id: `default-rew-2-${userId}`, title: '1 giờ chơi iPad/Game', cost_coins: 250, cash_value_vnd: 50000 },
+        { id: `default-rew-3-${userId}`, title: 'Bữa gà rán KFC/Jollibee', cost_coins: 400, cash_value_vnd: 100000 },
+        { id: `default-rew-4-${userId}`, title: 'Một cuốn truyện tranh tự chọn', cost_coins: 300, cash_value_vnd: 60000 },
+        { id: `default-rew-5-${userId}`, title: 'Vé xem phim cuối tuần', cost_coins: 500, cash_value_vnd: 120000 }
+      ];
+
+      for (const dr of defaultRewards) {
+        await pool.query(
+          `INSERT INTO ge10_parent_rewards (id, user_id, title, cost_coins, cash_value_vnd, status, timestamp)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)
+           ON CONFLICT (id) DO NOTHING`,
+          [dr.id, userId, dr.title, dr.cost_coins, dr.cash_value_vnd, 'pending', Date.now()]
+        );
+      }
+      rewardsRes = await pool.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
+    }
     // 7. Fetch challenges
     const challengesRes = await pool.query('SELECT * FROM ge10_user_challenges WHERE user_id = $1', [userId]);
     // 8. Fetch daily mission
@@ -686,7 +705,26 @@ app.get('/api/admin/student-profile', authMiddleware, async (req: any, res) => {
     const petRes = await pool.query('SELECT * FROM ge10_pet_states WHERE user_id = $1', [studentUserId]);
     const statsRes = await pool.query('SELECT * FROM ge10_category_stats WHERE user_id = $1', [studentUserId]);
     const logsRes = await pool.query('SELECT * FROM ge10_history_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 100', [studentUserId]);
-    const rewardsRes = await pool.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [studentUserId]);
+    let rewardsRes = await pool.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [studentUserId]);
+    if (rewardsRes.rowCount === 0) {
+      const defaultRewards = [
+        { id: `default-rew-1-${studentUserId}`, title: 'Ly trà sữa đặc biệt', cost_coins: 100, cash_value_vnd: 30000 },
+        { id: `default-rew-2-${studentUserId}`, title: '1 giờ chơi iPad/Game', cost_coins: 250, cash_value_vnd: 50000 },
+        { id: `default-rew-3-${studentUserId}`, title: 'Bữa gà rán KFC/Jollibee', cost_coins: 400, cash_value_vnd: 100000 },
+        { id: `default-rew-4-${studentUserId}`, title: 'Một cuốn truyện tranh tự chọn', cost_coins: 300, cash_value_vnd: 60000 },
+        { id: `default-rew-5-${studentUserId}`, title: 'Vé xem phim cuối tuần', cost_coins: 500, cash_value_vnd: 120000 }
+      ];
+
+      for (const dr of defaultRewards) {
+        await pool.query(
+          `INSERT INTO ge10_parent_rewards (id, user_id, title, cost_coins, cash_value_vnd, status, timestamp)
+           VALUES ($1, $2, $3, $4, $5, $6, $7)
+           ON CONFLICT (id) DO NOTHING`,
+          [dr.id, studentUserId, dr.title, dr.cost_coins, dr.cash_value_vnd, 'pending', Date.now()]
+        );
+      }
+      rewardsRes = await pool.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [studentUserId]);
+    }
 
     const categoryStats: any = {};
     statsRes.rows.forEach((row: any) => {

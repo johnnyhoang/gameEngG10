@@ -15,6 +15,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   const player = useGameState(state => state.player);
   const currentUser = useGameState(state => state.currentUser);
   const logout = useGameState(state => state.logout);
+  const showHelp = useGameState(state => state.showHelp);
 
   // Calculate percentage of XP to next level
   const xpNeeded = player.level * 200;
@@ -58,8 +59,12 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                     ADMIN
                   </span>
                 ) : (
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-synth-purple/30 text-synth-cyan border border-synth-cyan/20 uppercase font-orbitron">
-                    LV.{player.level}
+                  <span 
+                    onClick={() => showHelp('xp')}
+                    className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-synth-purple/30 text-synth-cyan border border-synth-cyan/20 uppercase font-orbitron cursor-pointer hover:bg-synth-purple/50 flex items-center gap-0.5"
+                    title="Cấp độ - Nhấp để xem hướng dẫn"
+                  >
+                    LV.{player.level} <span className="text-[8px] opacity-60">?</span>
                   </span>
                 )}
               </div>
@@ -83,58 +88,79 @@ export const TopHUD: React.FC<TopHUDProps> = ({
 
         {/* Stats */}
         {currentUser?.role !== 'admin' && (
-          <div className="flex items-center gap-4 md:gap-6 flex-wrap justify-center">
+          <div className="flex items-center gap-2 md:gap-3 flex-wrap justify-center">
             {/* Energy */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-synth-blue/40 border border-synth-cyan/20" title="Năng lượng làm bài hôm nay">
-              <Zap className="w-5 h-5 text-synth-cyan fill-synth-cyan animate-pulse" />
+            <div 
+              onClick={() => showHelp('energy')}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-synth-blue/40 border border-synth-cyan/20 cursor-pointer hover:bg-synth-blue/60 transition-all" 
+              title="Năng lượng làm bài - Nhấp để xem hướng dẫn"
+            >
+              <Zap className="w-4 h-4 text-synth-cyan fill-synth-cyan animate-pulse" />
               <div className="flex flex-col">
-                <span className="text-[10px] text-synth-cyan font-orbitron font-bold uppercase tracking-wider">Energy</span>
-                <span className="text-sm font-semibold font-orbitron">{player.energy}/100</span>
+                <span className="text-[8px] text-synth-cyan font-orbitron font-bold uppercase tracking-wider hidden sm:inline">Energy</span>
+                <span className="text-xs font-semibold font-orbitron">{player.energy}/100 <span className="text-[8px] opacity-50">?</span></span>
               </div>
             </div>
 
             {/* Hearts */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-synth-blue/40 border border-synth-cyan/20" title="Mạng chơi trong Dungeon/Arena">
-              <div className="flex gap-0.5">
+            <div 
+              onClick={() => showHelp('hearts')}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-synth-blue/40 border border-synth-cyan/20 cursor-pointer hover:bg-synth-blue/60 transition-all" 
+              title="Mạng chơi - Nhấp để xem hướng dẫn"
+            >
+              <div className="flex gap-0.5 items-center">
                 {[...Array(3)].map((_, i) => (
                   <Heart 
                     key={i} 
-                    className={`w-5 h-5 ${i < player.hearts ? 'text-synth-magenta fill-synth-magenta shadow-lg animate-float' : 'text-synth-gray fill-transparent'}`}
+                    className={`w-4 h-4 ${i < player.hearts ? 'text-synth-magenta fill-synth-magenta shadow-lg animate-float' : 'text-synth-gray fill-transparent'}`}
                     style={{ animationDelay: `${i * 0.2}s` }}
                   />
                 ))}
+                <span className="text-[8px] text-synth-magenta ml-1 opacity-50 font-bold font-orbitron">?</span>
               </div>
             </div>
 
             {/* Coins */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-synth-blue/40 border border-synth-cyan/20 cursor-pointer hover:border-synth-orange/50 transition-all duration-300" onClick={onOpenShop} title="Tiền vàng Nanite Points (NP)">
-              <Coins className="w-5 h-5 text-synth-orange fill-synth-orange" />
+            <div 
+              onClick={() => showHelp('nanite')}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-synth-blue/40 border border-synth-cyan/20 cursor-pointer hover:bg-synth-blue/60 transition-all" 
+              title="Tiền vàng Nanite NP - Nhấp để xem hướng dẫn"
+            >
+              <Coins className="w-4 h-4 text-synth-orange fill-synth-orange" />
               <div className="flex flex-col">
-                <span className="text-[10px] text-synth-orange font-orbitron font-bold uppercase tracking-wider">Nanite NP</span>
-                <span className="text-sm font-semibold font-orbitron">{player.coins}</span>
+                <span className="text-[8px] text-synth-orange font-orbitron font-bold uppercase tracking-wider hidden sm:inline">Nanite NP</span>
+                <span className="text-xs font-semibold font-orbitron">{player.coins} <span className="text-[8px] opacity-50">?</span></span>
               </div>
             </div>
 
             {/* Streak */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-synth-blue/40 border border-synth-cyan/20" title="Chuỗi Streak liên tục học tập">
-              <Flame className={`w-5 h-5 ${player.streak > 0 ? 'text-orange-500 fill-orange-500 animate-bounce' : 'text-synth-gray'}`} />
+            <div 
+              onClick={() => showHelp('streak')}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-synth-blue/40 border border-synth-cyan/20 cursor-pointer hover:bg-synth-blue/60 transition-all" 
+              title="Chuỗi ngày liên tục học - Nhấp để xem hướng dẫn"
+            >
+              <Flame className={`w-4 h-4 ${player.streak > 0 ? 'text-orange-500 fill-orange-500 animate-bounce' : 'text-synth-gray'}`} />
               <div className="flex flex-col">
-                <span className="text-[10px] text-orange-400 font-orbitron font-bold uppercase tracking-wider">Streak</span>
-                <span className="text-sm font-semibold font-orbitron">{player.streak} Ngày</span>
+                <span className="text-[8px] text-orange-400 font-orbitron font-bold uppercase tracking-wider hidden sm:inline">Streak</span>
+                <span className="text-xs font-semibold font-orbitron">{player.streak}d <span className="text-[8px] opacity-50">?</span></span>
               </div>
               {hasShield && (
                 <span title="Khiên bảo vệ Streak đang hoạt động!">
-                  <Shield className="w-4 h-4 text-synth-cyan fill-synth-cyan/20 animate-pulse ml-1" />
+                  <Shield className="w-3.5 h-3.5 text-synth-cyan fill-synth-cyan/20 animate-pulse ml-0.5" />
                 </span>
               )}
             </div>
 
             {/* Virtual Wallet */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-synth-blue/40 border border-synth-magenta/30" title="Ví tích lũy quy đổi VND từ Ba">
-              <Award className="w-5 h-5 text-synth-magenta" />
+            <div 
+              onClick={() => showHelp('wallet')}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-synth-blue/40 border border-synth-magenta/30 cursor-pointer hover:bg-synth-blue/60 transition-all" 
+              title="Ví thưởng VND - Nhấp để xem hướng dẫn"
+            >
+              <Award className="w-4 h-4 text-synth-magenta" />
               <div className="flex flex-col font-orbitron">
-                <span className="text-[10px] text-synth-magenta font-bold uppercase tracking-wider">Ví Thưởng</span>
-                <span className="text-sm font-semibold text-synth-magenta">{player.walletVND.toLocaleString()}đ</span>
+                <span className="text-[8px] text-synth-magenta font-bold uppercase tracking-wider hidden sm:inline">Ví Thưởng</span>
+                <span className="text-xs font-semibold text-synth-magenta">{player.walletVND.toLocaleString()}đ <span className="text-[8px] opacity-50">?</span></span>
               </div>
             </div>
           </div>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import type { Question } from '../types/game';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { Lock, Unlock, Check, X, ShieldAlert, Award, FileText, Database, Plus, BarChart2 } from 'lucide-react';
+import { Lock, Unlock, Check, X, Award, FileText, Database, Plus, BarChart2 } from 'lucide-react';
 import { supabase } from '../utils/supabaseClient';
 
 export const ParentConsole: React.FC = () => {
@@ -12,7 +12,6 @@ export const ParentConsole: React.FC = () => {
   const rejectReward = useGameState(state => state.rejectReward);
   const addParentReward = useGameState(state => state.addParentReward);
   const importQuestions = useGameState(state => state.importQuestions);
-  const resetProgress = useGameState(state => state.resetProgress);
 
   // Admin and member management states
   const currentUser = useGameState(state => state.currentUser);
@@ -23,6 +22,7 @@ export const ParentConsole: React.FC = () => {
   const fetchStudentProfile = useGameState(state => state.fetchStudentProfile);
   const adminApproveReward = useGameState(state => state.adminApproveReward);
   const adminRejectReward = useGameState(state => state.adminRejectReward);
+  const showHelp = useGameState(state => state.showHelp);
 
   // PIN Lock States
   const [pin, setPin] = useState('');
@@ -142,46 +142,7 @@ export const ParentConsole: React.FC = () => {
     };
   };
 
-  const handleResetProgress = () => {
-    if (window.confirm('Ba mẹ có chắc muốn thiết lập lại toàn bộ tiến độ của con không? Dữ liệu câu hỏi sẽ KHÔNG bị mất, nhưng điểm số, level và pet sẽ quay lại từ đầu.')) {
-      resetProgress();
-      alert('Đã hoàn tất thiết lập lại!');
-    }
-  };
 
-  const handleBackupExport = () => {
-    const stateJson = localStorage.getItem('cyber-english-state');
-    if (!stateJson) return;
-    const blob = new Blob([stateJson], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `cyber-english-backup-${new Date().toISOString().split('T')[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  };
-
-  const handleRestoreImport = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      try {
-        const data = JSON.parse(event.target?.result as string);
-        if (data.player && data.questions) {
-          localStorage.setItem('cyber-english-state', JSON.stringify(data));
-          window.location.reload(); // Reload to refresh Zustand state from localStorage
-        } else {
-          alert('Tệp dữ liệu không hợp lệ!');
-        }
-      } catch (err) {
-        alert('Lỗi khi phân tích tệp dữ liệu!');
-      }
-    };
-    reader.readAsText(file);
-  };
 
   // Prepare chart data
   const chartData = Object.values(activeCategoryStats).map((stat: any) => ({
@@ -237,20 +198,26 @@ export const ParentConsole: React.FC = () => {
       <div className="glass-panel rounded-2xl border border-synth-magenta/30 p-5 flex flex-col md:flex-row justify-between items-center gap-4 bg-gradient-to-r from-synth-magenta/5 to-transparent">
         <div className="flex items-center gap-3">
           <Unlock className="w-6 h-6 text-synth-magenta" />
-          <h2 className="font-orbitron text-lg font-black text-white uppercase tracking-wider">
+          <h2 className="font-orbitron text-lg font-black text-white uppercase tracking-wider flex items-center gap-1.5">
             Bảng Quản Trị Của Ba Mẹ
+            <button
+              onClick={() => showHelp('parent-console')}
+              className="w-5 h-5 rounded-full bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta text-[10px] font-black flex items-center justify-center hover:bg-synth-magenta/40 cursor-pointer transition-colors"
+              title="Xem hướng dẫn sử dụng trang quản trị"
+            >
+              ?
+            </button>
           </h2>
         </div>
 
         {/* Tab Controls */}
         <div className="flex gap-2 flex-wrap">
-          {['analytics', 'rewards', 'ingestion', 'members', 'settings'].map(tab => {
+          {['members', 'analytics', 'rewards', 'ingestion'].map(tab => {
             const tabNames: Record<string, string> = {
+              members: 'Thành viên',
               analytics: 'Thống kê',
               rewards: 'Phần thưởng',
-              ingestion: 'AI Ingest',
-              members: 'Thành viên',
-              settings: 'Cấu hình'
+              ingestion: 'AI Ingest'
             };
             return (
               <button
@@ -322,6 +289,13 @@ export const ParentConsole: React.FC = () => {
             <div className="glass-panel rounded-2xl border border-synth-cyan/20 p-5 flex flex-col justify-between min-h-[160px]">
               <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
                 <Award className="w-4 h-4" /> Dự đoán điểm thi vào lớp 10
+                <button
+                  onClick={() => showHelp('prediction')}
+                  className="w-4 h-4 rounded-full bg-synth-cyan/20 border border-synth-cyan/40 text-synth-cyan text-[9px] font-black flex items-center justify-center hover:bg-synth-cyan/40 cursor-pointer transition-colors"
+                  title="Tìm hiểu cách AI dự đoán điểm thi"
+                >
+                  ?
+                </button>
               </h4>
               <div className="py-4 text-center">
                 <span className="text-4xl font-black font-orbitron text-white">
@@ -537,6 +511,13 @@ export const ParentConsole: React.FC = () => {
             <div>
               <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider mb-1 flex items-center gap-1.5">
                 <FileText className="w-4 h-4" /> Nhập thêm đề thi Tiếng Anh vào lớp 10 (PDF/Thô)
+                <button
+                  onClick={() => showHelp('ai-ingest')}
+                  className="w-4 h-4 rounded-full bg-white/10 border border-white/20 text-white text-[9px] font-black flex items-center justify-center hover:bg-white/25 cursor-pointer transition-colors"
+                  title="Xem định dạng mẫu và hướng dẫn nhập liệu"
+                >
+                  ?
+                </button>
               </h4>
               <p className="text-xs text-synth-text-muted leading-relaxed">
                 Nhập văn bản thô của đề thi theo định dạng bên dưới. Công cụ sẽ tự động tách câu và đáp án.
@@ -622,56 +603,7 @@ Answer: politely"
         </div>
       )}
 
-      {/* Settings tab */}
-      {activeTab === 'settings' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Backup Database */}
-          <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-4">
-            <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
-              <Database className="w-4 h-4" /> Sao lưu & Khôi phục dữ liệu học tập
-            </h4>
-            <p className="text-xs text-synth-text-muted leading-relaxed">
-              Tránh mất mát dữ liệu do cache trình duyệt bị xóa. Hãy tạo sao lưu dự phòng định kỳ.
-            </p>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={handleBackupExport}
-                className="flex-1 py-3 rounded-xl border border-synth-cyan text-synth-cyan font-orbitron font-bold text-xs uppercase tracking-wider hover:bg-synth-cyan/10 cursor-pointer transition-all duration-300"
-              >
-                Sao Lưu (JSON Export)
-              </button>
-
-              <label className="flex-1 py-3 rounded-xl border border-synth-orange text-synth-orange font-orbitron font-bold text-xs uppercase tracking-wider text-center cursor-pointer hover:bg-synth-orange/10 transition-all duration-300">
-                Khôi Phục (JSON Import)
-                <input
-                  type="file"
-                  accept=".json"
-                  onChange={handleRestoreImport}
-                  className="hidden"
-                />
-              </label>
-            </div>
-          </div>
-
-          {/* Reset progress */}
-          <div className="glass-panel rounded-2xl border border-red-500/20 p-5 space-y-4 bg-gradient-to-t from-red-500/5 to-transparent">
-            <h4 className="font-orbitron font-bold text-xs text-red-500 uppercase tracking-wider flex items-center gap-1.5">
-              <ShieldAlert className="w-4 h-4" /> Vùng quản trị Nguy hiểm
-            </h4>
-            <p className="text-xs text-synth-text-muted leading-relaxed">
-              Thiết lập lại toàn bộ điểm số, streak và pet rồng lửa của con trở lại mặc định. Thao tác không thể hoàn tác.
-            </p>
-
-            <button
-              onClick={handleResetProgress}
-              className="w-full py-3 rounded-xl bg-red-500 hover:bg-red-600 text-black font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shadow-[0_0_12px_rgba(239,68,68,0.2)]"
-            >
-              Reset Tiến Độ Của Con
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* Members Tab */}
       {activeTab === 'members' && (

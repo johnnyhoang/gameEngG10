@@ -17,6 +17,8 @@ function App() {
   const initEventSubscriptions = useGameState(state => state.initEventSubscriptions);
   const openMysteryBox = useGameState(state => state.openMysteryBox);
   const spinWheel = useGameState(state => state.spinWheel);
+  const activeHelp = useGameState(state => state.activeHelp);
+  const closeHelp = useGameState(state => state.closeHelp);
 
   // Screen routing state
   const [screen, setScreen] = useState<'map' | 'play' | 'shop' | 'parent'>('map');
@@ -191,6 +193,32 @@ function App() {
               className="w-full py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 shadow-[0_0_10px_rgba(0,240,255,0.3)]"
             >
               Nhận Quà 
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Help Topic Modal */}
+      {activeHelp && (
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-fade-in">
+          <div className="glass-panel rounded-3xl border border-synth-cyan/40 p-6 max-w-md w-full space-y-4 shadow-[0_0_30px_rgba(0,240,255,0.2)]">
+            <h3 className="font-orbitron font-black text-base text-synth-cyan uppercase tracking-wider border-b border-synth-cyan/20 pb-2 flex items-center gap-2">
+              💡 Hướng dẫn: {activeHelp.title}
+            </h3>
+            
+            <div className="space-y-3 py-2">
+              {activeHelp.bullets.map((b, i) => (
+                <p key={i} className="text-xs text-slate-200 leading-relaxed font-medium">
+                  {b}
+                </p>
+              ))}
+            </div>
+
+            <button
+              onClick={closeHelp}
+              className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 shadow-[0_0_12px_rgba(0,240,255,0.3)]"
+            >
+              Đã hiểu
             </button>
           </div>
         </div>

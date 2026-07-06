@@ -5,6 +5,7 @@ import { Activity, Sparkles } from 'lucide-react';
 export const PetSanctuary: React.FC = () => {
   const pet = useGameState(state => state.pet);
   const feedPet = useGameState(state => state.feedPet);
+  const showHelp = useGameState(state => state.showHelp);
   const [interacting, setInteracting] = useState(false);
 
   const handleFeed = () => {
@@ -127,8 +128,15 @@ export const PetSanctuary: React.FC = () => {
   return (
     <div className="glass-panel rounded-2xl border border-synth-cyan/15 p-5 flex flex-col h-full">
       <div className="flex items-center justify-between mb-4 border-b border-synth-gray pb-3">
-        <h3 className="font-orbitron font-bold text-synth-cyan text-sm uppercase tracking-wider flex items-center gap-2">
+        <h3 className="font-orbitron font-bold text-synth-cyan text-sm uppercase tracking-wider flex items-center gap-1.5">
           <Activity className="w-4 h-4" /> Pet Sanctuary
+          <button
+            onClick={() => showHelp('dragon')}
+            className="w-4 h-4 rounded-full bg-synth-cyan/20 border border-synth-cyan/40 text-synth-cyan text-[9px] font-black flex items-center justify-center hover:bg-synth-cyan/40 cursor-pointer transition-colors"
+            title="Xem hướng dẫn về thú cưng"
+          >
+            ?
+          </button>
         </h3>
         <span className="text-xs font-semibold px-2 py-0.5 rounded bg-synth-magenta/15 text-synth-magenta border border-synth-magenta/30 font-orbitron">
           LV.{pet.level}

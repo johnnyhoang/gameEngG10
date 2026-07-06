@@ -15,6 +15,94 @@ import type {
   DailyMission
 } from '../types/game';
 
+const HELP_TOPICS: Record<string, { title: string; bullets: string[] }> = {
+  xp: {
+    title: 'Cấp độ & Kinh Nghiệm (XP)',
+    bullets: [
+      '• Làm đúng mỗi câu hỏi trắc nghiệm sẽ cộng thêm từ 10 - 25 XP tùy độ khó.',
+      '• Đủ điểm XP quy định sẽ thăng cấp (Level Up) giúp tăng giới hạn và tiến hóa Thú cưng.',
+      '• Chiến thắng Boss hoặc hoàn thành Nhiệm vụ ngày nhận lượng XP siêu khủng.'
+    ]
+  },
+  energy: {
+    title: 'Chỉ số Năng lượng (Energy)',
+    bullets: [
+      '• Giới hạn 100 Energy mỗi ngày, tự động nạp đầy 100% vào lúc 0h sáng.',
+      '• Mỗi lần làm bài luyện tập thường tiêu hao 10 Energy.',
+      '• Các trận đấu Boss hoặc khiêu chiến Dungeon tiêu hao 20 Energy.',
+      '• Giới hạn này giúp bảo vệ mắt và sức khỏe của con, tránh học tập quá sức.'
+    ]
+  },
+  hearts: {
+    title: 'Trái tim sinh mệnh (Hearts)',
+    bullets: [
+      '• Con có tối đa 3 trái tim khi tham gia Đấu trường hoặc làm bài thi.',
+      '• Mỗi câu trả lời sai sẽ làm mất 1 trái tim.',
+      '• Nếu mất hết cả 3 trái tim, lượt thi đấu sẽ thất bại và con phải làm lại từ đầu.',
+      '• Năng lượng không bị mất khi con làm sai, chỉ mất mạng chơi.'
+    ]
+  },
+  nanite: {
+    title: 'Nanite Points (Xu NP)',
+    bullets: [
+      '• Đây là tiền ảo trong game nhận được mỗi khi con trả lời đúng câu hỏi.',
+      '• Số xu kiếm được tương xứng với lượng XP nhận được.',
+      '• Con dùng xu vàng NP này trong Cửa hàng để mua Khiên bảo vệ Streak hoặc đổi các phần quà thực tế từ Ba Mẹ.'
+    ]
+  },
+  wallet: {
+    title: 'Ví tích lũy VND từ Ba Mẹ',
+    bullets: [
+      '• Hiển thị số tiền mặt thực tế con tích lũy được từ việc học tập.',
+      '• Khi con dùng xu NP để đổi các phần quà có giá trị tiền mặt (ví dụ: Ly trà sữa, 1h chơi iPad), yêu cầu sẽ gửi tới Ba Mẹ.',
+      '• Khi Ba Mẹ bấm duyệt yêu cầu trên trang Admin, số tiền sẽ được cộng vào Ví này và con có thể rút ra chi tiêu.'
+    ]
+  },
+  dragon: {
+    title: 'Thú cưng Rồng Đồng Hành',
+    bullets: [
+      '• Rồng con sẽ đồng hành cùng con trong suốt quá trình làm bài tập.',
+      '• Rồng tiến hóa qua 4 giai đoạn: Trứng (Egg) -> Rồng con (Hatchling) -> Rồng thiếu niên (Teen) -> Rồng trưởng thành (Adult).',
+      '• Thú cưng thăng cấp dựa trên Cấp độ học tập của con.',
+      '• Con cần dùng xu NP mua thức ăn trong shop để cho Rồng ăn thường xuyên, giữ chỉ số cảm xúc vui vẻ.'
+    ]
+  },
+  prediction: {
+    title: 'AI Dự đoán điểm thi lớp 10',
+    bullets: [
+      '• Công cụ phân tích thông minh sử dụng thuật toán máy học đánh giá kết quả làm bài của con.',
+      '• Yêu cầu con làm tối thiểu 20 câu hỏi để AI bắt đầu có dữ liệu phân tích.',
+      '• Luyện tập trên 200 câu giúp giảm biên độ sai số xuống cực thấp (±0.2 điểm).',
+      '• Điểm số dự kiến mô phỏng sát nhất với kết quả làm bài thi thật vào lớp 10.'
+    ]
+  },
+  'ai-ingest': {
+    title: 'Tự động Nhập Đề thi bằng AI',
+    bullets: [
+      '• Ba Mẹ chỉ cần copy văn bản thô, tài liệu đề thi học kỳ hoặc gõ câu hỏi vào khung nhập liệu.',
+      '• Nhấn nút "Phân tích bằng AI" để AI tự động bóc tách thành các câu hỏi trắc nghiệm hoàn chỉnh (có đề bài, 4 đáp án lựa chọn, đáp án đúng và lời giải chi tiết).',
+      '• Nhấn "Xác nhận nhập" để lưu trực tiếp câu hỏi vào ngân hàng đề thi của con.'
+    ]
+  },
+  'parent-console': {
+    title: 'Hướng dẫn sử dụng Bảng Quản Trị',
+    bullets: [
+      '• Tab Thành viên: Hiển thị danh sách các con. Nhấp "Xem Hoạt Động" để xem chi tiết tiến trình học, biểu đồ năng lực, trạng thái pet và 50 lịch sử gần nhất.',
+      '• Duyệt đổi quà: Phê duyệt nhanh các món quà con gửi yêu cầu ngay trong bảng Xem Hoạt Động.',
+      '• AI Ingest: Nơi ba mẹ tự biên soạn hoặc nạp thêm ngân hàng câu hỏi mới cho con làm bài.'
+    ]
+  },
+  streak: {
+    title: 'Chuỗi học tập liên tục (Streak)',
+    bullets: [
+      '• Chuỗi ngày liên tiếp con đăng nhập làm bài tập.',
+      '• Duy trì chuỗi Streak giúp nhân đôi lượng XP nhận được.',
+      '• Nếu một ngày con không học tập, chuỗi Streak sẽ bị reset về 0.',
+      '• Mẹo: Mua Khiên bảo vệ Streak (Streak Shield) trong cửa hàng để tự động giữ chuỗi nếu bận đột xuất.'
+    ]
+  }
+};
+
 interface GameState {
   // State
   currentUser: UserProfile | null;
@@ -33,6 +121,11 @@ interface GameState {
   // Admin and management states
   adminStudents: any[];
   selectedStudentProfile: any | null;
+
+  // Help States
+  activeHelp: { title: string; bullets: string[] } | null;
+  showHelp: (topic: string) => void;
+  closeHelp: () => void;
 
   // Profiles cache for multi-player
   profiles: Record<string, PlayerProfile>;
@@ -249,6 +342,7 @@ export const useGameState = create<GameState>()(
         activeCombo: 0,
         adminStudents: [],
         selectedStudentProfile: null,
+        activeHelp: null,
         maxCombo: 0,
 
         // Profiles cache for multi-player
@@ -602,8 +696,18 @@ export const useGameState = create<GameState>()(
             categoryStats: {},
             activeCombo: 0,
             adminStudents: [],
-            selectedStudentProfile: null
+            selectedStudentProfile: null,
+            activeHelp: null
           });
+        },
+
+        showHelp: (topic) => {
+          const content = HELP_TOPICS[topic] || null;
+          set({ activeHelp: content });
+        },
+
+        closeHelp: () => {
+          set({ activeHelp: null });
         },
 
         fetchAdminStudents: async () => {
