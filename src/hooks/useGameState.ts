@@ -530,10 +530,11 @@ export const useGameState = create<GameState>()(
                 });
 
                 return {
+                  currentUser: data.currentUser || user,
                   player: data.player || {
                     id: user.id,
                     name: user.name,
-                    role: 'student',
+                    role: (data.currentUser?.role || 'student') as any,
                     level: 1,
                     xp: 0,
                     coins: 200,
@@ -567,10 +568,14 @@ export const useGameState = create<GameState>()(
             console.error('Lỗi khi tải thông tin từ backend Supabase:', e);
             // Fallback to local profile if offline
             set(state => {
+              const updatedUser = {
+                ...user,
+                role: user.email === 'hoang.hoa@gmail.com' ? 'admin' : 'student'
+              };
               const newPlayer = state.profiles[user.id] || {
                 id: user.id,
                 name: user.name,
-                role: 'student',
+                role: updatedUser.role as any,
                 level: 1,
                 xp: 0,
                 coins: 200,
@@ -581,7 +586,7 @@ export const useGameState = create<GameState>()(
                 lastActive: new Date().toISOString(),
                 badges: []
               };
-              return { player: newPlayer };
+              return { currentUser: updatedUser, player: newPlayer };
             });
           }
         },
