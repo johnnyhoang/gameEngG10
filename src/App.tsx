@@ -278,16 +278,6 @@ function App() {
             <span className="text-lg">📊</span>
             <span>Nhật ký</span>
           </button>
-
-          <button
-            onClick={() => setScreen('parent')}
-            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
-              screen === 'parent' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
-            }`}
-          >
-            <span className="text-lg">🔒</span>
-            <span>Ba Mẹ</span>
-          </button>
         </nav>
       )}
 
