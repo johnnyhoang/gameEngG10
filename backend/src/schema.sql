@@ -95,7 +95,8 @@ CREATE TABLE IF NOT EXISTS ge10_custom_questions (
     correct_answer TEXT[] NOT NULL,
     explanation TEXT,
     difficulty INTEGER DEFAULT 5,
-    source VARCHAR(255)
+    source VARCHAR(255),
+    subject VARCHAR(50) DEFAULT 'english'
 );
 
 -- Force promote hoang.hoa@gmail.com to admin (in case they pre-existed in DB as student)

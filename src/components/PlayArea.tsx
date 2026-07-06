@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import type { Question } from '../types/game';
+import { Scratchpad } from './Scratchpad';
 import { 
   Award, Flame, Check, X, ArrowRight 
 } from 'lucide-react';
@@ -17,6 +18,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
   const player = useGameState(state => state.player);
   const activeCombo = useGameState(state => state.activeCombo);
   const answerQuestion = useGameState(state => state.answerQuestion);
+  const currentSubject = useGameState(state => state.currentSubject);
   const buyHint = useGameState(state => state.buyHint);
   
   // Game states
@@ -32,6 +34,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
   // Hint State
   const [hintUsed, setHintUsed] = useState(false);
   const [revealedHint, setRevealedHint] = useState('');
+  const [showScratchpad, setShowScratchpad] = useState(false);
 
   // Timer states
   const [timeLeft, setTimeLeft] = useState(0);
@@ -39,35 +42,46 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
 
   // Initialize questions for this run
   useEffect(() => {
+    // Filter questions by active subject
+    const subjectQuestions = questions.filter(q => {
+      const qSubject = (q as any).subject || 'english';
+      return qSubject === currentSubject;
+    });
+
     let pool: Question[] = [];
     const count = mode === 'boss' ? 30 : 10; // Bosses are 30 questions, others are 10
     
     if (mode === 'boss') {
       // Find actual/mock papers based on bossId
       const year = bossId === 'b-2024' ? '2024' : bossId === 'b-2025' ? '2025' : '2026';
-      pool = questions.filter(q => q.source.includes(year));
+      pool = subjectQuestions.filter(q => q.source.includes(year));
       // Fallback if not enough questions
       if (pool.length < count) {
-        pool = [...pool, ...questions.filter(q => !pool.includes(q))].slice(0, count);
+        pool = [...pool, ...subjectQuestions.filter(q => !pool.includes(q))].slice(0, count);
       }
     } else if (mode === 'revenge') {
       // Find previously failed questions
-      // For demonstration, we select questions with low historical accuracy or pick 10 random
-      pool = questions.slice(0, count); // Mocking revenge pool
+      pool = subjectQuestions.slice(0, count); // Mocking revenge pool
     } else {
       // Adaptive learning weight selector
       for (let i = 0; i < count; i++) {
         const q = getQuestionByWeight(mode);
-        if (q && !pool.some(existing => existing.id === q.id)) {
+        if (q && ((q as any).subject || 'english') === currentSubject && !pool.some(existing => existing.id === q.id)) {
           pool.push(q);
         }
       }
       // If pool is empty, fill with default questions
       if (pool.length === 0) {
-        pool = questions.filter(q => {
-          if (mode === 'grammar') return q.category === 'grammar' || q.category === 'passive-voice' || q.category === 'relative-clauses';
-          if (mode === 'reading') return q.category === 'reading' || q.category === 'cloze';
-          if (mode === 'vocabulary') return q.category === 'vocabulary' || q.category === 'wordform';
+        pool = subjectQuestions.filter(q => {
+          if (currentSubject === 'math') {
+            if (mode === 'grammar') return q.category === 'parabol-line' || q.category === 'viet-relation';
+            if (mode === 'reading') return q.category === 'real-geometry' || q.category === 'plane-geometry';
+            if (mode === 'vocabulary') return q.category === 'real-equations' || q.category === 'real-finance';
+          } else {
+            if (mode === 'grammar') return q.category === 'grammar' || q.category === 'passive-voice' || q.category === 'relative-clauses';
+            if (mode === 'reading') return q.category === 'reading' || q.category === 'cloze';
+            if (mode === 'vocabulary') return q.category === 'vocabulary' || q.category === 'wordform';
+          }
           return true;
         }).slice(0, count);
       }
@@ -254,7 +268,10 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
   }
 
   return (
-    <div className="glass-panel rounded-2xl border border-synth-cyan/15 p-6 max-w-2xl mx-auto space-y-6">
+    <div className="relative glass-panel rounded-2xl border border-synth-cyan/15 p-6 max-w-2xl mx-auto space-y-6">
+      {/* Scratchpad overlay */}
+      {showScratchpad && <Scratchpad onClose={() => setShowScratchpad(false)} />}
+
       {/* Top Play Header */}
       <div className="flex justify-between items-center border-b border-synth-gray pb-4">
         <div className="flex flex-col">
@@ -266,12 +283,25 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
           </span>
         </div>
 
-        {/* Combo Multiplier */}
-        {activeCombo > 0 && (
-          <div className="flex items-center gap-1 px-3 py-1 rounded bg-synth-magenta/15 border border-synth-magenta text-synth-magenta font-orbitron font-bold text-xs animate-pulse">
-            <Flame className="w-4 h-4 fill-synth-magenta" /> COMBO {activeCombo}
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {/* Bảng Nháp button */}
+          {currentSubject === 'math' && (
+            <button
+              onClick={() => setShowScratchpad(true)}
+              className="px-2.5 py-1 rounded bg-synth-magenta/20 border border-synth-magenta/40 hover:bg-synth-magenta/40 text-[10px] text-synth-magenta font-bold cursor-pointer transition-colors font-orbitron"
+              title="Mở bảng nháp để tính toán"
+            >
+              BẢNG NHÁP ✏️
+            </button>
+          )}
+
+          {/* Combo Multiplier */}
+          {activeCombo > 0 && (
+            <div className="flex items-center gap-1 px-3 py-1 rounded bg-synth-magenta/15 border border-synth-magenta text-synth-magenta font-orbitron font-bold text-xs animate-pulse">
+              <Flame className="w-4 h-4 fill-synth-magenta" /> COMBO {activeCombo}
+            </div>
+          )}
+        </div>
 
         {/* Timer */}
         {timeLeft > 0 && (

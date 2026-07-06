@@ -1,21 +1,24 @@
 import React from 'react';
 import { useGameState } from '../hooks/useGameState';
-import { Zap, Heart, Coins, Flame, Shield, Award, LogOut } from 'lucide-react';
+import { Zap, Heart, Coins, Flame, Shield, Award, LogOut, Palette } from 'lucide-react';
 
 interface TopHUDProps {
   currentScreen: 'map' | 'play' | 'shop' | 'parent' | 'pet' | 'logs';
   onOpenShop: () => void;
   onOpenParent: () => void;
+  onOpenProfile: () => void;
   onBackToMap: () => void;
 }
 
 export const TopHUD: React.FC<TopHUDProps> = ({ 
-  currentScreen, onOpenShop, onOpenParent, onBackToMap 
+  currentScreen, onOpenShop, onOpenParent, onOpenProfile, onBackToMap 
 }) => {
   const player = useGameState(state => state.player);
   const currentUser = useGameState(state => state.currentUser);
   const logout = useGameState(state => state.logout);
   const showHelp = useGameState(state => state.showHelp);
+  const currentSubject = useGameState(state => state.currentSubject);
+  const setSubject = useGameState(state => state.setSubject);
 
   // Calculate percentage of XP to next level
   const xpNeeded = player.level * 200;
@@ -30,15 +33,45 @@ export const TopHUD: React.FC<TopHUDProps> = ({
         <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
           <div 
             onClick={onBackToMap}
-            className="flex items-center gap-2 cursor-pointer group"
+            className="flex items-center gap-2 cursor-pointer group shrink-0"
           >
             <span className="font-orbitron text-2xl font-black bg-gradient-to-r from-synth-cyan to-synth-magenta bg-clip-text text-transparent group-hover:synth-glow-cyan transition-all duration-300">
               MIKAWAII
             </span>
-            <span className="text-xs font-semibold px-2 py-0.5 rounded border border-synth-magenta text-synth-magenta uppercase font-orbitron animate-pulse">
-              ENGLISH
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase font-orbitron animate-pulse ${
+              currentSubject === 'math' 
+                ? 'border-synth-magenta text-synth-magenta shadow-[0_0_6px_rgba(255,0,128,0.3)]' 
+                : 'border-synth-cyan text-synth-cyan shadow-[0_0_6px_rgba(0,240,255,0.3)]'
+            }`}>
+              {currentSubject === 'math' ? 'MATH' : 'ENGLISH'}
             </span>
           </div>
+
+          {/* Subject Switcher */}
+          {currentUser && currentUser.role !== 'admin' && (
+            <div className="flex items-center bg-synth-gray/30 rounded-xl p-0.5 border border-white/10 font-orbitron text-[9px] shrink-0">
+              <button
+                onClick={() => setSubject('english')}
+                className={`px-2.5 py-1 rounded-lg font-bold transition-all duration-200 cursor-pointer ${
+                  currentSubject === 'english'
+                    ? 'bg-gradient-to-r from-synth-purple to-synth-cyan text-black shadow-[0_0_8px_rgba(0,240,255,0.4)]'
+                    : 'text-synth-text-muted hover:text-white'
+                }`}
+              >
+                ENG
+              </button>
+              <button
+                onClick={() => setSubject('math')}
+                className={`px-2.5 py-1 rounded-lg font-bold transition-all duration-200 cursor-pointer ${
+                  currentSubject === 'math'
+                    ? 'bg-gradient-to-r from-synth-purple to-synth-magenta text-white shadow-[0_0_8px_rgba(255,0,128,0.4)]'
+                    : 'text-synth-text-muted hover:text-white'
+                }`}
+              >
+                MATH
+              </button>
+            </div>
+          )}
 
           <div className="flex items-center gap-3">
             {currentUser && (
@@ -177,25 +210,35 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                 className={`hidden sm:inline-block px-4 py-2 font-orbitron font-bold text-xs rounded-lg uppercase tracking-wider border cursor-pointer transition-all duration-300 ${
                   currentScreen === 'shop' 
                     ? 'bg-synth-orange border-synth-orange text-black shadow-[0_0_12px_#ff9f1c]' 
-                    : 'bg-transparent border-synth-orange/50 text-synth-orange hover:bg-synth-orange/10'
+                  : 'bg-transparent border-synth-orange/50 text-synth-orange hover:bg-synth-orange/10'
                 }`}
               >
                 Item Shop
               </button>
-              
-              {currentUser?.role === 'admin' && (
-                <button 
-                  onClick={onOpenParent}
-                  className={`px-4 py-2 font-orbitron font-bold text-xs rounded-lg uppercase tracking-wider border cursor-pointer transition-all duration-300 ${
-                    currentScreen === 'parent' 
-                      ? 'bg-synth-magenta border-synth-magenta text-black shadow-[0_0_12px_#ff007f]' 
-                      : 'bg-transparent border-synth-magenta/50 text-synth-magenta hover:bg-synth-magenta/10'
-                  }`}
-                >
-                  Parent HUD
-                </button>
-              )}
             </>
+          )}
+
+          {currentUser?.role === 'admin' && (
+            <button 
+              onClick={onOpenParent}
+              className={`hidden sm:inline-flex px-4 py-2 font-orbitron font-bold text-xs rounded-lg uppercase tracking-wider border cursor-pointer transition-all duration-300 ${
+                currentScreen === 'parent' 
+                  ? 'bg-synth-magenta border-synth-magenta text-black shadow-[0_0_12px_#ff007f]' 
+                  : 'bg-transparent border-synth-magenta/50 text-synth-magenta hover:bg-synth-magenta/10'
+              }`}
+            >
+              Parent HUD
+            </button>
+          )}
+
+          {currentUser && (
+            <button
+              onClick={onOpenProfile}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-white/10 bg-white/5 text-white hover:bg-white/10 font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300"
+            >
+              <Palette className="w-4 h-4" />
+              <span className="hidden sm:inline">Profile</span>
+            </button>
           )}
 
           {currentUser && (

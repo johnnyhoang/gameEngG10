@@ -3,6 +3,7 @@ export type ChallengeType = 'daily' | 'weekly' | 'achievement' | 'one-time';
 export type RewardStatus = 'pending' | 'approved' | 'claimed';
 export type PetStage = 'egg' | 'baby' | 'dragon' | 'legend';
 export type PetMood = 'happy' | 'neutral' | 'sad' | 'sleeping';
+export type UiThemeId = 'current' | 'cute-pink-pastel' | 'space-adventure' | 'fantasy-forest' | 'pixel-arcade';
 
 export interface UserProfile {
   id: string; // unique google id or email

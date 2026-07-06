@@ -35,6 +35,7 @@ export const ParentConsole: React.FC = () => {
   const [importPreview, setImportPreview] = useState<Question[]>([]);
   const [showImportPreview, setShowImportPreview] = useState(false);
   const [loadingIngest, setLoadingIngest] = useState(false);
+  const [ingestSubject, setIngestSubject] = useState<'english' | 'math'>('english');
 
   // Create Reward States
   const [rewardTitle, setRewardTitle] = useState('');
@@ -88,7 +89,7 @@ export const ParentConsole: React.FC = () => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ rawText })
+        body: JSON.stringify({ rawText, subject: ingestSubject })
       });
 
       if (!res.ok) {
@@ -511,7 +512,7 @@ export const ParentConsole: React.FC = () => {
           <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-4">
             <div>
               <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <FileText className="w-4 h-4" /> Nhập thêm đề thi Tiếng Anh vào lớp 10 (PDF/Thô)
+                <FileText className="w-4 h-4" /> Nạp thêm đề thi vào lớp 10 bằng AI (PDF/Thô)
                 <button
                   onClick={() => showHelp('ai-ingest')}
                   className="w-4 h-4 rounded-full bg-white/10 border border-white/20 text-white text-[9px] font-black flex items-center justify-center hover:bg-white/25 cursor-pointer transition-colors"
@@ -521,8 +522,39 @@ export const ParentConsole: React.FC = () => {
                 </button>
               </h4>
               <p className="text-xs text-synth-text-muted leading-relaxed">
-                Nhập văn bản thô của đề thi theo định dạng bên dưới. Công cụ sẽ tự động tách câu và đáp án.
+                Copy văn bản thô của đề thi Tiếng Anh hoặc Toán. Trí tuệ nhân tạo Gemini sẽ tự động bóc tách, gắn đáp án và thêm vào danh sách thử thách.
               </p>
+            </div>
+
+            {/* Subject Selector for Ingest */}
+            <div className="flex flex-col space-y-1.5">
+              <span className="text-[10px] font-bold text-synth-cyan font-orbitron uppercase tracking-wider">
+                Môn học nạp đề
+              </span>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIngestSubject('english')}
+                  className={`px-3 py-1.5 rounded-lg border text-xs font-bold cursor-pointer transition-all duration-200 ${
+                    ingestSubject === 'english'
+                      ? 'bg-synth-cyan/20 border-synth-cyan text-synth-cyan shadow-[0_0_8px_rgba(0,240,255,0.2)]'
+                      : 'bg-synth-gray/10 border-white/5 text-synth-text-muted hover:text-white'
+                  }`}
+                >
+                  🇬🇧 TIẾNG ANH
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIngestSubject('math')}
+                  className={`px-3 py-1.5 rounded-lg border text-xs font-bold cursor-pointer transition-all duration-200 ${
+                    ingestSubject === 'math'
+                      ? 'bg-synth-magenta/20 border-synth-magenta text-synth-magenta shadow-[0_0_8px_rgba(255,0,128,0.2)]'
+                      : 'bg-synth-gray/10 border-white/5 text-synth-text-muted hover:text-white'
+                  }`}
+                >
+                  📐 TOÁN HỌC
+                </button>
+              </div>
             </div>
 
             <textarea

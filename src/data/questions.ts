@@ -474,5 +474,96 @@ export const INITIAL_QUESTIONS: Question[] = [
     explanation: 'Sau sở hữu cách "my dad\'s" cần danh từ "assistance" (sự hỗ trợ/giúp đỡ).',
     difficulty: 5,
     source: 'HCMC Entrance Exam 2024'
-  }
+  },
+  
+  // ==================== MATH SUBJECT QUESTIONS ====================
+  {
+    id: 'm-1',
+    type: 'mcq',
+    category: 'parabol-line',
+    prompt: 'Tìm giao điểm của Parabol y = x² và đường thẳng y = 2x + 3.',
+    options: [
+      '(3; 9) và (-1; 1)',
+      '(3; 9) và (1; 1)',
+      '(-3; 9) và (-1; 1)',
+      '(3; 6) và (-1; 2)'
+    ],
+    correctAnswer: '(3; 9) và (-1; 1)',
+    explanation: 'Phương trình hoành độ giao điểm: x² = 2x + 3 <=> x² - 2x - 3 = 0. Có dạng a - b + c = 0 nên có hai nghiệm x = -1 và x = 3. Thay vào y: x = -1 => y = 1; x = 3 => y = 9. Ta có hai giao điểm (3; 9) và (-1; 1).',
+    difficulty: 5,
+    source: 'Đề thi Toán lớp 10 TP.HCM 2024',
+    subject: 'math'
+  } as any,
+  {
+    id: 'm-2',
+    type: 'mcq',
+    category: 'viet-relation',
+    prompt: 'Cho phương trình x² - 5x + 3 = 0 có hai nghiệm x₁, x₂. Tính giá trị biểu thức A = x₁² + x₂².',
+    options: ['A = 19', 'A = 22', 'A = 25', 'A = 16'],
+    correctAnswer: 'A = 19',
+    explanation: 'Theo hệ thức Vi-ét ta có: S = x₁ + x₂ = 5 và P = x₁ * x₂ = 3. Biểu thức A = x₁² + x₂² = (x₁ + x₂)² - 2x₁x₂ = S² - 2P = 5² - 2*3 = 25 - 6 = 19.',
+    difficulty: 6,
+    source: 'Đề thi Toán lớp 10 TP.HCM 2024',
+    subject: 'math'
+  } as any,
+  {
+    id: 'm-3',
+    type: 'mcq',
+    category: 'real-finance',
+    prompt: 'Một cửa hàng niêm yết giá bán một chiếc balo là 300.000 đồng. Nhân dịp khai giảng, cửa hàng giảm giá đợt 1 là 10%. Sau đó đợt 2 cửa hàng lại giảm tiếp 5% trên giá đã giảm của đợt 1. Hỏi sau hai đợt giảm giá, chiếc balo có giá bao nhiêu?',
+    options: ['256.500 đồng', '255.000 đồng', '270.000 đồng', '245.000 đồng'],
+    correctAnswer: '256.500 đồng',
+    explanation: 'Giá bán sau đợt giảm thứ nhất: 300.000 * (1 - 0.10) = 270.000 đồng. Giá bán sau đợt giảm thứ hai: 270.000 * (1 - 0.05) = 256.500 đồng.',
+    difficulty: 6,
+    source: 'Đề thi Toán lớp 10 TP.HCM 2024',
+    subject: 'math'
+  } as any,
+  {
+    id: 'm-4',
+    type: 'mcq',
+    category: 'real-geometry',
+    prompt: 'Một lon nước ngọt hình trụ có bán kính đáy r = 3 cm và chiều cao h = 12 cm. Tính thể tích vỏ lon nước ngọt này (lấy π ≈ 3.14).',
+    options: ['339.12 cm³', '113.04 cm³', '108.00 cm³', '300.00 cm³'],
+    correctAnswer: '339.12 cm³',
+    explanation: 'Thể tích hình trụ V = π * r² * h. Thay số: V ≈ 3.14 * 3² * 12 = 3.14 * 9 * 12 = 3.14 * 108 = 339.12 cm³.',
+    difficulty: 5,
+    source: 'Đề thi Toán lớp 10 TP.HCM 2025',
+    subject: 'math'
+  } as any,
+  {
+    id: 'm-5',
+    type: 'mcq',
+    category: 'viet-relation',
+    prompt: 'Tìm giá trị tham số m để phương trình x² - 2x + m - 1 = 0 có hai nghiệm phân biệt.',
+    options: ['m < 2', 'm > 2', 'm ≤ 2', 'm < 1'],
+    correctAnswer: 'm < 2',
+    explanation: 'Phương trình có hai nghiệm phân biệt <=> Δ\' > 0. Ta có Δ\' = (-1)² - 1*(m - 1) = 1 - m + 1 = 2 - m. Vậy Δ\' > 0 <=> 2 - m > 0 <=> m < 2.',
+    difficulty: 6,
+    source: 'Đề thi Toán lớp 10 TP.HCM 2025',
+    subject: 'math'
+  } as any,
+  {
+    id: 'm-6',
+    type: 'mcq',
+    category: 'real-equations',
+    prompt: 'Hai trường A và B có tổng cộng 500 học sinh đỗ lớp 10. Biết tỷ lệ đỗ của trường A là 90%, trường B là 85%. Tổng số học sinh dự thi của hai trường là 560 học sinh. Hỏi trường A có bao nhiêu học sinh dự thi?',
+    options: ['480 học sinh', '320 học sinh', '240 học sinh', '80 học sinh'],
+    correctAnswer: '480 học sinh',
+    explanation: 'Gọi x, y lần lượt là số học sinh dự thi của trường A và B (x, y > 0). Ta có hệ phương trình: x + y = 560 và 0.90x + 0.85y = 500. Từ phương trình 1 suy ra y = 560 - x. Thế vào phương trình 2: 0.90x + 0.85(560 - x) = 500 <=> 0.05x + 476 = 500 <=> 0.05x = 24 <=> x = 480 (thỏa mãn). Vậy trường A có 480 học sinh dự thi.',
+    difficulty: 7,
+    source: 'Đề thi Toán lớp 10 TP.HCM 2025',
+    subject: 'math'
+  } as any,
+  {
+    id: 'm-7',
+    type: 'mcq',
+    category: 'plane-geometry',
+    prompt: 'Cho đường tròn (O; R) và điểm A nằm ngoài đường tròn sao cho OA = 2R. Kẻ tiếp tuyến AB với đường tròn (B là tiếp điểm). Tính độ dài tiếp tuyến AB theo R.',
+    options: ['R√3', 'R√2', 'R', '1.5R'],
+    correctAnswer: 'R√3',
+    explanation: 'Vì AB là tiếp tuyến của (O) tại B nên tam giác OAB vuông tại B. Áp dụng định lý Py-ta-go: OA² = OB² + AB² <=> (2R)² = R² + AB² <=> 4R² = R² + AB² <=> AB² = 3R² <=> AB = R√3.',
+    difficulty: 7,
+    source: 'Đề thi Toán lớp 10 TP.HCM 2026',
+    subject: 'math'
+  } as any
 ];

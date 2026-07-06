@@ -12,8 +12,10 @@ import type {
   ParentReward,
   HistoryLog,
   Challenge,
-  DailyMission
+  DailyMission,
+  UiThemeId
 } from '../types/game';
+import { DEFAULT_UI_THEME } from '../theme/uiThemes';
 
 const HELP_TOPICS: Record<string, { title: string; bullets: string[] }> = {
   xp: {
@@ -118,6 +120,10 @@ interface GameState {
   activeCombo: number;
   maxCombo: number;
 
+  // Subject States
+  currentSubject: 'english' | 'math';
+  setSubject: (subject: 'english' | 'math') => void;
+
   // Admin and management states
   adminStudents: any[];
   selectedStudentProfile: any | null;
@@ -131,6 +137,9 @@ interface GameState {
   profiles: Record<string, PlayerProfile>;
   petStates: Record<string, PetState>;
   categoryStatsAll: Record<string, Record<string, CategoryStat>>;
+  uiTheme: UiThemeId;
+  uiThemesByUser: Record<string, UiThemeId>;
+  setUiTheme: (themeId: UiThemeId) => void;
 
   // Initializers
   initEventSubscriptions: () => () => void;
@@ -333,6 +342,7 @@ export const useGameState = create<GameState>()(
         currentUser: null,
         player: INITIAL_PLAYER,
         questions: INITIAL_QUESTIONS,
+        currentSubject: 'english',
         categoryStats: {},
         pet: INITIAL_PET,
         rewards: DEFAULT_REWARDS,
@@ -350,6 +360,13 @@ export const useGameState = create<GameState>()(
         profiles: {},
         petStates: {},
         categoryStatsAll: {},
+        uiTheme: DEFAULT_UI_THEME,
+        uiThemesByUser: {},
+
+        setSubject: (subject) => {
+          set({ currentSubject: subject });
+          logActivity('exercise', 'Chuyển môn học', `Con đã chuyển sang học môn ${subject === 'math' ? 'Toán Học' : 'Tiếng Anh'}.`, 0, 0, 0);
+        },
 
         // Initialize listeners
         initEventSubscriptions: () => {
@@ -549,10 +566,9 @@ export const useGameState = create<GameState>()(
 
         // Auth Actions
         login: async (user) => {
-          set({ currentUser: user });
-
           if (user.id.startsWith('mock-')) {
             set(state => {
+              const resolvedTheme = state.uiThemesByUser[user.id] || DEFAULT_UI_THEME;
               const newPlayer = state.profiles[user.id] || {
                 id: user.id,
                 name: user.name,
@@ -581,9 +597,11 @@ export const useGameState = create<GameState>()(
               const newStats = state.categoryStatsAll[user.id] || {};
 
               return {
+                currentUser: user,
                 player: newPlayer,
                 pet: newPet,
-                categoryStats: newStats
+                categoryStats: newStats,
+                uiTheme: resolvedTheme
               };
             });
             logActivity('energy_refill', 'Đăng nhập thành công', `Chào mừng ${user.name} đã gia nhập CyberEnglish!`);
@@ -617,6 +635,7 @@ export const useGameState = create<GameState>()(
             if (res.ok) {
               const data = await res.json();
               const dbCustomQs = data.customQuestions || [];
+              const resolvedTheme = (get().uiThemesByUser[data.currentUser?.id || user.id] || DEFAULT_UI_THEME) as UiThemeId;
 
               set(_state => {
                 const mergedQuestions = [...INITIAL_QUESTIONS];
@@ -628,6 +647,7 @@ export const useGameState = create<GameState>()(
 
                 return {
                   currentUser: data.currentUser || user,
+                  uiTheme: resolvedTheme,
                   player: data.player || {
                     id: user.id,
                     name: user.name,
@@ -669,6 +689,7 @@ export const useGameState = create<GameState>()(
                 ...user,
                 role: user.email === 'hoang.hoa@gmail.com' ? 'admin' : 'student'
               };
+              const resolvedTheme = state.uiThemesByUser[user.id] || DEFAULT_UI_THEME;
               const newPlayer = state.profiles[user.id] || {
                 id: user.id,
                 name: user.name,
@@ -683,7 +704,7 @@ export const useGameState = create<GameState>()(
                 lastActive: new Date().toISOString(),
                 badges: []
               };
-              return { currentUser: updatedUser, player: newPlayer };
+              return { currentUser: updatedUser, player: newPlayer, uiTheme: resolvedTheme };
             });
           }
         },
@@ -698,8 +719,19 @@ export const useGameState = create<GameState>()(
             activeCombo: 0,
             adminStudents: [],
             selectedStudentProfile: null,
-            activeHelp: null
+            activeHelp: null,
+            uiTheme: DEFAULT_UI_THEME
           });
+        },
+
+        setUiTheme: (themeId) => {
+          const userId = get().currentUser?.id;
+          set(prev => ({
+            uiTheme: themeId,
+            uiThemesByUser: userId
+              ? { ...prev.uiThemesByUser, [userId]: themeId }
+              : prev.uiThemesByUser
+          }));
         },
 
         showHelp: (topic) => {
@@ -1304,7 +1336,10 @@ export const useGameState = create<GameState>()(
         // Adaptive Selection Logic
         getAdaptiveQuestion: (category) => {
           const state = get();
-          const list = state.questions.filter(q => q.category === category);
+          const list = state.questions.filter(q => {
+            const qSubject = (q as any).subject || 'english';
+            return q.category === category && qSubject === state.currentSubject;
+          });
           if (list.length === 0) return null;
 
           // Find historical rolling accuracy for this category
@@ -1337,14 +1372,26 @@ export const useGameState = create<GameState>()(
           const state = get();
           const categoriesPool: string[] = [];
 
-          if (mode === 'grammar') {
-            categoriesPool.push('grammar', 'passive-voice', 'relative-clauses', 'tenses');
-          } else if (mode === 'reading') {
-            categoriesPool.push('reading', 'cloze');
-          } else if (mode === 'vocabulary') {
-            categoriesPool.push('vocabulary', 'wordform');
+          if (state.currentSubject === 'math') {
+            if (mode === 'grammar') {
+              categoriesPool.push('parabol-line', 'viet-relation');
+            } else if (mode === 'reading') {
+              categoriesPool.push('real-geometry', 'plane-geometry');
+            } else if (mode === 'vocabulary') {
+              categoriesPool.push('real-equations', 'real-finance');
+            } else {
+              categoriesPool.push('parabol-line', 'viet-relation', 'real-equations', 'real-geometry', 'real-finance', 'plane-geometry');
+            }
           } else {
-            categoriesPool.push('grammar', 'passive-voice', 'relative-clauses', 'tenses', 'reading', 'cloze', 'vocabulary', 'wordform', 'pronunciation', 'stress');
+            if (mode === 'grammar') {
+              categoriesPool.push('grammar', 'passive-voice', 'relative-clauses', 'tenses');
+            } else if (mode === 'reading') {
+              categoriesPool.push('reading', 'cloze');
+            } else if (mode === 'vocabulary') {
+              categoriesPool.push('vocabulary', 'wordform');
+            } else {
+              categoriesPool.push('grammar', 'passive-voice', 'relative-clauses', 'tenses', 'reading', 'cloze', 'vocabulary', 'wordform', 'pronunciation', 'stress');
+            }
           }
 
           // Calculate weights: W_c = (1.0 - Accuracy) + 0.1
@@ -1379,6 +1426,7 @@ export const useGameState = create<GameState>()(
         currentUser: state.currentUser,
         player: state.player,
         questions: state.questions,
+        currentSubject: state.currentSubject,
         categoryStats: state.categoryStats,
         pet: state.pet,
         rewards: state.rewards,
@@ -1389,7 +1437,9 @@ export const useGameState = create<GameState>()(
         maxCombo: state.maxCombo,
         profiles: state.profiles,
         petStates: state.petStates,
-        categoryStatsAll: state.categoryStatsAll
+        categoryStatsAll: state.categoryStatsAll,
+        uiTheme: state.uiTheme,
+        uiThemesByUser: state.uiThemesByUser
       })
     }
   )

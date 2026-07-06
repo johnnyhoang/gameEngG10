@@ -17,6 +17,7 @@ export const GameMap: React.FC<GameMapProps> = ({ onStartPlay, onOpenMysteryBox,
   const player = useGameState(state => state.player);
   const dailyMission = useGameState(state => state.dailyMission);
   const useEnergy = useGameState(state => state.useEnergy);
+  const currentSubject = useGameState(state => state.currentSubject);
 
   // Check if weekend for Lucky Wheel
   const isWeekend = () => {
@@ -37,7 +38,56 @@ export const GameMap: React.FC<GameMapProps> = ({ onStartPlay, onOpenMysteryBox,
     onStartPlay(mode, bossId);
   };
 
-  const mapZones = [
+  const mapZones = currentSubject === 'math' ? [
+    {
+      id: 'math-algebra',
+      title: 'Đảo Đại Số & Vi-ét',
+      mode: 'grammar' as const,
+      description: 'Luyện tập Hàm số, đồ thị Parabol (d) và Hệ thức Vi-ét chuyên sâu.',
+      energyCost: 10,
+      rewardText: '+15 XP / +5 NP',
+      colorClass: 'border-synth-magenta/30 hover:border-synth-magenta shadow-magenta',
+      textColor: 'text-synth-magenta',
+      bgGradient: 'from-synth-magenta/5 to-transparent',
+      icon: <Compass className="w-8 h-8 text-synth-magenta" />
+    },
+    {
+      id: 'math-wordproblems',
+      title: 'Đảo Toán Thực Tế',
+      mode: 'vocabulary' as const,
+      description: 'Chinh phục Toán thực tế: Lập phương trình, lãi suất, phần trăm kinh tế TP.HCM.',
+      energyCost: 10,
+      rewardText: '+15 XP / +5 NP',
+      colorClass: 'border-synth-purple/30 hover:border-synth-purple shadow-purple',
+      textColor: 'text-synth-purple',
+      bgGradient: 'from-synth-purple/5 to-transparent',
+      icon: <Star className="w-8 h-8 text-synth-purple" />
+    },
+    {
+      id: 'math-geometry',
+      title: 'Đảo Hình Học phẳng & Không gian',
+      mode: 'reading' as const,
+      description: 'Tính thể tích lon nước hình trụ, phễu nón và Tứ giác nội tiếp đường tròn.',
+      energyCost: 15,
+      rewardText: '+20 XP / +8 NP',
+      colorClass: 'border-synth-cyan/30 hover:border-synth-cyan shadow-cyan',
+      textColor: 'text-synth-cyan',
+      bgGradient: 'from-synth-cyan/5 to-transparent',
+      icon: <Compass className="w-8 h-8 text-synth-cyan" />
+    },
+    {
+      id: 'nightmare-dungeon',
+      title: 'Hầm Ngục Sửa Sai',
+      mode: 'revenge' as const,
+      description: 'Vượt qua nỗi sợ! Làm lại toàn bộ các câu hỏi toán con đã làm sai trước đây.',
+      energyCost: 10,
+      rewardText: 'Xử lý lỗi sai cũ / Hồi phục năng lượng',
+      colorClass: 'border-synth-orange/30 hover:border-synth-orange shadow-orange',
+      textColor: 'text-synth-orange',
+      bgGradient: 'from-synth-orange/5 to-transparent',
+      icon: <ShieldAlert className="w-8 h-8 text-synth-orange" />
+    }
+  ] : [
     {
       id: 'grammar-cave',
       title: 'Grammar Cave',
@@ -88,7 +138,11 @@ export const GameMap: React.FC<GameMapProps> = ({ onStartPlay, onOpenMysteryBox,
     }
   ];
 
-  const bosses = [
+  const bosses = currentSubject === 'math' ? [
+    { id: 'b-2024', name: 'Đại Ca Toán HCMC 2024', year: '2024', bounty: '10.000đ', energy: 20 },
+    { id: 'b-2025', name: 'Cự Long Toán HCMC 2025', year: '2025', bounty: '15.000đ', energy: 20 },
+    { id: 'b-2026', name: 'Cổ Long Toán HCMC 2026 (Mock)', year: '2026', bounty: '20.000đ', energy: 25 }
+  ] : [
     { id: 'b-2024', name: 'Đại Ca HCMC 2024', year: '2024', bounty: '10.000đ', energy: 20 },
     { id: 'b-2025', name: 'Cự Long HCMC 2025', year: '2025', bounty: '15.000đ', energy: 20 },
     { id: 'b-2026', name: 'Cổ Long HCMC 2026 (Mock)', year: '2026', bounty: '20.000đ', energy: 25 }

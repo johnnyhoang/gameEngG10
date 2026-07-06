@@ -8,6 +8,7 @@ import { PlayArea } from './components/PlayArea';
 import { ItemShop } from './components/ItemShop';
 import { ParentConsole } from './components/ParentConsole';
 import { GoogleLoginScreen } from './components/GoogleLoginScreen';
+import { ProfileThemeModal } from './components/ProfileThemeModal';
 import { supabase } from './utils/supabaseClient';
 import type { UserProfile } from './types/game';
 
@@ -19,11 +20,14 @@ function App() {
   const spinWheel = useGameState(state => state.spinWheel);
   const activeHelp = useGameState(state => state.activeHelp);
   const closeHelp = useGameState(state => state.closeHelp);
+  const uiTheme = useGameState(state => state.uiTheme);
+  const setUiTheme = useGameState(state => state.setUiTheme);
 
   // Screen routing state
   const [screen, setScreen] = useState<'map' | 'play' | 'shop' | 'parent' | 'pet' | 'logs'>('map');
   const [playMode, setPlayMode] = useState<'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss'>('mixed');
   const [bossId, setBossId] = useState<string | undefined>(undefined);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   // Auto-switch screen for admin users on login
   useEffect(() => {
@@ -57,6 +61,11 @@ function App() {
       clearInterval(interval);
     };
   }, [currentUser]);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = uiTheme;
+    document.body.dataset.theme = uiTheme;
+  }, [uiTheme]);
 
   // Listen for Supabase Auth state changes globally immediately on app mount
   useEffect(() => {
@@ -122,11 +131,12 @@ function App() {
   const isDungeonScreen = screen === 'play';
 
   return (
-    <div className="min-h-screen synth-grid-bg bg-synth-bg flex flex-col text-slate-100">
+    <div className="app-shell min-h-screen flex flex-col text-slate-100" data-theme={uiTheme}>
       {/* Top Header HUD */}
       <TopHUD 
         onOpenParent={() => setScreen('parent')}
         onOpenShop={() => setScreen('shop')}
+        onOpenProfile={() => setIsProfileOpen(true)}
         onBackToMap={() => setScreen('map')}
         currentScreen={screen}
       />
@@ -234,6 +244,16 @@ function App() {
             </button>
           </div>
         </div>
+      )}
+
+      {isProfileOpen && currentUser && (
+        <ProfileThemeModal
+          isOpen={isProfileOpen}
+          currentUser={currentUser}
+          currentTheme={uiTheme}
+          onClose={() => setIsProfileOpen(false)}
+          onSelectTheme={setUiTheme}
+        />
       )}
 
       {/* Mobile Bottom Navigation Bar */}

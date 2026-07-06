@@ -28,6 +28,7 @@ const initDB = async () => {
     }
     const sql = fs.readFileSync(schemaPath, 'utf8');
     await pool.query(sql);
+    await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS subject VARCHAR(50) DEFAULT 'english';`);
     console.log('Database initialized successfully.');
   } catch (error) {
     console.error('Error initializing database:', error);
@@ -409,10 +410,10 @@ app.get('/api/questions/custom', authMiddleware, async (req: any, res) => {
   }
 });
 
-// POST /api/ai/ingest: Uses Gemini API to parse raw text into structured grade 10 questions
+// POST /api/ai/ingest: Uses Gemini API to parse raw text into structured grade 10 questions (English or Math)
 app.post('/api/ai/ingest', authMiddleware, async (req: any, res) => {
   const userId = req.user.sub;
-  const { rawText } = req.body;
+  const { rawText, subject = 'english' } = req.body;
   if (!rawText) return res.status(400).json({ error: 'Missing rawText.' });
 
   try {
@@ -421,24 +422,53 @@ app.post('/api/ai/ingest', authMiddleware, async (req: any, res) => {
       return res.status(400).json({ error: 'Gemini API Key is not configured or is a placeholder.' });
     }
 
-    const prompt = `Bạn là một chuyên gia ôn thi tiếng Anh lớp 10 TP.HCM. Hãy phân tích đoạn văn bản sau đây và trích xuất/tạo ra các câu hỏi luyện thi theo đúng cấu trúc đề tuyển sinh lớp 10 TP.HCM (MCQ, Word Form, Rewrite, Cloze).
-    Trả về kết quả duy nhất là một mảng JSON các đối tượng theo schema sau, không kèm theo markdown hay phần giải thích ngoài JSON:
-    [
-      {
-        "id": "chuỗi ngẫu nhiên duy nhất",
-        "type": "mcq" | "wordform" | "rewrite" | "cloze",
-        "category": "grammar" | "reading" | "vocabulary" | "wordform" | "pronunciation" | "stress" | "tenses" | "passive-voice" | "relative-clauses",
-        "prompt": "Đề bài câu hỏi...",
-        "options": ["Lựa chọn A", "Lựa chọn B", "Lựa chọn C", "Lựa chọn D"],
-        "correctAnswer": "Đáp án đúng (nếu là rewrite hoặc wordform thì trả về mảng các đáp án được chấp nhận, ví dụ ['experienced'])",
-        "explanation": "Giải thích chi tiết tại sao chọn đáp án đó...",
-        "difficulty": số từ 1 đến 10,
-        "source": "AI Ingested"
-      }
-    ]
+    let prompt = '';
+    if (subject === 'math') {
+      prompt = `Bạn là một chuyên gia ôn thi môn Toán lớp 10 TP.HCM. Hãy phân tích đoạn văn bản sau đây và trích xuất/tạo ra các câu hỏi luyện thi trắc nghiệm theo đúng cấu trúc đề tuyển sinh môn Toán lớp 10 của Sở GD&ĐT TP.HCM. Các chủ đề bao gồm:
+      - "parabol-line": Hàm số đồ thị Parabol và đường thẳng y = ax+b.
+      - "viet-relation": Hệ thức Vi-ét và phương trình bậc hai.
+      - "real-equations": Giải toán bằng cách lập hệ phương trình hoặc phương trình thực tế.
+      - "real-geometry": Hình học không gian thực tế (thể tích/diện tích lon nước, phễu nón, quả cầu).
+      - "real-finance": Toán thực tế tài chính (lãi suất ngân hàng, khuyến mãi giảm giá, phần trăm).
+      - "plane-geometry": Hình học phẳng (tứ giác nội tiếp, tiếp tuyến đường tròn, tam giác đồng dạng).
+      
+      Trả về kết quả duy nhất là một mảng JSON các đối tượng theo schema sau, không kèm theo markdown hay phần giải thích ngoài JSON:
+      [
+        {
+          "id": "chuỗi ngẫu nhiên duy nhất",
+          "type": "mcq",
+          "category": "parabol-line" | "viet-relation" | "real-equations" | "real-geometry" | "real-finance" | "plane-geometry",
+          "prompt": "Đề bài câu hỏi (sử dụng ký hiệu toán học dễ đọc như x^2, x_1, x_2, căn(x), phân số dạng a/b)...",
+          "options": ["Lựa chọn A", "Lựa chọn B", "Lựa chọn C", "Lựa chọn D"],
+          "correctAnswer": "Lựa chọn chính xác, khớp với 1 trong các tùy chọn trong options",
+          "explanation": "Giải thích chi tiết các bước tính toán và lời giải từng bước...",
+          "difficulty": số từ 1 đến 10,
+          "source": "AI Ingested Math"
+        }
+      ]
 
-    Văn bản cần phân tích:
-    ${rawText}`;
+      Văn bản cần phân tích:
+      ${rawText}`;
+    } else {
+      prompt = `Bạn là một chuyên gia ôn thi tiếng Anh lớp 10 TP.HCM. Hãy phân tích đoạn văn bản sau đây và trích xuất/tạo ra các câu hỏi luyện thi theo đúng cấu trúc đề tuyển sinh lớp 10 TP.HCM (MCQ, Word Form, Rewrite, Cloze).
+      Trả về kết quả duy nhất là một mảng JSON các đối tượng theo schema sau, không kèm theo markdown hay phần giải thích ngoài JSON:
+      [
+        {
+          "id": "chuỗi ngẫu nhiên duy nhất",
+          "type": "mcq" | "wordform" | "rewrite" | "cloze",
+          "category": "grammar" | "reading" | "vocabulary" | "wordform" | "pronunciation" | "stress" | "tenses" | "passive-voice" | "relative-clauses",
+          "prompt": "Đề bài câu hỏi...",
+          "options": ["Lựa chọn A", "Lựa chọn B", "Lựa chọn C", "Lựa chọn D"],
+          "correctAnswer": "Đáp án đúng (nếu là rewrite hoặc wordform thì trả về mảng các đáp án được chấp nhận, ví dụ ['experienced'])",
+          "explanation": "Giải thích chi tiết tại sao chọn đáp án đó...",
+          "difficulty": số từ 1 đến 10,
+          "source": "AI Ingested English"
+        }
+      ]
+
+      Văn bản cần phân tích:
+      ${rawText}`;
+    }
 
     const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
       method: 'POST',
@@ -467,20 +497,21 @@ app.post('/api/ai/ingest', authMiddleware, async (req: any, res) => {
     // Save custom questions to PG custom_questions table
     for (const q of questions) {
       await pool.query(
-        `INSERT INTO ge10_custom_questions (id, user_id, type, category, prompt, options, correct_answer, explanation, difficulty, source)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        `INSERT INTO ge10_custom_questions (id, user_id, type, category, prompt, options, correct_answer, explanation, difficulty, source, subject)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
          ON CONFLICT (id) DO NOTHING`,
         [
           q.id || `ai-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
           userId,
-          q.type,
+          q.type || 'mcq',
           q.category,
           q.prompt,
           q.options || null,
           Array.isArray(q.correctAnswer) ? q.correctAnswer : [q.correctAnswer],
           q.explanation || '',
           q.difficulty || 5,
-          q.source || 'AI Ingested'
+          q.source || (subject === 'math' ? 'AI Ingested Math' : 'AI Ingested English'),
+          subject
         ]
       );
     }
