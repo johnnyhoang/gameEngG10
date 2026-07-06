@@ -149,7 +149,7 @@ export const useGameState = create<GameState>()(
               dailyMission: state.dailyMission
             };
 
-            await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000'}/api/profile/sync`, {
+            await fetch(`${import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000')}/api/profile/sync`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -513,7 +513,7 @@ export const useGameState = create<GameState>()(
             const token = session?.access_token;
             if (!token) return;
 
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
 
             // Sync user details to backend pg first
             await fetch(`${backendUrl}/api/auth/sync-user`, {
