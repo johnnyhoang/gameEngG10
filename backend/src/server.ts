@@ -44,11 +44,12 @@ const authMiddleware = (req: any, res: any, next: any) => {
 
   const token = authHeader.split(' ')[1];
   try {
-    // Supabase tokens are verified using JWT_SECRET
-    const secret = process.env.JWT_SECRET;
-    if (!secret) {
+    const secretStr = process.env.JWT_SECRET;
+    if (!secretStr) {
       throw new Error('JWT_SECRET env not configured on server.');
     }
+    // Supabase JWT secret is base64-encoded, so we must decode it to a Buffer
+    const secret = Buffer.from(secretStr, 'base64');
     const decoded = jwt.verify(token, secret) as any;
     req.user = decoded; // payload contains user details like sub, email, user_metadata
     next();
