@@ -88,16 +88,25 @@ app.post('/api/auth/sync-user', authMiddleware, async (req: any, res) => {
   const avatarUrl = userMetadata.avatar_url || userMetadata.picture || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
 
   try {
+    // Check if the user already exists to preserve their role
+    const existingUser = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [userId]);
+    let role = 'student';
+    if (existingUser.rowCount && existingUser.rowCount > 0) {
+      role = existingUser.rows[0].role;
+    } else {
+      role = email === 'hoang.hoa@gmail.com' ? 'admin' : 'student';
+    }
+
     await pool.query(
-      `INSERT INTO ge10_users (id, name, email, avatar_url)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO ge10_users (id, name, email, avatar_url, role)
+       VALUES ($1, $2, $3, $4, $5)
        ON CONFLICT (id) DO UPDATE SET
          name = EXCLUDED.name,
          avatar_url = EXCLUDED.avatar_url`,
-      [userId, name, email, avatarUrl]
+      [userId, name, email, avatarUrl, role]
     );
 
-    res.json({ success: true, user: { id: userId, name, email, avatar: avatarUrl } });
+    res.json({ success: true, user: { id: userId, name, email, avatar: avatarUrl, role } });
   } catch (error) {
     console.error('Error syncing user metadata:', error);
     res.status(500).json({ error: 'Failed to sync user.' });
@@ -190,12 +199,13 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
         id: userRow.id,
         name: userRow.name,
         email: userRow.email,
-        avatar: userRow.avatar_url
+        avatar: userRow.avatar_url,
+        role: userRow.role || 'student'
       },
       player: playerRes.rows[0] ? {
         id: playerRes.rows[0].user_id,
         name: userRow.name,
-        role: 'student',
+        role: userRow.role || 'student',
         level: playerRes.rows[0].level,
         xp: playerRes.rows[0].xp,
         coins: playerRes.rows[0].coins,
@@ -460,6 +470,136 @@ app.post('/api/ai/ingest', authMiddleware, async (req: any, res) => {
   } catch (error: any) {
     console.error('Lỗi gọi Gemini AI Ingest:', error.message);
     res.status(500).json({ error: 'Failed to process AI Ingestion: ' + error.message });
+  }
+});
+
+// GET /api/admin/users: Lists all users in the system
+app.get('/api/admin/users', authMiddleware, async (req: any, res) => {
+  const adminId = req.user.sub;
+  try {
+    const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
+    if (adminCheck.rowCount === 0 || adminCheck.rows[0].role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin access only.' });
+    }
+
+    const usersRes = await pool.query('SELECT id, name, email, avatar_url, role FROM ge10_users');
+    res.json(usersRes.rows);
+  } catch (error: any) {
+    console.error('Error fetching admin users:', error.message);
+    res.status(500).json({ error: 'Failed to fetch users list.' });
+  }
+});
+
+// POST /api/admin/promote: Updates role for a specific user ID
+app.post('/api/admin/promote', authMiddleware, async (req: any, res) => {
+  const adminId = req.user.sub;
+  try {
+    const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
+    if (adminCheck.rowCount === 0 || adminCheck.rows[0].role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin access only.' });
+    }
+
+    const { targetUserId, newRole } = req.body;
+    if (!targetUserId || !newRole) {
+      return res.status(400).json({ error: 'Missing targetUserId or newRole.' });
+    }
+
+    await pool.query('UPDATE ge10_users SET role = $1 WHERE id = $2', [newRole, targetUserId]);
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Error promoting user:', error.message);
+    res.status(500).json({ error: 'Failed to update user role.' });
+  }
+});
+
+// GET /api/admin/student-profile: Retrieves another student's profile statistics, logs, and pet state
+app.get('/api/admin/student-profile', authMiddleware, async (req: any, res) => {
+  const adminId = req.user.sub;
+  try {
+    const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
+    if (adminCheck.rowCount === 0 || adminCheck.rows[0].role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin access only.' });
+    }
+
+    const { studentUserId } = req.query;
+    if (!studentUserId) {
+      return res.status(400).json({ error: 'Missing studentUserId query parameter.' });
+    }
+
+    const userRes = await pool.query('SELECT id, name, email, avatar_url, role FROM ge10_users WHERE id = $1', [studentUserId]);
+    if (userRes.rowCount === 0) {
+      return res.status(404).json({ error: 'Student not found.' });
+    }
+    const userRow = userRes.rows[0];
+
+    const playerRes = await pool.query('SELECT * FROM ge10_player_profiles WHERE user_id = $1', [studentUserId]);
+    const petRes = await pool.query('SELECT * FROM ge10_pet_states WHERE user_id = $1', [studentUserId]);
+    const statsRes = await pool.query('SELECT * FROM ge10_category_stats WHERE user_id = $1', [studentUserId]);
+    const logsRes = await pool.query('SELECT * FROM ge10_history_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 100', [studentUserId]);
+    const rewardsRes = await pool.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [studentUserId]);
+
+    const categoryStats: any = {};
+    statsRes.rows.forEach((row: any) => {
+      categoryStats[row.category] = {
+        category: row.category,
+        totalAnswered: row.total_answered,
+        totalCorrect: row.total_correct,
+        rollingAccuracy: row.rolling_accuracy
+      };
+    });
+
+    const logs = logsRes.rows.map((row: any) => ({
+      id: row.id,
+      timestamp: Number(row.timestamp),
+      activityType: row.activity_type,
+      title: row.title,
+      detail: row.detail,
+      coinsChanged: row.coins_changed,
+      xpChanged: row.xp_changed,
+      walletChanged: row.wallet_changed
+    }));
+
+    const rewards = rewardsRes.rows.map((row: any) => ({
+      id: row.id,
+      title: row.title,
+      costCoins: row.cost_coins,
+      cashValueVND: row.cash_value_vnd,
+      status: row.status,
+      timestamp: Number(row.timestamp)
+    }));
+
+    res.json({
+      studentUser: userRow,
+      player: playerRes.rows[0] ? {
+        id: playerRes.rows[0].user_id,
+        name: userRow.name,
+        role: userRow.role,
+        level: playerRes.rows[0].level,
+        xp: playerRes.rows[0].xp,
+        coins: playerRes.rows[0].coins,
+        walletVND: playerRes.rows[0].wallet_vnd,
+        streak: playerRes.rows[0].streak,
+        energy: playerRes.rows[0].energy,
+        hearts: playerRes.rows[0].hearts,
+        lastActive: playerRes.rows[0].last_active,
+        badges: playerRes.rows[0].badges || []
+      } : null,
+      pet: petRes.rows[0] ? {
+        name: petRes.rows[0].name,
+        stage: petRes.rows[0].stage,
+        level: petRes.rows[0].level,
+        exp: petRes.rows[0].exp,
+        energy: petRes.rows[0].energy,
+        mood: petRes.rows[0].mood,
+        lastFed: petRes.rows[0].last_fed
+      } : null,
+      categoryStats,
+      logs,
+      rewards
+    });
+  } catch (error: any) {
+    console.error('Error fetching student profile:', error.message);
+    res.status(500).json({ error: 'Failed to retrieve student profile.' });
   }
 });
 

@@ -143,16 +143,18 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             Item Shop
           </button>
           
-          <button 
-            onClick={onOpenParent}
-            className={`px-4 py-2 font-orbitron font-bold text-xs rounded-lg uppercase tracking-wider border cursor-pointer transition-all duration-300 ${
-              currentScreen === 'parent' 
-                ? 'bg-synth-magenta border-synth-magenta text-black shadow-[0_0_12px_#ff007f]' 
-                : 'bg-transparent border-synth-magenta/50 text-synth-magenta hover:bg-synth-magenta/10'
-            }`}
-          >
-            Parent HUD
-          </button>
+          {currentUser?.role === 'admin' && (
+            <button 
+              onClick={onOpenParent}
+              className={`px-4 py-2 font-orbitron font-bold text-xs rounded-lg uppercase tracking-wider border cursor-pointer transition-all duration-300 ${
+                currentScreen === 'parent' 
+                  ? 'bg-synth-magenta border-synth-magenta text-black shadow-[0_0_12px_#ff007f]' 
+                  : 'bg-transparent border-synth-magenta/50 text-synth-magenta hover:bg-synth-magenta/10'
+              }`}
+            >
+              Parent HUD
+            </button>
+          )}
 
           {currentUser && (
             <button 

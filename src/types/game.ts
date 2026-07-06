@@ -9,12 +9,13 @@ export interface UserProfile {
   name: string;
   email: string;
   avatar: string;
+  role?: string;
 }
 
 export interface PlayerProfile {
   id: string;
   name: string;
-  role: 'student' | 'parent';
+  role: 'student' | 'admin' | 'parent';
   level: number;
   xp: number;
   coins: number;

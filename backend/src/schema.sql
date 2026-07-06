@@ -4,8 +4,12 @@ CREATE TABLE IF NOT EXISTS ge10_users (
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     avatar_url TEXT,
+    role VARCHAR(50) DEFAULT 'student',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Safe migration check for existing tables
+ALTER TABLE ge10_users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'student';
 
 -- Player Profiles Table
 CREATE TABLE IF NOT EXISTS ge10_player_profiles (

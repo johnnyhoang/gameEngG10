@@ -30,6 +30,10 @@ interface GameState {
   activeCombo: number;
   maxCombo: number;
 
+  // Admin and management states
+  adminStudents: any[];
+  selectedStudentProfile: any | null;
+
   // Profiles cache for multi-player
   profiles: Record<string, PlayerProfile>;
   petStates: Record<string, PetState>;
@@ -41,6 +45,9 @@ interface GameState {
   // Auth Actions
   login: (user: UserProfile) => void;
   logout: () => void;
+  fetchAdminStudents: () => Promise<void>;
+  promoteUser: (targetUserId: string, newRole: string) => Promise<void>;
+  fetchStudentProfile: (studentUserId: string) => Promise<void>;
 
   // Player Actions
   answerQuestion: (
@@ -238,6 +245,8 @@ export const useGameState = create<GameState>()(
         logs: [],
         parentPIN: DEFAULT_PIN,
         activeCombo: 0,
+        adminStudents: [],
+        selectedStudentProfile: null,
         maxCombo: 0,
 
         // Profiles cache for multi-player
@@ -584,8 +593,72 @@ export const useGameState = create<GameState>()(
             player: INITIAL_PLAYER,
             pet: INITIAL_PET,
             categoryStats: {},
-            activeCombo: 0
+            activeCombo: 0,
+            adminStudents: [],
+            selectedStudentProfile: null
           });
+        },
+
+        fetchAdminStudents: async () => {
+          try {
+            const session = (await supabase.auth.getSession()).data.session;
+            const token = session?.access_token;
+            if (!token) return;
+
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+            const res = await fetch(`${backendUrl}/api/admin/users`, {
+              headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (res.ok) {
+              const users = await res.json();
+              set({ adminStudents: users });
+            }
+          } catch (e) {
+            console.error('Error fetching admin students list:', e);
+          }
+        },
+
+        promoteUser: async (targetUserId: string, newRole: string) => {
+          try {
+            const session = (await supabase.auth.getSession()).data.session;
+            const token = session?.access_token;
+            if (!token) return;
+
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+            const res = await fetch(`${backendUrl}/api/admin/promote`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+              },
+              body: JSON.stringify({ targetUserId, newRole })
+            });
+            if (res.ok) {
+              // Refresh students list
+              await get().fetchAdminStudents();
+            }
+          } catch (e) {
+            console.error('Error promoting user:', e);
+          }
+        },
+
+        fetchStudentProfile: async (studentUserId: string) => {
+          try {
+            const session = (await supabase.auth.getSession()).data.session;
+            const token = session?.access_token;
+            if (!token) return;
+
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+            const res = await fetch(`${backendUrl}/api/admin/student-profile?studentUserId=${studentUserId}`, {
+              headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (res.ok) {
+              const profile = await res.json();
+              set({ selectedStudentProfile: profile });
+            }
+          } catch (e) {
+            console.error('Error fetching student profile:', e);
+          }
         },
 
         // Student Actions
