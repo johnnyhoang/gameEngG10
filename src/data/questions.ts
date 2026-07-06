@@ -565,5 +565,113 @@ export const INITIAL_QUESTIONS: Question[] = [
     difficulty: 7,
     source: 'Đề thi Toán lớp 10 TP.HCM 2026',
     subject: 'math'
+  } as any,
+  
+  // ==================== LITERATURE SUBJECT QUESTIONS ====================
+  {
+    id: 'lit-1',
+    type: 'mcq',
+    category: 'literature-vietnamese',
+    prompt: 'Xác định biện pháp tu từ được sử dụng trong câu thơ sau: "Mặt trời của bắp thì nằm trên đồi / Mặt trời của mẹ, em nằm trên lưng" (Nguyễn Khoa Điềm).',
+    options: ['Ẩn dụ', 'Hoán dụ', 'So sánh', 'Nhân hóa'],
+    correctAnswer: 'Ẩn dụ',
+    explanation: 'Hình ảnh "Mặt trời của mẹ" là ẩn dụ chỉ đứa con - nguồn sáng, nguồn ấm áp và hy vọng sống của cuộc đời người mẹ.',
+    difficulty: 5,
+    source: 'Đề thi Văn lớp 10 TP.HCM 2024',
+    subject: 'literature'
+  } as any,
+  {
+    id: 'lit-2',
+    type: 'mcq',
+    category: 'literature-vietnamese',
+    prompt: 'Tìm thành ngữ Tiếng Việt phù hợp điền vào câu sau: "Anh ấy luôn làm việc cẩu thả, kiểu _______ nên sản phẩm thường xuyên bị lỗi."',
+    options: ['Đem con bỏ chợ', 'Cưỡi ngựa xem hoa', 'Làm dối ăn thật', 'Đầu voi đuôi chuột'],
+    correctAnswer: 'Cưỡi ngựa xem hoa',
+    explanation: '"Cưỡi ngựa xem hoa" chỉ việc làm qua loa, cẩu thả, không tìm hiểu sâu sắc vấn đề.',
+    difficulty: 4,
+    source: 'Đề thi Văn lớp 10 TP.HCM 2024',
+    subject: 'literature'
+  } as any,
+  {
+    id: 'lit-3',
+    type: 'mcq',
+    category: 'literature-vietnamese',
+    prompt: 'Trong câu: "Trăng cứ tròn vành vạnh / ánh chi đã im phăng phắc" (Ánh trăng - Nguyễn Duy), từ "tròn vành vạnh" mang ý nghĩa gì?',
+    options: [
+      'Biểu tượng cho vẻ đẹp nguyên vẹn, thủy chung không phai mờ của quá khứ',
+      'Biểu tượng cho vẻ đẹp của thiên nhiên đêm rằm',
+      'Biểu tượng cho sự cô đơn của nhân vật trữ tình',
+      'Biểu tượng cho sự đổi thay của lòng người'
+    ],
+    correctAnswer: 'Biểu tượng cho vẻ đẹp nguyên vẹn, thủy chung không phai mờ của quá khứ',
+    explanation: '"Tròn vành vạnh" là biểu tượng cho quá khứ nghĩa tình thủy chung, trọn vẹn, không bao giờ thay đổi dù lòng người có đổi thay.',
+    difficulty: 6,
+    source: 'Đề thi Văn lớp 10 TP.HCM 2024',
+    subject: 'literature'
+  } as any,
+  {
+    id: 'lit-4',
+    type: 'mcq',
+    category: 'literature-reading-argument',
+    prompt: 'Văn bản sau thuộc phương thức biểu đạt chính nào? "Để thành công, con người cần có sự kiên trì. Kiên trì giúp ta vượt qua những khó khăn thử thách, tích lũy kinh nghiệm và hoàn thiện bản thân..."',
+    options: ['Nghị luận', 'Tự sự', 'Biểu cảm', 'Thuyết minh'],
+    correctAnswer: 'Nghị luận',
+    explanation: 'Đoạn văn đưa ra quan điểm, dùng lí lẽ và lập luận để thuyết phục người đọc về giá trị của sự kiên trì, nên phương thức biểu đạt chính là Nghị luận.',
+    difficulty: 4,
+    source: 'Đề thi Văn lớp 10 TP.HCM 2025',
+    subject: 'literature'
+  } as any,
+  {
+    id: 'lit-5',
+    type: 'mcq',
+    category: 'literature-vietnamese',
+    prompt: 'Từ "hoa" trong câu thơ "Làn thu thủy nét xuân sơn / Hoa ghen thua thắm liễu hờn kém xanh" (Truyện Kiều - Nguyễn Du) được dùng theo nghĩa nào?',
+    options: ['Nghĩa gốc', 'Nghĩa chuyển theo phương thức ẩn dụ', 'Nghĩa chuyển theo phương thức hoán dụ', 'Nghĩa chuyển theo phương thức nhân hóa'],
+    correctAnswer: 'Nghĩa gốc',
+    explanation: 'Từ "hoa" ở đây mang nghĩa gốc chỉ bông hoa của tự nhiên (đối lập với liễu), dùng trong phép nhân hóa "hoa ghen" để làm nổi bật vẻ đẹp tuyệt mĩ của Thúy Kiều.',
+    difficulty: 6,
+    source: 'Đề thi Văn lớp 10 TP.HCM 2025',
+    subject: 'literature'
+  } as any,
+  {
+    id: 'lit-6',
+    type: 'mcq',
+    category: 'literature-writing',
+    prompt: 'Yếu tố nào dưới đây KHÔNG thuộc luận cứ trong bài văn nghị luận xã hội về lối sống tử tế?',
+    options: [
+      'Cảm xúc chủ quan và sở thích riêng của cá nhân người viết',
+      'Những tấm gương giúp đỡ người có hoàn cảnh khó khăn trong đại dịch',
+      'Số liệu thống kê về các quỹ từ thiện xã hội uy tín',
+      'Danh ngôn, câu nói của các danh nhân về lòng nhân ái'
+    ],
+    correctAnswer: 'Cảm xúc chủ quan và sở thích riêng của cá nhân người viết',
+    explanation: 'Bài văn nghị luận xã hội đòi hỏi luận cứ khách quan, tính thuyết phục cao như dẫn chứng thực tế, danh ngôn, số liệu thực tế; cảm xúc chủ quan cá nhân không được xem là luận cứ thuyết phục.',
+    difficulty: 5,
+    source: 'Đề thi Văn lớp 10 TP.HCM 2025',
+    subject: 'literature'
+  } as any,
+  {
+    id: 'lit-7',
+    type: 'mcq',
+    category: 'literature-reading-poetry',
+    prompt: `**Đọc đoạn trích sau và trả lời câu hỏi:**
+"Con gặp lại nhân dân như nai về suối cũ
+Cỏ đón giếng đầu giùm, chim chập cánh hoa rừng
+Tình yêu đất nước là nơi ta đi tới
+Khi đi xa, đất đã hóa tâm hồn"
+*(Tiếng hát con tàu - Chế Lan Viên)*
+
+Xác định ý nghĩa sâu sắc của câu thơ "Khi đi xa, đất đã hóa tâm hồn".`,
+    options: [
+      'Khẳng định sự gắn bó máu thịt giữa con người với mảnh đất quê hương',
+      'Tả thực về sự thay đổi của đất đai địa chất',
+      'Mô tả vẻ đẹp lãng mạn của vùng cao Tây Bắc',
+      'Thể hiện khát vọng đi du lịch thám hiểm của nhà thơ'
+    ],
+    correctAnswer: 'Khẳng định sự gắn bó máu thịt giữa con người với mảnh đất quê hương',
+    explanation: 'Câu thơ khẳng định sự gắn bó máu thịt tâm hồn giữa con người và vùng đất họ đi qua; tình yêu thương biến những nơi xa lạ thành một phần máu thịt tâm hồn.',
+    difficulty: 7,
+    source: 'Đề thi Văn lớp 10 TP.HCM 2026',
+    subject: 'literature'
   } as any
 ];

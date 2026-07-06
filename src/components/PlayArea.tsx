@@ -262,10 +262,18 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
       </div>
     );
   }
-
-  if (currentQuestions.length === 0) {
+if (currentQuestions.length === 0) {
     return <div className="text-center py-10 font-orbitron text-synth-cyan">Loading Dungeon...</div>;
   }
+
+  // Check if we should render split screen for literature passages
+  const isLitSplit = currentSubject === 'literature' && activeQuestion.prompt.includes('\n\n');
+  const passageText = isLitSplit 
+    ? activeQuestion.prompt.split('\n\n').slice(0, -1).join('\n\n')
+    : '';
+  const questionText = isLitSplit 
+    ? activeQuestion.prompt.split('\n\n').slice(-1)[0]
+    : activeQuestion.prompt;
 
   return (
     <div className="relative glass-panel rounded-2xl border border-synth-cyan/15 p-6 max-w-2xl mx-auto space-y-6">
@@ -285,7 +293,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
 
         <div className="flex items-center gap-2">
           {/* Bảng Nháp button */}
-          {currentSubject === 'math' && (
+          {(currentSubject === 'math' || currentSubject === 'literature') && (
             <button
               onClick={() => setShowScratchpad(true)}
               className="px-2.5 py-1 rounded bg-synth-magenta/20 border border-synth-magenta/40 hover:bg-synth-magenta/40 text-[10px] text-synth-magenta font-bold cursor-pointer transition-colors font-orbitron"
@@ -319,64 +327,140 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
         />
       </div>
 
-      {/* The Question Prompt */}
-      <div className="space-y-4">
-        <div className="flex justify-between items-center text-[10px] text-synth-text-muted font-bold">
-          <span>Nguồn: {activeQuestion.source}</span>
-          <span className="text-synth-cyan font-orbitron">Cấp độ khó: {activeQuestion.difficulty}/10</span>
-        </div>
-        <p className="text-base text-white font-medium leading-relaxed bg-synth-gray/20 border border-white/5 rounded-xl p-4 whitespace-pre-line">
-          {activeQuestion.prompt}
-        </p>
-      </div>
-
-      {/* Answer Forms */}
-      <div className="space-y-3">
-        {activeQuestion.type === 'mcq' && activeQuestion.options ? (
-          <div className="grid grid-cols-1 gap-2.5">
-            {activeQuestion.options.map((option, idx) => {
-              const cleanOpt = option.trim();
-              const isSelected = selectedAnswer === cleanOpt;
-              const isCorrectOpt = cleanOpt.toLowerCase() === (activeQuestion.correctAnswer as string).toLowerCase();
-
-              let borderClass = 'border-white/10 hover:border-synth-cyan/40 bg-synth-gray/10';
-              if (isSelected) borderClass = 'border-synth-cyan bg-synth-cyan/15 text-white';
-              if (checked) {
-                if (isCorrectOpt) borderClass = 'border-synth-green bg-synth-green/10 text-synth-green';
-                else if (isSelected) borderClass = 'border-synth-magenta bg-synth-magenta/10 text-synth-magenta';
-              }
-
-              return (
-                <button
-                  key={idx}
-                  onClick={() => !checked && setSelectedAnswer(cleanOpt)}
-                  disabled={checked}
-                  className={`w-full text-left p-3.5 rounded-xl border text-sm font-medium transition-all duration-300 cursor-pointer ${borderClass}`}
-                >
-                  <span className="font-orbitron font-bold text-synth-text-muted mr-3">
-                    {String.fromCharCode(65 + idx)}.
-                  </span>
-                  {option}
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <input
-              type="text"
-              value={typedAnswer}
-              onChange={(e) => !checked && setTypedAnswer(e.target.value)}
-              placeholder="Gõ câu trả lời chính xác của con vào đây..."
-              disabled={checked}
-              className="w-full p-4 rounded-xl border border-white/10 focus:border-synth-cyan bg-synth-gray/20 text-white text-sm outline-none transition-all duration-300"
-            />
-            <span className="text-[10px] text-synth-text-muted">
-              *Lưu ý: Viết đúng chính tả, viết hoa chữ cái đầu nếu cần thiết.
+      {/* Content Area */}
+      {isLitSplit ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+          {/* Passage Column */}
+          <div className="glass-panel border border-synth-orange/30 p-4 rounded-xl space-y-2 bg-synth-orange/5 max-h-[220px] md:max-h-[350px] overflow-y-auto shadow-[0_0_15px_rgba(255,165,0,0.05)]">
+            <span className="text-[10px] font-bold text-synth-orange font-orbitron uppercase tracking-wider block border-b border-synth-orange/20 pb-1.5 mb-2">
+              📖 ĐOẠN TRÍCH ĐỌC HIỂU
             </span>
+            <div className="text-xs text-white/90 leading-relaxed whitespace-pre-line font-serif italic">
+              {passageText}
+            </div>
           </div>
-        )}
-      </div>
+
+          {/* Question & Options Column */}
+          <div className="space-y-5">
+            <div className="space-y-3">
+              <div className="flex justify-between items-center text-[10px] text-synth-text-muted font-bold">
+                <span>Nguồn: {activeQuestion.source}</span>
+                <span className="text-synth-cyan font-orbitron">Cấp độ khó: {activeQuestion.difficulty}/10</span>
+              </div>
+              <p className="text-sm text-white font-semibold leading-relaxed bg-synth-gray/20 border border-white/5 rounded-xl p-3.5 whitespace-pre-line">
+                {questionText}
+              </p>
+            </div>
+
+            {/* Answer Forms */}
+            <div className="space-y-3">
+              {activeQuestion.type === 'mcq' && activeQuestion.options ? (
+                <div className="grid grid-cols-1 gap-2.5">
+                  {activeQuestion.options.map((option, idx) => {
+                    const cleanOpt = option.trim();
+                    const isSelected = selectedAnswer === cleanOpt;
+                    const isCorrectOpt = cleanOpt.toLowerCase() === (activeQuestion.correctAnswer as string).toLowerCase();
+
+                    let borderClass = 'border-white/10 hover:border-synth-cyan/40 bg-synth-gray/10';
+                    if (isSelected) borderClass = 'border-synth-cyan bg-synth-cyan/15 text-white';
+                    if (checked) {
+                      if (isCorrectOpt) borderClass = 'border-synth-green bg-synth-green/10 text-synth-green';
+                      else if (isSelected) borderClass = 'border-synth-magenta bg-synth-magenta/10 text-synth-magenta';
+                    }
+
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => !checked && setSelectedAnswer(cleanOpt)}
+                        disabled={checked}
+                        className={`w-full text-left p-3 rounded-xl border text-xs font-medium transition-all duration-300 cursor-pointer ${borderClass}`}
+                      >
+                        <span className="font-orbitron font-bold text-synth-text-muted mr-2">
+                          {String.fromCharCode(65 + idx)}.
+                        </span>
+                        {option}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <input
+                    type="text"
+                    value={typedAnswer}
+                    onChange={(e) => !checked && setTypedAnswer(e.target.value)}
+                    placeholder="Gõ câu trả lời chính xác của con vào đây..."
+                    disabled={checked}
+                    className="w-full p-3.5 rounded-xl border border-white/10 focus:border-synth-cyan bg-synth-gray/20 text-white text-xs outline-none transition-all duration-300"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Regular single column layout */
+        <>
+          {/* The Question Prompt */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center text-[10px] text-synth-text-muted font-bold">
+              <span>Nguồn: {activeQuestion.source}</span>
+              <span className="text-synth-cyan font-orbitron">Cấp độ khó: {activeQuestion.difficulty}/10</span>
+            </div>
+            <p className="text-base text-white font-medium leading-relaxed bg-synth-gray/20 border border-white/5 rounded-xl p-4 whitespace-pre-line">
+              {activeQuestion.prompt}
+            </p>
+          </div>
+
+          {/* Answer Forms */}
+          <div className="space-y-3">
+            {activeQuestion.type === 'mcq' && activeQuestion.options ? (
+              <div className="grid grid-cols-1 gap-2.5">
+                {activeQuestion.options.map((option, idx) => {
+                  const cleanOpt = option.trim();
+                  const isSelected = selectedAnswer === cleanOpt;
+                  const isCorrectOpt = cleanOpt.toLowerCase() === (activeQuestion.correctAnswer as string).toLowerCase();
+
+                  let borderClass = 'border-white/10 hover:border-synth-cyan/40 bg-synth-gray/10';
+                  if (isSelected) borderClass = 'border-synth-cyan bg-synth-cyan/15 text-white';
+                  if (checked) {
+                    if (isCorrectOpt) borderClass = 'border-synth-green bg-synth-green/10 text-synth-green';
+                    else if (isSelected) borderClass = 'border-synth-magenta bg-synth-magenta/10 text-synth-magenta';
+                  }
+
+                  return (
+                    <button
+                      key={idx}
+                      onClick={() => !checked && setSelectedAnswer(cleanOpt)}
+                      disabled={checked}
+                      className={`w-full text-left p-3.5 rounded-xl border text-sm font-medium transition-all duration-300 cursor-pointer ${borderClass}`}
+                    >
+                      <span className="font-orbitron font-bold text-synth-text-muted mr-3">
+                        {String.fromCharCode(65 + idx)}.
+                      </span>
+                      {option}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={typedAnswer}
+                  onChange={(e) => !checked && setTypedAnswer(e.target.value)}
+                  placeholder="Gõ câu trả lời chính xác của con vào đây..."
+                  disabled={checked}
+                  className="w-full p-4 rounded-xl border border-white/10 focus:border-synth-cyan bg-synth-gray/20 text-white text-sm outline-none transition-all duration-300"
+                />
+                <span className="text-[10px] text-synth-text-muted">
+                  *Lưu ý: Viết đúng chính tả, viết hoa chữ cái đầu nếu cần thiết.
+                </span>
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Hint Alert */}
       {revealedHint && (

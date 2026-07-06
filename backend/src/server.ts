@@ -429,7 +429,7 @@ app.post('/api/ai/ingest', authMiddleware, async (req: any, res) => {
       - "viet-relation": Hệ thức Vi-ét và phương trình bậc hai.
       - "real-equations": Giải toán bằng cách lập hệ phương trình hoặc phương trình thực tế.
       - "real-geometry": Hình học không gian thực tế (thể tích/diện tích lon nước, phễu nón, quả cầu).
-      - "real-finance": Toán thực tế tài chính (lãi suất ngân hàng, khuyến mãi giảm giá, phần trăm).
+      - "real-finance": Toán thực tế tài chính (lãi suất ngân hàng, khuyến mãi giảm giá, phần trưng).
       - "plane-geometry": Hình học phẳng (tứ giác nội tiếp, tiếp tuyến đường tròn, tam giác đồng dạng).
       
       Trả về kết quả duy nhất là một mảng JSON các đối tượng theo schema sau, không kèm theo markdown hay phần giải thích ngoài JSON:
@@ -444,6 +444,35 @@ app.post('/api/ai/ingest', authMiddleware, async (req: any, res) => {
           "explanation": "Giải thích chi tiết các bước tính toán và lời giải từng bước...",
           "difficulty": số từ 1 đến 10,
           "source": "AI Ingested Math"
+        }
+      ]
+
+      Văn bản cần phân tích:
+      ${rawText}`;
+    } else if (subject === 'literature') {
+      prompt = `Bạn là một chuyên gia ôn thi môn Ngữ văn lớp 10 TP.HCM. Hãy phân tích đoạn văn bản sau đây và trích xuất/tạo ra các câu hỏi trắc nghiệm theo đúng cấu trúc đề tuyển sinh lớp 10 TP.HCM môn Ngữ văn. Các chủ đề bao gồm:
+      - "literature-reading-poetry": Đọc hiểu tác phẩm thơ.
+      - "literature-reading-prose": Đọc hiểu tác phẩm truyện, kí, tản văn.
+      - "literature-reading-argument": Đọc hiểu văn bản nghị luận xã hội hoặc văn bản thông tin (biểu đồ, số liệu).
+      - "literature-vietnamese": Tiếng Việt thực hành (các biện pháp tu từ như ẩn dụ, hoán dụ, điệp từ; nghĩa tường minh/hàm ý; thành ngữ; liên kết câu).
+      - "literature-writing": Kỹ năng làm văn nghị luận xã hội và nghị luận văn học.
+      
+      Lưu ý đặc biệt đối với đọc hiểu văn bản:
+      Nếu câu hỏi có đi kèm một văn bản đọc hiểu (đoạn trích thơ/văn), hãy đặt văn bản đọc hiểu đó ở đầu thuộc tính "prompt" theo mẫu định dạng:
+      "**Đọc đoạn trích sau và trả lời câu hỏi:**\\n[Đoạn văn bản trích dẫn]\\n\\n[Câu hỏi cụ thể...]"
+      
+      Trả về kết quả duy nhất là một mảng JSON các đối tượng theo schema sau, không kèm theo markdown hay phần giải thích ngoài JSON:
+      [
+        {
+          "id": "chuỗi ngẫu nhiên duy nhất",
+          "type": "mcq",
+          "category": "literature-reading-poetry" | "literature-reading-prose" | "literature-reading-argument" | "literature-vietnamese" | "literature-writing",
+          "prompt": "Đề bài câu hỏi (kèm đoạn văn bản trích dẫn nếu có)...",
+          "options": ["Lựa chọn A", "Lựa chọn B", "Lựa chọn C", "Lựa chọn D"],
+          "correctAnswer": "Lựa chọn chính xác, khớp với 1 trong các tùy chọn trong options",
+          "explanation": "Giải thích chi tiết tại sao chọn đáp án đó...",
+          "difficulty": số từ 1 đến 10,
+          "source": "AI Ingested Literature"
         }
       ]
 

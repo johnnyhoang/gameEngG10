@@ -16,10 +16,10 @@ export interface UiThemeConfig {
 export const UI_THEMES: UiThemeConfig[] = [
   {
     id: 'current',
-    name: 'Hiện tại',
-    shortName: 'Current',
-    tagline: 'Cyber neon đang dùng',
-    description: 'Giữ phong cách cyber hiện tại với cảm giác game hóa rõ nét, sáng và mạnh.',
+    name: 'Cyber Neon',
+    shortName: 'Cyber',
+    tagline: 'Phong cách hiện tại',
+    description: 'Giữ vibe cyber neon gốc với cảm giác game hóa rõ nét, sáng và mạnh.',
     mood: 'Neon, hiện đại, công nghệ',
     iconSet: ['⚡', '🎛️', '✨'],
     accentLabel: 'Cyan + Magenta',
@@ -41,11 +41,11 @@ export const UI_THEMES: UiThemeConfig[] = [
     id: 'space-adventure',
     name: 'Space Adventure',
     shortName: 'Space',
-    tagline: 'Phiêu lưu cùng vũ trụ',
-    description: 'Navy, tím, cyan với cảm giác tàu vũ trụ, sao băng, robot và phi hành gia.',
+    tagline: 'Vũ trụ nhẹ và mơ',
+    description: 'Tông xanh tím sáng hơn, bầu trời thoáng hơn, vẫn có tàu vũ trụ, sao băng và phi hành gia.',
     mood: 'Khám phá, khoa học, phiêu lưu',
     iconSet: ['🚀', '🪐', '🤖'],
-    accentLabel: 'Navy + cyan + tím',
+    accentLabel: 'Sky navy + lavender + cyan nhẹ',
     fontLabel: 'Sharp futuristic'
   },
   {

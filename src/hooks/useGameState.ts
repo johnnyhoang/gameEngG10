@@ -121,8 +121,8 @@ interface GameState {
   maxCombo: number;
 
   // Subject States
-  currentSubject: 'english' | 'math';
-  setSubject: (subject: 'english' | 'math') => void;
+  currentSubject: 'english' | 'math' | 'literature';
+  setSubject: (subject: 'english' | 'math' | 'literature') => void;
 
   // Admin and management states
   adminStudents: any[];
@@ -365,7 +365,7 @@ export const useGameState = create<GameState>()(
 
         setSubject: (subject) => {
           set({ currentSubject: subject });
-          logActivity('exercise', 'Chuyển môn học', `Con đã chuyển sang học môn ${subject === 'math' ? 'Toán Học' : 'Tiếng Anh'}.`, 0, 0, 0);
+          logActivity('exercise', 'Chuyển môn học', `Con đã chuyển sang học môn ${subject === 'math' ? 'Toán Học' : subject === 'literature' ? 'Ngữ Văn' : 'Tiếng Anh'}.`, 0, 0, 0);
         },
 
         // Initialize listeners
@@ -1381,6 +1381,16 @@ export const useGameState = create<GameState>()(
               categoriesPool.push('real-equations', 'real-finance');
             } else {
               categoriesPool.push('parabol-line', 'viet-relation', 'real-equations', 'real-geometry', 'real-finance', 'plane-geometry');
+            }
+          } else if (state.currentSubject === 'literature') {
+            if (mode === 'grammar') {
+              categoriesPool.push('literature-vietnamese');
+            } else if (mode === 'reading') {
+              categoriesPool.push('literature-reading-poetry', 'literature-reading-prose', 'literature-reading-argument');
+            } else if (mode === 'vocabulary') {
+              categoriesPool.push('literature-writing');
+            } else {
+              categoriesPool.push('literature-vietnamese', 'literature-reading-poetry', 'literature-reading-prose', 'literature-reading-argument', 'literature-writing');
             }
           } else {
             if (mode === 'grammar') {

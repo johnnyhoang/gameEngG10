@@ -35,7 +35,7 @@ export const ParentConsole: React.FC = () => {
   const [importPreview, setImportPreview] = useState<Question[]>([]);
   const [showImportPreview, setShowImportPreview] = useState(false);
   const [loadingIngest, setLoadingIngest] = useState(false);
-  const [ingestSubject, setIngestSubject] = useState<'english' | 'math'>('english');
+  const [ingestSubject, setIngestSubject] = useState<'english' | 'math' | 'literature'>('english');
 
   // Create Reward States
   const [rewardTitle, setRewardTitle] = useState('');
@@ -553,6 +553,17 @@ export const ParentConsole: React.FC = () => {
                   }`}
                 >
                   📐 TOÁN HỌC
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIngestSubject('literature')}
+                  className={`px-3 py-1.5 rounded-lg border text-xs font-bold cursor-pointer transition-all duration-200 ${
+                    ingestSubject === 'literature'
+                      ? 'bg-synth-orange/20 border-synth-orange text-synth-orange shadow-[0_0_8px_rgba(255,165,0,0.2)]'
+                      : 'bg-synth-gray/10 border-white/5 text-synth-text-muted hover:text-white'
+                  }`}
+                >
+                  ✍️ NGỮ VĂN
                 </button>
               </div>
             </div>

@@ -87,6 +87,55 @@ export const GameMap: React.FC<GameMapProps> = ({ onStartPlay, onOpenMysteryBox,
       bgGradient: 'from-synth-orange/5 to-transparent',
       icon: <ShieldAlert className="w-8 h-8 text-synth-orange" />
     }
+  ] : currentSubject === 'literature' ? [
+    {
+      id: 'lit-reading-literary',
+      title: 'Đảo Đọc Hiểu Văn Học',
+      mode: 'reading' as const,
+      description: 'Luyện đọc hiểu tác phẩm thơ, truyện, kí, tản văn. Phân tích chi tiết nghệ thuật và nhân vật.',
+      energyCost: 10,
+      rewardText: '+15 XP / +5 NP',
+      colorClass: 'border-synth-orange/30 hover:border-synth-orange shadow-orange',
+      textColor: 'text-synth-orange',
+      bgGradient: 'from-synth-orange/5 to-transparent',
+      icon: <Compass className="w-8 h-8 text-synth-orange" />
+    },
+    {
+      id: 'lit-vietnamese',
+      title: 'Đảo Tiếng Việt Thực Hành',
+      mode: 'grammar' as const,
+      description: 'Luyện các biện pháp tu từ, nghĩa tường minh/hàm ý, từ Hán Việt, câu đơn/câu ghép.',
+      energyCost: 10,
+      rewardText: '+15 XP / +5 NP',
+      colorClass: 'border-synth-cyan/30 hover:border-synth-cyan shadow-cyan',
+      textColor: 'text-synth-cyan',
+      bgGradient: 'from-synth-cyan/5 to-transparent',
+      icon: <Star className="w-8 h-8 text-synth-cyan" />
+    },
+    {
+      id: 'lit-writing',
+      title: 'Đảo Kỹ Năng Nghị Luận',
+      mode: 'vocabulary' as const,
+      description: 'Rèn luyện kiến thức làm văn nghị luận xã hội, nghị luận văn học và viết đoạn 200 chữ.',
+      energyCost: 15,
+      rewardText: '+20 XP / +8 NP',
+      colorClass: 'border-synth-purple/30 hover:border-synth-purple shadow-purple',
+      textColor: 'text-synth-purple',
+      bgGradient: 'from-synth-purple/5 to-transparent',
+      icon: <Compass className="w-8 h-8 text-synth-purple" />
+    },
+    {
+      id: 'nightmare-dungeon',
+      title: 'Hầm Ngục Sửa Sai',
+      mode: 'revenge' as const,
+      description: 'Vượt qua nỗi sợ! Tập hợp toàn bộ câu hỏi Ngữ văn con đã làm sai để giải lại.',
+      energyCost: 10,
+      rewardText: 'Xử lý lỗi sai cũ / Hồi phục năng lượng',
+      colorClass: 'border-red-500/30 hover:border-red-500 shadow-red',
+      textColor: 'text-red-500',
+      bgGradient: 'from-red-500/5 to-transparent',
+      icon: <ShieldAlert className="w-8 h-8 text-red-500" />
+    }
   ] : [
     {
       id: 'grammar-cave',
@@ -142,6 +191,10 @@ export const GameMap: React.FC<GameMapProps> = ({ onStartPlay, onOpenMysteryBox,
     { id: 'b-2024', name: 'Đại Ca Toán HCMC 2024', year: '2024', bounty: '10.000đ', energy: 20 },
     { id: 'b-2025', name: 'Cự Long Toán HCMC 2025', year: '2025', bounty: '15.000đ', energy: 20 },
     { id: 'b-2026', name: 'Cổ Long Toán HCMC 2026 (Mock)', year: '2026', bounty: '20.000đ', energy: 25 }
+  ] : currentSubject === 'literature' ? [
+    { id: 'b-2024', name: 'Đại Ca Văn HCMC 2024', year: '2024', bounty: '10.000đ', energy: 20 },
+    { id: 'b-2025', name: 'Cự Long Văn HCMC 2025', year: '2025', bounty: '15.000đ', energy: 20 },
+    { id: 'b-2026', name: 'Cổ Long Văn HCMC 2026 (Mock)', year: '2026', bounty: '20.000đ', energy: 25 }
   ] : [
     { id: 'b-2024', name: 'Đại Ca HCMC 2024', year: '2024', bounty: '10.000đ', energy: 20 },
     { id: 'b-2025', name: 'Cự Long HCMC 2025', year: '2025', bounty: '15.000đ', energy: 20 },

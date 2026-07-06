@@ -41,9 +41,11 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase font-orbitron animate-pulse ${
               currentSubject === 'math' 
                 ? 'border-synth-magenta text-synth-magenta shadow-[0_0_6px_rgba(255,0,128,0.3)]' 
+                : currentSubject === 'literature'
+                ? 'border-synth-orange text-synth-orange shadow-[0_0_6px_rgba(255,165,0,0.3)]'
                 : 'border-synth-cyan text-synth-cyan shadow-[0_0_6px_rgba(0,240,255,0.3)]'
             }`}>
-              {currentSubject === 'math' ? 'MATH' : 'ENGLISH'}
+              {currentSubject === 'math' ? 'MATH' : currentSubject === 'literature' ? 'LIT' : 'ENGLISH'}
             </span>
           </div>
 
@@ -52,23 +54,33 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             <div className="flex items-center bg-synth-gray/30 rounded-xl p-0.5 border border-white/10 font-orbitron text-[9px] shrink-0">
               <button
                 onClick={() => setSubject('english')}
-                className={`px-2.5 py-1 rounded-lg font-bold transition-all duration-200 cursor-pointer ${
+                className={`px-2 py-1 rounded-lg font-bold transition-all duration-200 cursor-pointer ${
                   currentSubject === 'english'
                     ? 'bg-gradient-to-r from-synth-purple to-synth-cyan text-black shadow-[0_0_8px_rgba(0,240,255,0.4)]'
                     : 'text-synth-text-muted hover:text-white'
                 }`}
               >
-                ENG
+                ANH
               </button>
               <button
                 onClick={() => setSubject('math')}
-                className={`px-2.5 py-1 rounded-lg font-bold transition-all duration-200 cursor-pointer ${
+                className={`px-2 py-1 rounded-lg font-bold transition-all duration-200 cursor-pointer ${
                   currentSubject === 'math'
                     ? 'bg-gradient-to-r from-synth-purple to-synth-magenta text-white shadow-[0_0_8px_rgba(255,0,128,0.4)]'
                     : 'text-synth-text-muted hover:text-white'
                 }`}
               >
-                MATH
+                TOÁN
+              </button>
+              <button
+                onClick={() => setSubject('literature')}
+                className={`px-2 py-1 rounded-lg font-bold transition-all duration-200 cursor-pointer ${
+                  currentSubject === 'literature'
+                    ? 'bg-gradient-to-r from-synth-purple to-synth-orange text-white shadow-[0_0_8px_rgba(255,165,0,0.4)]'
+                    : 'text-synth-text-muted hover:text-white'
+                }`}
+              >
+                VĂN
               </button>
             </div>
           )}
