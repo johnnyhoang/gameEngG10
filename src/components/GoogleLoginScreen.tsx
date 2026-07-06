@@ -37,12 +37,12 @@ export const GoogleLoginScreen: React.FC = () => {
             CYBER_ENGLISH
           </h1>
           <p className="text-xs text-synth-cyan font-bold uppercase tracking-widest font-orbitron">
-            Grade 10 Exam Prep HUD
+            Luyện thi Tiếng Anh vào lớp 10
           </p>
         </div>
 
         <p className="text-xs text-synth-text-muted leading-relaxed">
-          Chào mừng con đến với hệ thống game hóa học Tiếng Anh lớp 10 TP.HCM. Đăng nhập để lưu tiến độ và nuôi thú cưng.
+          Chào mừng con đến với hệ thống học Tiếng Anh luyện thi vào lớp 10 TP.HCM. Đăng nhập để lưu trữ tiến trình học tập và đồng hành cùng thú cưng.
         </p>
 
         {/* Active Google Button */}
@@ -51,7 +51,7 @@ export const GoogleLoginScreen: React.FC = () => {
             onClick={handleSupabaseGoogleLogin}
             className="w-full py-3.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 shadow-[0_0_12px_rgba(0,240,255,0.3)] flex items-center justify-center gap-2"
           >
-            <LogIn className="w-4 h-4" /> Đăng nhập qua Supabase Google
+            <LogIn className="w-4 h-4" /> Đăng nhập bằng tài khoản Google
           </button>
         </div>
 
