@@ -22,7 +22,8 @@ CREATE TABLE IF NOT EXISTS ge10_player_profiles (
     energy INTEGER DEFAULT 1000,
     hearts INTEGER DEFAULT 3,
     last_active VARCHAR(100) DEFAULT '',
-    badges TEXT[] DEFAULT '{}'::TEXT[]
+    badges TEXT[] DEFAULT '{}'::TEXT[],
+    server_updated_at TIMESTAMP DEFAULT NOW()
 );
 
 -- Pet States Table

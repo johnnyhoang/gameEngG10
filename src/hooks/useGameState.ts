@@ -124,6 +124,7 @@ interface GameState {
   // Subject States
   currentSubject: 'english' | 'math' | 'literature';
   setSubject: (subject: 'english' | 'math' | 'literature') => void;
+  lastSyncTime: string | null;
 
   // Admin and management states
   adminStudents: any[];
@@ -269,10 +270,11 @@ export const useGameState = create<GameState>()(
               logs: state.logs,
               rewards: state.rewards,
               challenges: state.challenges,
-              dailyMission: state.dailyMission
+              dailyMission: state.dailyMission,
+              lastSyncTime: state.lastSyncTime
             };
 
-            await fetch(`${import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000')}/api/profile/sync`, {
+            const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000')}/api/profile/sync`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -280,7 +282,22 @@ export const useGameState = create<GameState>()(
               },
               body: JSON.stringify(syncPayload)
             });
-            console.log('Profile synced with Supabase Postgres.');
+            if (res.ok) {
+              const resData = await res.json();
+              console.log('Profile synced with Supabase Postgres.');
+              
+              originalSet((s: GameState) => {
+                const updatedPlayer = resData.player ? {
+                  ...s.player,
+                  energy: resData.player.energy,
+                  walletVND: resData.player.walletVND
+                } : s.player;
+                return {
+                  lastSyncTime: resData.timestamp || new Date().toISOString(),
+                  player: updatedPlayer
+                };
+              });
+            }
           } catch (error) {
             console.error('Lỗi đồng bộ Supabase:', error);
           }
@@ -367,6 +384,7 @@ export const useGameState = create<GameState>()(
         selectedStudentProfile: null,
         activeHelp: null,
         maxCombo: 0,
+        lastSyncTime: null,
 
         // Profiles cache for multi-player
         profiles: {},

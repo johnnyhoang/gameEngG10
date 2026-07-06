@@ -32,6 +32,7 @@ const initDB = async () => {
     const sql = fs.readFileSync(schemaPath, 'utf8');
     await pool.query(sql);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS subject VARCHAR(50) DEFAULT 'english';`);
+    await pool.query(`ALTER TABLE ge10_player_profiles ADD COLUMN IF NOT EXISTS server_updated_at TIMESTAMP DEFAULT NOW();`);
     console.log('Database initialized successfully.');
   } catch (error) {
     console.error('Error initializing database:', error);
@@ -361,8 +362,27 @@ app.post('/api/profile/sync', authMiddleware, async (req: any, res) => {
   try {
     await client.query('BEGIN');
 
+    let mergedEnergy = player ? player.energy : 1000;
+    let mergedWallet = player ? player.walletVND : 0;
+
     // 1. Sync player profile
     if (player) {
+      const currentProfileRes = await client.query(
+        'SELECT energy, wallet_vnd, server_updated_at FROM ge10_player_profiles WHERE user_id = $1',
+        [userId]
+      );
+      if (currentProfileRes.rows.length > 0) {
+        const dbProfile = currentProfileRes.rows[0];
+        const dbServerUpdatedAt = new Date(dbProfile.server_updated_at).getTime();
+        const clientLastSyncTime = req.body.lastSyncTime ? new Date(req.body.lastSyncTime).getTime() : 0;
+
+        if (dbServerUpdatedAt > clientLastSyncTime) {
+          // Keep server values since they are newer (e.g. from parent console)
+          mergedEnergy = dbProfile.energy;
+          mergedWallet = dbProfile.wallet_vnd;
+        }
+      }
+
       await client.query(
         `INSERT INTO ge10_player_profiles (user_id, level, xp, coins, wallet_vnd, streak, energy, hearts, last_active, badges)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
@@ -381,9 +401,9 @@ app.post('/api/profile/sync', authMiddleware, async (req: any, res) => {
           player.level,
           player.xp,
           player.coins,
-          player.walletVND,
+          mergedWallet,
           player.streak,
-          player.energy,
+          mergedEnergy,
           player.hearts,
           player.lastActive,
           player.badges
@@ -482,7 +502,14 @@ app.post('/api/profile/sync', authMiddleware, async (req: any, res) => {
     }
 
     await client.query('COMMIT');
-    res.json({ success: true, timestamp: new Date().toISOString() });
+    res.json({ 
+      success: true, 
+      timestamp: new Date().toISOString(),
+      player: player ? {
+        energy: mergedEnergy,
+        walletVND: mergedWallet
+      } : null
+    });
   } catch (error) {
     await client.query('ROLLBACK');
     console.error('Error synchronizing profile data:', error);
@@ -751,7 +778,7 @@ app.post('/api/admin/approve-reward', authMiddleware, async (req: any, res) => {
 
       // Increase wallet balance
       await client.query(
-        'UPDATE ge10_player_profiles SET wallet_vnd = wallet_vnd + $1 WHERE user_id = $2',
+        'UPDATE ge10_player_profiles SET wallet_vnd = wallet_vnd + $1, server_updated_at = NOW() WHERE user_id = $2',
         [cash_value_vnd, studentUserId]
       );
 
@@ -887,7 +914,7 @@ app.post('/api/admin/deduct-wallet', authMiddleware, async (req: any, res: any) 
     }
 
     await pool.query(
-      'UPDATE ge10_player_profiles SET wallet_vnd = wallet_vnd - $1 WHERE user_id = $2',
+      'UPDATE ge10_player_profiles SET wallet_vnd = wallet_vnd - $1, server_updated_at = NOW() WHERE user_id = $2',
       [amount, studentUserId]
     );
 
@@ -946,7 +973,7 @@ app.post('/api/admin/refill-energy', authMiddleware, async (req: any, res: any) 
     }
 
     await pool.query(
-      'UPDATE ge10_player_profiles SET energy = $2 WHERE user_id = $1',
+      'UPDATE ge10_player_profiles SET energy = $2, server_updated_at = NOW() WHERE user_id = $1',
       [studentUserId, targetEnergy]
     );
 
