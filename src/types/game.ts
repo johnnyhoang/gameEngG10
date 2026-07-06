@@ -4,6 +4,13 @@ export type RewardStatus = 'pending' | 'approved' | 'claimed';
 export type PetStage = 'egg' | 'baby' | 'dragon' | 'legend';
 export type PetMood = 'happy' | 'neutral' | 'sad' | 'sleeping';
 
+export interface UserProfile {
+  id: string; // unique google id or email
+  name: string;
+  email: string;
+  avatar: string;
+}
+
 export interface PlayerProfile {
   id: string;
   name: string;

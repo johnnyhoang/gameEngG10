@@ -1,17 +1,21 @@
 import React from 'react';
 import { useGameState } from '../hooks/useGameState';
-import { Zap, Heart, Coins, Flame, Shield, Award } from 'lucide-react';
+import { Zap, Heart, Coins, Flame, Shield, Award, LogOut } from 'lucide-react';
 
 interface TopHUDProps {
-  onOpenParent: () => void;
+  currentScreen: 'map' | 'play' | 'shop' | 'parent';
   onOpenShop: () => void;
+  onOpenParent: () => void;
   onBackToMap: () => void;
-  currentScreen: string;
 }
 
-export const TopHUD: React.FC<TopHUDProps> = ({ onOpenParent, onOpenShop, onBackToMap, currentScreen }) => {
+export const TopHUD: React.FC<TopHUDProps> = ({ 
+  currentScreen, onOpenShop, onOpenParent, onBackToMap 
+}) => {
   const player = useGameState(state => state.player);
-  
+  const currentUser = useGameState(state => state.currentUser);
+  const logout = useGameState(state => state.logout);
+
   // Calculate percentage of XP to next level
   const xpNeeded = player.level * 200;
   const xpPercent = Math.min(100, (player.xp / xpNeeded) * 100);
@@ -36,19 +40,34 @@ export const TopHUD: React.FC<TopHUDProps> = ({ onOpenParent, onOpenShop, onBack
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-gradient-to-br from-synth-purple to-synth-cyan border border-synth-cyan/30 text-white font-orbitron font-bold">
-              L{player.level}
-            </div>
-            <div className="flex flex-col w-28 md:w-36">
-              <div className="flex justify-between text-xs font-orbitron font-semibold text-synth-cyan mb-1">
-                <span>EXP</span>
-                <span>{player.xp}/{xpNeeded}</span>
+            {currentUser && (
+              <img 
+                src={currentUser.avatar} 
+                alt={currentUser.name} 
+                className="w-9 h-9 rounded-full border border-synth-cyan/40 shadow-[0_0_8px_rgba(0,240,255,0.3)]"
+                title={`${currentUser.name} (${currentUser.email})`}
+              />
+            )}
+            <div className="flex flex-col">
+              <div className="flex items-center gap-1.5">
+                <span className="text-[11px] font-black text-white font-orbitron tracking-wide max-w-[100px] truncate">
+                  {currentUser ? currentUser.name : 'Con yêu'}
+                </span>
+                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-synth-purple/30 text-synth-cyan border border-synth-cyan/20 uppercase font-orbitron">
+                  LV.{player.level}
+                </span>
               </div>
-              <div className="w-full h-2 bg-synth-gray rounded-full overflow-hidden border border-synth-cyan/20">
-                <div 
-                  className="h-full bg-gradient-to-r from-synth-cyan to-synth-purple shadow-[0_0_8px_#00f0ff]" 
-                  style={{ width: `${xpPercent}%` }}
-                />
+              <div className="flex flex-col w-28 md:w-36 mt-1">
+                <div className="flex justify-between text-[9px] font-orbitron font-semibold text-synth-cyan mb-0.5">
+                  <span>EXP</span>
+                  <span>{player.xp}/{xpNeeded}</span>
+                </div>
+                <div className="w-full h-1.5 bg-synth-gray rounded-full overflow-hidden border border-synth-cyan/10">
+                  <div 
+                    className="h-full bg-gradient-to-r from-synth-cyan to-synth-purple shadow-[0_0_8px_#00f0ff]" 
+                    style={{ width: `${xpPercent}%` }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -134,6 +153,16 @@ export const TopHUD: React.FC<TopHUDProps> = ({ onOpenParent, onOpenShop, onBack
           >
             Parent HUD
           </button>
+
+          {currentUser && (
+            <button 
+              onClick={logout}
+              className="p-2 rounded-lg border border-red-500/30 text-red-500 hover:bg-red-500/15 cursor-pointer hover:synth-glow-red transition-all duration-300 flex items-center justify-center"
+              title="Đăng xuất tài khoản"
+            >
+              <LogOut className="w-4.5 h-4.5" />
+            </button>
+          )}
         </div>
       </div>
     </header>

@@ -7,8 +7,10 @@ import { GameMap } from './components/GameMap';
 import { PlayArea } from './components/PlayArea';
 import { ItemShop } from './components/ItemShop';
 import { ParentConsole } from './components/ParentConsole';
+import { GoogleLoginScreen } from './components/GoogleLoginScreen';
 
 function App() {
+  const currentUser = useGameState(state => state.currentUser);
   const checkDailyReset = useGameState(state => state.checkDailyReset);
   const initEventSubscriptions = useGameState(state => state.initEventSubscriptions);
   const openMysteryBox = useGameState(state => state.openMysteryBox);
@@ -24,6 +26,8 @@ function App() {
 
   // Initialize event subscriptions & daily checks on mount
   useEffect(() => {
+    if (!currentUser) return;
+
     // Run daily resets
     checkDailyReset();
     
@@ -39,7 +43,11 @@ function App() {
       unsub();
       clearInterval(interval);
     };
-  }, []);
+  }, [currentUser]);
+
+  if (!currentUser) {
+    return <GoogleLoginScreen googleClientId={import.meta.env.VITE_GOOGLE_CLIENT_ID} />;
+  }
 
   const triggerMysteryBox = () => {
     const outcome = openMysteryBox();

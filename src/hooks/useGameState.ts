@@ -3,6 +3,7 @@ import { persist } from 'zustand/middleware';
 import { INITIAL_QUESTIONS } from '../data/questions';
 import { eventBus } from '../utils/EventBus';
 import type {
+  UserProfile,
   PlayerProfile,
   Question,
   CategoryStat,
@@ -15,6 +16,7 @@ import type {
 
 interface GameState {
   // State
+  currentUser: UserProfile | null;
   player: PlayerProfile;
   questions: Question[];
   categoryStats: Record<string, CategoryStat>;
@@ -27,8 +29,17 @@ interface GameState {
   activeCombo: number;
   maxCombo: number;
 
+  // Profiles cache for multi-player
+  profiles: Record<string, PlayerProfile>;
+  petStates: Record<string, PetState>;
+  categoryStatsAll: Record<string, Record<string, CategoryStat>>;
+
   // Initializers
   initEventSubscriptions: () => () => void;
+
+  // Auth Actions
+  login: (user: UserProfile) => void;
+  logout: () => void;
 
   // Player Actions
   answerQuestion: (
@@ -111,7 +122,29 @@ const INITIAL_CHALLENGES: Challenge[] = [
 
 export const useGameState = create<GameState>()(
   persist(
-    (set, get) => {
+    (originalSet, get) => {
+      // Intercept set updates to automatically keep profiles in sync
+      const set = (
+        fn: GameState | Partial<GameState> | ((state: GameState) => GameState | Partial<GameState>),
+        replace?: any
+      ) => {
+        originalSet((state: GameState) => {
+          const nextState = typeof fn === 'function' ? (fn as Function)(state) : fn;
+          const currentUser = nextState.currentUser !== undefined ? nextState.currentUser : state.currentUser;
+          
+          const extra: any = {};
+          if (currentUser) {
+            const activePlayer = nextState.player || state.player;
+            const activePet = nextState.pet || state.pet;
+            const activeStats = nextState.categoryStats || state.categoryStats;
+            
+            extra.profiles = { ...(nextState.profiles || state.profiles), [currentUser.id]: activePlayer };
+            extra.petStates = { ...(nextState.petStates || state.petStates), [currentUser.id]: activePet };
+            extra.categoryStatsAll = { ...(nextState.categoryStatsAll || state.categoryStatsAll), [currentUser.id]: activeStats };
+          }
+          return { ...nextState, ...extra };
+        }, replace);
+      };
       // Helper to log audit trail
       const logActivity = (
         activityType: HistoryLog['activityType'],
@@ -153,6 +186,7 @@ export const useGameState = create<GameState>()(
 
       return {
         // Initial States
+        currentUser: null,
         player: INITIAL_PLAYER,
         questions: INITIAL_QUESTIONS,
         categoryStats: {},
@@ -164,6 +198,11 @@ export const useGameState = create<GameState>()(
         parentPIN: DEFAULT_PIN,
         activeCombo: 0,
         maxCombo: 0,
+
+        // Profiles cache for multi-player
+        profiles: {},
+        petStates: {},
+        categoryStatsAll: {},
 
         // Initialize listeners
         initEventSubscriptions: () => {
@@ -359,6 +398,56 @@ export const useGameState = create<GameState>()(
             unsubQuestion();
             unsubCheckIn();
           };
+        },
+
+        // Auth Actions
+        login: (user) => {
+          set(state => {
+            const newPlayer = state.profiles[user.id] || {
+              id: user.id,
+              name: user.name,
+              role: 'student',
+              level: 1,
+              xp: 0,
+              coins: 200,
+              walletVND: 0,
+              streak: 0,
+              energy: 100,
+              hearts: 3,
+              lastActive: new Date().toISOString(),
+              badges: []
+            };
+
+            const newPet = state.petStates[user.id] || {
+              name: 'Rồng Con',
+              stage: 'egg',
+              level: 1,
+              exp: 0,
+              energy: 100,
+              mood: 'neutral',
+              lastFed: new Date().toISOString()
+            };
+
+            const newStats = state.categoryStatsAll[user.id] || {};
+
+            return {
+              currentUser: user,
+              player: newPlayer,
+              pet: newPet,
+              categoryStats: newStats
+            };
+          });
+          logActivity('energy_refill', 'Đăng nhập thành công', `Chào mừng ${user.name} đã gia nhập CyberEnglish!`);
+        },
+
+        logout: () => {
+          set({
+            currentUser: null,
+            player: INITIAL_PLAYER,
+            pet: INITIAL_PET,
+            categoryStats: {},
+            activeCombo: 0
+          });
         },
 
         // Student Actions
@@ -887,6 +976,7 @@ export const useGameState = create<GameState>()(
     {
       name: 'cyber-english-state', // LocalStorage Key
       partialize: (state) => ({
+        currentUser: state.currentUser,
         player: state.player,
         questions: state.questions,
         categoryStats: state.categoryStats,
@@ -896,7 +986,10 @@ export const useGameState = create<GameState>()(
         dailyMission: state.dailyMission,
         logs: state.logs,
         parentPIN: state.parentPIN,
-        maxCombo: state.maxCombo
+        maxCombo: state.maxCombo,
+        profiles: state.profiles,
+        petStates: state.petStates,
+        categoryStatsAll: state.categoryStatsAll
       })
     }
   )
