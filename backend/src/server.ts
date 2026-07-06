@@ -48,6 +48,15 @@ const authMiddleware = (req: any, res: any, next: any) => {
     if (!secretStr) {
       throw new Error('JWT_SECRET env not configured on server.');
     }
+    
+    // Debug token payload and header structure
+    try {
+      const parsed = jwt.decode(token, { complete: true });
+      console.log('DEBUG: Parsed Token Header/Payload:', JSON.stringify(parsed));
+    } catch (parseErr: any) {
+      console.error('DEBUG: Failed to decode raw token string:', parseErr.message);
+    }
+
     // Supabase JWT secret is base64-encoded, so we must decode it to a Buffer
     const secret = Buffer.from(secretStr, 'base64');
     const decoded = jwt.verify(token, secret, { algorithms: ['HS256'] }) as any;
