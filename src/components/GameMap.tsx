@@ -19,6 +19,7 @@ export const GameMap: React.FC<GameMapProps> = ({ onStartPlay, onOpenMysteryBox,
   const useEnergy = useGameState(state => state.useEnergy);
   const currentSubject = useGameState(state => state.currentSubject);
   const bossBountiesVnd = useGameState(state => state.gameSettings.bossBountiesVnd);
+  const challengeEnergyCosts = useGameState(state => state.gameSettings.challengeEnergyCosts);
 
   // Check if weekend for Lucky Wheel
   const isWeekend = () => {
@@ -202,6 +203,11 @@ export const GameMap: React.FC<GameMapProps> = ({ onStartPlay, onOpenMysteryBox,
     { id: 'b-2026', name: 'Cổ Long HCMC 2026 (Mock)', year: '2026', energy: 25 }
   ];
 
+  const resolvedMapZones = mapZones.map((zone, idx) => ({
+    ...zone,
+    energyCost: challengeEnergyCosts[idx] ?? zone.energyCost
+  }));
+
   return (
     <div className="space-y-6">
       {/* Daily Quest & Rewards Banner */}
@@ -255,7 +261,7 @@ export const GameMap: React.FC<GameMapProps> = ({ onStartPlay, onOpenMysteryBox,
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {mapZones.map(zone => (
+          {resolvedMapZones.map(zone => (
             <div
               key={zone.id}
               onClick={() => handleLaunchZone(zone.mode, zone.energyCost)}

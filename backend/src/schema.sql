@@ -97,6 +97,13 @@ VALUES (
 )
 ON CONFLICT (setting_key) DO NOTHING;
 
+INSERT INTO ge10_game_settings (setting_key, setting_json)
+VALUES (
+    'challenge_energy_costs',
+    '{"1": 10, "2": 10, "3": 15, "4": 10}'::jsonb
+)
+ON CONFLICT (setting_key) DO NOTHING;
+
 -- Custom / Ingested Questions Table
 CREATE TABLE IF NOT EXISTS ge10_custom_questions (
     id VARCHAR(255) PRIMARY KEY,

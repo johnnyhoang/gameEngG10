@@ -7,6 +7,7 @@ export type UiThemeId = 'current' | 'cute-pink-pastel' | 'space-adventure' | 'fa
 
 export interface GameSettings {
   bossBountiesVnd: [number, number, number];
+  challengeEnergyCosts: [number, number, number, number];
 }
 
 export interface UserProfile {

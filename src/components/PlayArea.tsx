@@ -42,11 +42,12 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
 
   // Initialize questions for this run
   useEffect(() => {
-    // Filter questions by active subject
+    // Filter questions by active subject, but keep a safe fallback so the game never stalls on an empty pool.
     const subjectQuestions = questions.filter(q => {
       const qSubject = (q as any).subject || 'english';
       return qSubject === currentSubject;
     });
+    const fallbackQuestions = subjectQuestions.length > 0 ? subjectQuestions : questions;
 
     let pool: Question[] = [];
     const count = mode === 'boss' ? 30 : 10; // Bosses are 30 questions, others are 10
@@ -54,14 +55,14 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
     if (mode === 'boss') {
       // Find actual/mock papers based on bossId
       const year = bossId === 'b-2024' ? '2024' : bossId === 'b-2025' ? '2025' : '2026';
-      pool = subjectQuestions.filter(q => q.source.includes(year));
+      pool = fallbackQuestions.filter(q => q.source.includes(year));
       // Fallback if not enough questions
       if (pool.length < count) {
-        pool = [...pool, ...subjectQuestions.filter(q => !pool.includes(q))].slice(0, count);
+        pool = [...pool, ...fallbackQuestions.filter(q => !pool.includes(q))].slice(0, count);
       }
     } else if (mode === 'revenge') {
       // Find previously failed questions
-      pool = subjectQuestions.slice(0, count); // Mocking revenge pool
+      pool = fallbackQuestions.slice(0, count); // Mocking revenge pool
     } else {
       // Adaptive learning weight selector
       for (let i = 0; i < count; i++) {
@@ -72,7 +73,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
       }
       // If pool is empty, fill with default questions
       if (pool.length === 0) {
-        pool = subjectQuestions.filter(q => {
+        pool = fallbackQuestions.filter(q => {
           if (currentSubject === 'math') {
             if (mode === 'grammar') return q.category === 'parabol-line' || q.category === 'viet-relation';
             if (mode === 'reading') return q.category === 'real-geometry' || q.category === 'plane-geometry';
@@ -99,7 +100,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
     } else {
       setTimeLeft(0);
     }
-  }, [mode, bossId]);
+  }, [mode, bossId, currentSubject, questions, getQuestionByWeight]);
 
   // Handle countdown timer
   useEffect(() => {
@@ -262,8 +263,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
       </div>
     );
   }
-if (currentQuestions.length === 0) {
-    return <div className="text-center py-10 font-orbitron text-synth-cyan">Loading Dungeon...</div>;
+  if (currentQuestions.length === 0) {
+    return <div className="text-center py-10 font-orbitron text-synth-cyan">Đang nạp câu hỏi...</div>;
   }
 
   // Check if we should render split screen for literature passages

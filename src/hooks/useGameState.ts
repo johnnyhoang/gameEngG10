@@ -157,6 +157,7 @@ interface GameState {
   adminDeductWallet: (studentUserId: string, amount: number) => Promise<void>;
   adminSetEnergy: (studentUserId: string, energyPercent: number) => Promise<void>;
   updateBossBounties: (bossBountiesVnd: [number, number, number]) => Promise<void>;
+  updateChallengeEnergyCosts: (challengeEnergyCosts: [number, number, number, number]) => Promise<void>;
 
   // Player Actions
   answerQuestion: (
@@ -182,7 +183,8 @@ interface GameState {
   rejectReward: (rewardId: string) => void;
   addParentReward: (title: string, costCoins: number, cashValueVND: number) => void;
   importQuestions: (questions: Question[]) => void;
-  deleteQuestion: (questionId: string) => void;
+  deleteQuestion: (questionId: string) => Promise<boolean>;
+  updateQuestion: (questionId: string, updatedQuestion: Partial<Question>) => Promise<boolean>;
   resetProgress: () => void; // Keeps questions, resets student stats
 
   // Systems Reset
@@ -196,7 +198,8 @@ interface GameState {
 const DEFAULT_PIN = '1234';
 const PLAYER_ENERGY_MAX = 1000;
 const DEFAULT_GAME_SETTINGS: GameSettings = {
-  bossBountiesVnd: [10000, 15000, 20000]
+  bossBountiesVnd: [10000, 15000, 20000],
+  challengeEnergyCosts: [10, 10, 15, 10]
 };
 
 const INITIAL_PLAYER: PlayerProfile = {
@@ -948,11 +951,39 @@ export const useGameState = create<GameState>()(
               alert(errData.error || 'Lỗi khi cập nhật vàng săn thưởng.');
               return;
             }
-            set({ gameSettings: { bossBountiesVnd } });
+            set(state => ({ gameSettings: { ...state.gameSettings, bossBountiesVnd } }));
             alert('Đã cập nhật vàng săn thưởng cho Boss Arena.');
           } catch (e) {
             console.error('Error updating boss bounties:', e);
             alert('Lỗi kết nối khi cập nhật vàng săn thưởng.');
+          }
+        },
+
+        updateChallengeEnergyCosts: async (challengeEnergyCosts: [number, number, number, number]) => {
+          try {
+            const session = (await supabase.auth.getSession()).data.session;
+            const token = session?.access_token;
+            if (!token) return;
+
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+            const res = await fetch(`${backendUrl}/api/admin/game-settings`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+              },
+              body: JSON.stringify({ challengeEnergyCosts })
+            });
+            if (!res.ok) {
+              const errData = await res.json();
+              alert(errData.error || 'Lỗi khi cập nhật chi phí thử thách.');
+              return;
+            }
+            set(state => ({ gameSettings: { ...state.gameSettings, challengeEnergyCosts } }));
+            alert('Đã cập nhật chi phí thử thách.');
+          } catch (e) {
+            console.error('Error updating challenge costs:', e);
+            alert('Lỗi kết nối khi cập nhật chi phí thử thách.');
           }
         },
 
@@ -1310,11 +1341,84 @@ export const useGameState = create<GameState>()(
           logActivity('parent_approve', 'Ba nhập Đề thi mới', `Thêm thành công ${importedQuestions.length} câu hỏi vào Kho đề.`, 0, 0);
         },
 
-        deleteQuestion: (questionId) => {
+        deleteQuestion: async (questionId) => {
+          const state = get();
+          const question = state.questions.find(q => q.id === questionId);
+          if (!question) return false;
+
+          const isCustomQuestion = question.source?.startsWith('AI Ingested');
+          if (isCustomQuestion && !questionId.startsWith('ai-')) {
+            try {
+              const session = (await supabase.auth.getSession()).data.session;
+              const token = session?.access_token;
+              if (!token) return false;
+
+              const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+              const res = await fetch(`${backendUrl}/api/questions/custom/${questionId}`, {
+                method: 'DELETE',
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              });
+              if (!res.ok) {
+                const errData = await res.json();
+                alert(errData.error || 'Không thể xóa câu hỏi.');
+                return false;
+              }
+            } catch (error) {
+              console.error('Error deleting question:', error);
+              alert('Lỗi kết nối khi xóa câu hỏi.');
+              return false;
+            }
+          }
+
           set(state => ({
             questions: state.questions.filter(q => q.id !== questionId)
           }));
           logActivity('parent_approve', 'Xóa câu hỏi', `Ba đã xóa câu hỏi mã số ${questionId}`, 0, 0);
+          return true;
+        },
+
+        updateQuestion: async (questionId, updatedQuestion) => {
+          const state = get();
+          const question = state.questions.find(q => q.id === questionId);
+          if (!question) return false;
+
+          const isCustomQuestion = question.source?.startsWith('AI Ingested');
+          const nextQuestion = { ...question, ...updatedQuestion } as Question;
+
+          if (isCustomQuestion) {
+            try {
+              const session = (await supabase.auth.getSession()).data.session;
+              const token = session?.access_token;
+              if (!token) return false;
+
+              const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+              const res = await fetch(`${backendUrl}/api/questions/custom/${questionId}`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(nextQuestion)
+              });
+              if (!res.ok) {
+                const errData = await res.json();
+                alert(errData.error || 'Không thể cập nhật câu hỏi.');
+                return false;
+              }
+            } catch (error) {
+              console.error('Error updating question:', error);
+              alert('Lỗi kết nối khi cập nhật câu hỏi.');
+              return false;
+            }
+          }
+
+          set(state => ({
+            questions: state.questions.map(q => q.id === questionId ? nextQuestion : q)
+          }));
+          logActivity('parent_approve', 'Cập nhật câu hỏi', `Ba đã cập nhật câu hỏi mã số ${questionId}`, 0, 0);
+          return true;
         },
 
         resetProgress: () => {

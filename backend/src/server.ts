@@ -17,6 +17,7 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const PLAYER_ENERGY_MAX = 1000;
 const DEFAULT_BOSS_BOUNTIES_VND: [number, number, number] = [10000, 15000, 20000];
+const DEFAULT_CHALLENGE_ENERGY_COSTS: [number, number, number, number] = [10, 10, 15, 10];
 
 app.use(cors({ origin: '*' }));
 app.use(express.json());
@@ -94,12 +95,70 @@ const loadBossBounties = async (): Promise<[number, number, number]> => {
   return DEFAULT_BOSS_BOUNTIES_VND;
 };
 
+const loadChallengeEnergyCosts = async (): Promise<[number, number, number, number]> => {
+  const res = await pool.query(
+    "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'challenge_energy_costs'"
+  );
+  const raw = res.rows[0]?.setting_json;
+  const values = [
+    Number(raw?.['1']),
+    Number(raw?.['2']),
+    Number(raw?.['3']),
+    Number(raw?.['4'])
+  ];
+
+  if (values.every(v => Number.isFinite(v) && v >= 0)) {
+    return [values[0], values[1], values[2], values[3]];
+  }
+
+  return DEFAULT_CHALLENGE_ENERGY_COSTS;
+};
+
 const saveBossBounties = async (bossBountiesVnd: [number, number, number]) => {
   await pool.query(
     `INSERT INTO ge10_game_settings (setting_key, setting_json)
      VALUES ('boss_bounties_vnd', $1::jsonb)
      ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
     [JSON.stringify({ 2024: bossBountiesVnd[0], 2025: bossBountiesVnd[1], 2026: bossBountiesVnd[2] })]
+  );
+};
+
+const saveChallengeEnergyCosts = async (challengeEnergyCosts: [number, number, number, number]) => {
+  await pool.query(
+    `INSERT INTO ge10_game_settings (setting_key, setting_json)
+     VALUES ('challenge_energy_costs', $1::jsonb)
+     ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
+    [JSON.stringify({ 1: challengeEnergyCosts[0], 2: challengeEnergyCosts[1], 3: challengeEnergyCosts[2], 4: challengeEnergyCosts[3] })]
+  );
+};
+
+const persistCustomQuestion = async (userId: string, question: any) => {
+  await pool.query(
+    `INSERT INTO ge10_custom_questions (id, user_id, type, category, prompt, options, correct_answer, explanation, difficulty, source, subject)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+     ON CONFLICT (id) DO UPDATE SET
+       type = EXCLUDED.type,
+       category = EXCLUDED.category,
+       prompt = EXCLUDED.prompt,
+       options = EXCLUDED.options,
+       correct_answer = EXCLUDED.correct_answer,
+       explanation = EXCLUDED.explanation,
+       difficulty = EXCLUDED.difficulty,
+       source = EXCLUDED.source,
+       subject = EXCLUDED.subject`,
+    [
+      question.id,
+      userId,
+      question.type || 'mcq',
+      question.category,
+      question.prompt,
+      question.options || null,
+      Array.isArray(question.correctAnswer) ? question.correctAnswer : [question.correctAnswer],
+      question.explanation || '',
+      question.difficulty || 5,
+      question.source || 'AI Ingested English',
+      question.subject || 'english'
+    ]
   );
 };
 
@@ -191,6 +250,7 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
     // 9. Fetch custom questions
     const questionsRes = await pool.query('SELECT * FROM ge10_custom_questions WHERE user_id = $1', [userId]);
     const bossBountiesVnd = await loadBossBounties();
+    const challengeEnergyCosts = await loadChallengeEnergyCosts();
 
     // Format category stats array into record mapping
     const categoryStats: any = {};
@@ -281,7 +341,8 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
       challenges,
       dailyMission,
       gameSettings: {
-        bossBountiesVnd
+        bossBountiesVnd,
+        challengeEnergyCosts
       },
       customQuestions
     });
@@ -443,6 +504,45 @@ app.get('/api/questions/custom', authMiddleware, async (req: any, res) => {
   }
 });
 
+// PUT /api/questions/custom/:questionId: Updates a custom question owned by the signed-in user
+app.put('/api/questions/custom/:questionId', authMiddleware, async (req: any, res) => {
+  const userId = req.user.sub;
+  const { questionId } = req.params;
+  try {
+    const exists = await pool.query('SELECT id FROM ge10_custom_questions WHERE id = $1 AND user_id = $2', [questionId, userId]);
+    if (exists.rowCount === 0) {
+      return res.status(404).json({ error: 'Question not found.' });
+    }
+
+    const question = {
+      id: questionId,
+      ...req.body,
+      subject: req.body.subject || 'english'
+    };
+    await persistCustomQuestion(userId, question);
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Error updating custom question:', error.message);
+    res.status(500).json({ error: 'Failed to update question.' });
+  }
+});
+
+// DELETE /api/questions/custom/:questionId: Deletes a custom question owned by the signed-in user
+app.delete('/api/questions/custom/:questionId', authMiddleware, async (req: any, res) => {
+  const userId = req.user.sub;
+  const { questionId } = req.params;
+  try {
+    const result = await pool.query('DELETE FROM ge10_custom_questions WHERE id = $1 AND user_id = $2', [questionId, userId]);
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: 'Question not found.' });
+    }
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Error deleting custom question:', error.message);
+    res.status(500).json({ error: 'Failed to delete question.' });
+  }
+});
+
 // POST /api/ai/ingest: Uses Gemini API to parse raw text into structured grade 10 questions (English or Math)
 app.post('/api/ai/ingest', authMiddleware, async (req: any, res) => {
   const userId = req.user.sub;
@@ -558,24 +658,12 @@ app.post('/api/ai/ingest', authMiddleware, async (req: any, res) => {
 
     // Save custom questions to PG custom_questions table
     for (const q of questions) {
-      await pool.query(
-        `INSERT INTO ge10_custom_questions (id, user_id, type, category, prompt, options, correct_answer, explanation, difficulty, source, subject)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-         ON CONFLICT (id) DO NOTHING`,
-        [
-          q.id || `ai-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          userId,
-          q.type || 'mcq',
-          q.category,
-          q.prompt,
-          q.options || null,
-          Array.isArray(q.correctAnswer) ? q.correctAnswer : [q.correctAnswer],
-          q.explanation || '',
-          q.difficulty || 5,
-          q.source || (subject === 'math' ? 'AI Ingested Math' : 'AI Ingested English'),
-          subject
-        ]
-      );
+      await persistCustomQuestion(userId, {
+        id: q.id || `ai-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        ...q,
+        source: q.source || (subject === 'math' ? 'AI Ingested Math' : 'AI Ingested English'),
+        subject
+      });
     }
 
     res.json({ success: true, questionsCount: questions.length, questions });
@@ -896,18 +984,34 @@ app.put('/api/admin/game-settings', authMiddleware, async (req: any, res: any) =
       return res.status(403).json({ error: 'Forbidden: Admin access only.' });
     }
 
-    const { bossBountiesVnd } = req.body || {};
-    if (!Array.isArray(bossBountiesVnd) || bossBountiesVnd.length !== 3) {
-      return res.status(400).json({ error: 'Invalid parameters: bossBountiesVnd must contain 3 values.' });
+    const { bossBountiesVnd, challengeEnergyCosts } = req.body || {};
+    const response: any = { success: true };
+
+    if (bossBountiesVnd !== undefined) {
+      if (!Array.isArray(bossBountiesVnd) || bossBountiesVnd.length !== 3) {
+        return res.status(400).json({ error: 'Invalid parameters: bossBountiesVnd must contain 3 values.' });
+      }
+      const normalizedBounties = bossBountiesVnd.map((value: any) => Math.max(0, Math.round(Number(value)))) as [number, number, number];
+      if (normalizedBounties.some(v => !Number.isFinite(v))) {
+        return res.status(400).json({ error: 'Invalid boss bounty values.' });
+      }
+      await saveBossBounties(normalizedBounties);
+      response.bossBountiesVnd = normalizedBounties;
     }
 
-    const normalized = bossBountiesVnd.map((value: any) => Math.max(0, Math.round(Number(value)))) as [number, number, number];
-    if (normalized.some(v => !Number.isFinite(v))) {
-      return res.status(400).json({ error: 'Invalid boss bounty values.' });
+    if (challengeEnergyCosts !== undefined) {
+      if (!Array.isArray(challengeEnergyCosts) || challengeEnergyCosts.length !== 4) {
+        return res.status(400).json({ error: 'Invalid parameters: challengeEnergyCosts must contain 4 values.' });
+      }
+      const normalizedCosts = challengeEnergyCosts.map((value: any) => Math.max(0, Math.round(Number(value)))) as [number, number, number, number];
+      if (normalizedCosts.some(v => !Number.isFinite(v))) {
+        return res.status(400).json({ error: 'Invalid challenge energy values.' });
+      }
+      await saveChallengeEnergyCosts(normalizedCosts);
+      response.challengeEnergyCosts = normalizedCosts;
     }
 
-    await saveBossBounties(normalized);
-    res.json({ success: true, bossBountiesVnd: normalized });
+    res.json(response);
   } catch (error: any) {
     console.error('Error updating boss bounties:', error.message);
     res.status(500).json({ error: 'Failed to update boss bounties.' });

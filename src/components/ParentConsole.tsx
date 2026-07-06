@@ -2,11 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import type { Question } from '../types/game';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { Lock, Unlock, Check, X, Award, FileText, Database, Plus, BarChart2, SlidersHorizontal } from 'lucide-react';
+import { Lock, Unlock, Check, X, Award, FileText, Database, Plus, SlidersHorizontal, Search, Pencil, Trash2 } from 'lucide-react';
 import { supabase } from '../utils/supabaseClient';
 
 export const ParentConsole: React.FC = () => {
-  const player = useGameState(state => state.player);
   const verifyPIN = useGameState(state => state.verifyPIN);
   const approveReward = useGameState(state => state.approveReward);
   const rejectReward = useGameState(state => state.rejectReward);
@@ -26,7 +25,11 @@ export const ParentConsole: React.FC = () => {
   const adminDeductWallet = useGameState(state => state.adminDeductWallet);
   const adminSetEnergy = useGameState(state => state.adminSetEnergy);
   const updateBossBounties = useGameState(state => state.updateBossBounties);
+  const updateChallengeEnergyCosts = useGameState(state => state.updateChallengeEnergyCosts);
   const gameSettings = useGameState(state => state.gameSettings);
+  const questions = useGameState(state => state.questions);
+  const deleteQuestion = useGameState(state => state.deleteQuestion);
+  const updateQuestion = useGameState(state => state.updateQuestion);
 
   // PIN Lock States
   const [pin, setPin] = useState('');
@@ -48,9 +51,22 @@ export const ParentConsole: React.FC = () => {
   const [bossBounty2024, setBossBounty2024] = useState(10000);
   const [bossBounty2025, setBossBounty2025] = useState(15000);
   const [bossBounty2026, setBossBounty2026] = useState(20000);
+  const [challengeCost1, setChallengeCost1] = useState(10);
+  const [challengeCost2, setChallengeCost2] = useState(10);
+  const [challengeCost3, setChallengeCost3] = useState(15);
+  const [challengeCost4, setChallengeCost4] = useState(10);
+  const [questionQuery, setQuestionQuery] = useState('');
+  const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [editPrompt, setEditPrompt] = useState('');
+  const [editExplanation, setEditExplanation] = useState('');
+  const [editCategory, setEditCategory] = useState('');
+  const [editDifficulty, setEditDifficulty] = useState(5);
+  const [editOptions, setEditOptions] = useState('');
+  const [editCorrectAnswer, setEditCorrectAnswer] = useState('');
+  const [editSource, setEditSource] = useState('');
 
   // Active Tab
-  const [activeTab, setActiveTab] = useState<'analytics' | 'rewards' | 'ingestion' | 'members' | 'settings'>('members');
+  const [activeTab, setActiveTab] = useState<'rewards' | 'ingestion' | 'members' | 'settings'>('members');
   const [viewingStudentId, setViewingStudentId] = useState<string | null>(null);
 
   // Load students list on mount for admin users
@@ -70,7 +86,23 @@ export const ParentConsole: React.FC = () => {
     setBossBounty2024(b2024);
     setBossBounty2025(b2025);
     setBossBounty2026(b2026);
-  }, [gameSettings.bossBountiesVnd]);
+    const [c1, c2, c3, c4] = gameSettings.challengeEnergyCosts;
+    setChallengeCost1(c1);
+    setChallengeCost2(c2);
+    setChallengeCost3(c3);
+    setChallengeCost4(c4);
+  }, [gameSettings.bossBountiesVnd, gameSettings.challengeEnergyCosts]);
+
+  useEffect(() => {
+    if (!editingQuestion) return;
+    setEditPrompt(editingQuestion.prompt);
+    setEditExplanation(editingQuestion.explanation);
+    setEditCategory(editingQuestion.category);
+    setEditDifficulty(editingQuestion.difficulty);
+    setEditOptions(Array.isArray(editingQuestion.options) ? editingQuestion.options.join('\n') : '');
+    setEditCorrectAnswer(Array.isArray(editingQuestion.correctAnswer) ? editingQuestion.correctAnswer.join('\n') : editingQuestion.correctAnswer);
+    setEditSource(editingQuestion.source);
+  }, [editingQuestion]);
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,6 +112,34 @@ export const ParentConsole: React.FC = () => {
     } else {
       setPinError(true);
       setPin('');
+    }
+  };
+
+  const handleSaveQuestion = async () => {
+    if (!editingQuestion) return;
+
+    const nextOptions = editOptions
+      .split('\n')
+      .map(line => line.trim())
+      .filter(Boolean);
+    const nextCorrectAnswer = editCorrectAnswer
+      .split('\n')
+      .map(line => line.trim())
+      .filter(Boolean);
+
+    const payload = {
+      prompt: editPrompt.trim(),
+      explanation: editExplanation.trim(),
+      category: editCategory.trim(),
+      difficulty: Math.max(1, Math.min(10, Number(editDifficulty) || 5)),
+      options: nextOptions.length > 0 ? nextOptions : undefined,
+      correctAnswer: nextCorrectAnswer.length > 1 ? nextCorrectAnswer : nextCorrectAnswer[0] || '',
+      source: editSource.trim()
+    };
+
+    const ok = await updateQuestion(editingQuestion.id, payload);
+    if (ok) {
+      setEditingQuestion(null);
     }
   };
 
@@ -137,40 +197,7 @@ export const ParentConsole: React.FC = () => {
   };
 
   // Active Data bindings: if viewing a student, use their loaded data. Otherwise fall back to parent.
-  const activePlayer = selectedStudentProfile?.player || player;
-  const activeCategoryStats = selectedStudentProfile?.categoryStats || {};
   const activeRewards = selectedStudentProfile?.rewards || [];
-
-  // Prediction calculations
-  const calculatePrediction = () => {
-    const totalQuestionsSolved = Object.values(activeCategoryStats).reduce((acc: number, current: any) => acc + current.totalAnswered, 0);
-    if (totalQuestionsSolved < 20) {
-      return { score: 'Đang tích lũy...', range: 'Cần làm ít nhất 20 câu để AI dự đoán' };
-    }
-
-    // Calculate rolling average accuracy
-    const activeStats = Object.values(activeCategoryStats);
-    const totalAccuracy = activeStats.reduce((acc: number, current: any) => acc + current.rollingAccuracy, 0);
-    const avgAccuracy = totalAccuracy / activeStats.length;
-
-    // Map accuracy to entrance score (10.0 scale)
-    const baseScore = avgAccuracy * 10;
-    const marginOfError = totalQuestionsSolved > 200 ? 0.2 : totalQuestionsSolved > 50 ? 0.5 : 1.0;
-    
-    return {
-      score: baseScore.toFixed(1),
-      range: `±${marginOfError.toFixed(1)}`
-    };
-  };
-
-
-
-  // Prepare chart data
-  const chartData = Object.values(activeCategoryStats).map((stat: any) => ({
-    name: stat.category.toUpperCase().replace('-', ' '),
-    'Tỷ Lệ Đúng (%)': Math.round(stat.rollingAccuracy * 100),
-    'Đã làm': stat.totalAnswered
-  }));
 
   if (!isUnlocked) {
     return (
@@ -211,8 +238,6 @@ export const ParentConsole: React.FC = () => {
     );
   }
 
-  const prediction = calculatePrediction();
-
   return (
     <div className="space-y-6 pb-20 md:pb-6">
       {/* HUD Header */}
@@ -233,12 +258,11 @@ export const ParentConsole: React.FC = () => {
 
         {/* Tab Controls */}
         <div className="hidden md:flex gap-2 flex-wrap">
-          {['members', 'analytics', 'rewards', 'ingestion', 'settings'].map(tab => {
+          {['members', 'rewards', 'ingestion', 'settings'].map(tab => {
             const tabNames: Record<string, string> = {
               members: 'Thành viên',
-              analytics: 'Thống kê',
               rewards: 'Phần thưởng',
-              ingestion: 'AI Ingest',
+              ingestion: 'Ngân hàng câu hỏi',
               settings: 'Cấu hình'
             };
             return (
@@ -289,104 +313,6 @@ export const ParentConsole: React.FC = () => {
             Đổi học sinh khác
           </button>
         </div>
-      )}
-
-      {/* Analytics Tab */}
-      {activeTab === 'analytics' && (
-        !viewingStudentId ? (
-          <div className="glass-panel rounded-2xl border border-white/5 p-12 text-center space-y-4">
-            <p className="text-sm text-synth-text-muted">
-              Vui lòng chọn một tài khoản con từ danh sách <strong>Thành viên</strong> để xem thống kê năng lực học tập.
-            </p>
-            <button
-              onClick={() => setActiveTab('members')}
-              className="px-4 py-2 rounded-lg font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-magenta text-black hover:synth-glow-magenta cursor-pointer transition-all duration-300"
-            >
-              Xem danh sách Thành viên
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Prediction Metric */}
-            <div className="glass-panel rounded-2xl border border-synth-cyan/20 p-5 flex flex-col justify-between min-h-[160px]">
-              <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
-                <Award className="w-4 h-4" /> Dự đoán điểm thi vào lớp 10
-                <button
-                  onClick={() => showHelp('prediction')}
-                  className="w-4 h-4 rounded-full bg-synth-cyan/20 border border-synth-cyan/40 text-synth-cyan text-[9px] font-black flex items-center justify-center hover:bg-synth-cyan/40 cursor-pointer transition-colors"
-                  title="Tìm hiểu cách AI dự đoán điểm thi"
-                >
-                  ?
-                </button>
-              </h4>
-              <div className="py-4 text-center">
-                <span className="text-4xl font-black font-orbitron text-white">
-                  {prediction.score}
-                </span>
-                <span className="text-sm font-semibold text-synth-cyan font-orbitron ml-1">
-                  {prediction.range !== 'Cần làm ít nhất 20 câu để AI dự đoán' && prediction.range}
-                </span>
-              </div>
-              <p className="text-[10px] text-synth-text-muted leading-relaxed">
-                Dự đoán dựa trên tỷ lệ làm đúng trên từng chuyên đề thực tế. {prediction.range}
-              </p>
-            </div>
-
-            {/* Core Volume */}
-            <div className="glass-panel rounded-2xl border border-synth-orange/20 p-5 flex flex-col justify-between min-h-[160px]">
-              <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider flex items-center gap-1.5">
-                <BarChart2 className="w-4 h-4" /> Tổng quan kết quả làm bài
-              </h4>
-              <div className="py-4 text-center">
-                <span className="text-4xl font-black font-orbitron text-white">
-                  {chartData.reduce((acc, cur) => acc + cur['Đã làm'], 0)}
-                </span>
-                <span className="text-xs text-synth-text-muted font-bold uppercase ml-2">Câu Hỏi</span>
-              </div>
-              <p className="text-[10px] text-synth-text-muted leading-relaxed">
-                Số câu đã trả lời. Luyện tập trên 2000 câu giúp dự đoán chính xác điểm tới 98%.
-              </p>
-            </div>
-
-            {/* Current Wallet Approved */}
-            <div className="glass-panel rounded-2xl border border-synth-magenta/20 p-5 flex flex-col justify-between min-h-[160px]">
-              <h4 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-1.5">
-                <Database className="w-4 h-4" /> Số dư Ví đổi quà của con
-              </h4>
-              <div className="py-4 text-center">
-                <span className="text-4xl font-black font-orbitron text-synth-magenta">
-                  {(activePlayer?.walletVND || 0).toLocaleString()}đ
-                </span>
-              </div>
-              <p className="text-[10px] text-synth-text-muted leading-relaxed">
-                Khoản thưởng tích lũy của con chưa quy đổi. Con tích lũy từ nhiệm vụ ngày hoặc đấu Boss.
-              </p>
-            </div>
-
-            {/* Category Bar Chart */}
-            <div className="glass-panel rounded-2xl border border-white/5 p-5 md:col-span-3">
-              <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider mb-4">
-                Biểu đồ tỷ lệ đúng theo chuyên đề
-              </h4>
-              <div className="h-64 w-full">
-                {chartData.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={chartData}>
-                      <XAxis dataKey="name" stroke="#95a5a6" fontSize={10} tickLine={false} />
-                      <YAxis stroke="#95a5a6" fontSize={10} domain={[0, 100]} />
-                      <Tooltip contentStyle={{ backgroundColor: '#141722', borderColor: '#ff007f' }} />
-                      <Bar dataKey="Tỷ Lệ Đúng (%)" fill="#00f0ff" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="flex items-center justify-center h-full text-xs text-synth-text-muted">
-                    Con chưa làm bài luyện tập nào để kết xuất biểu đồ.
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        )
       )}
 
       {/* Rewards tab */}
@@ -664,10 +590,212 @@ Answer: politely"
               </div>
             </div>
           )}
+
+          <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div>
+                <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
+                  <Database className="w-4 h-4" /> Ngân hàng câu hỏi hiện có
+                </h4>
+                <p className="text-[10px] text-synth-text-muted mt-1">
+                  Xem toàn bộ đề trong kho hiện tại. Câu AI nhập có thể sửa/xóa, đề gốc chỉ xem.
+                </p>
+              </div>
+              <div className="relative w-full md:w-80">
+                <Search className="w-4 h-4 text-synth-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={questionQuery}
+                  onChange={(e) => setQuestionQuery(e.target.value)}
+                  placeholder="Tìm theo nội dung, chuyên đề, nguồn..."
+                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-xs text-white outline-none focus:border-synth-cyan"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
+              {questions.filter(q => {
+                const haystack = `${q.prompt} ${q.category} ${q.source} ${q.type}`.toLowerCase();
+                return haystack.includes(questionQuery.toLowerCase());
+              }).map(q => {
+                const isCustom = q.source?.startsWith('AI Ingested');
+                return (
+                  <div key={q.id} className="rounded-xl border border-white/5 bg-white/5 p-3.5 space-y-2">
+                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
+                      <div className="space-y-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-synth-cyan/20 text-synth-cyan font-bold uppercase font-orbitron">
+                            {q.type}
+                          </span>
+                          <span className="text-[10px] px-2 py-0.5 rounded bg-synth-magenta/15 text-synth-magenta font-bold uppercase font-orbitron">
+                            {q.category}
+                          </span>
+                          {isCustom && (
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-synth-orange/20 text-synth-orange font-bold uppercase font-orbitron">
+                              AI / Custom
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-white font-medium leading-relaxed">{q.prompt}</p>
+                        <p className="text-[10px] text-synth-text-muted">
+                          Nguồn: {q.source || 'Default'} | Độ khó: {q.difficulty}/10 | ID: {q.id}
+                        </p>
+                      </div>
+
+                      {isCustom && (
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            onClick={() => setEditingQuestion(q)}
+                            className="px-2.5 py-1.5 rounded-lg bg-synth-cyan/20 text-synth-cyan border border-synth-cyan/30 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
+                          >
+                            <Pencil className="w-3.5 h-3.5" /> Sửa
+                          </button>
+                          <button
+                            onClick={async () => {
+                              if (window.confirm(`Xóa câu hỏi này?\n\n${q.prompt}`)) {
+                                await deleteQuestion(q.id);
+                              }
+                            }}
+                            className="px-2.5 py-1.5 rounded-lg bg-red-500/20 text-red-300 border border-red-500/30 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" /> Xóa
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    {q.options && q.options.length > 0 && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                        {q.options.map((opt, idx) => (
+                          <div
+                            key={idx}
+                            className={`rounded-lg px-3 py-2 border ${Array.isArray(q.correctAnswer) ? q.correctAnswer.includes(opt) : q.correctAnswer === opt ? 'border-synth-green text-synth-green bg-synth-green/10' : 'border-white/5 text-synth-text-muted bg-white/5'}`}
+                          >
+                            {opt}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       )}
 
 
+
+      {editingQuestion && (
+        <div className="fixed inset-0 z-[90] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="glass-panel rounded-3xl border border-synth-cyan/30 w-full max-w-3xl max-h-[90vh] overflow-y-auto p-5 space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div>
+                <h4 className="font-orbitron font-bold text-sm text-synth-cyan uppercase tracking-wider">
+                  Sửa câu hỏi
+                </h4>
+                <p className="text-[10px] text-synth-text-muted mt-1">
+                  Câu hỏi AI/import sẽ được cập nhật và lưu lại vào kho đề.
+                </p>
+              </div>
+              <button
+                onClick={() => setEditingQuestion(null)}
+                className="px-3 py-1.5 rounded-lg border border-white/10 text-white text-xs font-bold hover:bg-white/5"
+              >
+                Đóng
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="space-y-2 text-xs">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Chuyên đề</span>
+                <input
+                  type="text"
+                  value={editCategory}
+                  onChange={(e) => setEditCategory(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                />
+              </label>
+              <label className="space-y-2 text-xs">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Nguồn</span>
+                <input
+                  type="text"
+                  value={editSource}
+                  onChange={(e) => setEditSource(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                />
+              </label>
+            </div>
+
+            <label className="space-y-2 text-xs block">
+              <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Đề bài</span>
+              <textarea
+                value={editPrompt}
+                onChange={(e) => setEditPrompt(e.target.value)}
+                rows={5}
+                className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan font-mono text-xs"
+              />
+            </label>
+
+            <label className="space-y-2 text-xs block">
+              <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Giải thích</span>
+              <textarea
+                value={editExplanation}
+                onChange={(e) => setEditExplanation(e.target.value)}
+                rows={4}
+                className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan font-mono text-xs"
+              />
+            </label>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="space-y-2 text-xs">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Đáp án / Mỗi dòng 1 đáp án</span>
+                <textarea
+                  value={editCorrectAnswer}
+                  onChange={(e) => setEditCorrectAnswer(e.target.value)}
+                  rows={4}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan font-mono text-xs"
+                />
+              </label>
+              <label className="space-y-2 text-xs">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Options / Mỗi dòng 1 lựa chọn</span>
+                <textarea
+                  value={editOptions}
+                  onChange={(e) => setEditOptions(e.target.value)}
+                  rows={4}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan font-mono text-xs"
+                />
+              </label>
+            </div>
+
+            <label className="space-y-2 text-xs block max-w-xs">
+              <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Độ khó (1-10)</span>
+              <input
+                type="number"
+                min={1}
+                max={10}
+                value={editDifficulty}
+                onChange={(e) => setEditDifficulty(Number(e.target.value))}
+                className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+              />
+            </label>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setEditingQuestion(null)}
+                className="px-4 py-2.5 rounded-xl border border-white/10 text-white font-orbitron font-bold text-xs uppercase tracking-wider hover:bg-white/5"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={handleSaveQuestion}
+                className="px-4 py-2.5 rounded-xl bg-synth-cyan text-black font-orbitron font-bold text-xs uppercase tracking-wider hover:synth-glow-cyan"
+              >
+                Lưu thay đổi
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Members Tab */}
       {activeTab === 'members' && (
@@ -1067,13 +1195,35 @@ Answer: politely"
             ))}
           </div>
 
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {[
+              { label: 'Đảo 1', value: challengeCost1, setter: setChallengeCost1 },
+              { label: 'Đảo 2', value: challengeCost2, setter: setChallengeCost2 },
+              { label: 'Đảo 3', value: challengeCost3, setter: setChallengeCost3 },
+              { label: 'Đảo 4', value: challengeCost4, setter: setChallengeCost4 }
+            ].map(item => (
+              <label key={item.label} className="space-y-2 text-xs">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">{item.label} cost (Energy)</span>
+                <input
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={item.value}
+                  onChange={(e) => item.setter(Number(e.target.value) || 0)}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                />
+              </label>
+            ))}
+          </div>
+
           <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between bg-white/5 rounded-xl border border-white/5 p-4">
             <p className="text-xs text-synth-text-muted leading-relaxed">
-              Các mức này sẽ hiển thị ở Boss Arena trên toàn bộ game. Có thể đổi về 10.000đ / 15.000đ / 20.000đ hoặc tăng giảm tùy nhu cầu.
+              Các mức này sẽ hiển thị ở Boss Arena và các đảo thử thách trên toàn bộ game. Có thể đổi về 10.000đ / 15.000đ / 20.000đ và các cost thử thách tùy nhu cầu.
             </p>
             <button
               onClick={async () => {
                 await updateBossBounties([bossBounty2024, bossBounty2025, bossBounty2026]);
+                await updateChallengeEnergyCosts([challengeCost1, challengeCost2, challengeCost3, challengeCost4]);
               }}
               className="px-4 py-2.5 rounded-xl bg-synth-magenta text-black font-orbitron font-bold text-[10px] uppercase tracking-wider hover:synth-glow-magenta transition-all shrink-0"
             >
@@ -1099,16 +1249,6 @@ Answer: politely"
         </button>
 
         <button
-          onClick={() => setActiveTab('analytics')}
-          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
-            activeTab === 'analytics' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
-          }`}
-        >
-          <span className="text-lg">📊</span>
-          <span>Thống kê</span>
-        </button>
-
-        <button
           onClick={() => setActiveTab('rewards')}
           className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
             activeTab === 'rewards' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
@@ -1125,7 +1265,7 @@ Answer: politely"
           }`}
         >
           <span className="text-lg">🤖</span>
-          <span>AI Ingest</span>
+          <span>Ngân hàng</span>
         </button>
 
         <button

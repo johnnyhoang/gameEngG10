@@ -239,7 +239,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                   : 'bg-transparent border-synth-magenta/50 text-synth-magenta hover:bg-synth-magenta/10'
               }`}
             >
-              Parent HUD
+              Admin Hub
             </button>
           )}
 
