@@ -618,7 +618,7 @@ Answer: politely"
                   <thead>
                     <tr className="border-b border-white/10 text-synth-cyan uppercase font-orbitron text-[10px] tracking-wider">
                       <th className="py-3 px-4">Thành viên</th>
-                      <th className="py-3 px-4">Email</th>
+                      <th className="py-3 px-4 hidden md:table-cell">Email</th>
                       <th className="py-3 px-4">Vai trò</th>
                       <th className="py-3 px-4 text-center">Hành động</th>
                     </tr>
@@ -634,7 +634,7 @@ Answer: politely"
                           />
                           <span className="font-bold text-white">{usr.name}</span>
                         </td>
-                        <td className="py-3 px-4 text-synth-text-muted">{usr.email}</td>
+                        <td className="py-3 px-4 text-synth-text-muted hidden md:table-cell">{usr.email}</td>
                         <td className="py-3 px-4">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase font-orbitron ${
                             usr.role === 'admin' 
@@ -645,7 +645,7 @@ Answer: politely"
                           </span>
                         </td>
                         <td className="py-3 px-4 text-center">
-                          <div className="flex items-center justify-center gap-3">
+                          <div className="flex flex-wrap items-center justify-center gap-2">
                             <button
                               onClick={() => {
                                 setViewingStudentId(usr.id);
