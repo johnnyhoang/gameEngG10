@@ -533,35 +533,47 @@ export const useGameState = create<GameState>()(
 
             if (res.ok) {
               const data = await res.json();
-              set({
-                player: data.player || {
-                  id: user.id,
-                  name: user.name,
-                  role: 'student',
-                  level: 1,
-                  xp: 0,
-                  coins: 200,
-                  walletVND: 0,
-                  streak: 0,
-                  energy: 100,
-                  hearts: 3,
-                  lastActive: new Date().toISOString(),
-                  badges: []
-                },
-                pet: data.pet || {
-                  name: 'Rồng Con',
-                  stage: 'egg',
-                  level: 1,
-                  exp: 0,
-                  energy: 100,
-                  mood: 'neutral',
-                  lastFed: new Date().toISOString()
-                },
-                categoryStats: data.categoryStats || {},
-                logs: data.logs || [],
-                rewards: data.rewards || [],
-                challenges: data.challenges || INITIAL_CHALLENGES,
-                dailyMission: data.dailyMission || null
+              const dbCustomQs = data.customQuestions || [];
+
+              set(_state => {
+                const mergedQuestions = [...INITIAL_QUESTIONS];
+                dbCustomQs.forEach((q: any) => {
+                  if (!mergedQuestions.some(eq => eq.id === q.id || eq.prompt === q.prompt)) {
+                    mergedQuestions.push(q);
+                  }
+                });
+
+                return {
+                  player: data.player || {
+                    id: user.id,
+                    name: user.name,
+                    role: 'student',
+                    level: 1,
+                    xp: 0,
+                    coins: 200,
+                    walletVND: 0,
+                    streak: 0,
+                    energy: 100,
+                    hearts: 3,
+                    lastActive: new Date().toISOString(),
+                    badges: []
+                  },
+                  pet: data.pet || {
+                    name: 'Rồng Con',
+                    stage: 'egg',
+                    level: 1,
+                    exp: 0,
+                    energy: 100,
+                    mood: 'neutral',
+                    lastFed: new Date().toISOString()
+                  },
+                  categoryStats: data.categoryStats || {},
+                  logs: data.logs || [],
+                  rewards: data.rewards || [],
+                  challenges: data.challenges || INITIAL_CHALLENGES,
+                  dailyMission: data.dailyMission || null,
+                  questions: mergedQuestions
+                };
               });
               logActivity('energy_refill', 'Đồng bộ Đám mây', `Tải dữ liệu học tập thành công cho ${user.name}!`);
             }
