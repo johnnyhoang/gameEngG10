@@ -286,5 +286,193 @@ export const INITIAL_QUESTIONS: Question[] = [
     explanation: '"Similarly" (Tương tự như vậy) dùng để liên kết hai ví dụ về ô nhiễm (không khí và nước).',
     difficulty: 6,
     source: 'HCMC Entrance Exam 2024'
+  },
+  {
+    id: 'hcm-2023-pr-1',
+    type: 'mcq',
+    category: 'pronunciation',
+    prompt: 'Which word has the underlined part pronounced differently from that of the others?',
+    options: ['mentioned', 'consisted', 'described', 'studied'],
+    correctAnswer: 'consisted',
+    explanation: 'Đuôi "-ed" trong "consisted" phát âm là /ɪd/, các từ còn lại phát âm là /d/.',
+    difficulty: 4,
+    source: 'HCMC Entrance Exam 2023'
+  },
+  {
+    id: 'hcm-2023-pr-2',
+    type: 'mcq',
+    category: 'pronunciation',
+    prompt: 'Which word has the underlined part pronounced differently from that of the others?',
+    options: ['village', 'lighting', 'litter', 'river'],
+    correctAnswer: 'lighting',
+    explanation: 'Nguyên âm "i" trong "lighting" phát âm là /aɪ/, các từ còn lại phát âm là /ɪ/.',
+    difficulty: 3,
+    source: 'HCMC Entrance Exam 2023'
+  },
+  {
+    id: 'hcm-2023-st-1',
+    type: 'mcq',
+    category: 'stress',
+    prompt: 'Which word has a different stress pattern from that of the others?',
+    options: ['refresh', 'intend', 'excite', 'eager'],
+    correctAnswer: 'eager',
+    explanation: '"eager" nhấn âm 1 (/ˈiː.ɡər/), các từ còn lại nhấn âm 2.',
+    difficulty: 4,
+    source: 'HCMC Entrance Exam 2023'
+  },
+  {
+    id: 'hcm-2023-st-2',
+    type: 'mcq',
+    category: 'stress',
+    prompt: 'Which word has a different stress pattern from that of the others?',
+    options: ['happening', 'responses', 'benefit', 'prisoner'],
+    correctAnswer: 'responses',
+    explanation: '"responses" nhấn âm 2 (/rɪˈspɒn.sɪz/), các từ còn lại nhấn âm 1.',
+    difficulty: 5,
+    source: 'HCMC Entrance Exam 2023'
+  },
+  {
+    id: 'hcm-2023-wf-1',
+    type: 'wordform',
+    category: 'wordform',
+    prompt: 'AI like ChatGPT is believed to be _______ in the search of information. (BENEFIT)',
+    correctAnswer: ['beneficial'],
+    explanation: 'Cần tính từ "beneficial" đứng sau tobe "to be" để bổ nghĩa cho chủ ngữ.',
+    difficulty: 5,
+    source: 'HCMC Entrance Exam 2023'
+  },
+  {
+    id: 'hcm-2023-wf-2',
+    type: 'wordform',
+    category: 'wordform',
+    prompt: 'Minh Thu, the youngest _______, won the special prize for “Promising Voice”. (CONTEST)',
+    correctAnswer: ['contestant'],
+    explanation: 'Cần danh từ chỉ người "contestant" (thí sinh) đóng vai trò là chủ ngữ rút gọn.',
+    difficulty: 5,
+    source: 'HCMC Entrance Exam 2023'
+  },
+  {
+    id: 'hcm-2023-wf-3',
+    type: 'wordform',
+    category: 'wordform',
+    prompt: 'The earthquake in Turkey destroyed several villages and many people became _______. (HOME)',
+    correctAnswer: ['homeless'],
+    explanation: 'Cấu trúc "become + adj". Cần tính từ "homeless" (vô gia cư) phù hợp với ngữ cảnh bị động đất tàn phá.',
+    difficulty: 4,
+    source: 'HCMC Entrance Exam 2023'
+  },
+  {
+    id: 'hcm-2023-wf-4',
+    type: 'wordform',
+    category: 'wordform',
+    prompt: '_______ all buildings in Sweden have been heated by solar energy. (NEAR)',
+    correctAnswer: ['Nearly'],
+    explanation: 'Cần trạng từ "Nearly" (hầu như, gần như) đứng đầu câu để bổ nghĩa cho định lượng từ "all".',
+    difficulty: 5,
+    source: 'HCMC Entrance Exam 2023'
+  },
+  {
+    id: 'hcm-2023-wf-5',
+    type: 'wordform',
+    category: 'wordform',
+    prompt: 'In _______, we really need to do something about our neighborhood. (CONCLUDE)',
+    correctAnswer: ['conclusion'],
+    explanation: 'Cụm từ cố định: "In conclusion" (Tóm lại, kết luận lại).',
+    difficulty: 4,
+    source: 'HCMC Entrance Exam 2023'
+  },
+  {
+    id: 'hcm-2023-wf-6',
+    type: 'wordform',
+    category: 'wordform',
+    prompt: 'I spent some time _______ because I just didn\'t know which website was useful for me. (SURF)',
+    correctAnswer: ['surfing'],
+    explanation: 'Cấu trúc "spend time + V-ing" (dành thời gian làm gì).',
+    difficulty: 4,
+    source: 'HCMC Entrance Exam 2023'
+  },
+  {
+    id: 'hcm-2023-rw-1',
+    type: 'rewrite',
+    category: 'rewrite',
+    prompt: 'Change the way you learn vocabulary, and you can improve your English. (Rewrite starting with: "If you...")',
+    correctAnswer: ['If you change the way you learn vocabulary, you can improve your English.'],
+    explanation: 'Chuyển đổi câu mệnh lệnh điều kiện thành câu điều kiện Loại 1.',
+    difficulty: 5,
+    source: 'HCMC Entrance Exam 2023'
+  },
+  {
+    id: 'hcm-2023-rw-2',
+    type: 'rewrite',
+    category: 'rewrite',
+    prompt: '“Why don\'t we collect those empty bottles for recycling?” said Robert. (Rewrite starting with: "Robert suggested that those...")',
+    correctAnswer: [
+      'Robert suggested that those empty bottles should be collected for recycling.',
+      'Robert suggested that those empty bottles be collected for recycling.'
+    ],
+    explanation: 'Cấu trúc giả định với suggest: "S + suggest + that + S + (should) + be + V3" (bị động).',
+    difficulty: 8,
+    source: 'HCMC Entrance Exam 2023'
+  },
+  {
+    id: 'hcm-2023-rw-3',
+    type: 'rewrite',
+    category: 'rewrite',
+    prompt: 'Because Tom is very lazy, he can\'t get good marks at school. (Rewrite ending with: "..., so...")',
+    correctAnswer: ['Tom is very lazy, so he can\'t get good marks at school.'],
+    explanation: 'Thay thế liên từ chỉ nguyên nhân "Because" bằng liên từ chỉ kết quả "so".',
+    difficulty: 4,
+    source: 'HCMC Entrance Exam 2023'
+  },
+  {
+    id: 'hcm-2023-rw-4',
+    type: 'rewrite',
+    category: 'rewrite',
+    prompt: 'Michael loves to play football after school. (Rewrite starting with: "Michael is fond...")',
+    correctAnswer: ['Michael is fond of playing football after school.'],
+    explanation: 'Cấu trúc tương đương: "love/like + V-ing" = "be fond of + V-ing".',
+    difficulty: 4,
+    source: 'HCMC Entrance Exam 2023'
+  },
+  {
+    id: 'hcm-2024-pr-3',
+    type: 'mcq',
+    category: 'pronunciation',
+    prompt: 'Which word has the underlined part pronounced differently from that of the others?',
+    options: ['destroys', 'controls', 'predicts', 'wanders'],
+    correctAnswer: 'predicts',
+    explanation: 'Đuôi "-s" của "predicts" phát âm là /s/ đứng sau âm vô thanh /t/. Các từ còn lại phát âm là /z/.',
+    difficulty: 5,
+    source: 'HCMC Entrance Exam 2024'
+  },
+  {
+    id: 'hcm-2024-wf-7',
+    type: 'wordform',
+    category: 'wordform',
+    prompt: 'Mr. Tam is a well-qualified and _______ teacher. (EXPERIENCE)',
+    correctAnswer: ['experienced'],
+    explanation: 'Cần tính từ "experienced" (giàu kinh nghiệm) để bổ nghĩa cho danh từ "teacher".',
+    difficulty: 6,
+    source: 'HCMC Entrance Exam 2024'
+  },
+  {
+    id: 'hcm-2024-wf-8',
+    type: 'wordform',
+    category: 'wordform',
+    prompt: 'We need to _______ our house to welcome the New Year. (BEAUTY)',
+    correctAnswer: ['beautify'],
+    explanation: 'Sau "need to" cần động từ nguyên mẫu "beautify" (làm đẹp).',
+    difficulty: 6,
+    source: 'HCMC Entrance Exam 2024'
+  },
+  {
+    id: 'hcm-2024-wf-9',
+    type: 'wordform',
+    category: 'wordform',
+    prompt: 'Thanks to my dad\'s _______, I now feel confident for the coming contest. (ASSIST)',
+    correctAnswer: ['assistance'],
+    explanation: 'Sau sở hữu cách "my dad\'s" cần danh từ "assistance" (sự hỗ trợ/giúp đỡ).',
+    difficulty: 5,
+    source: 'HCMC Entrance Exam 2024'
   }
 ];
