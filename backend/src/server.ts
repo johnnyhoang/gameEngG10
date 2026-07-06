@@ -6,6 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { pool } from './db.js';
+import { createRemoteJWKSet, jwtVerify } from 'jose';
 
 dotenv.config();
 
@@ -35,8 +36,12 @@ const initDB = async () => {
 
 initDB();
 
+// JWKS client for verifying asymmetric ES256 Supabase JWTs
+const supabaseUrl = process.env.SUPABASE_URL || 'https://czngbleeeiljsrpbaksg.supabase.co';
+const JWKS = createRemoteJWKSet(new URL(`${supabaseUrl}/auth/v1/.well-known/jwks.json`));
+
 // JWT Auth Middleware (Decodes Supabase signed tokens)
-const authMiddleware = (req: any, res: any, next: any) => {
+const authMiddleware = async (req: any, res: any, next: any) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Missing or malformed authorization header.' });
@@ -44,11 +49,8 @@ const authMiddleware = (req: any, res: any, next: any) => {
 
   const token = authHeader.split(' ')[1];
   try {
-    const secretStr = process.env.JWT_SECRET;
-    if (!secretStr) {
-      throw new Error('JWT_SECRET env not configured on server.');
-    }
-    
+    const supabaseUrl = process.env.SUPABASE_URL || 'https://czngbleeeiljsrpbaksg.supabase.co';
+
     // Debug token payload and header structure
     try {
       const parsed = jwt.decode(token, { complete: true });
@@ -57,10 +59,13 @@ const authMiddleware = (req: any, res: any, next: any) => {
       console.error('DEBUG: Failed to decode raw token string:', parseErr.message);
     }
 
-    // Supabase JWT secret is base64-encoded, so we must decode it to a Buffer
-    const secret = Buffer.from(secretStr, 'base64');
-    const decoded = jwt.verify(token, secret, { algorithms: ['HS256'] }) as any;
-    req.user = decoded; // payload contains user details like sub, email, user_metadata
+    // Verify asymmetric ES256 signature using JWKS
+    const { payload } = await jwtVerify(token, JWKS, {
+      issuer: `${supabaseUrl}/auth/v1`,
+      algorithms: ['ES256']
+    });
+
+    req.user = payload; // payload contains user details like sub, email, user_metadata
     next();
   } catch (error: any) {
     console.error('JWT Verification Error:', error.message);
