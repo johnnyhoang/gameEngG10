@@ -193,7 +193,7 @@ export const ParentConsole: React.FC = () => {
   const prediction = calculatePrediction();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20 md:pb-6">
       {/* HUD Header */}
       <div className="glass-panel rounded-2xl border border-synth-magenta/30 p-5 flex flex-col md:flex-row justify-between items-center gap-4 bg-gradient-to-r from-synth-magenta/5 to-transparent">
         <div className="flex items-center gap-3">
@@ -211,7 +211,7 @@ export const ParentConsole: React.FC = () => {
         </div>
 
         {/* Tab Controls */}
-        <div className="flex gap-2 flex-wrap">
+        <div className="hidden md:flex gap-2 flex-wrap">
           {['members', 'analytics', 'rewards', 'ingestion'].map(tab => {
             const tabNames: Record<string, string> = {
               members: 'Thành viên',
@@ -915,6 +915,52 @@ Answer: politely"
           )}
         </div>
       )}
+
+      {/* Mobile Admin Bottom Navigation Bar */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-3 py-2.5 pb-3 flex justify-around items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)]">
+        <button
+          onClick={() => {
+            setActiveTab('members');
+            fetchAdminStudents();
+          }}
+          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
+            activeTab === 'members' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
+          }`}
+        >
+          <span className="text-lg">👥</span>
+          <span>Thành viên</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('analytics')}
+          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
+            activeTab === 'analytics' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
+          }`}
+        >
+          <span className="text-lg">📊</span>
+          <span>Thống kê</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('rewards')}
+          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
+            activeTab === 'rewards' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
+          }`}
+        >
+          <span className="text-lg">🎁</span>
+          <span>Phần thưởng</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('ingestion')}
+          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
+            activeTab === 'ingestion' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
+          }`}
+        >
+          <span className="text-lg">🤖</span>
+          <span>AI Ingest</span>
+        </button>
+      </nav>
     </div>
   );
 };
