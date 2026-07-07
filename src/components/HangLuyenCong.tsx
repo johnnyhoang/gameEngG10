@@ -22,6 +22,8 @@ import {
   type HangSubjectId
 } from '../data/hangLuyenCong';
 import { Biki3DStudio } from './Biki3DStudio';
+import { BikiDoThiHamSo } from './BikiDoThiHamSo';
+import { BikiHinhHocPhang } from './BikiHinhHocPhang';
 
 interface HangLuyenCongProps {
   onStartPractice: () => void;
@@ -64,7 +66,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({ onStartPractice, o
   const questions = useGameState(state => state.questions);
 
   const [selectedSubject, setSelectedSubject] = useState<HangSubjectId>(currentSubject);
-  const [activeTool, setActiveTool] = useState<'map' | 'flashcards' | 'drill' | 'biki3d' | 'notes'>('map');
+  const [activeTool, setActiveTool] = useState<'map' | 'flashcards' | 'drill' | 'biki3d' | 'bikiplane' | 'bikigraph' | 'notes'>('map');
   const [flashcardIndex, setFlashcardIndex] = useState(0);
   const [noteText, setNoteText] = useState('');
 
@@ -353,6 +355,14 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({ onStartPractice, o
 
           {activeTool === 'biki3d' && (
             <Biki3DStudio problemText="" />
+          )}
+
+          {activeTool === 'bikiplane' && (
+            <BikiHinhHocPhang problemText="" />
+          )}
+
+          {activeTool === 'bikigraph' && (
+            <BikiDoThiHamSo problemText="" />
           )}
 
           {activeTool === 'notes' && (

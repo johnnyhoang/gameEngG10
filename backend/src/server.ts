@@ -794,6 +794,180 @@ Thông tin bài toán:
   }
 });
 
+// POST /api/ai/geometry-plane: Uses Gemini API to analyze a grade 9 plane geometry problem and return structured drawing guidance
+app.post('/api/ai/geometry-plane', authMiddleware, async (req: any, res) => {
+  const { problemText } = req.body || {};
+  if (!problemText || !String(problemText).trim()) {
+    return res.status(400).json({ error: 'Missing problemText.' });
+  }
+
+  try {
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!geminiKey || geminiKey.includes('AIzaSy') || geminiKey.includes('sk-')) {
+      return res.status(400).json({ error: 'Gemini API Key is not configured or is a placeholder.' });
+    }
+
+    const prompt = `Bạn là trợ lý Toán 9 chuyên về hình học phẳng theo chương trình Bộ GD&ĐT và cách trình bày chấm điểm của Sở GD&ĐT TP.HCM. Hãy phân tích đề bài hình học phẳng và trả về đúng một JSON duy nhất, không markdown.
+
+Yêu cầu:
+- Nhận dạng đúng dạng hình: tam giác, tứ giác, đường tròn, hỗn hợp hoặc unknown.
+- Ưu tiên mô tả các yếu tố cơ bản mà học sinh cần dựng trên bảng.
+- Có thể đề xuất các thao tác đơn giản như nối đỉnh với đỉnh, nối đỉnh với cạnh, dựng đường cao, trung tuyến, vuông góc, song song, đánh dấu góc.
+- Không bịa quan hệ nếu đề không cho.
+- Lời giải phải ngắn gọn, theo kiểu: giả thiết -> dựng hình -> lập luận -> kết luận.
+- Mọi điểm và tọa độ nên nằm trong khoảng hợp lý trên bảng 800x560 để dựng trực quan.
+
+Trả về JSON theo schema:
+{
+  "figureKind": "triangle" | "quadrilateral" | "circle" | "mixed" | "unknown",
+  "title": "chuỗi ngắn gọn",
+  "summary": "mô tả nhanh cách nhìn hình",
+  "assumptions": ["..."],
+  "stepByStep": [
+    { "title": "Bước 1", "body": "..." }
+  ],
+  "scene": {
+    "points": [
+      { "id": "A", "x": 180, "y": 120, "label": "A", "locked": false }
+    ],
+    "polygon": {
+      "id": "tri",
+      "points": ["A", "B", "C"],
+      "fill": "#38bdf8",
+      "opacity": 0.14
+    },
+    "circle": {
+      "center": "O",
+      "radiusPoint": "A",
+      "fill": "#38bdf8",
+      "opacity": 0.08
+    },
+    "overlays": [
+      {
+        "type": "segment" | "marker" | "parallel" | "angle",
+        "from": "A",
+        "to": "BC",
+        "at": "A",
+        "color": "#00f0ff",
+        "label": "Đường cao",
+        "dashed": true
+      }
+    ]
+  },
+  "commands": ["vẽ đường cao từ A", "nối trung điểm BC với đỉnh A"],
+  "warnings": ["..."]
+}
+
+Thông tin bài toán:
+${problemText}`;
+
+    const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.2
+        }
+      })
+    });
+
+    if (!apiRes.ok) {
+      const errText = await apiRes.text();
+      throw new Error(`Gemini API error: ${errText}`);
+    }
+
+    const apiData = await apiRes.json() as any;
+    const responseText = apiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!responseText) throw new Error('Empty response from Gemini AI.');
+
+    const parsed = JSON.parse(responseText.trim());
+    res.json({ success: true, result: parsed });
+  } catch (error: any) {
+    console.error('Lỗi gọi Gemini AI Geometry Plane:', error.message);
+    res.status(500).json({ error: 'Failed to process plane geometry analysis: ' + error.message });
+  }
+});
+
+// POST /api/ai/function-graph: Uses Gemini API to analyze a grade 9 function graph problem and return structured guidance
+app.post('/api/ai/function-graph', authMiddleware, async (req: any, res) => {
+  const { problemText } = req.body || {};
+  if (!problemText || !String(problemText).trim()) {
+    return res.status(400).json({ error: 'Missing problemText.' });
+  }
+
+  try {
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!geminiKey || geminiKey.includes('AIzaSy') || geminiKey.includes('sk-')) {
+      return res.status(400).json({ error: 'Gemini API Key is not configured or is a placeholder.' });
+    }
+
+    const prompt = `Bạn là trợ lý Toán 9 chuyên về đồ thị hàm số theo chương trình Bộ GD&ĐT. Hãy phân tích đề bài và trả về đúng một JSON duy nhất, không markdown.
+
+Yêu cầu:
+- Nhận dạng đúng dạng hàm: bậc nhất, bậc hai hoặc unknown.
+- Nếu là bậc nhất, ưu tiên hệ số m, n trong y = mx + n.
+- Nếu là bậc hai, ưu tiên hệ số a, b, c trong y = ax^2 + bx + c.
+- Có thể nêu các điểm đặc biệt: giao với Ox/Oy, đỉnh, trục đối xứng, xét chiều biến thiên cơ bản.
+- Lời giải phải theo cách trình bày Toán 9: nhận dạng hàm -> nêu hệ số -> xác định điểm đặc biệt -> kết luận.
+
+Trả về JSON theo schema:
+{
+  "functionKind": "linear" | "quadratic" | "unknown",
+  "title": "chuỗi ngắn gọn",
+  "summary": "mô tả nhanh",
+  "assumptions": ["..."],
+  "stepByStep": [
+    { "title": "Bước 1", "body": "..." }
+  ],
+  "coefficients": {
+    "m": 1,
+    "n": 0,
+    "a": 1,
+    "b": 0,
+    "c": 0
+  },
+  "commands": ["tăng a lên 2", "tìm giao điểm với Ox"],
+  "warnings": ["..."]
+}
+
+Thông tin bài toán:
+${problemText}`;
+
+    const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.2
+        }
+      })
+    });
+
+    if (!apiRes.ok) {
+      const errText = await apiRes.text();
+      throw new Error(`Gemini API error: ${errText}`);
+    }
+
+    const apiData = await apiRes.json() as any;
+    const responseText = apiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!responseText) throw new Error('Empty response from Gemini AI.');
+
+    const parsed = JSON.parse(responseText.trim());
+    res.json({ success: true, result: parsed });
+  } catch (error: any) {
+    console.error('Lỗi gọi Gemini AI Function Graph:', error.message);
+    res.status(500).json({ error: 'Failed to process function graph analysis: ' + error.message });
+  }
+});
+
 // GET /api/admin/users: Lists all users in the system
 app.get('/api/admin/users', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;

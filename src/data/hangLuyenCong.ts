@@ -160,6 +160,18 @@ export const HANG_TOOLS: HangTool[] = [
     actionLabel: 'Mở Bí kíp'
   },
   {
+    id: 'bikiplane',
+    title: 'Bí kíp Hình học phẳng',
+    description: 'Dựng tam giác, tứ giác, đường tròn; kéo thả điểm, kẻ đường cao, trung tuyến và kiểm tra quan hệ hình học.',
+    actionLabel: 'Mở Bí kíp'
+  },
+  {
+    id: 'bikigraph',
+    title: 'Bí kíp Đồ thị hàm số',
+    description: 'Vẽ hàm số bậc nhất, bậc hai với slider hệ số, xem giao điểm, đỉnh, trục đối xứng và phân tích từng bước.',
+    actionLabel: 'Mở Bí kíp'
+  },
+  {
     id: 'notes',
     title: 'Sổ tay lỗi sai',
     description: 'Ghi lại phần còn yếu, đánh dấu thứ cần ôn lại ở lần sau.',
