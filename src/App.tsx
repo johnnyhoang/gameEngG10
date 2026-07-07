@@ -10,6 +10,10 @@ import { ParentConsole } from './components/ParentConsole';
 import { GoogleLoginScreen } from './components/GoogleLoginScreen';
 import { ProfileThemeModal } from './components/ProfileThemeModal';
 import { HangLuyenCong } from './components/HangLuyenCong';
+import { HangMatThatPage } from './components/HangMatThatPage';
+import { Biki3DStudio } from './components/Biki3DStudio';
+import { BikiDoThiHamSo } from './components/BikiDoThiHamSo';
+import { BikiHinhHocPhang } from './components/BikiHinhHocPhang';
 import { supabase } from './utils/supabaseClient';
 import type { UserProfile } from './types/game';
 
@@ -25,7 +29,7 @@ function App() {
   const setUiTheme = useGameState(state => state.setUiTheme);
 
   // Screen routing state
-  const [screen, setScreen] = useState<'map' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang'>('map');
+  const [screen, setScreen] = useState<'map' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang' | 'hang-3d' | 'hang-plane' | 'hang-graph'>('map');
   const [playMode, setPlayMode] = useState<'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss'>('mixed');
   const [bossId, setBossId] = useState<string | undefined>(undefined);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -130,6 +134,8 @@ function App() {
   };
 
   const isDungeonScreen = screen === 'play';
+  const isHangMatterScreen = screen === 'hang-3d' || screen === 'hang-plane' || screen === 'hang-graph';
+  const topHudScreen = isHangMatterScreen ? 'hang' : screen;
 
   return (
     <div className="app-shell min-h-screen flex flex-col text-slate-100" data-theme={uiTheme}>
@@ -140,14 +146,14 @@ function App() {
         onOpenHang={() => setScreen('hang')}
         onOpenProfile={() => setIsProfileOpen(true)}
         onBackToMap={() => setScreen('map')}
-        currentScreen={screen}
+        currentScreen={topHudScreen}
       />
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:py-8 flex flex-col lg:flex-row gap-6 items-stretch pb-20 lg:pb-8">
         
         {/* Left Companion Panel (Hidden in play area, hidden on mobile) */}
-        {!isDungeonScreen && currentUser?.role !== 'admin' && (
+        {!isDungeonScreen && !isHangMatterScreen && currentUser?.role !== 'admin' && (
           <aside className="hidden lg:block w-72 shrink-0 h-fit lg:sticky lg:top-24">
             <PetSanctuary />
           </aside>
@@ -180,7 +186,52 @@ function App() {
             <HangLuyenCong
               onStartPractice={() => handleStartPlay('mixed')}
               onBackToMap={() => setScreen('map')}
+              onOpenMatThat3D={() => setScreen('hang-3d')}
+              onOpenMatThatPlane={() => setScreen('hang-plane')}
+              onOpenMatThatGraph={() => setScreen('hang-graph')}
             />
+          )}
+
+          {screen === 'hang-3d' && (
+            <HangMatThatPage
+              kind="3d"
+              title="Mật thất 3D"
+              subtitle="Không gian riêng cho hình học không gian lớp 9: dựng hình, xoay 360°, chọn góc nhìn và phân tích từng bước mà không bị bó hẹp trong layout chung."
+              onBack={() => setScreen('hang')}
+              onSwitchTo3D={() => setScreen('hang-3d')}
+              onSwitchToPlane={() => setScreen('hang-plane')}
+              onSwitchToGraph={() => setScreen('hang-graph')}
+            >
+              <Biki3DStudio problemText="" />
+            </HangMatThatPage>
+          )}
+
+          {screen === 'hang-plane' && (
+            <HangMatThatPage
+              kind="plane"
+              title="Mật thất Hình học phẳng"
+              subtitle="Không gian riêng cho tam giác, tứ giác, đường tròn và các đường phụ. Board rộng hơn để kéo thả, nối cạnh, dựng đường cao và đọc lời giải rõ ràng."
+              onBack={() => setScreen('hang')}
+              onSwitchTo3D={() => setScreen('hang-3d')}
+              onSwitchToPlane={() => setScreen('hang-plane')}
+              onSwitchToGraph={() => setScreen('hang-graph')}
+            >
+              <BikiHinhHocPhang problemText="" />
+            </HangMatThatPage>
+          )}
+
+          {screen === 'hang-graph' && (
+            <HangMatThatPage
+              kind="graph"
+              title="Mật thất Đồ thị hàm số"
+              subtitle="Không gian riêng cho bậc nhất và bậc hai, slider hệ số, giao điểm, đỉnh và trục đối xứng. AI sẽ phân tích đề và điều khiển đồ thị theo lệnh."
+              onBack={() => setScreen('hang')}
+              onSwitchTo3D={() => setScreen('hang-3d')}
+              onSwitchToPlane={() => setScreen('hang-plane')}
+              onSwitchToGraph={() => setScreen('hang-graph')}
+            >
+              <BikiDoThiHamSo problemText="" />
+            </HangMatThatPage>
           )}
 
           {screen === 'pet' && (
@@ -197,7 +248,7 @@ function App() {
         </section>
 
         {/* Right Info Ledger (Hidden in play area, hidden on mobile) */}
-        {!isDungeonScreen && currentUser?.role !== 'admin' && (
+        {!isDungeonScreen && !isHangMatterScreen && currentUser?.role !== 'admin' && (
           <aside className="hidden lg:block w-80 shrink-0 h-fit lg:sticky lg:top-24">
             <ActivityLog />
           </aside>
@@ -267,7 +318,7 @@ function App() {
       )}
 
       {/* Mobile Bottom Navigation Bar */}
-      {currentUser && currentUser.role !== 'admin' && screen !== 'play' && (
+      {currentUser && currentUser.role !== 'admin' && screen !== 'play' && !isHangMatterScreen && (
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-cyan/20 px-3 py-2.5 pb-3 flex justify-around items-center z-50 shadow-[0_-4px_20px_rgba(0,240,255,0.15)]">
           <button
             onClick={() => setScreen('map')}

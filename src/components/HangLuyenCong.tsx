@@ -21,13 +21,13 @@ import {
   HANG_TRACKS,
   type HangSubjectId
 } from '../data/hangLuyenCong';
-import { Biki3DStudio } from './Biki3DStudio';
-import { BikiDoThiHamSo } from './BikiDoThiHamSo';
-import { BikiHinhHocPhang } from './BikiHinhHocPhang';
 
 interface HangLuyenCongProps {
   onStartPractice: () => void;
   onBackToMap: () => void;
+  onOpenMatThat3D: () => void;
+  onOpenMatThatPlane: () => void;
+  onOpenMatThatGraph: () => void;
 }
 
 const SUBJECT_META: Record<HangSubjectId, {
@@ -60,13 +60,19 @@ const SUBJECT_META: Record<HangSubjectId, {
   }
 };
 
-export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({ onStartPractice, onBackToMap }) => {
+export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
+  onStartPractice,
+  onBackToMap,
+  onOpenMatThat3D,
+  onOpenMatThatPlane,
+  onOpenMatThatGraph
+}) => {
   const currentSubject = useGameState(state => state.currentSubject);
   const setSubject = useGameState(state => state.setSubject);
   const questions = useGameState(state => state.questions);
 
   const [selectedSubject, setSelectedSubject] = useState<HangSubjectId>(currentSubject);
-  const [activeTool, setActiveTool] = useState<'map' | 'flashcards' | 'drill' | 'biki3d' | 'bikiplane' | 'bikigraph' | 'notes'>('map');
+  const [activeTool, setActiveTool] = useState<'map' | 'flashcards' | 'drill' | 'notes'>('map');
   const [flashcardIndex, setFlashcardIndex] = useState(0);
   const [noteText, setNoteText] = useState('');
 
@@ -251,10 +257,25 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({ onStartPractice, o
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
               {HANG_TOOLS.map(tool => {
                 const isActive = activeTool === tool.id;
+                const openBikiTool = () => {
+                  if (tool.id === 'biki3d') {
+                    onOpenMatThat3D();
+                    return;
+                  }
+                  if (tool.id === 'bikiplane') {
+                    onOpenMatThatPlane();
+                    return;
+                  }
+                  if (tool.id === 'bikigraph') {
+                    onOpenMatThatGraph();
+                    return;
+                  }
+                  setActiveTool(tool.id as typeof activeTool);
+                };
                 return (
                   <button
                     key={tool.id}
-                    onClick={() => setActiveTool(tool.id as typeof activeTool)}
+                    onClick={openBikiTool}
                     className={`rounded-2xl border p-4 text-left transition-all duration-200 cursor-pointer ${
                       isActive
                         ? 'border-synth-cyan/40 bg-synth-cyan/10 shadow-[0_0_16px_rgba(0,240,255,0.12)]'
@@ -351,18 +372,6 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({ onStartPractice, o
                 Bắt đầu luyện <ArrowRight className="w-4 h-4" />
               </button>
             </div>
-          )}
-
-          {activeTool === 'biki3d' && (
-            <Biki3DStudio problemText="" />
-          )}
-
-          {activeTool === 'bikiplane' && (
-            <BikiHinhHocPhang problemText="" />
-          )}
-
-          {activeTool === 'bikigraph' && (
-            <BikiDoThiHamSo problemText="" />
           )}
 
           {activeTool === 'notes' && (
