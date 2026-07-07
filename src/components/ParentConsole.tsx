@@ -8,6 +8,44 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 import { Lock, Unlock, Check, X, Award, Database, Plus, SlidersHorizontal, Search, Pencil, Trash2 } from 'lucide-react';
 import { toast } from '../utils/toast';
 
+const QUESTION_TYPE_LABELS: Record<Question['type'], string> = {
+  mcq: 'Trắc nghiệm',
+  'short-answer': 'Tự luận ngắn',
+  proof: 'Chứng minh',
+  'multi-part': 'Nhiều ý',
+  wordform: 'Word form',
+  rewrite: 'Rewrite',
+  cloze: 'Cloze',
+  reading: 'Reading'
+};
+
+const ENGLISH_PART_LABELS = Object.fromEntries(ENGLISH_EXAM_BLUEPRINT.map(part => [part.part, part.title])) as Record<string, string>;
+const MATH_PART_LABELS = Object.fromEntries(MATH_EXAM_BLUEPRINT.map(part => [part.part, part.title])) as Record<string, string>;
+const LITERATURE_PART_LABELS = Object.fromEntries(LITERATURE_EXAM_BLUEPRINT.map(part => [part.part, part.title])) as Record<string, string>;
+
+const humanizeKey = (value: string) => value.replace(/-/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase());
+
+const getExamPartLabel = (question: Question) => {
+  const part = question.metadata?.examPart?.trim();
+  if (!part) return 'Chưa gắn part';
+  if (question.subject === 'math') return MATH_PART_LABELS[part] ? `${part} - ${MATH_PART_LABELS[part]}` : part;
+  if (question.subject === 'literature') return LITERATURE_PART_LABELS[part] ? `${part} - ${LITERATURE_PART_LABELS[part]}` : part;
+  return ENGLISH_PART_LABELS[part] ? `${part} - ${ENGLISH_PART_LABELS[part]}` : part;
+};
+
+const getTopicLabel = (question: Question) => {
+  if (question.subject === 'math') {
+    const topic = question.metadata?.mathTopic || question.category;
+    return MATH_TOPIC_LABELS[topic as keyof typeof MATH_TOPIC_LABELS] || humanizeKey(topic || 'Chưa phân loại');
+  }
+  if (question.subject === 'literature') {
+    const topic = question.metadata?.literatureTask || question.category;
+    return LITERATURE_TASK_LABELS[topic as keyof typeof LITERATURE_TASK_LABELS] || humanizeKey(topic || 'Chưa phân loại');
+  }
+  const topic = question.metadata?.englishTask || question.category;
+  return ENGLISH_TASK_LABELS[topic as keyof typeof ENGLISH_TASK_LABELS] || humanizeKey(topic || 'Chưa phân loại');
+};
+
 export const ParentConsole: React.FC = () => {
   const verifyPIN = useGameState(state => state.verifyPIN);
   const approveReward = useGameState(state => state.approveReward);
@@ -53,6 +91,9 @@ export const ParentConsole: React.FC = () => {
   const [challengeCost4, setChallengeCost4] = useState(10);
   const [questionQuery, setQuestionQuery] = useState('');
   const [subjectFilter, setSubjectFilter] = useState<'all' | 'english' | 'math' | 'literature'>('all');
+  const [questionTypeFilter, setQuestionTypeFilter] = useState<'all' | Question['type']>('all');
+  const [examPartFilter, setExamPartFilter] = useState('all');
+  const [topicFilter, setTopicFilter] = useState('all');
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [editType, setEditType] = useState<Question['type']>('mcq');
   const [editPrompt, setEditPrompt] = useState('');
@@ -217,7 +258,7 @@ export const ParentConsole: React.FC = () => {
   // Active Data bindings: if viewing a student, use their loaded data. Otherwise fall back to parent.
   const activeRewards = selectedStudentProfile?.rewards || [];
 
-  const typeCounts = useMemo(() => {
+  const questionTypeCounts = useMemo(() => {
     return questions.reduce((acc: Record<string, number>, q) => {
       acc[q.type] = (acc[q.type] || 0) + 1;
       return acc;
@@ -226,11 +267,50 @@ export const ParentConsole: React.FC = () => {
 
   const examPartCounts = useMemo(() => {
     return questions.reduce((acc: Record<string, number>, q) => {
-      const key = q.metadata?.examPart || 'Chưa gắn part';
+      const key = q.metadata?.examPart?.trim() || 'Chưa gắn part';
       acc[key] = (acc[key] || 0) + 1;
       return acc;
     }, {});
   }, [questions]);
+
+  const topicCounts = useMemo(() => {
+    return questions.reduce((acc: Record<string, number>, q) => {
+      const key = q.category?.trim() || 'Chưa phân loại';
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+  }, [questions]);
+
+  const topTypeEntries = Object.entries(questionTypeCounts).sort((a, b) => b[1] - a[1]);
+  const topExamParts = Object.entries(examPartCounts).sort((a, b) => b[1] - a[1]);
+  const topTopics = Object.entries(topicCounts).sort((a, b) => b[1] - a[1]);
+
+  const examPartLabelMap = useMemo(() => {
+    return questions.reduce((acc: Record<string, string>, q) => {
+      const key = q.metadata?.examPart?.trim() || 'Chưa gắn part';
+      if (!acc[key]) acc[key] = getExamPartLabel(q);
+      return acc;
+    }, {});
+  }, [questions]);
+
+  const topicLabelMap = useMemo(() => {
+    return questions.reduce((acc: Record<string, string>, q) => {
+      const key = q.category?.trim() || 'Chưa phân loại';
+      if (!acc[key]) acc[key] = getTopicLabel(q);
+      return acc;
+    }, {});
+  }, [questions]);
+
+  const subjectCoverageRows = [
+    { key: 'mcq', label: 'Trắc nghiệm' },
+    { key: 'short-answer', label: 'Tự luận ngắn' },
+    { key: 'proof', label: 'Chứng minh' },
+    { key: 'multi-part', label: 'Nhiều ý' },
+    { key: 'wordform', label: 'Word form' },
+    { key: 'rewrite', label: 'Rewrite' },
+    { key: 'cloze', label: 'Cloze' },
+    { key: 'reading', label: 'Reading' }
+  ] as const;
 
   const mathTopicCounts = useMemo(() => {
     return questions
@@ -273,6 +353,9 @@ export const ParentConsole: React.FC = () => {
         const qSubject = q.subject || 'english';
         if (qSubject !== subjectFilter) return false;
       }
+      if (questionTypeFilter !== 'all' && q.type !== questionTypeFilter) return false;
+      if (examPartFilter !== 'all' && (q.metadata?.examPart || 'Chưa gắn part') !== examPartFilter) return false;
+      if (topicFilter !== 'all' && (q.category || 'Chưa phân loại') !== topicFilter) return false;
       if (!query) return true;
       const haystack = [
         q.prompt,
@@ -296,7 +379,7 @@ export const ParentConsole: React.FC = () => {
         .toLowerCase();
       return haystack.includes(query);
     });
-  }, [questions, questionQuery, subjectFilter]);
+  }, [questions, questionQuery, subjectFilter, questionTypeFilter, examPartFilter, topicFilter]);
 
   const filteredSubjectCounts = useMemo(() => {
     return filteredQuestions.reduce((acc: Record<string, number>, q) => {
@@ -729,13 +812,16 @@ export const ParentConsole: React.FC = () => {
                 <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">Bộ lọc theo môn</span>
-                      <p className="text-[10px] text-synth-text-muted mt-1">Chạm vào môn học để thu hẹp kho đề ngay.</p>
+                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">Tab môn học</span>
+                      <p className="text-[10px] text-synth-text-muted mt-1">Chọn 1 tab môn để mở đúng nội dung của môn đó.</p>
                     </div>
                     <button
                       type="button"
                       onClick={() => {
                         setSubjectFilter('all');
+                        setQuestionTypeFilter('all');
+                        setExamPartFilter('all');
+                        setTopicFilter('all');
                         setQuestionQuery('');
                       }}
                       className="text-[10px] px-2.5 py-1 rounded-full bg-white/5 text-white border border-white/10 font-bold uppercase hover:bg-white/10 transition-colors"
@@ -786,7 +872,7 @@ export const ParentConsole: React.FC = () => {
                             <div className="space-y-0.5">
                               <span className="block text-[11px] uppercase font-orbitron font-bold tracking-wider">{label}</span>
                               <span className="block text-[10px] text-inherit/70">
-                                {sub === 'all' ? 'Toàn bộ kho đề' : 'Chỉ xem câu thuộc môn này'}
+                                {sub === 'all' ? 'Xem tổng quan' : 'Chỉ câu của môn này'}
                               </span>
                             </div>
                             <span className="min-w-12 text-center px-2.5 py-1 rounded-full bg-white/10 text-xs font-black">
@@ -796,6 +882,120 @@ export const ParentConsole: React.FC = () => {
                         </button>
                       );
                     })}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">Bộ lọc CRUD</span>
+                      <p className="text-[10px] text-synth-text-muted mt-1">Lọc theo dạng câu, part và topic để sửa nhanh hơn.</p>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 gap-3">
+                    <label className="space-y-1.5 text-[10px]">
+                      <span className="block uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">Dạng câu</span>
+                      <select
+                        value={questionTypeFilter}
+                        onChange={(e) => setQuestionTypeFilter(e.target.value as typeof questionTypeFilter)}
+                        className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                      >
+                        <option value="all">Tất cả dạng</option>
+                        {topTypeEntries.map(([type, count]) => (
+                          <option key={type} value={type}>
+                            {QUESTION_TYPE_LABELS[type as Question['type']] || type} ({count})
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="space-y-1.5 text-[10px]">
+                      <span className="block uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">Bài / Part</span>
+                      <select
+                        value={examPartFilter}
+                        onChange={(e) => setExamPartFilter(e.target.value)}
+                        className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                      >
+                        <option value="all">Tất cả part</option>
+                        {topExamParts.map(([part, count]) => (
+                          <option key={part} value={part}>
+                            {examPartLabelMap[part] || part} ({count})
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                    <label className="space-y-1.5 text-[10px]">
+                      <span className="block uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">Topic / Chuyên đề</span>
+                      <select
+                        value={topicFilter}
+                        onChange={(e) => setTopicFilter(e.target.value)}
+                        className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                      >
+                        <option value="all">Tất cả topic</option>
+                        {topTopics.map(([topic, count]) => (
+                          <option key={topic} value={topic}>
+                            {topicLabelMap[topic] || topic} ({count})
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">Preset lọc nhanh</span>
+                      <p className="text-[10px] text-synth-text-muted mt-1">Chọn nhanh theo môn và đề đang xem.</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      {
+                        label: 'Tất cả',
+                        run: () => {
+                          setSubjectFilter('all');
+                          setQuestionTypeFilter('all');
+                          setExamPartFilter('all');
+                          setTopicFilter('all');
+                        }
+                      },
+                      {
+                        label: 'Anh Part I',
+                        run: () => {
+                          setSubjectFilter('english');
+                          setQuestionTypeFilter('mcq');
+                          setExamPartFilter('Part I');
+                          setTopicFilter('all');
+                        }
+                      },
+                      {
+                        label: 'Toán Bài 2',
+                        run: () => {
+                          setSubjectFilter('math');
+                          setQuestionTypeFilter('all');
+                          setExamPartFilter('Bài 2');
+                          setTopicFilter('all');
+                        }
+                      },
+                      {
+                        label: 'Văn đọc hiểu',
+                        run: () => {
+                          setSubjectFilter('literature');
+                          setQuestionTypeFilter('all');
+                          setExamPartFilter('Phần I');
+                          setTopicFilter('all');
+                        }
+                      }
+                    ].map(preset => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={preset.run}
+                        className="px-3 py-1.5 rounded-full border border-white/10 bg-white/5 text-[10px] font-bold uppercase text-white hover:bg-white/10 transition-colors"
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
@@ -843,12 +1043,66 @@ export const ParentConsole: React.FC = () => {
                     <span className="text-2xl font-black text-synth-green font-orbitron">{filteredQuestions.length}</span>
                     <span className="text-[10px] text-synth-text-muted">Theo môn + từ khóa</span>
                   </div>
-                </div>                {subjectFilter === 'all' ? (
-                  <div className="rounded-2xl border border-dashed border-white/10 bg-synth-gray/10 p-5 space-y-2">
-                    <p className="text-sm font-semibold text-white">Chọn 1 môn ở sidebar bên trái để xem chi tiết riêng.</p>
-                    <p className="text-[10px] text-synth-text-muted leading-relaxed">
-                      Khi đang ở chế độ Tất cả, admin chỉ thấy tổng quan ngắn gọn. Chọn Tiếng Anh, Toán hoặc Ngữ văn để mở đúng blueprint, topic và task của môn đó.
-                    </p>
+                </div>
+
+                {subjectFilter === 'all' ? (
+                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <h5 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">Phân bố theo dạng câu</h5>
+                        <p className="text-[10px] text-synth-text-muted mt-1">Cho biết mỗi dạng đang có bao nhiêu câu trong kho.</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => showHelp('bank-structure')}
+                        className="text-[10px] px-2.5 py-1 rounded-full border border-synth-cyan/30 text-synth-cyan font-bold uppercase hover:bg-synth-cyan/10 transition-colors"
+                      >
+                        Help
+                      </button>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {topTypeEntries.map(([type, count]) => (
+                        <span key={type} className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold uppercase text-white">
+                          {QUESTION_TYPE_LABELS[type as Question['type']] || type}: {count}
+                        </span>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+                      {subjectCoverageRows.map(row => {
+                        const englishCount = questions.filter(q => (q.subject || 'english') === 'english' && q.type === row.key).length;
+                        const mathCount = questions.filter(q => q.subject === 'math' && q.type === row.key).length;
+                        const literatureCount = questions.filter(q => q.subject === 'literature' && q.type === row.key).length;
+                        const total = englishCount + mathCount + literatureCount;
+                        return (
+                          <div key={row.key} className="rounded-2xl border border-white/5 bg-white/5 p-3 space-y-3">
+                            <div className="flex items-start justify-between gap-3">
+                              <div>
+                                <div className="text-[11px] uppercase font-orbitron font-bold text-white">{row.label}</div>
+                                <p className="text-[10px] text-synth-text-muted mt-1">Tổng: {total} câu</p>
+                              </div>
+                              <span className="px-2 py-1 rounded-full bg-synth-cyan/15 text-synth-cyan text-[10px] font-bold uppercase">Matrix</span>
+                            </div>
+                            <div className="grid grid-cols-3 gap-2 text-[10px]">
+                              <div className="rounded-xl bg-synth-cyan/10 border border-synth-cyan/20 px-2 py-2 text-center">
+                                <div className="text-synth-cyan font-bold">Anh</div>
+                                <div className="text-white font-black mt-1">{englishCount}</div>
+                              </div>
+                              <div className="rounded-xl bg-synth-magenta/10 border border-synth-magenta/20 px-2 py-2 text-center">
+                                <div className="text-synth-magenta font-bold">Toán</div>
+                                <div className="text-white font-black mt-1">{mathCount}</div>
+                              </div>
+                              <div className="rounded-xl bg-synth-orange/10 border border-synth-orange/20 px-2 py-2 text-center">
+                                <div className="text-synth-orange font-bold">Văn</div>
+                                <div className="text-white font-black mt-1">{literatureCount}</div>
+                              </div>
+                            </div>
+                            <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
+                              <div className="h-full rounded-full bg-gradient-to-r from-synth-cyan via-synth-magenta to-synth-orange" style={{ width: `${Math.max(8, Math.min(100, total ? (total / Math.max(1, questions.length)) * 100 : 0))}%` }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 ) : subjectFilter === 'english' ? (
                   <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-4">
@@ -964,7 +1218,7 @@ export const ParentConsole: React.FC = () => {
                               <div className="space-y-2 min-w-0">
                                 <div className="flex flex-wrap items-center gap-2">
                                   <span className="text-[10px] px-2 py-0.5 rounded bg-synth-cyan/20 text-synth-cyan font-bold uppercase font-orbitron">
-                                    {q.type}
+                                    {QUESTION_TYPE_LABELS[q.type] || q.type}
                                   </span>
                                   <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase font-orbitron ${
                                     (q.subject || 'english') === 'english' ? 'bg-synth-cyan/20 text-synth-cyan' :
@@ -976,11 +1230,11 @@ export const ParentConsole: React.FC = () => {
                                      '✍️ Văn'}
                                   </span>
                                   <span className="text-[10px] px-2 py-0.5 rounded bg-synth-magenta/15 text-synth-magenta font-bold uppercase font-orbitron">
-                                    {q.category}
+                                    {getTopicLabel(q)}
                                   </span>
                                   {q.metadata?.examPart && (
                                     <span className="text-[10px] px-2 py-0.5 rounded bg-synth-green/15 text-synth-green font-bold uppercase font-orbitron">
-                                      {q.metadata.examPart}
+                                      {getExamPartLabel(q)}
                                     </span>
                                   )}
                                   {q.subject === 'english' && q.metadata?.englishPart && (
@@ -1181,12 +1435,21 @@ export const ParentConsole: React.FC = () => {
                   Câu hỏi AI/import sẽ được cập nhật và lưu lại vào kho đề.
                 </p>
               </div>
-              <button
-                onClick={() => setEditingQuestion(null)}
-                className="px-3 py-1.5 rounded-lg border border-white/10 text-white text-xs font-bold hover:bg-white/5"
-              >
-                Đóng
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => showHelp(`question-type-${editingQuestion?.type || 'mcq'}`)}
+                  className="px-3 py-1.5 rounded-lg border border-synth-cyan/30 text-synth-cyan text-xs font-bold hover:bg-synth-cyan/10"
+                >
+                  Help dạng này
+                </button>
+                <button
+                  onClick={() => setEditingQuestion(null)}
+                  className="px-3 py-1.5 rounded-lg border border-white/10 text-white text-xs font-bold hover:bg-white/5"
+                >
+                  Đóng
+                </button>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
@@ -1889,6 +2152,9 @@ export const ParentConsole: React.FC = () => {
     </div>
   );
 };
+
+
+
 
 
 

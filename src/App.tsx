@@ -12,6 +12,7 @@ import { ProfileThemeModal } from './components/ProfileThemeModal';
 import { HangLuyenCong } from './components/HangLuyenCong';
 import { HangMatThatPage } from './components/HangMatThatPage';
 import { LessonStudyView } from './components/LessonStudyView';
+import { RelaxationZone } from './components/RelaxationZone';
 import { Biki3DStudio } from './components/Biki3DStudio';
 import { BikiDoThiHamSo } from './components/BikiDoThiHamSo';
 import { BikiHinhHocPhang } from './components/BikiHinhHocPhang';
@@ -33,7 +34,7 @@ function App() {
   const setUiTheme = useGameState(state => state.setUiTheme);
 
   // Screen routing state
-  const [screen, setScreen] = useState<'map' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang' | 'hang-3d' | 'hang-plane' | 'hang-graph' | 'lesson-study'>('map');
+  const [screen, setScreen] = useState<'map' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang' | 'hang-3d' | 'hang-plane' | 'hang-graph' | 'lesson-study' | 'relax'>('map');
   const [playMode, setPlayMode] = useState<'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss' | 'lesson' | 'survival'>('mixed');
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const masterLesson = useGameState(state => state.masterLesson);
@@ -187,7 +188,7 @@ function App() {
 
   const isDungeonScreen = screen === 'play';
   const isHangMatterScreen = screen === 'hang-3d' || screen === 'hang-plane' || screen === 'hang-graph';
-  const topHudScreen = (isHangMatterScreen || screen === 'lesson-study') ? 'hang' : screen;
+  const topHudScreen = (isHangMatterScreen || screen === 'lesson-study') ? 'hang' : (screen === 'relax' ? 'map' : screen);
 
   return (
     <div className="app-shell min-h-screen flex flex-col text-slate-100" data-theme={uiTheme}>
@@ -221,6 +222,7 @@ function App() {
               onOpenHang={() => setScreen('hang')}
               onStudyLesson={handleStudyLessonFromMap}
               onStartLessonPractice={handleStartLessonPracticeFromMap}
+              onOpenRelax={() => setScreen('relax')}
             />
           )}
 
@@ -321,6 +323,10 @@ function App() {
             >
               <BikiDoThiHamSo problemText="" />
             </HangMatThatPage>
+          )}
+
+          {screen === 'relax' && (
+            <RelaxationZone onBack={() => setScreen('map')} />
           )}
 
           {screen === 'pet' && (

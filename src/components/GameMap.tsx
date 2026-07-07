@@ -17,9 +17,10 @@ interface GameMapProps {
   onOpenHang: () => void;
   onStudyLesson?: (lessonId: string) => void;
   onStartLessonPractice?: (lessonId: string) => void;
+  onOpenRelax?: () => void;
 }
 
-export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang, onStudyLesson, onStartLessonPractice }: GameMapProps) {
+export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang, onStudyLesson, onStartLessonPractice, onOpenRelax }: GameMapProps) {
   const player = useGameState(state => state.player);
   const dailyMission = useGameState(state => state.dailyMission);
   const consumeEnergy = useGameState(state => state.useEnergy);
@@ -186,26 +187,59 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
         </div>
       )}
 
-      {/* Hang Luyen Cong shortcut */}
-      <div className="glass-panel rounded-2xl border border-synth-cyan/30 bg-gradient-to-r from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex flex-col md:flex-row justify-between items-center gap-4">
-        <div className="space-y-1 text-center md:text-left">
-          <div className="flex items-center gap-2 justify-center md:justify-start">
-            <span className="w-2.5 h-2.5 rounded-full bg-synth-cyan animate-ping" />
-            <h2 className="font-orbitron text-lg font-black text-white uppercase tracking-wider">
-              Hang Luyện Công
-            </h2>
+      {/* Shortcut Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Hang Luyen Cong shortcut */}
+        <div className="glass-panel rounded-2xl border border-synth-cyan/30 bg-gradient-to-r from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex flex-col justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-synth-cyan animate-ping" />
+              <h2 className="font-orbitron text-lg font-black text-white uppercase tracking-wider">
+                Hang Luyện Công
+              </h2>
+            </div>
+            <p className="text-xs text-synth-text-muted">
+              Tổng ôn Toán, Văn, Anh bằng bản đồ kiến thức, thẻ nhớ, sổ tay lỗi sai và đường vào phòng luyện nhanh.
+            </p>
           </div>
-          <p className="text-xs text-synth-text-muted">
-            Tổng ôn Toán, Văn, Anh bằng bản đồ kiến thức, thẻ nhớ, sổ tay lỗi sai và đường vào phòng luyện nhanh.
-          </p>
+
+          <button
+            onClick={onOpenHang}
+            className="w-full py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 shadow-[0_0_15px_#00f0ff]"
+          >
+            Vào Hang Luyện Công
+          </button>
         </div>
 
-        <button
-          onClick={onOpenHang}
-          className="px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 shadow-[0_0_15px_#00f0ff]"
-        >
-          Vào Hang Luyện Công
-        </button>
+        {/* Son Trang Thu Gian shortcut */}
+        <div className={`glass-panel rounded-2xl p-5 flex flex-col justify-between gap-4 border ${
+          isUnicorn 
+            ? 'border-violet-200/35 bg-gradient-to-r from-fuchsia-50/20 via-white/10 to-cyan-50/20 shadow-[0_10px_28px_rgba(192,132,252,0.06)]' 
+            : 'border-synth-magenta/30 bg-gradient-to-r from-synth-magenta/10 via-synth-purple/10 to-transparent'
+        }`}>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-synth-magenta animate-ping" />
+              <h2 className="font-orbitron text-lg font-black text-white uppercase tracking-wider">
+                Sơn Trang Thư Giãn
+              </h2>
+            </div>
+            <p className="text-xs text-synth-text-muted">
+              Khu vui chơi giải trí nhẹ nhàng, tích hợp flashcards, ghép cặp bài trùng, sơ đồ tư duy sáng tạo và học qua cốt truyện hấp dẫn.
+            </p>
+          </div>
+
+          <button
+            onClick={onOpenRelax}
+            className={`w-full py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 ${
+              isUnicorn
+                ? 'bg-gradient-to-r from-fuchsia-400 via-violet-400 to-cyan-300 text-violet-900 shadow-[0_0_15px_rgba(192,132,252,0.35)]'
+                : 'bg-synth-magenta text-black hover:synth-glow-magenta shadow-[0_0_15px_#ff007f]'
+            }`}
+          >
+            Ghé Sơn Trang Thư Giãn 🏝️
+          </button>
+        </div>
       </div>
 
       {/* ─── ARENA MODES ─── */}

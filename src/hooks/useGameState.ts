@@ -138,6 +138,70 @@ const HELP_TOPICS: Record<string, { title: string; bullets: string[] }> = {
       '• Ưu tiên answerMode phù hợp: short-answer cho đáp số, proof cho chứng minh, multi-part cho bài phân hóa.'
     ]
   },
+  'question-type-mcq': {
+    title: 'Trắc nghiệm',
+    bullets: [
+      '• Chỉ nên lưu 1 đáp án đúng duy nhất trong correctAnswer.',
+      '• Giữ 4 lựa chọn rõ ràng, cùng định dạng, tránh đáp án dài ngắn lệch nhau.',
+      '• Khi giải thích, nêu vì sao đáp án đúng và vì sao các phương án còn lại sai.'
+    ]
+  },
+  'question-type-short-answer': {
+    title: 'Tự luận ngắn',
+    bullets: [
+      '• Nên có đáp số cuối rõ ràng, kèm đơn vị nếu có.',
+      '• solutionSteps nên chia 2-4 bước ngắn, đúng trọng tâm.',
+      '• Chấm theo đáp số + lập luận; không nên viết dài lan man.'
+    ]
+  },
+  'question-type-proof': {
+    title: 'Chứng minh',
+    bullets: [
+      '• Trình bày theo giả thiết -> suy luận -> kết luận.',
+      '• Mỗi ý chứng minh nên có mốc riêng để chấm rubric.',
+      '• Nếu là hình học, nên nêu rõ góc, tam giác đồng dạng, hệ thức lượng hoặc phương tích.'
+    ]
+  },
+  'question-type-multi-part': {
+    title: 'Nhiều ý',
+    bullets: [
+      '• Tách từng ý a/b/c trong prompt và solutionSteps.',
+      '• Mỗi ý cần kết quả riêng để hệ thống chấm từng phần.',
+      '• Nếu một ý là điều kiện, ý sau là tính toán, phải ghi rõ trình tự để UI không lẫn.'
+    ]
+  },
+  'question-type-wordform': {
+    title: 'Word form',
+    bullets: [
+      '• Lưu đúng từ gốc và các đáp án chấp nhận được.',
+      '• Nếu có nhiều biến thể đúng, liệt kê hết trong correctAnswer.',
+      '• Khi chấm, ưu tiên đúng loại từ và đúng ngữ cảnh câu.'
+    ]
+  },
+  'question-type-rewrite': {
+    title: 'Rewrite / Transformation',
+    bullets: [
+      '• Giữ nguyên nghĩa, đổi đúng cấu trúc được yêu cầu.',
+      '• Lưu nhiều đáp án chấp nhận được nếu đề cho phép biến thể.',
+      '• Chấm theo đúng dạng chuyển đổi: passive, reported speech, clause, inversion, etc.'
+    ]
+  },
+  'question-type-cloze': {
+    title: 'Cloze',
+    bullets: [
+      '• Chú ý ngữ cảnh trước và sau chỗ trống.',
+      '• Nếu là guided cloze, nên ghi rõ dạng từ cần điền và collocation.',
+      '• Chấm theo đáp án đúng hoặc các biến thể được chấp nhận.'
+    ]
+  },
+  'question-type-reading': {
+    title: 'Reading',
+    bullets: [
+      '• Luôn gắn đoạn đọc / ngữ liệu gốc ở đầu prompt.',
+      '• Câu hỏi nên ghi rõ cần main idea, detail, reference hay true/false.',
+      '• Chấm theo ý chính, không chỉ theo từ khóa rời rạc.'
+    ]
+  },
   streak: {
     title: 'Chuỗi học tập liên tục (Streak)',
     bullets: [

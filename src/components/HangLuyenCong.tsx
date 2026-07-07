@@ -103,6 +103,76 @@ const SUBJECT_META: Record<HangSubjectId, {
   }
 };
 
+const SUBJECT_TRACKS: Record<HangSubjectId, {
+  tag: string;
+  title: string;
+  description: string;
+  focusLabel: string;
+  focusPoints: string[];
+  lessonTitle: string;
+  lessonDescription: string;
+  sampleTitle: string;
+  sampleDescription: string;
+  toolTitle: string;
+  toolDescription: string;
+  notePlaceholder: string;
+}> = {
+  math: {
+    tag: 'Toán - công thức, dạng bài, thực chiến',
+    title: 'Track Toán: giải nhanh, trình bày gọn, tránh lỗi công thức',
+    description: 'Tách riêng phần đại số, hình học, đồ thị và bài toán thực tế để con luyện đúng nhịp, đúng dạng, đúng cách trình bày.',
+    focusLabel: 'Trọng tâm Toán',
+    focusPoints: [
+      'Bấm đúng công thức, khai triển đúng bước, trình bày ngắn mà đủ ý',
+      'Tách riêng đại số, hình học, đồ thị và bài thực tế',
+      'Luyện theo dạng để nhận diện đề nhanh hơn trước khi làm'
+    ],
+    lessonTitle: 'Chuyên đề Toán',
+    lessonDescription: 'Ôn lý thuyết theo từng mảng kiến thức rồi mới nhảy sang câu luyện.',
+    sampleTitle: 'Câu mẫu Toán',
+    sampleDescription: 'Xem nhanh các câu đại diện cho dạng bài, mức độ và nguồn ra đề.',
+    toolTitle: 'Bảng công cụ Toán',
+    toolDescription: 'Chọn một công cụ luyện duy nhất ở mỗi lượt để tránh loãng nhịp học.',
+    notePlaceholder: 'Ví dụ: quên điều kiện xác định; viết thiếu bước biến đổi; nhầm dấu khi khai triển...'
+  },
+  literature: {
+    tag: 'Ngữ văn - đọc hiểu, nghị luận, dẫn chứng',
+    title: 'Track Văn: đọc đúng, viết đúng, chạm rubric',
+    description: 'Chia rõ đọc hiểu, nghị luận xã hội và nghị luận văn học để con luyện cách trả lời, lập luận và dùng dẫn chứng theo thang chấm.',
+    focusLabel: 'Trọng tâm Văn',
+    focusPoints: [
+      'Đọc hiểu theo câu hỏi, trả lời ngắn gọn nhưng đúng trọng tâm',
+      'Nghị luận có bố cục rõ, luận điểm mạch lạc, dẫn chứng phù hợp',
+      'Luyện cách trình bày để không bị mất điểm vì diễn đạt hoặc thiếu ý'
+    ],
+    lessonTitle: 'Chuyên đề Văn',
+    lessonDescription: 'Ôn từng mảng nội dung, sau đó nối sang cách viết và cách chấm.',
+    sampleTitle: 'Câu mẫu Văn',
+    sampleDescription: 'Bộ câu đại diện cho các kiểu đọc hiểu và viết đoạn/bài trong đề thật.',
+    toolTitle: 'Bảng công cụ Văn',
+    toolDescription: 'Ghi lỗi sai, chốt bố cục, kiểm tra dẫn chứng trước khi nộp bài.',
+    notePlaceholder: 'Ví dụ: mở bài dài nhưng thiếu luận điểm; dẫn chứng chung chung; chưa bám yêu cầu câu hỏi...'
+  },
+  english: {
+    tag: 'Tiếng Anh - ngữ pháp, đọc hiểu, biến đổi câu',
+    title: 'Track Anh: tách ngữ pháp, đọc hiểu và viết lại câu',
+    description: 'Chia riêng từng cụm kỹ năng để con học theo đúng kiểu đề: ngữ pháp, từ vựng, đọc hiểu, viết lại câu và phát âm.',
+    focusLabel: 'Trọng tâm Anh',
+    focusPoints: [
+      'Nhìn nhanh cấu trúc để khoanh đúng dạng ngữ pháp và từ vựng',
+      'Tách phần đọc hiểu và viết lại câu thành bài luyện riêng',
+      'Ghi lỗi sai theo mẫu để tránh lặp lại bẫy đề'
+    ],
+    lessonTitle: 'Chuyên đề Anh',
+    lessonDescription: 'Ôn lý thuyết theo nhóm dạng rồi mới chuyển sang câu luyện.',
+    sampleTitle: 'Câu mẫu Anh',
+    sampleDescription: 'Mỗi câu đại diện cho một nhóm dạng thường gặp trong đề thi.',
+    toolTitle: 'Bảng công cụ Anh',
+    toolDescription: 'Dùng thẻ nhớ, luyện nhanh, sổ tay và nguồn tài liệu theo đúng thứ tự.',
+    notePlaceholder: 'Ví dụ: nhầm thì, nhầm mạo từ, chọn sai dạng word form, thiếu từ trong rewrite...'
+  }
+};
+
 export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   onStartPractice,
   onStudyLesson,
@@ -161,6 +231,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
 
   const currentFlashcard = activeFlashcards[flashcardIndex % activeFlashcards.length];
   const meta = SUBJECT_META[selectedSubject];
+  const track = SUBJECT_TRACKS[selectedSubject];
 
   const handleSelectSubject = (subject: HangSubjectId) => {
     setSelectedSubject(subject);
@@ -179,16 +250,18 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
     literature: questions.filter(q => q.subject === 'literature').length
   };
 
+  const subjectTabOrder: HangSubjectId[] = ['math', 'literature', 'english'];
+
   const wizardSteps = [
     {
       step: '01',
       title: 'Chọn môn',
-      body: `Hiện đang chọn ${meta.label}.`
+      body: `Hiện đang mở track ${meta.label}: ${track.tag}.`
     },
     {
       step: '02',
       title: 'Chọn mật thất',
-      body: 'Bấm vào 1 mật thất để mở trang riêng, không làm dồn layout.'
+      body: `Mở đúng cụm ${meta.shortLabel} để đi thẳng vào dạng bài phù hợp.`
     },
     {
       step: '03',
@@ -231,27 +304,84 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {Object.entries(subjectTotals).map(([subject, total]) => {
-              const key = subject as HangSubjectId;
-              const item = SUBJECT_META[key];
-              return (
-                <button
-                  key={subject}
-                  onClick={() => handleSelectSubject(key)}
-                  className={`rounded-2xl border p-4 text-left bg-gradient-to-br ${item.accentSoft} transition-all duration-200 cursor-pointer ${
-                    selectedSubject === key ? 'border-white/30 shadow-[0_0_18px_rgba(255,255,255,0.08)] scale-[1.01]' : 'border-white/10 hover:border-white/20'
-                  }`}
-                >
-                  <div className={`flex items-center gap-2 font-orbitron font-black uppercase ${item.accent}`}>
-                    {item.icon}
-                    <span className="text-[11px]">{item.shortLabel}</span>
-                  </div>
-                  <div className="mt-3 text-2xl font-black text-white">{total}</div>
-                  <div className="text-[10px] uppercase tracking-wider text-slate-300">câu hiện có</div>
-                </button>
-              );
-            })}
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-3 md:p-4 space-y-4">
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <div className="text-[10px] uppercase tracking-[0.26em] text-synth-cyan font-bold">Tab môn</div>
+                <h2 className="font-orbitron font-black text-sm uppercase tracking-wider text-white mt-1">
+                  Chọn Toán, Văn hoặc Anh
+                </h2>
+              </div>
+              <span className="text-[10px] uppercase tracking-[0.22em] text-slate-400 font-bold">
+                Đang chọn: {meta.label}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {subjectTabOrder.map(subject => {
+                const item = SUBJECT_META[subject];
+                const total = subjectTotals[subject];
+                const active = selectedSubject === subject;
+                return (
+                  <button
+                    key={subject}
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => handleSelectSubject(subject)}
+                    className={`rounded-2xl border p-4 text-left bg-gradient-to-br ${item.accentSoft} transition-all duration-200 cursor-pointer ${
+                      active ? 'border-white/30 shadow-[0_0_18px_rgba(255,255,255,0.08)] scale-[1.01]' : 'border-white/10 hover:border-white/20'
+                    }`}
+                  >
+                    <div className={`flex items-center gap-2 font-orbitron font-black uppercase ${item.accent}`}>
+                      {item.icon}
+                      <span className="text-[11px]">{item.label}</span>
+                    </div>
+                    <div className="mt-3 text-2xl font-black text-white">{total}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-slate-300">câu hiện có</div>
+                    <div className="mt-3 text-[10px] text-slate-200/80 leading-relaxed">
+                      {active ? 'Đang mở tab này' : 'Bấm để chuyển sang tab này'}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-3">
+            <div className={`rounded-2xl border border-white/10 bg-gradient-to-br ${meta.accentSoft} p-4`}>
+              <div className="text-[10px] uppercase tracking-[0.28em] text-white/70 font-bold">
+                {track.tag}
+              </div>
+              <div className="mt-2 flex items-center gap-2 text-white">
+                {meta.icon}
+                <h3 className="font-orbitron font-black uppercase tracking-wider text-sm md:text-base">{track.title}</h3>
+              </div>
+              <p className="mt-2 text-xs md:text-sm text-white/80 leading-relaxed">
+                {track.description}
+              </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className={`inline-flex items-center gap-2 rounded-full border border-white/15 bg-synth-gray/30 px-3 py-1 text-[10px] uppercase tracking-[0.24em] font-bold ${meta.accent}`}>
+                  {meta.shortLabel} hiện tại
+                </span>
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-synth-gray/30 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-slate-200 font-bold">
+                  {subjectTotals[selectedSubject]} câu trong kho
+                </span>
+              </div>
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+              <div className="text-[10px] uppercase tracking-[0.28em] text-synth-cyan font-bold">
+                {track.focusLabel}
+              </div>
+              <ul className="mt-3 space-y-2">
+                {track.focusPoints.map(point => (
+                  <li key={point} className="flex gap-2 text-xs text-slate-300 leading-relaxed">
+                    <span className={`mt-1 h-1.5 w-1.5 rounded-full bg-gradient-to-r ${meta.accentSoft}`} />
+                    <span>{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -276,10 +406,10 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between flex-wrap mb-4">
           <div>
             <h2 className="font-orbitron font-black text-lg md:text-xl text-white uppercase tracking-wider">
-              Mật thất nhanh
+              Mật thất nhanh - {meta.shortLabel}
             </h2>
             <p className="text-xs text-slate-300 mt-1">
-              Chọn đúng mật thất rồi vào thẳng không gian học riêng, tránh bị dồn chung trong một layout.
+              {track.sampleDescription}
             </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
@@ -287,7 +417,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
               Đang xem: {meta.label}
             </span>
             <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-slate-300 font-bold">
-              Công cụ: {STUDY_PANEL_LABELS[selectedStudyPanel]}
+              {track.focusLabel}
             </span>
           </div>
         </div>
@@ -330,15 +460,15 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <div>
                 <h2 className="font-orbitron font-black text-lg text-white uppercase tracking-wider">
-                  Chuyên Đề Kiến Thức - {meta.label}
+                  {track.lessonTitle} - {meta.label}
                 </h2>
                 <p className="text-xs text-slate-300 mt-1">
-                  Đọc lý thuyết chuyên sâu và củng cố kiến thức trước khi làm bài thi.
+                  {track.lessonDescription}
                 </p>
               </div>
               <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/10 bg-gradient-to-r ${meta.accentSoft} text-xs font-bold ${meta.accent}`}>
                 <Target className="w-4 h-4" />
-                {meta.label} hiện tại
+                {track.focusLabel}
               </div>
             </div>
 
@@ -393,7 +523,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
             {sampleQuestions.length > 0 ? sampleQuestions.map(question => (
               <div key={question.id} className="rounded-2xl border border-white/10 bg-synth-gray/20 p-4 flex flex-col gap-3">
                 <div className="flex items-center justify-between gap-3 text-[10px] uppercase tracking-wider text-slate-400 font-bold">
-                  <span>{question.category}</span>
+                  <span>{track.sampleTitle}</span>
                   <span>{question.difficulty}/10</span>
                 </div>
                 {question.imageUrl && (
@@ -409,7 +539,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                   {question.prompt}
                 </p>
                 <div className="mt-auto text-[10px] text-slate-400">
-                  Nguồn: {question.source}
+                  {question.category} · Nguồn: {question.source}
                 </div>
               </div>
             )) : (
@@ -425,13 +555,16 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-2 text-white">
                 <NotebookTabs className="w-5 h-5 text-synth-cyan" />
-                <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Bảng công cụ</h3>
+                <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">{track.toolTitle}</h3>
               </div>
               <span className="text-[10px] uppercase tracking-[0.24em] text-slate-400 font-bold">
                 1 công cụ / lúc
               </span>
             </div>
 
+            <p className="text-xs text-slate-300 leading-relaxed">
+              {track.toolDescription}
+            </p>
             <div className="grid grid-cols-2 gap-2">
               {STUDY_PANELS.map(panel => {
                 const isActive = selectedStudyPanel === panel.id;
@@ -458,7 +591,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 text-white">
                       <ScrollText className="w-5 h-5 text-synth-magenta" />
-                      <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Thẻ nhớ tốc hành</h3>
+                      <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Thẻ nhớ tốc hành - {meta.shortLabel}</h3>
                     </div>
                     <span className="text-[10px] text-slate-400 uppercase tracking-wider">
                       {flashcardIndex + 1}/{activeFlashcards.length}
@@ -503,10 +636,10 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                 <>
                   <div className="flex items-center gap-2 text-white">
                     <Target className="w-5 h-5 text-synth-orange" />
-                    <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Học theo chuyên đề</h3>
+                    <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Học theo chuyên đề - {meta.shortLabel}</h3>
                   </div>
                   <p className="text-sm text-slate-200 leading-relaxed">
-                    Đọc lý thuyết chi tiết của chuyên đề trước, sau đó trả lời các câu hỏi luyện tập củng cố để tích lũy NP và XP.
+                    {track.lessonDescription}
                   </p>
                   <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-xs text-slate-300 space-y-2">
                     <div className="flex items-center justify-between gap-2">
@@ -539,7 +672,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                   <textarea
                     value={noteText}
                     onChange={e => setNoteText(e.target.value)}
-                    placeholder="Ví dụ: nhầm passive voice với active voice; cần nhìn mốc thời gian trước..."
+                    placeholder={track.notePlaceholder}
                     className="w-full min-h-[180px] rounded-2xl border border-white/10 bg-synth-gray/25 p-4 text-sm text-white outline-none focus:border-synth-cyan/40 resize-y"
                   />
                 </>
@@ -549,7 +682,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                 <>
                   <div className="flex items-center gap-2 text-white">
                     <Sparkles className="w-5 h-5 text-synth-cyan" />
-                    <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Nguồn học liệu</h3>
+                    <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Nguồn học liệu - {meta.shortLabel}</h3>
                   </div>
                   <div className="space-y-3">
                     {HANG_SOURCES.map(source => (
