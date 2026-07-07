@@ -49,6 +49,7 @@ export const ParentConsole: React.FC = () => {
   const [challengeCost3, setChallengeCost3] = useState(15);
   const [challengeCost4, setChallengeCost4] = useState(10);
   const [questionQuery, setQuestionQuery] = useState('');
+  const [subjectFilter, setSubjectFilter] = useState<'all' | 'english' | 'math' | 'literature'>('all');
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [editPrompt, setEditPrompt] = useState('');
   const [editExplanation, setEditExplanation] = useState('');
@@ -58,6 +59,7 @@ export const ParentConsole: React.FC = () => {
   const [editCorrectAnswer, setEditCorrectAnswer] = useState('');
   const [editSource, setEditSource] = useState('');
   const [editImageUrl, setEditImageUrl] = useState('');
+  const [editSubject, setEditSubject] = useState<'english' | 'math' | 'literature'>('english');
 
   // Active Tab
   const [activeTab, setActiveTab] = useState<'rewards' | 'ingestion' | 'members' | 'settings'>('members');
@@ -97,6 +99,7 @@ export const ParentConsole: React.FC = () => {
     setEditCorrectAnswer(Array.isArray(editingQuestion.correctAnswer) ? editingQuestion.correctAnswer.join('\n') : editingQuestion.correctAnswer);
     setEditSource(editingQuestion.source);
     setEditImageUrl(editingQuestion.imageUrl || '');
+    setEditSubject(editingQuestion.subject || 'english');
   }, [editingQuestion]);
 
   const handleUnlock = (e: React.FormEvent) => {
@@ -130,7 +133,8 @@ export const ParentConsole: React.FC = () => {
       options: nextOptions.length > 0 ? nextOptions : undefined,
       correctAnswer: nextCorrectAnswer.length > 1 ? nextCorrectAnswer : nextCorrectAnswer[0] || '',
       source: editSource.trim(),
-      imageUrl: editImageUrl.trim() || undefined
+      imageUrl: editImageUrl.trim() || undefined,
+      subject: editSubject
     };
 
     const ok = await updateQuestion(editingQuestion.id, payload);
@@ -430,6 +434,33 @@ export const ParentConsole: React.FC = () => {
               </div>
             </div>
 
+            {/* Bộ lọc môn học */}
+            <div className="flex flex-wrap gap-2 pb-1">
+              {(['all', 'english', 'math', 'literature'] as const).map(sub => {
+                const label = sub === 'all' ? 'TẤT CẢ' : sub === 'english' ? '🇬🇧 TIẾNG ANH' : sub === 'math' ? '📐 TOÁN HỌC' : '✍️ NGỮ VĂN';
+                let activeStyle = '';
+                if (sub === 'all') activeStyle = 'bg-synth-cyan/20 border-synth-cyan text-synth-cyan shadow-[0_0_8px_rgba(0,240,255,0.15)]';
+                else if (sub === 'english') activeStyle = 'bg-synth-cyan/20 border-synth-cyan text-synth-cyan shadow-[0_0_8px_rgba(0,240,255,0.15)]';
+                else if (sub === 'math') activeStyle = 'bg-synth-magenta/20 border-synth-magenta text-synth-magenta shadow-[0_0_8px_rgba(255,0,128,0.15)]';
+                else activeStyle = 'bg-synth-orange/20 border-synth-orange text-synth-orange shadow-[0_0_8px_rgba(255,165,0,0.15)]';
+
+                return (
+                  <button
+                    key={sub}
+                    type="button"
+                    onClick={() => setSubjectFilter(sub)}
+                    className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold font-orbitron uppercase cursor-pointer transition-all duration-200 ${
+                      subjectFilter === sub
+                        ? activeStyle
+                        : 'bg-synth-gray/10 border-white/5 text-synth-text-muted hover:text-white'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
+
             {/* Thống kê ngân hàng câu hỏi */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-synth-gray/10 p-4 rounded-xl border border-white/5">
               <div className="space-y-1">
@@ -467,10 +498,14 @@ export const ParentConsole: React.FC = () => {
 
             <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
               {questions.filter(q => {
+                if (subjectFilter !== 'all') {
+                  const qSubject = q.subject || 'english';
+                  if (qSubject !== subjectFilter) return false;
+                }
                 const haystack = `${q.prompt} ${q.category} ${q.source} ${q.type}`.toLowerCase();
                 return haystack.includes(questionQuery.toLowerCase());
               }).map(q => {
-                const isCustom = q.source?.startsWith('AI Ingested');
+                const isCustom = q.source?.startsWith('AI Ingested') || q.id.startsWith('hcmc-') || q.id.startsWith('mock-');
                 return (
                   <div key={q.id} className="rounded-xl border border-white/5 bg-white/5 p-3.5 space-y-2">
                     <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
@@ -478,6 +513,15 @@ export const ParentConsole: React.FC = () => {
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="text-[10px] px-2 py-0.5 rounded bg-synth-cyan/20 text-synth-cyan font-bold uppercase font-orbitron">
                             {q.type}
+                          </span>
+                          <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase font-orbitron ${
+                            (q.subject || 'english') === 'english' ? 'bg-synth-cyan/20 text-synth-cyan' :
+                            q.subject === 'math' ? 'bg-synth-magenta/20 text-synth-magenta' :
+                            'bg-synth-orange/20 text-synth-orange'
+                          }`}>
+                            {(q.subject || 'english') === 'english' ? '🇬🇧 Anh' :
+                             q.subject === 'math' ? '📐 Toán' :
+                             '✍️ Văn'}
                           </span>
                           <span className="text-[10px] px-2 py-0.5 rounded bg-synth-magenta/15 text-synth-magenta font-bold uppercase font-orbitron">
                             {q.category}
@@ -566,7 +610,19 @@ export const ParentConsole: React.FC = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <label className="space-y-2 text-xs">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Môn học</span>
+                <select
+                  value={editSubject}
+                  onChange={(e) => setEditSubject(e.target.value as any)}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                >
+                  <option value="english">🇬🇧 Tiếng Anh</option>
+                  <option value="math">📐 Toán học</option>
+                  <option value="literature">✍️ Ngữ văn</option>
+                </select>
+              </label>
               <label className="space-y-2 text-xs">
                 <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Chuyên đề</span>
                 <input
