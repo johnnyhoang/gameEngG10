@@ -1,20 +1,25 @@
+import { useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
+import { INITIAL_LESSONS } from '../data/lessons';
 import {
-  Compass, Sword, ShieldAlert, Star, Zap
+  Compass, Sword, ShieldAlert, Star, Zap, BookOpen,
+  ChevronDown, ChevronUp, Skull, Swords, BookMarked, BrainCircuit, Heart
 } from 'lucide-react';
 import { toast } from '../utils/toast';
 
 interface GameMapProps {
   onStartPlay: (
-    mode: 'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss',
+    mode: 'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss' | 'survival',
     bossId?: string
   ) => void;
   onOpenMysteryBox: () => void;
   onSpinWheel: () => void;
   onOpenHang: () => void;
+  onStudyLesson?: (lessonId: string) => void;
+  onStartLessonPractice?: (lessonId: string) => void;
 }
 
-export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang }: GameMapProps) {
+export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang, onStudyLesson, onStartLessonPractice }: GameMapProps) {
   const player = useGameState(state => state.player);
   const dailyMission = useGameState(state => state.dailyMission);
   const consumeEnergy = useGameState(state => state.useEnergy);
@@ -22,175 +27,48 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
   const bossBountiesVnd = useGameState(state => state.gameSettings.bossBountiesVnd);
   const challengeEnergyCosts = useGameState(state => state.gameSettings.challengeEnergyCosts);
   const uiTheme = useGameState(state => state.uiTheme);
+  const categoryStats = useGameState(state => state.categoryStats);
+  const lessonsProgress = useGameState(state => state.lessonsProgress);
   const isUnicorn = uiTheme === 'unicorn-dream';
+
+  const [topicOpen, setTopicOpen] = useState(false);
 
   // Check if weekend for Lucky Wheel
   const isWeekend = () => {
     const day = new Date().getDay();
-    return day === 0 || day === 6; // Sunday = 0, Saturday = 6
+    return day === 0 || day === 6;
   };
 
   const handleLaunchZone = (
-    mode: 'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss',
+    mode: 'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss' | 'survival',
     energyCost: number,
     bossId?: string
   ) => {
     if (player.energy < energyCost) {
-      toast.error('Không đủ năng lượng! Hãy đợi năng lượng hồi phục hoặc hoàn thành các thử thách khác.');
+      toast.error('Không đủ năng lượng. Hãy đợi hồi phục hoặc hoàn thành thử thách khác.');
       return;
     }
     consumeEnergy(energyCost);
     onStartPlay(mode, bossId);
   };
 
-  const mapZones = currentSubject === 'math' ? [
-    {
-      id: 'math-algebra',
-      title: 'Đảo Đại Số & Vi-ét',
-      mode: 'grammar' as const,
-      description: 'Luyện tập Hàm số, đồ thị Parabol (d) và Hệ thức Vi-ét chuyên sâu.',
-      energyCost: 10,
-      rewardText: '+15 XP / +5 NP',
-      colorClass: 'border-synth-magenta/30 hover:border-synth-magenta shadow-magenta',
-      textColor: 'text-synth-magenta',
-      bgGradient: 'from-synth-magenta/5 to-transparent',
-      icon: <Compass className="w-8 h-8 text-synth-magenta" />
-    },
-    {
-      id: 'math-wordproblems',
-      title: 'Đảo Toán Thực Tế',
-      mode: 'vocabulary' as const,
-      description: 'Chinh phục Toán thực tế: Lập phương trình, lãi suất, phần trăm kinh tế TP.HCM.',
-      energyCost: 10,
-      rewardText: '+15 XP / +5 NP',
-      colorClass: 'border-synth-purple/30 hover:border-synth-purple shadow-purple',
-      textColor: 'text-synth-purple',
-      bgGradient: 'from-synth-purple/5 to-transparent',
-      icon: <Star className="w-8 h-8 text-synth-purple" />
-    },
-    {
-      id: 'math-geometry',
-      title: 'Đảo Hình Học phẳng & Không gian',
-      mode: 'reading' as const,
-      description: 'Tính thể tích lon nước hình trụ, phễu nón và Tứ giác nội tiếp đường tròn.',
-      energyCost: 15,
-      rewardText: '+20 XP / +8 NP',
-      colorClass: 'border-synth-cyan/30 hover:border-synth-cyan shadow-cyan',
-      textColor: 'text-synth-cyan',
-      bgGradient: 'from-synth-cyan/5 to-transparent',
-      icon: <Compass className="w-8 h-8 text-synth-cyan" />
-    },
-    {
-      id: 'nightmare-dungeon',
-      title: 'Hầm Ngục Sửa Sai',
-      mode: 'revenge' as const,
-      description: 'Vượt qua nỗi sợ! Làm lại toàn bộ các câu hỏi toán con đã làm sai trước đây.',
-      energyCost: 10,
-      rewardText: 'Xử lý lỗi sai cũ / Hồi phục năng lượng',
-      colorClass: 'border-synth-orange/30 hover:border-synth-orange shadow-orange',
-      textColor: 'text-synth-orange',
-      bgGradient: 'from-synth-orange/5 to-transparent',
-      icon: <ShieldAlert className="w-8 h-8 text-synth-orange" />
-    }
-  ] : currentSubject === 'literature' ? [
-    {
-      id: 'lit-reading-literary',
-      title: 'Đảo Đọc Hiểu Văn Học',
-      mode: 'reading' as const,
-      description: 'Luyện đọc hiểu tác phẩm thơ, truyện, kí, tản văn. Phân tích chi tiết nghệ thuật và nhân vật.',
-      energyCost: 10,
-      rewardText: '+15 XP / +5 NP',
-      colorClass: 'border-synth-orange/30 hover:border-synth-orange shadow-orange',
-      textColor: 'text-synth-orange',
-      bgGradient: 'from-synth-orange/5 to-transparent',
-      icon: <Compass className="w-8 h-8 text-synth-orange" />
-    },
-    {
-      id: 'lit-vietnamese',
-      title: 'Đảo Tiếng Việt Thực Hành',
-      mode: 'grammar' as const,
-      description: 'Luyện các biện pháp tu từ, nghĩa tường minh/hàm ý, từ Hán Việt, câu đơn/câu ghép.',
-      energyCost: 10,
-      rewardText: '+15 XP / +5 NP',
-      colorClass: 'border-synth-cyan/30 hover:border-synth-cyan shadow-cyan',
-      textColor: 'text-synth-cyan',
-      bgGradient: 'from-synth-cyan/5 to-transparent',
-      icon: <Star className="w-8 h-8 text-synth-cyan" />
-    },
-    {
-      id: 'lit-writing',
-      title: 'Đảo Kỹ Năng Nghị Luận',
-      mode: 'vocabulary' as const,
-      description: 'Rèn luyện kiến thức làm văn nghị luận xã hội, nghị luận văn học và viết đoạn 200 chữ.',
-      energyCost: 15,
-      rewardText: '+20 XP / +8 NP',
-      colorClass: 'border-synth-purple/30 hover:border-synth-purple shadow-purple',
-      textColor: 'text-synth-purple',
-      bgGradient: 'from-synth-purple/5 to-transparent',
-      icon: <Compass className="w-8 h-8 text-synth-purple" />
-    },
-    {
-      id: 'nightmare-dungeon',
-      title: 'Hầm Ngục Sửa Sai',
-      mode: 'revenge' as const,
-      description: 'Vượt qua nỗi sợ! Tập hợp toàn bộ câu hỏi Ngữ văn con đã làm sai để giải lại.',
-      energyCost: 10,
-      rewardText: 'Xử lý lỗi sai cũ / Hồi phục năng lượng',
-      colorClass: 'border-red-500/30 hover:border-red-500 shadow-red',
-      textColor: 'text-red-500',
-      bgGradient: 'from-red-500/5 to-transparent',
-      icon: <ShieldAlert className="w-8 h-8 text-red-500" />
-    }
-  ] : [
-    {
-      id: 'grammar-cave',
-      title: 'Grammar Cave',
-      mode: 'grammar' as const,
-      description: 'Luyện cấu trúc Ngữ pháp chuyên sâu: Thì, Bị động, Mệnh đề quan hệ...',
-      energyCost: 10,
-      rewardText: '+15 XP / +5 NP',
-      colorClass: 'border-synth-cyan/30 hover:border-synth-cyan shadow-cyan',
-      textColor: 'text-synth-cyan',
-      bgGradient: 'from-synth-cyan/5 to-transparent',
-      icon: <Compass className="w-8 h-8 text-synth-cyan" />
-    },
-    {
-      id: 'vocabulary-castle',
-      title: 'Vocabulary Castle',
-      mode: 'vocabulary' as const,
-      description: 'Chinh phục Từ vựng & chuyên đề Word Form (Biến đổi danh/động/tính từ) cốt lõi HCMC.',
-      energyCost: 10,
-      rewardText: '+15 XP / +5 NP',
-      colorClass: 'border-purple-500/30 hover:border-synth-purple shadow-purple',
-      textColor: 'text-synth-purple',
-      bgGradient: 'from-synth-purple/5 to-transparent',
-      icon: <Star className="w-8 h-8 text-synth-purple" />
-    },
-    {
-      id: 'reading-forest',
-      title: 'Reading Forest',
-      mode: 'reading' as const,
-      description: 'Nâng trình Đọc hiểu, điền từ đoạn văn (Cloze Test) & Đọc hiểu liên hoàn.',
-      energyCost: 15,
-      rewardText: '+20 XP / +8 NP',
-      colorClass: 'border-green-500/30 hover:border-synth-green shadow-green',
-      textColor: 'text-synth-green',
-      bgGradient: 'from-synth-green/5 to-transparent',
-      icon: <Compass className="w-8 h-8 text-synth-green" />
-    },
-    {
-      id: 'nightmare-dungeon',
-      title: 'Nightmare Dungeon',
-      mode: 'revenge' as const,
-      description: 'Vượt qua nỗi sợ! Tập hợp toàn bộ các câu hỏi con đã từng làm sai để sửa chữa lỗi lầm.',
-      energyCost: 10,
-      rewardText: 'Xử lý lỗi sai cũ / Hồi phục năng lượng',
-      colorClass: 'border-synth-orange/30 hover:border-synth-orange shadow-orange',
-      textColor: 'text-synth-orange',
-      bgGradient: 'from-synth-orange/5 to-transparent',
-      icon: <ShieldAlert className="w-8 h-8 text-synth-orange" />
-    }
-  ];
+  // Get lessons for current subject
+  const subjectLessons = INITIAL_LESSONS.filter(l => l.subject === currentSubject);
+
+  // Find weakest categories (accuracy < 50%) for AI hint
+  const weakCategories = Object.entries(categoryStats)
+    .map(([cat, stat]) => ({
+      cat,
+      accuracy: stat.totalAnswered > 0 ? stat.totalCorrect / stat.totalAnswered : 1
+    }))
+    .filter(x => x.accuracy < 0.5 && categoryStats[x.cat].totalAnswered >= 2)
+    .sort((a, b) => a.accuracy - b.accuracy)
+    .slice(0, 2);
+
+  // Find matching lesson for weak category
+  const weakLesson = weakCategories.length > 0
+    ? subjectLessons.find(l => l.category === weakCategories[0].cat)
+    : null;
 
   const bosses = currentSubject === 'math' ? [
     { id: 'b-2024', name: 'Đại Ca Toán HCMC 2024', year: '2024', energy: 20 },
@@ -206,17 +84,19 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
     { id: 'b-2026', name: 'Cổ Long HCMC 2026 (Mock)', year: '2026', energy: 25 }
   ];
 
-  const resolvedMapZones = mapZones.map((zone, idx) => ({
-    ...zone,
-    energyCost: challengeEnergyCosts[idx] ?? zone.energyCost
-  }));
+  const completedLessons = subjectLessons.filter(l => lessonsProgress[l.id]).length;
+  const progressPct = subjectLessons.length > 0
+    ? Math.round((completedLessons / subjectLessons.length) * 100)
+    : 0;
+
   const questBannerClass = isUnicorn
     ? 'glass-panel rounded-2xl border border-violet-200/35 bg-gradient-to-r from-fuchsia-50/90 via-white/90 to-cyan-50/90 p-5 flex flex-col md:flex-row justify-between items-center gap-4 shadow-[0_10px_28px_rgba(192,132,252,0.12)]'
     : 'glass-panel rounded-2xl border border-synth-magenta/30 bg-gradient-to-r from-synth-magenta/10 via-synth-purple/10 to-transparent p-5 flex flex-col md:flex-row justify-between items-center gap-4';
 
   return (
     <div className="space-y-6">
-      {/* Daily Quest & Rewards Banner */}
+
+      {/* Daily Quest Banner */}
       <div className={questBannerClass}>
         <div className="space-y-1 text-center md:text-left">
           <div className="flex items-center gap-2 justify-center md:justify-start">
@@ -226,8 +106,8 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
             </h2>
           </div>
           <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
-            {dailyMission?.completed 
-              ? 'Tuyệt vời! Con đã hoàn thành tất cả nhiệm vụ hôm nay. Hãy nhận Hòm Bí Mật!' 
+            {dailyMission?.completed
+              ? 'Tuyệt vời! Con đã hoàn thành tất cả nhiệm vụ hôm nay. Hãy nhận Hòm Bí Mật!'
               : 'Hoàn thành chỉ tiêu học tập hôm nay để mở khóa Hòm Bí Mật và Ví Thưởng.'}
           </p>
         </div>
@@ -272,6 +152,41 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
         </div>
       </div>
 
+      {/* AI Sư Phụ suggestion banner */}
+      {weakLesson && (
+        <div className="glass-panel rounded-2xl border border-amber-400/30 bg-gradient-to-r from-amber-400/10 via-orange-400/5 to-transparent p-4 flex flex-col md:flex-row items-start md:items-center gap-4">
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/25 flex items-center justify-center">
+              <BrainCircuit className="w-5 h-5 text-amber-400" />
+            </div>
+            <span className="font-orbitron font-bold text-xs uppercase text-amber-300 tracking-wider">Sư Phụ AI</span>
+          </div>
+          <p className="text-xs text-slate-300 flex-1 leading-relaxed">
+            Con đang yếu ở chuyên đề <span className="text-amber-300 font-bold">{weakLesson.title}</span> (chỉ{' '}
+            {Math.round((weakCategories[0].accuracy) * 100)}% chính xác). Hãy ôn luyện ngay để lấp lỗ hổng kiến thức!
+          </p>
+          <div className="flex gap-2 shrink-0">
+            {onStudyLesson && (
+              <button
+                onClick={() => onStudyLesson(weakLesson.id)}
+                className="px-3 py-2 rounded-lg border border-amber-400/30 bg-amber-400/10 text-amber-300 text-[10px] font-bold uppercase tracking-wider hover:bg-amber-400/20 transition-colors cursor-pointer"
+              >
+                Học Lý Thuyết 📖
+              </button>
+            )}
+            {onStartLessonPractice && (
+              <button
+                onClick={() => onStartLessonPractice(weakLesson.id)}
+                className="px-3 py-2 rounded-lg bg-amber-400 text-black text-[10px] font-bold uppercase tracking-wider hover:bg-amber-300 transition-colors cursor-pointer"
+              >
+                Luyện Tập ⚔️
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Hang Luyen Cong shortcut */}
       <div className="glass-panel rounded-2xl border border-synth-cyan/30 bg-gradient-to-r from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex flex-col md:flex-row justify-between items-center gap-4">
         <div className="space-y-1 text-center md:text-left">
           <div className="flex items-center gap-2 justify-center md:justify-start">
@@ -293,55 +208,190 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
         </button>
       </div>
 
-      {/* Grid Map Zones */}
+      {/* ─── ARENA MODES ─── */}
       <div>
         <h3 className={`font-orbitron font-bold text-base uppercase tracking-wider mb-4 flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-white'}`}>
-          <Compass className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-cyan'}`} /> Bản Đồ Học Tập
+          <Compass className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-cyan'}`} /> Đấu Trường Tự Do
         </h3>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {resolvedMapZones.map(zone => (
-            <div
-              key={zone.id}
-              onClick={() => handleLaunchZone(zone.mode, zone.energyCost)}
-              className={`glass-panel glass-panel-hover rounded-2xl border p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 ${
-                isUnicorn
-                  ? 'border-violet-200/35 bg-gradient-to-br from-white/90 via-fuchsia-50/70 to-cyan-50/70 shadow-[0_14px_30px_rgba(192,132,252,0.1)]'
-                  : `${zone.colorClass} bg-gradient-to-br ${zone.bgGradient}`
-              }`}
-            >
-              {/* Energy Cost Overlay */}
-              <div className={`absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold ${
-                isUnicorn ? 'bg-white/80 border border-violet-200/40 text-violet-700' : 'bg-synth-blue border border-synth-cyan/20 text-white'
-              }`}>
-                <Zap className={`w-3 h-3 ${isUnicorn ? 'text-fuchsia-500 fill-fuchsia-500' : 'text-synth-cyan fill-synth-cyan'}`} /> {zone.energyCost}
-              </div>
 
-              {/* Graphic Icon */}
-              <div className={`w-12 h-12 rounded-xl border flex items-center justify-center shrink-0 ${
-                isUnicorn ? 'bg-white/75 border-violet-200/30 shadow-[0_0_12px_rgba(192,132,252,0.12)]' : 'bg-synth-gray/50 border border-white/5'
-              }`}>
-                {zone.icon}
+          {/* Survival Mode – prominent */}
+          <div
+            onClick={() => handleLaunchZone('survival', challengeEnergyCosts[0] ?? 15)}
+            className="glass-panel glass-panel-hover rounded-2xl border border-red-500/40 hover:border-red-400 bg-gradient-to-br from-red-500/10 via-orange-500/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 md:col-span-2"
+          >
+            {/* glow backdrop */}
+            <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(239,68,68,0.07),transparent_60%)]" />
+            <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-red-500/20 border border-red-500/40 text-red-400">
+              <Zap className="w-3 h-3 text-red-400 fill-red-400" /> {challengeEnergyCosts[0] ?? 15}
+            </div>
+            <div className="w-14 h-14 rounded-xl border border-red-500/30 bg-red-500/10 flex items-center justify-center shrink-0">
+              <Skull className="w-8 h-8 text-red-400" />
+            </div>
+            <div className="space-y-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h4 className="font-orbitron font-black text-base text-red-400">⚔️ Đấu Trường Sinh Tồn</h4>
+                <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-red-500/20 border border-red-500/30 text-red-300">Survival</span>
               </div>
-
-              {/* Details */}
-              <div className="space-y-1 min-w-0">
-                <h4 className={`font-orbitron font-bold text-base ${isUnicorn ? 'text-violet-700' : zone.textColor}`}>
-                  {zone.title}
-                </h4>
-                <p className={`text-xs leading-relaxed ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
-                  {zone.description}
-                </p>
-                <div className={`text-[10px] font-bold font-orbitron pt-2 ${isUnicorn ? 'text-violet-600/80' : 'text-synth-text-muted'}`}>
-                  Phần thưởng: <span className={isUnicorn ? 'text-violet-800' : 'text-white'}>{zone.rewardText}</span>
-                </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                15 câu hỏi hỗn hợp liên tục – trả lời sai mất 1 mạng <Heart className="inline w-3 h-3 text-red-400 fill-red-400" />. Chỉ có 3 mạng, trả lời đúng liên tiếp nhận thưởng XP và NP tăng theo cấp số nhân!
+              </p>
+              <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
+                Phần thưởng: <span className="text-red-300">+1.5× XP & NP mỗi câu đúng / Combo multiplier</span>
               </div>
             </div>
-          ))}
+          </div>
+
+          {/* Mixed random */}
+          <div
+            onClick={() => handleLaunchZone('mixed', challengeEnergyCosts[1] ?? 10)}
+            className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
+          >
+            <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white">
+              <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 10}
+            </div>
+            <div className="w-12 h-12 rounded-xl border border-white/5 bg-synth-gray/50 flex items-center justify-center shrink-0">
+              <Star className="w-7 h-7 text-synth-cyan" />
+            </div>
+            <div className="space-y-1 min-w-0">
+              <h4 className="font-orbitron font-bold text-base text-synth-cyan">🌀 Hành Trình Ngẫu Nhiên</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">10 câu hỏi ngẫu nhiên từ toàn bộ chuyên đề, ưu tiên câu yếu.</p>
+              <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">Phần thưởng: <span className="text-white">+15 XP / +5 NP</span></div>
+            </div>
+          </div>
+
+          {/* Revenge Dungeon */}
+          <div
+            onClick={() => handleLaunchZone('revenge', challengeEnergyCosts[2] ?? 10)}
+            className="glass-panel glass-panel-hover rounded-2xl border border-synth-orange/30 hover:border-synth-orange bg-gradient-to-br from-synth-orange/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
+          >
+            <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-orange/20 text-white">
+              <Zap className="w-3 h-3 text-synth-orange fill-synth-orange" /> {challengeEnergyCosts[2] ?? 10}
+            </div>
+            <div className="w-12 h-12 rounded-xl border border-white/5 bg-synth-gray/50 flex items-center justify-center shrink-0">
+              <ShieldAlert className="w-7 h-7 text-synth-orange" />
+            </div>
+            <div className="space-y-1 min-w-0">
+              <h4 className="font-orbitron font-bold text-base text-synth-orange">💀 Hầm Ngục Sửa Sai</h4>
+              <p className="text-xs text-slate-400 leading-relaxed">Tập hợp toàn bộ câu hỏi đã từng làm sai để giải lại và sửa chữa lỗi lầm.</p>
+              <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">Phần thưởng: <span className="text-white">XP hồi phục / Xoá sai cũ</span></div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Boss Arena Section */}
+      {/* ─── TOPIC DUNGEON ─── */}
+      <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden">
+        <button
+          onClick={() => setTopicOpen(prev => !prev)}
+          className="w-full flex items-center justify-between gap-4 px-5 py-4 hover:bg-white/5 transition-colors cursor-pointer"
+        >
+          <div className="flex items-center gap-3">
+            <BookMarked className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-purple'}`} />
+            <div className="text-left">
+              <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-700' : 'text-white'}`}>
+                Hầm Ngục Chuyên Đề
+              </h3>
+              <p className="text-[10px] text-slate-400 mt-0.5">
+                Luyện sâu từng chuyên đề · {completedLessons}/{subjectLessons.length} đã lĩnh ngộ
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            {/* Progress bar */}
+            <div className="hidden md:flex items-center gap-2">
+              <div className="w-24 h-1.5 rounded-full bg-white/10 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-synth-cyan to-synth-purple transition-all duration-500"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+              <span className="text-[10px] font-bold text-slate-400">{progressPct}%</span>
+            </div>
+            {topicOpen
+              ? <ChevronUp className="w-4 h-4 text-slate-400" />
+              : <ChevronDown className="w-4 h-4 text-slate-400" />
+            }
+          </div>
+        </button>
+
+        {topicOpen && (
+          <div className="border-t border-white/10 p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
+            {subjectLessons.length === 0 && (
+              <div className="col-span-2 text-center text-slate-400 text-sm py-4">
+                Chưa có chuyên đề nào cho môn này.
+              </div>
+            )}
+            {subjectLessons.map(lesson => {
+              const isCompleted = lessonsProgress[lesson.id] || false;
+              const stat = categoryStats[lesson.category];
+              const accuracy = stat && stat.totalAnswered > 0
+                ? Math.round((stat.totalCorrect / stat.totalAnswered) * 100)
+                : null;
+
+              return (
+                <div
+                  key={lesson.id}
+                  className={`rounded-xl border p-4 flex flex-col gap-3 transition-all duration-200 ${
+                    isCompleted
+                      ? 'border-synth-cyan/20 bg-synth-cyan/5'
+                      : 'border-white/10 bg-white/4 hover:border-white/20'
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="space-y-1 min-w-0">
+                      <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
+                        {lesson.topic}
+                      </span>
+                      <h4 className="font-orbitron font-black uppercase text-xs text-white tracking-wide leading-snug">
+                        {lesson.title}
+                      </h4>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      {isCompleted ? (
+                        <span className="text-[9px] font-bold text-synth-cyan font-orbitron uppercase">Đã lĩnh ngộ 🌟</span>
+                      ) : (
+                        <span className="text-[9px] font-semibold text-slate-400 uppercase">Chưa xong ⏳</span>
+                      )}
+                      {accuracy !== null && (
+                        <div className={`text-[9px] font-bold mt-0.5 ${accuracy >= 70 ? 'text-green-400' : accuracy >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
+                          {accuracy}% chính xác
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 mt-auto">
+                    {onStudyLesson && (
+                      <button
+                        onClick={e => { e.stopPropagation(); onStudyLesson(lesson.id); }}
+                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-white/10 bg-white/5 text-white text-[10px] font-bold uppercase tracking-wider hover:bg-white/10 transition-colors cursor-pointer"
+                      >
+                        <BookOpen className="w-3 h-3" /> Lý thuyết
+                      </button>
+                    )}
+                    {onStartLessonPractice && (
+                      <button
+                        onClick={e => { e.stopPropagation(); onStartLessonPractice(lesson.id); }}
+                        className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                          isCompleted
+                            ? 'border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
+                            : 'bg-gradient-to-r from-synth-cyan to-synth-purple text-black shadow-[0_0_10px_rgba(0,240,255,0.2)] hover:scale-[1.02]'
+                        }`}
+                      >
+                        <Swords className="w-3 h-3" /> Luyện tập
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ─── BOSS ARENA ─── */}
       <div>
         <h3 className={`font-orbitron font-bold text-base uppercase tracking-wider mb-4 flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-magenta'}`}>
           <Sword className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : ''}`} /> Boss Arena (Đề thi thử lớp 10 HCMC)
@@ -391,6 +441,4 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
     </div>
   );
 }
-
-
 

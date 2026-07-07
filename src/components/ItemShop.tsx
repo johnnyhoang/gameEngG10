@@ -17,7 +17,7 @@ export const ItemShop: React.FC = () => {
     if (!success) {
       toast.error('Không đủ Coins (NP) hoặc con đã sở hữu Khiên rồi!');
     } else {
-      toast.success('Mua Khiên Bảo Vệ thành công!');
+      toast.success('Mua Khiên Bảo Vệ thành công.');
     }
   };
 
@@ -26,7 +26,7 @@ export const ItemShop: React.FC = () => {
     if (!success) {
       toast.error('Không đủ Coins (NP) hoặc con đã có tối đa 3 Mạng rồi!');
     } else {
-      toast.success('Hồi mạng (Heart) thành công!');
+      toast.success('Hồi mạng (Heart) thành công.');
     }
   };
 
@@ -35,7 +35,7 @@ export const ItemShop: React.FC = () => {
     if (!success) {
       toast.error('Không đủ Coins (NP) để đổi quà này!');
     } else {
-      toast.success('Đã gửi yêu cầu đổi quà tới Ba. Hãy đợi Ba duyệt nhé!');
+      toast.success('Yêu cầu đổi quà đã được gửi. Chờ Ba duyệt nhé.');
     }
   };
 
@@ -190,4 +190,5 @@ export const ItemShop: React.FC = () => {
     </div>
   );
 };
+
 

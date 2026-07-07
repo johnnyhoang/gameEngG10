@@ -16,7 +16,7 @@ export const GoogleLoginScreen: React.FC = () => {
       if (error) throw error;
     } catch (error: any) {
       console.error('Lỗi đăng nhập Google Supabase:', error.message);
-      toast.error('Không thể kết nối với Supabase Google Auth: ' + error.message);
+      toast.error('Không thể kết nối với Google Auth: ' + error.message);
     }
   };
 
@@ -64,4 +64,5 @@ export const GoogleLoginScreen: React.FC = () => {
     </div>
   );
 };
+
 

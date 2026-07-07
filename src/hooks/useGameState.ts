@@ -977,7 +977,7 @@ export const useGameState = create<GameState>()(
             }
             // Reload profile
             await get().fetchStudentProfile(studentUserId);
-            toast.success(`Đã khấu trừ thành công ${amount.toLocaleString()}đ khỏi ví thưởng của bé.`);
+            toast.success(`Khấu trừ ví thành công: ${amount.toLocaleString()}đ.`);
           } catch (e) {
             console.error('Error deducting student wallet:', e);
             toast.error('Lỗi kết nối khi khấu trừ ví.');
@@ -1006,7 +1006,7 @@ export const useGameState = create<GameState>()(
               return;
             }
             await get().fetchStudentProfile(studentUserId);
-            toast.success(`Đã cập nhật năng lượng của bé lên ${clampedPercent}%.`);
+            toast.success(`Cập nhật năng lượng thành công: ${clampedPercent}%.`);
           } catch (e) {
             console.error('Error updating student energy:', e);
             toast.error('Lỗi kết nối khi cập nhật năng lượng.');
@@ -1039,7 +1039,7 @@ export const useGameState = create<GameState>()(
                 ...payload
               }
             }));
-            toast.success('Đã cập nhật cấu hình trò chơi thành công!');
+            toast.success('Cập nhật cấu hình trò chơi thành công.');
           } catch (e) {
             console.error('Error updating game settings:', e);
             toast.error('Lỗi kết nối khi cập nhật cấu hình.');
@@ -1105,6 +1105,12 @@ export const useGameState = create<GameState>()(
             const streakBonus = 1 + Math.min(1.0, state.player.streak * 0.1); // Max 2.0x (10 days streak)
             expGained = Math.round(expGained * streakBonus);
             coinsGained = Math.round(coinsGained * streakBonus);
+
+            // Apply 1.5x bonus for survival mode challenge
+            if (gameMode === 'survival') {
+              expGained = Math.round(expGained * 1.5);
+              coinsGained = Math.round(coinsGained * 1.5);
+            }
           } else {
             newCombo = 0; // Combo resets
             
@@ -1756,6 +1762,7 @@ export const useGameState = create<GameState>()(
     }
   )
 );
+
 
 
 

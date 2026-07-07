@@ -14,7 +14,7 @@ import { toast } from '../utils/toast';
 import { supabase } from '../utils/supabaseClient';
 
 interface PlayAreaProps {
-  mode: 'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss' | 'lesson';
+  mode: 'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss' | 'lesson' | 'survival';
   bossId?: string;
   lessonId?: string;
   onFinish: () => void;
@@ -77,7 +77,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     const fallbackQuestions = subjectQuestions.length > 0 ? subjectQuestions : questions;
 
     let pool: Question[] = [];
-    const count = mode === 'boss' ? 30 : 10; // Bosses are 30 questions, others are 10
+    const count = mode === 'boss' ? 30 : mode === 'survival' ? 15 : 10; // Bosses are 30, Survival is 15, others are 10
     
     if (mode === 'boss') {
       // Find actual/mock papers based on bossId
@@ -104,8 +104,9 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       }
     } else {
       // Adaptive learning weight selector
+      const weightMode = mode === 'survival' ? 'mixed' : mode;
       for (let i = 0; i < count; i++) {
-        const q = getQuestionByWeight(mode);
+        const q = getQuestionByWeight(weightMode);
         if (q && ((q as any).subject || 'english') === currentSubject && !pool.some(existing => existing.id === q.id)) {
           pool.push(q);
         }
@@ -165,7 +166,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const handleUseHint = () => {
     if (!activeQuestion || hintUsed) return;
     if (player.coins < 50) {
-      toast.error('Không đủ Coins (NP) để mua Gợi ý! Cần 50 NP.');
+      toast.error('Không đủ NP để mua gợi ý. Cần 50 NP.');
       return;
     }
     
@@ -349,7 +350,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       setLastRubricMissing([]);
     }
 
-    const mappedMode = mode === 'boss' ? 'boss' : 'practice';
+    const mappedMode = mode === 'boss' ? 'boss' : mode === 'survival' ? 'survival' : 'practice';
     const outcome = answerQuestion(
       activeQuestion.id,
       isCorrect,
@@ -371,7 +372,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     }));
 
     // If hearts hit 0 in Survival/Boss, terminate
-    if (scoreRatio < 0.35 && (mode === 'boss' || player.hearts <= 1)) {
+    if (scoreRatio < 0.35 && (mode === 'boss' || mode === 'survival') && player.hearts <= 1) {
       // Wait a moment for explanation then trigger Game Over
       setTimeout(() => {
         if (player.hearts <= 1) {
@@ -913,4 +914,5 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     </div>
   );
 };
+
 

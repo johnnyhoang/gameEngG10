@@ -209,7 +209,7 @@ export const ParentConsole: React.FC = () => {
     if (!rewardTitle.trim()) return;
     addParentReward(rewardTitle, rewardCost, rewardCash);
     setRewardTitle('');
-    toast.success('Thêm quà tặng mới thành công!');
+    toast.success('Thêm quà tặng mới thành công.');
   };
 
 
@@ -262,8 +262,6 @@ export const ParentConsole: React.FC = () => {
       }, {});
   }, [questions]);
 
-  const topTypeEntries = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
-  const topExamParts = Object.entries(examPartCounts).sort((a, b) => b[1] - a[1]);
   const topMathTopics = Object.entries(mathTopicCounts).sort((a, b) => b[1] - a[1]);
   const topEnglishTasks = Object.entries(englishTaskCounts).sort((a, b) => b[1] - a[1]);
   const topLiteratureTasks = Object.entries(literatureTaskCounts).sort((a, b) => b[1] - a[1]);
@@ -726,49 +724,104 @@ export const ParentConsole: React.FC = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.95fr)] gap-6 items-start">
-              <div className="space-y-5 min-w-0">
+            <div className="grid grid-cols-1 xl:grid-cols-[300px_minmax(0,1fr)_minmax(320px,0.95fr)] gap-6 items-start">
+              <div className="space-y-4 xl:sticky xl:top-4 self-start">
                 <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <span className="text-[10px] uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">Bộ lọc theo môn</span>
-                      <p className="text-[10px] text-synth-text-muted mt-1">Chọn đúng môn trước rồi mới soi chi tiết part, topic và task.</p>
+                      <p className="text-[10px] text-synth-text-muted mt-1">Chạm vào môn học để thu hẹp kho đề ngay.</p>
                     </div>
-                    <span className="text-[10px] px-2.5 py-1 rounded-full bg-white/5 text-white border border-white/5 font-bold uppercase">
-                      {filteredQuestions.length}/{questions.length} câu đang khớp
-                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSubjectFilter('all');
+                        setQuestionQuery('');
+                      }}
+                      className="text-[10px] px-2.5 py-1 rounded-full bg-white/5 text-white border border-white/10 font-bold uppercase hover:bg-white/10 transition-colors"
+                    >
+                      Reset
+                    </button>
                   </div>
-                  <div className="flex flex-wrap gap-2">
+
+                  <div className="rounded-xl border border-white/5 bg-black/10 p-3 space-y-2">
+                    <div className="flex items-center justify-between text-[10px] uppercase font-orbitron font-bold tracking-wider">
+                      <span className="text-synth-text-muted">Đang lọc</span>
+                      <span className="text-white">{filteredQuestions.length}/{questions.length}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-synth-cyan via-synth-magenta to-synth-orange transition-all"
+                        style={{ width: `${questions.length ? Math.max(8, (filteredQuestions.length / questions.length) * 100) : 0}%` }}
+                      />
+                    </div>
+                    <p className="text-[10px] text-synth-text-muted leading-relaxed">
+                      Kết quả đang khớp theo môn và từ khóa tìm kiếm.
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
                     {(['all', 'english', 'math', 'literature'] as const).map(sub => {
                       const label = sub === 'all' ? 'Tất cả' : sub === 'english' ? 'Tiếng Anh' : sub === 'math' ? 'Toán học' : 'Ngữ văn';
                       const count = sub === 'all' ? questions.length : sub === 'english' ? bankStats.english : sub === 'math' ? bankStats.math : bankStats.literature;
-                      const activeStyle = sub === 'all'
-                        ? 'bg-synth-cyan/20 border-synth-cyan text-synth-cyan'
-                        : sub === 'english'
-                          ? 'bg-synth-cyan/20 border-synth-cyan text-synth-cyan'
-                          : sub === 'math'
-                            ? 'bg-synth-magenta/20 border-synth-magenta text-synth-magenta'
-                            : 'bg-synth-orange/20 border-synth-orange text-synth-orange';
+                      const tone = sub === 'math' ? 'magenta' : sub === 'literature' ? 'orange' : 'cyan';
+                      const toneClasses = tone === 'magenta'
+                        ? 'border-synth-magenta/40 text-synth-magenta bg-synth-magenta/10'
+                        : tone === 'orange'
+                          ? 'border-synth-orange/40 text-synth-orange bg-synth-orange/10'
+                          : 'border-synth-cyan/40 text-synth-cyan bg-synth-cyan/10';
 
                       return (
                         <button
                           key={sub}
                           type="button"
                           onClick={() => setSubjectFilter(sub)}
-                          className={`min-w-[140px] flex-1 px-3.5 py-3 rounded-xl border text-left text-[10px] font-bold font-orbitron uppercase cursor-pointer transition-all duration-200 ${
+                          className={`w-full rounded-xl border px-3 py-3 text-left transition-all duration-200 ${
                             subjectFilter === sub
-                              ? activeStyle
-                              : 'bg-synth-gray/10 border-white/5 text-synth-text-muted hover:text-white hover:border-white/10'
+                              ? toneClasses
+                              : 'border-white/5 bg-synth-gray/10 text-synth-text-muted hover:text-white hover:border-white/10'
                           }`}
                         >
-                          <span className="block text-[11px] tracking-wider">{label}</span>
-                          <span className="mt-1 block text-sm normal-case font-black">{count} câu</span>
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="space-y-0.5">
+                              <span className="block text-[11px] uppercase font-orbitron font-bold tracking-wider">{label}</span>
+                              <span className="block text-[10px] text-inherit/70">
+                                {sub === 'all' ? 'Toàn bộ kho đề' : 'Chỉ xem câu thuộc môn này'}
+                              </span>
+                            </div>
+                            <span className="min-w-12 text-center px-2.5 py-1 rounded-full bg-white/10 text-xs font-black">
+                              {count}
+                            </span>
+                          </div>
                         </button>
                       );
                     })}
                   </div>
                 </div>
 
+                <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">Nhìn nhanh</span>
+                    <span className="text-[10px] text-synth-text-muted">Theo bộ lọc hiện tại</span>
+                  </div>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2">
+                      <span className="text-synth-cyan font-semibold">Khớp lọc</span>
+                      <span className="text-white font-bold">{filteredQuestions.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2">
+                      <span className="text-synth-magenta font-semibold">Tổng kho đề</span>
+                      <span className="text-white font-bold">{questions.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2">
+                      <span className="text-synth-orange font-semibold">Độ khó TB</span>
+                      <span className="text-white font-bold">{bankStats.avgDifficulty.toFixed(1)}/10</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-5 min-w-0">
                 <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
                   <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-1.5">
                     <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Tổng câu hỏi</span>
@@ -790,89 +843,105 @@ export const ParentConsole: React.FC = () => {
                     <span className="text-2xl font-black text-synth-green font-orbitron">{filteredQuestions.length}</span>
                     <span className="text-[10px] text-synth-text-muted">Theo môn + từ khóa</span>
                   </div>
-                </div>
-
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
-                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">Loại câu hỏi</span>
-                      <button onClick={() => showHelp('bank-structure')} className="text-[10px] px-2 py-1 rounded bg-white/5 text-white hover:bg-white/10">Help</button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {topTypeEntries.map(([type, count]) => (
-                        <span key={type} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
-                          {type}: <span className="text-synth-cyan">{count}</span>
-                        </span>
-                      ))}
-                    </div>
+                </div>                {subjectFilter === 'all' ? (
+                  <div className="rounded-2xl border border-dashed border-white/10 bg-synth-gray/10 p-5 space-y-2">
+                    <p className="text-sm font-semibold text-white">Chọn 1 môn ở sidebar bên trái để xem chi tiết riêng.</p>
+                    <p className="text-[10px] text-synth-text-muted leading-relaxed">
+                      Khi đang ở chế độ Tất cả, admin chỉ thấy tổng quan ngắn gọn. Chọn Tiếng Anh, Toán hoặc Ngữ văn để mở đúng blueprint, topic và task của môn đó.
+                    </p>
                   </div>
-                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                ) : subjectFilter === 'english' ? (
+                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-4">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-green">Part / chuyên đề</span>
-                      <button onClick={() => showHelp('rubric')} className="text-[10px] px-2 py-1 rounded bg-white/5 text-white hover:bg-white/10">Rubric</button>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {topExamParts.map(([part, count]) => (
-                        <span key={part} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
-                          {part}: <span className="text-synth-green">{count}</span>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-orange">Gợi ý sử dụng</span>
-                      <button onClick={() => showHelp('parent-console')} className="text-[10px] px-2 py-1 rounded bg-white/5 text-white hover:bg-white/10">Console</button>
-                    </div>
-                    <div className="flex flex-wrap gap-2 text-[10px]">
-                      <button onClick={() => showHelp('math-bank')} className="px-2.5 py-1 rounded-full bg-synth-magenta/15 text-synth-magenta font-bold uppercase">Toán</button>
-                      <button onClick={() => showHelp('english-bank')} className="px-2.5 py-1 rounded-full bg-synth-cyan/15 text-synth-cyan font-bold uppercase">Anh</button>
-                      <button onClick={() => showHelp('literature-bank')} className="px-2.5 py-1 rounded-full bg-synth-orange/15 text-synth-orange font-bold uppercase">Văn</button>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
-                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-magenta">Toán theo topic</span>
-                      <span className="text-[10px] text-synth-text-muted">{questions.filter(q => q.subject === 'math').length} câu</span>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {topMathTopics.map(([topic, count]) => (
-                        <span key={topic} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
-                          {MATH_TOPIC_LABELS[topic] || topic}: <span className="text-synth-magenta">{count}</span>
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">Anh theo task</span>
+                      <div>
+                        <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">Môn đang xem</span>
+                        <h5 className="text-sm font-bold text-white mt-1">Tiếng Anh</h5>
+                      </div>
                       <span className="text-[10px] text-synth-text-muted">{questions.filter(q => !q.subject || q.subject === 'english').length} câu</span>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {topEnglishTasks.map(([task, count]) => (
-                        <span key={task} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
-                          {ENGLISH_TASK_LABELS[task] || task}: <span className="text-synth-cyan">{count}</span>
-                        </span>
-                      ))}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="rounded-xl border border-white/5 bg-white/5 p-3 space-y-1.5">
+                        <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">Tổng câu Anh</span>
+                        <div className="text-xl font-black text-white font-orbitron">{bankStats.english}</div>
+                        <p className="text-[10px] text-synth-text-muted">Chỉ tính câu thuộc Tiếng Anh</p>
+                      </div>
+                      <div className="rounded-xl border border-white/5 bg-white/5 p-3 space-y-1.5">
+                        <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">Task</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {topEnglishTasks.map(([task, count]) => (
+                            <span key={task} className="px-2 py-1 rounded-full bg-synth-cyan/15 text-synth-cyan text-[10px] font-bold uppercase">
+                              {ENGLISH_TASK_LABELS[task] || task}: {count}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="rounded-xl border border-white/5 bg-white/5 p-3 space-y-1.5">
+                        <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">Part</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {ENGLISH_EXAM_BLUEPRINT.map(part => (
+                            <span key={part.part} className="px-2 py-1 rounded-full bg-white/10 text-white text-[10px] font-bold uppercase">
+                              {part.part}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                ) : subjectFilter === 'math' ? (
+                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-4">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-orange">Văn theo task</span>
+                      <div>
+                        <span className="text-[10px] uppercase font-orbitron font-bold text-synth-magenta">Môn đang xem</span>
+                        <h5 className="text-sm font-bold text-white mt-1">Toán học</h5>
+                      </div>
+                      <span className="text-[10px] text-synth-text-muted">{questions.filter(q => q.subject === 'math').length} câu</span>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="rounded-xl border border-white/5 bg-white/5 p-3 space-y-1.5">
+                        <span className="text-[10px] uppercase font-orbitron font-bold text-synth-magenta">Tổng câu Toán</span>
+                        <div className="text-xl font-black text-white font-orbitron">{bankStats.math}</div>
+                        <p className="text-[10px] text-synth-text-muted">Chỉ tính câu thuộc Toán</p>
+                      </div>
+                      <div className="rounded-xl border border-white/5 bg-white/5 p-3 space-y-1.5 md:col-span-2">
+                        <span className="text-[10px] uppercase font-orbitron font-bold text-synth-magenta">Topic</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {topMathTopics.map(([topic, count]) => (
+                            <span key={topic} className="px-2 py-1 rounded-full bg-synth-magenta/15 text-synth-magenta text-[10px] font-bold uppercase">
+                              {MATH_TOPIC_LABELS[topic] || topic}: {count}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-4">
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <span className="text-[10px] uppercase font-orbitron font-bold text-synth-orange">Môn đang xem</span>
+                        <h5 className="text-sm font-bold text-white mt-1">Ngữ văn</h5>
+                      </div>
                       <span className="text-[10px] text-synth-text-muted">{questions.filter(q => q.subject === 'literature').length} câu</span>
                     </div>
-                    <div className="flex flex-wrap gap-2">
-                      {topLiteratureTasks.map(([task, count]) => (
-                        <span key={task} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
-                          {LITERATURE_TASK_LABELS[task] || task}: <span className="text-synth-orange">{count}</span>
-                        </span>
-                      ))}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="rounded-xl border border-white/5 bg-white/5 p-3 space-y-1.5">
+                        <span className="text-[10px] uppercase font-orbitron font-bold text-synth-orange">Tổng câu Văn</span>
+                        <div className="text-xl font-black text-white font-orbitron">{bankStats.literature}</div>
+                        <p className="text-[10px] text-synth-text-muted">Chỉ tính câu thuộc Ngữ văn</p>
+                      </div>
+                      <div className="rounded-xl border border-white/5 bg-white/5 p-3 space-y-1.5">
+                        <span className="text-[10px] uppercase font-orbitron font-bold text-synth-orange">Task</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {topLiteratureTasks.map(([task, count]) => (
+                            <span key={task} className="px-2 py-1 rounded-full bg-synth-orange/15 text-synth-orange text-[10px] font-bold uppercase">
+                              {LITERATURE_TASK_LABELS[task] || task}: {count}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-4">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
@@ -1820,6 +1889,11 @@ export const ParentConsole: React.FC = () => {
     </div>
   );
 };
+
+
+
+
+
 
 
 
