@@ -3,13 +3,13 @@ import { useGameState } from '../hooks/useGameState';
 import { INITIAL_LESSONS } from '../data/lessons';
 import {
   Compass, Sword, ShieldAlert, Star, Zap, BookOpen,
-  ChevronDown, ChevronUp, Skull, Swords, BookMarked, BrainCircuit, Heart
+  ChevronDown, ChevronUp, Skull, Swords, BookMarked, BrainCircuit, Heart, Volume2
 } from 'lucide-react';
 import { toast } from '../utils/toast';
 
 interface GameMapProps {
   onStartPlay: (
-    mode: 'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss' | 'survival',
+    mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'survival',
     bossId?: string
   ) => void;
   onOpenMysteryBox: () => void;
@@ -41,7 +41,7 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
   };
 
   const handleLaunchZone = (
-    mode: 'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss' | 'survival',
+    mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'survival',
     energyCost: number,
     bossId?: string
   ) => {
@@ -249,31 +249,66 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
         </h3>
 
         {currentSubject === 'english' && (
-          <div className="mb-4">
-            <div
-              onClick={() => handleLaunchZone('vocabulary', challengeEnergyCosts[1] ?? 10)}
-              className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
-            >
-              <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(0,240,255,0.08),transparent_60%)]" />
-              <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white">
-                <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 10}
-              </div>
-              <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
-                <BookOpen className="w-8 h-8 text-synth-cyan" />
-              </div>
-              <div className="space-y-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="font-orbitron font-black text-base text-synth-cyan">🏰 Vocabulary Castle</h4>
-                  <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-synth-cyan/15 border border-synth-cyan/30 text-synth-cyan">English</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {[
+              {
+                title: 'Grammar Cave',
+                subtitle: 'Ngữ pháp cốt lõi',
+                description: 'Bám thì, bị động, mệnh đề quan hệ và viết lại câu ở tốc độ đề thi.',
+                icon: <BookOpen className="w-8 h-8 text-synth-cyan" />,
+                mode: 'grammar' as const,
+                reward: 'Ưu tiên grammar + rewrite'
+              },
+              {
+                title: 'Vocabulary Castle',
+                subtitle: 'Từ vựng và word form',
+                description: 'Luyện bám nghĩa, collocation và ngữ cảnh, tách riêng vocabulary khỏi phần còn lại.',
+                icon: <BookMarked className="w-8 h-8 text-synth-cyan" />,
+                mode: 'vocabulary' as const,
+                reward: 'Ưu tiên vocabulary + word form'
+              },
+              {
+                title: 'Reading Forest',
+                subtitle: 'Đọc hiểu và cloze',
+                description: 'Đi xuyên qua passage, scan keyword, nối ý và xử lý câu hỏi đọc hiểu.',
+                icon: <Compass className="w-8 h-8 text-synth-cyan" />,
+                mode: 'reading' as const,
+                reward: 'Ưu tiên reading + cloze'
+              },
+              {
+                title: 'Pronunciation Peak',
+                subtitle: 'Phát âm và stress',
+                description: 'Bắt đuôi -ed/-s, trọng âm và minimal pairs trong một đường leo riêng.',
+                icon: <Volume2 className="w-8 h-8 text-synth-cyan" />,
+                mode: 'pronunciation' as const,
+                reward: 'Ưu tiên pronunciation + stress'
+              }
+            ].map(card => (
+              <div
+                key={card.title}
+                onClick={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 10)}
+                className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
+              >
+                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(0,240,255,0.08),transparent_60%)]" />
+                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white">
+                  <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 10}
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  Tập trung từ vựng và word form. Các câu được kéo riêng thành lâu đài vocabulary để luyện bám nghĩa, collocation và ngữ cảnh.
-                </p>
-                <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
-                  Phần thưởng: <span className="text-white">Ưu tiên câu vocabulary / word form</span>
+                <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
+                  {card.icon}
+                </div>
+                <div className="space-y-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="font-orbitron font-black text-base text-synth-cyan">🏰 {card.title}</h4>
+                    <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-synth-cyan/15 border border-synth-cyan/30 text-synth-cyan">English</span>
+                  </div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-400">{card.subtitle}</div>
+                  <p className="text-xs text-slate-300 leading-relaxed">{card.description}</p>
+                  <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
+                    Phần thưởng: <span className="text-white">{card.reward}</span>
+                  </div>
                 </div>
               </div>
-            </div>
+            ))}
           </div>
         )}
 

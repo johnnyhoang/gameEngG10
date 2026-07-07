@@ -14,7 +14,7 @@ import { toast } from '../utils/toast';
 import { supabase } from '../utils/supabaseClient';
 
 interface PlayAreaProps {
-  mode: 'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss' | 'lesson' | 'survival';
+  mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'lesson' | 'survival';
   bossId?: string;
   lessonId?: string;
   onFinish: () => void;
@@ -123,6 +123,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
             if (mode === 'grammar') return q.category === 'grammar' || q.category === 'passive-voice' || q.category === 'relative-clauses' || q.category === 'rewrite';
             if (mode === 'reading') return q.category === 'reading' || q.category === 'cloze';
             if (mode === 'vocabulary') return q.category === 'vocabulary' || q.category === 'wordform';
+            if (mode === 'pronunciation') return q.category === 'pronunciation' || q.category === 'stress';
           }
           return true;
         }).slice(0, count);
@@ -201,6 +202,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         setRevealedHint('Gợi ý: Tìm từ khóa chính và xác định đoạn chứa thông tin liên quan nhất.');
       } else if (englishTask === 'word-form') {
         setRevealedHint('Gợi ý: Xác định loại từ cần điền: noun, verb, adjective hay adverb.');
+      } else if (mode === 'pronunciation') {
+        setRevealedHint('Gợi ý: Chú ý đuôi -ed/-s, nguyên âm gần âm và trọng âm của từ.');
       } else if (englishTask === 'rearrangement') {
         setRevealedHint('Gợi ý: Bắt đầu từ chủ ngữ, động từ và các cụm bổ nghĩa cố định trước.');
       } else if (englishTask === 'transformation') {
@@ -444,19 +447,21 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
 
   const modeLabel = mode === 'vocabulary'
     ? 'Vocabulary Castle'
-    : mode === 'grammar'
-      ? 'Grammar Dungeon'
-      : mode === 'reading'
-        ? 'Reading Dungeon'
-        : mode === 'mixed'
-          ? 'Mixed Dungeon'
-          : mode === 'revenge'
-            ? 'Revenge Dungeon'
-            : mode === 'boss'
-              ? 'Boss Arena'
-              : mode === 'survival'
-                ? 'Survival Arena'
-                : 'Lesson Dungeon';
+    : mode === 'pronunciation'
+      ? 'Pronunciation Peak'
+      : mode === 'grammar'
+        ? 'Grammar Cave'
+        : mode === 'reading'
+          ? 'Reading Forest'
+          : mode === 'mixed'
+            ? 'Mixed Dungeon'
+            : mode === 'revenge'
+              ? 'Revenge Dungeon'
+              : mode === 'boss'
+                ? 'Boss Arena'
+                : mode === 'survival'
+                  ? 'Survival Arena'
+                  : 'Lesson Dungeon';
 
   if (runFinished) {
     const isGameOver = player.hearts <= 0 && mode === 'boss';
@@ -475,7 +480,9 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
               ? 'Con đã hoàn thành các câu hỏi củng cố! Hãy quay lại để xác nhận lĩnh hội bài học nhé.'
               : mode === 'vocabulary'
                 ? 'Con đã chinh phục Vocabulary Castle! Từ vựng và word form sẽ được ưu tiên ở lượt sau.'
-                : `Đã hoàn thành phụ bản ${mode.toUpperCase()}! Hãy cùng xem thành quả chiến lợi phẩm.`}
+                : mode === 'pronunciation'
+                  ? 'Con đã chinh phục Pronunciation Peak! Hãy giữ nhịp phát âm và trọng âm thật chắc.'
+                  : `Đã hoàn thành phụ bản ${mode.toUpperCase()}! Hãy cùng xem thành quả chiến lợi phẩm.`}
         </p>
 
         {/* Reward card */}

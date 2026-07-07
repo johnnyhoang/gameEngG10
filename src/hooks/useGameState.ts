@@ -312,7 +312,7 @@ interface GameState {
 
   // Selection Logic
   getAdaptiveQuestion: (category: string) => Question | null;
-  getQuestionByWeight: (mode: 'grammar' | 'reading' | 'vocabulary' | 'mixed') => Question | null;
+  getQuestionByWeight: (mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed') => Question | null;
 }
 
 const DEFAULT_PIN = '1234';
@@ -1808,6 +1808,8 @@ export const useGameState = create<GameState>()(
               categoriesPool.push('reading', 'cloze');
             } else if (mode === 'vocabulary') {
               categoriesPool.push('vocabulary', 'wordform');
+            } else if (mode === 'pronunciation') {
+              categoriesPool.push('pronunciation', 'stress');
             } else {
               categoriesPool.push('grammar', 'passive-voice', 'relative-clauses', 'tenses', 'rewrite', 'reading', 'cloze', 'vocabulary', 'wordform', 'pronunciation', 'stress');
             }
