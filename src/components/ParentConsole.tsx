@@ -64,6 +64,7 @@ export const ParentConsole: React.FC = () => {
   const [editOptions, setEditOptions] = useState('');
   const [editCorrectAnswer, setEditCorrectAnswer] = useState('');
   const [editSource, setEditSource] = useState('');
+  const [editImageUrl, setEditImageUrl] = useState('');
 
   // Active Tab
   const [activeTab, setActiveTab] = useState<'rewards' | 'ingestion' | 'members' | 'settings'>('members');
@@ -102,6 +103,7 @@ export const ParentConsole: React.FC = () => {
     setEditOptions(Array.isArray(editingQuestion.options) ? editingQuestion.options.join('\n') : '');
     setEditCorrectAnswer(Array.isArray(editingQuestion.correctAnswer) ? editingQuestion.correctAnswer.join('\n') : editingQuestion.correctAnswer);
     setEditSource(editingQuestion.source);
+    setEditImageUrl(editingQuestion.imageUrl || '');
   }, [editingQuestion]);
 
   const handleUnlock = (e: React.FormEvent) => {
@@ -134,7 +136,8 @@ export const ParentConsole: React.FC = () => {
       difficulty: Math.max(1, Math.min(10, Number(editDifficulty) || 5)),
       options: nextOptions.length > 0 ? nextOptions : undefined,
       correctAnswer: nextCorrectAnswer.length > 1 ? nextCorrectAnswer : nextCorrectAnswer[0] || '',
-      source: editSource.trim()
+      source: editSource.trim(),
+      imageUrl: editImageUrl.trim() || undefined
     };
 
     const ok = await updateQuestion(editingQuestion.id, payload);
@@ -554,6 +557,15 @@ Answer: politely"
                     <span className="font-bold text-synth-cyan uppercase font-orbitron text-[10px]">
                       Loại: {q.type} | Dạng: {q.category}
                     </span>
+                    {q.imageUrl && (
+                      <div className="my-1.5 max-w-[120px] bg-synth-gray/50 p-1.5 rounded-lg border border-white/5">
+                        <img 
+                          src={q.imageUrl} 
+                          className="rounded max-h-[70px] object-contain mx-auto" 
+                          alt="Preview" 
+                        />
+                      </div>
+                    )}
                     <p className="text-white font-medium my-1">{q.prompt}</p>
                     {q.options && (
                       <ul className="pl-4 list-disc text-synth-text-muted">
@@ -636,6 +648,15 @@ Answer: politely"
                             </span>
                           )}
                         </div>
+                        {q.imageUrl && (
+                          <div className="my-2 max-w-[160px] bg-synth-gray/30 p-1.5 rounded-lg border border-white/5">
+                            <img 
+                              src={q.imageUrl} 
+                              className="rounded max-h-[100px] object-contain mx-auto" 
+                              alt="Question" 
+                            />
+                          </div>
+                        )}
                         <p className="text-sm text-white font-medium leading-relaxed">{q.prompt}</p>
                         <p className="text-[10px] text-synth-text-muted">
                           Nguồn: {q.source || 'Default'} | Độ khó: {q.difficulty}/10 | ID: {q.id}
@@ -767,17 +788,29 @@ Answer: politely"
               </label>
             </div>
 
-            <label className="space-y-2 text-xs block max-w-xs">
-              <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Độ khó (1-10)</span>
-              <input
-                type="number"
-                min={1}
-                max={10}
-                value={editDifficulty}
-                onChange={(e) => setEditDifficulty(Number(e.target.value))}
-                className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
-              />
-            </label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className="space-y-2 text-xs block">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Độ khó (1-10)</span>
+                <input
+                  type="number"
+                  min={1}
+                  max={10}
+                  value={editDifficulty}
+                  onChange={(e) => setEditDifficulty(Number(e.target.value))}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                />
+              </label>
+              <label className="space-y-2 text-xs block">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Đường dẫn hình ảnh (URL)</span>
+                <input
+                  type="text"
+                  value={editImageUrl}
+                  onChange={(e) => setEditImageUrl(e.target.value)}
+                  placeholder="https://example.com/image.png"
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                />
+              </label>
+            </div>
 
             <div className="flex justify-end gap-3">
               <button

@@ -374,6 +374,15 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
                 <span>Nguồn: {activeQuestion.source}</span>
                 <span className="text-synth-cyan font-orbitron">Cấp độ khó: {activeQuestion.difficulty}/10</span>
               </div>
+              {activeQuestion.imageUrl && (
+                <div className="flex justify-center bg-synth-gray/10 border border-white/5 rounded-xl p-3">
+                  <img 
+                    src={activeQuestion.imageUrl} 
+                    className="rounded-lg max-h-[140px] object-contain border border-synth-orange/20 shadow-[0_0_15px_rgba(255,165,0,0.05)]" 
+                    alt="Question Illustration" 
+                  />
+                </div>
+              )}
               <p className="text-sm text-white font-semibold leading-relaxed bg-synth-gray/20 border border-white/5 rounded-xl p-3.5 whitespace-pre-line">
                 {questionText}
               </p>
@@ -434,6 +443,15 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
               <span>Nguồn: {activeQuestion.source}</span>
               <span className="text-synth-cyan font-orbitron">Cấp độ khó: {activeQuestion.difficulty}/10</span>
             </div>
+            {activeQuestion.imageUrl && (
+              <div className="flex justify-center bg-synth-gray/10 border border-white/5 rounded-xl p-3">
+                <img 
+                  src={activeQuestion.imageUrl} 
+                  className="rounded-lg max-h-[160px] md:max-h-[220px] object-contain border border-synth-orange/20 shadow-[0_0_15px_rgba(255,165,0,0.05)]" 
+                  alt="Question Illustration" 
+                />
+              </div>
+            )}
             <p className="text-base text-white font-medium leading-relaxed bg-synth-gray/20 border border-white/5 rounded-xl p-4 whitespace-pre-line">
               {activeQuestion.prompt}
             </p>

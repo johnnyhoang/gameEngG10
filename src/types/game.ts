@@ -44,6 +44,7 @@ export interface Question {
   difficulty: number; // 1 to 10 scale
   source: string; // e.g. "HCMC 2024 Exam", "Specialized 2025 Mock"
   subject?: 'english' | 'math' | 'literature';
+  imageUrl?: string;
 }
 
 export interface CategoryStat {

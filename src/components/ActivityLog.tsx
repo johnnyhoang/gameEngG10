@@ -5,6 +5,8 @@ import { Target, Clock, Gift, ShieldAlert, Award, FileText, CheckCircle2 } from 
 export const ActivityLog: React.FC = () => {
   const dailyMission = useGameState(state => state.dailyMission);
   const logs = useGameState(state => state.logs);
+  const uiTheme = useGameState(state => state.uiTheme);
+  const isUnicorn = uiTheme === 'unicorn-dream';
   const [visibleCount, setVisibleCount] = useState(20);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const loadMoreLockRef = useRef(false);
@@ -45,17 +47,19 @@ export const ActivityLog: React.FC = () => {
   };
 
   return (
-    <div className="glass-panel rounded-2xl border border-synth-cyan/15 p-5 flex flex-col h-full overflow-hidden">
+    <div className={`glass-panel rounded-2xl p-5 flex flex-col h-full overflow-hidden ${
+      isUnicorn ? 'border-violet-200/35 bg-white/80' : 'border-synth-cyan/15'
+    }`}>
       {/* Daily Mission Section */}
-      <div className="mb-6 border-b border-synth-gray pb-4">
-        <h3 className="font-orbitron font-bold text-synth-orange text-sm uppercase tracking-wider flex items-center gap-2 mb-3">
-          <Target className="w-4 h-4" /> Daily Mission
+      <div className={`mb-6 pb-4 ${isUnicorn ? 'border-b border-violet-200/35' : 'border-b border-synth-gray'}`}>
+        <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 mb-3 ${isUnicorn ? 'text-violet-700' : 'text-synth-orange'}`}>
+          <Target className={`w-4 h-4 ${isUnicorn ? 'text-fuchsia-500' : ''}`} /> Daily Mission
         </h3>
 
         {dailyMission ? (
           <div className="space-y-3">
             <div className="flex justify-between items-start">
-              <h4 className="text-xs font-bold text-white leading-tight">
+              <h4 className={`text-xs font-bold leading-tight ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
                 {dailyMission.title}
               </h4>
               <span className={`text-[10px] px-1.5 py-0.5 rounded font-orbitron font-semibold ${
@@ -68,15 +72,15 @@ export const ActivityLog: React.FC = () => {
             {/* Requirements list */}
             <div className="space-y-2">
               {dailyMission.requirements.map((req, idx) => (
-                <div key={idx} className="bg-synth-gray/20 rounded-lg p-2 border border-white/5 text-[11px]">
-                  <div className="flex justify-between font-semibold text-white mb-1">
+                <div key={idx} className={`rounded-lg p-2 text-[11px] ${isUnicorn ? 'bg-white/70 border border-violet-200/25' : 'bg-synth-gray/20 border border-white/5'}`}>
+                  <div className={`flex justify-between font-semibold mb-1 ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
                     <span>{req.description}</span>
                     <span>{req.current}/{req.target}</span>
                   </div>
-                  <div className="w-full h-1 bg-synth-gray rounded-full overflow-hidden">
+                  <div className={`w-full h-1 rounded-full overflow-hidden ${isUnicorn ? 'bg-violet-100' : 'bg-synth-gray'}`}>
                     <div 
                       className={`h-full transition-all duration-300 ${
-                        req.completed ? 'bg-synth-green' : 'bg-synth-orange'
+                        req.completed ? (isUnicorn ? 'unicorn-rainbow-strip' : 'bg-synth-green') : (isUnicorn ? 'bg-violet-300' : 'bg-synth-orange')
                       }`}
                       style={{ width: `${Math.min(100, (req.current / req.target) * 100)}%` }}
                     />
@@ -86,24 +90,26 @@ export const ActivityLog: React.FC = () => {
             </div>
 
             {/* Mission Rewards */}
-            <div className="flex items-center justify-between bg-synth-blue/30 rounded-lg p-2 border border-synth-cyan/10 text-xs font-semibold">
-              <span className="text-synth-text-muted">Phần thưởng hoàn thành:</span>
-              <span className="text-synth-magenta font-orbitron font-bold">
+            <div className={`flex items-center justify-between rounded-lg p-2 text-xs font-semibold ${
+              isUnicorn ? 'bg-white/70 border border-violet-200/25' : 'bg-synth-blue/30 border border-synth-cyan/10'
+            }`}>
+              <span className={isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}>Phần thưởng hoàn thành:</span>
+              <span className={`font-orbitron font-bold ${isUnicorn ? 'text-violet-700' : 'text-synth-magenta'}`}>
                 +{dailyMission.rewardVND.toLocaleString()}đ (Ví)
               </span>
             </div>
           </div>
         ) : (
           <div className="text-center py-4 bg-synth-gray/10 rounded-lg border border-dashed border-synth-gray">
-            <span className="text-xs text-synth-text-muted">Làm bài luyện tập hôm nay để nhận Nhiệm Vụ Ngày!</span>
+            <span className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>Làm bài luyện tập hôm nay để nhận Nhiệm Vụ Ngày!</span>
           </div>
         )}
       </div>
 
       {/* Activity Logs Section */}
       <div className="flex-1 flex flex-col min-h-0">
-        <h3 className="font-orbitron font-bold text-synth-cyan text-sm uppercase tracking-wider flex items-center gap-2 mb-3">
-          <Clock className="w-4 h-4" /> Activity Feed
+        <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 mb-3 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
+          <Clock className={`w-4 h-4 ${isUnicorn ? 'text-fuchsia-500' : ''}`} /> Activity Feed
         </h3>
 
         <div
@@ -113,7 +119,9 @@ export const ActivityLog: React.FC = () => {
         >
           {visibleLogs.length > 0 ? (
             <>
-              <div className="flex items-center justify-between text-[10px] text-synth-text-muted font-bold uppercase tracking-wider mb-2 sticky top-0 z-10 bg-synth-bg/90 backdrop-blur-sm py-1">
+              <div className={`flex items-center justify-between text-[10px] font-bold uppercase tracking-wider mb-2 sticky top-0 z-10 backdrop-blur-sm py-1 ${
+                isUnicorn ? 'bg-white/85 text-violet-600/80' : 'bg-synth-bg/90 text-synth-text-muted'
+              }`}>
                 <span>Hiển thị {visibleLogs.length}/{logs.length}</span>
                 {visibleLogs.length < logs.length && <span>Kéo xuống để tải thêm</span>}
               </div>

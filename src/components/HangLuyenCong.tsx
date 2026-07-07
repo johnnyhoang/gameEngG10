@@ -361,6 +361,15 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                   <span>{question.category}</span>
                   <span>{question.difficulty}/10</span>
                 </div>
+                {question.imageUrl && (
+                  <div className="flex justify-center bg-synth-gray/10 rounded-xl p-2 max-h-[80px] overflow-hidden border border-white/5">
+                    <img 
+                      src={question.imageUrl} 
+                      className="rounded max-h-[60px] object-contain" 
+                      alt="Preview" 
+                    />
+                  </div>
+                )}
                 <p className="text-sm text-white leading-relaxed max-h-24 overflow-hidden">
                   {question.prompt}
                 </p>

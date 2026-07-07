@@ -37,12 +37,16 @@ export const GoogleLoginScreen: React.FC = () => {
             MIKAWAII
           </h1>
           <p className="text-xs text-synth-cyan font-bold uppercase tracking-widest font-orbitron">
-            Luyện thi Tiếng Anh vào lớp 10
+            Đấu trường học thuật
           </p>
         </div>
 
         <p className="text-xs text-synth-text-muted leading-relaxed">
-          Chào mừng con đến với hệ thống học Tiếng Anh luyện thi vào lớp 10 TP.HCM. Đăng nhập để lưu trữ tiến trình học tập và đồng hành cùng thú cưng.
+          MIKAWAII là hệ sinh thái luyện thi cho Tiếng Anh, Toán và Ngữ văn,
+          nơi con bước vào đấu trường, chinh phục hàng loạt thử thách, cày trong
+          hang luyện công, mở mật thất luyện bí kíp và mài giũa hàng ngàn tuyệt
+          chiêu từ ngân hàng câu hỏi. Đăng nhập để lưu tiến trình, ghi dấu
+          thành tích và lên trình mỗi ngày.
         </p>
 
         {/* Active Google Button */}

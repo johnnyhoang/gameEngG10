@@ -32,6 +32,7 @@ const initDB = async () => {
     const sql = fs.readFileSync(schemaPath, 'utf8');
     await pool.query(sql);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS subject VARCHAR(50) DEFAULT 'english';`);
+    await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS image_url TEXT;`);
     await pool.query(`ALTER TABLE ge10_player_profiles ADD COLUMN IF NOT EXISTS server_updated_at TIMESTAMP DEFAULT NOW();`);
     console.log('Database initialized successfully.');
   } catch (error) {
@@ -135,8 +136,8 @@ const saveChallengeEnergyCosts = async (challengeEnergyCosts: [number, number, n
 
 const persistCustomQuestion = async (userId: string, question: any) => {
   await pool.query(
-    `INSERT INTO ge10_custom_questions (id, user_id, type, category, prompt, options, correct_answer, explanation, difficulty, source, subject)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+    `INSERT INTO ge10_custom_questions (id, user_id, type, category, prompt, options, correct_answer, explanation, difficulty, source, subject, image_url)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
      ON CONFLICT (id) DO UPDATE SET
        type = EXCLUDED.type,
        category = EXCLUDED.category,
@@ -146,7 +147,8 @@ const persistCustomQuestion = async (userId: string, question: any) => {
        explanation = EXCLUDED.explanation,
        difficulty = EXCLUDED.difficulty,
        source = EXCLUDED.source,
-       subject = EXCLUDED.subject`,
+       subject = EXCLUDED.subject,
+       image_url = EXCLUDED.image_url`,
     [
       question.id,
       userId,
@@ -158,7 +160,8 @@ const persistCustomQuestion = async (userId: string, question: any) => {
       question.explanation || '',
       question.difficulty || 5,
       question.source || 'AI Ingested English',
-      question.subject || 'english'
+      question.subject || 'english',
+      question.imageUrl || question.image_url || null
     ]
   );
 };
@@ -309,7 +312,8 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
       explanation: row.explanation,
       difficulty: row.difficulty,
       source: row.source,
-      subject: row.subject
+      subject: row.subject,
+      imageUrl: row.image_url
     }));
 
     res.json({
@@ -537,7 +541,19 @@ app.get('/api/questions/custom', authMiddleware, async (req: any, res) => {
           OR user_id IN (SELECT id FROM ge10_users WHERE role = 'admin')`,
       [userId]
     );
-    res.json(qRes.rows);
+    res.json(qRes.rows.map((row: any) => ({
+      id: row.id,
+      type: row.type,
+      category: row.category,
+      prompt: row.prompt,
+      options: row.options,
+      correctAnswer: row.correct_answer,
+      explanation: row.explanation,
+      difficulty: row.difficulty,
+      source: row.source,
+      subject: row.subject,
+      imageUrl: row.image_url
+    })));
   } catch (error) {
     console.error('Error loading custom questions:', error);
     res.status(500).json({ error: 'Failed to retrieve questions.' });
