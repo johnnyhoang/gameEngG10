@@ -248,13 +248,11 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
           <Compass className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-cyan'}`} /> Đấu Trường Tự Do
         </h3>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-          {/* Vocabulary Castle – English-specific lane */}
-          {currentSubject === 'english' && (
+        {currentSubject === 'english' && (
+          <div className="mb-4">
             <div
               onClick={() => handleLaunchZone('vocabulary', challengeEnergyCosts[1] ?? 10)}
-              className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 md:col-span-2"
+              className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
             >
               <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(0,240,255,0.08),transparent_60%)]" />
               <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white">
@@ -276,7 +274,10 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
                 </div>
               </div>
             </div>
-          )}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
           {/* Survival Mode – prominent */}
           <div
