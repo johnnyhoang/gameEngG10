@@ -17,6 +17,9 @@ import { BikiHinhHocPhang } from './components/BikiHinhHocPhang';
 import { supabase } from './utils/supabaseClient';
 import type { UserProfile } from './types/game';
 
+const APP_VERSION = 'fd44bc2';
+const APP_PUSH_TIME = 'Tue, 7 Jul 2026 12:05 ICT';
+
 function App() {
   const currentUser = useGameState(state => state.currentUser);
   const checkDailyReset = useGameState(state => state.checkDailyReset);
@@ -373,8 +376,13 @@ function App() {
       )}
 
       {/* Footer */}
-      <footer className="py-6 border-t border-synth-gray/30 text-center text-[10px] text-synth-text-muted font-semibold tracking-wider uppercase font-orbitron">
-        © 2026 MIKAWAII ENGLISH GRADE 10. ALL RIGHTS RESERVED. RUNNING_LOCAL_LOCALFORAGE_INDEXEDDB.
+      <footer className="py-6 border-t border-synth-gray/30 text-center space-y-2">
+        <div className="text-[10px] text-synth-text-muted font-semibold tracking-wider uppercase font-orbitron">
+          © 2026 MIKAWAII ENGLISH GRADE 10. ALL RIGHTS RESERVED. RUNNING_LOCAL_LOCALFORAGE_INDEXEDDB.
+        </div>
+        <div className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase font-orbitron">
+          Version {APP_VERSION} · Push {APP_PUSH_TIME}
+        </div>
       </footer>
     </div>
   );
