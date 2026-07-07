@@ -516,7 +516,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         </div>
       );
     }
-    return <div className="text-center py-10 font-orbitron text-synth-cyan">Đang nạp câu hỏi...</div>;
+    return <div className="text-center py-10 font-orbitron text-theme-text-info">Đang nạp câu hỏi...</div>;
   }
 
   // Check if we should render split screen for literature passages
@@ -674,10 +674,10 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                     const isCorrectOpt = cleanOpt.toLowerCase() === correctAnsStr.toLowerCase();
 
                     let borderClass = 'border-white/10 hover:border-synth-cyan/40 bg-synth-gray/10';
-                    if (isSelected) borderClass = 'border-synth-cyan bg-synth-cyan/15 text-white';
+                    if (isSelected) borderClass = 'border-synth-cyan bg-synth-cyan/15 text-theme-text-highlight font-semibold';
                     if (checked) {
-                      if (isCorrectOpt) borderClass = 'border-synth-green bg-synth-green/10 text-synth-green';
-                      else if (isSelected) borderClass = 'border-synth-magenta bg-synth-magenta/10 text-synth-magenta';
+                      if (isCorrectOpt) borderClass = 'border-theme-text-success bg-theme-bg-success text-theme-text-success font-bold';
+                      else if (isSelected) borderClass = 'border-theme-text-error bg-theme-bg-error text-theme-text-error font-bold';
                     }
 
                     return (
@@ -757,10 +757,10 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                   const isCorrectOpt = cleanOpt.toLowerCase() === correctAnsStr.toLowerCase();
 
                   let borderClass = 'border-white/10 hover:border-synth-cyan/40 bg-synth-gray/10';
-                  if (isSelected) borderClass = 'border-synth-cyan bg-synth-cyan/15 text-white';
+                  if (isSelected) borderClass = 'border-synth-cyan bg-synth-cyan/15 text-theme-text-highlight font-semibold';
                   if (checked) {
-                    if (isCorrectOpt) borderClass = 'border-synth-green bg-synth-green/10 text-synth-green';
-                    else if (isSelected) borderClass = 'border-synth-magenta bg-synth-magenta/10 text-synth-magenta';
+                    if (isCorrectOpt) borderClass = 'border-theme-text-success bg-theme-bg-success text-theme-text-success font-bold';
+                    else if (isSelected) borderClass = 'border-theme-text-error bg-theme-bg-error text-theme-text-error font-bold';
                   }
 
                   return (
@@ -813,7 +813,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
 
       {/* Hint Alert */}
       {revealedHint && (
-        <div className="p-3 bg-synth-blue/40 border border-synth-cyan/30 rounded-xl text-xs text-synth-cyan">
+        <div className="p-3 bg-theme-bg-success border border-theme-border-success rounded-xl text-xs text-theme-text-info font-semibold">
           {revealedHint}
         </div>
       )}
@@ -822,8 +822,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       {checked && (
         <div className={`p-4 rounded-xl border flex gap-3 text-xs leading-relaxed ${
           isLastCorrect 
-            ? 'border-synth-green/30 bg-synth-green/5 text-synth-green' 
-            : 'border-synth-magenta/30 bg-synth-magenta/5 text-synth-magenta'
+            ? 'border-theme-border-success bg-theme-bg-success text-theme-text-success font-semibold' 
+            : 'border-theme-border-error bg-theme-bg-error text-theme-text-error font-semibold'
         }`}>
           <div className="mt-0.5">
             {isLastCorrect ? <Check className="w-5 h-5" /> : <X className="w-5 h-5" />}
@@ -835,25 +835,25 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                 : isLastCorrect ? 'Chính xác! Cực tốt con ơi.' : 'Sai rồi! Đừng nản lòng.'}
             </h5>
             {currentSubject === 'literature' && activeQuestion.category === 'literature-writing' ? (
-              <p className="text-white mb-2 font-medium">
-                Điểm ước tính: <span className="font-bold underline text-synth-green">{lastRubricScore ?? 0}/10</span>
+              <p className="text-theme-text-highlight mb-2 font-medium">
+                Điểm ước tính: <span className="font-bold underline text-theme-text-success">{lastRubricScore ?? 0}/10</span>
               </p>
             ) : (
-              <p className="text-white mb-2 font-medium">
-                Đáp án đúng: <span className="font-bold underline text-synth-green">
+              <p className="text-theme-text-highlight mb-2 font-medium">
+                Đáp án đúng: <span className="font-bold underline text-theme-text-success">
                   {Array.isArray(activeQuestion.correctAnswer) ? activeQuestion.correctAnswer.join(' | ') : activeQuestion.correctAnswer}
                 </span>
               </p>
             )}
             {aiWarningMessage && (
-              <div className="p-2.5 bg-synth-orange/15 border border-synth-orange/35 rounded-lg text-synth-orange font-bold text-[11px] mb-2">
+              <div className="p-2.5 bg-theme-bg-error/30 border border-theme-border-error/50 rounded-lg text-theme-text-warning font-bold text-[11px] mb-2">
                 ⚠️ {aiWarningMessage}
               </div>
             )}
             {currentSubject === 'literature' && activeQuestion.category === 'literature-writing' && lastRubricMissing.length > 0 && (
-              <div className="text-white/90 space-y-1">
+              <div className="text-theme-text-highlight/90 space-y-1">
                 <p className="font-bold uppercase tracking-wider text-[10px]">Ý còn thiếu / cần mạnh hơn</p>
-                <ul className="list-disc pl-4 space-y-0.5 text-white/80">
+                <ul className="list-disc pl-4 space-y-0.5 text-theme-text-highlight/80">
                   {lastRubricMissing.slice(0, 5).map(item => (
                     <li key={item}>{item}</li>
                   ))}
@@ -861,15 +861,15 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
               </div>
             )}
             {aiFeedback && (
-              <div className="text-white/95 space-y-1 mt-2">
-                <p className="font-bold uppercase tracking-wider text-[10px] text-synth-cyan">Nhận xét chi tiết từ AI</p>
-                <p className="text-white/90 italic leading-relaxed bg-synth-gray/25 p-2 rounded-lg">{aiFeedback}</p>
+              <div className="text-theme-text-highlight/95 space-y-1 mt-2">
+                <p className="font-bold uppercase tracking-wider text-[10px] text-theme-text-info">Nhận xét chi tiết từ AI</p>
+                <p className="text-theme-text-highlight/90 italic leading-relaxed bg-synth-gray/25 p-2 rounded-lg">{aiFeedback}</p>
               </div>
             )}
             {aiSuggestions && aiSuggestions.length > 0 && (
-              <div className="text-white/95 space-y-1 mt-2">
-                <p className="font-bold uppercase tracking-wider text-[10px] text-synth-cyan">Gợi ý cải thiện</p>
-                <ul className="list-disc pl-4 space-y-0.5 text-white/80">
+              <div className="text-theme-text-highlight/95 space-y-1 mt-2">
+                <p className="font-bold uppercase tracking-wider text-[10px] text-theme-text-info">Gợi ý cải thiện</p>
+                <ul className="list-disc pl-4 space-y-0.5 text-theme-text-highlight/80">
                   {aiSuggestions.map((item, idx) => (
                     <li key={idx}>{item}</li>
                   ))}
@@ -880,9 +880,9 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
               {activeQuestion.explanation}
             </p>
             {currentSubject === 'literature' && activeQuestion.category === 'literature-writing' && activeQuestion.metadata?.solutionSteps?.length ? (
-              <div className="text-white/90 space-y-1">
+              <div className="text-theme-text-highlight/90 space-y-1">
                 <p className="font-bold uppercase tracking-wider text-[10px]">Rubric gợi ý</p>
-                <ol className="list-decimal pl-4 space-y-0.5 text-white/80">
+                <ol className="list-decimal pl-4 space-y-0.5 text-theme-text-highlight/80">
                   {activeQuestion.metadata.solutionSteps.map(step => (
                     <li key={step}>{step}</li>
                   ))}

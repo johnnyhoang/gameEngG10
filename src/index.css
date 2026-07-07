@@ -24,6 +24,16 @@
   --animate-bubble-rise: bubble-rise 7s ease-in-out infinite;
   --animate-leaf-drift: leaf-drift 9s ease-in-out infinite;
   --animate-pixel-pop: pixel-pop 1.6s steps(2, end) infinite;
+
+  --color-theme-text-success: var(--theme-text-success);
+  --color-theme-text-error: var(--theme-text-error);
+  --color-theme-text-info: var(--theme-text-info);
+  --color-theme-text-warning: var(--theme-text-warning);
+  --color-theme-bg-success: var(--theme-bg-success);
+  --color-theme-bg-error: var(--theme-bg-error);
+  --color-theme-border-success: var(--theme-border-success);
+  --color-theme-border-error: var(--theme-border-error);
+  --color-theme-text-highlight: var(--theme-text-highlight);
 }
 
 :root,
@@ -37,6 +47,16 @@ body,
   --theme-card: rgba(20, 23, 34, 0.75);
   --theme-card-strong: rgba(20, 23, 34, 0.92);
   --theme-border: rgba(255, 255, 255, 0.08);
+
+  --theme-text-success: #39ff14;
+  --theme-text-error: #ff007f;
+  --theme-text-info: #00f0ff;
+  --theme-text-warning: #ff9f1c;
+  --theme-bg-success: rgba(57, 255, 20, 0.06);
+  --theme-bg-error: rgba(255, 0, 127, 0.06);
+  --theme-border-success: rgba(57, 255, 20, 0.35);
+  --theme-border-error: rgba(255, 0, 127, 0.35);
+  --theme-text-highlight: #ffffff;
 }
 
 :root[data-theme='cute-pink-pastel'] {
@@ -56,6 +76,16 @@ body,
   --theme-card: rgba(255, 252, 254, 0.9);
   --theme-card-strong: rgba(255, 244, 251, 0.98);
   --theme-border: rgba(244, 114, 182, 0.22);
+
+  --theme-text-success: #16a34a;
+  --theme-text-error: #be185d;
+  --theme-text-info: #4f46e5;
+  --theme-text-warning: #c2410c;
+  --theme-bg-success: #f0fdf4;
+  --theme-bg-error: #fdf2f8;
+  --theme-border-success: rgba(22, 163, 74, 0.22);
+  --theme-border-error: rgba(190, 24, 93, 0.22);
+  --theme-text-highlight: #4b2d66;
 }
 
 body[data-theme='cute-pink-pastel'] {
@@ -79,6 +109,16 @@ body[data-theme='cute-pink-pastel'] {
   --theme-card: rgba(16, 25, 52, 0.72);
   --theme-card-strong: rgba(19, 31, 63, 0.9);
   --theme-border: rgba(155, 231, 255, 0.16);
+
+  --theme-text-success: #8df7c2;
+  --theme-text-error: #d8b4fe;
+  --theme-text-info: #9be7ff;
+  --theme-text-warning: #fbc97a;
+  --theme-bg-success: rgba(141, 247, 194, 0.06);
+  --theme-bg-error: rgba(216, 180, 254, 0.06);
+  --theme-border-success: rgba(141, 247, 194, 0.3);
+  --theme-border-error: rgba(216, 180, 254, 0.3);
+  --theme-text-highlight: #ffffff;
 }
 
 body[data-theme='space-adventure'] {
@@ -102,6 +142,16 @@ body[data-theme='space-adventure'] {
   --theme-card: rgba(255, 255, 248, 0.9);
   --theme-card-strong: rgba(247, 250, 235, 0.98);
   --theme-border: rgba(52, 211, 153, 0.22);
+
+  --theme-text-success: #15803d;
+  --theme-text-error: #be123c;
+  --theme-text-info: #0369a1;
+  --theme-text-warning: #a16207;
+  --theme-bg-success: #f0fdf4;
+  --theme-bg-error: #fff1f2;
+  --theme-border-success: rgba(21, 128, 61, 0.22);
+  --theme-border-error: rgba(190, 18, 60, 0.22);
+  --theme-text-highlight: #1e3a1e;
 }
 
 body[data-theme='fantasy-forest'] {
@@ -125,6 +175,16 @@ body[data-theme='fantasy-forest'] {
   --theme-card: rgba(7, 14, 29, 0.96);
   --theme-card-strong: rgba(10, 20, 40, 0.98);
   --theme-border: rgba(132, 204, 22, 0.18);
+
+  --theme-text-success: #84cc16;
+  --theme-text-error: #fb7185;
+  --theme-text-info: #22d3ee;
+  --theme-text-warning: #fb923c;
+  --theme-bg-success: rgba(132, 204, 22, 0.06);
+  --theme-bg-error: rgba(251, 113, 133, 0.06);
+  --theme-border-success: rgba(132, 204, 22, 0.25);
+  --theme-border-error: rgba(251, 113, 133, 0.25);
+  --theme-text-highlight: #ffffff;
 }
 
 :root[data-theme='unicorn-dream'] {
@@ -144,6 +204,16 @@ body[data-theme='fantasy-forest'] {
   --theme-card: rgba(255, 255, 255, 0.88);
   --theme-card-strong: rgba(252, 245, 255, 0.98);
   --theme-border: rgba(192, 132, 252, 0.18);
+
+  --theme-text-success: #047857;
+  --theme-text-error: #b91c1c;
+  --theme-text-info: #6d28d9;
+  --theme-text-warning: #b45309;
+  --theme-bg-success: #ecfdf5;
+  --theme-bg-error: #fef2f2;
+  --theme-border-success: rgba(4, 120, 87, 0.22);
+  --theme-border-error: rgba(185, 28, 28, 0.22);
+  --theme-text-highlight: #371c4a;
 }
 
 body[data-theme='unicorn-dream'] {
