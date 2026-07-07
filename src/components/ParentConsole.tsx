@@ -6,6 +6,7 @@ import { MATH_ANSWER_MODE_LABELS, MATH_EXAM_BLUEPRINT, MATH_TOPIC_LABELS } from 
 import { LITERATURE_ANSWER_MODE_LABELS, LITERATURE_EXAM_BLUEPRINT, LITERATURE_TASK_LABELS, LITERATURE_TEXT_GENRE_LABELS } from '../data/literatureExamBlueprint';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Lock, Unlock, Check, X, Award, Database, Plus, SlidersHorizontal, Search, Pencil, Trash2 } from 'lucide-react';
+import { toast } from '../utils/toast';
 
 export const ParentConsole: React.FC = () => {
   const verifyPIN = useGameState(state => state.verifyPIN);
@@ -208,7 +209,7 @@ export const ParentConsole: React.FC = () => {
     if (!rewardTitle.trim()) return;
     addParentReward(rewardTitle, rewardCost, rewardCash);
     setRewardTitle('');
-    alert('Thêm quà tặng mới thành công!');
+    toast.success('Thêm quà tặng mới thành công!');
   };
 
 
@@ -267,7 +268,64 @@ export const ParentConsole: React.FC = () => {
   const topEnglishTasks = Object.entries(englishTaskCounts).sort((a, b) => b[1] - a[1]);
   const topLiteratureTasks = Object.entries(literatureTaskCounts).sort((a, b) => b[1] - a[1]);
 
-  if (!isUnlocked) {
+  const filteredQuestions = useMemo(() => {
+    const query = questionQuery.trim().toLowerCase();
+    return questions.filter(q => {
+      if (subjectFilter !== 'all') {
+        const qSubject = q.subject || 'english';
+        if (qSubject !== subjectFilter) return false;
+      }
+      if (!query) return true;
+      const haystack = [
+        q.prompt,
+        q.category,
+        q.source,
+        q.type,
+        q.subject,
+        q.metadata?.examPart,
+        q.metadata?.mathTopic,
+        q.metadata?.englishPart,
+        q.metadata?.englishTask,
+        q.metadata?.englishSkill,
+        q.metadata?.literatureTrack,
+        q.metadata?.literatureTask,
+        q.metadata?.textGenre,
+        q.metadata?.answerMode,
+        q.metadata?.solutionStyle
+      ]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(query);
+    });
+  }, [questions, questionQuery, subjectFilter]);
+
+  const filteredSubjectCounts = useMemo(() => {
+    return filteredQuestions.reduce((acc: Record<string, number>, q) => {
+      const key = q.subject || 'english';
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+  }, [filteredQuestions]);
+
+  const bankStats = useMemo(() => {
+    const total = questions.length;
+    const avgDifficulty = total ? questions.reduce((sum, q) => sum + q.difficulty, 0) / total : 0;
+    return {
+      total,
+      avgDifficulty,
+      easy: questions.filter(q => q.difficulty <= 4).length,
+      medium: questions.filter(q => q.difficulty >= 5 && q.difficulty <= 7).length,
+      hard: questions.filter(q => q.difficulty >= 8).length,
+      mcq: questions.filter(q => q.type === 'mcq').length,
+      shortAnswer: questions.filter(q => q.type === 'short-answer').length,
+      proof: questions.filter(q => q.type === 'proof').length,
+      multiPart: questions.filter(q => q.type === 'multi-part').length,
+      english: questions.filter(q => !q.subject || q.subject === 'english').length,
+      math: questions.filter(q => q.subject === 'math').length,
+      literature: questions.filter(q => q.subject === 'literature').length
+    };
+  }, [questions]);  if (!isUnlocked) {
     return (
       <div className="glass-panel rounded-2xl border border-synth-magenta/30 p-8 max-w-md mx-auto text-center space-y-6">
         <div className="w-16 h-16 mx-auto rounded-full bg-synth-magenta/10 border border-synth-magenta/30 flex items-center justify-center">
@@ -642,368 +700,409 @@ export const ParentConsole: React.FC = () => {
       {/* Ingestion tab */}
       {activeTab === 'ingestion' && (
         <div className="space-y-6">
-          <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-4">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-              <div>
+          <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5">
+            <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-4">
+              <div className="space-y-2">
                 <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
                   <Database className="w-4 h-4" /> Ngân hàng câu hỏi hiện có
                 </h4>
-                <p className="text-[10px] text-synth-text-muted mt-1">
-                  Xem toàn bộ đề trong kho hiện tại. Câu AI nhập có thể sửa/xóa, đề gốc chỉ xem.
+                <p className="text-[10px] text-synth-text-muted max-w-2xl leading-relaxed">
+                  Dùng bộ lọc theo môn ở cột trái, xem thống kê ở cột phải, rồi sửa/xóa câu AI nhập ngay trong danh sách lớn bên dưới.
                 </p>
               </div>
-              <div className="relative w-full md:w-80">
-                <Search className="w-4 h-4 text-synth-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={questionQuery}
-                  onChange={(e) => setQuestionQuery(e.target.value)}
-                  placeholder="Tìm theo nội dung, chuyên đề, nguồn..."
-                  className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-xs text-white outline-none focus:border-synth-cyan"
-                />
+
+              <div className="w-full xl:max-w-xl space-y-2">
+                <label className="text-[10px] uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">Tìm kiếm</label>
+                <div className="relative">
+                  <Search className="w-4 h-4 text-synth-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    value={questionQuery}
+                    onChange={(e) => setQuestionQuery(e.target.value)}
+                    placeholder="Tìm theo đề bài, chuyên đề, part, kỹ năng, nguồn..."
+                    className="w-full pl-9 pr-3 py-3 rounded-xl border border-white/10 bg-synth-gray/20 text-xs text-white outline-none focus:border-synth-cyan"
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Bộ lọc môn học */}
-            <div className="flex flex-wrap gap-2 pb-1">
-              {(['all', 'english', 'math', 'literature'] as const).map(sub => {
-                const label = sub === 'all' ? 'TẤT CẢ' : sub === 'english' ? '🇬🇧 TIẾNG ANH' : sub === 'math' ? '📐 TOÁN HỌC' : '✍️ NGỮ VĂN';
-                let activeStyle = '';
-                if (sub === 'all') activeStyle = 'bg-synth-cyan/20 border-synth-cyan text-synth-cyan shadow-[0_0_8px_rgba(0,240,255,0.15)]';
-                else if (sub === 'english') activeStyle = 'bg-synth-cyan/20 border-synth-cyan text-synth-cyan shadow-[0_0_8px_rgba(0,240,255,0.15)]';
-                else if (sub === 'math') activeStyle = 'bg-synth-magenta/20 border-synth-magenta text-synth-magenta shadow-[0_0_8px_rgba(255,0,128,0.15)]';
-                else activeStyle = 'bg-synth-orange/20 border-synth-orange text-synth-orange shadow-[0_0_8px_rgba(255,165,0,0.15)]';
-
-                return (
-                  <button
-                    key={sub}
-                    type="button"
-                    onClick={() => setSubjectFilter(sub)}
-                    className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold font-orbitron uppercase cursor-pointer transition-all duration-200 ${
-                      subjectFilter === sub
-                        ? activeStyle
-                        : 'bg-synth-gray/10 border-white/5 text-synth-text-muted hover:text-white'
-                    }`}
-                  >
-                    {label}
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] uppercase font-orbitron font-bold text-synth-magenta">Toán</span>
-                <span className="text-[10px] text-synth-text-muted">Blueprint bank theo 7 bài chuẩn đề TP.HCM</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {MATH_EXAM_BLUEPRINT.map(part => (
-                  <div key={part.part} className="rounded-xl border border-white/5 bg-synth-gray/10 p-3 text-[11px] text-white space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-magenta">{part.part}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-synth-text-muted">{part.answerModes.join(' / ')}</span>
+            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.65fr)_minmax(320px,0.95fr)] gap-6 items-start">
+              <div className="space-y-5 min-w-0">
+                <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <div>
+                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">Bộ lọc theo môn</span>
+                      <p className="text-[10px] text-synth-text-muted mt-1">Chọn đúng môn trước rồi mới soi chi tiết part, topic và task.</p>
                     </div>
-                    <h4 className="font-bold text-sm text-white">{part.title}</h4>
-                    <p className="text-synth-text-muted leading-relaxed">{part.focus}</p>
-                    <p className="text-synth-cyan text-[10px] leading-relaxed">{part.importHint}</p>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full bg-white/5 text-white border border-white/5 font-bold uppercase">
+                      {filteredQuestions.length}/{questions.length} câu đang khớp
+                    </span>
                   </div>
-                ))}
-              </div>
+                  <div className="flex flex-wrap gap-2">
+                    {(['all', 'english', 'math', 'literature'] as const).map(sub => {
+                      const label = sub === 'all' ? 'Tất cả' : sub === 'english' ? 'Tiếng Anh' : sub === 'math' ? 'Toán học' : 'Ngữ văn';
+                      const count = sub === 'all' ? questions.length : sub === 'english' ? bankStats.english : sub === 'math' ? bankStats.math : bankStats.literature;
+                      const activeStyle = sub === 'all'
+                        ? 'bg-synth-cyan/20 border-synth-cyan text-synth-cyan'
+                        : sub === 'english'
+                          ? 'bg-synth-cyan/20 border-synth-cyan text-synth-cyan'
+                          : sub === 'math'
+                            ? 'bg-synth-magenta/20 border-synth-magenta text-synth-magenta'
+                            : 'bg-synth-orange/20 border-synth-orange text-synth-orange';
 
-              <div className="flex items-center gap-2 pt-2">
-                <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">Tiếng Anh</span>
-                <span className="text-[10px] text-synth-text-muted">Blueprint bank theo 6 phần đề chuẩn hóa: MCQ, cloze, reading, word form, rearrangement, transformation</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {ENGLISH_EXAM_BLUEPRINT.map(part => (
-                  <div key={part.part} className="rounded-xl border border-white/5 bg-synth-gray/10 p-3 text-[11px] text-white space-y-2">
+                      return (
+                        <button
+                          key={sub}
+                          type="button"
+                          onClick={() => setSubjectFilter(sub)}
+                          className={`min-w-[140px] flex-1 px-3.5 py-3 rounded-xl border text-left text-[10px] font-bold font-orbitron uppercase cursor-pointer transition-all duration-200 ${
+                            subjectFilter === sub
+                              ? activeStyle
+                              : 'bg-synth-gray/10 border-white/5 text-synth-text-muted hover:text-white hover:border-white/10'
+                          }`}
+                        >
+                          <span className="block text-[11px] tracking-wider">{label}</span>
+                          <span className="mt-1 block text-sm normal-case font-black">{count} câu</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-1.5">
+                    <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Tổng câu hỏi</span>
+                    <span className="text-2xl font-black text-synth-cyan font-orbitron">{bankStats.total}</span>
+                    <span className="text-[10px] text-synth-text-muted">Trong toàn bộ kho đề</span>
+                  </div>
+                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-1.5">
+                    <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Độ khó TB</span>
+                    <span className="text-2xl font-black text-synth-orange font-orbitron">{bankStats.avgDifficulty.toFixed(1)}/10</span>
+                    <span className="text-[10px] text-synth-text-muted">Dễ {bankStats.easy} · TB {bankStats.medium} · Khó {bankStats.hard}</span>
+                  </div>
+                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-1.5">
+                    <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Dạng phổ biến</span>
+                    <span className="text-2xl font-black text-synth-magenta font-orbitron">{bankStats.mcq}</span>
+                    <span className="text-[10px] text-synth-text-muted">Trắc nghiệm nhiều nhất</span>
+                  </div>
+                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-1.5">
+                    <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Câu lọc được</span>
+                    <span className="text-2xl font-black text-synth-green font-orbitron">{filteredQuestions.length}</span>
+                    <span className="text-[10px] text-synth-text-muted">Theo môn + từ khóa</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
+                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">{part.part}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-synth-text-muted">{part.answerModes.join(' / ')}</span>
+                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">Loại câu hỏi</span>
+                      <button onClick={() => showHelp('bank-structure')} className="text-[10px] px-2 py-1 rounded bg-white/5 text-white hover:bg-white/10">Help</button>
                     </div>
-                    <h4 className="font-bold text-sm text-white">{part.title}</h4>
-                    <p className="text-synth-text-muted leading-relaxed">{part.focus}</p>
-                    <p className="text-synth-cyan text-[10px] leading-relaxed">{part.importHint}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {topTypeEntries.map(([type, count]) => (
+                        <span key={type} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
+                          {type}: <span className="text-synth-cyan">{count}</span>
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                ))}
-              </div>
-
-              <div className="flex items-center gap-2 pt-2">
-                <span className="text-[10px] uppercase font-orbitron font-bold text-synth-orange">Ngữ văn</span>
-                <span className="text-[10px] text-synth-text-muted">Blueprint bank theo đọc hiểu, tiếng Việt, nghị luận xã hội và nghị luận văn học</span>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {LITERATURE_EXAM_BLUEPRINT.map(part => (
-                  <div key={`${part.part}-${part.title}`} className="rounded-xl border border-white/5 bg-synth-gray/10 p-3 text-[11px] text-white space-y-2">
+                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-orange">{part.part}</span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-synth-text-muted">{part.answerModes.join(' / ')}</span>
+                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-green">Part / chuyên đề</span>
+                      <button onClick={() => showHelp('rubric')} className="text-[10px] px-2 py-1 rounded bg-white/5 text-white hover:bg-white/10">Rubric</button>
                     </div>
-                    <h4 className="font-bold text-sm text-white">{part.title}</h4>
-                    <p className="text-synth-text-muted leading-relaxed">{part.focus}</p>
-                    <p className="text-synth-cyan text-[10px] leading-relaxed">{part.importHint}</p>
+                    <div className="flex flex-wrap gap-2">
+                      {topExamParts.map(([part, count]) => (
+                        <span key={part} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
+                          {part}: <span className="text-synth-green">{count}</span>
+                        </span>
+                      ))}
+                    </div>
                   </div>
-                ))}
-              </div>
-            </div>
+                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-orange">Gợi ý sử dụng</span>
+                      <button onClick={() => showHelp('parent-console')} className="text-[10px] px-2 py-1 rounded bg-white/5 text-white hover:bg-white/10">Console</button>
+                    </div>
+                    <div className="flex flex-wrap gap-2 text-[10px]">
+                      <button onClick={() => showHelp('math-bank')} className="px-2.5 py-1 rounded-full bg-synth-magenta/15 text-synth-magenta font-bold uppercase">Toán</button>
+                      <button onClick={() => showHelp('english-bank')} className="px-2.5 py-1 rounded-full bg-synth-cyan/15 text-synth-cyan font-bold uppercase">Anh</button>
+                      <button onClick={() => showHelp('literature-bank')} className="px-2.5 py-1 rounded-full bg-synth-orange/15 text-synth-orange font-bold uppercase">Văn</button>
+                    </div>
+                  </div>
+                </div>
 
-            {/* Thống kê ngân hàng câu hỏi */}
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-synth-gray/10 p-4 rounded-xl border border-white/5">
-                <div className="space-y-1">
-                  <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Tổng số câu hỏi</span>
-                  <span className="text-xl font-black text-synth-cyan font-orbitron">{questions.length}</span>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Theo môn học</span>
-                  <div className="text-[11px] text-white space-y-0.5">
-                    <div>🇬🇧 Tiếng Anh: <span className="font-bold text-synth-cyan">{questions.filter(q => !q.subject || q.subject === 'english').length}</span></div>
-                    <div>📐 Toán học: <span className="font-bold text-synth-magenta">{questions.filter(q => q.subject === 'math').length}</span></div>
-                    <div>✍️ Ngữ văn: <span className="font-bold text-synth-orange">{questions.filter(q => q.subject === 'literature').length}</span></div>
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
+                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-magenta">Toán theo topic</span>
+                      <span className="text-[10px] text-synth-text-muted">{questions.filter(q => q.subject === 'math').length} câu</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {topMathTopics.map(([topic, count]) => (
+                        <span key={topic} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
+                          {MATH_TOPIC_LABELS[topic] || topic}: <span className="text-synth-magenta">{count}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">Anh theo task</span>
+                      <span className="text-[10px] text-synth-text-muted">{questions.filter(q => !q.subject || q.subject === 'english').length} câu</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {topEnglishTasks.map(([task, count]) => (
+                        <span key={task} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
+                          {ENGLISH_TASK_LABELS[task] || task}: <span className="text-synth-cyan">{count}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-orange">Văn theo task</span>
+                      <span className="text-[10px] text-synth-text-muted">{questions.filter(q => q.subject === 'literature').length} câu</span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {topLiteratureTasks.map(([task, count]) => (
+                        <span key={task} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
+                          {LITERATURE_TASK_LABELS[task] || task}: <span className="text-synth-orange">{count}</span>
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Độ khó trung bình</span>
-                  <span className="text-xl font-black text-synth-orange font-orbitron">
-                    {(questions.reduce((sum, q) => sum + q.difficulty, 0) / questions.length || 0).toFixed(1)}/10
-                  </span>
-                  <span className="text-[9px] text-synth-text-muted block">
-                    Dễ: {questions.filter(q => q.difficulty <= 4).length} | T.Bình: {questions.filter(q => q.difficulty >= 5 && q.difficulty <= 7).length} | Khó: {questions.filter(q => q.difficulty >= 8).length}
-                  </span>
-                </div>
-                <div className="space-y-1">
-                  <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Dạng câu hỏi</span>
-                  <div className="text-[11px] text-white space-y-0.5">
-                    <div>Trắc nghiệm: <span className="font-bold text-synth-cyan">{questions.filter(q => q.type === 'mcq').length}</span></div>
-                    <div>Tự luận ngắn: <span className="font-bold text-synth-magenta">{questions.filter(q => q.type === 'short-answer').length}</span></div>
-                    <div>Chứng minh: <span className="font-bold text-synth-orange">{questions.filter(q => q.type === 'proof').length}</span></div>
-                    <div>Nhiều ý: <span className="font-bold text-synth-green">{questions.filter(q => q.type === 'multi-part').length}</span></div>
-                  </div>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-                <div className="rounded-xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">Đếm theo dạng</span>
-                    <button onClick={() => showHelp('bank-structure')} className="text-[10px] px-2 py-1 rounded bg-white/5 text-white hover:bg-white/10">Help</button>
+                <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-4">
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+                    <div>
+                      <h5 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">Danh sách câu hỏi</h5>
+                      <p className="text-[10px] text-synth-text-muted mt-1">Card to, dễ đọc hơn, tập trung vào prompt, metadata, hình ảnh và nút CRUD.</p>
+                    </div>
+                    <span className="text-[10px] px-2.5 py-1 rounded-full bg-white/5 text-synth-text-muted border border-white/5 font-bold uppercase">
+                      {filteredQuestions.length} kết quả
+                    </span>
                   </div>
-                  <div className="flex flex-wrap gap-2">
-                    {topTypeEntries.map(([type, count]) => (
-                      <span key={type} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
-                        {type}: <span className="text-synth-cyan">{count}</span>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="rounded-xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] uppercase font-orbitron font-bold text-synth-green">Đếm theo part</span>
-                    <button onClick={() => showHelp('rubric')} className="text-[10px] px-2 py-1 rounded bg-white/5 text-white hover:bg-white/10">Rubric</button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {topExamParts.map(([part, count]) => (
-                      <span key={part} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
-                        {part}: <span className="text-synth-green">{count}</span>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="rounded-xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] uppercase font-orbitron font-bold text-synth-orange">Hướng dẫn nhanh</span>
-                    <button onClick={() => showHelp('parent-console')} className="text-[10px] px-2 py-1 rounded bg-white/5 text-white hover:bg-white/10">Console</button>
-                  </div>
-                  <div className="flex flex-wrap gap-2 text-[10px]">
-                    <button onClick={() => showHelp('math-bank')} className="px-2.5 py-1 rounded-full bg-synth-magenta/15 text-synth-magenta font-bold uppercase">Toán</button>
-                    <button onClick={() => showHelp('english-bank')} className="px-2.5 py-1 rounded-full bg-synth-cyan/15 text-synth-cyan font-bold uppercase">Anh</button>
-                    <button onClick={() => showHelp('literature-bank')} className="px-2.5 py-1 rounded-full bg-synth-orange/15 text-synth-orange font-bold uppercase">Văn</button>
-                  </div>
-                </div>
-              </div>
 
-              <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
-                <div className="rounded-xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] uppercase font-orbitron font-bold text-synth-magenta">Toán theo topic</span>
-                    <span className="text-[10px] text-synth-text-muted">{questions.filter(q => q.subject === 'math').length} câu</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {topMathTopics.map(([topic, count]) => (
-                      <span key={topic} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
-                        {MATH_TOPIC_LABELS[topic] || topic}: <span className="text-synth-magenta">{count}</span>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="rounded-xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">Anh theo task</span>
-                    <span className="text-[10px] text-synth-text-muted">{questions.filter(q => !q.subject || q.subject === 'english').length} câu</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {topEnglishTasks.map(([task, count]) => (
-                      <span key={task} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
-                        {ENGLISH_TASK_LABELS[task] || task}: <span className="text-synth-cyan">{count}</span>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="rounded-xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-[10px] uppercase font-orbitron font-bold text-synth-orange">Văn theo task</span>
-                    <span className="text-[10px] text-synth-text-muted">{questions.filter(q => q.subject === 'literature').length} câu</span>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {topLiteratureTasks.map(([task, count]) => (
-                      <span key={task} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
-                        {LITERATURE_TASK_LABELS[task] || task}: <span className="text-synth-orange">{count}</span>
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
+                  <div className="space-y-3 max-h-[560px] overflow-y-auto pr-1">
+                    {filteredQuestions.length > 0 ? (
+                      filteredQuestions.map(q => {
+                        const isCustom = q.source?.startsWith('AI Ingested') || q.id.startsWith('hcmc-') || q.id.startsWith('mock-');
+                        return (
+                          <div key={q.id} className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-3">
+                            <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+                              <div className="space-y-2 min-w-0">
+                                <div className="flex flex-wrap items-center gap-2">
+                                  <span className="text-[10px] px-2 py-0.5 rounded bg-synth-cyan/20 text-synth-cyan font-bold uppercase font-orbitron">
+                                    {q.type}
+                                  </span>
+                                  <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase font-orbitron ${
+                                    (q.subject || 'english') === 'english' ? 'bg-synth-cyan/20 text-synth-cyan' :
+                                    q.subject === 'math' ? 'bg-synth-magenta/20 text-synth-magenta' :
+                                    'bg-synth-orange/20 text-synth-orange'
+                                  }`}>
+                                    {(q.subject || 'english') === 'english' ? '🇬🇧 Anh' :
+                                     q.subject === 'math' ? '📐 Toán' :
+                                     '✍️ Văn'}
+                                  </span>
+                                  <span className="text-[10px] px-2 py-0.5 rounded bg-synth-magenta/15 text-synth-magenta font-bold uppercase font-orbitron">
+                                    {q.category}
+                                  </span>
+                                  {q.metadata?.examPart && (
+                                    <span className="text-[10px] px-2 py-0.5 rounded bg-synth-green/15 text-synth-green font-bold uppercase font-orbitron">
+                                      {q.metadata.examPart}
+                                    </span>
+                                  )}
+                                  {q.subject === 'english' && q.metadata?.englishPart && (
+                                    <span className="text-[10px] px-2 py-0.5 rounded bg-synth-cyan/15 text-synth-cyan font-bold uppercase font-orbitron">
+                                      {q.metadata.englishPart}
+                                    </span>
+                                  )}
+                                  {q.subject === 'english' && q.metadata?.englishTask && (
+                                    <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-white font-bold uppercase font-orbitron">
+                                      {ENGLISH_TASK_LABELS[q.metadata.englishTask] || q.metadata.englishTask}
+                                    </span>
+                                  )}
+                                  {q.subject === 'english' && q.metadata?.englishSkill && (
+                                    <span className="text-[10px] px-2 py-0.5 rounded bg-synth-magenta/15 text-synth-magenta font-bold uppercase font-orbitron">
+                                      {ENGLISH_SKILL_LABELS[q.metadata.englishSkill] || q.metadata.englishSkill}
+                                    </span>
+                                  )}
+                                  {q.metadata?.answerMode && (
+                                    <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-white font-bold uppercase font-orbitron">
+                                      {(q.subject === 'literature' ? LITERATURE_ANSWER_MODE_LABELS : q.subject === 'english' ? ENGLISH_ANSWER_MODE_LABELS : MATH_ANSWER_MODE_LABELS)[q.metadata.answerMode] || q.metadata.answerMode}
+                                    </span>
+                                  )}
+                                  {q.metadata?.solutionStyle && (
+                                    <span className="text-[10px] px-2 py-0.5 rounded bg-synth-green/15 text-synth-green font-bold uppercase font-orbitron">
+                                      {q.metadata.solutionStyle}
+                                    </span>
+                                  )}
+                                  {q.metadata?.literatureTask && q.subject === 'literature' && (
+                                    <span className="text-[10px] px-2 py-0.5 rounded bg-synth-orange/15 text-synth-orange font-bold uppercase font-orbitron">
+                                      {LITERATURE_TASK_LABELS[q.metadata.literatureTask] || q.metadata.literatureTask}
+                                    </span>
+                                  )}
+                                  {q.metadata?.textGenre && q.subject === 'literature' && (
+                                    <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-white font-bold uppercase font-orbitron">
+                                      {LITERATURE_TEXT_GENRE_LABELS[q.metadata.textGenre] || q.metadata.textGenre}
+                                    </span>
+                                  )}
+                                  {isCustom && (
+                                    <span className="text-[10px] px-2 py-0.5 rounded bg-synth-orange/20 text-synth-orange font-bold uppercase font-orbitron">
+                                      AI / Custom
+                                    </span>
+                                  )}
+                                </div>
+                                {q.imageUrl && (
+                                  <div className="w-full max-w-[280px] bg-synth-gray/30 p-2 rounded-xl border border-white/5">
+                                    <img
+                                      src={q.imageUrl}
+                                      className="rounded-lg max-h-[180px] object-contain mx-auto"
+                                      alt="Question"
+                                    />
+                                  </div>
+                                )}
+                                <p className="text-sm text-white font-medium leading-relaxed">{q.prompt}</p>
+                                <p className="text-[10px] text-synth-text-muted break-words">
+                                  Nguồn: {q.source || 'Default'} | Độ khó: {q.difficulty}/10 | ID: {q.id}
+                                </p>
+                              </div>
 
-
-
-            <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
-              {questions.filter(q => {
-                if (subjectFilter !== 'all') {
-                  const qSubject = q.subject || 'english';
-                  if (qSubject !== subjectFilter) return false;
-                }
-                const haystack = `${q.prompt} ${q.category} ${q.source} ${q.type}`.toLowerCase();
-                return haystack.includes(questionQuery.toLowerCase());
-              }).map(q => {
-                const isCustom = q.source?.startsWith('AI Ingested') || q.id.startsWith('hcmc-') || q.id.startsWith('mock-');
-                return (
-                  <div key={q.id} className="rounded-xl border border-white/5 bg-white/5 p-3.5 space-y-2">
-                    <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-2">
-                      <div className="space-y-1">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-[10px] px-2 py-0.5 rounded bg-synth-cyan/20 text-synth-cyan font-bold uppercase font-orbitron">
-                            {q.type}
-                          </span>
-                          <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase font-orbitron ${
-                            (q.subject || 'english') === 'english' ? 'bg-synth-cyan/20 text-synth-cyan' :
-                            q.subject === 'math' ? 'bg-synth-magenta/20 text-synth-magenta' :
-                            'bg-synth-orange/20 text-synth-orange'
-                          }`}>
-                            {(q.subject || 'english') === 'english' ? '🇬🇧 Anh' :
-                             q.subject === 'math' ? '📐 Toán' :
-                             '✍️ Văn'}
-                          </span>
-                          <span className="text-[10px] px-2 py-0.5 rounded bg-synth-magenta/15 text-synth-magenta font-bold uppercase font-orbitron">
-                            {q.category}
-                          </span>
-                          {q.metadata?.examPart && (
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-synth-green/15 text-synth-green font-bold uppercase font-orbitron">
-                              {q.metadata.examPart}
-                            </span>
-                          )}
-                          {q.subject === 'english' && q.metadata?.englishPart && (
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-synth-cyan/15 text-synth-cyan font-bold uppercase font-orbitron">
-                              {q.metadata.englishPart}
-                            </span>
-                          )}
-                          {q.subject === 'english' && q.metadata?.englishTask && (
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-white font-bold uppercase font-orbitron">
-                              {ENGLISH_TASK_LABELS[q.metadata.englishTask] || q.metadata.englishTask}
-                            </span>
-                          )}
-                          {q.subject === 'english' && q.metadata?.englishSkill && (
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-synth-magenta/15 text-synth-magenta font-bold uppercase font-orbitron">
-                              {ENGLISH_SKILL_LABELS[q.metadata.englishSkill] || q.metadata.englishSkill}
-                            </span>
-                          )}
-                          {q.metadata?.answerMode && (
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-white font-bold uppercase font-orbitron">
-                              {(q.subject === 'literature' ? LITERATURE_ANSWER_MODE_LABELS : q.subject === 'english' ? ENGLISH_ANSWER_MODE_LABELS : MATH_ANSWER_MODE_LABELS)[q.metadata.answerMode] || q.metadata.answerMode}
-                            </span>
-                          )}
-                          {q.metadata?.solutionStyle && (
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-synth-green/15 text-synth-green font-bold uppercase font-orbitron">
-                              {q.metadata.solutionStyle}
-                            </span>
-                          )}
-                          {q.metadata?.literatureTask && q.subject === 'literature' && (
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-synth-orange/15 text-synth-orange font-bold uppercase font-orbitron">
-                              {LITERATURE_TASK_LABELS[q.metadata.literatureTask] || q.metadata.literatureTask}
-                            </span>
-                          )}
-                          {q.metadata?.textGenre && q.subject === 'literature' && (
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-white font-bold uppercase font-orbitron">
-                              {LITERATURE_TEXT_GENRE_LABELS[q.metadata.textGenre] || q.metadata.textGenre}
-                            </span>
-                          )}
-                          {isCustom && (
-                            <span className="text-[10px] px-2 py-0.5 rounded bg-synth-orange/20 text-synth-orange font-bold uppercase font-orbitron">
-                              AI / Custom
-                            </span>
-                          )}
-                        </div>
-                        {q.imageUrl && (
-                          <div className="my-2 max-w-[160px] bg-synth-gray/30 p-1.5 rounded-lg border border-white/5">
-                            <img 
-                              src={q.imageUrl} 
-                              className="rounded max-h-[100px] object-contain mx-auto" 
-                              alt="Question" 
-                            />
+                              {isCustom && (
+                                <div className="flex items-center gap-2 shrink-0 xl:flex-col xl:items-stretch">
+                                  <button
+                                    onClick={() => setEditingQuestion(q)}
+                                    className="px-3 py-2 rounded-xl bg-synth-cyan/20 text-synth-cyan border border-synth-cyan/30 text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
+                                  >
+                                    <Pencil className="w-3.5 h-3.5" /> Sửa
+                                  </button>
+                                  <button
+                                    onClick={async () => {
+                                      if (window.confirm(`Xóa câu hỏi này?\n\n${q.prompt}`)) {
+                                        await deleteQuestion(q.id);
+                                      }
+                                    }}
+                                    className="px-3 py-2 rounded-xl bg-red-500/20 text-red-300 border border-red-500/30 text-[10px] font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
+                                  >
+                                    <Trash2 className="w-3.5 h-3.5" /> Xóa
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                            {q.options && q.options.length > 0 && (
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                                {q.options.map((opt, idx) => (
+                                  <div
+                                    key={idx}
+                                    className={`rounded-xl px-3 py-2.5 border ${Array.isArray(q.correctAnswer) ? q.correctAnswer.includes(opt) : q.correctAnswer === opt ? 'border-synth-green text-synth-green bg-synth-green/10' : 'border-white/5 text-synth-text-muted bg-white/5'}`}
+                                  >
+                                    {opt}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
-                        )}
-                        <p className="text-sm text-white font-medium leading-relaxed">{q.prompt}</p>
-                        <p className="text-[10px] text-synth-text-muted">
-                          Nguồn: {q.source || 'Default'} | Độ khó: {q.difficulty}/10 | ID: {q.id}
-                        </p>
-                      </div>
-
-                      {isCustom && (
-                        <div className="flex items-center gap-2 shrink-0">
-                          <button
-                            onClick={() => setEditingQuestion(q)}
-                            className="px-2.5 py-1.5 rounded-lg bg-synth-cyan/20 text-synth-cyan border border-synth-cyan/30 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
-                          >
-                            <Pencil className="w-3.5 h-3.5" /> Sửa
-                          </button>
-                          <button
-                            onClick={async () => {
-                              if (window.confirm(`Xóa câu hỏi này?\n\n${q.prompt}`)) {
-                                await deleteQuestion(q.id);
-                              }
-                            }}
-                            className="px-2.5 py-1.5 rounded-lg bg-red-500/20 text-red-300 border border-red-500/30 text-[10px] font-bold uppercase tracking-wider flex items-center gap-1"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" /> Xóa
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                    {q.options && q.options.length > 0 && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-                        {q.options.map((opt, idx) => (
-                          <div
-                            key={idx}
-                            className={`rounded-lg px-3 py-2 border ${(Array.isArray(q.correctAnswer) ? q.correctAnswer.includes(opt) : q.correctAnswer === opt) ? 'border-synth-green text-synth-green bg-synth-green/10' : 'border-white/5 text-synth-text-muted bg-white/5'}`}
-                          >
-                            {opt}
-                          </div>
-                        ))}
+                        );
+                      })
+                    ) : (
+                      <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-8 text-center space-y-2">
+                        <p className="text-sm text-white font-semibold">Không có câu hỏi nào khớp bộ lọc hiện tại.</p>
+                        <p className="text-[10px] text-synth-text-muted">Thử đổi môn học hoặc xóa bớt từ khóa tìm kiếm.</p>
                       </div>
                     )}
                   </div>
-                );
-              })}
+                </div>
+              </div>
+
+              <div className="space-y-4 xl:sticky xl:top-4 self-start">
+                <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">Phân bố theo môn</span>
+                    <span className="text-[10px] text-synth-text-muted">Kết quả đang lọc</span>
+                  </div>
+                  <div className="space-y-2 text-xs">
+                    <div className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2">
+                      <span className="text-synth-cyan font-semibold">Tiếng Anh</span>
+                      <span className="text-white font-bold">{filteredSubjectCounts.english || 0}</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2">
+                      <span className="text-synth-magenta font-semibold">Toán học</span>
+                      <span className="text-white font-bold">{filteredSubjectCounts.math || 0}</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-xl bg-white/5 px-3 py-2">
+                      <span className="text-synth-orange font-semibold">Ngữ văn</span>
+                      <span className="text-white font-bold">{filteredSubjectCounts.literature || 0}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] uppercase font-orbitron font-bold text-synth-magenta">Toán</span>
+                    <span className="text-[10px] text-synth-text-muted">7 bài chuẩn</span>
+                  </div>
+                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    {MATH_EXAM_BLUEPRINT.map(part => (
+                      <div key={part.part} className="rounded-xl border border-white/5 bg-white/5 p-3 text-[11px] text-white space-y-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] uppercase font-orbitron font-bold text-synth-magenta">{part.part}</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-synth-text-muted">{part.answerModes.join(' / ')}</span>
+                        </div>
+                        <h4 className="font-bold text-sm text-white">{part.title}</h4>
+                        <p className="text-synth-text-muted leading-relaxed">{part.focus}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">Tiếng Anh</span>
+                    <span className="text-[10px] text-synth-text-muted">Blueprint chuẩn hóa</span>
+                  </div>
+                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    {ENGLISH_EXAM_BLUEPRINT.map(part => (
+                      <div key={part.part} className="rounded-xl border border-white/5 bg-white/5 p-3 text-[11px] text-white space-y-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">{part.part}</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-synth-text-muted">{part.answerModes.join(' / ')}</span>
+                        </div>
+                        <h4 className="font-bold text-sm text-white">{part.title}</h4>
+                        <p className="text-synth-text-muted leading-relaxed">{part.focus}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] uppercase font-orbitron font-bold text-synth-orange">Ngữ văn</span>
+                    <span className="text-[10px] text-synth-text-muted">Blueprint theo năng lực</span>
+                  </div>
+                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                    {LITERATURE_EXAM_BLUEPRINT.map(part => (
+                      <div key={`${part.part}-${part.title}`} className="rounded-xl border border-white/5 bg-white/5 p-3 text-[11px] text-white space-y-1.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-[10px] uppercase font-orbitron font-bold text-synth-orange">{part.part}</span>
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-synth-text-muted">{part.answerModes.join(' / ')}</span>
+                        </div>
+                        <h4 className="font-bold text-sm text-white">{part.title}</h4>
+                        <p className="text-synth-text-muted leading-relaxed">{part.focus}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-
-
       {editingQuestion && (
         <div className="fixed inset-0 z-[90] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="glass-panel rounded-3xl border border-synth-cyan/30 w-full max-w-3xl max-h-[90vh] overflow-y-auto p-5 space-y-4">
+          <div className="glass-panel rounded-3xl border border-synth-cyan/30 w-full max-w-6xl max-h-[92vh] overflow-y-auto p-6 space-y-6">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h4 className="font-orbitron font-bold text-sm text-synth-cyan uppercase tracking-wider">
@@ -1229,25 +1328,27 @@ export const ParentConsole: React.FC = () => {
               </div>
             )}
 
-            <label className="space-y-2 text-xs block">
-              <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Đề bài</span>
-              <textarea
-                value={editPrompt}
-                onChange={(e) => setEditPrompt(e.target.value)}
-                rows={5}
-                className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan font-mono text-xs"
-              />
-            </label>
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+              <label className="space-y-2 text-xs block xl:col-span-2">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Đề bài</span>
+                <textarea
+                  value={editPrompt}
+                  onChange={(e) => setEditPrompt(e.target.value)}
+                  rows={6}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan font-mono text-xs"
+                />
+              </label>
 
-            <label className="space-y-2 text-xs block">
-              <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Giải thích</span>
-              <textarea
-                value={editExplanation}
-                onChange={(e) => setEditExplanation(e.target.value)}
-                rows={4}
-                className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan font-mono text-xs"
-              />
-            </label>
+              <label className="space-y-2 text-xs block xl:col-span-2">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Giải thích</span>
+                <textarea
+                  value={editExplanation}
+                  onChange={(e) => setEditExplanation(e.target.value)}
+                  rows={5}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan font-mono text-xs"
+                />
+              </label>
+            </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <label className="space-y-2 text-xs">
@@ -1449,18 +1550,18 @@ export const ParentConsole: React.FC = () => {
                           onClick={async () => {
                             const currentVal = selectedStudentProfile.player?.walletVND || 0;
                             if (currentVal <= 0) {
-                              alert('Ví tích lũy của bé đang bằng 0đ, không thể rút tiền!');
+                              toast.error('Ví tích lũy của bé đang bằng 0đ, không thể rút tiền!');
                               return;
                             }
                             const rawAmount = window.prompt(`Nhập số tiền mặt ba đã đưa cho bé ở ngoài để khấu trừ vào Ví (Số dư hiện tại: ${currentVal.toLocaleString()}đ):`);
                             if (rawAmount === null) return; // Cancelled
                             const amount = parseInt(rawAmount.replace(/\D/g, ''), 10);
                             if (isNaN(amount) || amount <= 0) {
-                              alert('Số tiền nhập vào không hợp lệ!');
+                              toast.error('Số tiền nhập vào không hợp lệ!');
                               return;
                             }
                             if (amount > currentVal) {
-                              alert(`Số tiền khấu trừ không được vượt quá số dư hiện có (${currentVal.toLocaleString()}đ)!`);
+                              toast.error(`Số tiền khấu trừ không được vượt quá số dư hiện có (${currentVal.toLocaleString()}đ)!`);
                               return;
                             }
                             if (window.confirm(`Xác nhận khấu trừ ${amount.toLocaleString()}đ khỏi ví thưởng của bé?`)) {
@@ -1719,3 +1820,15 @@ export const ParentConsole: React.FC = () => {
     </div>
   );
 };
+
+
+
+
+
+
+
+
+
+
+
+

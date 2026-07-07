@@ -1,7 +1,8 @@
 import { useGameState } from '../hooks/useGameState';
-import { 
+import {
   Compass, Sword, ShieldAlert, Star, Zap
 } from 'lucide-react';
+import { toast } from '../utils/toast';
 
 interface GameMapProps {
   onStartPlay: (
@@ -35,7 +36,7 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
     bossId?: string
   ) => {
     if (player.energy < energyCost) {
-      alert('Không đủ năng lượng! Hãy đợi năng lượng hồi phục hoặc hoàn thành các thử thách khác.');
+      toast.error('Không đủ năng lượng! Hãy đợi năng lượng hồi phục hoặc hoàn thành các thử thách khác.');
       return;
     }
     consumeEnergy(energyCost);
@@ -390,3 +391,6 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
     </div>
   );
 }
+
+
+

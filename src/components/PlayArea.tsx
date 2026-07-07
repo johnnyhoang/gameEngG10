@@ -10,6 +10,8 @@ import {
   Award, Flame, Check, X, ArrowRight, Volume2, VolumeX 
 } from 'lucide-react';
 import { sound } from '../utils/sound';
+import { toast } from '../utils/toast';
+import { supabase } from '../utils/supabaseClient';
 
 interface PlayAreaProps {
   mode: 'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss' | 'lesson';
@@ -39,6 +41,10 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const [runFinished, setRunFinished] = useState(false);
   const [lastRubricScore, setLastRubricScore] = useState<number | null>(null);
   const [lastRubricMissing, setLastRubricMissing] = useState<string[]>([]);
+  const [isAiGrading, setIsAiGrading] = useState(false);
+  const [aiFeedback, setAiFeedback] = useState<string>('');
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
+  const [aiWarningMessage, setAiWarningMessage] = useState<string>('');
   
   // Hint State
   const [hintUsed, setHintUsed] = useState(false);
@@ -159,7 +165,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const handleUseHint = () => {
     if (!activeQuestion || hintUsed) return;
     if (player.coins < 50) {
-      alert('Không đủ Coins (NP) để mua Gợi ý! Cần 50 NP.');
+      toast.error('Không đủ Coins (NP) để mua Gợi ý! Cần 50 NP.');
       return;
     }
     
@@ -222,7 +228,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     }
   };
 
-  const handleCheckAnswer = () => {
+  const handleCheckAnswer = async () => {
     if (checked || !activeQuestion) return;
 
     let isCorrect = false;
@@ -236,34 +242,106 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       .replace(/[₁]/g, '1')
       .replace(/[₂]/g, '2');
 
+    const runOldGradingBackup = () => {
+      const answers = Array.isArray(activeQuestion.correctAnswer)
+        ? activeQuestion.correctAnswer
+        : [activeQuestion.correctAnswer];
+      const normalizedTyped = cleanAnswer(typedAnswer);
+      const matchedAnswers = answers.filter(ans => {
+        const normalizedAns = cleanAnswer(ans);
+        return normalizedAns.length >= 4 && normalizedTyped.includes(normalizedAns);
+      });
+      const matched = matchedAnswers.length;
+      const computedScoreRatio = answers.length > 0 ? Math.min(1, matched / answers.length) : 0;
+      const computedIsCorrect = computedScoreRatio >= 0.6;
+      setLastRubricScore(Math.round(computedScoreRatio * 10));
+      setLastRubricMissing(answers.filter(ans => !matchedAnswers.includes(ans)));
+      return { isCorrect: computedIsCorrect, scoreRatio: computedScoreRatio };
+    };
+
+    const isLiteratureRubric = currentSubject === 'literature' && activeQuestion.category === 'literature-writing';
+
     if (activeQuestion.type === 'mcq') {
       const correctAnsStr = Array.isArray(activeQuestion.correctAnswer)
         ? activeQuestion.correctAnswer[0]
         : activeQuestion.correctAnswer;
       isCorrect = cleanAnswer(selectedAnswer) === cleanAnswer(correctAnsStr);
       scoreRatio = isCorrect ? 1 : 0;
+      setLastRubricScore(null);
+      setLastRubricMissing([]);
+      setAiFeedback('');
+      setAiSuggestions([]);
+      setAiWarningMessage('');
+    } else if (isLiteratureRubric) {
+      setIsAiGrading(true);
+      setAiFeedback('');
+      setAiSuggestions([]);
+      setAiWarningMessage('');
+
+      try {
+        const session = (await supabase.auth.getSession()).data.session;
+        const token = session?.access_token;
+        if (!token) {
+          throw new Error('No auth token available');
+        }
+
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+        const answers = Array.isArray(activeQuestion.correctAnswer)
+          ? activeQuestion.correctAnswer
+          : [activeQuestion.correctAnswer];
+        
+        const res = await fetch(`${backendUrl}/api/ai/grade-literature`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            promptText: activeQuestion.prompt,
+            essay: typedAnswer,
+            keywords: answers,
+            rubric: activeQuestion.metadata?.solutionSteps || []
+          })
+        });
+
+        if (!res.ok) {
+          const errText = await res.text().catch(() => '');
+          throw new Error(`API error: ${res.status} ${errText}`);
+        }
+
+        const data = await res.json();
+        if (data.success && data.result) {
+          const { score, missingKeywords = [], feedback = '', suggestions = [] } = data.result;
+          scoreRatio = score / 10;
+          isCorrect = scoreRatio >= 0.6;
+          setLastRubricScore(score);
+          setLastRubricMissing(missingKeywords);
+          setAiFeedback(feedback);
+          setAiSuggestions(suggestions);
+        } else {
+          throw new Error('Invalid response structure');
+        }
+      } catch (err: any) {
+        console.error('Lỗi khi gọi AI chấm bài, chuyển sang backup:', err);
+        setAiWarningMessage('Sư phụ hết công lực chấm bài, phải sử dụng máy chấm điểm cho nên kết quả có thể không được chính xác lắm');
+        const fallbackResult = runOldGradingBackup();
+        isCorrect = fallbackResult.isCorrect;
+        scoreRatio = fallbackResult.scoreRatio;
+      } finally {
+        setIsAiGrading(false);
+      }
     } else {
       const answers = Array.isArray(activeQuestion.correctAnswer)
         ? activeQuestion.correctAnswer
         : [activeQuestion.correctAnswer];
       const normalizedTyped = cleanAnswer(typedAnswer);
-      const isLiteratureRubric = currentSubject === 'literature' && activeQuestion.category === 'literature-writing';
-      if (isLiteratureRubric) {
-        const matchedAnswers = answers.filter(ans => {
-          const normalizedAns = cleanAnswer(ans);
-          return normalizedAns.length >= 4 && normalizedTyped.includes(normalizedAns);
-        });
-        const matched = matchedAnswers.length;
-        scoreRatio = answers.length > 0 ? Math.min(1, matched / answers.length) : 0;
-        isCorrect = scoreRatio >= 0.6;
-        setLastRubricScore(Math.round(scoreRatio * 10));
-        setLastRubricMissing(answers.filter(ans => !matchedAnswers.includes(ans)));
-      } else {
-        isCorrect = answers.some(ans => normalizedTyped === cleanAnswer(ans));
-        scoreRatio = isCorrect ? 1 : 0;
-        setLastRubricScore(null);
-        setLastRubricMissing([]);
-      }
+      isCorrect = answers.some(ans => normalizedTyped === cleanAnswer(ans));
+      scoreRatio = isCorrect ? 1 : 0;
+      setLastRubricScore(null);
+      setLastRubricMissing([]);
+      setAiFeedback('');
+      setAiSuggestions([]);
+      setAiWarningMessage('');
     }
 
     if (activeQuestion.type === 'mcq') {
@@ -312,6 +390,9 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     setRevealedHint('');
     setLastRubricScore(null);
     setLastRubricMissing([]);
+    setAiFeedback('');
+    setAiSuggestions([]);
+    setAiWarningMessage('');
 
     if (currentIndex + 1 < currentQuestions.length) {
       setCurrentIndex(prev => prev + 1);
@@ -585,6 +666,17 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                     );
                   })}
                 </div>
+              ) : currentSubject === 'literature' && activeQuestion.category === 'literature-writing' ? (
+                <div className="space-y-2">
+                  <textarea
+                    value={typedAnswer}
+                    onChange={(e) => !checked && setTypedAnswer(e.target.value)}
+                    placeholder="Gõ bài làm văn của con vào đây..."
+                    disabled={checked}
+                    rows={8}
+                    className="w-full p-3.5 rounded-xl border border-white/10 focus:border-synth-cyan bg-synth-gray/20 text-white text-xs outline-none transition-all duration-300 font-serif"
+                  />
+                </div>
               ) : (
                 <div className="space-y-2">
                   <input
@@ -657,6 +749,20 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                   );
                 })}
               </div>
+            ) : currentSubject === 'literature' && activeQuestion.category === 'literature-writing' ? (
+              <div className="space-y-2">
+                <textarea
+                  value={typedAnswer}
+                  onChange={(e) => !checked && setTypedAnswer(e.target.value)}
+                  placeholder="Gõ bài làm văn của con vào đây..."
+                  disabled={checked}
+                  rows={10}
+                  className="w-full p-4 rounded-xl border border-white/10 focus:border-synth-cyan bg-synth-gray/20 text-white text-sm outline-none transition-all duration-300 font-serif"
+                />
+                <span className="text-[10px] text-synth-text-muted">
+                  *Lưu ý: Bài làm nghị luận xã hội/văn học cần lập luận chặt chẽ, đầy đủ bố cục.
+                </span>
+              </div>
             ) : (
               <div className="space-y-2">
                 <input
@@ -710,12 +816,33 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                 </span>
               </p>
             )}
+            {aiWarningMessage && (
+              <div className="p-2.5 bg-synth-orange/15 border border-synth-orange/35 rounded-lg text-synth-orange font-bold text-[11px] mb-2">
+                ⚠️ {aiWarningMessage}
+              </div>
+            )}
             {currentSubject === 'literature' && activeQuestion.category === 'literature-writing' && lastRubricMissing.length > 0 && (
               <div className="text-white/90 space-y-1">
                 <p className="font-bold uppercase tracking-wider text-[10px]">Ý còn thiếu / cần mạnh hơn</p>
                 <ul className="list-disc pl-4 space-y-0.5 text-white/80">
                   {lastRubricMissing.slice(0, 5).map(item => (
                     <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {aiFeedback && (
+              <div className="text-white/95 space-y-1 mt-2">
+                <p className="font-bold uppercase tracking-wider text-[10px] text-synth-cyan">Nhận xét chi tiết từ AI</p>
+                <p className="text-white/90 italic leading-relaxed bg-synth-gray/25 p-2 rounded-lg">{aiFeedback}</p>
+              </div>
+            )}
+            {aiSuggestions && aiSuggestions.length > 0 && (
+              <div className="text-white/95 space-y-1 mt-2">
+                <p className="font-bold uppercase tracking-wider text-[10px] text-synth-cyan">Gợi ý cải thiện</p>
+                <ul className="list-disc pl-4 space-y-0.5 text-white/80">
+                  {aiSuggestions.map((item, idx) => (
+                    <li key={idx}>{item}</li>
                   ))}
                 </ul>
               </div>
@@ -755,10 +882,17 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         {!checked ? (
           <button
             onClick={handleCheckAnswer}
-            disabled={activeQuestion.type === 'mcq' ? !selectedAnswer : !typedAnswer.trim()}
-            className="flex-1 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 disabled:opacity-40 text-center"
+            disabled={isAiGrading || (activeQuestion.type === 'mcq' ? !selectedAnswer : !typedAnswer.trim())}
+            className="flex-1 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 disabled:opacity-40 text-center flex items-center justify-center gap-2"
           >
-            Kiểm Tra Đáp Án
+            {isAiGrading ? (
+              <>
+                <span className="animate-spin inline-block w-4 h-4 border-2 border-black border-t-transparent rounded-full"></span>
+                Đang chấm bài bằng AI...
+              </>
+            ) : (
+              'Kiểm Tra Đáp Án'
+            )}
           </button>
         ) : (
           <button
@@ -779,3 +913,4 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     </div>
   );
 };
+

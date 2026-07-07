@@ -838,5 +838,341 @@ Xác định ý nghĩa sâu sắc của câu thơ "Khi đi xa, đất đã hóa 
     source: 'Đề thi Ngữ văn lớp 10 TP.HCM 2026',
     subject: 'literature',
     metadata: { examPart: 'Phần IV', literatureTrack: 'literary-essay', literatureTask: 'character-analysis', textGenre: 'prose', answerMode: 'multi-part', solutionStyle: 'rubric', subparts: ['mở bài', 'tình yêu con ở chiến khu', 'nghệ thuật xây dựng nhân vật', 'ý nghĩa gia đình', 'kết bài'], solutionSteps: ['Xác định nhân vật và hoàn cảnh truyện.', 'Phân tích hành động, tâm lí và chi tiết chiếc lược ngà.', 'Khái quát giá trị tình cảm gia đình.', 'Kết luận thông điệp tác phẩm.'], tags: ['official-exam', 'hcmc-2026'] }
+  } as any,
+  {
+    id: 'lit-12',
+    type: 'short-answer',
+    category: 'literature-vietnamese',
+    prompt: `**Đọc đoạn trích sau và trả lời câu hỏi:**
+"... Trường Sa - vùng biển, đảo thiêng liêng của Tổ quốc - nơi những người lính trẻ đang ngày đêm canh giữ chủ quyền đất nước, luôn có một vị trí đặc biệt trong trái tim mỗi người dân Việt Nam."
+
+Xác định thành phần biệt lập phụ chú trong đoạn trích trên.`,
+    correctAnswer: ['vùng biển, đảo thiêng liêng của Tổ quốc'],
+    explanation: 'Thành phần phụ chú là "vùng biển, đảo thiêng liêng của Tổ quốc" được đặt giữa hai dấu gạch ngang, bổ sung thông tin giải thích cho cụm từ "Trường Sa".',
+    difficulty: 4,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2024',
+    subject: 'literature',
+    metadata: { examPart: 'Phần I', literatureTrack: 'vietnamese', literatureTask: 'rhetoric', textGenre: 'prose', answerMode: 'short-answer', solutionStyle: 'direct', tags: ['official-exam', 'hcmc-2024'] }
+  } as any,
+  {
+    id: 'lit-13',
+    type: 'short-answer',
+    category: 'literature-reading-poetry',
+    prompt: `**Đọc đoạn trích sau và trả lời câu hỏi:**
+"Súng bên súng, đầu sát bên đầu
+Đêm rét chung chăn thành đôi tri kỷ...
+Trường Sa ơi, mai ta lại lên đường..."
+
+Nêu nội dung/hình ảnh người lính được khắc họa qua các câu thơ trên.`,
+    correctAnswer: ['người lính đảo Trường Sa trẻ tuổi', 'nhiệt huyết', 'tình yêu đất nước mãnh liệt', 'giữ vững chủ quyền'],
+    explanation: 'Đoạn trích khắc họa chân thực và xúc động hình ảnh người lính Trường Sa trẻ tuổi, mang trong mình bầu nhiệt huyết thanh xuân và tình yêu Tổ quốc thiêng liêng, kiên cường bảo vệ chủ quyền biển đảo quê hương.',
+    difficulty: 5,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2024',
+    subject: 'literature',
+    metadata: { examPart: 'Phần I', literatureTrack: 'reading', literatureTask: 'character-analysis', textGenre: 'poetry', answerMode: 'short-answer', solutionStyle: 'worked', solutionSteps: ['Xác định chủ thể và bối cảnh thơ.', 'Nêu vẻ đẹp tâm hồn, lòng yêu nước của người lính.', 'Khái quát thông điệp của tác giả.'], tags: ['official-exam', 'hcmc-2024'] }
+  } as any,
+  {
+    id: 'lit-14',
+    type: 'short-answer',
+    category: 'literature-reading-poetry',
+    prompt: `Từ hình ảnh người lính đảo Trường Sa trẻ tuổi, hãy đề xuất 2 hoạt động/giải pháp thực tế của học sinh thể hiện lòng yêu nước và ý thức bảo vệ chủ quyền biển đảo.`,
+    correctAnswer: ['vẽ tranh về biển đảo', 'cuộc thi tìm hiểu chủ quyền', 'viết thư gửi lính đảo', 'sáng tác thơ văn', 'học tập tốt', 'tuyên truyền thông tin chính thống'],
+    explanation: 'Học sinh có thể đề xuất các hành động cụ thể như: tích cực học tập, viết thư gửi động viên các chiến sĩ hải quân, tham gia các hoạt động vẽ tranh hay viết bài tìm hiểu về lịch sử biển đảo Tổ quốc.',
+    difficulty: 5,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2024',
+    subject: 'literature',
+    metadata: { examPart: 'Phần I', literatureTrack: 'reading', literatureTask: 'message', textGenre: 'mixed', answerMode: 'short-answer', solutionStyle: 'worked', solutionSteps: ['Đọc kỹ yêu cầu đề xuất 2 hoạt động.', 'Nêu các hoạt động thiết thực, phù hợp lứa tuổi học sinh.', 'Trình bày rõ ràng, mang tính khả thi.'], tags: ['official-exam', 'hcmc-2024'] }
+  } as any,
+  {
+    id: 'lit-15',
+    type: 'multi-part',
+    category: 'literature-writing',
+    prompt: `Từ ngữ liệu phần đọc hiểu, hãy viết một bài văn ngắn (khoảng 500 chữ) bàn về ý nghĩa của việc "Biết nghĩ bằng con tim".`,
+    correctAnswer: ['nghĩ bằng con tim', 'lắng nghe tình cảm', 'thấu hiểu', 'lòng trắc ẩn', 'kết hợp hài hòa lý trí', 'đồng cảm sẻ chia', 'mối quan hệ nhân văn', 'tránh mù quáng cảm tính', 'bài học nhận thức hành động'],
+    explanation: 'Bài viết cần định nghĩa "nghĩ bằng con tim" là sự lắng nghe tình cảm, kết hợp hài hòa với lý trí; phân tích vai trò giúp nuôi dưỡng lòng thấu hiểu, trắc ẩn, gắn kết cộng đồng và nêu phản đề tránh cảm tính mù quáng.',
+    difficulty: 8,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2024',
+    subject: 'literature',
+    metadata: { examPart: 'Phần II', literatureTrack: 'social-essay', literatureTask: 'social-essay', textGenre: 'argument', answerMode: 'multi-part', solutionStyle: 'rubric', subparts: ['mở bài', 'giải thích', 'phân tích chứng minh', 'phản đề', 'bài học hành động', 'kết bài'], solutionSteps: ['Dẫn dắt và nêu vấn đề "Biết nghĩ bằng con tim".', 'Giải thích: lắng nghe cảm xúc, sự bao dung và trắc ẩn.', 'Phân tích ý nghĩa đối với cá nhân và cộng đồng.', 'Đưa ra dẫn chứng và lập luận phản đề.', 'Bài học nhận thức và hành động cụ thể cho học sinh.', 'Khái quát lại giá trị thông điệp.'], tags: ['official-exam', 'hcmc-2024'] }
+  } as any,
+  {
+    id: 'lit-16',
+    type: 'multi-part',
+    category: 'literature-writing',
+    prompt: `Cảm nhận về tình cảm của nhân vật bé Thu dành cho cha trong tác phẩm Chiếc lược ngà (Nguyễn Quang Sáng). Từ đó, liên hệ với thực tế cuộc sống hoặc một tác phẩm khác để thấy được ý nghĩa thiêng liêng của tình cảm gia đình.`,
+    correctAnswer: ['bé thu', 'chiếc lược ngà', 'tình cảm dành cho cha', 'nguyễn quang sáng', 'giai đoạn cự tuyệt', 'bướng bỉnh', 'vết thẹo', 'giai đoạn nhận ba', 'tiếng gọi ba xé lòng', 'ôm chặt lấy ba', 'tình cảm gia đình'],
+    explanation: 'Bài viết cần phân tích diễn chuyển biến tâm lý của bé Thu từ thái độ bướng bỉnh cự tuyệt (vì tình yêu ba trọn vẹn dành cho người trong ảnh không thẹo) sang sự vỡ òa, mãnh liệt khi nhận ra ba trong giờ phút chia ly. Phần liên hệ làm sáng rõ giá trị thiêng liêng của tình cảm gia đình.',
+    difficulty: 9,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2024',
+    subject: 'literature',
+    metadata: { examPart: 'Phần III', literatureTrack: 'literary-essay', literatureTask: 'character-analysis', textGenre: 'prose', answerMode: 'multi-part', solutionStyle: 'rubric', subparts: ['mở bài', 'giai đoạn cự tuyệt ương ngạnh', 'giai đoạn nhận ba xúc động', 'nghệ thuật xây dựng tâm lý', 'liên hệ thực tế/tác phẩm khác', 'kết bài'], solutionSteps: ['Giới thiệu tác giả Nguyễn Quang Sáng, tác phẩm và tình huống truyện.', 'Phân tích thái độ cự tuyệt của bé Thu những ngày đầu ông Sáu về phép.', 'Làm rõ nguyên nhân sâu xa của thái độ đó (tình yêu ba tuyệt đối).', 'Phân tích cảnh chia tay đầy xúc động ở bến sông.', 'Nhận xét nghệ thuật xây dựng nhân vật và phân tích tâm lý trẻ em.', 'Liên hệ tác phẩm khác cùng đề tài hoặc liên hệ thực tế.', 'Khẳng định giá trị nhân văn của tác phẩm.'], tags: ['official-exam', 'hcmc-2024'] }
+  } as any,
+  {
+    id: 'lit-17',
+    type: 'short-answer',
+    category: 'literature-vietnamese',
+    prompt: `**Đọc đoạn trích sau và trả lời câu hỏi:**
+"Đọc sự thật đằng sau những ngọt ngào giả dối. Đọc thấy yêu thương sau những giận hờn. Đọc thấu những điều ngay lẽ phải sau những xô bồ, hỗn loạn. Biết 'đọc' không chỉ khiến ta khôn ngoan hơn, mà còn khiến ta có thể bao dung hơn với những gì ta gặp..."
+
+Xác định lời dẫn trực tiếp có trong văn bản và chuyển nó thành lời dẫn gián tiếp.`,
+    correctAnswer: ['Biết "đọc" không chỉ khiến ta khôn ngoan hơn, mà còn khiến ta có thể bao dung hơn với những gì ta gặp', 'Tác giả Hà Nhân viết rằng việc biết đọc không chỉ khiến chúng ta khôn ngoan hơn, mà còn khiến chúng ta có thể bao dung hơn với những gì mình gặp.'],
+    explanation: 'Lời dẫn trực tiếp trong văn bản là phần nằm trong dấu nháy đơn: Biết "đọc" không chỉ khiến ta khôn ngoan hơn, mà còn khiến ta có thể bao dung hơn với những gì ta gặp. Khi chuyển thành lời dẫn gián tiếp, ta lược bỏ dấu nháy đơn/ngoặc kép và sử dụng các từ liên kết thích hợp (rằng, là).',
+    difficulty: 5,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2025',
+    subject: 'literature',
+    metadata: { examPart: 'Phần I', literatureTrack: 'vietnamese', literatureTask: 'rhetoric', textGenre: 'argument', answerMode: 'short-answer', solutionStyle: 'worked', solutionSteps: ['Tìm lời dẫn trực tiếp (được đánh dấu bằng dấu nháy đơn).', 'Chuyển đổi ngôi xưng hoặc loại bỏ từ xưng hô trực tiếp.', 'Viết lại dưới dạng lời dẫn gián tiếp có từ nối.'], tags: ['official-exam', 'hcmc-2025'] }
+  } as any,
+  {
+    id: 'lit-18',
+    type: 'short-answer',
+    category: 'literature-reading-argument',
+    prompt: `**Đọc đoạn trích sau và trả lời câu hỏi:**
+"Đọc sự thật đằng sau những ngọt ngào giả dối. Đọc thấy yêu thương sau những giận hờn. Đọc thấu những điều ngay lẽ phải sau những xô bồ, hỗn loạn. Biết 'đọc' không chỉ khiến ta khôn ngoan hơn, mà còn khiến ta có thể bao dung hơn với những gì ta gặp..."
+
+Chỉ ra lý lẽ/luận điểm của tác giả về vai trò của việc phân biệt bên trong với bên ngoài, sự thật và ngụy tạo trong xã hội ngày nay.`,
+    correctAnswer: ['đọc sự thật đằng sau những ngọt ngào giả dối', 'yêu thương sau những giận hờn', 'điều ngay lẽ phải sau những xô bồ', 'khôn ngoan hơn', 'bao dung hơn'],
+    explanation: 'Tác giả nêu luận điểm: "biết đọc" là khả năng nhìn thấu bản chất ẩn chứa bên sau các biểu hiện bên ngoài (thấu suốt sự thật đằng sau ngọt ngào giả dối, nhận ra yêu thương sau giận hờn). Việc thấu suốt này làm ta khôn ngoan và bao dung hơn.',
+    difficulty: 6,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2025',
+    subject: 'literature',
+    metadata: { examPart: 'Phần I', literatureTrack: 'reading', literatureTask: 'main-idea', textGenre: 'argument', answerMode: 'short-answer', solutionStyle: 'worked', solutionSteps: ['Xác định luận điểm cốt lõi của tác giả trong đoạn văn.', 'Trích xuất các dẫn chứng về vai trò của khả năng "đọc".', 'Diễn đạt câu trả lời ngắn gọn, đầy đủ ý.'], tags: ['official-exam', 'hcmc-2025'] }
+  } as any,
+  {
+    id: 'lit-19',
+    type: 'short-answer',
+    category: 'literature-reading-poetry',
+    prompt: `Em hiểu như thế nào về ý nghĩa của hai dòng thơ sau:
+"Con nằm giữa cha và mẹ
+Cuộc đời nằm giữa yêu thương"`,
+    correctAnswer: ['gia đình là chiếc nôi bình yên', 'cội nguồn sinh dưỡng', 'bồi đắp tâm hồn', 'che chở của cha mẹ', 'bệ phóng vững vàng', 'trưởng thành'],
+    explanation: 'Hai dòng thơ khẳng định gia đình là tổ ấm bình yên nhất, là cội nguồn của tình yêu thương bao la bồi đắp tâm hồn con. Sự che chở của cha mẹ chính là bệ nâng đỡ vững vàng nhất cho cuộc đời con bước ra thế giới rộng lớn.',
+    difficulty: 6,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2025',
+    subject: 'literature',
+    metadata: { examPart: 'Phần I', literatureTrack: 'reading', literatureTask: 'message', textGenre: 'poetry', answerMode: 'short-answer', solutionStyle: 'worked', solutionSteps: ['Giải nghĩa nghĩa đen của hình ảnh "con nằm giữa cha mẹ".', 'Phân tích nghĩa ẩn dụ của câu "cuộc đời nằm giữa yêu thương".', 'Liên hệ vai trò làm điểm tựa gia đình trong quá trình lớn khôn.'], tags: ['official-exam', 'hcmc-2025'] }
+  } as any,
+  {
+    id: 'lit-20',
+    type: 'multi-part',
+    category: 'literature-writing',
+    prompt: `Từ văn bản phần đọc hiểu, tác giả gợi ra vấn đề: Việc "biết đọc" — biết nhận ra những giá trị tốt đẹp (sự thật, tình yêu thương, điều ngay lẽ phải,...) đang bị che lấp — là một biểu hiện của sự trưởng thành. Em hãy viết bài văn nghị luận (khoảng 500 chữ) bàn về vấn đề trên.`,
+    correctAnswer: ['biết đọc', 'giá trị tốt đẹp', 'sự thật', 'tình yêu thương', 'điều ngay lẽ phải', 'trưởng thành', 'tư duy độc lập', 'bao dung', 'lòng trắc ẩn', 'tránh hùa theo đám đông', 'phản biện'],
+    explanation: 'Bài viết cần phân tích: Khái niệm "biết đọc" (nhận thức chiều sâu các giá trị thực sự); Vì sao đây là biểu hiện của sự trưởng thành (giúp có tư duy độc lập, tỉnh táo trước dư luận, biết đồng cảm và thấu hiểu); Liên hệ dẫn chứng về hành vi văn hóa mạng xã hội; Bài học nhận thức phản biện và hành động tử tế.',
+    difficulty: 8,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2025',
+    subject: 'literature',
+    metadata: { examPart: 'Phần II', literatureTrack: 'social-essay', literatureTask: 'social-essay', textGenre: 'argument', answerMode: 'multi-part', solutionStyle: 'rubric', subparts: ['mở bài', 'giải thích khái niệm', 'phân tích ý nghĩa', 'dẫn chứng mạng xã hội/đời sống', 'phản đề', 'bài học hành động', 'kết bài'], solutionSteps: ['Giới thiệu vấn đề: "Biết đọc" các giá trị ẩn giấu là dấu hiệu trưởng thành.', 'Giải thích: "Biết đọc" là khả năng phân biệt giả - thật, thấu cảm bản chất.', 'Lý giải tại sao: Xã hội nhiễu loạn thông tin cần đầu óc tỉnh táo và lòng trắc ẩn để không bị dẫn dắt sai lệch.', 'Đưa dẫn chứng từ phản ứng đám đông, bình luận trên không gian mạng.', 'Phê phán hiện tượng vội vã phán xét phiến diện.', 'Rút ra bài học: rèn luyện tư duy phản biện kết hợp tình thương.', 'Tổng kết và khẳng định vấn đề.'], tags: ['official-exam', 'hcmc-2025'] }
+  } as any,
+  {
+    id: 'lit-21',
+    type: 'multi-part',
+    category: 'literature-writing',
+    prompt: `Viết đoạn văn nghị luận (khoảng 200 chữ) nêu cảm nhận của em về nội dung chủ đề và một số nét đặc sắc nghệ thuật trong bài thơ "Con nằm" của Tế Hanh.`,
+    correctAnswer: ['con nằm', 'tế hanh', 'tình cảm gia đình', 'chở che của cha mẹ', 'làn sóng giữa hai bờ biển bắc', 'cánh chim bay giữa hai bờ trời xanh', 'điệp từ', 'giọng thơ âu yếm'],
+    explanation: 'Bài viết làm nổi bật nội dung ngợi ca tình thương bao dung và sự chở che tuyệt đối của cha mẹ dành cho con (hình ảnh con nằm giữa cha mẹ là biểu tượng của ấm áp). Đồng thời phân tích nghệ thuật ẩn dụ độc đáo ("hai bờ biển bắc", "hai bờ trời xanh") và nhịp thơ nhẹ nhàng, thâm trầm.',
+    difficulty: 8,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2025',
+    subject: 'literature',
+    metadata: { examPart: 'Phần III', literatureTrack: 'literary-essay', literatureTask: 'poetry-analysis', textGenre: 'poetry', answerMode: 'multi-part', solutionStyle: 'rubric', subparts: ['mở bài', 'cảm nhận nội dung tình thân', 'phân tích hình ảnh ẩn dụ', 'đặc sắc nhịp thơ, cấu trúc lặp', 'kết bài'], solutionSteps: ['Giới thiệu bài thơ "Con nằm" và cảm nhận chung về tình mẫu tử, phụ tử.', 'Phân tích hình ảnh "con nằm giữa cha và mẹ" mang ý nghĩa che chở.', 'Phân tích các câu thơ có biện pháp tu từ ẩn dụ.', 'Nhận xét về nhạc điệu thiết tha, nhẹ nhàng đầy trìu mến.', 'Tổng kết cảm nhận.'], tags: ['official-exam', 'hcmc-2025'] }
+  } as any,
+  {
+    id: 'lit-22',
+    type: 'multi-part',
+    category: 'literature-writing',
+    prompt: `Nhận định của nhà thơ Chế Lan Viên về thơ Tế Hanh: "Chữ ít mà nghĩa rất nhiều. Không phải nghĩa nữa, đó là hồn, tâm hồn, cái không thể đo bằng đơn vị chữ nghĩa".
+Em hãy tự chọn một tác phẩm thơ trong chương trình đã học để chứng minh nhận định trên.`,
+    correctAnswer: ['chữ ít nghĩa nhiều', 'hồn cốt thơ', 'đồng chí', 'chính hữu', 'bếp lửa', 'bằng việt', 'ánh trăng', 'nguyễn duy', 'ngôn từ hữu hạn', 'tâm hồn vô hạn'],
+    explanation: 'Bài viết cần giải thích nhận định: thơ ca dùng ngôn từ cô đọng, tinh lọc ("chữ ít") nhưng có khả năng khơi gợi thế giới tình cảm, tâm hồn sâu sắc vô bờ bến ("hồn cốt"). Học sinh phân tích tác phẩm tự chọn (Ví dụ: Đồng chí của Chính Hữu, Ánh trăng của Nguyễn Duy) để làm nổi bật sức gợi và chiều sâu cảm xúc lắng đọng phía sau từng câu chữ.',
+    difficulty: 9,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2025',
+    subject: 'literature',
+    metadata: { examPart: 'Phần III', literatureTrack: 'literary-essay', literatureTask: 'poetry-analysis', textGenre: 'poetry', answerMode: 'multi-part', solutionStyle: 'rubric', subparts: ['mở bài', 'giải thích nhận định', 'phân tích tác phẩm tự chọn làm rõ chữ ít nghĩa nhiều', 'làm rõ thế giới tâm hồn cảm xúc', 'kết bài'], solutionSteps: ['Dẫn dắt và giải thích ý kiến của Chế Lan Viên về đặc trưng ngôn ngữ thơ ca.', 'Lựa chọn và giới thiệu bài thơ chứng minh.', 'Phân tích những chi tiết từ ngữ, hình ảnh cô đọng mà giàu sức gợi trong tác phẩm.', 'Làm nổi bật thế giới tâm hồn (tình đồng chí đồng đội, nỗi nhớ bà sâu đậm, hay sự thức tỉnh của lương tri).', 'Khái quát nghệ thuật biểu đạt đặc trưng của thơ.', 'Tổng kết và rút ra bài học tiếp nhận thơ ca.'], tags: ['official-exam', 'hcmc-2025'] }
+  } as any,
+  {
+    id: 'lit-23',
+    type: 'short-answer',
+    category: 'literature-reading-poetry',
+    prompt: `**Đọc đoạn trích sau và trả lời câu hỏi:**
+"Cha trao cho con đôi cánh tự tin
+Cha dắt con đi qua những ngày giông bão
+Trao cho con hành trang tri thức sáng ngời
+Và tình yêu thương ôm ấp cả cuộc đời..."
+
+Dựa vào đoạn trích trên, hãy chỉ ra các từ ngữ/hình ảnh thể hiện "đôi cánh" hành trang của đứa con.`,
+    correctAnswer: ['tự tin', 'tri thức', 'tình yêu thương'],
+    explanation: 'Các từ ngữ/hình ảnh thể hiện "đôi cánh" hành trang của người con trong đoạn trích bao gồm: sự tự tin ("đôi cánh tự tin"), tri thức ("hành trang tri thức"), và tình yêu thương ("tình yêu thương ôm ấp").',
+    difficulty: 4,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2023',
+    subject: 'literature',
+    metadata: { examPart: 'Phần I', literatureTrack: 'reading', literatureTask: 'detail', textGenre: 'poetry', answerMode: 'short-answer', solutionStyle: 'direct', tags: ['official-exam', 'hcmc-2023'] }
+  } as any,
+  {
+    id: 'lit-24',
+    type: 'short-answer',
+    category: 'literature-reading-prose',
+    prompt: `**Đọc đoạn trích sau và trả lời câu hỏi:**
+"Thường thì con người tự đóng lại đôi cánh của mình chỉ vì sợ hãi những vấp ngã ban đầu, sợ những lời dèm pha của thế gian, hoặc đơn thuần vì không dám tin rằng mình có thể bay cao..." (Theo Phạm Lữ Ân)
+
+Theo đoạn trích trên, vì sao con người lại tự từ bỏ cơ hội "cất cánh" của bản thân?`,
+    correctAnswer: ['sợ hãi thất bại', 'sợ vấp ngã', 'sợ những lời phán xét', 'thiếu niềm tin'],
+    explanation: 'Theo tác giả Phạm Lữ Ân, con người tự đóng lại đôi cánh của mình vì ba nguyên nhân chính: nỗi sợ hãi vấp ngã/thất bại ban đầu, sự e ngại trước những lời phán xét của người khác, và sự thiếu tự tin vào năng lực của chính bản thân.',
+    difficulty: 5,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2023',
+    subject: 'literature',
+    metadata: { examPart: 'Phần I', literatureTrack: 'reading', literatureTask: 'main-idea', textGenre: 'prose', answerMode: 'short-answer', solutionStyle: 'worked', solutionSteps: ['Tìm các tác nhân tâm lý cản trở con người cất cánh trong văn bản.', 'Tóm tắt các ý chính: sợ vấp ngã, sợ dèm pha, thiếu tự tin.', 'Trình bày rõ ràng thành câu trả lời hoàn chỉnh.'], tags: ['official-exam', 'hcmc-2023'] }
+  } as any,
+  {
+    id: 'lit-25',
+    type: 'short-answer',
+    category: 'literature-vietnamese',
+    prompt: `Chỉ ra biện pháp tu từ ẩn dụ được sử dụng trong hình ảnh "đôi cánh" ở câu văn: "Đừng để ai định đoạt giới hạn cho đôi cánh của bạn" và nêu tác dụng của biện pháp đó.`,
+    correctAnswer: ['ẩn dụ', 'đôi cánh', 'khát vọng', 'năng lực', 'giọng điệu truyền cảm hứng', 'tăng sức gợi cảm'],
+    explanation: 'Biện pháp tu từ ẩn dụ lấy hình ảnh "đôi cánh" để chỉ ước mơ, khát vọng, năng lực hành động và bản lĩnh của con người. Tác dụng: giúp câu văn giàu tính hình tượng, tăng sức gợi cảm và truyền cảm hứng mạnh mẽ về khát vọng vươn lên.',
+    difficulty: 5,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2023',
+    subject: 'literature',
+    metadata: { examPart: 'Phần I', literatureTrack: 'vietnamese', literatureTask: 'rhetoric', textGenre: 'argument', answerMode: 'short-answer', solutionStyle: 'worked', solutionSteps: ['Chỉ ra hình ảnh ẩn dụ (đôi cánh).', 'Nêu ý nghĩa biểu trưng của ẩn dụ đó.', 'Phân tích tác dụng biểu cảm và tăng sức thuyết phục cho thông điệp.'], tags: ['official-exam', 'hcmc-2023'] }
+  } as any,
+  {
+    id: 'lit-26',
+    type: 'short-answer',
+    category: 'literature-reading-prose',
+    prompt: `Em có đồng ý với lời khuyên "Đừng để ai định đoạt giới hạn cho đôi cánh của bạn" không? Vì sao?`,
+    correctAnswer: ['đồng ý', 'cuộc đời là của chính mình', 'tiềm năng vô hạn', 'sống cuộc đời mờ nhạt'],
+    explanation: 'Học sinh có thể đồng ý vì cuộc sống và tương lai là của chính mình; tiềm năng của con người là vô hạn, nếu để người khác áp đặt giới hạn, ta sẽ tự làm thui chột khả năng phát triển của bản thân và sống cuộc đời tẻ nhạt, thiếu ý nghĩa.',
+    difficulty: 6,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2023',
+    subject: 'literature',
+    metadata: { examPart: 'Phần I', literatureTrack: 'reading', literatureTask: 'message', textGenre: 'argument', answerMode: 'short-answer', solutionStyle: 'worked', solutionSteps: ['Khẳng định quan điểm cá nhân (Đồng ý/Không đồng ý).', 'Lý giải dựa trên giá trị của sự độc lập và bản lĩnh tự chủ.', 'Diễn đạt thuyết phục, có chiều sâu tư duy.'], tags: ['official-exam', 'hcmc-2023'] }
+  } as any,
+  {
+    id: 'lit-27',
+    type: 'multi-part',
+    category: 'literature-writing',
+    prompt: `Viết bài văn ngắn (khoảng 500 chữ) bàn về: Mối quan hệ giữa "đôi cánh" (những hành trang tinh thần) và "bầu trời" (những mục tiêu, khát vọng) của mỗi con người trên hành trình trưởng thành.`,
+    correctAnswer: ['đôi cánh', 'hành trang tinh thần', 'bầu trời', 'ước mơ lý tưởng', 'mục tiêu khát vọng', 'mối quan hệ biện chứng', 'ảo tưởng', 'vô nghĩa'],
+    explanation: 'Bài viết cần giải thích ý nghĩa biểu trưng: "đôi cánh" là hành trang tinh thần (tri thức, kỹ năng, tình yêu thương, bản lĩnh) và "bầu trời" là mục tiêu, lý tưởng sống. Phân tích mối quan hệ tương hỗ: Đôi cánh vững chãi giúp chinh phục bầu trời cao rộng; bầu trời lớn chính là động lực vươn lên. Phê phán thái độ ảo tưởng (chỉ ước mơ mà không rèn luyện) hoặc quẩn quanh (có năng lực nhưng không chí hướng). Rút ra bài học hành động.',
+    difficulty: 8,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2023',
+    subject: 'literature',
+    metadata: { examPart: 'Phần II', literatureTrack: 'social-essay', literatureTask: 'social-essay', textGenre: 'argument', answerMode: 'multi-part', solutionStyle: 'rubric', subparts: ['mở bài', 'giải thích hình ảnh', 'phân tích mối quan hệ', 'dẫn chứng thực tế', 'phản đề', 'bài học hành động', 'kết bài'], solutionSteps: ['Dẫn dắt và nêu vấn đề: Đôi cánh tinh thần và bầu trời ước mơ.', 'Giải thích: Đôi cánh (hành trang tri thức, tâm hồn), Bầu trời (lý tưởng, hoài bão).', 'Phân tích tính biện chứng: Bầu trời thúc đẩy cánh bay xa, cánh bay mạnh mới chiếm lĩnh được bầu trời.', 'Đưa ra dẫn chứng thực tiễn về những người trẻ cất cánh thành công.', 'Phản đề: sống thực tế không ảo tưởng, sống khát vọng không cam chịu.', 'Bài học nhận thức và hành động rèn luyện hành trang.', 'Khái quát lại giá trị mối quan hệ.'], tags: ['official-exam', 'hcmc-2023'] }
+  } as any,
+  {
+    id: 'lit-28',
+    type: 'multi-part',
+    category: 'literature-writing',
+    prompt: `Cảm nhận của em về tình yêu làng, yêu nước của nhân vật ông Hai trong truyện ngắn Làng (Kim Lân). Từ đó, liên hệ với một tác phẩm khác hoặc thực tế để thấy được sự dịch chuyển, mở rộng của tình cảm cá nhân hòa vào tình cảm chung của đất nước.`,
+    correctAnswer: ['ông hai', 'làng', 'kim lân', 'tình yêu làng', 'tin đồn cải chính', 'làng theo tây thì phải thù', 'mùa xuân nho nhỏ', 'thanh hải', 'tình cảm cá nhân hòa vào đất nước'],
+    explanation: 'Bài làm cần phân tích nét đặc sắc của nhân vật ông Hai: sự gắn bó máu thịt với làng quê trước cách mạng; biến chuyển tâm lý đau đớn khi nghe tin làng chợ Dầu theo giặc, đưa đến nhận thức mới "Làng thì yêu thật nhưng làng theo Tây thì phải thù"; niềm vui vỡ òa khi tin đồn được cải chính. Phần liên hệ nêu sự tương quan với tình cảm cống hiến âm thầm trong Mùa xuân nho nhỏ hoặc lòng yêu nước trong thực tế đại dịch Covid-19.',
+    difficulty: 9,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2023',
+    subject: 'literature',
+    metadata: { examPart: 'Phần III', literatureTrack: 'literary-essay', literatureTask: 'character-analysis', textGenre: 'prose', answerMode: 'multi-part', solutionStyle: 'rubric', subparts: ['mở bài', 'tình yêu làng tự nhiên', 'mâu thuẫn giằng xé khi nghe tin dữ', 'niềm vui sướng tột cùng khi cải chính', 'liên hệ mở rộng', 'kết bài'], solutionSteps: ['Giới thiệu tác giả Kim Lân, truyện ngắn Làng và nhân vật ông Hai.', 'Phân tích thói quen khoe làng, nhớ làng ở nơi tản cư của ông.', 'Làm nổi bật tâm trạng đau đớn, tủi hổ khi nghe tin làng theo giặc.', 'Khắc họa sự đấu tranh nội tâm và tinh thần trung thành với kháng chiến của ông.', 'Phân tích niềm vui tột cùng khi tin đồn được cải chính và nhà bị đốt nhẵn.', 'Liên hệ tác phẩm khác làm rõ sự hòa quyện tình yêu cá nhân vào tình cảm dân tộc.', 'Khẳng định giá trị nhân đạo sâu sắc của truyện.'], tags: ['official-exam', 'hcmc-2023'] }
+  } as any,
+  {
+    id: 'lit-29',
+    type: 'multi-part',
+    category: 'literature-writing',
+    prompt: `Sử dụng các tác phẩm thơ hoặc truyện trong chương trình để làm rõ ý niệm: "Văn học đem đến cho con người một đôi cánh kỳ diệu để vượt qua mọi giới hạn không gian và thời gian".`,
+    correctAnswer: ['văn học', 'đôi cánh kỳ diệu', 'vượt qua giới hạn', 'xe không kính', 'phạm tiến duật', 'ánh trăng', 'nguyễn duy'],
+    explanation: 'Bài viết cần giải thích nhận định: văn học nâng đỡ tinh thần ("đôi cánh") giúp ta trải nghiệm những vùng không gian, thời gian lịch sử khác nhau, cảm nhận được tâm tư của thế hệ đi trước. Phân tích Bài thơ về tiểu đội xe không kính (không gian chiến trường khốc liệt) hoặc Ánh trăng (thời gian quá khứ gian lao kết nối hiện tại thanh bình) để chứng minh.',
+    difficulty: 9,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2023',
+    subject: 'literature',
+    metadata: { examPart: 'Phần III', literatureTrack: 'literary-essay', literatureTask: 'poetry-analysis', textGenre: 'mixed', answerMode: 'multi-part', solutionStyle: 'rubric', subparts: ['mở bài', 'giải thích nhận định hoài bão', 'phân tích tác phẩm dẫn chứng', 'đánh giá vai trò của văn chương', 'kết bài'], solutionSteps: ['Dẫn dắt và giải thích nhận định về sức mạnh giải phóng giới hạn của văn học.', 'Lựa chọn các tác phẩm thơ/truyện tiêu biểu làm chất liệu chứng minh.', 'Phân tích chiều sâu trải nghiệm thời gian/không gian trong tác phẩm để thấy sự vượt thoát.', 'Làm nổi bật sự thanh lọc tâm hồn và chắp cánh ước mơ cho người đọc.', 'Đánh giá nghệ thuật ngôn từ tạo nên sức hấp dẫn vượt thời gian.', 'Kết luận về sứ mệnh của văn học.'], tags: ['official-exam', 'hcmc-2023'] }
+  } as any,
+  {
+    id: 'lit-30',
+    type: 'short-answer',
+    category: 'literature-reading-argument',
+    prompt: `**Đọc đoạn trích sau và trả lời câu hỏi:**
+"Hãy lắng nghe tiếng chim ca hát lúc bình minh, tiếng xào xạc của lá cây rụng về cội, tiếng thì thầm của gió ngàn... Tất cả những thanh âm mộc mạc ấy chính là khúc nhạc dịu êm của thiên nhiên ban tặng cho tâm hồn bạn..."
+
+Dựa vào đoạn trích trên, hãy chỉ ra những âm thanh của thiên nhiên mà con người cần lắng nghe.`,
+    correctAnswer: ['tiếng chim ca hát', 'tiếng xào xạc của lá cây', 'tiếng thì thầm của gió ngàn'],
+    explanation: 'Các âm thanh thiên nhiên được nhắc đến trong đoạn trích gồm có: tiếng chim hót lúc bình minh, tiếng lá cây rụng xào xạc, và tiếng gió ngàn thì thầm.',
+    difficulty: 4,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2022',
+    subject: 'literature',
+    metadata: { examPart: 'Phần I', literatureTrack: 'reading', literatureTask: 'detail', textGenre: 'informative', answerMode: 'short-answer', solutionStyle: 'direct', tags: ['official-exam', 'hcmc-2022'] }
+  } as any,
+  {
+    id: 'lit-31',
+    type: 'short-answer',
+    category: 'literature-reading-poetry',
+    prompt: `**Đọc đoạn trích thơ sau và trả lời câu hỏi:**
+"Lắng nghe người để thấu nỗi đau đời
+Nghe giọt mồ hôi rơi trên vai áo bạc
+Nghe lời chia sẻ lúc gian nan xô lệch
+Để kéo lòng người xích lại gần nhau..."
+
+Theo đoạn trích thơ trên, việc lắng nghe người khác đem lại giá trị gì cho các mối quan hệ?`,
+    correctAnswer: ['thấu hiểu', 'đồng cảm', 'xoa dịu tổn thương', 'kéo con người lại gần nhau'],
+    explanation: 'Theo đoạn trích thơ, việc lắng nghe người khác giúp ta thấu hiểu nỗi đau, sự gian lao của họ, đồng cảm sẻ chia và từ đó gắn kết con người gần nhau hơn ("xích lại gần nhau").',
+    difficulty: 5,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2022',
+    subject: 'literature',
+    metadata: { examPart: 'Phần I', literatureTrack: 'reading', literatureTask: 'message', textGenre: 'poetry', answerMode: 'short-answer', solutionStyle: 'worked', solutionSteps: ['Đọc kỹ khổ thơ đọc hiểu.', 'Rút ra các lợi ích đối với mối quan hệ xã hội được đề cập.', 'Diễn đạt súc tích, trúng ý thơ.'], tags: ['official-exam', 'hcmc-2022'] }
+  } as any,
+  {
+    id: 'lit-32',
+    type: 'short-answer',
+    category: 'literature-vietnamese',
+    prompt: `Xác định câu rút gọn được sử dụng trong dòng thơ: "Nghe giọt mồ hôi rơi trên vai áo bạc" và nêu tác dụng của phép rút gọn này.`,
+    correctAnswer: ['câu rút gọn', 'rút gọn chủ ngữ', 'tập trung vào hành động nghe', 'tạo nhịp điệu nhanh', 'ngắn gọn'],
+    explanation: 'Câu thơ được rút gọn thành phần Chủ ngữ (người nghe). Tác dụng: làm lời thơ dồn dập, nhấn mạnh trực tiếp vào hành động "nghe" và cảm xúc thấu hiểu sâu sắc, đồng thời giúp câu thơ cô đọng, súc tích hơn.',
+    difficulty: 5,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2022',
+    subject: 'literature',
+    metadata: { examPart: 'Phần I', literatureTrack: 'vietnamese', literatureTask: 'rhetoric', textGenre: 'poetry', answerMode: 'short-answer', solutionStyle: 'worked', solutionSteps: ['Chỉ ra thành phần bị lược bỏ trong câu (Chủ ngữ).', 'Phân tích tác dụng nhấn mạnh vào vị ngữ hành động.', 'Nêu hiệu quả nghệ thuật tạo nhịp thơ.'], tags: ['official-exam', 'hcmc-2022'] }
+  } as any,
+  {
+    id: 'lit-33',
+    type: 'short-answer',
+    category: 'literature-reading-prose',
+    prompt: `Từ việc đọc hiểu các ngữ liệu, em thấy việc "lắng nghe chính mình" có ý nghĩa như thế nào trên con đường hoàn thiện bản thân?`,
+    correctAnswer: ['nhận ra ưu điểm', 'khắc phục khuyết điểm', 'bình yên trong tâm hồn', 'hoàn thiện bản thân'],
+    explanation: 'Lắng nghe chính mình giúp ta hiểu rõ năng lực và mong muốn thật sự; tự nhận diện ưu điểm để phát huy và khuyết điểm để sửa chữa; giữ vững sự độc lập, bình yên trong tâm hồn trước những áp lực cuộc sống.',
+    difficulty: 6,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2022',
+    subject: 'literature',
+    metadata: { examPart: 'Phần I', literatureTrack: 'reading', literatureTask: 'message', textGenre: 'argument', answerMode: 'short-answer', solutionStyle: 'worked', solutionSteps: ['Định nghĩa hành động "lắng nghe chính mình".', 'Chỉ ra tác động tích cực đến tự nhận thức và điều chỉnh hành vi.', 'Kết luận vai trò định hình nhân cách.'], tags: ['official-exam', 'hcmc-2022'] }
+  } as any,
+  {
+    id: 'lit-34',
+    type: 'multi-part',
+    category: 'literature-writing',
+    prompt: `Viết bài văn ngắn (khoảng 500 chữ) bàn luận về câu hỏi: Phải chăng lắng nghe người khác là đánh mất cơ hội khẳng định bản thân?`,
+    correctAnswer: ['lắng nghe người khác', 'khẳng định bản thân', 'tôn trọng', 'bản sắc riêng', 'tư duy phản biện', 'không ba phải'],
+    explanation: 'Bài văn cần khẳng định: lắng nghe người khác không làm lu mờ cái tôi mà là nền tảng để khẳng định bản thân bền vững. Phân tích: lắng nghe giúp tích lũy kinh nghiệm, thấu hiểu đa chiều; thể hiện sự tôn trọng tôn vinh giá trị văn hóa giao tiếp của bản thân. Phản đề: Lắng nghe không phải là đồng ý mù quáng, cần có chọn lọc bằng tư duy phản biện. Rút ra bài học nhận thức và hành động.',
+    difficulty: 8,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2022',
+    subject: 'literature',
+    metadata: { examPart: 'Phần II', literatureTrack: 'social-essay', literatureTask: 'social-essay', textGenre: 'argument', answerMode: 'multi-part', solutionStyle: 'rubric', subparts: ['mở bài', 'giải thích và bác bỏ giả thuyết', 'lợi ích của lắng nghe', 'thể hiện sự tôn trọng chính mình', 'phản đề và tư duy phản biện', 'bài học hành động', 'kết bài'], solutionSteps: ['Dẫn dắt chủ đề: Thời gian để lắng nghe và sự khẳng định mình.', 'Giải thích: Lắng nghe người khác, Khẳng định cái tôi.', 'Bác bỏ giả thuyết đề bài: Khẳng định hai yếu tố này song hành bổ trợ.', 'Chứng minh vai trò của việc tiếp thu thông tin giúp cái tôi chín chắn hơn.', 'Đưa ra dẫn chứng thực tế về kỹ năng lắng nghe của các nhà lãnh đạo/khoa học.', 'Phản đề: tránh nhu nhược, thiếu chính kiến.', 'Rút ra bài học rèn luyện cách lắng nghe chủ động.', 'Kết bài khẳng định giá trị bản thân.'], tags: ['official-exam', 'hcmc-2022'] }
+  } as any,
+  {
+    id: 'lit-35',
+    type: 'multi-part',
+    category: 'literature-writing',
+    prompt: `Cảm nhận của em về tình đồng chí, đồng đội cao đẹp của các chiến sĩ trong bài thơ Đồng chí (Chính Hữu). Từ đó, liên hệ với một tác phẩm khác hoặc thực tế để thấy được sức mạnh của sự sẻ chia, thấu hiểu giữa con người với con người.`,
+    correctAnswer: ['đồng chí', 'chính hữu', 'tình đồng chí đồng đội', 'đầu súng trăng treo', 'sẻ chia', 'xe không kính', 'phạm tiến duật'],
+    explanation: 'Bài viết cần làm nổi bật: Cơ sở hình thành tình đồng chí (cùng cảnh ngộ nghèo, cùng lý tưởng); Những biểu hiện cao đẹp (chia sẻ gian lao, thấu hiểu nỗi nhớ quê, nắm tay truyền hơi ấm); Bức tranh biểu tượng "Đầu súng trăng treo". Phần liên hệ dẫn chứng tình đồng đội trong Bài thơ về tiểu đội xe không kính hoặc sự thấu hiểu sẻ chia trong cuộc sống cộng đồng.',
+    difficulty: 8,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2022',
+    subject: 'literature',
+    metadata: { examPart: 'Phần III', literatureTrack: 'literary-essay', literatureTask: 'poetry-analysis', textGenre: 'poetry', answerMode: 'multi-part', solutionStyle: 'rubric', subparts: ['mở bài', 'cơ sở tình đồng chí', 'biểu hiện tình đồng đội', 'bức tranh đầu súng trăng treo', 'liên hệ sẻ chia thấu hiểu', 'kết bài'], solutionSteps: ['Giới thiệu tác giả Chính Hữu, bài thơ Đồng chí và hình tượng người lính kháng chiến chống Pháp.', 'Phân tích cơ sở hình thành từ xuất thân nghèo khó đến sự đồng hành nơi chiến trận.', 'Phân tích các chi tiết hiện thực chia ngọt sẻ bùi ấm lòng.', 'Làm rõ biểu tượng thơ mộng đầu súng trăng treo ở cuối bài.', 'Liên hệ tác phẩm khác làm rõ sự tiếp nối sức mạnh thấu hiểu.', 'Khẳng định vẻ đẹp bất tử của tình đồng chí.'], tags: ['official-exam', 'hcmc-2022'] }
+  } as any,
+  {
+    id: 'lit-36',
+    type: 'multi-part',
+    category: 'literature-writing',
+    prompt: `Khi lắng nghe một tác phẩm văn học, em nghe được tiếng lòng của tác giả hay tiếng gọi của chính tâm hồn mình? Hãy chọn một tác phẩm thơ hoặc truyện trong chương trình để làm sáng tỏ trải nghiệm văn học đó.`,
+    correctAnswer: ['tiếng lòng của tác giả', 'tiếng gọi của chính tâm hồn', 'đồng điệu', 'thanh lọc hướng thiện', 'ánh trăng', 'mùa xuân nho nhỏ'],
+    explanation: 'Bài viết cần giải thích nhận định: Trải nghiệm văn học là sự giao thoa hai chiều. Một mặt, ta lắng nghe "tiếng lòng" tác giả (tư tưởng, tình cảm của nhà văn); mặt khác, ta nghe thấy "tiếng gọi tâm hồn mình" (nhận thức lại bản thân, đồng điệu, tự thanh lọc). Học sinh phân tích Ánh trăng (lắng nghe tiếng lòng hoài niệm của Nguyễn Duy, đồng thời tự nhắc nhở bản thân về lối sống thủy chung nghĩa tình) hoặc Mùa xuân nho nhỏ để làm rõ.',
+    difficulty: 9,
+    source: 'Đề tuyển sinh lớp 10 Ngữ văn TP.HCM 2022',
+    subject: 'literature',
+    metadata: { examPart: 'Phần III', literatureTrack: 'literary-essay', literatureTask: 'poetry-analysis', textGenre: 'poetry', answerMode: 'multi-part', solutionStyle: 'rubric', subparts: ['mở bài', 'giải thích nhận định lý luận', 'phân tích tác phẩm làm dẫn chứng', 'đánh giá sự tiếp nhận văn học', 'kết bài'], solutionSteps: ['Dẫn dắt hoài bão và giới thiệu ý kiến về trải nghiệm đọc văn học.', 'Giải thích: Tiếng lòng tác giả (tư tưởng tác phẩm), Tiếng gọi tâm hồn mình (sự đồng điệu và tự nhận thức của người đọc).', 'Phân tích tác phẩm thơ/truyện đã chọn làm dẫn chứng thuyết phục.', 'Khắc họa quá trình tự soi chiếu bản thân khi trải nghiệm thế giới nghệ thuật.', 'Đánh giá tính sáng tạo trong tiếp nhận văn học.', 'Tổng kết sứ mệnh kết nối tâm hồn của văn chương.'], tags: ['official-exam', 'hcmc-2022'] }
   } as any
 ];
+

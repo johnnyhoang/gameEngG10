@@ -1,6 +1,7 @@
 import React from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { Shield, Heart, Coins, Gift } from 'lucide-react';
+import { toast } from '../utils/toast';
 
 export const ItemShop: React.FC = () => {
   const player = useGameState(state => state.player);
@@ -14,27 +15,27 @@ export const ItemShop: React.FC = () => {
   const handleBuyShield = () => {
     const success = buyStreakShield();
     if (!success) {
-      alert('Không đủ Coins (NP) hoặc con đã sở hữu Khiên rồi!');
+      toast.error('Không đủ Coins (NP) hoặc con đã sở hữu Khiên rồi!');
     } else {
-      alert('Mua Khiên Bảo Vệ thành công!');
+      toast.success('Mua Khiên Bảo Vệ thành công!');
     }
   };
 
   const handleBuyHeart = () => {
     const success = buyHeart();
     if (!success) {
-      alert('Không đủ Coins (NP) hoặc con đã có tối đa 3 Mạng rồi!');
+      toast.error('Không đủ Coins (NP) hoặc con đã có tối đa 3 Mạng rồi!');
     } else {
-      alert('Hồi mạng (Heart) thành công!');
+      toast.success('Hồi mạng (Heart) thành công!');
     }
   };
 
   const handleClaimReward = (id: string) => {
     const success = claimParentReward(id);
     if (!success) {
-      alert('Không đủ Coins (NP) để đổi quà này!');
+      toast.error('Không đủ Coins (NP) để đổi quà này!');
     } else {
-      alert('Đã gửi yêu cầu đổi quà tới Ba. Hãy đợi Ba duyệt nhé!');
+      toast.success('Đã gửi yêu cầu đổi quà tới Ba. Hãy đợi Ba duyệt nhé!');
     }
   };
 
@@ -189,3 +190,4 @@ export const ItemShop: React.FC = () => {
     </div>
   );
 };
+

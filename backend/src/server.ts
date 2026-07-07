@@ -1143,6 +1143,57 @@ ${problemText}`;
   }
 });
 
+// POST /api/ai/grade-literature: Uses Gemini API to evaluate and grade a student's literature essay
+app.post('/api/ai/grade-literature', authMiddleware, async (req: any, res) => {
+  const { promptText, essay, keywords = [], rubric = [] } = req.body || {};
+  if (!promptText || !String(promptText).trim()) {
+    return res.status(400).json({ error: 'Missing promptText.' });
+  }
+  if (!essay || !String(essay).trim()) {
+    return res.status(400).json({ error: 'Missing essay.' });
+  }
+
+  try {
+    const prompt = `Bạn là một giáo viên dạy Văn trung học phổ thông, chuyên chấm thi tuyển sinh lớp 10 môn Ngữ văn tại TP.HCM.
+Nhiệm vụ của bạn là chấm điểm bài làm văn nghị luận của học sinh dựa trên đề bài, các từ khóa/ý chính cần có, và các bước giải quyết đề (rubric).
+
+Yêu cầu chấm điểm và nhận xét:
+1. Đánh giá xem bài làm có đáp ứng đề bài không, độ dài có phù hợp không (ví dụ đề yêu cầu khoảng 500 chữ thì bài làm cần đủ dung lượng tối thiểu 200-300 chữ, tối đa khoảng 600-700 chữ).
+2. Kiểm tra xem học sinh có đưa vào bài viết các ý chính/từ khóa quan trọng hay không. Cần đánh giá theo mặt ý nghĩa/khái niệm chứ không chỉ so khớp từ ngữ thô cứng (ví dụ: học sinh dùng từ đồng nghĩa, diễn đạt khác nhưng vẫn đầy đủ ý thì vẫn tính là đạt).
+3. Đánh giá tính liên kết, mạch lạc, lập luận logic của bài viết.
+4. Đưa ra điểm số khách quan từ 0 đến 10 (chỉ lấy số nguyên).
+5. Chỉ ra các ý chính cụ thể nào học sinh đã viết tốt (matchedKeywords) và các ý chính nào học sinh bị thiếu hoặc diễn đạt quá mờ nhạt (missingKeywords).
+6. Viết một đoạn nhận xét chung ngắn gọn bằng tiếng Việt về ưu/nhược điểm (bố cục, hành văn, lập luận).
+7. Đưa ra một vài gợi ý cụ thể để học sinh cải thiện.
+
+Thông tin đầu vào:
+- Đề bài: ${promptText}
+- Bài làm của học sinh: ${essay}
+- Các từ khóa/ý chính cần có: ${JSON.stringify(keywords)}
+- Dàn ý/Rubric các bước gợi ý: ${JSON.stringify(rubric)}
+
+Hãy trả về kết quả dưới dạng JSON duy nhất khớp chính xác với cấu trúc dưới đây:
+{
+  "score": 8,
+  "matchedKeywords": ["ý 1", "ý 2"],
+  "missingKeywords": ["ý 3", "ý 4"],
+  "feedback": "Nhận xét chung ngắn gọn...",
+  "suggestions": ["gợi ý 1", "gợi ý 2"]
+}
+Lưu ý: các phần tử trong matchedKeywords và missingKeywords phải lấy chính xác từ danh sách từ khóa/ý chính cần có đầu vào nếu chúng tương ứng với ý đó.`;
+
+    const responseText = await callGeminiAPI(prompt, { responseMimeType: 'application/json', temperature: 0.2 });
+    const parsed = JSON.parse(responseText.trim());
+    res.json({ success: true, result: parsed });
+  } catch (error: any) {
+    console.error('Lỗi gọi Gemini AI Grade Literature:', error.message);
+    if (error instanceof GeminiExhaustedError) {
+      return res.status(503).json({ error: error.message });
+    }
+    res.status(500).json({ error: 'Failed to process literature essay grading: ' + error.message });
+  }
+});
+
 // GET /api/admin/users: Lists all users in the system
 app.get('/api/admin/users', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;

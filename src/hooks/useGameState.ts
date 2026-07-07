@@ -4,6 +4,7 @@ import { INITIAL_QUESTIONS } from '../data/questions';
 import { INITIAL_LESSONS, type Lesson } from '../data/lessons';
 import { eventBus } from '../utils/EventBus';
 import { supabase } from '../utils/supabaseClient';
+import { toast } from '../utils/toast';
 import type {
   UserProfile,
   PlayerProfile,
@@ -971,15 +972,15 @@ export const useGameState = create<GameState>()(
             });
             if (!res.ok) {
               const errData = await res.json();
-              alert(errData.error || 'Lỗi khi khấu trừ ví.');
+              toast.error(errData.error || 'Lỗi khi khấu trừ ví.');
               return;
             }
             // Reload profile
             await get().fetchStudentProfile(studentUserId);
-            alert(`Đã khấu trừ thành công ${amount.toLocaleString()}đ khỏi ví thưởng của bé.`);
+            toast.success(`Đã khấu trừ thành công ${amount.toLocaleString()}đ khỏi ví thưởng của bé.`);
           } catch (e) {
             console.error('Error deducting student wallet:', e);
-            alert('Lỗi kết nối khi khấu trừ ví.');
+            toast.error('Lỗi kết nối khi khấu trừ ví.');
           }
         },
 
@@ -1001,14 +1002,14 @@ export const useGameState = create<GameState>()(
             });
             if (!res.ok) {
               const errData = await res.json();
-              alert(errData.error || 'Lỗi khi cập nhật năng lượng.');
+              toast.error(errData.error || 'Lỗi khi cập nhật năng lượng.');
               return;
             }
             await get().fetchStudentProfile(studentUserId);
-            alert(`Đã cập nhật năng lượng của bé lên ${clampedPercent}%.`);
+            toast.success(`Đã cập nhật năng lượng của bé lên ${clampedPercent}%.`);
           } catch (e) {
             console.error('Error updating student energy:', e);
-            alert('Lỗi kết nối khi cập nhật năng lượng.');
+            toast.error('Lỗi kết nối khi cập nhật năng lượng.');
           }
         },
 
@@ -1029,7 +1030,7 @@ export const useGameState = create<GameState>()(
             });
             if (!res.ok) {
               const errData = await res.json();
-              alert(errData.error || 'Lỗi khi cập nhật cấu hình.');
+              toast.error(errData.error || 'Lỗi khi cập nhật cấu hình.');
               return;
             }
             set(state => ({
@@ -1038,10 +1039,10 @@ export const useGameState = create<GameState>()(
                 ...payload
               }
             }));
-            alert('Đã cập nhật cấu hình trò chơi thành công!');
+            toast.success('Đã cập nhật cấu hình trò chơi thành công!');
           } catch (e) {
             console.error('Error updating game settings:', e);
-            alert('Lỗi kết nối khi cập nhật cấu hình.');
+            toast.error('Lỗi kết nối khi cập nhật cấu hình.');
           }
         },
 
@@ -1474,12 +1475,12 @@ export const useGameState = create<GameState>()(
               });
               if (!res.ok) {
                 const errData = await res.json();
-                alert(errData.error || 'Không thể xóa câu hỏi.');
+                toast.error(errData.error || 'Không thể xóa câu hỏi.');
                 return false;
               }
             } catch (error) {
               console.error('Error deleting question:', error);
-              alert('Lỗi kết nối khi xóa câu hỏi.');
+              toast.error('Lỗi kết nối khi xóa câu hỏi.');
               return false;
             }
           }
@@ -1516,12 +1517,12 @@ export const useGameState = create<GameState>()(
               });
               if (!res.ok) {
                 const errData = await res.json();
-                alert(errData.error || 'Không thể cập nhật câu hỏi.');
+                toast.error(errData.error || 'Không thể cập nhật câu hỏi.');
                 return false;
               }
             } catch (error) {
               console.error('Error updating question:', error);
-              alert('Lỗi kết nối khi cập nhật câu hỏi.');
+              toast.error('Lỗi kết nối khi cập nhật câu hỏi.');
               return false;
             }
           }
@@ -1755,3 +1756,8 @@ export const useGameState = create<GameState>()(
     }
   )
 );
+
+
+
+
+
