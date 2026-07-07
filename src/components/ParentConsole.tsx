@@ -2,15 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import type { Question } from '../types/game';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { Lock, Unlock, Check, X, Award, FileText, Database, Plus, SlidersHorizontal, Search, Pencil, Trash2 } from 'lucide-react';
-import { supabase } from '../utils/supabaseClient';
+import { Lock, Unlock, Check, X, Award, Database, Plus, SlidersHorizontal, Search, Pencil, Trash2 } from 'lucide-react';
 
 export const ParentConsole: React.FC = () => {
   const verifyPIN = useGameState(state => state.verifyPIN);
   const approveReward = useGameState(state => state.approveReward);
   const rejectReward = useGameState(state => state.rejectReward);
   const addParentReward = useGameState(state => state.addParentReward);
-  const importQuestions = useGameState(state => state.importQuestions);
 
   // Admin and member management states
   const currentUser = useGameState(state => state.currentUser);
@@ -36,12 +34,7 @@ export const ParentConsole: React.FC = () => {
   const [isUnlocked, setIsUnlocked] = useState(currentUser?.role === 'admin');
   const [pinError, setPinError] = useState(false);
 
-  // Admin Ingestion States
-  const [rawText, setRawText] = useState('');
-  const [importPreview, setImportPreview] = useState<Question[]>([]);
-  const [showImportPreview, setShowImportPreview] = useState(false);
-  const [loadingIngest, setLoadingIngest] = useState(false);
-  const [ingestSubject, setIngestSubject] = useState<'english' | 'math' | 'literature'>('english');
+
 
   // Create Reward States
   const [rewardTitle, setRewardTitle] = useState('');
@@ -154,50 +147,7 @@ export const ParentConsole: React.FC = () => {
     alert('Thêm quà tặng mới thành công!');
   };
 
-  // Raw text parsing to JSON question using Gemini AI on backend
-  const handleParseQuestions = async () => {
-    if (!rawText.trim()) return;
 
-    setLoadingIngest(true);
-    try {
-      const session = (await supabase.auth.getSession()).data.session;
-      const token = session?.access_token;
-      if (!token) throw new Error('Cần đăng nhập qua Supabase để sử dụng AI.');
-
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
-      const res = await fetch(`${backendUrl}/api/ai/ingest`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ rawText, subject: ingestSubject })
-      });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || 'Lỗi server.');
-      }
-
-      const data = await res.json();
-      setImportPreview(data.questions);
-      setShowImportPreview(true);
-    } catch (e: any) {
-      console.error('Lỗi phân tích AI:', e);
-      alert('Không thể phân tích đề thi bằng AI: ' + e.message);
-    } finally {
-      setLoadingIngest(false);
-    }
-  };
-
-  const handleConfirmImport = () => {
-    if (importPreview.length === 0) return;
-    importQuestions(importPreview);
-    setRawText('');
-    setImportPreview([]);
-    setShowImportPreview(false);
-    alert('Đã nhập câu hỏi thành công!');
-  };
 
   // Active Data bindings: if viewing a student, use their loaded data. Otherwise fall back to parent.
   const activeRewards = selectedStudentProfile?.rewards || [];
@@ -459,151 +409,6 @@ export const ParentConsole: React.FC = () => {
       {activeTab === 'ingestion' && (
         <div className="space-y-6">
           <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-4">
-            <div>
-              <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider mb-1 flex items-center gap-1.5">
-                <FileText className="w-4 h-4" /> Nạp thêm đề thi vào lớp 10 bằng AI (PDF/Thô)
-                <button
-                  onClick={() => showHelp('ai-ingest')}
-                  className="w-4 h-4 rounded-full bg-white/10 border border-white/20 text-white text-[9px] font-black flex items-center justify-center hover:bg-white/25 cursor-pointer transition-colors"
-                  title="Xem định dạng mẫu và hướng dẫn nhập liệu"
-                >
-                  ?
-                </button>
-              </h4>
-              <p className="text-xs text-synth-text-muted leading-relaxed">
-                Copy văn bản thô của đề thi Tiếng Anh hoặc Toán. Trí tuệ nhân tạo Gemini sẽ tự động bóc tách, gắn đáp án và thêm vào danh sách thử thách.
-              </p>
-            </div>
-
-            {/* Subject Selector for Ingest */}
-            <div className="flex flex-col space-y-1.5">
-              <span className="text-[10px] font-bold text-synth-cyan font-orbitron uppercase tracking-wider">
-                Môn học nạp đề
-              </span>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIngestSubject('english')}
-                  className={`px-3 py-1.5 rounded-lg border text-xs font-bold cursor-pointer transition-all duration-200 ${
-                    ingestSubject === 'english'
-                      ? 'bg-synth-cyan/20 border-synth-cyan text-synth-cyan shadow-[0_0_8px_rgba(0,240,255,0.2)]'
-                      : 'bg-synth-gray/10 border-white/5 text-synth-text-muted hover:text-white'
-                  }`}
-                >
-                  🇬🇧 TIẾNG ANH
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIngestSubject('math')}
-                  className={`px-3 py-1.5 rounded-lg border text-xs font-bold cursor-pointer transition-all duration-200 ${
-                    ingestSubject === 'math'
-                      ? 'bg-synth-magenta/20 border-synth-magenta text-synth-magenta shadow-[0_0_8px_rgba(255,0,128,0.2)]'
-                      : 'bg-synth-gray/10 border-white/5 text-synth-text-muted hover:text-white'
-                  }`}
-                >
-                  📐 TOÁN HỌC
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIngestSubject('literature')}
-                  className={`px-3 py-1.5 rounded-lg border text-xs font-bold cursor-pointer transition-all duration-200 ${
-                    ingestSubject === 'literature'
-                      ? 'bg-synth-orange/20 border-synth-orange text-synth-orange shadow-[0_0_8px_rgba(255,165,0,0.2)]'
-                      : 'bg-synth-gray/10 border-white/5 text-synth-text-muted hover:text-white'
-                  }`}
-                >
-                  ✍️ NGỮ VĂN
-                </button>
-              </div>
-            </div>
-
-            <textarea
-              value={rawText}
-              onChange={(e) => setRawText(e.target.value)}
-              placeholder="Ví dụ:
-The weather was extremely cold...
-A. because
-B. despite (correct)
-C. although
-D. however
-
-She behaved very ______ towards guests. (POLITE)
-Answer: politely"
-              rows={8}
-              className="w-full p-4 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-magenta font-mono"
-            />
-
-            <div className="flex gap-3 justify-end">
-              <button
-                onClick={handleParseQuestions}
-                disabled={!rawText.trim() || loadingIngest}
-                className="px-6 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-magenta text-black hover:synth-glow-magenta cursor-pointer transition-all duration-300 disabled:opacity-40"
-              >
-                {loadingIngest ? 'Đang phân tích (AI)...' : 'Phân Tích Đề Thi (AI)'}
-              </button>
-            </div>
-          </div>
-
-          {/* Import Preview List */}
-          {showImportPreview && (
-            <div className="glass-panel rounded-2xl border border-synth-cyan/20 p-5 space-y-4 animate-float">
-              <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">
-                Xem trước câu hỏi phân tích ({importPreview.length} câu)
-              </h4>
-
-              <div className="space-y-3 overflow-y-auto max-h-[300px]">
-                {importPreview.map((q, idx) => (
-                  <div key={idx} className="bg-synth-gray/30 p-3 rounded-lg border border-white/5 text-xs">
-                    <span className="font-bold text-synth-cyan uppercase font-orbitron text-[10px]">
-                      Loại: {q.type} | Dạng: {q.category}
-                    </span>
-                    {q.imageUrl && (
-                      <div className="my-1.5 max-w-[120px] bg-synth-gray/50 p-1.5 rounded-lg border border-white/5">
-                        <img 
-                          src={q.imageUrl} 
-                          className="rounded max-h-[70px] object-contain mx-auto" 
-                          alt="Preview" 
-                        />
-                      </div>
-                    )}
-                    <p className="text-white font-medium my-1">{q.prompt}</p>
-                    {q.options && (
-                      <ul className="pl-4 list-disc text-synth-text-muted">
-                        {q.options.map((opt, oIdx) => (
-                          <li key={oIdx} className={opt === q.correctAnswer ? 'text-synth-green font-bold' : ''}>
-                            {opt}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                    {!q.options && (
-                      <p className="text-synth-green font-bold">Đáp án: {q.correctAnswer}</p>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex gap-3 justify-end">
-                <button
-                  onClick={handleConfirmImport}
-                  className="px-6 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all"
-                >
-                  Xác Nhận Nhập Đề
-                </button>
-                <button
-                  onClick={() => {
-                    setImportPreview([]);
-                    setShowImportPreview(false);
-                  }}
-                  className="px-6 py-2.5 rounded-xl border border-synth-gray text-synth-text-muted font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer"
-                >
-                  Hủy Bỏ
-                </button>
-              </div>
-            </div>
-          )}
-
-          <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-4">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
               <div>
                 <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
@@ -624,6 +429,41 @@ Answer: politely"
                 />
               </div>
             </div>
+
+            {/* Thống kê ngân hàng câu hỏi */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-synth-gray/10 p-4 rounded-xl border border-white/5">
+              <div className="space-y-1">
+                <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Tổng số câu hỏi</span>
+                <span className="text-xl font-black text-synth-cyan font-orbitron">{questions.length}</span>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Theo môn học</span>
+                <div className="text-[11px] text-white space-y-0.5">
+                  <div>🇬🇧 Tiếng Anh: <span className="font-bold text-synth-cyan">{questions.filter(q => !q.subject || q.subject === 'english').length}</span></div>
+                  <div>📐 Toán học: <span className="font-bold text-synth-magenta">{questions.filter(q => q.subject === 'math').length}</span></div>
+                  <div>✍️ Ngữ văn: <span className="font-bold text-synth-orange">{questions.filter(q => q.subject === 'literature').length}</span></div>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Độ khó trung bình</span>
+                <span className="text-xl font-black text-synth-orange font-orbitron">
+                  {(questions.reduce((sum, q) => sum + q.difficulty, 0) / questions.length || 0).toFixed(1)}/10
+                </span>
+                <span className="text-[9px] text-synth-text-muted block">
+                  Dễ: {questions.filter(q => q.difficulty <= 4).length} | T.Bình: {questions.filter(q => q.difficulty >= 5 && q.difficulty <= 7).length} | Khó: {questions.filter(q => q.difficulty >= 8).length}
+                </span>
+              </div>
+              <div className="space-y-1">
+                <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Dạng câu hỏi</span>
+                <div className="text-[11px] text-white space-y-0.5">
+                  <div>Trắc nghiệm: <span className="font-bold text-synth-cyan">{questions.filter(q => q.type === 'mcq').length}</span></div>
+                  <div>Điền từ: <span className="font-bold text-synth-magenta">{questions.filter(q => q.type === 'wordform').length}</span></div>
+                  <div>Viết lại câu: <span className="font-bold text-synth-orange">{questions.filter(q => q.type === 'rewrite').length}</span></div>
+                </div>
+              </div>
+            </div>
+
+
 
             <div className="space-y-2 max-h-[420px] overflow-y-auto pr-1">
               {questions.filter(q => {
