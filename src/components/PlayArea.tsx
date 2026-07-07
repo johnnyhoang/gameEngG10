@@ -6,8 +6,9 @@ import { MATH_ANSWER_MODE_LABELS, MATH_TOPIC_LABELS } from '../data/mathExamBlue
 import { LITERATURE_ANSWER_MODE_LABELS, LITERATURE_TASK_LABELS, LITERATURE_TEXT_GENRE_LABELS } from '../data/literatureExamBlueprint';
 import { Scratchpad } from './Scratchpad';
 import { 
-  Award, Flame, Check, X, ArrowRight 
+  Award, Flame, Check, X, ArrowRight, Volume2, VolumeX 
 } from 'lucide-react';
+import { sound } from '../utils/sound';
 
 interface PlayAreaProps {
   mode: 'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss';
@@ -41,6 +42,18 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
   const [hintUsed, setHintUsed] = useState(false);
   const [revealedHint, setRevealedHint] = useState('');
   const [showScratchpad, setShowScratchpad] = useState(false);
+  const [isMuted, setIsMuted] = useState(sound.isMuted());
+
+  const toggleMute = () => {
+    const nextMuted = !isMuted;
+    sound.setMuted(nextMuted);
+    setIsMuted(nextMuted);
+  };
+
+  const handleEscape = () => {
+    sound.playEscape();
+    onFinish();
+  };
 
   // Timer states
   const [timeLeft, setTimeLeft] = useState(0);
@@ -137,6 +150,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
     }
     
     buyHint();
+    sound.playCoin();
     setHintUsed(true);
 
     const answerMode = activeQuestion.metadata?.answerMode;
@@ -254,6 +268,11 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
 
     setIsLastCorrect(isCorrect);
     setChecked(true);
+    if (isCorrect) {
+      sound.playCorrect();
+    } else {
+      sound.playIncorrect();
+    }
     setRewardsEarned(prev => ({
       coins: prev.coins + outcome.coinsGained,
       xp: prev.xp + outcome.expGained
@@ -271,6 +290,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
   };
 
   const handleNextQuestion = () => {
+    sound.playNext();
     setChecked(false);
     setSelectedAnswer('');
     setTypedAnswer('');
@@ -336,7 +356,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
         )}
 
         <button
-          onClick={onFinish}
+          onClick={handleEscape}
           className="px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-border-cyan cursor-pointer transition-all duration-300 shadow-[0_0_15px_rgba(0,240,255,0.4)]"
         >
           Trở Lại Bản Đồ 🗺️
@@ -362,7 +382,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
           </p>
 
           <button
-            onClick={onFinish}
+            onClick={handleEscape}
             className="px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-border-cyan cursor-pointer transition-all duration-300 shadow-[0_0_15px_rgba(0,240,255,0.4)]"
           >
             Trở Lại Bản Đồ 🗺️
@@ -434,6 +454,18 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Mute/Unmute sound button */}
+          <button
+            onClick={toggleMute}
+            className="px-2.5 py-1 rounded bg-synth-gray/50 border border-white/10 hover:bg-synth-gray text-white cursor-pointer transition-colors flex items-center justify-center"
+            title={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
+          >
+            {isMuted ? <VolumeX className="w-3.5 h-3.5 text-synth-magenta mr-1" /> : <Volume2 className="w-3.5 h-3.5 text-synth-cyan mr-1" />}
+            <span className="font-orbitron font-bold text-[9px] tracking-wide uppercase">
+              {isMuted ? 'MUTE' : 'SOUND'}
+            </span>
+          </button>
+
           {/* Bảng Nháp button */}
           {(currentSubject === 'math' || currentSubject === 'literature') && (
             <button
@@ -722,7 +754,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
         )}
 
         <button
-          onClick={onFinish}
+          onClick={handleEscape}
           className="px-4 py-3 rounded-xl border border-synth-gray hover:bg-synth-gray/20 text-synth-text-muted font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 w-full sm:w-auto text-center"
         >
           Trốn Chạy (Thoát)
