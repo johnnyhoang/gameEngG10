@@ -729,8 +729,9 @@ app.post('/api/ai/geometry-3d', authMiddleware, async (req: any, res) => {
     const prompt = `Bạn là trợ lý Toán 9 chuyên về hình học không gian theo định hướng chấm của Sở GD&ĐT TP.HCM. Nhiệm vụ của bạn là phân tích một đề bài hình học 3D và trả về kết quả JSON duy nhất, không có markdown.
 
 Yêu cầu:
-- Nhận dạng đúng dạng hình: hình chóp, lăng trụ, tứ diện, hình hộp, hoặc unknown.
+- Nhận dạng đúng dạng hình: hình trụ, hình chóp, lăng trụ, tứ diện, hình hộp, hoặc unknown.
 - Không bịa số đo hay quan hệ nếu đề không cung cấp.
+- Nếu đề là hình trụ có mặt cắt song song với trục, hãy ưu tiên nhận dạng cylinder và mô tả rõ dây cung, tâm đáy, chiều cao và mặt cắt chữ nhật.
 - Khi đề có nhắc đến đường cao, trung điểm, mặt phẳng, vuông góc, song song, phải nêu rõ cách dựng hình và ý nghĩa hình học.
 - Phần lời giải phải theo kiểu Toán 9: giả thiết -> dựng hình -> lập luận -> kết luận.
 - Cho phép đề xuất các thao tác vẽ đơn giản để học sinh thao tác trên bảng.
@@ -738,7 +739,7 @@ Yêu cầu:
 
 Trả về JSON theo schema:
 {
-  "detectedShape": "prism" | "cuboid" | "pyramid" | "tetrahedron" | "unknown",
+  "detectedShape": "prism" | "cuboid" | "pyramid" | "tetrahedron" | "cylinder" | "unknown",
   "title": "chuỗi ngắn gọn",
   "summary": "tóm tắt cách nhìn nhanh",
   "assumptions": ["..."],

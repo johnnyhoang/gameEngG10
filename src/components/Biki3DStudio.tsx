@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowRight, Layers3, Move3D, Pause, Play, RotateCcw, Ruler, Sparkles, Square, Triangle } from 'lucide-react';
+import { ArrowRight, Circle, Layers3, Move3D, Pause, Play, RotateCcw, Ruler, Sparkles, Square, Triangle } from 'lucide-react';
 import { supabase } from '../utils/supabaseClient';
 
-type ShapeKind = 'prism' | 'cuboid' | 'pyramid' | 'tetrahedron';
+type ShapeKind = 'prism' | 'cuboid' | 'pyramid' | 'tetrahedron' | 'cylinder';
 type ViewPreset = 'iso' | 'front' | 'top' | 'side';
 
 interface Point3D {
@@ -29,6 +29,7 @@ interface SceneModel {
   faces: Face[];
   baseFaceIds: string[];
   apexId?: string;
+  autoAnnotations?: OverlayAnnotation[];
 }
 
 interface ProjectedFace extends Face {
@@ -95,7 +96,8 @@ const SHAPE_LABELS: Record<ShapeKind, { label: string; icon: React.ReactNode }> 
   prism: { label: 'Lăng trụ tam giác', icon: <Layers3 className="w-4 h-4" /> },
   cuboid: { label: 'Hình hộp chữ nhật', icon: <Square className="w-4 h-4" /> },
   pyramid: { label: 'Hình chóp', icon: <Triangle className="w-4 h-4" /> },
-  tetrahedron: { label: 'Tứ diện', icon: <Move3D className="w-4 h-4" /> }
+  tetrahedron: { label: 'Tứ diện', icon: <Move3D className="w-4 h-4" /> },
+  cylinder: { label: 'Hình trụ', icon: <Circle className="w-4 h-4" /> }
 };
 
 const VIEW_PRESETS: Record<ViewPreset, { yaw: number; pitch: number; roll: number; zoom: number; panX: number; panY: number }> = {
@@ -157,7 +159,144 @@ function rotatePoint(point: Point3D, yaw: number, pitch: number, roll: number) {
   return { x: x3, y: y3, z: z2 };
 }
 
-function buildShape(kind: ShapeKind): SceneModel {
+function circlePoint(angleDeg: number, radius: number, z: number): Point3D {
+  const rad = (angleDeg * Math.PI) / 180;
+  return {
+    x: Math.cos(rad) * radius,
+    y: Math.sin(rad) * radius,
+    z
+  };
+}
+
+function formatNumber(value: number) {
+  const rounded = Math.round(value * 100) / 100;
+  return Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(2).replace(/\.00$/, '');
+}
+
+interface CylinderEvidence {
+  chordLength?: number;
+  distanceToChord?: number;
+  sectionArea?: number;
+}
+
+function extractCylinderEvidence(problemText: string): CylinderEvidence {
+  const normalized = stripVietnamese(problemText).toLowerCase();
+  const numberPattern = '(\\d+(?:[.,]\\d+)?)';
+  const chordMatch = normalized.match(new RegExp(`ab\\s*=\\s*${numberPattern}`));
+  const distanceMatch = normalized.match(new RegExp(`(?:tam\\s*o\\s*cach\\s*ab|o\\s*cach\\s*ab|cach\\s*ab)\\s*(?:la\\s*)?${numberPattern}`));
+  const areaMatch = normalized.match(new RegExp(`dien tich mat cat(?:\\s*la)?\\s*${numberPattern}`));
+
+  return {
+    chordLength: chordMatch ? Number(chordMatch[1].replace(',', '.')) : undefined,
+    distanceToChord: distanceMatch ? Number(distanceMatch[1].replace(',', '.')) : undefined,
+    sectionArea: areaMatch ? Number(areaMatch[1].replace(',', '.')) : undefined
+  };
+}
+
+function buildCylinderShape(evidence?: CylinderEvidence): SceneModel {
+  const topRing = Array.from({ length: 16 }, (_, index) => {
+    const angle = (index / 16) * 360;
+    const point = circlePoint(angle, 1, 1.2);
+    return { id: `T${index + 1}`, ...point };
+  });
+  const bottomRing = Array.from({ length: 16 }, (_, index) => {
+    const angle = (index / 16) * 360;
+    const point = circlePoint(angle, 1, -1.2);
+    return { id: `B${index + 1}`, ...point };
+  });
+
+  const sectionTopLeft = { id: 'A', ...circlePoint(143.13010235415598, 1, 1.2) };
+  const sectionTopRight = { id: 'B', ...circlePoint(36.86989764584402, 1, 1.2) };
+  const sectionBottomRight = { id: 'C', ...circlePoint(36.86989764584402, 1, -1.2) };
+  const sectionBottomLeft = { id: 'D', ...circlePoint(143.13010235415598, 1, -1.2) };
+  const center = { id: 'O', x: 0, y: 0, z: 1.2 };
+  const midpoint = { id: 'M', x: 0, y: 0.6, z: 1.2 };
+  const axisBottom = { id: 'O1', x: 0, y: 0, z: -1.2 };
+
+  const sectionAreaText = evidence?.sectionArea ? `${formatNumber(evidence.sectionArea)} cm²` : 'diện tích mặt cắt';
+  const chordText = evidence?.chordLength ? `AB = ${formatNumber(evidence.chordLength)} cm` : 'AB';
+  const distanceText = evidence?.distanceToChord ? `d(O,AB) = ${formatNumber(evidence.distanceToChord)} cm` : 'OM';
+
+  return {
+    title: 'Hình trụ có mặt cắt ABCD song song với trục',
+    notation: 'hình trụ',
+    vertices: [
+      ...topRing,
+      ...bottomRing,
+      sectionTopLeft,
+      sectionTopRight,
+      sectionBottomRight,
+      sectionBottomLeft,
+      center,
+      midpoint,
+      axisBottom
+    ],
+    faces: [
+      { id: 'base', vertices: ['A', 'B', 'C', 'D'], fill: '#38bdf8', opacity: 0.26 },
+      { id: 'top', vertices: topRing.map(point => point.id), fill: '#38bdf8', opacity: 0.14 },
+      { id: 'bottom', vertices: bottomRing.map(point => point.id), fill: '#fb7185', opacity: 0.1 },
+      ...topRing.map((point, index) => {
+        const next = topRing[(index + 1) % topRing.length];
+        const bottom = bottomRing[index];
+        const bottomNext = bottomRing[(index + 1) % bottomRing.length];
+        return {
+          id: `side-${index + 1}`,
+          vertices: [point.id, next.id, bottomNext.id, bottom.id],
+          fill: '#8b5cf6',
+          opacity: 0.12
+        };
+      })
+    ],
+    baseFaceIds: ['A', 'B', 'C', 'D'],
+    autoAnnotations: [
+      {
+        id: 'guide-ab',
+        type: 'line',
+        title: chordText,
+        body: 'Dây cung AB là cạnh trên của mặt cắt chữ nhật ABCD.',
+        from: 'A',
+        to: 'B',
+        color: '#00f0ff',
+        opacity: 1
+      },
+      {
+        id: 'guide-om',
+        type: 'line',
+        title: distanceText,
+        body: 'Đoạn OM vuông góc với AB và biểu diễn khoảng cách từ tâm O đến dây AB.',
+        from: 'O',
+        to: 'M',
+        color: '#f59e0b',
+        opacity: 1,
+        dashed: true
+      },
+      {
+        id: 'guide-center',
+        type: 'marker',
+        title: 'Tâm O',
+        body: 'Tâm của đáy tròn và đầu mút của trục đối xứng.',
+        at: 'O',
+        color: '#ffffff',
+        opacity: 1
+      },
+      {
+        id: 'guide-section',
+        type: 'face',
+        title: sectionAreaText,
+        body: 'Mặt cắt ABCD là hình chữ nhật sinh ra bởi mặt phẳng song song với trục.',
+        points: ['A', 'B', 'C', 'D'],
+        color: '#22c55e',
+        opacity: 0.22
+      }
+    ]
+  };
+}
+
+function buildShape(kind: ShapeKind, evidence?: CylinderEvidence): SceneModel {
+  if (kind === 'cylinder') {
+    return buildCylinderShape(evidence);
+  }
+
   if (kind === 'cuboid') {
     const vertices: Vertex[] = [
       { id: 'A', x: -1.25, y: -0.75, z: -1 },
@@ -257,6 +396,7 @@ function buildShape(kind: ShapeKind): SceneModel {
 function detectShape(problemText: string): ShapeKind | null {
   const normalized = stripVietnamese(problemText).toLowerCase();
   if (!normalized.trim()) return null;
+  if (normalized.includes('hinh tru') || normalized.includes('mat cat song song voi truc') || (normalized.includes('mat cat') && normalized.includes('truc'))) return 'cylinder';
   if (normalized.includes('tu dien')) return 'tetrahedron';
   if (normalized.includes('hinh hop') || normalized.includes('hop chu nhat')) return 'cuboid';
   if (normalized.includes('lang tru')) return 'prism';
@@ -601,6 +741,53 @@ function buildBaseSteps(shape: ShapeKind, model: SceneModel, problemText: string
     ? `Đề bài đã được nhận dạng theo dạng ${labels.label.toLowerCase()}.`
     : 'Chưa có đề bài; công cụ đang ở chế độ mẫu để học sinh quan sát cấu trúc hình.';
 
+  if (shape === 'cylinder') {
+    const evidence = extractCylinderEvidence(problemText);
+    const hasExactData = Boolean(evidence.chordLength && evidence.distanceToChord && evidence.sectionArea);
+    const chordText = evidence.chordLength ? `AB = ${formatNumber(evidence.chordLength)} cm` : 'AB';
+    const distanceText = evidence.distanceToChord ? `OM = ${formatNumber(evidence.distanceToChord)} cm` : 'OM';
+    const areaText = evidence.sectionArea ? `S = ${formatNumber(evidence.sectionArea)} cm²` : 'S';
+    const height = evidence.chordLength && evidence.sectionArea ? evidence.sectionArea / evidence.chordLength : undefined;
+    const radius = evidence.chordLength && evidence.distanceToChord
+      ? Math.sqrt((evidence.chordLength / 2) ** 2 + evidence.distanceToChord ** 2)
+      : undefined;
+    const lateralArea = radius && height ? 2 * Math.PI * radius * height : undefined;
+    const volume = radius && height ? Math.PI * radius * radius * height : undefined;
+
+    return [
+      {
+        title: 'Nhận dạng hình trụ',
+        body: `Đây là hình trụ có mặt cắt ABCD song song với trục. ${detected}`,
+        focus: ['A', 'B', 'C', 'D', 'O', 'M'],
+        annotationIds: ['guide-ab', 'guide-om', 'guide-center', 'guide-section']
+      },
+      {
+        title: 'Đọc dữ kiện hình',
+        body: hasExactData
+          ? `Mặt cắt là hình chữ nhật nên ${chordText}, ${distanceText}, ${areaText}.`
+          : 'Mặt cắt là hình chữ nhật; cần xác định AB là dây cung trên đáy, OM là khoảng cách từ tâm đến dây và diện tích mặt cắt để suy ra các kích thước còn lại.',
+        focus: ['A', 'B', 'C', 'D', 'O', 'M'],
+        annotationIds: ['guide-section', 'guide-ab', 'guide-om']
+      },
+      {
+        title: 'Tính bán kính và chiều cao',
+        body: hasExactData && radius && height
+          ? `Từ ${chordText} và khoảng cách ${distanceText}, suy ra r = √((AB/2)^2 + OM^2) = ${formatNumber(radius)} cm. Đồng thời h = S / AB = ${formatNumber(height)} cm.`
+          : 'Từ dây cung AB và khoảng cách từ tâm đến AB, dùng công thức r² = (AB/2)² + OM². Chiều cao h lấy bằng diện tích mặt cắt chia cho AB.',
+        focus: ['O', 'M', 'A', 'B'],
+        annotationIds: ['guide-om', 'guide-ab']
+      },
+      {
+        title: 'Diện tích xung quanh và thể tích',
+        body: hasExactData && lateralArea && volume
+          ? `Áp dụng công thức: Sxq = 2πrh = ${formatNumber(lateralArea)} cm² và V = πr²h = ${formatNumber(volume)} cm³.`
+          : 'Sau khi có r và h, tính diện tích xung quanh theo Sxq = 2πrh và thể tích theo V = πr²h.',
+        focus: ['O', 'M'],
+        annotationIds: ['guide-om']
+      }
+    ];
+  }
+
   const baseSteps: LessonStep[] = [
     {
       title: 'Nhận dạng hình',
@@ -645,6 +832,7 @@ function unionEdges(faces: Face[]) {
 
 export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
   const detectedShape = detectShape(problemText);
+  const cylinderEvidence = useMemo(() => extractCylinderEvidence(problemText), [problemText]);
   const [manualShape, setManualShape] = useState<ShapeKind>('pyramid');
   const [autoResolve, setAutoResolve] = useState(true);
   const [yaw, setYaw] = useState(32);
@@ -666,7 +854,7 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
   const playTimerRef = useRef<number | null>(null);
 
   const shape = autoResolve && detectedShape ? detectedShape : manualShape;
-  const model = useMemo(() => buildShape(shape), [shape]);
+  const model = useMemo(() => buildShape(shape, cylinderEvidence), [cylinderEvidence, shape]);
 
   useEffect(() => {
     setPrompt(problemText);
@@ -817,17 +1005,26 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
     return overlayAnnotations.filter(annotation => currentAnnotationIds.includes(annotation.id));
   }, [currentAnnotationIds, overlayAnnotations]);
 
-  const visibleAnnotations = currentStep ? activeAnnotations : overlayAnnotations;
+  const visibleAnnotations = useMemo(
+    () => [...(model.autoAnnotations ?? []), ...(currentStep ? activeAnnotations : overlayAnnotations)],
+    [activeAnnotations, currentStep, model.autoAnnotations, overlayAnnotations]
+  );
 
   const problemSummary = useMemo(() => {
     if (!prompt.trim()) {
       return 'Nhập đề bài vào ô bên dưới để AI dựng hình và sinh lời giải theo đúng cấu trúc trình bày.';
     }
+    if (shape === 'cylinder') {
+      const area = cylinderEvidence.sectionArea ? `${formatNumber(cylinderEvidence.sectionArea)} cm²` : 'diện tích mặt cắt';
+      const chord = cylinderEvidence.chordLength ? `${formatNumber(cylinderEvidence.chordLength)} cm` : 'AB';
+      const distance = cylinderEvidence.distanceToChord ? `${formatNumber(cylinderEvidence.distanceToChord)} cm` : 'OM';
+      return `Đề dạng hình trụ: mặt cắt ABCD song song trục, ${chord}, tâm O cách AB ${distance}, ${area}.`;
+    }
     if (detectedShape) {
       return `AI nhận dạng đề theo dạng ${SHAPE_LABELS[detectedShape].label.toLowerCase()}.`;
     }
     return 'Đề bài chưa đủ dấu hiệu để nhận dạng tự động, nhưng mô hình vẫn có thể dựng thủ công bằng chọn hình bên cạnh.';
-  }, [detectedShape, prompt]);
+  }, [cylinderEvidence.chordLength, cylinderEvidence.distanceToChord, cylinderEvidence.sectionArea, detectedShape, prompt, shape]);
 
   const promptHints = useMemo(() => {
     const normalized = stripVietnamese(prompt).toLowerCase();
@@ -836,6 +1033,11 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
     if (normalized.includes('duong cao')) {
       hints.push('Ưu tiên xác định đỉnh cần hạ vuông góc và mặt đáy liên quan.');
       hints.push('Bấm công cụ Vuông góc rồi chọn đỉnh, sau đó chọn cạnh đáy phù hợp.');
+    }
+
+    if (normalized.includes('hinh tru') || normalized.includes('mat cat') || normalized.includes('truc')) {
+      hints.push('Chọn hình trụ nếu đề có mặt cắt song song với trục hoặc có tiết diện là hình chữ nhật.');
+      hints.push('Xác định AB là dây cung trên đáy trên, rồi dựng OM vuông góc AB để lấy khoảng cách từ tâm đến dây.');
     }
 
     if (normalized.includes('trung diem')) {
@@ -1285,6 +1487,7 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
               <option value="cuboid">Hình hộp chữ nhật</option>
               <option value="pyramid">Hình chóp</option>
               <option value="tetrahedron">Tứ diện</option>
+              <option value="cylinder">Hình trụ</option>
             </select>
             <button
               onClick={() => setAutoResolve(true)}
@@ -1312,7 +1515,7 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
               </div>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-xs text-slate-300">
-              Gợi ý lệnh: <span className="text-white">"vẽ đường cao từ S"</span>, <span className="text-white">"nối trung điểm BC với đỉnh S"</span>, <span className="text-white">"tô màu mặt ABCD"</span>.
+              Gợi ý lệnh: <span className="text-white">"vẽ đường cao từ S"</span>, <span className="text-white">"nối trung điểm BC với đỉnh S"</span>, <span className="text-white">"tô màu mặt ABCD"</span>, <span className="text-white">"vẽ OM vuông góc AB"</span>.
             </div>
           </div>
         </div>
