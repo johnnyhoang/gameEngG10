@@ -3,9 +3,12 @@ import { useGameState } from '../hooks/useGameState';
 import {
   BookOpen,
   Calculator,
+  ExternalLink,
   Languages,
+  Layers3,
+  LineChart,
+  Move3D,
   Target,
-  RefreshCw,
   ScrollText,
   NotebookTabs,
   Sparkles,
@@ -17,7 +20,6 @@ import {
 import {
   HANG_FLASHCARDS,
   HANG_SOURCES,
-  HANG_TOOLS,
   HANG_TRACKS,
   type HangSubjectId
 } from '../data/hangLuyenCong';
@@ -29,6 +31,40 @@ interface HangLuyenCongProps {
   onOpenMatThatPlane: () => void;
   onOpenMatThatGraph: () => void;
 }
+
+type StudyPanelId = 'flashcards' | 'drill' | 'notes' | 'sources';
+
+const STUDY_PANELS: Array<{
+  id: StudyPanelId;
+  label: string;
+  icon: React.ReactNode;
+}> = [
+  { id: 'flashcards', label: 'Thẻ nhớ', icon: <ScrollText className="w-4 h-4" /> },
+  { id: 'drill', label: 'Luyện nhanh', icon: <Target className="w-4 h-4" /> },
+  { id: 'notes', label: 'Sổ tay', icon: <CheckCircle2 className="w-4 h-4" /> },
+  { id: 'sources', label: 'Nguồn', icon: <NotebookTabs className="w-4 h-4" /> }
+];
+
+const MAT_THAT_CARDS = [
+  {
+    id: 'biki3d',
+    title: 'Mật thất 3D',
+    description: 'Dựng hình không gian, xoay 360°, chọn góc nhìn và đọc lời giải từng bước.',
+    icon: <Move3D className="w-5 h-5" />
+  },
+  {
+    id: 'bikiplane',
+    title: 'Mật thất Hình học phẳng',
+    description: 'Dựng tam giác, đường tròn, đường cao, trung tuyến và các dấu hiệu chứng minh.',
+    icon: <Layers3 className="w-5 h-5" />
+  },
+  {
+    id: 'bikigraph',
+    title: 'Mật thất Đồ thị hàm số',
+    description: 'Slider hệ số, đỉnh parabol, giao điểm và trục đối xứng theo thời gian thực.',
+    icon: <LineChart className="w-5 h-5" />
+  }
+] as const;
 
 const SUBJECT_META: Record<HangSubjectId, {
   label: string;
@@ -72,7 +108,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   const questions = useGameState(state => state.questions);
 
   const [selectedSubject, setSelectedSubject] = useState<HangSubjectId>(currentSubject);
-  const [activeTool, setActiveTool] = useState<'map' | 'flashcards' | 'drill' | 'notes'>('map');
+  const [selectedStudyPanel, setSelectedStudyPanel] = useState<StudyPanelId>('flashcards');
   const [flashcardIndex, setFlashcardIndex] = useState(0);
   const [noteText, setNoteText] = useState('');
 
@@ -116,7 +152,6 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
     setSelectedSubject(subject);
     setSubject(subject);
     setFlashcardIndex(0);
-    setActiveTool('map');
   };
 
   const handleStart = () => {
@@ -133,8 +168,8 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   return (
     <div className="space-y-6">
       <section className="glass-panel rounded-3xl border border-synth-cyan/20 p-6 md:p-8 bg-[radial-gradient(circle_at_top_right,rgba(0,240,255,0.12),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(255,0,127,0.10),transparent_32%)]">
-        <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
-          <div className="space-y-4 max-w-3xl">
+        <div className="flex flex-col gap-5">
+          <div className="space-y-4 max-w-4xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-synth-cyan/30 bg-synth-blue/40 text-[10px] font-orbitron font-bold uppercase tracking-[0.24em] text-synth-cyan">
               <Sparkles className="w-3.5 h-3.5" />
               Hang Luyện Công
@@ -143,7 +178,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
               <h1 className="font-orbitron font-black text-3xl md:text-5xl uppercase tracking-wider text-white">
                 Ôn toàn bộ kiến thức vào lớp 10
               </h1>
-              <p className="text-sm md:text-base text-slate-200 leading-relaxed max-w-2xl">
+              <p className="text-sm md:text-base text-slate-200 leading-relaxed max-w-3xl">
                 Một phòng luyện hợp nhất cho Toán, Văn, Anh. Mỗi môn có bản đồ kiến thức, thẻ nhớ, bài luyện nhanh và sổ tay lỗi sai để con ôn tập theo cách phù hợp nhất.
               </p>
             </div>
@@ -164,7 +199,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3 w-full lg:w-[360px]">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {Object.entries(subjectTotals).map(([subject, total]) => {
               const key = subject as HangSubjectId;
               const item = SUBJECT_META[key];
@@ -189,7 +224,54 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
         </div>
       </section>
 
-      <section className="grid grid-cols-1 xl:grid-cols-3 gap-6 items-start">
+      <section className="glass-panel rounded-3xl border border-white/10 p-5 md:p-6">
+        <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+          <div>
+            <h2 className="font-orbitron font-black text-lg md:text-xl text-white uppercase tracking-wider">
+              Mật thất nhanh
+            </h2>
+            <p className="text-xs text-slate-300 mt-1">
+              Chọn đúng mật thất rồi vào thẳng không gian học riêng, tránh bị dồn chung trong một layout.
+            </p>
+          </div>
+          <div className="text-[10px] uppercase tracking-[0.24em] text-synth-cyan font-bold">
+            1 bấm mở 1 mật thất
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+          {MAT_THAT_CARDS.map(card => {
+            const onOpen = card.id === 'biki3d'
+              ? onOpenMatThat3D
+              : card.id === 'bikiplane'
+                ? onOpenMatThatPlane
+                : onOpenMatThatGraph;
+            return (
+              <button
+                key={card.id}
+                onClick={onOpen}
+                className="rounded-2xl border border-white/10 bg-white/5 p-4 text-left hover:border-synth-cyan/30 hover:bg-white/7 transition-all duration-200 cursor-pointer"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <div className="inline-flex items-center gap-2 font-orbitron font-black uppercase tracking-wider text-white">
+                    {card.icon}
+                    {card.title}
+                  </div>
+                  <ExternalLink className="w-4 h-4 text-slate-400" />
+                </div>
+                <p className="text-xs text-slate-300 mt-3 leading-relaxed">
+                  {card.description}
+                </p>
+                <div className="mt-4 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-synth-cyan">
+                  Mở mật thất
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-6 items-start">
         <div className="xl:col-span-2 space-y-6">
           <div className="glass-panel rounded-2xl border border-white/10 p-5">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -248,168 +330,153 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
           </div>
         </div>
 
-        <aside className="space-y-6">
-          <div className="glass-panel rounded-2xl border border-white/10 p-5">
-            <div className="flex items-center gap-2 mb-4 text-white">
-              <NotebookTabs className="w-5 h-5 text-synth-cyan" />
-              <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Công cụ chuẩn</h3>
+        <aside className="space-y-6 xl:sticky xl:top-24">
+          <div className="glass-panel rounded-2xl border border-white/10 p-5 space-y-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 text-white">
+                <NotebookTabs className="w-5 h-5 text-synth-cyan" />
+                <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Bảng công cụ</h3>
+              </div>
+              <span className="text-[10px] uppercase tracking-[0.24em] text-slate-400 font-bold">
+                1 công cụ / lúc
+              </span>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-1 gap-3">
-              {HANG_TOOLS.map(tool => {
-                const isActive = activeTool === tool.id;
-                const openBikiTool = () => {
-                  if (tool.id === 'biki3d') {
-                    onOpenMatThat3D();
-                    return;
-                  }
-                  if (tool.id === 'bikiplane') {
-                    onOpenMatThatPlane();
-                    return;
-                  }
-                  if (tool.id === 'bikigraph') {
-                    onOpenMatThatGraph();
-                    return;
-                  }
-                  setActiveTool(tool.id as typeof activeTool);
-                };
+
+            <div className="grid grid-cols-2 gap-2">
+              {STUDY_PANELS.map(panel => {
+                const isActive = selectedStudyPanel === panel.id;
                 return (
                   <button
-                    key={tool.id}
-                    onClick={openBikiTool}
-                    className={`rounded-2xl border p-4 text-left transition-all duration-200 cursor-pointer ${
+                    key={panel.id}
+                    onClick={() => setSelectedStudyPanel(panel.id)}
+                    className={`inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
                       isActive
-                        ? 'border-synth-cyan/40 bg-synth-cyan/10 shadow-[0_0_16px_rgba(0,240,255,0.12)]'
-                        : 'border-white/10 bg-white/5 hover:border-white/20'
+                        ? 'border-synth-cyan/40 bg-synth-cyan/10 text-synth-cyan'
+                        : 'border-white/10 bg-white/5 text-white hover:border-white/20'
                     }`}
                   >
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="text-sm font-orbitron font-black uppercase tracking-wider text-white">
-                        {tool.title}
-                      </div>
-                      <RefreshCw className={`w-4 h-4 ${isActive ? 'text-synth-cyan' : 'text-slate-400'}`} />
-                    </div>
-                    <p className="text-xs text-slate-300 mt-2 leading-relaxed">{tool.description}</p>
-                    <div className="mt-3 text-[10px] font-bold uppercase tracking-wider text-synth-cyan">
-                      {tool.actionLabel}
-                    </div>
+                    {panel.icon}
+                    {panel.label}
                   </button>
                 );
               })}
             </div>
-          </div>
 
-          {activeTool === 'flashcards' && currentFlashcard && (
-            <div className="glass-panel rounded-2xl border border-synth-magenta/20 p-5 space-y-4">
-              <div className="flex items-center justify-between gap-2">
-                <div className="flex items-center gap-2 text-white">
-                  <ScrollText className="w-5 h-5 text-synth-magenta" />
-                  <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Thẻ nhớ tốc hành</h3>
-                </div>
-                <span className="text-[10px] text-slate-400 uppercase tracking-wider">
-                  {flashcardIndex + 1}/{activeFlashcards.length}
-                </span>
-              </div>
+            <div className="rounded-2xl border border-white/10 bg-synth-gray/20 p-4 space-y-4">
+              {selectedStudyPanel === 'flashcards' && currentFlashcard && (
+                <>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 text-white">
+                      <ScrollText className="w-5 h-5 text-synth-magenta" />
+                      <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Thẻ nhớ tốc hành</h3>
+                    </div>
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider">
+                      {flashcardIndex + 1}/{activeFlashcards.length}
+                    </span>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/8 to-transparent p-4 min-h-[180px] flex flex-col justify-between gap-4">
+                    <div className="text-xs font-bold text-synth-cyan uppercase tracking-wider">
+                      {SUBJECT_META[currentFlashcard.subject].label}
+                    </div>
+                    <div>
+                      <p className="text-base font-semibold text-white leading-relaxed">
+                        {currentFlashcard.front}
+                      </p>
+                      <p className="text-sm text-slate-200 mt-3 leading-relaxed">
+                        {currentFlashcard.back}
+                      </p>
+                    </div>
+                    <div className="text-[10px] text-slate-400 border-t border-white/10 pt-3">
+                      {currentFlashcard.note}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <button
+                      onClick={() => setFlashcardIndex(prev => Math.max(0, prev - 1))}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-xs font-bold uppercase tracking-wider cursor-pointer"
+                    >
+                      <ChevronLeft className="w-4 h-4" />
+                      Trước
+                    </button>
+                    <button
+                      onClick={() => setFlashcardIndex(prev => prev + 1)}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 text-synth-cyan text-xs font-bold uppercase tracking-wider cursor-pointer"
+                    >
+                      Sau
+                      <ChevronRight className="w-4 h-4" />
+                    </button>
+                  </div>
+                </>
+              )}
 
-              <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/8 to-transparent p-4 min-h-[180px] flex flex-col justify-between gap-4">
-                <div className="text-xs font-bold text-synth-cyan uppercase tracking-wider">
-                  {SUBJECT_META[currentFlashcard.subject].label}
-                </div>
-                <div>
-                  <p className="text-base font-semibold text-white leading-relaxed">
-                    {currentFlashcard.front}
+              {selectedStudyPanel === 'drill' && (
+                <>
+                  <div className="flex items-center gap-2 text-white">
+                    <Target className="w-5 h-5 text-synth-orange" />
+                    <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Phòng luyện nhanh</h3>
+                  </div>
+                  <p className="text-sm text-slate-200 leading-relaxed">
+                    Chuyển sang chế độ luyện hiện tại của kho câu hỏi. Đây là đường ngắn nhất từ ôn tập sang kiểm tra mức độ nắm bài.
                   </p>
-                  <p className="text-sm text-slate-200 mt-3 leading-relaxed">
-                    {currentFlashcard.back}
+                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-xs text-slate-300 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span>Kho đề hiện tại</span>
+                      <span className="font-bold text-white">{subjectCount} câu</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
+                      <span>Môn đang chọn</span>
+                      <span className={`font-bold ${meta.accent}`}>{meta.label}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleStart}
+                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-synth-orange to-synth-cyan text-black font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer"
+                  >
+                    Bắt đầu luyện <ArrowRight className="w-4 h-4" />
+                  </button>
+                </>
+              )}
+
+              {selectedStudyPanel === 'notes' && (
+                <>
+                  <div className="flex items-center gap-2 text-white">
+                    <CheckCircle2 className="w-5 h-5 text-synth-green" />
+                    <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Sổ tay lỗi sai</h3>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Ghi đúng một việc cần sửa, không ghi lan man. Mỗi lỗi nên có 1 dòng: sai ở đâu, vì sao sai, lần sau làm thế nào.
                   </p>
-                </div>
-                <div className="text-[10px] text-slate-400 border-t border-white/10 pt-3">
-                  {currentFlashcard.note}
-                </div>
-              </div>
+                  <textarea
+                    value={noteText}
+                    onChange={e => setNoteText(e.target.value)}
+                    placeholder="Ví dụ: nhầm passive voice với active voice; cần nhìn mốc thời gian trước..."
+                    className="w-full min-h-[180px] rounded-2xl border border-white/10 bg-synth-gray/25 p-4 text-sm text-white outline-none focus:border-synth-cyan/40 resize-y"
+                  />
+                </>
+              )}
 
-              <div className="flex items-center justify-between gap-3">
-                <button
-                  onClick={() => setFlashcardIndex(prev => Math.max(0, prev - 1))}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-xs font-bold uppercase tracking-wider cursor-pointer"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                  Trước
-                </button>
-                <button
-                  onClick={() => setFlashcardIndex(prev => prev + 1)}
-                  className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 text-synth-cyan text-xs font-bold uppercase tracking-wider cursor-pointer"
-                >
-                  Sau
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          )}
-
-          {activeTool === 'drill' && (
-            <div className="glass-panel rounded-2xl border border-synth-orange/20 p-5 space-y-4">
-              <div className="flex items-center gap-2 text-white">
-                <Target className="w-5 h-5 text-synth-orange" />
-                <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Phòng luyện nhanh</h3>
-              </div>
-              <p className="text-sm text-slate-200 leading-relaxed">
-                Chuyển sang chế độ luyện hiện tại của kho câu hỏi. Đây là đường ngắn nhất từ ôn tập sang kiểm tra mức độ nắm bài.
-              </p>
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-xs text-slate-300 space-y-2">
-                <div className="flex items-center justify-between gap-2">
-                  <span>Kho đề hiện tại</span>
-                  <span className="font-bold text-white">{subjectCount} câu</span>
-                </div>
-                <div className="flex items-center justify-between gap-2">
-                  <span>Môn đang chọn</span>
-                  <span className={`font-bold ${meta.accent}`}>{meta.label}</span>
-                </div>
-              </div>
-              <button
-                onClick={handleStart}
-                className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-synth-orange to-synth-cyan text-black font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer"
-              >
-                Bắt đầu luyện <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-
-          {activeTool === 'notes' && (
-            <div className="glass-panel rounded-2xl border border-synth-purple/20 p-5 space-y-4">
-              <div className="flex items-center gap-2 text-white">
-                <CheckCircle2 className="w-5 h-5 text-synth-green" />
-                <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Sổ tay lỗi sai</h3>
-              </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Ghi đúng một việc cần sửa, không ghi lan man. Mỗi lỗi nên có 1 dòng: sai ở đâu, vì sao sai, lần sau làm thế nào.
-              </p>
-              <textarea
-                value={noteText}
-                onChange={e => setNoteText(e.target.value)}
-                placeholder="Ví dụ: nhầm passive voice với active voice; cần nhìn mốc thời gian trước..."
-                className="w-full min-h-[180px] rounded-2xl border border-white/10 bg-synth-gray/25 p-4 text-sm text-white outline-none focus:border-synth-cyan/40 resize-y"
-              />
-            </div>
-          )}
-
-          <div className="glass-panel rounded-2xl border border-white/10 p-5 space-y-4">
-            <div className="flex items-center gap-2 text-white">
-              <Sparkles className="w-5 h-5 text-synth-cyan" />
-              <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Nguồn học liệu</h3>
-            </div>
-            <div className="space-y-3">
-              {HANG_SOURCES.map(source => (
-                <a
-                  key={source.url}
-                  href={source.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="block rounded-xl border border-white/10 bg-white/5 p-3 hover:border-synth-cyan/30 transition-colors"
-                >
-                  <div className="text-xs font-bold text-white">{source.label}</div>
-                  <div className="text-[10px] text-slate-400 mt-1 leading-relaxed">{source.note}</div>
-                </a>
-              ))}
+              {selectedStudyPanel === 'sources' && (
+                <>
+                  <div className="flex items-center gap-2 text-white">
+                    <Sparkles className="w-5 h-5 text-synth-cyan" />
+                    <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Nguồn học liệu</h3>
+                  </div>
+                  <div className="space-y-3">
+                    {HANG_SOURCES.map(source => (
+                      <a
+                        key={source.url}
+                        href={source.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="block rounded-xl border border-white/10 bg-white/5 p-3 hover:border-synth-cyan/30 transition-colors"
+                      >
+                        <div className="text-xs font-bold text-white">{source.label}</div>
+                        <div className="text-[10px] text-slate-400 mt-1 leading-relaxed">{source.note}</div>
+                      </a>
+                    ))}
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </aside>

@@ -20,6 +20,8 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
   const currentSubject = useGameState(state => state.currentSubject);
   const bossBountiesVnd = useGameState(state => state.gameSettings.bossBountiesVnd);
   const challengeEnergyCosts = useGameState(state => state.gameSettings.challengeEnergyCosts);
+  const uiTheme = useGameState(state => state.uiTheme);
+  const isUnicorn = uiTheme === 'unicorn-dream';
 
   // Check if weekend for Lucky Wheel
   const isWeekend = () => {
@@ -207,19 +209,22 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
     ...zone,
     energyCost: challengeEnergyCosts[idx] ?? zone.energyCost
   }));
+  const questBannerClass = isUnicorn
+    ? 'glass-panel rounded-2xl border border-violet-200/35 bg-gradient-to-r from-fuchsia-50/90 via-white/90 to-cyan-50/90 p-5 flex flex-col md:flex-row justify-between items-center gap-4 shadow-[0_10px_28px_rgba(192,132,252,0.12)]'
+    : 'glass-panel rounded-2xl border border-synth-magenta/30 bg-gradient-to-r from-synth-magenta/10 via-synth-purple/10 to-transparent p-5 flex flex-col md:flex-row justify-between items-center gap-4';
 
   return (
     <div className="space-y-6">
       {/* Daily Quest & Rewards Banner */}
-      <div className="glass-panel rounded-2xl border border-synth-magenta/30 bg-gradient-to-r from-synth-magenta/10 via-synth-purple/10 to-transparent p-5 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div className={questBannerClass}>
         <div className="space-y-1 text-center md:text-left">
           <div className="flex items-center gap-2 justify-center md:justify-start">
-            <span className="w-2.5 h-2.5 rounded-full bg-synth-magenta animate-ping" />
-            <h2 className="font-orbitron text-lg font-black text-white uppercase tracking-wider">
+            <span className={`w-2.5 h-2.5 rounded-full animate-ping ${isUnicorn ? 'bg-fuchsia-400' : 'bg-synth-magenta'}`} />
+            <h2 className={`font-orbitron text-lg font-black uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
               Nhiệm Vụ Chiến Dịch Ngày
             </h2>
           </div>
-          <p className="text-xs text-synth-text-muted">
+          <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
             {dailyMission?.completed 
               ? 'Tuyệt vời! Con đã hoàn thành tất cả nhiệm vụ hôm nay. Hãy nhận Hòm Bí Mật!' 
               : 'Hoàn thành chỉ tiêu học tập hôm nay để mở khóa Hòm Bí Mật và Ví Thưởng.'}
@@ -230,14 +235,22 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
           {dailyMission?.completed ? (
             <button
               onClick={onOpenMysteryBox}
-              className="px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-magenta text-black hover:synth-glow-magenta cursor-pointer transition-all duration-300 shadow-[0_0_15px_#ff007f] animate-bounce"
+              className={`px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 animate-bounce ${
+                isUnicorn
+                  ? 'bg-gradient-to-r from-fuchsia-400 via-violet-400 to-cyan-300 text-violet-900 shadow-[0_0_15px_rgba(192,132,252,0.35)]'
+                  : 'bg-synth-magenta text-black hover:synth-glow-magenta shadow-[0_0_15px_#ff007f]'
+              }`}
             >
               Mở Hòm Bí Mật 🎁
             </button>
           ) : (
             <button
               onClick={() => handleLaunchZone('mixed', 10)}
-              className="px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 shadow-[0_0_15px_#00f0ff]"
+              className={`px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 ${
+                isUnicorn
+                  ? 'bg-gradient-to-r from-cyan-200 via-white to-fuchsia-200 text-violet-900 shadow-[0_0_15px_rgba(125,211,252,0.28)]'
+                  : 'bg-synth-cyan text-black hover:synth-glow-cyan shadow-[0_0_15px_#00f0ff]'
+              }`}
             >
               Hành Trình Ngẫu Nhiên ⚡
             </button>
@@ -246,7 +259,11 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
           {isWeekend() && (
             <button
               onClick={onSpinWheel}
-              className="px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-orange text-black hover:synth-glow-orange cursor-pointer transition-all duration-300 shadow-[0_0_15px_#ff9f1c]"
+              className={`px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 ${
+                isUnicorn
+                  ? 'bg-gradient-to-r from-fuchsia-200 via-amber-100 to-cyan-200 text-violet-900 shadow-[0_0_15px_rgba(249,168,212,0.25)]'
+                  : 'bg-synth-orange text-black hover:synth-glow-orange shadow-[0_0_15px_#ff9f1c]'
+              }`}
             >
               Vòng Quay Cuối Tuần 🎡
             </button>
@@ -277,8 +294,8 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
 
       {/* Grid Map Zones */}
       <div>
-        <h3 className="font-orbitron font-bold text-white text-base uppercase tracking-wider mb-4 flex items-center gap-2">
-          <Compass className="w-5 h-5 text-synth-cyan" /> Bản Đồ Học Tập
+        <h3 className={`font-orbitron font-bold text-base uppercase tracking-wider mb-4 flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-white'}`}>
+          <Compass className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-cyan'}`} /> Bản Đồ Học Tập
         </h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -286,28 +303,36 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
             <div
               key={zone.id}
               onClick={() => handleLaunchZone(zone.mode, zone.energyCost)}
-              className={`glass-panel glass-panel-hover rounded-2xl border p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 ${zone.colorClass} bg-gradient-to-br ${zone.bgGradient}`}
+              className={`glass-panel glass-panel-hover rounded-2xl border p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 ${
+                isUnicorn
+                  ? 'border-violet-200/35 bg-gradient-to-br from-white/90 via-fuchsia-50/70 to-cyan-50/70 shadow-[0_14px_30px_rgba(192,132,252,0.1)]'
+                  : `${zone.colorClass} bg-gradient-to-br ${zone.bgGradient}`
+              }`}
             >
               {/* Energy Cost Overlay */}
-              <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded bg-synth-blue border border-synth-cyan/20 text-[10px] font-orbitron font-bold">
-                <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {zone.energyCost}
+              <div className={`absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold ${
+                isUnicorn ? 'bg-white/80 border border-violet-200/40 text-violet-700' : 'bg-synth-blue border border-synth-cyan/20 text-white'
+              }`}>
+                <Zap className={`w-3 h-3 ${isUnicorn ? 'text-fuchsia-500 fill-fuchsia-500' : 'text-synth-cyan fill-synth-cyan'}`} /> {zone.energyCost}
               </div>
 
               {/* Graphic Icon */}
-              <div className="w-12 h-12 rounded-xl bg-synth-gray/50 border border-white/5 flex items-center justify-center shrink-0">
+              <div className={`w-12 h-12 rounded-xl border flex items-center justify-center shrink-0 ${
+                isUnicorn ? 'bg-white/75 border-violet-200/30 shadow-[0_0_12px_rgba(192,132,252,0.12)]' : 'bg-synth-gray/50 border border-white/5'
+              }`}>
                 {zone.icon}
               </div>
 
               {/* Details */}
               <div className="space-y-1 min-w-0">
-                <h4 className={`font-orbitron font-bold text-base ${zone.textColor}`}>
+                <h4 className={`font-orbitron font-bold text-base ${isUnicorn ? 'text-violet-700' : zone.textColor}`}>
                   {zone.title}
                 </h4>
-                <p className="text-xs text-synth-text-muted leading-relaxed">
+                <p className={`text-xs leading-relaxed ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
                   {zone.description}
                 </p>
-                <div className="text-[10px] text-synth-text-muted font-bold font-orbitron pt-2">
-                  Phần thưởng: <span className="text-white">{zone.rewardText}</span>
+                <div className={`text-[10px] font-bold font-orbitron pt-2 ${isUnicorn ? 'text-violet-600/80' : 'text-synth-text-muted'}`}>
+                  Phần thưởng: <span className={isUnicorn ? 'text-violet-800' : 'text-white'}>{zone.rewardText}</span>
                 </div>
               </div>
             </div>
@@ -317,8 +342,8 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
 
       {/* Boss Arena Section */}
       <div>
-        <h3 className="font-orbitron font-bold text-synth-magenta text-base uppercase tracking-wider mb-4 flex items-center gap-2">
-          <Sword className="w-5 h-5" /> Boss Arena (Đề thi thử lớp 10 HCMC)
+        <h3 className={`font-orbitron font-bold text-base uppercase tracking-wider mb-4 flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-magenta'}`}>
+          <Sword className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : ''}`} /> Boss Arena (Đề thi thử lớp 10 HCMC)
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -326,27 +351,35 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
             <div
               key={boss.id}
               onClick={() => handleLaunchZone('boss', boss.energy, boss.id)}
-              className="glass-panel glass-panel-hover rounded-2xl border border-synth-magenta/20 hover:border-synth-magenta p-5 flex flex-col justify-between cursor-pointer relative bg-gradient-to-t from-synth-magenta/5 to-transparent min-h-[160px] transition-all duration-300"
+              className={`glass-panel glass-panel-hover rounded-2xl p-5 flex flex-col justify-between cursor-pointer relative min-h-[160px] transition-all duration-300 ${
+                isUnicorn
+                  ? 'border-violet-200/35 hover:border-violet-300 bg-gradient-to-t from-white/80 to-fuchsia-50/60 shadow-[0_14px_30px_rgba(192,132,252,0.1)]'
+                  : 'border-synth-magenta/20 hover:border-synth-magenta bg-gradient-to-t from-synth-magenta/5 to-transparent'
+              }`}
             >
-              <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded bg-synth-blue border border-synth-magenta/30 text-[10px] font-orbitron font-bold text-synth-magenta">
-                <Zap className="w-3 h-3 text-synth-magenta fill-synth-magenta" /> {boss.energy}
+              <div className={`absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold ${
+                isUnicorn ? 'bg-white/80 border border-violet-200/40 text-violet-700' : 'bg-synth-blue border border-synth-magenta/30 text-synth-magenta'
+              }`}>
+                <Zap className={`w-3 h-3 ${isUnicorn ? 'text-fuchsia-500 fill-fuchsia-500' : 'text-synth-magenta fill-synth-magenta'}`} /> {boss.energy}
               </div>
 
               <div className="space-y-2">
-                <span className="text-[10px] font-bold font-orbitron px-2 py-0.5 rounded bg-synth-magenta/15 text-synth-magenta border border-synth-magenta/30 uppercase">
+                <span className={`text-[10px] font-bold font-orbitron px-2 py-0.5 rounded uppercase ${
+                  isUnicorn ? 'bg-fuchsia-100/80 text-violet-700 border border-violet-200/40' : 'bg-synth-magenta/15 text-synth-magenta border border-synth-magenta/30'
+                }`}>
                   Độ Khó: Boss
                 </span>
-                <h4 className="font-orbitron font-bold text-base text-white">
+                <h4 className={`font-orbitron font-bold text-base ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
                   {boss.name}
                 </h4>
-                <p className="text-xs text-synth-text-muted">
+                <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
                   Đề thi chuẩn cấu trúc sở GD HCMC năm {boss.year}. Chỉ 1 mạng duy nhất!
                 </p>
               </div>
 
               <div className="border-t border-synth-gray/50 pt-3 mt-3 flex justify-between items-center text-xs font-semibold">
-                <span className="text-synth-text-muted">Vàng săn thưởng:</span>
-                <span className="text-synth-green font-orbitron font-bold flex items-center gap-1">
+                <span className={isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}>Vàng săn thưởng:</span>
+                <span className={`font-orbitron font-bold flex items-center gap-1 ${isUnicorn ? 'text-violet-700' : 'text-synth-green'}`}>
                   +{(bossBountiesVnd[index] ?? [10000, 15000, 20000][index]).toLocaleString('vi-VN')}đ
                 </span>
               </div>

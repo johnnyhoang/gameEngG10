@@ -8,6 +8,8 @@ export const ItemShop: React.FC = () => {
   const buyStreakShield = useGameState(state => state.buyStreakShield);
   const buyHeart = useGameState(state => state.buyHeart);
   const claimParentReward = useGameState(state => state.claimParentReward);
+  const uiTheme = useGameState(state => state.uiTheme);
+  const isUnicorn = uiTheme === 'unicorn-dream';
 
   const handleBuyShield = () => {
     const success = buyStreakShield();
@@ -52,29 +54,37 @@ export const ItemShop: React.FC = () => {
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* HUD Banner */}
-      <div className="glass-panel rounded-2xl border border-synth-orange/30 bg-gradient-to-r from-synth-orange/10 via-synth-purple/10 to-transparent p-5 flex justify-between items-center">
+      <div className={`glass-panel rounded-2xl p-5 flex justify-between items-center ${
+        isUnicorn
+          ? 'border-violet-200/35 bg-gradient-to-r from-fuchsia-50/90 via-white/90 to-cyan-50/90'
+          : 'border-synth-orange/30 bg-gradient-to-r from-synth-orange/10 via-synth-purple/10 to-transparent'
+      }`}>
         <div className="space-y-1">
-          <h2 className="font-orbitron text-lg font-black text-white uppercase tracking-wider">
+          <h2 className={`font-orbitron text-lg font-black uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
             Item Shop & Cửa Hàng Đổi Quà
           </h2>
-          <p className="text-xs text-synth-text-muted">
+          <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
             Dùng Nanite Points (NP) tích lũy được từ việc làm đúng để mua bổ trợ hoặc đổi quà thực tế từ Ba.
           </p>
         </div>
-        <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-synth-blue border border-synth-orange/30 font-orbitron font-bold">
-          <Coins className="w-5 h-5 text-synth-orange fill-synth-orange animate-pulse" /> {player.coins} NP
+        <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-orbitron font-bold ${
+          isUnicorn ? 'bg-white/80 border border-violet-200/40 text-violet-700' : 'bg-synth-blue border border-synth-orange/30'
+        }`}>
+          <Coins className={`w-5 h-5 animate-pulse ${isUnicorn ? 'text-fuchsia-500 fill-fuchsia-500' : 'text-synth-orange fill-synth-orange'}`} /> {player.coins} NP
         </div>
       </div>
 
       {/* Utility items grid */}
       <div>
-        <h3 className="font-orbitron font-bold text-white text-base uppercase tracking-wider mb-4 flex items-center gap-2">
-          <Shield className="w-5 h-5 text-synth-cyan" /> Vật Phẩm Hỗ Trợ
+        <h3 className={`font-orbitron font-bold text-base uppercase tracking-wider mb-4 flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-white'}`}>
+          <Shield className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-cyan'}`} /> Vật Phẩm Hỗ Trợ
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Streak Shield Card */}
-          <div className="glass-panel rounded-2xl border border-synth-cyan/20 p-5 flex justify-between items-center bg-gradient-to-tr from-synth-cyan/5 to-transparent">
+          <div className={`glass-panel rounded-2xl p-5 flex justify-between items-center ${
+            isUnicorn ? 'border-violet-200/35 bg-gradient-to-tr from-white/85 via-fuchsia-50/70 to-cyan-50/70' : 'border-synth-cyan/20 bg-gradient-to-tr from-synth-cyan/5 to-transparent'
+          }`}>
             <div className="flex gap-4 items-center">
               <div className="w-14 h-14 rounded-xl bg-synth-gray/50 border border-synth-cyan/30 flex items-center justify-center">
                 <Shield className="w-8 h-8 text-synth-cyan fill-synth-cyan/20 animate-pulse" />
@@ -96,7 +106,9 @@ export const ItemShop: React.FC = () => {
           </div>
 
           {/* Nano Heart Card */}
-          <div className="glass-panel rounded-2xl border border-synth-magenta/20 p-5 flex justify-between items-center bg-gradient-to-tr from-synth-magenta/5 to-transparent">
+          <div className={`glass-panel rounded-2xl p-5 flex justify-between items-center ${
+            isUnicorn ? 'border-violet-200/35 bg-gradient-to-tr from-white/85 via-fuchsia-50/70 to-cyan-50/70' : 'border-synth-magenta/20 bg-gradient-to-tr from-synth-magenta/5 to-transparent'
+          }`}>
             <div className="flex gap-4 items-center">
               <div className="w-14 h-14 rounded-xl bg-synth-gray/50 border border-synth-magenta/30 flex items-center justify-center">
                 <Heart className="w-8 h-8 text-synth-magenta fill-synth-magenta/20 animate-pulse" />
@@ -121,8 +133,8 @@ export const ItemShop: React.FC = () => {
 
       {/* Parent rewards redeem ledger */}
       <div>
-        <h3 className="font-orbitron font-bold text-white text-base uppercase tracking-wider mb-4 flex items-center gap-2">
-          <Gift className="w-5 h-5 text-synth-orange" /> Cửa Hàng Phần Thưởng Của Ba
+        <h3 className={`font-orbitron font-bold text-base uppercase tracking-wider mb-4 flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-white'}`}>
+          <Gift className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-orange'}`} /> Cửa Hàng Phần Thưởng Của Ba
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -133,8 +145,10 @@ export const ItemShop: React.FC = () => {
             return (
               <div
                 key={reward.id}
-                className="glass-panel rounded-2xl border border-white/5 p-4 flex justify-between items-center bg-synth-gray/20 hover:bg-synth-gray/30 transition-all duration-200"
-              >
+              className={`glass-panel rounded-2xl p-4 flex justify-between items-center transition-all duration-200 ${
+                isUnicorn ? 'border-violet-200/25 bg-white/75 hover:bg-white/90' : 'border border-white/5 bg-synth-gray/20 hover:bg-synth-gray/30'
+              }`}
+            >
                 <div className="flex gap-3 items-center min-w-0">
                   <div className="w-10 h-10 rounded-lg bg-synth-blue/60 border border-white/5 flex items-center justify-center shrink-0">
                     <Gift className="w-5 h-5 text-synth-orange" />

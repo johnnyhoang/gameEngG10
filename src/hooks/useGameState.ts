@@ -129,6 +129,7 @@ interface GameState {
   // Admin and management states
   adminStudents: any[];
   selectedStudentProfile: any | null;
+  failedQuestionIds: string[];
 
   // Help States
   activeHelp: { title: string; bullets: string[] } | null;
@@ -372,6 +373,7 @@ export const useGameState = create<GameState>()(
         questions: INITIAL_QUESTIONS,
         currentSubject: 'english',
         categoryStats: {},
+        failedQuestionIds: [],
         gameSettings: DEFAULT_GAME_SETTINGS,
         pet: INITIAL_PET,
         rewards: DEFAULT_REWARDS,
@@ -1083,10 +1085,17 @@ export const useGameState = create<GameState>()(
           const updatedXP = state.player.xp + expGained;
           const levelCheck = checkLevelUp(updatedXP, state.player.level);
 
+          const updatedFailedIds = isCorrect
+            ? state.failedQuestionIds.filter(id => id !== questionId)
+            : state.failedQuestionIds.includes(questionId)
+              ? state.failedQuestionIds
+              : [...state.failedQuestionIds, questionId];
+
           set({
             categoryStats: updatedStats,
             activeCombo: newCombo,
             maxCombo,
+            failedQuestionIds: updatedFailedIds,
             player: {
               ...state.player,
               xp: levelCheck.xp,
@@ -1645,7 +1654,8 @@ export const useGameState = create<GameState>()(
         petStates: state.petStates,
         categoryStatsAll: state.categoryStatsAll,
         uiTheme: state.uiTheme,
-        uiThemesByUser: state.uiThemesByUser
+        uiThemesByUser: state.uiThemesByUser,
+        failedQuestionIds: state.failedQuestionIds
       })
     }
   )

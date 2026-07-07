@@ -221,6 +221,35 @@ body[data-theme='unicorn-dream'] {
   }
 }
 
+@keyframes unicorn-twinkle {
+  0%, 100% {
+    transform: scale(0.95) translateY(0);
+    opacity: 0.45;
+  }
+  50% {
+    transform: scale(1.08) translateY(-4px);
+    opacity: 1;
+  }
+}
+
+@keyframes unicorn-rainbow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+@keyframes cloud-float {
+  0%, 100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -6px, 0);
+  }
+}
+
 /* Global Styles */
 html,
 body {
@@ -429,6 +458,33 @@ body {
     radial-gradient(circle at 84% 40%, rgba(192, 132, 252, 0.6) 0 1.5px, transparent 3px),
     radial-gradient(circle at 70% 76%, rgba(167, 243, 208, 0.45) 0 2px, transparent 3px);
   animation: bubble-rise 8s ease-in-out infinite;
+}
+
+.app-shell[data-theme='unicorn-dream'] .glass-panel {
+  box-shadow:
+    0 18px 50px rgba(192, 132, 252, 0.10),
+    0 0 0 1px rgba(255, 255, 255, 0.35) inset;
+}
+
+.app-shell[data-theme='unicorn-dream'] .synth-grid-bg {
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(249, 168, 212, 0.18), transparent 30%),
+    radial-gradient(circle at 80% 12%, rgba(125, 211, 252, 0.16), transparent 25%),
+    radial-gradient(circle at 50% 80%, rgba(192, 132, 252, 0.12), transparent 26%);
+}
+
+.unicorn-rainbow-strip {
+  background: linear-gradient(90deg, #f9a8d4, #fde68a, #a7f3d0, #7dd3fc, #c084fc, #f9a8d4);
+  background-size: 200% 200%;
+  animation: unicorn-rainbow 8s linear infinite;
+}
+
+.unicorn-twinkle {
+  animation: unicorn-twinkle 1.8s ease-in-out infinite;
+}
+
+.unicorn-cloud {
+  animation: cloud-float 4.2s ease-in-out infinite;
 }
 
 body[data-theme='cute-pink-pastel'] :is(.text-white, .text-slate-100, .text-slate-200),

@@ -20,6 +20,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
   const answerQuestion = useGameState(state => state.answerQuestion);
   const currentSubject = useGameState(state => state.currentSubject);
   const buyHint = useGameState(state => state.buyHint);
+  const failedQuestionIds = useGameState(state => state.failedQuestionIds || []);
   
   // Game states
   const [currentQuestions, setCurrentQuestions] = useState<Question[]>([]);
@@ -61,8 +62,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
         pool = [...pool, ...fallbackQuestions.filter(q => !pool.includes(q))].slice(0, count);
       }
     } else if (mode === 'revenge') {
-      // Find previously failed questions
-      pool = fallbackQuestions.slice(0, count); // Mocking revenge pool
+      // Find actual previously failed questions for the current subject
+      pool = subjectQuestions.filter(q => failedQuestionIds.includes(q.id));
     } else {
       // Adaptive learning weight selector
       for (let i = 0; i < count; i++) {
@@ -264,6 +265,31 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
     );
   }
   if (currentQuestions.length === 0) {
+    if (mode === 'revenge') {
+      return (
+        <div className="glass-panel rounded-2xl border border-synth-cyan/30 p-8 max-w-xl mx-auto text-center space-y-6">
+          <Award className="w-16 h-16 mx-auto text-synth-cyan animate-pulse" />
+          
+          <h2 className="font-orbitron font-black text-2xl text-white uppercase tracking-wider">
+            HẦM NGỤC YÊN BÌNH 🛡️
+          </h2>
+          
+          <p className="text-sm text-synth-text-muted leading-relaxed">
+            Tuyệt vời! Con không có câu hỏi làm sai nào cần sửa ở môn{' '}
+            <span className="text-synth-orange font-bold font-orbitron uppercase">
+              {currentSubject === 'english' ? 'Tiếng Anh' : currentSubject === 'math' ? 'Toán Học' : 'Ngữ Văn'}
+            </span>. Hãy tiếp tục duy trì phong độ xuất sắc này nhé!
+          </p>
+
+          <button
+            onClick={onFinish}
+            className="px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-border-cyan cursor-pointer transition-all duration-300 shadow-[0_0_15px_rgba(0,240,255,0.4)]"
+          >
+            Trở Lại Bản Đồ 🗺️
+          </button>
+        </div>
+      );
+    }
     return <div className="text-center py-10 font-orbitron text-synth-cyan">Đang nạp câu hỏi...</div>;
   }
 

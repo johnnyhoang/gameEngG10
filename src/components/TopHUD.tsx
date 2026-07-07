@@ -20,15 +20,23 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   const showHelp = useGameState(state => state.showHelp);
   const currentSubject = useGameState(state => state.currentSubject);
   const setSubject = useGameState(state => state.setSubject);
+  const uiTheme = useGameState(state => state.uiTheme);
 
   // Calculate percentage of XP to next level
   const xpNeeded = player.level * 200;
   const xpPercent = Math.min(100, (player.xp / xpNeeded) * 100);
 
   const hasShield = player.badges.includes('Streak Shield');
+  const isUnicorn = uiTheme === 'unicorn-dream';
+  const headerClass = isUnicorn
+    ? 'glass-panel border-b border-violet-200/30 p-4 sticky top-0 z-40 bg-gradient-to-r from-fuchsia-50/80 via-white/90 to-cyan-50/80'
+    : 'glass-panel border-b border-synth-cyan/20 p-4 sticky top-0 z-40';
+  const statChipClass = isUnicorn
+    ? 'flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg bg-white/70 border border-violet-200/35 text-violet-800 shadow-[0_8px_18px_rgba(192,132,252,0.12)] cursor-pointer hover:bg-white/90 transition-all'
+    : 'flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg bg-synth-blue/40 border border-synth-cyan/20 cursor-pointer hover:bg-synth-blue/60 transition-all';
 
   return (
-    <header className="glass-panel border-b border-synth-cyan/20 p-4 sticky top-0 z-40">
+    <header className={headerClass}>
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
         {/* Logo & Level */}
         <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
@@ -36,7 +44,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             onClick={onBackToMap}
             className="flex items-center gap-2 cursor-pointer group shrink-0"
           >
-            <span className="font-orbitron text-2xl font-black bg-gradient-to-r from-synth-cyan to-synth-magenta bg-clip-text text-transparent group-hover:synth-glow-cyan transition-all duration-300">
+            <span className={`font-orbitron text-2xl font-black bg-gradient-to-r ${isUnicorn ? 'from-fuchsia-500 via-violet-500 to-cyan-400' : 'from-synth-cyan to-synth-magenta'} bg-clip-text text-transparent group-hover:synth-glow-cyan transition-all duration-300`}>
               MIKAWAII
             </span>
             <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase font-orbitron animate-pulse ${
@@ -138,7 +146,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             {/* Energy */}
             <div 
               onClick={() => showHelp('energy')}
-              className="col-span-2 md:col-span-1 flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg bg-synth-blue/40 border border-synth-cyan/20 cursor-pointer hover:bg-synth-blue/60 transition-all" 
+              className={`col-span-2 md:col-span-1 ${statChipClass}`} 
               title="Năng lượng làm bài - Nhấp để xem hướng dẫn"
             >
               <Zap className="w-4 h-4 text-synth-cyan fill-synth-cyan animate-pulse" />
@@ -151,7 +159,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             {/* Hearts */}
             <div 
               onClick={() => showHelp('hearts')}
-              className="col-span-2 md:col-span-1 flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg bg-synth-blue/40 border border-synth-cyan/20 cursor-pointer hover:bg-synth-blue/60 transition-all" 
+              className={`col-span-2 md:col-span-1 ${statChipClass}`} 
               title="Mạng chơi - Nhấp để xem hướng dẫn"
             >
               <div className="flex gap-0.5 items-center justify-center">
@@ -169,7 +177,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             {/* Coins */}
             <div 
               onClick={() => showHelp('nanite')}
-              className="col-span-2 md:col-span-1 flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg bg-synth-blue/40 border border-synth-cyan/20 cursor-pointer hover:bg-synth-blue/60 transition-all" 
+              className={`col-span-2 md:col-span-1 ${statChipClass}`} 
               title="Tiền vàng Nanite NP - Nhấp để xem hướng dẫn"
             >
               <Coins className="w-4 h-4 text-synth-orange fill-synth-orange" />
@@ -182,7 +190,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             {/* Streak */}
             <div 
               onClick={() => showHelp('streak')}
-              className="col-span-3 md:col-span-1 flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg bg-synth-blue/40 border border-synth-cyan/20 cursor-pointer hover:bg-synth-blue/60 transition-all relative" 
+              className={`col-span-3 md:col-span-1 ${statChipClass} relative`} 
               title="Chuỗi ngày liên tục học - Nhấp để xem hướng dẫn"
             >
               <div className="flex items-center justify-center gap-1.5">
@@ -202,7 +210,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             {/* Virtual Wallet */}
             <div 
               onClick={() => showHelp('wallet')}
-              className="col-span-3 md:col-span-1 flex items-center justify-center gap-1.5 px-2 py-1 rounded-lg bg-synth-blue/40 border border-synth-magenta/30 cursor-pointer hover:bg-synth-blue/60 transition-all" 
+              className={`col-span-3 md:col-span-1 ${statChipClass}`} 
               title="Ví thưởng VND - Nhấp để xem hướng dẫn"
             >
               <Award className="w-4 h-4 text-synth-magenta" />
@@ -222,8 +230,12 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                 onClick={onOpenShop}
                 className={`hidden sm:inline-block px-4 py-2 font-orbitron font-bold text-xs rounded-lg uppercase tracking-wider border cursor-pointer transition-all duration-300 ${
                   currentScreen === 'shop' 
-                    ? 'bg-synth-orange border-synth-orange text-black shadow-[0_0_12px_#ff9f1c]' 
-                  : 'bg-transparent border-synth-orange/50 text-synth-orange hover:bg-synth-orange/10'
+                    ? isUnicorn
+                      ? 'bg-gradient-to-r from-fuchsia-400 to-cyan-300 border-violet-200 text-violet-900 shadow-[0_0_12px_rgba(192,132,252,0.35)]'
+                      : 'bg-synth-orange border-synth-orange text-black shadow-[0_0_12px_#ff9f1c]'
+                    : isUnicorn
+                      ? 'bg-white/50 border-violet-200/50 text-violet-700 hover:bg-white/80'
+                      : 'bg-transparent border-synth-orange/50 text-synth-orange hover:bg-synth-orange/10'
                 }`}
               >
                 Item Shop
@@ -233,8 +245,12 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                 onClick={onOpenHang}
                 className={`inline-flex items-center gap-2 px-4 py-2 font-orbitron font-bold text-xs rounded-lg uppercase tracking-wider border cursor-pointer transition-all duration-300 ${
                   currentScreen === 'hang'
-                    ? 'bg-synth-cyan border-synth-cyan text-black shadow-[0_0_12px_#00f0ff]'
-                    : 'bg-transparent border-synth-cyan/50 text-synth-cyan hover:bg-synth-cyan/10'
+                    ? isUnicorn
+                      ? 'bg-gradient-to-r from-fuchsia-300 to-cyan-200 border-violet-200 text-violet-900 shadow-[0_0_12px_rgba(125,211,252,0.35)]'
+                      : 'bg-synth-cyan border-synth-cyan text-black shadow-[0_0_12px_#00f0ff]'
+                    : isUnicorn
+                      ? 'bg-white/50 border-violet-200/50 text-violet-700 hover:bg-white/80'
+                      : 'bg-transparent border-synth-cyan/50 text-synth-cyan hover:bg-synth-cyan/10'
                 }`}
               >
                 <span>📚</span>
@@ -259,7 +275,11 @@ export const TopHUD: React.FC<TopHUDProps> = ({
           {currentUser && (
             <button
               onClick={onOpenProfile}
-              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg border border-white/10 bg-white/5 text-white hover:bg-white/10 font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300"
+              className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg border font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 ${
+                isUnicorn
+                  ? 'border-violet-200/40 bg-white/70 text-violet-700 hover:bg-white/90'
+                  : 'border-white/10 bg-white/5 text-white hover:bg-white/10'
+              }`}
             >
               <Palette className="w-4 h-4" />
               <span className="hidden sm:inline">Profile</span>
