@@ -171,6 +171,7 @@ interface GameState {
   adminStudents: any[];
   selectedStudentProfile: any | null;
   failedQuestionIds: string[];
+  recentlyPlayedQuestionIds: string[];
 
   // Help States
   activeHelp: { title: string; bullets: string[] } | null;
@@ -424,6 +425,7 @@ export const useGameState = create<GameState>()(
         currentSubject: 'english',
         categoryStats: {},
         failedQuestionIds: [],
+        recentlyPlayedQuestionIds: [],
         gameSettings: DEFAULT_GAME_SETTINGS,
         pet: INITIAL_PET,
         rewards: DEFAULT_REWARDS,
@@ -1120,11 +1122,15 @@ export const useGameState = create<GameState>()(
               ? state.failedQuestionIds
               : [...state.failedQuestionIds, questionId];
 
+          const currentRecent = state.recentlyPlayedQuestionIds || [];
+          const updatedRecent = [questionId, ...currentRecent.filter(id => id !== questionId)].slice(0, 20);
+
           set({
             categoryStats: updatedStats,
             activeCombo: newCombo,
             maxCombo,
             failedQuestionIds: updatedFailedIds,
+            recentlyPlayedQuestionIds: updatedRecent,
             player: {
               ...state.player,
               xp: levelCheck.xp,
@@ -1607,8 +1613,17 @@ export const useGameState = create<GameState>()(
           const matchedDiffList = list.filter(q => q.difficulty >= minDiff && q.difficulty <= maxDiff);
           const finalPool = matchedDiffList.length > 0 ? matchedDiffList : list;
 
-          // Random pick from final pool
-          return finalPool[Math.floor(Math.random() * finalPool.length)];
+          // Aggressive randomization: filter out recently played questions to avoid repetition
+          const recentlyPlayed = state.recentlyPlayedQuestionIds || [];
+          let filteredPool = finalPool.filter(q => !recentlyPlayed.includes(q.id));
+
+          // If filtering leaves the pool empty or too small (e.g. less than 2 questions), fall back to original pool
+          if (filteredPool.length === 0) {
+            filteredPool = finalPool;
+          }
+
+          // Random pick from final/filtered pool
+          return filteredPool[Math.floor(Math.random() * filteredPool.length)];
         },
 
         getQuestionByWeight: (mode) => {
@@ -1693,7 +1708,8 @@ export const useGameState = create<GameState>()(
         categoryStatsAll: state.categoryStatsAll,
         uiTheme: state.uiTheme,
         uiThemesByUser: state.uiThemesByUser,
-        failedQuestionIds: state.failedQuestionIds
+        failedQuestionIds: state.failedQuestionIds,
+        recentlyPlayedQuestionIds: state.recentlyPlayedQuestionIds
       })
     }
   )
