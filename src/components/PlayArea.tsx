@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import type { Question } from '../types/game';
+import { ENGLISH_ANSWER_MODE_LABELS, ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../data/englishExamBlueprint';
+import { MATH_ANSWER_MODE_LABELS, MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
+import { LITERATURE_ANSWER_MODE_LABELS, LITERATURE_TASK_LABELS, LITERATURE_TEXT_GENRE_LABELS } from '../data/literatureExamBlueprint';
 import { Scratchpad } from './Scratchpad';
 import { 
   Award, Flame, Check, X, ArrowRight 
@@ -31,6 +34,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
   const [isLastCorrect, setIsLastCorrect] = useState(false);
   const [rewardsEarned, setRewardsEarned] = useState({ coins: 0, xp: 0 });
   const [runFinished, setRunFinished] = useState(false);
+  const [lastRubricScore, setLastRubricScore] = useState<number | null>(null);
+  const [lastRubricMissing, setLastRubricMissing] = useState<string[]>([]);
   
   // Hint State
   const [hintUsed, setHintUsed] = useState(false);
@@ -76,11 +81,11 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
       if (pool.length === 0) {
         pool = fallbackQuestions.filter(q => {
           if (currentSubject === 'math') {
-            if (mode === 'grammar') return q.category === 'parabol-line' || q.category === 'viet-relation';
-            if (mode === 'reading') return q.category === 'real-geometry' || q.category === 'plane-geometry';
-            if (mode === 'vocabulary') return q.category === 'real-equations' || q.category === 'real-finance';
+            if (mode === 'grammar') return q.category === 'parabol-line' || q.category === 'viet-relation' || q.category === 'linear-function';
+            if (mode === 'reading') return q.category === 'real-geometry' || q.category === 'plane-geometry' || q.category === 'volume-displacement' || q.category === 'tangent-geometry';
+            if (mode === 'vocabulary') return q.category === 'real-equations' || q.category === 'real-finance' || q.category === 'growth-modeling' || q.category === 'percentage-discount' || q.category === 'shopping-discount';
           } else {
-            if (mode === 'grammar') return q.category === 'grammar' || q.category === 'passive-voice' || q.category === 'relative-clauses';
+            if (mode === 'grammar') return q.category === 'grammar' || q.category === 'passive-voice' || q.category === 'relative-clauses' || q.category === 'rewrite';
             if (mode === 'reading') return q.category === 'reading' || q.category === 'cloze';
             if (mode === 'vocabulary') return q.category === 'vocabulary' || q.category === 'wordform';
           }
@@ -134,20 +139,56 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
     buyHint();
     setHintUsed(true);
 
+    const answerMode = activeQuestion.metadata?.answerMode;
+    const mathTopic = activeQuestion.metadata?.mathTopic;
+    const englishTask = activeQuestion.metadata?.englishTask;
+    const englishSkill = activeQuestion.metadata?.englishSkill;
+    const literatureTask = activeQuestion.metadata?.literatureTask;
+    const textGenre = activeQuestion.metadata?.textGenre;
+
     if (activeQuestion.type === 'mcq' && activeQuestion.options) {
       // 50/50: remove two wrong options
       const correctOpt = activeQuestion.correctAnswer as string;
       const wrongOpts = activeQuestion.options.filter(opt => opt !== correctOpt);
       const randomWrongs = wrongOpts.sort(() => Math.random() - 0.5).slice(0, 2);
-      setRevealedHint(`Gợi ý: Hai lựa chọn này là sai: "${randomWrongs.join('" và "')}"`);
-    } else if (activeQuestion.type === 'wordform') {
-      // Reveal first 2 letters
-      const correctStr = Array.isArray(activeQuestion.correctAnswer) 
-        ? activeQuestion.correctAnswer[0] 
+      setRevealedHint(`Gợi ý: Hai lựa chọn này là sai: "${randomWrongs.join(' và ')}"`);
+    } else if (currentSubject === 'english' && englishTask) {
+      const skillLabel = englishSkill ? ENGLISH_SKILL_LABELS[englishSkill] || englishSkill : '';
+      const taskLabel = ENGLISH_TASK_LABELS[englishTask] || englishTask;
+      if (englishTask === 'guided-cloze') {
+        setRevealedHint('Gợi ý: Nhìn câu trước và sau chỗ trống để chọn đúng loại từ và collocation.');
+      } else if (englishTask === 'reading-true-false') {
+        setRevealedHint('Gợi ý: Scan keywords trong statement rồi đối chiếu đúng từng ý trong passage.');
+      } else if (englishTask === 'reading-mcq') {
+        setRevealedHint('Gợi ý: Tìm từ khóa chính và xác định đoạn chứa thông tin liên quan nhất.');
+      } else if (englishTask === 'word-form') {
+        setRevealedHint('Gợi ý: Xác định loại từ cần điền: noun, verb, adjective hay adverb.');
+      } else if (englishTask === 'rearrangement') {
+        setRevealedHint('Gợi ý: Bắt đầu từ chủ ngữ, động từ và các cụm bổ nghĩa cố định trước.');
+      } else if (englishTask === 'transformation') {
+        setRevealedHint('Gợi ý: Xác định cấu trúc mục tiêu trước: tense, reported speech, passive, clause...');
+      } else {
+        setRevealedHint(`Gợi ý${skillLabel ? ` (${skillLabel})` : ''}: Tập trung vào dạng ${taskLabel.toLowerCase()} và quy tắc ngữ pháp liên quan.`);
+      }
+    } else if (currentSubject === 'literature' && literatureTask === 'social-essay') {
+      const steps = activeQuestion.metadata?.solutionSteps || [];
+      setRevealedHint(`Gợi ý: Bám bố cục nghị luận và nêu dàn ý rõ ràng${steps[0] ? `, bắt đầu từ "${steps[0]}"` : ''}.`);
+    } else if (currentSubject === 'literature' && literatureTask) {
+      const genreLabel = textGenre ? LITERATURE_TEXT_GENRE_LABELS[textGenre] || textGenre : '';
+      const taskLabel = LITERATURE_TASK_LABELS[literatureTask] || literatureTask;
+      setRevealedHint(`Gợi ý${genreLabel ? ` (${genreLabel})` : ''}: Tập trung vào ý ${taskLabel.toLowerCase()} và nêu đúng chi tiết trọng tâm.`);
+    } else if (answerMode === 'proof' || activeQuestion.type === 'proof') {
+      setRevealedHint('Gợi ý: Bài chứng minh nên đi từ giả thiết, dựng hình hoặc biến đổi trung gian trước khi kết luận.');
+    } else if (answerMode === 'multi-part' || activeQuestion.type === 'multi-part') {
+      setRevealedHint('Gợi ý: Chia bài thành từng ý a/b/c, làm ý dễ trước để lấy dữ kiện cho ý sau.');
+    } else if (activeQuestion.type === 'wordform' || answerMode === 'short-answer' || answerMode === 'numeric' || answerMode === 'expression') {
+      const correctStr = Array.isArray(activeQuestion.correctAnswer)
+        ? activeQuestion.correctAnswer[0]
         : activeQuestion.correctAnswer;
-      setRevealedHint(`Gợi ý: Từ bắt đầu bằng: "${correctStr.substring(0, 2).toUpperCase()}..."`);
+      setRevealedHint(`Gợi ý: Đáp án có thể bắt đầu bằng "${correctStr.substring(0, 2).toUpperCase()}..."`);
     } else {
-      setRevealedHint(`Gợi ý: ${activeQuestion.explanation.substring(0, 50)}...`);
+      const extra = mathTopic ? ` (${MATH_TOPIC_LABELS[mathTopic] || mathTopic})` : '';
+      setRevealedHint(`Gợi ý${extra}: ${activeQuestion.explanation.substring(0, 50)}...`);
     }
   };
 
@@ -155,15 +196,46 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
     if (checked || !activeQuestion) return;
 
     let isCorrect = false;
-    const cleanAnswer = (str: string) => str.trim().toLowerCase().replace(/\s+/g, ' ');
+    let scoreRatio = 0;
+    const cleanAnswer = (str: string) => str
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '')
+      .replace(/[–−]/g, '-')
+      .replace(/[×·]/g, '*')
+      .replace(/[₁]/g, '1')
+      .replace(/[₂]/g, '2');
 
     if (activeQuestion.type === 'mcq') {
       isCorrect = cleanAnswer(selectedAnswer) === cleanAnswer(activeQuestion.correctAnswer as string);
+      scoreRatio = isCorrect ? 1 : 0;
     } else {
       const answers = Array.isArray(activeQuestion.correctAnswer)
         ? activeQuestion.correctAnswer
         : [activeQuestion.correctAnswer];
-      isCorrect = answers.some(ans => cleanAnswer(typedAnswer) === cleanAnswer(ans));
+      const normalizedTyped = cleanAnswer(typedAnswer);
+      const isLiteratureRubric = currentSubject === 'literature' && activeQuestion.category === 'literature-writing';
+      if (isLiteratureRubric) {
+        const matchedAnswers = answers.filter(ans => {
+          const normalizedAns = cleanAnswer(ans);
+          return normalizedAns.length >= 4 && normalizedTyped.includes(normalizedAns);
+        });
+        const matched = matchedAnswers.length;
+        scoreRatio = answers.length > 0 ? Math.min(1, matched / answers.length) : 0;
+        isCorrect = scoreRatio >= 0.6;
+        setLastRubricScore(Math.round(scoreRatio * 10));
+        setLastRubricMissing(answers.filter(ans => !matchedAnswers.includes(ans)));
+      } else {
+        isCorrect = answers.some(ans => normalizedTyped === cleanAnswer(ans));
+        scoreRatio = isCorrect ? 1 : 0;
+        setLastRubricScore(null);
+        setLastRubricMissing([]);
+      }
+    }
+
+    if (activeQuestion.type === 'mcq') {
+      setLastRubricScore(null);
+      setLastRubricMissing([]);
     }
 
     const mappedMode = mode === 'boss' ? 'boss' : 'practice';
@@ -171,7 +243,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
       activeQuestion.id,
       isCorrect,
       10, // time spent (mocked)
-      mappedMode
+      mappedMode,
+      scoreRatio
     );
 
     setIsLastCorrect(isCorrect);
@@ -182,7 +255,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
     }));
 
     // If hearts hit 0 in Survival/Boss, terminate
-    if (!isCorrect && (mode === 'boss' || player.hearts <= 1)) {
+    if (scoreRatio < 0.35 && (mode === 'boss' || player.hearts <= 1)) {
       // Wait a moment for explanation then trigger Game Over
       setTimeout(() => {
         if (player.hearts <= 1) {
@@ -198,6 +271,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
     setTypedAnswer('');
     setHintUsed(false);
     setRevealedHint('');
+    setLastRubricScore(null);
+    setLastRubricMissing([]);
 
     if (currentIndex + 1 < currentQuestions.length) {
       setCurrentIndex(prev => prev + 1);
@@ -313,6 +388,41 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
           <span className="text-[10px] font-bold text-synth-cyan font-orbitron uppercase tracking-wider">
             {mode.toUpperCase()} Dungeon
           </span>
+          {activeQuestion.metadata?.examPart && (
+            <span className="text-[10px] px-2 py-1 rounded-full bg-synth-magenta/15 border border-synth-magenta/30 text-synth-magenta font-orbitron font-bold uppercase tracking-wider">
+              {activeQuestion.metadata.examPart}
+            </span>
+          )}
+          {activeQuestion.metadata?.answerMode && (
+            <span className="text-[10px] px-2 py-1 rounded-full bg-synth-cyan/15 border border-synth-cyan/30 text-synth-cyan font-orbitron font-bold uppercase tracking-wider">
+              {(activeQuestion.subject === 'literature' ? LITERATURE_ANSWER_MODE_LABELS : activeQuestion.subject === 'english' ? ENGLISH_ANSWER_MODE_LABELS : MATH_ANSWER_MODE_LABELS)[activeQuestion.metadata.answerMode] || activeQuestion.metadata.answerMode}
+            </span>
+          )}
+          {activeQuestion.subject === 'english' && activeQuestion.metadata?.englishPart && (
+            <span className="text-[10px] px-2 py-1 rounded-full bg-synth-magenta/15 border border-synth-magenta/30 text-synth-magenta font-orbitron font-bold uppercase tracking-wider">
+              {activeQuestion.metadata.englishPart}
+            </span>
+          )}
+          {activeQuestion.subject === 'english' && activeQuestion.metadata?.englishTask && (
+            <span className="text-[10px] px-2 py-1 rounded-full bg-white/5 border border-white/10 text-white font-orbitron font-bold uppercase tracking-wider">
+              {ENGLISH_TASK_LABELS[activeQuestion.metadata.englishTask] || activeQuestion.metadata.englishTask}
+            </span>
+          )}
+          {activeQuestion.subject === 'english' && activeQuestion.metadata?.englishSkill && (
+            <span className="text-[10px] px-2 py-1 rounded-full bg-synth-cyan/15 border border-synth-cyan/30 text-synth-cyan font-orbitron font-bold uppercase tracking-wider">
+              {ENGLISH_SKILL_LABELS[activeQuestion.metadata.englishSkill] || activeQuestion.metadata.englishSkill}
+            </span>
+          )}
+          {activeQuestion.metadata?.literatureTask && currentSubject === 'literature' && (
+            <span className="text-[10px] px-2 py-1 rounded-full bg-synth-orange/15 border border-synth-orange/30 text-synth-orange font-orbitron font-bold uppercase tracking-wider">
+              {LITERATURE_TASK_LABELS[activeQuestion.metadata.literatureTask] || activeQuestion.metadata.literatureTask}
+            </span>
+          )}
+          {activeQuestion.metadata?.textGenre && currentSubject === 'literature' && (
+            <span className="text-[10px] px-2 py-1 rounded-full bg-white/5 border border-white/10 text-white font-orbitron font-bold uppercase tracking-wider">
+              {LITERATURE_TEXT_GENRE_LABELS[activeQuestion.metadata.textGenre] || activeQuestion.metadata.textGenre}
+            </span>
+          )}
           <span className="text-sm font-semibold text-white">
             Câu {currentIndex + 1}/{currentQuestions.length}
           </span>
@@ -524,18 +634,47 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
           <div className="mt-0.5">
             {isLastCorrect ? <Check className="w-5 h-5" /> : <X className="w-5 h-5" />}
           </div>
-          <div>
+          <div className="space-y-2">
             <h5 className="font-bold uppercase tracking-wider mb-1">
-              {isLastCorrect ? 'Chính xác! Cực tốt con ơi.' : 'Sai rồi! Đừng nản lòng.'}
+              {currentSubject === 'literature' && activeQuestion.category === 'literature-writing'
+                ? isLastCorrect ? 'Bài viết đạt rubric' : 'Bài viết cần cải thiện theo rubric'
+                : isLastCorrect ? 'Chính xác! Cực tốt con ơi.' : 'Sai rồi! Đừng nản lòng.'}
             </h5>
-            <p className="text-white mb-2 font-medium">
-              Đáp án đúng: <span className="font-bold underline text-synth-green">
-                {Array.isArray(activeQuestion.correctAnswer) ? activeQuestion.correctAnswer.join(' | ') : activeQuestion.correctAnswer}
-              </span>
-            </p>
+            {currentSubject === 'literature' && activeQuestion.category === 'literature-writing' ? (
+              <p className="text-white mb-2 font-medium">
+                Điểm ước tính: <span className="font-bold underline text-synth-green">{lastRubricScore ?? 0}/10</span>
+              </p>
+            ) : (
+              <p className="text-white mb-2 font-medium">
+                Đáp án đúng: <span className="font-bold underline text-synth-green">
+                  {Array.isArray(activeQuestion.correctAnswer) ? activeQuestion.correctAnswer.join(' | ') : activeQuestion.correctAnswer}
+                </span>
+              </p>
+            )}
+            {currentSubject === 'literature' && activeQuestion.category === 'literature-writing' && lastRubricMissing.length > 0 && (
+              <div className="text-white/90 space-y-1">
+                <p className="font-bold uppercase tracking-wider text-[10px]">Ý còn thiếu / cần mạnh hơn</p>
+                <ul className="list-disc pl-4 space-y-0.5 text-white/80">
+                  {lastRubricMissing.slice(0, 5).map(item => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
             <p className="text-synth-text-muted">
               {activeQuestion.explanation}
             </p>
+            {currentSubject === 'literature' && activeQuestion.category === 'literature-writing' && activeQuestion.metadata?.solutionSteps?.length ? (
+              <div className="text-white/90 space-y-1">
+                <p className="font-bold uppercase tracking-wider text-[10px]">Rubric gợi ý</p>
+                <ol className="list-decimal pl-4 space-y-0.5 text-white/80">
+                  {activeQuestion.metadata.solutionSteps.map(step => (
+                    <li key={step}>{step}</li>
+                  ))}
+                </ol>
+                <p className="text-synth-text-muted text-[10px] italic">Không viết hộ đáp án hoàn chỉnh; chỉ chấm và chỉ ra điểm cần cải thiện.</p>
+              </div>
+            ) : null}
           </div>
         </div>
       )}

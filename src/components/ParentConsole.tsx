@@ -1,6 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
-import type { Question } from '../types/game';
+import type { Question, QuestionMeta } from '../types/game';
+import { ENGLISH_ANSWER_MODE_LABELS, ENGLISH_EXAM_BLUEPRINT, ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../data/englishExamBlueprint';
+import { MATH_ANSWER_MODE_LABELS, MATH_EXAM_BLUEPRINT, MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
+import { LITERATURE_ANSWER_MODE_LABELS, LITERATURE_EXAM_BLUEPRINT, LITERATURE_TASK_LABELS, LITERATURE_TEXT_GENRE_LABELS } from '../data/literatureExamBlueprint';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Lock, Unlock, Check, X, Award, Database, Plus, SlidersHorizontal, Search, Pencil, Trash2 } from 'lucide-react';
 
@@ -22,8 +25,7 @@ export const ParentConsole: React.FC = () => {
   const showHelp = useGameState(state => state.showHelp);
   const adminDeductWallet = useGameState(state => state.adminDeductWallet);
   const adminSetEnergy = useGameState(state => state.adminSetEnergy);
-  const updateBossBounties = useGameState(state => state.updateBossBounties);
-  const updateChallengeEnergyCosts = useGameState(state => state.updateChallengeEnergyCosts);
+  const updateGameSettings = useGameState(state => state.updateGameSettings);
   const gameSettings = useGameState(state => state.gameSettings);
   const questions = useGameState(state => state.questions);
   const deleteQuestion = useGameState(state => state.deleteQuestion);
@@ -51,6 +53,7 @@ export const ParentConsole: React.FC = () => {
   const [questionQuery, setQuestionQuery] = useState('');
   const [subjectFilter, setSubjectFilter] = useState<'all' | 'english' | 'math' | 'literature'>('all');
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
+  const [editType, setEditType] = useState<Question['type']>('mcq');
   const [editPrompt, setEditPrompt] = useState('');
   const [editExplanation, setEditExplanation] = useState('');
   const [editCategory, setEditCategory] = useState('');
@@ -60,6 +63,21 @@ export const ParentConsole: React.FC = () => {
   const [editSource, setEditSource] = useState('');
   const [editImageUrl, setEditImageUrl] = useState('');
   const [editSubject, setEditSubject] = useState<'english' | 'math' | 'literature'>('english');
+  const [editExamPart, setEditExamPart] = useState('');
+  const [editMathTopic, setEditMathTopic] = useState('');
+  const [editEnglishPart, setEditEnglishPart] = useState('');
+  const [editEnglishTask, setEditEnglishTask] = useState('');
+  const [editEnglishSkill, setEditEnglishSkill] = useState('');
+  const [editLiteratureTrack, setEditLiteratureTrack] = useState('');
+  const [editLiteratureTask, setEditLiteratureTask] = useState('');
+  const [editTextGenre, setEditTextGenre] = useState('');
+  const [editAnswerMode, setEditAnswerMode] = useState('');
+  const [editSolutionStyle, setEditSolutionStyle] = useState('');
+  const [editSolutionSteps, setEditSolutionSteps] = useState('');
+
+  const [maxEnergyVal, setMaxEnergyVal] = useState(1000);
+  const [baseXPVal, setBaseXPVal] = useState(15);
+  const [baseCoinsVal, setBaseCoinsVal] = useState(5);
 
   // Active Tab
   const [activeTab, setActiveTab] = useState<'rewards' | 'ingestion' | 'members' | 'settings'>('members');
@@ -74,8 +92,9 @@ export const ParentConsole: React.FC = () => {
 
   useEffect(() => {
     if (!selectedStudentProfile?.player) return;
-    setStudentEnergyPercent(Math.round((selectedStudentProfile.player.energy / 1000) * 100));
-  }, [selectedStudentProfile?.player?.energy]);
+    const maxE = gameSettings.maxEnergy ?? 1000;
+    setStudentEnergyPercent(Math.round((selectedStudentProfile.player.energy / maxE) * 100));
+  }, [selectedStudentProfile?.player?.energy, gameSettings.maxEnergy]);
 
   useEffect(() => {
     const [b2024, b2025, b2026] = gameSettings.bossBountiesVnd;
@@ -87,10 +106,14 @@ export const ParentConsole: React.FC = () => {
     setChallengeCost2(c2);
     setChallengeCost3(c3);
     setChallengeCost4(c4);
-  }, [gameSettings.bossBountiesVnd, gameSettings.challengeEnergyCosts]);
+    setMaxEnergyVal(gameSettings.maxEnergy ?? 1000);
+    setBaseXPVal(gameSettings.baseXP ?? 15);
+    setBaseCoinsVal(gameSettings.baseCoins ?? 5);
+  }, [gameSettings.bossBountiesVnd, gameSettings.challengeEnergyCosts, gameSettings.maxEnergy, gameSettings.baseXP, gameSettings.baseCoins]);
 
   useEffect(() => {
     if (!editingQuestion) return;
+    setEditType(editingQuestion.type);
     setEditPrompt(editingQuestion.prompt);
     setEditExplanation(editingQuestion.explanation);
     setEditCategory(editingQuestion.category);
@@ -100,6 +123,17 @@ export const ParentConsole: React.FC = () => {
     setEditSource(editingQuestion.source);
     setEditImageUrl(editingQuestion.imageUrl || '');
     setEditSubject(editingQuestion.subject || 'english');
+    setEditExamPart(editingQuestion.metadata?.examPart || '');
+    setEditMathTopic(editingQuestion.metadata?.mathTopic || '');
+    setEditEnglishPart(editingQuestion.metadata?.englishPart || '');
+    setEditEnglishTask(editingQuestion.metadata?.englishTask || '');
+    setEditEnglishSkill(editingQuestion.metadata?.englishSkill || '');
+    setEditLiteratureTrack(editingQuestion.metadata?.literatureTrack || '');
+    setEditLiteratureTask(editingQuestion.metadata?.literatureTask || '');
+    setEditTextGenre(editingQuestion.metadata?.textGenre || '');
+    setEditAnswerMode(editingQuestion.metadata?.answerMode || '');
+    setEditSolutionStyle(editingQuestion.metadata?.solutionStyle || '');
+    setEditSolutionSteps(Array.isArray(editingQuestion.metadata?.solutionSteps) ? editingQuestion.metadata.solutionSteps.join('\n') : '');
   }, [editingQuestion]);
 
   const handleUnlock = (e: React.FormEvent) => {
@@ -125,7 +159,32 @@ export const ParentConsole: React.FC = () => {
       .map(line => line.trim())
       .filter(Boolean);
 
+    const metadata = editSubject === 'math' ? ({
+      examPart: editExamPart.trim() || undefined,
+      mathTopic: editMathTopic.trim() || undefined,
+      answerMode: editAnswerMode.trim() || undefined,
+      solutionStyle: editSolutionStyle.trim() || undefined,
+      solutionSteps: editSolutionSteps.split('\n').map(line => line.trim()).filter(Boolean)
+    } as QuestionMeta) : editSubject === 'english' ? ({
+      examPart: editExamPart.trim() || undefined,
+      englishPart: editEnglishPart.trim() || undefined,
+      englishTask: editEnglishTask.trim() || undefined,
+      englishSkill: editEnglishSkill.trim() || undefined,
+      answerMode: editAnswerMode.trim() || undefined,
+      solutionStyle: editSolutionStyle.trim() || undefined,
+      solutionSteps: editSolutionSteps.split('\n').map(line => line.trim()).filter(Boolean)
+    } as QuestionMeta) : editSubject === 'literature' ? ({
+      examPart: editExamPart.trim() || undefined,
+      literatureTrack: editLiteratureTrack.trim() || undefined,
+      literatureTask: editLiteratureTask.trim() || undefined,
+      textGenre: editTextGenre.trim() || undefined,
+      answerMode: editAnswerMode.trim() || undefined,
+      solutionStyle: editSolutionStyle.trim() || undefined,
+      solutionSteps: editSolutionSteps.split('\n').map(line => line.trim()).filter(Boolean)
+    } as QuestionMeta) : undefined;
+
     const payload = {
+      type: editType,
       prompt: editPrompt.trim(),
       explanation: editExplanation.trim(),
       category: editCategory.trim(),
@@ -134,7 +193,8 @@ export const ParentConsole: React.FC = () => {
       correctAnswer: nextCorrectAnswer.length > 1 ? nextCorrectAnswer : nextCorrectAnswer[0] || '',
       source: editSource.trim(),
       imageUrl: editImageUrl.trim() || undefined,
-      subject: editSubject
+      subject: editSubject,
+      metadata
     };
 
     const ok = await updateQuestion(editingQuestion.id, payload);
@@ -155,6 +215,57 @@ export const ParentConsole: React.FC = () => {
 
   // Active Data bindings: if viewing a student, use their loaded data. Otherwise fall back to parent.
   const activeRewards = selectedStudentProfile?.rewards || [];
+
+  const typeCounts = useMemo(() => {
+    return questions.reduce((acc: Record<string, number>, q) => {
+      acc[q.type] = (acc[q.type] || 0) + 1;
+      return acc;
+    }, {});
+  }, [questions]);
+
+  const examPartCounts = useMemo(() => {
+    return questions.reduce((acc: Record<string, number>, q) => {
+      const key = q.metadata?.examPart || 'Chưa gắn part';
+      acc[key] = (acc[key] || 0) + 1;
+      return acc;
+    }, {});
+  }, [questions]);
+
+  const mathTopicCounts = useMemo(() => {
+    return questions
+      .filter(q => q.subject === 'math')
+      .reduce((acc: Record<string, number>, q) => {
+        const key = q.metadata?.mathTopic || q.category || 'mixed';
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+  }, [questions]);
+
+  const englishTaskCounts = useMemo(() => {
+    return questions
+      .filter(q => q.subject === 'english' || !q.subject)
+      .reduce((acc: Record<string, number>, q) => {
+        const key = q.metadata?.englishTask || q.category || 'grammar';
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+  }, [questions]);
+
+  const literatureTaskCounts = useMemo(() => {
+    return questions
+      .filter(q => q.subject === 'literature')
+      .reduce((acc: Record<string, number>, q) => {
+        const key = q.metadata?.literatureTask || q.category || 'reading';
+        acc[key] = (acc[key] || 0) + 1;
+        return acc;
+      }, {});
+  }, [questions]);
+
+  const topTypeEntries = Object.entries(typeCounts).sort((a, b) => b[1] - a[1]);
+  const topExamParts = Object.entries(examPartCounts).sort((a, b) => b[1] - a[1]);
+  const topMathTopics = Object.entries(mathTopicCounts).sort((a, b) => b[1] - a[1]);
+  const topEnglishTasks = Object.entries(englishTaskCounts).sort((a, b) => b[1] - a[1]);
+  const topLiteratureTasks = Object.entries(literatureTaskCounts).sort((a, b) => b[1] - a[1]);
 
   if (!isUnlocked) {
     return (
@@ -215,12 +326,11 @@ export const ParentConsole: React.FC = () => {
 
         {/* Tab Controls */}
         <div className="hidden md:flex gap-2 flex-wrap">
-          {['members', 'rewards', 'ingestion', 'settings'].map(tab => {
+          {['members', 'rewards', 'ingestion'].map(tab => {
             const tabNames: Record<string, string> = {
               members: 'Thành viên',
-              rewards: 'Phần thưởng',
-              ingestion: 'Ngân hàng câu hỏi',
-              settings: 'Cấu hình'
+              rewards: 'Phần thưởng & Cấu hình',
+              ingestion: 'Ngân hàng câu hỏi'
             };
             return (
               <button
@@ -274,139 +384,259 @@ export const ParentConsole: React.FC = () => {
 
       {/* Rewards tab */}
       {activeTab === 'rewards' && (
-        !viewingStudentId ? (
-          <div className="glass-panel rounded-2xl border border-white/5 p-12 text-center space-y-4">
-            <p className="text-sm text-synth-text-muted">
-              Vui lòng chọn một tài khoản con từ danh sách <strong>Thành viên</strong> để duyệt và quản lý quy đổi phần thưởng.
-            </p>
-            <button
-              onClick={() => setActiveTab('members')}
-              className="px-4 py-2 rounded-lg font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-magenta text-black hover:synth-glow-magenta cursor-pointer transition-all duration-300"
-            >
-              Xem danh sách Thành viên
-            </button>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Create Reward Form */}
-            <div className="glass-panel rounded-2xl border border-synth-orange/20 p-5 h-fit">
-              <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider mb-4 flex items-center gap-1.5">
-                <Plus className="w-4 h-4" /> Thêm Quà tặng mới
-              </h4>
-
-              <form onSubmit={handleCreateReward} className="space-y-4">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-synth-text-muted uppercase">Tên Quà Tặng</label>
-                  <input
-                    type="text"
-                    value={rewardTitle}
-                    onChange={(e) => setRewardTitle(e.target.value)}
-                    placeholder="Ví dụ: Ly trà sữa, 1h chơi iPad"
-                    className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[10px] text-synth-text-muted uppercase">Giá Coins (NP)</label>
-                    <input
-                      type="number"
-                      value={rewardCost}
-                      onChange={(e) => setRewardCost(Number(e.target.value))}
-                      className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[10px] text-synth-text-muted uppercase">Giá trị VNĐ (Mặt)</label>
-                    <input
-                      type="number"
-                      value={rewardCash}
-                      onChange={(e) => setRewardCash(Number(e.target.value))}
-                      className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange"
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-orange text-black hover:synth-glow-orange cursor-pointer transition-all duration-300"
-                >
-                  Tạo Phần Thưởng
-                </button>
-              </form>
+        <div className="space-y-6">
+          {/* Game configuration panel - always visible */}
+          <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5">
+            <div className="flex items-center gap-2">
+              <SlidersHorizontal className="w-4 h-4 text-synth-cyan" />
+              <h3 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">
+                Cấu hình Game & Mức thưởng
+              </h3>
             </div>
 
-            {/* Approvals ledger */}
-            <div className="glass-panel rounded-2xl border border-white/5 p-5 md:col-span-2 space-y-4">
-              <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
-                <Award className="w-4 h-4" /> Danh sách duyệt quy đổi phần thưởng của con
-              </h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <label className="space-y-2 text-xs">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Boss 2024 Bounty (VNĐ)</span>
+                <input
+                  type="number"
+                  min={0}
+                  step={1000}
+                  value={bossBounty2024}
+                  onChange={(e) => setBossBounty2024(Number(e.target.value) || 0)}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                />
+              </label>
+              <label className="space-y-2 text-xs">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Boss 2025 Bounty (VNĐ)</span>
+                <input
+                  type="number"
+                  min={0}
+                  step={1000}
+                  value={bossBounty2025}
+                  onChange={(e) => setBossBounty2025(Number(e.target.value) || 0)}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                />
+              </label>
+              <label className="space-y-2 text-xs">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Boss 2026 Bounty (VNĐ)</span>
+                <input
+                  type="number"
+                  min={0}
+                  step={1000}
+                  value={bossBounty2026}
+                  onChange={(e) => setBossBounty2026(Number(e.target.value) || 0)}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                />
+              </label>
+            </div>
 
-              <div className="space-y-2 overflow-y-auto max-h-[300px]">
-                {activeRewards.length > 0 ? (
-                  activeRewards.map((reward: any) => (
-                    <div
-                      key={reward.id}
-                      className="bg-synth-gray/20 rounded-xl p-4 border border-white/5 flex justify-between items-center"
-                    >
-                      <div>
-                        <h5 className="text-sm font-bold text-white">{reward.title}</h5>
-                        <div className="flex items-center gap-3 text-xs mt-1">
-                          <span className="text-synth-orange font-bold font-orbitron">{reward.costCoins} NP</span>
-                          {reward.cashValueVND > 0 && (
-                            <span className="text-synth-green font-bold font-orbitron">{reward.cashValueVND.toLocaleString()}đ mặt</span>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              {[
+                { label: 'Đảo 1', value: challengeCost1, setter: setChallengeCost1 },
+                { label: 'Đảo 2', value: challengeCost2, setter: setChallengeCost2 },
+                { label: 'Đảo 3', value: challengeCost3, setter: setChallengeCost3 },
+                { label: 'Đảo 4', value: challengeCost4, setter: setChallengeCost4 }
+              ].map(item => (
+                <label key={item.label} className="space-y-2 text-xs">
+                  <span className="block text-synth-text-muted font-bold uppercase tracking-wider">{item.label} cost (Energy)</span>
+                  <input
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={item.value}
+                    onChange={(e) => item.setter(Number(e.target.value) || 0)}
+                    className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                  />
+                </label>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <label className="space-y-2 text-xs">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Năng lượng tối đa (Max Energy)</span>
+                <input
+                  type="number"
+                  min={100}
+                  step={100}
+                  value={maxEnergyVal}
+                  onChange={(e) => setMaxEnergyVal(Number(e.target.value) || 1000)}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                />
+              </label>
+              <label className="space-y-2 text-xs">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Điểm XP cơ bản / Câu đúng</span>
+                <input
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={baseXPVal}
+                  onChange={(e) => setBaseXPVal(Number(e.target.value) || 15)}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                />
+              </label>
+              <label className="space-y-2 text-xs">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Điểm Coins cơ bản (NP) / Câu đúng</span>
+                <input
+                  type="number"
+                  min={1}
+                  step={1}
+                  value={baseCoinsVal}
+                  onChange={(e) => setBaseCoinsVal(Number(e.target.value) || 5)}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                />
+              </label>
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between bg-white/5 rounded-xl border border-white/5 p-4">
+              <p className="text-[10px] text-synth-text-muted leading-relaxed">
+                Các cấu hình này sẽ tự động áp dụng trực tiếp cho tất cả học sinh trên ứng dụng (Boss Arena, đảo thử thách, lượng năng lượng tối đa nhận mỗi ngày, và điểm thưởng học tập).
+              </p>
+              <button
+                onClick={async () => {
+                  await updateGameSettings({
+                    bossBountiesVnd: [bossBounty2024, bossBounty2025, bossBounty2026],
+                    challengeEnergyCosts: [challengeCost1, challengeCost2, challengeCost3, challengeCost4],
+                    maxEnergy: maxEnergyVal,
+                    baseXP: baseXPVal,
+                    baseCoins: baseCoinsVal
+                  });
+                }}
+                className="px-4 py-2.5 rounded-xl bg-synth-magenta text-black font-orbitron font-bold text-[10px] uppercase tracking-wider hover:synth-glow-magenta transition-all shrink-0 cursor-pointer"
+              >
+                Lưu cấu hình game
+              </button>
+            </div>
+          </div>
+
+          {/* Child rewards management section */}
+          {!viewingStudentId ? (
+            <div className="glass-panel rounded-2xl border border-white/5 p-8 text-center space-y-3">
+              <p className="text-xs text-synth-text-muted">
+                Chọn tài khoản con tại tab <strong className="text-synth-magenta">Thành viên</strong> để duyệt yêu cầu đổi quà hoặc thiết kế các phần quà tặng dành riêng cho con.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Create Reward Form */}
+              <div className="glass-panel rounded-2xl border border-synth-orange/20 p-5 h-fit">
+                <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider mb-4 flex items-center gap-1.5">
+                  <Plus className="w-4 h-4" /> Thêm Quà tặng mới
+                </h4>
+
+                <form onSubmit={handleCreateReward} className="space-y-4">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[10px] text-synth-text-muted uppercase">Tên Quà Tặng</label>
+                    <input
+                      type="text"
+                      value={rewardTitle}
+                      onChange={(e) => setRewardTitle(e.target.value)}
+                      placeholder="Ví dụ: Ly trà sữa, 1h chơi iPad"
+                      className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] text-synth-text-muted uppercase">Giá Coins (NP)</label>
+                      <input
+                        type="number"
+                        value={rewardCost}
+                        onChange={(e) => setRewardCost(Number(e.target.value))}
+                        className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange"
+                      />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <label className="text-[10px] text-synth-text-muted uppercase">Giá trị VNĐ (Mặt)</label>
+                      <input
+                        type="number"
+                        value={rewardCash}
+                        onChange={(e) => setRewardCash(Number(e.target.value))}
+                        className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-orange text-black hover:synth-glow-orange cursor-pointer transition-all duration-300"
+                  >
+                    Tạo Phần Thưởng
+                  </button>
+                </form>
+              </div>
+
+              {/* Approvals ledger */}
+              <div className="glass-panel rounded-2xl border border-white/5 p-5 md:col-span-2 space-y-4">
+                <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <Award className="w-4 h-4" /> Danh sách duyệt quy đổi phần thưởng của con
+                </h4>
+
+                <div className="space-y-2 overflow-y-auto max-h-[300px]">
+                  {activeRewards.length > 0 ? (
+                    activeRewards.map((reward: any) => (
+                      <div
+                        key={reward.id}
+                        className="bg-synth-gray/20 rounded-xl p-4 border border-white/5 flex justify-between items-center"
+                      >
+                        <div>
+                          <h5 className="text-sm font-bold text-white">{reward.title}</h5>
+                          <div className="flex items-center gap-3 text-xs mt-1">
+                            <span className="text-synth-orange font-bold font-orbitron">{reward.costCoins} NP</span>
+                            {reward.cashValueVND > 0 && (
+                              <span className="text-synth-green font-bold font-orbitron">{reward.cashValueVND.toLocaleString()}đ mặt</span>
+                            )}
+                            <span className="text-synth-text-muted">{new Date(reward.timestamp).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          {reward.status === 'approved' ? (
+                            <>
+                              <button
+                                onClick={() => {
+                                  if (viewingStudentId) {
+                                    adminApproveReward(viewingStudentId, reward.id);
+                                  } else {
+                                    approveReward(reward.id);
+                                  }
+                                }}
+                                className="p-2 rounded-lg bg-synth-green text-black cursor-pointer hover:synth-glow-green transition-all"
+                                title="Xác nhận đã chi quà thật cho con"
+                              >
+                                <Check className="w-4 h-4" />
+                              </button>
+                              <button
+                                onClick={() => {
+                                  if (viewingStudentId) {
+                                    adminRejectReward(viewingStudentId, reward.id);
+                                  } else {
+                                    rejectReward(reward.id);
+                                  }
+                                }}
+                                className="p-2 rounded-lg border border-synth-magenta text-synth-magenta cursor-pointer hover:bg-synth-magenta/10 transition-all"
+                                title="Hủy bỏ yêu cầu, hoàn lại coins cho con"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </>
+                          ) : (
+                            <span className="text-xs text-synth-text-muted italic px-3 py-1 bg-synth-gray/50 rounded-lg">
+                              {reward.status === 'claimed' ? 'Đã trao quà' : 'Chưa quy đổi'}
+                            </span>
                           )}
-                          <span className="text-synth-text-muted">{new Date(reward.timestamp).toLocaleDateString()}</span>
                         </div>
                       </div>
-
-                      <div className="flex gap-2">
-                        {reward.status === 'approved' ? (
-                          <>
-                            <button
-                              onClick={() => {
-                                if (viewingStudentId) {
-                                  adminApproveReward(viewingStudentId, reward.id);
-                                } else {
-                                  approveReward(reward.id);
-                                }
-                              }}
-                              className="p-2 rounded-lg bg-synth-green text-black cursor-pointer hover:synth-glow-green transition-all"
-                              title="Xác nhận đã chi quà thật cho con"
-                            >
-                              <Check className="w-4 h-4" />
-                            </button>
-                            <button
-                              onClick={() => {
-                                if (viewingStudentId) {
-                                  adminRejectReward(viewingStudentId, reward.id);
-                                } else {
-                                  rejectReward(reward.id);
-                                }
-                              }}
-                              className="p-2 rounded-lg border border-synth-magenta text-synth-magenta cursor-pointer hover:bg-synth-magenta/10 transition-all"
-                              title="Hủy bỏ yêu cầu, hoàn lại coins cho con"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </>
-                        ) : (
-                          <span className="text-xs text-synth-text-muted italic px-3 py-1 bg-synth-gray/50 rounded-lg">
-                            {reward.status === 'claimed' ? 'Đã trao quà' : 'Chưa quy đổi'}
-                          </span>
-                        )}
-                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-xs text-synth-text-muted">
+                      Chưa có phần thưởng nào đang chờ duyệt.
                     </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-xs text-synth-text-muted">
-                    Chưa có phần thưởng nào đang chờ duyệt.
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        )
+          )}
+        </div>
       )}
 
       {/* Ingestion tab */}
@@ -461,35 +691,176 @@ export const ParentConsole: React.FC = () => {
               })}
             </div>
 
-            {/* Thống kê ngân hàng câu hỏi */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-synth-gray/10 p-4 rounded-xl border border-white/5">
-              <div className="space-y-1">
-                <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Tổng số câu hỏi</span>
-                <span className="text-xl font-black text-synth-cyan font-orbitron">{questions.length}</span>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] uppercase font-orbitron font-bold text-synth-magenta">Toán</span>
+                <span className="text-[10px] text-synth-text-muted">Blueprint bank theo 7 bài chuẩn đề TP.HCM</span>
               </div>
-              <div className="space-y-1">
-                <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Theo môn học</span>
-                <div className="text-[11px] text-white space-y-0.5">
-                  <div>🇬🇧 Tiếng Anh: <span className="font-bold text-synth-cyan">{questions.filter(q => !q.subject || q.subject === 'english').length}</span></div>
-                  <div>📐 Toán học: <span className="font-bold text-synth-magenta">{questions.filter(q => q.subject === 'math').length}</span></div>
-                  <div>✍️ Ngữ văn: <span className="font-bold text-synth-orange">{questions.filter(q => q.subject === 'literature').length}</span></div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {MATH_EXAM_BLUEPRINT.map(part => (
+                  <div key={part.part} className="rounded-xl border border-white/5 bg-synth-gray/10 p-3 text-[11px] text-white space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-magenta">{part.part}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-synth-text-muted">{part.answerModes.join(' / ')}</span>
+                    </div>
+                    <h4 className="font-bold text-sm text-white">{part.title}</h4>
+                    <p className="text-synth-text-muted leading-relaxed">{part.focus}</p>
+                    <p className="text-synth-cyan text-[10px] leading-relaxed">{part.importHint}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">Tiếng Anh</span>
+                <span className="text-[10px] text-synth-text-muted">Blueprint bank theo 6 phần đề chuẩn hóa: MCQ, cloze, reading, word form, rearrangement, transformation</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {ENGLISH_EXAM_BLUEPRINT.map(part => (
+                  <div key={part.part} className="rounded-xl border border-white/5 bg-synth-gray/10 p-3 text-[11px] text-white space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">{part.part}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-synth-text-muted">{part.answerModes.join(' / ')}</span>
+                    </div>
+                    <h4 className="font-bold text-sm text-white">{part.title}</h4>
+                    <p className="text-synth-text-muted leading-relaxed">{part.focus}</p>
+                    <p className="text-synth-cyan text-[10px] leading-relaxed">{part.importHint}</p>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <span className="text-[10px] uppercase font-orbitron font-bold text-synth-orange">Ngữ văn</span>
+                <span className="text-[10px] text-synth-text-muted">Blueprint bank theo đọc hiểu, tiếng Việt, nghị luận xã hội và nghị luận văn học</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {LITERATURE_EXAM_BLUEPRINT.map(part => (
+                  <div key={`${part.part}-${part.title}`} className="rounded-xl border border-white/5 bg-synth-gray/10 p-3 text-[11px] text-white space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-orange">{part.part}</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-synth-text-muted">{part.answerModes.join(' / ')}</span>
+                    </div>
+                    <h4 className="font-bold text-sm text-white">{part.title}</h4>
+                    <p className="text-synth-text-muted leading-relaxed">{part.focus}</p>
+                    <p className="text-synth-cyan text-[10px] leading-relaxed">{part.importHint}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Thống kê ngân hàng câu hỏi */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 bg-synth-gray/10 p-4 rounded-xl border border-white/5">
+                <div className="space-y-1">
+                  <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Tổng số câu hỏi</span>
+                  <span className="text-xl font-black text-synth-cyan font-orbitron">{questions.length}</span>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Theo môn học</span>
+                  <div className="text-[11px] text-white space-y-0.5">
+                    <div>🇬🇧 Tiếng Anh: <span className="font-bold text-synth-cyan">{questions.filter(q => !q.subject || q.subject === 'english').length}</span></div>
+                    <div>📐 Toán học: <span className="font-bold text-synth-magenta">{questions.filter(q => q.subject === 'math').length}</span></div>
+                    <div>✍️ Ngữ văn: <span className="font-bold text-synth-orange">{questions.filter(q => q.subject === 'literature').length}</span></div>
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Độ khó trung bình</span>
+                  <span className="text-xl font-black text-synth-orange font-orbitron">
+                    {(questions.reduce((sum, q) => sum + q.difficulty, 0) / questions.length || 0).toFixed(1)}/10
+                  </span>
+                  <span className="text-[9px] text-synth-text-muted block">
+                    Dễ: {questions.filter(q => q.difficulty <= 4).length} | T.Bình: {questions.filter(q => q.difficulty >= 5 && q.difficulty <= 7).length} | Khó: {questions.filter(q => q.difficulty >= 8).length}
+                  </span>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Dạng câu hỏi</span>
+                  <div className="text-[11px] text-white space-y-0.5">
+                    <div>Trắc nghiệm: <span className="font-bold text-synth-cyan">{questions.filter(q => q.type === 'mcq').length}</span></div>
+                    <div>Tự luận ngắn: <span className="font-bold text-synth-magenta">{questions.filter(q => q.type === 'short-answer').length}</span></div>
+                    <div>Chứng minh: <span className="font-bold text-synth-orange">{questions.filter(q => q.type === 'proof').length}</span></div>
+                    <div>Nhiều ý: <span className="font-bold text-synth-green">{questions.filter(q => q.type === 'multi-part').length}</span></div>
+                  </div>
                 </div>
               </div>
-              <div className="space-y-1">
-                <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Độ khó trung bình</span>
-                <span className="text-xl font-black text-synth-orange font-orbitron">
-                  {(questions.reduce((sum, q) => sum + q.difficulty, 0) / questions.length || 0).toFixed(1)}/10
-                </span>
-                <span className="text-[9px] text-synth-text-muted block">
-                  Dễ: {questions.filter(q => q.difficulty <= 4).length} | T.Bình: {questions.filter(q => q.difficulty >= 5 && q.difficulty <= 7).length} | Khó: {questions.filter(q => q.difficulty >= 8).length}
-                </span>
+
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+                <div className="rounded-xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">Đếm theo dạng</span>
+                    <button onClick={() => showHelp('bank-structure')} className="text-[10px] px-2 py-1 rounded bg-white/5 text-white hover:bg-white/10">Help</button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {topTypeEntries.map(([type, count]) => (
+                      <span key={type} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
+                        {type}: <span className="text-synth-cyan">{count}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] uppercase font-orbitron font-bold text-synth-green">Đếm theo part</span>
+                    <button onClick={() => showHelp('rubric')} className="text-[10px] px-2 py-1 rounded bg-white/5 text-white hover:bg-white/10">Rubric</button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {topExamParts.map(([part, count]) => (
+                      <span key={part} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
+                        {part}: <span className="text-synth-green">{count}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] uppercase font-orbitron font-bold text-synth-orange">Hướng dẫn nhanh</span>
+                    <button onClick={() => showHelp('parent-console')} className="text-[10px] px-2 py-1 rounded bg-white/5 text-white hover:bg-white/10">Console</button>
+                  </div>
+                  <div className="flex flex-wrap gap-2 text-[10px]">
+                    <button onClick={() => showHelp('math-bank')} className="px-2.5 py-1 rounded-full bg-synth-magenta/15 text-synth-magenta font-bold uppercase">Toán</button>
+                    <button onClick={() => showHelp('english-bank')} className="px-2.5 py-1 rounded-full bg-synth-cyan/15 text-synth-cyan font-bold uppercase">Anh</button>
+                    <button onClick={() => showHelp('literature-bank')} className="px-2.5 py-1 rounded-full bg-synth-orange/15 text-synth-orange font-bold uppercase">Văn</button>
+                  </div>
+                </div>
               </div>
-              <div className="space-y-1">
-                <span className="text-[10px] text-synth-text-muted font-bold uppercase tracking-wider block">Dạng câu hỏi</span>
-                <div className="text-[11px] text-white space-y-0.5">
-                  <div>Trắc nghiệm: <span className="font-bold text-synth-cyan">{questions.filter(q => q.type === 'mcq').length}</span></div>
-                  <div>Điền từ: <span className="font-bold text-synth-magenta">{questions.filter(q => q.type === 'wordform').length}</span></div>
-                  <div>Viết lại câu: <span className="font-bold text-synth-orange">{questions.filter(q => q.type === 'rewrite').length}</span></div>
+
+              <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+                <div className="rounded-xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] uppercase font-orbitron font-bold text-synth-magenta">Toán theo topic</span>
+                    <span className="text-[10px] text-synth-text-muted">{questions.filter(q => q.subject === 'math').length} câu</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {topMathTopics.map(([topic, count]) => (
+                      <span key={topic} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
+                        {MATH_TOPIC_LABELS[topic] || topic}: <span className="text-synth-magenta">{count}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan">Anh theo task</span>
+                    <span className="text-[10px] text-synth-text-muted">{questions.filter(q => !q.subject || q.subject === 'english').length} câu</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {topEnglishTasks.map(([task, count]) => (
+                      <span key={task} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
+                        {ENGLISH_TASK_LABELS[task] || task}: <span className="text-synth-cyan">{count}</span>
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] uppercase font-orbitron font-bold text-synth-orange">Văn theo task</span>
+                    <span className="text-[10px] text-synth-text-muted">{questions.filter(q => q.subject === 'literature').length} câu</span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {topLiteratureTasks.map(([task, count]) => (
+                      <span key={task} className="px-2.5 py-1 rounded-full bg-white/5 text-[10px] font-bold uppercase text-white border border-white/5">
+                        {LITERATURE_TASK_LABELS[task] || task}: <span className="text-synth-orange">{count}</span>
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -526,6 +897,46 @@ export const ParentConsole: React.FC = () => {
                           <span className="text-[10px] px-2 py-0.5 rounded bg-synth-magenta/15 text-synth-magenta font-bold uppercase font-orbitron">
                             {q.category}
                           </span>
+                          {q.metadata?.examPart && (
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-synth-green/15 text-synth-green font-bold uppercase font-orbitron">
+                              {q.metadata.examPart}
+                            </span>
+                          )}
+                          {q.subject === 'english' && q.metadata?.englishPart && (
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-synth-cyan/15 text-synth-cyan font-bold uppercase font-orbitron">
+                              {q.metadata.englishPart}
+                            </span>
+                          )}
+                          {q.subject === 'english' && q.metadata?.englishTask && (
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-white font-bold uppercase font-orbitron">
+                              {ENGLISH_TASK_LABELS[q.metadata.englishTask] || q.metadata.englishTask}
+                            </span>
+                          )}
+                          {q.subject === 'english' && q.metadata?.englishSkill && (
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-synth-magenta/15 text-synth-magenta font-bold uppercase font-orbitron">
+                              {ENGLISH_SKILL_LABELS[q.metadata.englishSkill] || q.metadata.englishSkill}
+                            </span>
+                          )}
+                          {q.metadata?.answerMode && (
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-white font-bold uppercase font-orbitron">
+                              {(q.subject === 'literature' ? LITERATURE_ANSWER_MODE_LABELS : q.subject === 'english' ? ENGLISH_ANSWER_MODE_LABELS : MATH_ANSWER_MODE_LABELS)[q.metadata.answerMode] || q.metadata.answerMode}
+                            </span>
+                          )}
+                          {q.metadata?.solutionStyle && (
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-synth-green/15 text-synth-green font-bold uppercase font-orbitron">
+                              {q.metadata.solutionStyle}
+                            </span>
+                          )}
+                          {q.metadata?.literatureTask && q.subject === 'literature' && (
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-synth-orange/15 text-synth-orange font-bold uppercase font-orbitron">
+                              {LITERATURE_TASK_LABELS[q.metadata.literatureTask] || q.metadata.literatureTask}
+                            </span>
+                          )}
+                          {q.metadata?.textGenre && q.subject === 'literature' && (
+                            <span className="text-[10px] px-2 py-0.5 rounded bg-white/5 text-white font-bold uppercase font-orbitron">
+                              {LITERATURE_TEXT_GENRE_LABELS[q.metadata.textGenre] || q.metadata.textGenre}
+                            </span>
+                          )}
                           {isCustom && (
                             <span className="text-[10px] px-2 py-0.5 rounded bg-synth-orange/20 text-synth-orange font-bold uppercase font-orbitron">
                               AI / Custom
@@ -610,7 +1021,7 @@ export const ParentConsole: React.FC = () => {
               </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
               <label className="space-y-2 text-xs">
                 <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Môn học</span>
                 <select
@@ -621,6 +1032,23 @@ export const ParentConsole: React.FC = () => {
                   <option value="english">🇬🇧 Tiếng Anh</option>
                   <option value="math">📐 Toán học</option>
                   <option value="literature">✍️ Ngữ văn</option>
+                </select>
+              </label>
+              <label className="space-y-2 text-xs">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Dạng câu hỏi</span>
+                <select
+                  value={editType}
+                  onChange={(e) => setEditType(e.target.value as Question['type'])}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                >
+                  <option value="mcq">Trắc nghiệm</option>
+                  <option value="short-answer">Tự luận ngắn</option>
+                  <option value="proof">Chứng minh</option>
+                  <option value="multi-part">Nhiều ý</option>
+                  <option value="wordform">Word form</option>
+                  <option value="rewrite">Rewrite</option>
+                  <option value="cloze">Cloze</option>
+                  <option value="reading">Reading</option>
                 </select>
               </label>
               <label className="space-y-2 text-xs">
@@ -642,6 +1070,164 @@ export const ParentConsole: React.FC = () => {
                 />
               </label>
             </div>
+
+            {editSubject === 'english' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <label className="space-y-2 text-xs">
+                  <span className="block text-synth-text-muted font-bold uppercase tracking-wider">English part</span>
+                  <select
+                    value={editEnglishPart}
+                    onChange={(e) => setEditEnglishPart(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                  >
+                    <option value="">Chưa phân loại</option>
+                    {ENGLISH_EXAM_BLUEPRINT.map(part => (
+                      <option key={part.part} value={part.part}>{part.part} - {part.title}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="space-y-2 text-xs">
+                  <span className="block text-synth-text-muted font-bold uppercase tracking-wider">English task</span>
+                  <select
+                    value={editEnglishTask}
+                    onChange={(e) => setEditEnglishTask(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                  >
+                    <option value="">Chưa chọn</option>
+                    {Object.entries(ENGLISH_TASK_LABELS).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="space-y-2 text-xs">
+                  <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Skill group</span>
+                  <select
+                    value={editEnglishSkill}
+                    onChange={(e) => setEditEnglishSkill(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                  >
+                    <option value="">Chưa chọn</option>
+                    {Object.entries(ENGLISH_SKILL_LABELS).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            )}
+
+            {editSubject === 'math' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <label className="space-y-2 text-xs">
+                  <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Bài / Phần</span>
+                  <input
+                    type="text"
+                    value={editExamPart}
+                    onChange={(e) => setEditExamPart(e.target.value)}
+                    placeholder="Bài 1, Bài 2, ..."
+                    className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                  />
+                </label>
+                <label className="space-y-2 text-xs">
+                  <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Math topic</span>
+                  <select
+                    value={editMathTopic}
+                    onChange={(e) => setEditMathTopic(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                  >
+                    <option value="">Chưa phân loại</option>
+                    {Object.entries(MATH_TOPIC_LABELS).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="space-y-2 text-xs">
+                  <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Answer mode</span>
+                  <select
+                    value={editAnswerMode}
+                    onChange={(e) => setEditAnswerMode(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                  >
+                    <option value="">Chưa chọn</option>
+                    {Object.entries(MATH_ANSWER_MODE_LABELS).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="space-y-2 text-xs">
+                  <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Solution style</span>
+                  <select
+                    value={editSolutionStyle}
+                    onChange={(e) => setEditSolutionStyle(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                  >
+                    <option value="">Chưa chọn</option>
+                    <option value="direct">Direct</option>
+                    <option value="worked">Worked</option>
+                    <option value="proof-outline">Proof outline</option>
+                    <option value="diagram">Diagram</option>
+                    <option value="table">Table</option>
+                    <option value="rubric">Rubric</option>
+                  </select>
+                </label>
+              </div>
+            )}
+
+            {(editSubject === 'math' || editSubject === 'english' || editSubject === 'literature') && (
+              <label className="space-y-2 text-xs block">
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Solution steps / 1 dòng = 1 ý</span>
+                <textarea
+                  value={editSolutionSteps}
+                  onChange={(e) => setEditSolutionSteps(e.target.value)}
+                  rows={4}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan font-mono text-xs"
+                />
+              </label>
+            )}
+
+            {editSubject === 'literature' && (
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                <label className="space-y-2 text-xs">
+                  <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Literature track</span>
+                  <select
+                    value={editLiteratureTrack}
+                    onChange={(e) => setEditLiteratureTrack(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                  >
+                    <option value="">Chưa phân loại</option>
+                    <option value="reading">Đọc hiểu</option>
+                    <option value="vietnamese">Tiếng Việt</option>
+                    <option value="social-essay">Nghị luận xã hội</option>
+                    <option value="literary-essay">Nghị luận văn học</option>
+                  </select>
+                </label>
+                <label className="space-y-2 text-xs">
+                  <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Literature task</span>
+                  <select
+                    value={editLiteratureTask}
+                    onChange={(e) => setEditLiteratureTask(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                  >
+                    <option value="">Chưa chọn</option>
+                    {Object.entries(LITERATURE_TASK_LABELS).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="space-y-2 text-xs">
+                  <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Text genre</span>
+                  <select
+                    value={editTextGenre}
+                    onChange={(e) => setEditTextGenre(e.target.value)}
+                    className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                  >
+                    <option value="">Chưa phân loại</option>
+                    {Object.entries(LITERATURE_TEXT_GENRE_LABELS).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
+            )}
 
             <label className="space-y-2 text-xs block">
               <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Đề bài</span>
@@ -1095,75 +1681,8 @@ export const ParentConsole: React.FC = () => {
         </div>
       )}
 
-      {activeTab === 'settings' && (
-        <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5">
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4 text-synth-cyan" />
-            <h3 className="font-orbitron font-bold text-sm text-synth-cyan uppercase tracking-wider">
-              Cấu hình Game
-            </h3>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {[
-              { label: 'Boss 2024', value: bossBounty2024, setter: setBossBounty2024 },
-              { label: 'Boss 2025', value: bossBounty2025, setter: setBossBounty2025 },
-              { label: 'Boss 2026', value: bossBounty2026, setter: setBossBounty2026 }
-            ].map(item => (
-              <label key={item.label} className="space-y-2 text-xs">
-                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">{item.label} bounty (VND)</span>
-                <input
-                  type="number"
-                  min={0}
-                  step={1000}
-                  value={item.value}
-                  onChange={(e) => item.setter(Number(e.target.value) || 0)}
-                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
-                />
-              </label>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {[
-              { label: 'Đảo 1', value: challengeCost1, setter: setChallengeCost1 },
-              { label: 'Đảo 2', value: challengeCost2, setter: setChallengeCost2 },
-              { label: 'Đảo 3', value: challengeCost3, setter: setChallengeCost3 },
-              { label: 'Đảo 4', value: challengeCost4, setter: setChallengeCost4 }
-            ].map(item => (
-              <label key={item.label} className="space-y-2 text-xs">
-                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">{item.label} cost (Energy)</span>
-                <input
-                  type="number"
-                  min={0}
-                  step={1}
-                  value={item.value}
-                  onChange={(e) => item.setter(Number(e.target.value) || 0)}
-                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
-                />
-              </label>
-            ))}
-          </div>
-
-          <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between bg-white/5 rounded-xl border border-white/5 p-4">
-            <p className="text-xs text-synth-text-muted leading-relaxed">
-              Các mức này sẽ hiển thị ở Boss Arena và các đảo thử thách trên toàn bộ game. Có thể đổi về 10.000đ / 15.000đ / 20.000đ và các cost thử thách tùy nhu cầu.
-            </p>
-            <button
-              onClick={async () => {
-                await updateBossBounties([bossBounty2024, bossBounty2025, bossBounty2026]);
-                await updateChallengeEnergyCosts([challengeCost1, challengeCost2, challengeCost3, challengeCost4]);
-              }}
-              className="px-4 py-2.5 rounded-xl bg-synth-magenta text-black font-orbitron font-bold text-[10px] uppercase tracking-wider hover:synth-glow-magenta transition-all shrink-0"
-            >
-              Lưu cấu hình
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Mobile Admin Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-3 py-2.5 pb-3 grid grid-cols-5 gap-1.5 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-3 py-2.5 pb-3 grid grid-cols-3 gap-1.5 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)]">
         <button
           onClick={() => {
             setActiveTab('members');
@@ -1184,7 +1703,7 @@ export const ParentConsole: React.FC = () => {
           }`}
         >
           <span className="text-lg">🎁</span>
-          <span>Phần thưởng</span>
+          <span>Thưởng & Cấu hình</span>
         </button>
 
         <button
@@ -1195,16 +1714,6 @@ export const ParentConsole: React.FC = () => {
         >
           <span className="text-lg">🤖</span>
           <span>Ngân hàng</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('settings')}
-          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
-            activeTab === 'settings' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
-          }`}
-        >
-          <SlidersHorizontal className="w-4 h-4" />
-          <span>Cấu hình</span>
         </button>
       </nav>
     </div>

@@ -91,8 +91,49 @@ const HELP_TOPICS: Record<string, { title: string; bullets: string[] }> = {
     title: 'Hướng dẫn sử dụng Bảng Quản Trị',
     bullets: [
       '• Tab Thành viên: Hiển thị danh sách các con. Nhấp "Xem Hoạt Động" để xem chi tiết tiến trình học, biểu đồ năng lực, trạng thái pet và 50 lịch sử gần nhất.',
+      '• Tab Ngân hàng: Có bộ đếm theo loại câu, theo part, theo chuyên đề và nút mở help cho từng môn.',
       '• Duyệt đổi quà: Phê duyệt nhanh các món quà con gửi yêu cầu ngay trong bảng Xem Hoạt Động.',
       '• AI Ingest: Nơi ba mẹ tự biên soạn hoặc nạp thêm ngân hàng câu hỏi mới cho con làm bài.'
+    ]
+  },
+  'bank-structure': {
+    title: 'Cách đọc ngân hàng câu hỏi',
+    bullets: [
+      '• Mỗi câu nên có subject, category và metadata để UI lọc đúng dạng.',
+      '• examPart dùng để chia đề theo phần / bài; answerMode cho biết cách chấm.',
+      '• solutionStyle và solutionSteps là khung chấm điểm nhanh cho CRUD và AI.'
+    ]
+  },
+  'math-bank': {
+    title: 'Dạng Toán & cách chấm',
+    bullets: [
+      '• Giữ đủ 8 bài: đồ thị, Viète, hàm bậc nhất, tăng trưởng %, giảm giá, thể tích dâng nước, mua hàng khuyến mãi, hình học chứng minh.',
+      '• Bài nhiều ý nên dùng answerMode = multi-part và subparts = [a, b, c].',
+      '• proof / diagram nên có solutionSteps rõ từng ý để chấm rubric không lệch.'
+    ]
+  },
+  'english-bank': {
+    title: 'Dạng Tiếng Anh',
+    bullets: [
+      '• Part I là MCQ: grammar, vocabulary, pronunciation, stress, communication, signs.',
+      '• Part II - III nên gắn guided-cloze hoặc reading để lọc đúng bài đọc.',
+      '• Part IV - VI nên lưu word-form, rearrangement, transformation và các đáp án chấp nhận được.'
+    ]
+  },
+  'literature-bank': {
+    title: 'Dạng Ngữ văn',
+    bullets: [
+      '• Tách rõ reading, tiếng Việt, nghị luận xã hội và nghị luận văn học.',
+      '• Bài đọc hiểu nên lưu textGenre và literatureTask để lọc đúng câu hỏi.',
+      '• Bài nghị luận nên dùng solutionSteps + correctAnswer dạng rubric để chấm từng ý.'
+    ]
+  },
+  rubric: {
+    title: 'Cách trình bày và chấm điểm',
+    bullets: [
+      '• Bố cục rõ: mở bài, thân bài, kết luận hoặc từng ý a/b/c.',
+      '• Ghi đủ bước biến đổi, công thức, và đơn vị để AI chấm không phải đoán.',
+      '• Ưu tiên answerMode phù hợp: short-answer cho đáp số, proof cho chứng minh, multi-part cho bài phân hóa.'
     ]
   },
   streak: {
@@ -158,16 +199,22 @@ interface GameState {
   adminRejectReward: (studentUserId: string, rewardId: string) => Promise<void>;
   adminDeductWallet: (studentUserId: string, amount: number) => Promise<void>;
   adminSetEnergy: (studentUserId: string, energyPercent: number) => Promise<void>;
-  updateBossBounties: (bossBountiesVnd: [number, number, number]) => Promise<void>;
-  updateChallengeEnergyCosts: (challengeEnergyCosts: [number, number, number, number]) => Promise<void>;
+  updateGameSettings: (payload: {
+    bossBountiesVnd?: [number, number, number];
+    challengeEnergyCosts?: [number, number, number, number];
+    maxEnergy?: number;
+    baseXP?: number;
+    baseCoins?: number;
+  }) => Promise<void>;
 
   // Player Actions
   answerQuestion: (
     questionId: string,
     isCorrect: boolean,
     timeSpentSeconds: number,
-    gameMode: 'practice' | 'survival' | 'boss' | 'infinite'
-  ) => { isCorrect: boolean; expGained: number; coinsGained: number; comboMultiplier: number };
+    gameMode: 'practice' | 'survival' | 'boss' | 'infinite',
+    scoreRatio?: number
+  ) => { isCorrect: boolean; expGained: number; coinsGained: number; comboMultiplier: number; scoreRatio: number };
   useEnergy: (amount: number) => boolean;
   addEnergy: (amount: number) => void;
   buyStreakShield: () => boolean;
@@ -201,7 +248,10 @@ const DEFAULT_PIN = '1234';
 const PLAYER_ENERGY_MAX = 1000;
 const DEFAULT_GAME_SETTINGS: GameSettings = {
   bossBountiesVnd: [10000, 15000, 20000],
-  challengeEnergyCosts: [10, 10, 15, 10]
+  challengeEnergyCosts: [10, 10, 15, 10],
+  maxEnergy: 1000,
+  baseXP: 15,
+  baseCoins: 5
 };
 
 const INITIAL_PLAYER: PlayerProfile = {
@@ -445,7 +495,7 @@ export const useGameState = create<GameState>()(
                   if (ch.id === 'ch-1' || ch.id === 'ch-4' || ch.id === 'ch-5' || ch.id === 'ch-6') {
                     // General question counters
                     match = true;
-                  } else if (ch.id === 'ch-2' && (category === 'grammar' || category === 'passive-voice' || category === 'relative-clauses' || category === 'tenses')) {
+                  } else if (ch.id === 'ch-2' && (category === 'grammar' || category === 'passive-voice' || category === 'relative-clauses' || category === 'tenses' || category === 'rewrite')) {
                     // Grammar specific
                     match = isCorrect;
                   } else if (ch.id === 'ch-3' && isCorrect) {
@@ -522,7 +572,7 @@ export const useGameState = create<GameState>()(
                 if (req.type === 'count') {
                   match = true;
                 } else if (req.type === 'category') {
-                  if (req.description.includes('Grammar') && (category === 'grammar' || category === 'passive-voice' || category === 'relative-clauses' || category === 'tenses')) {
+                  if (req.description.includes('Grammar') && (category === 'grammar' || category === 'passive-voice' || category === 'relative-clauses' || category === 'tenses' || category === 'rewrite')) {
                     match = true;
                   } else if (req.description.includes('Reading') && (category === 'reading' || category === 'cloze')) {
                     match = true;
@@ -951,7 +1001,7 @@ export const useGameState = create<GameState>()(
           }
         },
 
-        updateBossBounties: async (bossBountiesVnd: [number, number, number]) => {
+        updateGameSettings: async (payload) => {
           try {
             const session = (await supabase.auth.getSession()).data.session;
             const token = session?.access_token;
@@ -964,54 +1014,31 @@ export const useGameState = create<GameState>()(
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + token
               },
-              body: JSON.stringify({ bossBountiesVnd })
+              body: JSON.stringify(payload)
             });
             if (!res.ok) {
               const errData = await res.json();
-              alert(errData.error || 'Lỗi khi cập nhật vàng săn thưởng.');
+              alert(errData.error || 'Lỗi khi cập nhật cấu hình.');
               return;
             }
-            set(state => ({ gameSettings: { ...state.gameSettings, bossBountiesVnd } }));
-            alert('Đã cập nhật vàng săn thưởng cho Boss Arena.');
+            set(state => ({
+              gameSettings: {
+                ...state.gameSettings,
+                ...payload
+              }
+            }));
+            alert('Đã cập nhật cấu hình trò chơi thành công!');
           } catch (e) {
-            console.error('Error updating boss bounties:', e);
-            alert('Lỗi kết nối khi cập nhật vàng săn thưởng.');
-          }
-        },
-
-        updateChallengeEnergyCosts: async (challengeEnergyCosts: [number, number, number, number]) => {
-          try {
-            const session = (await supabase.auth.getSession()).data.session;
-            const token = session?.access_token;
-            if (!token) return;
-
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-            const res = await fetch(`${backendUrl}/api/admin/game-settings`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
-              },
-              body: JSON.stringify({ challengeEnergyCosts })
-            });
-            if (!res.ok) {
-              const errData = await res.json();
-              alert(errData.error || 'Lỗi khi cập nhật chi phí thử thách.');
-              return;
-            }
-            set(state => ({ gameSettings: { ...state.gameSettings, challengeEnergyCosts } }));
-            alert('Đã cập nhật chi phí thử thách.');
-          } catch (e) {
-            console.error('Error updating challenge costs:', e);
-            alert('Lỗi kết nối khi cập nhật chi phí thử thách.');
+            console.error('Error updating game settings:', e);
+            alert('Lỗi kết nối khi cập nhật cấu hình.');
           }
         },
 
         // Student Actions
-        answerQuestion: (questionId, isCorrect, _timeSpent, gameMode) => {
+        answerQuestion: (questionId, isCorrect, _timeSpent, gameMode, scoreRatio = isCorrect ? 1 : 0) => {
           const state = get();
           const question = state.questions.find(q => q.id === questionId);
-          if (!question) return { isCorrect: false, expGained: 0, coinsGained: 0, comboMultiplier: 1 };
+          if (!question) return { isCorrect: false, expGained: 0, coinsGained: 0, comboMultiplier: 1, scoreRatio: 0 };
 
           // 1. Update rolling category stats
           const category = question.category;
@@ -1023,7 +1050,9 @@ export const useGameState = create<GameState>()(
             recentResults: []
           };
 
-          const newRecentResults = [...currentStat.recentResults, isCorrect].slice(-10); // Keep last 10
+          const performanceScore = Math.max(0, Math.min(1, scoreRatio));
+          const effectiveCorrect = performanceScore >= 0.6;
+          const newRecentResults = [...currentStat.recentResults, effectiveCorrect].slice(-10); // Keep last 10
           const correctCount = newRecentResults.filter(Boolean).length;
           const rollingAccuracy = correctCount / newRecentResults.length;
 
@@ -1032,7 +1061,7 @@ export const useGameState = create<GameState>()(
             [category]: {
               category,
               totalAnswered: currentStat.totalAnswered + 1,
-              totalCorrect: currentStat.totalCorrect + (isCorrect ? 1 : 0),
+              totalCorrect: currentStat.totalCorrect + (effectiveCorrect ? 1 : 0),
               rollingAccuracy,
               recentResults: newRecentResults
             }
@@ -1044,8 +1073,8 @@ export const useGameState = create<GameState>()(
           let newCombo = state.activeCombo;
           let comboMultiplier = 1.0;
 
-          if (isCorrect) {
-            newCombo += 1;
+          if (performanceScore > 0) {
+            if (effectiveCorrect) newCombo += 1;
             
             // Set multipliers
             if (newCombo >= 30) comboMultiplier = 2.0;
@@ -1053,12 +1082,12 @@ export const useGameState = create<GameState>()(
             else if (newCombo >= 10) comboMultiplier = 1.2;
 
             // Base scores adjusted by difficulty
-            const baseXP = 15;
-            const baseCoins = 5;
+            const baseXP = state.gameSettings.baseXP ?? 15;
+            const baseCoins = state.gameSettings.baseCoins ?? 5;
             const difficultyMultiplier = 1 + (question.difficulty - 1) * 0.1; // e.g. diff 10 gives 1.9x
 
-            expGained = Math.round(baseXP * difficultyMultiplier * comboMultiplier);
-            coinsGained = Math.round(baseCoins * difficultyMultiplier * comboMultiplier);
+            expGained = Math.round(baseXP * difficultyMultiplier * comboMultiplier * performanceScore);
+            coinsGained = Math.round(baseCoins * difficultyMultiplier * comboMultiplier * performanceScore);
 
             // Apply streak multiplier to coins and XP
             const streakBonus = 1 + Math.min(1.0, state.player.streak * 0.1); // Max 2.0x (10 days streak)
@@ -1068,7 +1097,7 @@ export const useGameState = create<GameState>()(
             newCombo = 0; // Combo resets
             
             // Deduct heart for Survival/Boss mode
-            if (gameMode === 'survival' || gameMode === 'boss') {
+            if ((gameMode === 'survival' || gameMode === 'boss') && performanceScore < 0.35) {
               set(prev => ({
                 player: {
                   ...prev.player,
@@ -1106,7 +1135,15 @@ export const useGameState = create<GameState>()(
           });
 
           // Write activity log
-          if (isCorrect) {
+          if (performanceScore > 0 && !effectiveCorrect) {
+            logActivity(
+              'exercise',
+              'Câu trả lời CHƯA ĐẠT',
+              `Đúng một phần dạng [${question.category}] - Đạt ${Math.round(performanceScore * 10)}/10 theo rubric. Nhận +${coinsGained} NP / +${expGained} XP.`,
+              coinsGained,
+              expGained
+            );
+          } else if (isCorrect) {
             logActivity(
               'exercise', 
               'Câu trả lời ĐÚNG', 
@@ -1128,12 +1165,13 @@ export const useGameState = create<GameState>()(
           eventBus.publish('QUESTION_ANSWERED', {
             questionId,
             category,
-            isCorrect,
+            isCorrect: effectiveCorrect,
             difficulty: question.difficulty,
-            gameMode
+            gameMode,
+            scoreRatio: performanceScore
           });
 
-          return { isCorrect, expGained, coinsGained, comboMultiplier };
+          return { isCorrect: effectiveCorrect, expGained, coinsGained, comboMultiplier, scoreRatio: performanceScore };
         },
 
         useEnergy: (amount) => {
@@ -1153,7 +1191,7 @@ export const useGameState = create<GameState>()(
           set(state => ({
             player: {
               ...state.player,
-              energy: Math.min(PLAYER_ENERGY_MAX, state.player.energy + amount)
+              energy: Math.min(state.gameSettings.maxEnergy ?? 1000, state.player.energy + amount)
             }
           }));
         },
@@ -1526,7 +1564,7 @@ export const useGameState = create<GameState>()(
             player: {
               ...state.player,
               streak: newStreak,
-              energy: PLAYER_ENERGY_MAX, // Refill energy daily
+              energy: state.gameSettings.maxEnergy ?? 1000, // Refill energy daily
               hearts: 3, // Refill hearts daily
               lastActive: new Date().toISOString()
             },
@@ -1579,13 +1617,13 @@ export const useGameState = create<GameState>()(
 
           if (state.currentSubject === 'math') {
             if (mode === 'grammar') {
-              categoriesPool.push('parabol-line', 'viet-relation');
+              categoriesPool.push('parabol-line', 'viet-relation', 'linear-function');
             } else if (mode === 'reading') {
-              categoriesPool.push('real-geometry', 'plane-geometry');
+              categoriesPool.push('real-geometry', 'plane-geometry', 'volume-displacement', 'tangent-geometry');
             } else if (mode === 'vocabulary') {
-              categoriesPool.push('real-equations', 'real-finance');
+              categoriesPool.push('real-equations', 'real-finance', 'growth-modeling', 'percentage-discount', 'shopping-discount');
             } else {
-              categoriesPool.push('parabol-line', 'viet-relation', 'real-equations', 'real-geometry', 'real-finance', 'plane-geometry');
+              categoriesPool.push('parabol-line', 'viet-relation', 'linear-function', 'growth-modeling', 'percentage-discount', 'volume-displacement', 'shopping-discount', 'real-equations', 'real-geometry', 'real-finance', 'plane-geometry', 'tangent-geometry');
             }
           } else if (state.currentSubject === 'literature') {
             if (mode === 'grammar') {
@@ -1599,13 +1637,13 @@ export const useGameState = create<GameState>()(
             }
           } else {
             if (mode === 'grammar') {
-              categoriesPool.push('grammar', 'passive-voice', 'relative-clauses', 'tenses');
+              categoriesPool.push('grammar', 'passive-voice', 'relative-clauses', 'tenses', 'rewrite');
             } else if (mode === 'reading') {
               categoriesPool.push('reading', 'cloze');
             } else if (mode === 'vocabulary') {
               categoriesPool.push('vocabulary', 'wordform');
             } else {
-              categoriesPool.push('grammar', 'passive-voice', 'relative-clauses', 'tenses', 'reading', 'cloze', 'vocabulary', 'wordform', 'pronunciation', 'stress');
+              categoriesPool.push('grammar', 'passive-voice', 'relative-clauses', 'tenses', 'rewrite', 'reading', 'cloze', 'vocabulary', 'wordform', 'pronunciation', 'stress');
             }
           }
 

@@ -1,4 +1,4 @@
-export type QuestionType = 'mcq' | 'wordform' | 'rewrite' | 'cloze' | 'reading';
+export type QuestionType = 'mcq' | 'wordform' | 'rewrite' | 'cloze' | 'reading' | 'short-answer' | 'proof' | 'multi-part';
 export type ChallengeType = 'daily' | 'weekly' | 'achievement' | 'one-time';
 export type RewardStatus = 'pending' | 'approved' | 'claimed';
 export type PetStage = 'egg' | 'baby' | 'dragon' | 'legend';
@@ -8,6 +8,9 @@ export type UiThemeId = 'current' | 'cute-pink-pastel' | 'space-adventure' | 'fa
 export interface GameSettings {
   bossBountiesVnd: [number, number, number];
   challengeEnergyCosts: [number, number, number, number];
+  maxEnergy?: number;
+  baseXP?: number;
+  baseCoins?: number;
 }
 
 export interface UserProfile {
@@ -45,6 +48,25 @@ export interface Question {
   source: string; // e.g. "HCMC 2024 Exam", "Specialized 2025 Mock"
   subject?: 'english' | 'math' | 'literature';
   imageUrl?: string;
+  metadata?: QuestionMeta;
+}
+
+export interface QuestionMeta {
+  examPart?: string;
+  mathTopic?: 'function-graph' | 'quadratic-equation' | 'linear-function' | 'growth-modeling' | 'percentage-discount' | 'volume-displacement' | 'shopping-discount' | 'tangent-geometry' | 'statistics-probability' | 'modeling' | 'solid-geometry' | 'finance' | 'plane-geometry' | 'mixed';
+  answerMode?: 'single-choice' | 'short-answer' | 'proof' | 'multi-part' | 'numeric' | 'expression';
+  solutionStyle?: 'direct' | 'worked' | 'proof-outline' | 'diagram' | 'table' | 'rubric';
+  englishPart?: 'Part I' | 'Part II' | 'Part III' | 'Part IV' | 'Part V' | 'Part VI';
+  englishTask?: 'grammar' | 'vocabulary' | 'pronunciation' | 'stress' | 'guided-cloze' | 'reading-true-false' | 'reading-mcq' | 'word-form' | 'rearrangement' | 'transformation' | 'mixed';
+  englishSkill?: 'multiple-choice' | 'guided-cloze' | 'reading' | 'word-form' | 'rearrangement' | 'transformation';
+  literatureTrack?: 'reading' | 'vietnamese' | 'social-essay' | 'literary-essay';
+  literatureTask?: 'main-idea' | 'detail' | 'rhetoric' | 'vocabulary' | 'message' | 'social-essay' | 'poetry-analysis' | 'prose-analysis' | 'character-analysis' | 'comparison';
+  textGenre?: 'poetry' | 'prose' | 'argument' | 'informative' | 'mixed';
+  subparts?: string[];
+  solutionSteps?: string[];
+  formulaHints?: string[];
+  diagramHint?: string;
+  tags?: string[];
 }
 
 export interface CategoryStat {

@@ -33,6 +33,7 @@ const initDB = async () => {
     await pool.query(sql);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS subject VARCHAR(50) DEFAULT 'english';`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS image_url TEXT;`);
+    await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;`);
     await pool.query(`ALTER TABLE ge10_player_profiles ADD COLUMN IF NOT EXISTS server_updated_at TIMESTAMP DEFAULT NOW();`);
     console.log('Database initialized successfully.');
   } catch (error) {
@@ -79,6 +80,67 @@ const authMiddleware = async (req: any, res: any, next: any) => {
   }
 };
 
+// Friendly Vietnamese message shown to users once GEMINI_API_KEY, GEMINI_API_KEY2 and GEMINI_API_KEY3 have all failed
+const AI_EXHAUSTED_MESSAGE = 'Các sư phụ đã hết công lực AI rồi, phải nhờ đại sư phụ nạp thêm tiền để hồi phục công lực thì mới chấm bài bằng AI được!';
+
+class GeminiExhaustedError extends Error {
+  constructor() {
+    super(AI_EXHAUSTED_MESSAGE);
+    this.name = 'GeminiExhaustedError';
+  }
+}
+
+const getGeminiApiKeys = (): string[] => {
+  return [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEY2, process.env.GEMINI_API_KEY3]
+    .filter((key): key is string => !!key && key.trim() !== '' && !key.toLowerCase().includes('your_gemini_api_key'));
+};
+
+// Calls the Gemini API, trying GEMINI_API_KEY -> GEMINI_API_KEY2 -> GEMINI_API_KEY3 in order.
+// Only moves on to the next key when a key fails (quota/error); throws GeminiExhaustedError once all keys are exhausted.
+const callGeminiAPI = async (prompt: string, generationConfig: Record<string, any> = { responseMimeType: 'application/json' }): Promise<string> => {
+  const keys = getGeminiApiKeys();
+  if (keys.length === 0) {
+    throw new GeminiExhaustedError();
+  }
+
+  let lastError: Error | null = null;
+  for (let i = 0; i < keys.length; i++) {
+    try {
+      const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${keys[i]}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig
+        })
+      });
+
+      if (!apiRes.ok) {
+        const errText = await apiRes.text();
+        lastError = new Error(`Gemini key #${i + 1} thất bại: ${errText}`);
+        console.error(lastError.message);
+        continue;
+      }
+
+      const apiData = await apiRes.json() as any;
+      const responseText = apiData.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (!responseText) {
+        lastError = new Error(`Gemini key #${i + 1} trả về response rỗng.`);
+        console.error(lastError.message);
+        continue;
+      }
+
+      return responseText;
+    } catch (err: any) {
+      lastError = err;
+      console.error(`Gemini key #${i + 1} lỗi:`, err.message);
+    }
+  }
+
+  console.error('Tất cả Gemini API keys đều thất bại:', lastError?.message);
+  throw new GeminiExhaustedError();
+};
+
 const loadBossBounties = async (): Promise<[number, number, number]> => {
   const res = await pool.query(
     "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'boss_bounties_vnd'"
@@ -116,6 +178,60 @@ const loadChallengeEnergyCosts = async (): Promise<[number, number, number, numb
   return DEFAULT_CHALLENGE_ENERGY_COSTS;
 };
 
+const loadMaxEnergy = async (): Promise<number> => {
+  const res = await pool.query(
+    "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'max_energy'"
+  );
+  const raw = res.rows[0]?.setting_json;
+  const value = Number(raw?.['value']);
+  return (Number.isFinite(value) && value > 0) ? value : 1000;
+};
+
+const loadBaseXP = async (): Promise<number> => {
+  const res = await pool.query(
+    "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'base_xp'"
+  );
+  const raw = res.rows[0]?.setting_json;
+  const value = Number(raw?.['value']);
+  return (Number.isFinite(value) && value > 0) ? value : 15;
+};
+
+const loadBaseCoins = async (): Promise<number> => {
+  const res = await pool.query(
+    "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'base_coins'"
+  );
+  const raw = res.rows[0]?.setting_json;
+  const value = Number(raw?.['value']);
+  return (Number.isFinite(value) && value > 0) ? value : 5;
+};
+
+const saveMaxEnergy = async (maxEnergy: number) => {
+  await pool.query(
+    `INSERT INTO ge10_game_settings (setting_key, setting_json)
+     VALUES ('max_energy', $1::jsonb)
+     ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
+    [JSON.stringify({ value: maxEnergy })]
+  );
+};
+
+const saveBaseXP = async (baseXP: number) => {
+  await pool.query(
+    `INSERT INTO ge10_game_settings (setting_key, setting_json)
+     VALUES ('base_xp', $1::jsonb)
+     ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
+    [JSON.stringify({ value: baseXP })]
+  );
+};
+
+const saveBaseCoins = async (baseCoins: number) => {
+  await pool.query(
+    `INSERT INTO ge10_game_settings (setting_key, setting_json)
+     VALUES ('base_coins', $1::jsonb)
+     ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
+    [JSON.stringify({ value: baseCoins })]
+  );
+};
+
 const saveBossBounties = async (bossBountiesVnd: [number, number, number]) => {
   await pool.query(
     `INSERT INTO ge10_game_settings (setting_key, setting_json)
@@ -136,8 +252,8 @@ const saveChallengeEnergyCosts = async (challengeEnergyCosts: [number, number, n
 
 const persistCustomQuestion = async (userId: string, question: any) => {
   await pool.query(
-    `INSERT INTO ge10_custom_questions (id, user_id, type, category, prompt, options, correct_answer, explanation, difficulty, source, subject, image_url)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+    `INSERT INTO ge10_custom_questions (id, user_id, type, category, prompt, options, correct_answer, explanation, difficulty, source, subject, image_url, metadata)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
      ON CONFLICT (id) DO UPDATE SET
        type = EXCLUDED.type,
        category = EXCLUDED.category,
@@ -148,7 +264,8 @@ const persistCustomQuestion = async (userId: string, question: any) => {
        difficulty = EXCLUDED.difficulty,
        source = EXCLUDED.source,
        subject = EXCLUDED.subject,
-       image_url = EXCLUDED.image_url`,
+       image_url = EXCLUDED.image_url,
+       metadata = EXCLUDED.metadata`,
     [
       question.id,
       userId,
@@ -161,7 +278,8 @@ const persistCustomQuestion = async (userId: string, question: any) => {
       question.difficulty || 5,
       question.source || 'AI Ingested English',
       question.subject || 'english',
-      question.imageUrl || question.image_url || null
+      question.imageUrl || question.image_url || null,
+      question.metadata ? JSON.stringify(question.metadata) : null
     ]
   );
 };
@@ -261,6 +379,9 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
     );
     const bossBountiesVnd = await loadBossBounties();
     const challengeEnergyCosts = await loadChallengeEnergyCosts();
+    const maxEnergy = await loadMaxEnergy();
+    const baseXP = await loadBaseXP();
+    const baseCoins = await loadBaseCoins();
 
     // Format category stats array into record mapping
     const categoryStats: any = {};
@@ -354,7 +475,10 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
       dailyMission,
       gameSettings: {
         bossBountiesVnd,
-        challengeEnergyCosts
+        challengeEnergyCosts,
+        maxEnergy,
+        baseXP,
+        baseCoins
       },
       customQuestions
     });
@@ -552,7 +676,8 @@ app.get('/api/questions/custom', authMiddleware, async (req: any, res) => {
       difficulty: row.difficulty,
       source: row.source,
       subject: row.subject,
-      imageUrl: row.image_url
+      imageUrl: row.image_url,
+      metadata: row.metadata || undefined
     })));
   } catch (error) {
     console.error('Error loading custom questions:', error);
@@ -606,81 +731,133 @@ app.post('/api/ai/ingest', authMiddleware, async (req: any, res) => {
   if (!rawText) return res.status(400).json({ error: 'Missing rawText.' });
 
   try {
-    const geminiKey = process.env.GEMINI_API_KEY;
-    if (!geminiKey || geminiKey.includes('AIzaSy') || geminiKey.includes('sk-')) {
-      return res.status(400).json({ error: 'Gemini API Key is not configured or is a placeholder.' });
-    }
-
     let prompt = '';
     if (subject === 'math') {
-      prompt = `Bạn là một chuyên gia ôn thi môn Toán lớp 10 TP.HCM. Hãy phân tích đoạn văn bản sau đây và trích xuất/tạo ra các câu hỏi luyện thi trắc nghiệm theo đúng cấu trúc đề tuyển sinh môn Toán lớp 10 của Sở GD&ĐT TP.HCM. Các chủ đề bao gồm:
-      - "parabol-line": Hàm số đồ thị Parabol và đường thẳng y = ax+b.
-      - "viet-relation": Hệ thức Vi-ét và phương trình bậc hai.
-      - "real-equations": Giải toán bằng cách lập hệ phương trình hoặc phương trình thực tế.
-      - "real-geometry": Hình học không gian thực tế (thể tích/diện tích lon nước, phễu nón, quả cầu).
-      - "real-finance": Toán thực tế tài chính (lãi suất ngân hàng, khuyến mãi giảm giá, phần trưng).
-      - "plane-geometry": Hình học phẳng (tứ giác nội tiếp, tiếp tuyến đường tròn, tam giác đồng dạng).
-      
+      prompt = `Bạn là một chuyên gia ôn thi môn Toán lớp 10 TP.HCM. Hãy phân tích đoạn văn bản sau đây và trích xuất/tạo ra câu hỏi theo đúng cấu trúc đề tuyển sinh Toán 10 TP.HCM. Đề thật thường chia theo 8 cụm nội dung: parabol/đồ thị, Vi-ét, hàm số bậc nhất/đổi đơn vị, tăng trưởng theo tỉ lệ phần trăm, giảm giá lũy tiến, hình học thể tích/dâng nước, mua hàng khuyến mãi, hình học phẳng chứng minh.
+
       Trả về kết quả duy nhất là một mảng JSON các đối tượng theo schema sau, không kèm theo markdown hay phần giải thích ngoài JSON:
       [
         {
           "id": "chuỗi ngẫu nhiên duy nhất",
-          "type": "mcq",
-          "category": "parabol-line" | "viet-relation" | "real-equations" | "real-geometry" | "real-finance" | "plane-geometry",
-          "prompt": "Đề bài câu hỏi (sử dụng ký hiệu toán học dễ đọc như x^2, x_1, x_2, căn(x), phân số dạng a/b)...",
+          "type": "mcq" | "short-answer" | "proof" | "multi-part",
+          "category": "parabol-line" | "viet-relation" | "linear-function" | "growth-modeling" | "percentage-discount" | "volume-displacement" | "shopping-discount" | "tangent-geometry" | "real-equations" | "real-geometry" | "real-finance" | "plane-geometry" | "statistics-probability" | "modeling",
+          "prompt": "Đề bài câu hỏi. Nếu là bài chứng minh hoặc nhiều ý, hãy giữ nguyên a/b/c rõ ràng.",
           "options": ["Lựa chọn A", "Lựa chọn B", "Lựa chọn C", "Lựa chọn D"],
-          "correctAnswer": "Lựa chọn chính xác, khớp với 1 trong các tùy chọn trong options",
-          "explanation": "Giải thích chi tiết các bước tính toán và lời giải từng bước...",
+          "correctAnswer": "Đáp án đúng hoặc mảng các đáp án được chấp nhận",
+          "explanation": "Giải thích chi tiết từng bước. Với bài hình hoặc chứng minh, tách các bước logic rõ ràng.",
           "difficulty": số từ 1 đến 10,
-          "source": "AI Ingested Math"
+          "source": "AI Ingested Math",
+          "metadata": {
+            "examPart": "Bài 1|Bài 2|...",
+            "mathTopic": "function-graph" | "quadratic-equation" | "linear-function" | "growth-modeling" | "percentage-discount" | "volume-displacement" | "shopping-discount" | "tangent-geometry" | "statistics-probability" | "modeling" | "solid-geometry" | "finance" | "plane-geometry" | "mixed",
+            "answerMode": "single-choice" | "short-answer" | "proof" | "multi-part" | "numeric" | "expression",
+            "solutionStyle": "direct" | "worked" | "proof-outline" | "diagram" | "table",
+            "subparts": ["a", "b", "c"],
+            "solutionSteps": ["Bước 1...", "Bước 2..."],
+            "formulaHints": ["..."],
+            "diagramHint": "...",
+            "tags": ["official-exam", "hcmc-2026"]
+          }
         }
       ]
 
       Văn bản cần phân tích:
       ${rawText}`;
     } else if (subject === 'literature') {
-      prompt = `Bạn là một chuyên gia ôn thi môn Ngữ văn lớp 10 TP.HCM. Hãy phân tích đoạn văn bản sau đây và trích xuất/tạo ra các câu hỏi trắc nghiệm theo đúng cấu trúc đề tuyển sinh lớp 10 TP.HCM môn Ngữ văn. Các chủ đề bao gồm:
-      - "literature-reading-poetry": Đọc hiểu tác phẩm thơ.
-      - "literature-reading-prose": Đọc hiểu tác phẩm truyện, kí, tản văn.
-      - "literature-reading-argument": Đọc hiểu văn bản nghị luận xã hội hoặc văn bản thông tin (biểu đồ, số liệu).
-      - "literature-vietnamese": Tiếng Việt thực hành (các biện pháp tu từ như ẩn dụ, hoán dụ, điệp từ; nghĩa tường minh/hàm ý; thành ngữ; liên kết câu).
-      - "literature-writing": Kỹ năng làm văn nghị luận xã hội và nghị luận văn học.
-      
+      prompt = `Bạn là một chuyên gia ôn thi môn Ngữ văn lớp 10 TP.HCM. Hãy phân tích đoạn văn bản sau đây và trích xuất/tạo ra các câu hỏi theo đúng cấu trúc đề tuyển sinh lớp 10 TP.HCM môn Ngữ văn. Ngân hàng câu hỏi phải bao phủ đủ 4 lớp nội dung:
+      - "literature-reading-poetry": Đọc hiểu thơ.
+      - "literature-reading-prose": Đọc hiểu truyện, kí, tản văn.
+      - "literature-reading-argument": Đọc hiểu văn bản nghị luận hoặc văn bản thông tin.
+      - "literature-vietnamese": Tiếng Việt thực hành: phương thức biểu đạt, biện pháp tu từ, thành phần câu, nghĩa từ, liên kết.
+      - "literature-writing": Nghị luận xã hội và nghị luận văn học.
+
+      Gợi ý phân tầng metadata để UI và CRUD hiểu đúng bank:
+      - Phần I: reading, dùng cho câu nhận biết/thông hiểu/vận dụng đọc hiểu.
+      - Phần II: vietnamese, dùng cho câu tiếng Việt thực hành.
+      - Phần III: social-essay, dùng cho bài nghị luận xã hội.
+      - Phần IV: literary-essay, dùng cho bài nghị luận văn học.
+      - textGenre: poetry | prose | argument | informative | mixed.
+      - literatureTask: main-idea | detail | rhetoric | vocabulary | message | social-essay | poetry-analysis | prose-analysis | character-analysis | comparison.
+      - answerMode: single-choice | short-answer | multi-part.
+      - solutionStyle: direct | worked | rubric.
+
       Lưu ý đặc biệt đối với đọc hiểu văn bản:
       Nếu câu hỏi có đi kèm một văn bản đọc hiểu (đoạn trích thơ/văn), hãy đặt văn bản đọc hiểu đó ở đầu thuộc tính "prompt" theo mẫu định dạng:
-      "**Đọc đoạn trích sau và trả lời câu hỏi:**\\n[Đoạn văn bản trích dẫn]\\n\\n[Câu hỏi cụ thể...]"
-      
+      "**Đọc đoạn trích sau và trả lời câu hỏi:**
+[Đoạn văn bản trích dẫn]
+
+[Câu hỏi cụ thể...]"
+
+      Với câu nghị luận, hãy trả về các ý chấm/rubric dưới dạng mảng trong correctAnswer và solutionSteps để có thể tái dùng cho CRUD và hiển thị đáp án mẫu.
+
       Trả về kết quả duy nhất là một mảng JSON các đối tượng theo schema sau, không kèm theo markdown hay phần giải thích ngoài JSON:
       [
         {
           "id": "chuỗi ngẫu nhiên duy nhất",
-          "type": "mcq",
+          "type": "mcq" | "short-answer" | "multi-part",
           "category": "literature-reading-poetry" | "literature-reading-prose" | "literature-reading-argument" | "literature-vietnamese" | "literature-writing",
           "prompt": "Đề bài câu hỏi (kèm đoạn văn bản trích dẫn nếu có)...",
           "options": ["Lựa chọn A", "Lựa chọn B", "Lựa chọn C", "Lựa chọn D"],
-          "correctAnswer": "Lựa chọn chính xác, khớp với 1 trong các tùy chọn trong options",
-          "explanation": "Giải thích chi tiết tại sao chọn đáp án đó...",
+          "correctAnswer": "Lựa chọn chính xác hoặc mảng các ý/keyword được chấp nhận",
+          "explanation": "Giải thích chi tiết tại sao chọn đáp án đó hoặc rubric chấm bài...",
           "difficulty": số từ 1 đến 10,
-          "source": "AI Ingested Literature"
+          "source": "AI Ingested Literature",
+          "metadata": {
+            "examPart": "Phần I|Phần II|Phần III|Phần IV",
+            "literatureTrack": "reading" | "vietnamese" | "social-essay" | "literary-essay",
+            "literatureTask": "main-idea" | "detail" | "rhetoric" | "vocabulary" | "message" | "social-essay" | "poetry-analysis" | "prose-analysis" | "character-analysis" | "comparison",
+            "textGenre": "poetry" | "prose" | "argument" | "informative" | "mixed",
+            "answerMode": "single-choice" | "short-answer" | "multi-part",
+            "solutionStyle": "direct" | "worked" | "rubric",
+            "subparts": ["mở bài", "thân bài", "kết bài"],
+            "solutionSteps": ["Bước 1...", "Bước 2..."],
+            "tags": ["official-exam", "hcmc-2026"]
+          }
         }
       ]
 
       Văn bản cần phân tích:
       ${rawText}`;
     } else {
-      prompt = `Bạn là một chuyên gia ôn thi tiếng Anh lớp 10 TP.HCM. Hãy phân tích đoạn văn bản sau đây và trích xuất/tạo ra các câu hỏi luyện thi theo đúng cấu trúc đề tuyển sinh lớp 10 TP.HCM (MCQ, Word Form, Rewrite, Cloze).
+
+      prompt = `Bạn là một chuyên gia ôn thi tiếng Anh lớp 10 TP.HCM. Hãy phân tích đoạn văn bản sau đây và trích xuất/tạo ra câu hỏi theo đúng cấu trúc đề tuyển sinh lớp 10 TP.HCM môn Tiếng Anh. Đề chuẩn hóa có 6 phần:
+      - Part I: Multiple Choice (grammar, vocabulary, pronunciation, stress, communication, signs).
+      - Part II: Guided Cloze.
+      - Part III: Reading Comprehension (true/false, main idea, detail, reference).
+      - Part IV: Word Forms.
+      - Part V: Sentence Rearrangement.
+      - Part VI: Sentence Transformation.
+
+      Gợi ý phân tầng metadata để UI và CRUD hiểu đúng bank:
+      - englishPart: Part I | Part II | Part III | Part IV | Part V | Part VI.
+      - englishTask: grammar | vocabulary | pronunciation | stress | guided-cloze | reading-true-false | reading-mcq | word-form | rearrangement | transformation.
+      - englishSkill: multiple-choice | guided-cloze | reading | word-form | rearrangement | transformation.
+      - answerMode: single-choice | short-answer | multi-part.
+      - solutionStyle: direct | worked | rubric.
+
       Trả về kết quả duy nhất là một mảng JSON các đối tượng theo schema sau, không kèm theo markdown hay phần giải thích ngoài JSON:
       [
         {
           "id": "chuỗi ngẫu nhiên duy nhất",
-          "type": "mcq" | "wordform" | "rewrite" | "cloze",
-          "category": "grammar" | "reading" | "vocabulary" | "wordform" | "pronunciation" | "stress" | "tenses" | "passive-voice" | "relative-clauses",
+          "type": "mcq" | "wordform" | "rewrite" | "cloze" | "short-answer" | "multi-part",
+          "category": "grammar" | "reading" | "vocabulary" | "wordform" | "pronunciation" | "stress" | "tenses" | "passive-voice" | "relative-clauses" | "rewrite",
           "prompt": "Đề bài câu hỏi...",
           "options": ["Lựa chọn A", "Lựa chọn B", "Lựa chọn C", "Lựa chọn D"],
-          "correctAnswer": "Đáp án đúng (nếu là rewrite hoặc wordform thì trả về mảng các đáp án được chấp nhận, ví dụ ['experienced'])",
+          "correctAnswer": "Đáp án đúng hoặc mảng các đáp án được chấp nhận",
           "explanation": "Giải thích chi tiết tại sao chọn đáp án đó...",
           "difficulty": số từ 1 đến 10,
-          "source": "AI Ingested English"
+          "source": "AI Ingested English",
+          "metadata": {
+            "examPart": "Part I|Part II|Part III|Part IV|Part V|Part VI",
+            "englishPart": "Part I|Part II|Part III|Part IV|Part V|Part VI",
+            "englishTask": "grammar|vocabulary|pronunciation|stress|guided-cloze|reading-true-false|reading-mcq|word-form|rearrangement|transformation",
+            "englishSkill": "multiple-choice|guided-cloze|reading|word-form|rearrangement|transformation",
+            "answerMode": "single-choice|short-answer|multi-part",
+            "solutionStyle": "direct|worked|rubric",
+            "subparts": ["a", "b", "c"],
+            "solutionSteps": ["Step 1...", "Step 2..."],
+            "tags": ["official-exam", "hcmc-2026"]
+          }
         }
       ]
 
@@ -688,28 +865,7 @@ app.post('/api/ai/ingest', authMiddleware, async (req: any, res) => {
       ${rawText}`;
     }
 
-    const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: 'application/json'
-        }
-      })
-    });
-
-    if (!apiRes.ok) {
-      const errText = await apiRes.text();
-      throw new Error(`Gemini API error: ${errText}`);
-    }
-
-    const apiData = await apiRes.json() as any;
-    const responseText = apiData.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!responseText) throw new Error('Empty response from Gemini AI.');
-
+    const responseText = await callGeminiAPI(prompt, { responseMimeType: 'application/json' });
     const questions = JSON.parse(responseText.trim());
 
     // Save custom questions to PG custom_questions table
@@ -717,7 +873,7 @@ app.post('/api/ai/ingest', authMiddleware, async (req: any, res) => {
       await persistCustomQuestion(userId, {
         id: q.id || `ai-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
         ...q,
-        source: q.source || (subject === 'math' ? 'AI Ingested Math' : 'AI Ingested English'),
+        source: q.source || (subject === 'math' ? 'AI Ingested Math' : subject === 'literature' ? 'AI Ingested Literature' : 'AI Ingested English'),
         subject
       });
     }
@@ -725,6 +881,9 @@ app.post('/api/ai/ingest', authMiddleware, async (req: any, res) => {
     res.json({ success: true, questionsCount: questions.length, questions });
   } catch (error: any) {
     console.error('Lỗi gọi Gemini AI Ingest:', error.message);
+    if (error instanceof GeminiExhaustedError) {
+      return res.status(503).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Failed to process AI Ingestion: ' + error.message });
   }
 });
@@ -737,11 +896,6 @@ app.post('/api/ai/geometry-3d', authMiddleware, async (req: any, res) => {
   }
 
   try {
-    const geminiKey = process.env.GEMINI_API_KEY;
-    if (!geminiKey || geminiKey.includes('AIzaSy') || geminiKey.includes('sk-')) {
-      return res.status(400).json({ error: 'Gemini API Key is not configured or is a placeholder.' });
-    }
-
     const prompt = `Bạn là trợ lý Toán 9 chuyên về hình học không gian theo định hướng chấm của Sở GD&ĐT TP.HCM. Nhiệm vụ của bạn là phân tích một đề bài hình học 3D và trả về kết quả JSON duy nhất, không có markdown.
 
 Yêu cầu:
@@ -782,31 +936,14 @@ Thông tin bài toán:
 - shapeHint: ${shapeHint}
 - problemText: ${problemText}`;
 
-    const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: 'application/json',
-          temperature: 0.2
-        }
-      })
-    });
-
-    if (!apiRes.ok) {
-      const errText = await apiRes.text();
-      throw new Error(`Gemini API error: ${errText}`);
-    }
-
-    const apiData = await apiRes.json() as any;
-    const responseText = apiData.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!responseText) throw new Error('Empty response from Gemini AI.');
-
+    const responseText = await callGeminiAPI(prompt, { responseMimeType: 'application/json', temperature: 0.2 });
     const parsed = JSON.parse(responseText.trim());
     res.json({ success: true, result: parsed });
   } catch (error: any) {
     console.error('Lỗi gọi Gemini AI Geometry 3D:', error.message);
+    if (error instanceof GeminiExhaustedError) {
+      return res.status(503).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Failed to process geometry analysis: ' + error.message });
   }
 });
@@ -819,11 +956,6 @@ app.post('/api/ai/geometry-plane', authMiddleware, async (req: any, res) => {
   }
 
   try {
-    const geminiKey = process.env.GEMINI_API_KEY;
-    if (!geminiKey || geminiKey.includes('AIzaSy') || geminiKey.includes('sk-')) {
-      return res.status(400).json({ error: 'Gemini API Key is not configured or is a placeholder.' });
-    }
-
     const prompt = `Bạn là trợ lý Toán 9 chuyên về hình học phẳng theo chương trình Bộ GD&ĐT và cách trình bày chấm điểm của Sở GD&ĐT TP.HCM. Hãy phân tích đề bài hình học phẳng và trả về đúng một JSON duy nhất, không markdown.
 
 Yêu cầu:
@@ -878,33 +1010,14 @@ Trả về JSON theo schema:
 Thông tin bài toán:
 ${problemText}`;
 
-    const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: 'application/json',
-          temperature: 0.2
-        }
-      })
-    });
-
-    if (!apiRes.ok) {
-      const errText = await apiRes.text();
-      throw new Error(`Gemini API error: ${errText}`);
-    }
-
-    const apiData = await apiRes.json() as any;
-    const responseText = apiData.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!responseText) throw new Error('Empty response from Gemini AI.');
-
+    const responseText = await callGeminiAPI(prompt, { responseMimeType: 'application/json', temperature: 0.2 });
     const parsed = JSON.parse(responseText.trim());
     res.json({ success: true, result: parsed });
   } catch (error: any) {
     console.error('Lỗi gọi Gemini AI Geometry Plane:', error.message);
+    if (error instanceof GeminiExhaustedError) {
+      return res.status(503).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Failed to process plane geometry analysis: ' + error.message });
   }
 });
@@ -917,11 +1030,6 @@ app.post('/api/ai/function-graph', authMiddleware, async (req: any, res) => {
   }
 
   try {
-    const geminiKey = process.env.GEMINI_API_KEY;
-    if (!geminiKey || geminiKey.includes('AIzaSy') || geminiKey.includes('sk-')) {
-      return res.status(400).json({ error: 'Gemini API Key is not configured or is a placeholder.' });
-    }
-
     const prompt = `Bạn là trợ lý Toán 9 chuyên về đồ thị hàm số theo chương trình Bộ GD&ĐT. Hãy phân tích đề bài và trả về đúng một JSON duy nhất, không markdown.
 
 Yêu cầu:
@@ -954,33 +1062,14 @@ Trả về JSON theo schema:
 Thông tin bài toán:
 ${problemText}`;
 
-    const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          responseMimeType: 'application/json',
-          temperature: 0.2
-        }
-      })
-    });
-
-    if (!apiRes.ok) {
-      const errText = await apiRes.text();
-      throw new Error(`Gemini API error: ${errText}`);
-    }
-
-    const apiData = await apiRes.json() as any;
-    const responseText = apiData.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!responseText) throw new Error('Empty response from Gemini AI.');
-
+    const responseText = await callGeminiAPI(prompt, { responseMimeType: 'application/json', temperature: 0.2 });
     const parsed = JSON.parse(responseText.trim());
     res.json({ success: true, result: parsed });
   } catch (error: any) {
     console.error('Lỗi gọi Gemini AI Function Graph:', error.message);
+    if (error instanceof GeminiExhaustedError) {
+      return res.status(503).json({ error: error.message });
+    }
     res.status(500).json({ error: 'Failed to process function graph analysis: ' + error.message });
   }
 });
@@ -1249,12 +1338,13 @@ app.post('/api/admin/refill-energy', authMiddleware, async (req: any, res: any) 
 
     const rawPercent = Number(req.body.energyPercent);
     const rawEnergyValue = Number(req.body.energyValue);
-    let targetEnergy = PLAYER_ENERGY_MAX;
+    const maxEnergy = await loadMaxEnergy();
+    let targetEnergy = maxEnergy;
     if (Number.isFinite(rawPercent)) {
       const clampedPercent = Math.max(0, Math.min(100, rawPercent));
-      targetEnergy = Math.round((PLAYER_ENERGY_MAX * clampedPercent) / 100);
+      targetEnergy = Math.round((maxEnergy * clampedPercent) / 100);
     } else if (Number.isFinite(rawEnergyValue)) {
-      targetEnergy = Math.max(0, Math.min(PLAYER_ENERGY_MAX, Math.round(rawEnergyValue)));
+      targetEnergy = Math.max(0, Math.min(maxEnergy, Math.round(rawEnergyValue)));
     }
 
     await pool.query(
@@ -1273,21 +1363,21 @@ app.post('/api/admin/refill-energy', authMiddleware, async (req: any, res: any) 
         Date.now(),
         'exercise',
         '⚡ Bơm Năng Lượng',
-        `Ba Mẹ đã cập nhật năng lượng cho bé lên ${targetEnergy}/${PLAYER_ENERGY_MAX} (${Math.round((targetEnergy / PLAYER_ENERGY_MAX) * 100)}%).`,
+        `Ba Mẹ đã cập nhật năng lượng cho bé lên ${targetEnergy}/${maxEnergy} (${Math.round((targetEnergy / maxEnergy) * 100)}%).`,
         0,
         0,
         0
       ]
     );
 
-    res.json({ success: true, energy: targetEnergy, maxEnergy: PLAYER_ENERGY_MAX });
+    res.json({ success: true, energy: targetEnergy, maxEnergy: maxEnergy });
   } catch (error: any) {
     console.error('Error refilling energy:', error.message);
     res.status(500).json({ error: 'Failed to refill energy.' });
   }
 });
 
-// PUT /api/admin/game-settings: Updates global boss bounty amounts
+// PUT /api/admin/game-settings: Updates global game configuration parameters
 app.put('/api/admin/game-settings', authMiddleware, async (req: any, res: any) => {
   const adminId = req.user.sub;
   try {
@@ -1296,7 +1386,7 @@ app.put('/api/admin/game-settings', authMiddleware, async (req: any, res: any) =
       return res.status(403).json({ error: 'Forbidden: Admin access only.' });
     }
 
-    const { bossBountiesVnd, challengeEnergyCosts } = req.body || {};
+    const { bossBountiesVnd, challengeEnergyCosts, maxEnergy, baseXP, baseCoins } = req.body || {};
     const response: any = { success: true };
 
     if (bossBountiesVnd !== undefined) {
@@ -1323,10 +1413,37 @@ app.put('/api/admin/game-settings', authMiddleware, async (req: any, res: any) =
       response.challengeEnergyCosts = normalizedCosts;
     }
 
+    if (maxEnergy !== undefined) {
+      const val = Math.max(1, Math.round(Number(maxEnergy)));
+      if (!Number.isFinite(val)) {
+        return res.status(400).json({ error: 'Invalid maxEnergy value.' });
+      }
+      await saveMaxEnergy(val);
+      response.maxEnergy = val;
+    }
+
+    if (baseXP !== undefined) {
+      const val = Math.max(1, Math.round(Number(baseXP)));
+      if (!Number.isFinite(val)) {
+        return res.status(400).json({ error: 'Invalid baseXP value.' });
+      }
+      await saveBaseXP(val);
+      response.baseXP = val;
+    }
+
+    if (baseCoins !== undefined) {
+      const val = Math.max(1, Math.round(Number(baseCoins)));
+      if (!Number.isFinite(val)) {
+        return res.status(400).json({ error: 'Invalid baseCoins value.' });
+      }
+      await saveBaseCoins(val);
+      response.baseCoins = val;
+    }
+
     res.json(response);
   } catch (error: any) {
-    console.error('Error updating boss bounties:', error.message);
-    res.status(500).json({ error: 'Failed to update boss bounties.' });
+    console.error('Error updating game settings:', error.message);
+    res.status(500).json({ error: 'Failed to update game settings.' });
   }
 });
 

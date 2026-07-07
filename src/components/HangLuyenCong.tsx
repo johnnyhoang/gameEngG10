@@ -140,7 +140,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
 
   const sampleQuestions = useMemo(() => {
     const allowedCategories: Record<HangSubjectId, string[]> = {
-      english: ['grammar', 'passive-voice', 'relative-clauses', 'tenses', 'reading', 'cloze', 'vocabulary', 'wordform', 'pronunciation', 'stress'],
+      english: ['grammar', 'passive-voice', 'relative-clauses', 'tenses', 'rewrite', 'reading', 'cloze', 'vocabulary', 'wordform', 'pronunciation', 'stress'],
       math: ['parabol-line', 'viet-relation', 'real-equations', 'real-geometry', 'real-finance', 'plane-geometry'],
       literature: ['literature-vietnamese', 'literature-reading-poetry', 'literature-reading-prose', 'literature-reading-argument', 'literature-writing']
     };

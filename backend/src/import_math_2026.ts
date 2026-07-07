@@ -121,8 +121,8 @@ async function main() {
     for (const q of questions) {
       await pool.query(
         `INSERT INTO ge10_custom_questions 
-           (id, user_id, type, category, prompt, options, correct_answer, explanation, difficulty, source, subject)
-         VALUES ($1, NULL, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+           (id, user_id, type, category, prompt, options, correct_answer, explanation, difficulty, source, subject, metadata)
+         VALUES ($1, NULL, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
          ON CONFLICT (id) DO UPDATE SET
            type = EXCLUDED.type,
            category = EXCLUDED.category,
@@ -132,7 +132,8 @@ async function main() {
            explanation = EXCLUDED.explanation,
            difficulty = EXCLUDED.difficulty,
            source = EXCLUDED.source,
-           subject = EXCLUDED.subject`,
+           subject = EXCLUDED.subject,
+           metadata = EXCLUDED.metadata`,
         [
           q.id,
           q.type,
@@ -143,7 +144,8 @@ async function main() {
           q.explanation,
           q.difficulty,
           sourceText,
-          'math'
+          'math',
+          null
         ]
       );
       successCount++;
