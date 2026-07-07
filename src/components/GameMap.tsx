@@ -1,4 +1,3 @@
-import React from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { 
   Compass, Sword, ShieldAlert, Star, Zap
@@ -11,12 +10,13 @@ interface GameMapProps {
   ) => void;
   onOpenMysteryBox: () => void;
   onSpinWheel: () => void;
+  onOpenHang: () => void;
 }
 
-export const GameMap: React.FC<GameMapProps> = ({ onStartPlay, onOpenMysteryBox, onSpinWheel }) => {
+export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang }: GameMapProps) {
   const player = useGameState(state => state.player);
   const dailyMission = useGameState(state => state.dailyMission);
-  const useEnergy = useGameState(state => state.useEnergy);
+  const consumeEnergy = useGameState(state => state.useEnergy);
   const currentSubject = useGameState(state => state.currentSubject);
   const bossBountiesVnd = useGameState(state => state.gameSettings.bossBountiesVnd);
   const challengeEnergyCosts = useGameState(state => state.gameSettings.challengeEnergyCosts);
@@ -36,7 +36,7 @@ export const GameMap: React.FC<GameMapProps> = ({ onStartPlay, onOpenMysteryBox,
       alert('Không đủ năng lượng! Hãy đợi năng lượng hồi phục hoặc hoàn thành các thử thách khác.');
       return;
     }
-    useEnergy(energyCost);
+    consumeEnergy(energyCost);
     onStartPlay(mode, bossId);
   };
 
@@ -254,6 +254,27 @@ export const GameMap: React.FC<GameMapProps> = ({ onStartPlay, onOpenMysteryBox,
         </div>
       </div>
 
+      <div className="glass-panel rounded-2xl border border-synth-cyan/30 bg-gradient-to-r from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="space-y-1 text-center md:text-left">
+          <div className="flex items-center gap-2 justify-center md:justify-start">
+            <span className="w-2.5 h-2.5 rounded-full bg-synth-cyan animate-ping" />
+            <h2 className="font-orbitron text-lg font-black text-white uppercase tracking-wider">
+              Hang Luyện Công
+            </h2>
+          </div>
+          <p className="text-xs text-synth-text-muted">
+            Tổng ôn Toán, Văn, Anh bằng bản đồ kiến thức, thẻ nhớ, sổ tay lỗi sai và đường vào phòng luyện nhanh.
+          </p>
+        </div>
+
+        <button
+          onClick={onOpenHang}
+          className="px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 shadow-[0_0_15px_#00f0ff]"
+        >
+          Vào Hang Luyện Công
+        </button>
+      </div>
+
       {/* Grid Map Zones */}
       <div>
         <h3 className="font-orbitron font-bold text-white text-base uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -335,4 +356,4 @@ export const GameMap: React.FC<GameMapProps> = ({ onStartPlay, onOpenMysteryBox,
       </div>
     </div>
   );
-};
+}

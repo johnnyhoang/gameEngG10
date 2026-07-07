@@ -248,8 +248,14 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
     const challengesRes = await pool.query('SELECT * FROM ge10_user_challenges WHERE user_id = $1', [userId]);
     // 8. Fetch daily mission
     const missionRes = await pool.query('SELECT * FROM ge10_daily_missions WHERE user_id = $1', [userId]);
-    // 9. Fetch custom questions
-    const questionsRes = await pool.query('SELECT * FROM ge10_custom_questions WHERE user_id = $1', [userId]);
+    // 9. Fetch custom questions (retrieve owned, admin-created, and system-wide questions)
+    const questionsRes = await pool.query(
+      `SELECT * FROM ge10_custom_questions 
+       WHERE user_id = $1 
+          OR user_id IS NULL 
+          OR user_id IN (SELECT id FROM ge10_users WHERE role = 'admin')`,
+      [userId]
+    );
     const bossBountiesVnd = await loadBossBounties();
     const challengeEnergyCosts = await loadChallengeEnergyCosts();
 
@@ -302,7 +308,8 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
       correctAnswer: row.correct_answer,
       explanation: row.explanation,
       difficulty: row.difficulty,
-      source: row.source
+      source: row.source,
+      subject: row.subject
     }));
 
     res.json({
@@ -523,7 +530,13 @@ app.post('/api/profile/sync', authMiddleware, async (req: any, res) => {
 app.get('/api/questions/custom', authMiddleware, async (req: any, res) => {
   const userId = req.user.sub;
   try {
-    const qRes = await pool.query('SELECT * FROM ge10_custom_questions WHERE user_id = $1', [userId]);
+    const qRes = await pool.query(
+      `SELECT * FROM ge10_custom_questions 
+       WHERE user_id = $1 
+          OR user_id IS NULL 
+          OR user_id IN (SELECT id FROM ge10_users WHERE role = 'admin')`,
+      [userId]
+    );
     res.json(qRes.rows);
   } catch (error) {
     console.error('Error loading custom questions:', error);
@@ -697,6 +710,87 @@ app.post('/api/ai/ingest', authMiddleware, async (req: any, res) => {
   } catch (error: any) {
     console.error('Lỗi gọi Gemini AI Ingest:', error.message);
     res.status(500).json({ error: 'Failed to process AI Ingestion: ' + error.message });
+  }
+});
+
+// POST /api/ai/geometry-3d: Uses Gemini API to analyze a grade 9 3D geometry problem and return structured drawing guidance
+app.post('/api/ai/geometry-3d', authMiddleware, async (req: any, res) => {
+  const { problemText, subjectHint = 'math', shapeHint = '' } = req.body || {};
+  if (!problemText || !String(problemText).trim()) {
+    return res.status(400).json({ error: 'Missing problemText.' });
+  }
+
+  try {
+    const geminiKey = process.env.GEMINI_API_KEY;
+    if (!geminiKey || geminiKey.includes('AIzaSy') || geminiKey.includes('sk-')) {
+      return res.status(400).json({ error: 'Gemini API Key is not configured or is a placeholder.' });
+    }
+
+    const prompt = `Bạn là trợ lý Toán 9 chuyên về hình học không gian theo định hướng chấm của Sở GD&ĐT TP.HCM. Nhiệm vụ của bạn là phân tích một đề bài hình học 3D và trả về kết quả JSON duy nhất, không có markdown.
+
+Yêu cầu:
+- Nhận dạng đúng dạng hình: hình chóp, lăng trụ, tứ diện, hình hộp, hoặc unknown.
+- Không bịa số đo hay quan hệ nếu đề không cung cấp.
+- Khi đề có nhắc đến đường cao, trung điểm, mặt phẳng, vuông góc, song song, phải nêu rõ cách dựng hình và ý nghĩa hình học.
+- Phần lời giải phải theo kiểu Toán 9: giả thiết -> dựng hình -> lập luận -> kết luận.
+- Cho phép đề xuất các thao tác vẽ đơn giản để học sinh thao tác trên bảng.
+- Nếu không đủ dữ kiện, phải nói rõ thiếu gì cần bổ sung.
+
+Trả về JSON theo schema:
+{
+  "detectedShape": "prism" | "cuboid" | "pyramid" | "tetrahedron" | "unknown",
+  "title": "chuỗi ngắn gọn",
+  "summary": "tóm tắt cách nhìn nhanh",
+  "assumptions": ["..."],
+  "stepByStep": [
+    { "title": "Bước 1", "body": "..." }
+  ],
+  "modelActions": [
+    {
+      "type": "drawAltitude" | "connectVertexToEdge" | "connectVertexToVertex" | "highlightFace" | "markPerpendicular" | "markParallel" | "markMidpoint",
+      "from": "S",
+      "to": "BC",
+      "face": ["A", "B", "C"],
+      "note": "ghi chú ngắn",
+      "style": "solid" | "dashed",
+      "color": "#00f0ff"
+    }
+  ],
+  "commands": ["vẽ đường cao từ S", "nối trung điểm BC với đỉnh S"],
+  "warnings": ["..."]
+}
+
+Thông tin bài toán:
+- subjectHint: ${subjectHint}
+- shapeHint: ${shapeHint}
+- problemText: ${problemText}`;
+
+    const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: 'application/json',
+          temperature: 0.2
+        }
+      })
+    });
+
+    if (!apiRes.ok) {
+      const errText = await apiRes.text();
+      throw new Error(`Gemini API error: ${errText}`);
+    }
+
+    const apiData = await apiRes.json() as any;
+    const responseText = apiData.candidates?.[0]?.content?.parts?.[0]?.text;
+    if (!responseText) throw new Error('Empty response from Gemini AI.');
+
+    const parsed = JSON.parse(responseText.trim());
+    res.json({ success: true, result: parsed });
+  } catch (error: any) {
+    console.error('Lỗi gọi Gemini AI Geometry 3D:', error.message);
+    res.status(500).json({ error: 'Failed to process geometry analysis: ' + error.message });
   }
 });
 

@@ -3,15 +3,16 @@ import { useGameState } from '../hooks/useGameState';
 import { Zap, Heart, Coins, Flame, Shield, Award, LogOut, Palette } from 'lucide-react';
 
 interface TopHUDProps {
-  currentScreen: 'map' | 'play' | 'shop' | 'parent' | 'pet' | 'logs';
+  currentScreen: 'map' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang';
   onOpenShop: () => void;
   onOpenParent: () => void;
+  onOpenHang: () => void;
   onOpenProfile: () => void;
   onBackToMap: () => void;
 }
 
 export const TopHUD: React.FC<TopHUDProps> = ({ 
-  currentScreen, onOpenShop, onOpenParent, onOpenProfile, onBackToMap 
+  currentScreen, onOpenShop, onOpenParent, onOpenHang, onOpenProfile, onBackToMap 
 }) => {
   const player = useGameState(state => state.player);
   const currentUser = useGameState(state => state.currentUser);
@@ -226,6 +227,18 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                 }`}
               >
                 Item Shop
+              </button>
+
+              <button
+                onClick={onOpenHang}
+                className={`inline-flex items-center gap-2 px-4 py-2 font-orbitron font-bold text-xs rounded-lg uppercase tracking-wider border cursor-pointer transition-all duration-300 ${
+                  currentScreen === 'hang'
+                    ? 'bg-synth-cyan border-synth-cyan text-black shadow-[0_0_12px_#00f0ff]'
+                    : 'bg-transparent border-synth-cyan/50 text-synth-cyan hover:bg-synth-cyan/10'
+                }`}
+              >
+                <span>📚</span>
+                <span className="hidden sm:inline">Hang Luyện Công</span>
               </button>
             </>
           )}

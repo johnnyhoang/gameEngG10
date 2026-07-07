@@ -9,6 +9,7 @@ import { ItemShop } from './components/ItemShop';
 import { ParentConsole } from './components/ParentConsole';
 import { GoogleLoginScreen } from './components/GoogleLoginScreen';
 import { ProfileThemeModal } from './components/ProfileThemeModal';
+import { HangLuyenCong } from './components/HangLuyenCong';
 import { supabase } from './utils/supabaseClient';
 import type { UserProfile } from './types/game';
 
@@ -24,7 +25,7 @@ function App() {
   const setUiTheme = useGameState(state => state.setUiTheme);
 
   // Screen routing state
-  const [screen, setScreen] = useState<'map' | 'play' | 'shop' | 'parent' | 'pet' | 'logs'>('map');
+  const [screen, setScreen] = useState<'map' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang'>('map');
   const [playMode, setPlayMode] = useState<'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss'>('mixed');
   const [bossId, setBossId] = useState<string | undefined>(undefined);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
@@ -136,6 +137,7 @@ function App() {
       <TopHUD 
         onOpenParent={() => setScreen('parent')}
         onOpenShop={() => setScreen('shop')}
+        onOpenHang={() => setScreen('hang')}
         onOpenProfile={() => setIsProfileOpen(true)}
         onBackToMap={() => setScreen('map')}
         currentScreen={screen}
@@ -158,6 +160,7 @@ function App() {
               onStartPlay={handleStartPlay}
               onOpenMysteryBox={triggerMysteryBox}
               onSpinWheel={triggerSpinWheel}
+              onOpenHang={() => setScreen('hang')}
             />
           )}
 
@@ -172,6 +175,13 @@ function App() {
           {screen === 'shop' && <ItemShop />}
 
           {screen === 'parent' && <ParentConsole />}
+
+          {screen === 'hang' && (
+            <HangLuyenCong
+              onStartPractice={() => handleStartPlay('mixed')}
+              onBackToMap={() => setScreen('map')}
+            />
+          )}
 
           {screen === 'pet' && (
             <div className="lg:hidden">
@@ -287,6 +297,16 @@ function App() {
           >
             <span className="text-lg">🛒</span>
             <span>Shop</span>
+          </button>
+
+          <button
+            onClick={() => setScreen('hang')}
+            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
+              screen === 'hang' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
+            }`}
+          >
+            <span className="text-lg">📚</span>
+            <span>Hang</span>
           </button>
 
           <button
