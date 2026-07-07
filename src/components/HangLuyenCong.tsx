@@ -66,6 +66,13 @@ const MAT_THAT_CARDS = [
   }
 ] as const;
 
+const STUDY_PANEL_LABELS: Record<StudyPanelId, string> = {
+  flashcards: 'Thẻ nhớ',
+  drill: 'Luyện nhanh',
+  notes: 'Sổ tay',
+  sources: 'Nguồn'
+};
+
 const SUBJECT_META: Record<HangSubjectId, {
   label: string;
   shortLabel: string;
@@ -165,9 +172,27 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
     literature: questions.filter(q => q.subject === 'literature').length
   };
 
+  const wizardSteps = [
+    {
+      step: '01',
+      title: 'Chọn môn',
+      body: `Hiện đang chọn ${meta.label}.`
+    },
+    {
+      step: '02',
+      title: 'Chọn mật thất',
+      body: 'Bấm vào 1 mật thất để mở trang riêng, không làm dồn layout.'
+    },
+    {
+      step: '03',
+      title: 'Chọn công cụ',
+      body: `Tab đang mở: ${STUDY_PANEL_LABELS[selectedStudyPanel]}.`
+    }
+  ] as const;
+
   return (
     <div className="space-y-6">
-      <section className="glass-panel rounded-3xl border border-synth-cyan/20 p-6 md:p-8 bg-[radial-gradient(circle_at_top_right,rgba(0,240,255,0.12),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(255,0,127,0.10),transparent_32%)]">
+      <section className="glass-panel rounded-3xl border border-synth-cyan/20 p-5 md:p-8 bg-[radial-gradient(circle_at_top_right,rgba(0,240,255,0.12),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(255,0,127,0.10),transparent_32%)]">
         <div className="flex flex-col gap-5">
           <div className="space-y-4 max-w-4xl">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-synth-cyan/30 bg-synth-blue/40 text-[10px] font-orbitron font-bold uppercase tracking-[0.24em] text-synth-cyan">
@@ -175,7 +200,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
               Hang Luyện Công
             </div>
             <div className="space-y-2">
-              <h1 className="font-orbitron font-black text-3xl md:text-5xl uppercase tracking-wider text-white">
+              <h1 className="font-orbitron font-black text-2xl md:text-5xl uppercase tracking-wider text-white leading-tight">
                 Ôn toàn bộ kiến thức vào lớp 10
               </h1>
               <p className="text-sm md:text-base text-slate-200 leading-relaxed max-w-3xl">
@@ -221,11 +246,27 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
               );
             })}
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {wizardSteps.map(item => (
+              <div key={item.step} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <div className="text-[10px] uppercase tracking-[0.28em] text-synth-cyan font-bold">
+                  Bước {item.step}
+                </div>
+                <div className="mt-2 font-orbitron font-black uppercase tracking-wider text-white text-sm">
+                  {item.title}
+                </div>
+                <p className="mt-2 text-xs text-slate-300 leading-relaxed">
+                  {item.body}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       <section className="glass-panel rounded-3xl border border-white/10 p-5 md:p-6">
-        <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between flex-wrap mb-4">
           <div>
             <h2 className="font-orbitron font-black text-lg md:text-xl text-white uppercase tracking-wider">
               Mật thất nhanh
@@ -234,8 +275,13 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
               Chọn đúng mật thất rồi vào thẳng không gian học riêng, tránh bị dồn chung trong một layout.
             </p>
           </div>
-          <div className="text-[10px] uppercase tracking-[0.24em] text-synth-cyan font-bold">
-            1 bấm mở 1 mật thất
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="rounded-full border border-synth-cyan/30 bg-synth-cyan/10 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-synth-cyan font-bold">
+              Đang xem: {meta.label}
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-slate-300 font-bold">
+              Công cụ: {STUDY_PANEL_LABELS[selectedStudyPanel]}
+            </span>
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
@@ -271,7 +317,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
         </div>
       </section>
 
-      <section className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-6 items-start">
+      <section className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-5 md:gap-6 items-start">
         <div className="xl:col-span-2 space-y-6">
           <div className="glass-panel rounded-2xl border border-white/10 p-5">
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
