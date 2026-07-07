@@ -250,6 +250,34 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
+          {/* Vocabulary Castle – English-specific lane */}
+          {currentSubject === 'english' && (
+            <div
+              onClick={() => handleLaunchZone('vocabulary', challengeEnergyCosts[1] ?? 10)}
+              className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 md:col-span-2"
+            >
+              <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(0,240,255,0.08),transparent_60%)]" />
+              <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white">
+                <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 10}
+              </div>
+              <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
+                <BookOpen className="w-8 h-8 text-synth-cyan" />
+              </div>
+              <div className="space-y-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="font-orbitron font-black text-base text-synth-cyan">🏰 Vocabulary Castle</h4>
+                  <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-synth-cyan/15 border border-synth-cyan/30 text-synth-cyan">English</span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Tập trung từ vựng và word form. Các câu được kéo riêng thành lâu đài vocabulary để luyện bám nghĩa, collocation và ngữ cảnh.
+                </p>
+                <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
+                  Phần thưởng: <span className="text-white">Ưu tiên câu vocabulary / word form</span>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Survival Mode – prominent */}
           <div
             onClick={() => handleLaunchZone('survival', challengeEnergyCosts[0] ?? 15)}

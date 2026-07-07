@@ -442,6 +442,22 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
+  const modeLabel = mode === 'vocabulary'
+    ? 'Vocabulary Castle'
+    : mode === 'grammar'
+      ? 'Grammar Dungeon'
+      : mode === 'reading'
+        ? 'Reading Dungeon'
+        : mode === 'mixed'
+          ? 'Mixed Dungeon'
+          : mode === 'revenge'
+            ? 'Revenge Dungeon'
+            : mode === 'boss'
+              ? 'Boss Arena'
+              : mode === 'survival'
+                ? 'Survival Arena'
+                : 'Lesson Dungeon';
+
   if (runFinished) {
     const isGameOver = player.hearts <= 0 && mode === 'boss';
     return (
@@ -457,7 +473,9 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
             ? 'Rất tiếc, con đã cạn kiệt mạng (Hearts) khi chiến đấu với Boss. Hãy quay lại ôn tập thêm nhé!' 
             : mode === 'lesson'
               ? 'Con đã hoàn thành các câu hỏi củng cố! Hãy quay lại để xác nhận lĩnh hội bài học nhé.'
-              : `Đã hoàn thành phụ bản ${mode.toUpperCase()}! Hãy cùng xem thành quả chiến lợi phẩm.`}
+              : mode === 'vocabulary'
+                ? 'Con đã chinh phục Vocabulary Castle! Từ vựng và word form sẽ được ưu tiên ở lượt sau.'
+                : `Đã hoàn thành phụ bản ${mode.toUpperCase()}! Hãy cùng xem thành quả chiến lợi phẩm.`}
         </p>
 
         {/* Reward card */}
@@ -537,7 +555,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       <div className="flex justify-between items-center border-b border-synth-gray pb-4">
         <div className="flex flex-col">
           <span className="text-[10px] font-bold text-synth-cyan font-orbitron uppercase tracking-wider">
-            {mode.toUpperCase()} Dungeon
+            {modeLabel}
           </span>
           {activeQuestion.metadata?.examPart && (
             <span className="text-[10px] px-2 py-1 rounded-full bg-synth-magenta/15 border border-synth-magenta/30 text-synth-magenta font-orbitron font-bold uppercase tracking-wider">
