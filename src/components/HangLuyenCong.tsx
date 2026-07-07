@@ -20,12 +20,12 @@ import {
 import {
   HANG_FLASHCARDS,
   HANG_SOURCES,
-  HANG_TRACKS,
   type HangSubjectId
 } from '../data/hangLuyenCong';
 
 interface HangLuyenCongProps {
   onStartPractice: () => void;
+  onStudyLesson: (lessonId: string) => void;
   onBackToMap: () => void;
   onOpenMatThat3D: () => void;
   onOpenMatThatPlane: () => void;
@@ -40,7 +40,7 @@ const STUDY_PANELS: Array<{
   icon: React.ReactNode;
 }> = [
   { id: 'flashcards', label: 'Thẻ nhớ', icon: <ScrollText className="w-4 h-4" /> },
-  { id: 'drill', label: 'Luyện nhanh', icon: <Target className="w-4 h-4" /> },
+  { id: 'drill', label: 'Học lý thuyết', icon: <Target className="w-4 h-4" /> },
   { id: 'notes', label: 'Sổ tay', icon: <CheckCircle2 className="w-4 h-4" /> },
   { id: 'sources', label: 'Nguồn', icon: <NotebookTabs className="w-4 h-4" /> }
 ];
@@ -105,6 +105,7 @@ const SUBJECT_META: Record<HangSubjectId, {
 
 export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   onStartPractice,
+  onStudyLesson,
   onBackToMap,
   onOpenMatThat3D,
   onOpenMatThatPlane,
@@ -113,6 +114,8 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   const currentSubject = useGameState(state => state.currentSubject);
   const setSubject = useGameState(state => state.setSubject);
   const questions = useGameState(state => state.questions);
+  const lessons = useGameState(state => state.lessons);
+  const lessonsProgress = useGameState(state => state.lessonsProgress);
 
   const [selectedSubject, setSelectedSubject] = useState<HangSubjectId>(currentSubject);
   const [selectedStudyPanel, setSelectedStudyPanel] = useState<StudyPanelId>('flashcards');
@@ -136,7 +139,11 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
     return questions.filter(q => (q.subject || 'english') === selectedSubject);
   }, [questions, selectedSubject]);
 
-  const subjectCount = subjectQuestions.length;
+  const subjectLessons = useMemo(() => {
+    return lessons.filter(l => l.subject === selectedSubject);
+  }, [lessons, selectedSubject]);
+
+
 
   const sampleQuestions = useMemo(() => {
     const allowedCategories: Record<HangSubjectId, string[]> = {
@@ -212,7 +219,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                 onClick={handleStart}
                 className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-synth-cyan to-synth-purple text-black font-orbitron font-bold text-xs uppercase tracking-wider shadow-[0_0_18px_rgba(0,240,255,0.35)] hover:scale-[1.01] transition-transform cursor-pointer"
               >
-                Vào luyện ngay <ArrowRight className="w-4 h-4" />
+                Vào học ngay <ArrowRight className="w-4 h-4" />
               </button>
               <button
                 onClick={onBackToMap}
@@ -323,10 +330,10 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <div>
                 <h2 className="font-orbitron font-black text-lg text-white uppercase tracking-wider">
-                  Bản đồ kiến thức - {meta.label}
+                  Chuyên Đề Kiến Thức - {meta.label}
                 </h2>
                 <p className="text-xs text-slate-300 mt-1">
-                  {subjectCount} câu hỏi sẵn có trong kho đề và 4 mảng trọng tâm cần nắm.
+                  Đọc lý thuyết chuyên sâu và củng cố kiến thức trước khi làm bài thi.
                 </p>
               </div>
               <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/10 bg-gradient-to-r ${meta.accentSoft} text-xs font-bold ${meta.accent}`}>
@@ -336,21 +343,49 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {HANG_TRACKS[selectedSubject].map(track => (
-                <div key={track.title} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                  <div className={`text-sm font-orbitron font-black uppercase tracking-wider ${meta.accent}`}>
-                    {track.title}
+              {subjectLessons.map(lesson => {
+                const isCompleted = lessonsProgress[lesson.id] || false;
+                return (
+                  <div key={lesson.id} className={`rounded-2xl border p-4 flex flex-col justify-between gap-4 transition-all duration-200 ${
+                    isCompleted ? 'border-synth-cyan/20 bg-synth-cyan/5' : 'border-white/10 bg-white/5'
+                  }`}>
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-slate-300 uppercase tracking-wider">
+                          {lesson.topic}
+                        </span>
+                        {isCompleted ? (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-synth-cyan uppercase font-orbitron tracking-wider">
+                            Đã Lĩnh Ngộ 🌟
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                            Chưa Lĩnh Ngộ ⏳
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="font-orbitron font-black uppercase text-sm text-white tracking-wide leading-snug">
+                        {lesson.title}
+                      </h3>
+                      <p className="text-xs text-slate-400 line-clamp-2">
+                        {lesson.theory.replace(/[#*`>]/g, '').trim()}
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => onStudyLesson(lesson.id)}
+                      className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+                        isCompleted 
+                          ? 'border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10'
+                          : 'bg-gradient-to-r from-synth-cyan to-synth-purple text-black shadow-[0_0_12px_rgba(0,240,255,0.2)] hover:scale-[1.01]'
+                      }`}
+                    >
+                      {isCompleted ? 'Học lại bài 🎓' : 'Học bài ngay 📖'}
+                      <ArrowRight className="w-4 h-4" />
+                    </button>
                   </div>
-                  <p className="text-xs text-slate-300 mt-2 leading-relaxed">{track.summary}</p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {track.focus.map(item => (
-                      <span key={item} className="px-2.5 py-1 rounded-full bg-synth-blue/40 border border-white/10 text-[10px] font-semibold text-slate-200">
-                        {item}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -468,15 +503,15 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                 <>
                   <div className="flex items-center gap-2 text-white">
                     <Target className="w-5 h-5 text-synth-orange" />
-                    <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Phòng luyện nhanh</h3>
+                    <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Học theo chuyên đề</h3>
                   </div>
                   <p className="text-sm text-slate-200 leading-relaxed">
-                    Chuyển sang chế độ luyện hiện tại của kho câu hỏi. Đây là đường ngắn nhất từ ôn tập sang kiểm tra mức độ nắm bài.
+                    Đọc lý thuyết chi tiết của chuyên đề trước, sau đó trả lời các câu hỏi luyện tập củng cố để tích lũy NP và XP.
                   </p>
                   <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-xs text-slate-300 space-y-2">
                     <div className="flex items-center justify-between gap-2">
-                      <span>Kho đề hiện tại</span>
-                      <span className="font-bold text-white">{subjectCount} câu</span>
+                      <span>Số chuyên đề hiện có</span>
+                      <span className="font-bold text-white">{subjectLessons.length} bài học</span>
                     </div>
                     <div className="flex items-center justify-between gap-2">
                       <span>Môn đang chọn</span>
@@ -487,7 +522,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                     onClick={handleStart}
                     className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-synth-orange to-synth-cyan text-black font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer"
                   >
-                    Bắt đầu luyện <ArrowRight className="w-4 h-4" />
+                    Bắt đầu học ngay <ArrowRight className="w-4 h-4" />
                   </button>
                 </>
               )}

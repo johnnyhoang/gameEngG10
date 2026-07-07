@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { INITIAL_QUESTIONS } from '../data/questions';
+import { INITIAL_LESSONS, type Lesson } from '../data/lessons';
 import { eventBus } from '../utils/EventBus';
 import { supabase } from '../utils/supabaseClient';
 import type {
@@ -152,6 +153,8 @@ interface GameState {
   currentUser: UserProfile | null;
   player: PlayerProfile;
   questions: Question[];
+  lessons: Lesson[];
+  lessonsProgress: Record<string, boolean>;
   categoryStats: Record<string, CategoryStat>;
   pet: PetState;
   rewards: ParentReward[];
@@ -225,6 +228,7 @@ interface GameState {
   feedPet: () => void;
   spinWheel: () => { rewardType: string; amount: number; message: string };
   openMysteryBox: () => { rewardType: string; amount: number; message: string };
+  masterLesson: (lessonId: string) => Promise<void>;
 
   // Parent Actions
   verifyPIN: (pin: string) => boolean;
@@ -323,6 +327,7 @@ export const useGameState = create<GameState>()(
               rewards: state.rewards,
               challenges: state.challenges,
               dailyMission: state.dailyMission,
+              lessonsProgress: state.lessonsProgress,
               lastSyncTime: state.lastSyncTime
             };
 
@@ -422,6 +427,8 @@ export const useGameState = create<GameState>()(
         currentUser: null,
         player: INITIAL_PLAYER,
         questions: INITIAL_QUESTIONS,
+        lessons: INITIAL_LESSONS,
+        lessonsProgress: {},
         currentSubject: 'english',
         categoryStats: {},
         failedQuestionIds: [],
@@ -762,7 +769,9 @@ export const useGameState = create<GameState>()(
                   challenges: data.challenges || INITIAL_CHALLENGES,
                   dailyMission: data.dailyMission || null,
                   gameSettings: data.gameSettings || DEFAULT_GAME_SETTINGS,
-                  questions: mergedQuestions
+                  questions: mergedQuestions,
+                  lessons: data.lessons || INITIAL_LESSONS,
+                  lessonsProgress: data.lessonsProgress || {}
                 };
               });
               logActivity('energy_refill', 'Đồng bộ Đám mây', `Tải dữ liệu học tập thành công cho ${user.name}!`);
@@ -1253,6 +1262,38 @@ export const useGameState = create<GameState>()(
 
           logActivity('shop', 'Mua Gợi Ý', 'Dùng 50 NP mua 1 gợi ý cứu trợ trong bài làm', -cost, 0);
           return true;
+        },
+
+        masterLesson: async (lessonId) => {
+          const state = get();
+          const lesson = state.lessons.find(l => l.id === lessonId) || INITIAL_LESSONS.find(l => l.id === lessonId);
+          if (!lesson) return;
+
+          // Tránh cộng trùng thưởng nếu bài học đã được hoàn thành trước đó
+          if (state.lessonsProgress[lessonId]) {
+            return;
+          }
+
+          const expGained = 50;
+          const coinsGained = 20;
+
+          const updatedXP = state.player.xp + expGained;
+          const levelCheck = checkLevelUp(updatedXP, state.player.level);
+
+          set({
+            lessonsProgress: {
+              ...state.lessonsProgress,
+              [lessonId]: true
+            },
+            player: {
+              ...state.player,
+              xp: levelCheck.xp,
+              level: levelCheck.level,
+              coins: state.player.coins + coinsGained
+            }
+          });
+
+          logActivity('exercise', 'Lĩnh ngộ bài học!', `Đã lĩnh ngộ thành công chuyên đề: ${lesson.title}`, coinsGained, expGained, 0);
         },
 
         claimParentReward: (rewardId) => {

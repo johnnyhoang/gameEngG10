@@ -11,6 +11,7 @@ import { GoogleLoginScreen } from './components/GoogleLoginScreen';
 import { ProfileThemeModal } from './components/ProfileThemeModal';
 import { HangLuyenCong } from './components/HangLuyenCong';
 import { HangMatThatPage } from './components/HangMatThatPage';
+import { LessonStudyView } from './components/LessonStudyView';
 import { Biki3DStudio } from './components/Biki3DStudio';
 import { BikiDoThiHamSo } from './components/BikiDoThiHamSo';
 import { BikiHinhHocPhang } from './components/BikiHinhHocPhang';
@@ -32,8 +33,10 @@ function App() {
   const setUiTheme = useGameState(state => state.setUiTheme);
 
   // Screen routing state
-  const [screen, setScreen] = useState<'map' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang' | 'hang-3d' | 'hang-plane' | 'hang-graph'>('map');
-  const [playMode, setPlayMode] = useState<'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss'>('mixed');
+  const [screen, setScreen] = useState<'map' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang' | 'hang-3d' | 'hang-plane' | 'hang-graph' | 'lesson-study'>('map');
+  const [playMode, setPlayMode] = useState<'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss' | 'lesson'>('mixed');
+  const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+  const masterLesson = useGameState(state => state.masterLesson);
   const [bossId, setBossId] = useState<string | undefined>(undefined);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
@@ -156,17 +159,22 @@ function App() {
   };
 
   const handleStartPlay = (
-    mode: 'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss',
+    mode: 'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss' | 'lesson',
     id?: string
   ) => {
     setPlayMode(mode);
-    setBossId(id);
+    if (mode === 'lesson') {
+      setSelectedLessonId(id || null);
+      setBossId(undefined);
+    } else {
+      setBossId(id);
+    }
     setScreen('play');
   };
 
   const isDungeonScreen = screen === 'play';
   const isHangMatterScreen = screen === 'hang-3d' || screen === 'hang-plane' || screen === 'hang-graph';
-  const topHudScreen = isHangMatterScreen ? 'hang' : screen;
+  const topHudScreen = (isHangMatterScreen || screen === 'lesson-study') ? 'hang' : screen;
 
   return (
     <div className="app-shell min-h-screen flex flex-col text-slate-100" data-theme={uiTheme}>
@@ -205,7 +213,15 @@ function App() {
             <PlayArea 
               mode={playMode}
               bossId={bossId}
-              onFinish={() => setScreen('map')}
+              lessonId={selectedLessonId || undefined}
+              onFinish={async () => {
+                if (playMode === 'lesson' && selectedLessonId) {
+                  await masterLesson(selectedLessonId);
+                  setScreen('hang');
+                } else {
+                  setScreen('map');
+                }
+              }}
             />
           )}
 
@@ -215,11 +231,37 @@ function App() {
 
           {screen === 'hang' && (
             <HangLuyenCong
-              onStartPractice={() => handleStartPlay('mixed')}
+              onStartPractice={() => {
+                // Find first uncompleted lesson of selected subject, or default to first
+                const currentSub = useGameState.getState().currentSubject;
+                const lessonsList = useGameState.getState().lessons;
+                const progress = useGameState.getState().lessonsProgress;
+                const subLessons = lessonsList.filter(l => l.subject === currentSub);
+                const uncompleted = subLessons.find(l => !progress[l.id]);
+                const targetLesson = uncompleted || subLessons[0];
+                if (targetLesson) {
+                  setSelectedLessonId(targetLesson.id);
+                  setScreen('lesson-study');
+                } else {
+                  handleStartPlay('mixed');
+                }
+              }}
+              onStudyLesson={(lessonId) => {
+                setSelectedLessonId(lessonId);
+                setScreen('lesson-study');
+              }}
               onBackToMap={() => setScreen('map')}
               onOpenMatThat3D={() => setScreen('hang-3d')}
               onOpenMatThatPlane={() => setScreen('hang-plane')}
               onOpenMatThatGraph={() => setScreen('hang-graph')}
+            />
+          )}
+
+          {screen === 'lesson-study' && selectedLessonId && (
+            <LessonStudyView
+              lessonId={selectedLessonId}
+              onStartPractice={(lessonId) => handleStartPlay('lesson', lessonId)}
+              onBack={() => setScreen('hang')}
             />
           )}
 

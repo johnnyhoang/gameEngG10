@@ -6,6 +6,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { pool } from './db.js';
+import { SEED_LESSONS } from './lessonsData.js';
 import { createRemoteJWKSet, jwtVerify } from 'jose';
 
 dotenv.config();
@@ -35,7 +36,29 @@ const initDB = async () => {
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS image_url TEXT;`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;`);
     await pool.query(`ALTER TABLE ge10_player_profiles ADD COLUMN IF NOT EXISTS server_updated_at TIMESTAMP DEFAULT NOW();`);
-    console.log('Database initialized successfully.');
+
+    // Seed lessons
+    for (const lesson of SEED_LESSONS) {
+      await pool.query(
+        `INSERT INTO ge10_lessons (id, subject, topic, title, theory, category)
+         VALUES ($1, $2, $3, $4, $5, $6)
+         ON CONFLICT (id) DO UPDATE SET
+           topic = EXCLUDED.topic,
+           title = EXCLUDED.title,
+           theory = EXCLUDED.theory,
+           category = EXCLUDED.category`,
+        [lesson.id, lesson.subject, lesson.topic, lesson.title, lesson.theory, lesson.category]
+      );
+    }
+
+    // Auto-link existing questions to their lessons by category
+    await pool.query(
+      `UPDATE ge10_custom_questions 
+       SET lesson_id = (SELECT id FROM ge10_lessons WHERE ge10_lessons.category = ge10_custom_questions.category)
+       WHERE lesson_id IS NULL`
+    );
+
+    console.log('Database initialized and lessons seeded successfully.');
   } catch (error) {
     console.error('Error initializing database:', error);
   }
@@ -251,9 +274,19 @@ const saveChallengeEnergyCosts = async (challengeEnergyCosts: [number, number, n
 };
 
 const persistCustomQuestion = async (userId: string, question: any) => {
+  let lessonId = null;
+  try {
+    const lessonRes = await pool.query('SELECT id FROM ge10_lessons WHERE category = $1', [question.category]);
+    if (lessonRes.rows.length > 0) {
+      lessonId = lessonRes.rows[0].id;
+    }
+  } catch (e: any) {
+    console.error('Lỗi khi truy vấn lesson_id cho câu hỏi:', e.message);
+  }
+
   await pool.query(
-    `INSERT INTO ge10_custom_questions (id, user_id, type, category, prompt, options, correct_answer, explanation, difficulty, source, subject, image_url, metadata)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+    `INSERT INTO ge10_custom_questions (id, user_id, type, category, prompt, options, correct_answer, explanation, difficulty, source, subject, image_url, metadata, lesson_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
      ON CONFLICT (id) DO UPDATE SET
        type = EXCLUDED.type,
        category = EXCLUDED.category,
@@ -265,7 +298,8 @@ const persistCustomQuestion = async (userId: string, question: any) => {
        source = EXCLUDED.source,
        subject = EXCLUDED.subject,
        image_url = EXCLUDED.image_url,
-       metadata = EXCLUDED.metadata`,
+       metadata = EXCLUDED.metadata,
+       lesson_id = EXCLUDED.lesson_id`,
     [
       question.id,
       userId,
@@ -279,7 +313,8 @@ const persistCustomQuestion = async (userId: string, question: any) => {
       question.source || 'AI Ingested English',
       question.subject || 'english',
       question.imageUrl || question.image_url || null,
-      question.metadata ? JSON.stringify(question.metadata) : null
+      question.metadata ? JSON.stringify(question.metadata) : null,
+      lessonId
     ]
   );
 };
@@ -377,6 +412,14 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
           OR user_id IN (SELECT id FROM ge10_users WHERE role = 'admin')`,
       [userId]
     );
+    // 10. Fetch lessons
+    const lessonsRes = await pool.query('SELECT * FROM ge10_lessons');
+    // 11. Fetch user lessons progress
+    const progressRes = await pool.query('SELECT * FROM ge10_user_lessons_progress WHERE user_id = $1', [userId]);
+    const lessonsProgress: Record<string, boolean> = {};
+    progressRes.rows.forEach((row: any) => {
+      lessonsProgress[row.lesson_id] = row.completed;
+    });
     const bossBountiesVnd = await loadBossBounties();
     const challengeEnergyCosts = await loadChallengeEnergyCosts();
     const maxEnergy = await loadMaxEnergy();
@@ -434,7 +477,8 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
       difficulty: row.difficulty,
       source: row.source,
       subject: row.subject,
-      imageUrl: row.image_url
+      imageUrl: row.image_url,
+      lessonId: row.lesson_id
     }));
 
     res.json({
@@ -480,7 +524,16 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
         baseXP,
         baseCoins
       },
-      customQuestions
+      customQuestions,
+      lessons: lessonsRes.rows.map((row: any) => ({
+        id: row.id,
+        subject: row.subject,
+        topic: row.topic,
+        title: row.title,
+        theory: row.theory,
+        category: row.category
+      })),
+      lessonsProgress
     });
   } catch (error) {
     console.error('Error fetching profile stats:', error);
@@ -491,7 +544,7 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
 // POST /api/profile/sync: Receives Zustand state and synchronizes it to Supabase PostgreSQL
 app.post('/api/profile/sync', authMiddleware, async (req: any, res) => {
   const userId = req.user.sub;
-  const { player, pet, categoryStats, logs, rewards, challenges, dailyMission } = req.body;
+  const { player, pet, categoryStats, logs, rewards, challenges, dailyMission, lessonsProgress } = req.body;
 
   const client = await pool.connect();
   try {
@@ -634,6 +687,22 @@ app.post('/api/profile/sync', authMiddleware, async (req: any, res) => {
            mission_json = EXCLUDED.mission_json`,
         [userId, dailyMission ? JSON.stringify(dailyMission) : null]
       );
+    }
+
+    // 8. Sync lessons progress
+    if (lessonsProgress) {
+      for (const [lessonId, completed] of Object.entries(lessonsProgress)) {
+        if (completed) {
+          await client.query(
+            `INSERT INTO ge10_user_lessons_progress (user_id, lesson_id, completed, completed_at)
+             VALUES ($1, $2, $3, NOW())
+             ON CONFLICT (user_id, lesson_id) DO UPDATE SET
+               completed = EXCLUDED.completed,
+               completed_at = NOW()`,
+            [userId, lessonId, completed]
+          );
+        }
+      }
     }
 
     await client.query('COMMIT');

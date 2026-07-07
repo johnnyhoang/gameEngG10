@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import type { Question } from '../types/game';
+import { INITIAL_LESSONS } from '../data/lessons';
 import { ENGLISH_ANSWER_MODE_LABELS, ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../data/englishExamBlueprint';
 import { MATH_ANSWER_MODE_LABELS, MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
 import { LITERATURE_ANSWER_MODE_LABELS, LITERATURE_TASK_LABELS, LITERATURE_TEXT_GENRE_LABELS } from '../data/literatureExamBlueprint';
@@ -11,12 +12,13 @@ import {
 import { sound } from '../utils/sound';
 
 interface PlayAreaProps {
-  mode: 'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss';
+  mode: 'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss' | 'lesson';
   bossId?: string;
+  lessonId?: string;
   onFinish: () => void;
 }
 
-export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) => {
+export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFinish }) => {
   const getQuestionByWeight = useGameState(state => state.getQuestionByWeight);
   const questions = useGameState(state => state.questions);
   const player = useGameState(state => state.player);
@@ -82,6 +84,18 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
     } else if (mode === 'revenge') {
       // Find actual previously failed questions for the current subject
       pool = subjectQuestions.filter(q => failedQuestionIds.includes(q.id));
+    } else if (mode === 'lesson') {
+      const lesson = INITIAL_LESSONS.find(l => l.id === lessonId);
+      if (lesson) {
+        pool = fallbackQuestions.filter(q => (q as any).lessonId === lessonId || q.category === lesson.category);
+        // Chọn tối đa 3 câu hỏi cho phiên luyện tập ngắn củng cố lý thuyết
+        pool = pool.slice(0, 3);
+      }
+      if (pool.length < 3) {
+        // Fallback to random subject questions if not enough questions are linked
+        const extra = fallbackQuestions.filter(q => !pool.includes(q));
+        pool = [...pool, ...extra].slice(0, 3);
+      }
     } else {
       // Adaptive learning weight selector
       for (let i = 0; i < count; i++) {
@@ -119,7 +133,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
     } else {
       setTimeLeft(0);
     }
-  }, [mode, bossId, currentSubject, questions, getQuestionByWeight]);
+  }, [mode, bossId, lessonId, currentSubject, questions, getQuestionByWeight]);
 
   // Handle countdown timer
   useEffect(() => {
@@ -331,7 +345,9 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
         <p className="text-xs text-synth-text-muted">
           {isGameOver 
             ? 'Rất tiếc, con đã cạn kiệt mạng (Hearts) khi chiến đấu với Boss. Hãy quay lại ôn tập thêm nhé!' 
-            : `Đã hoàn thành phụ bản ${mode.toUpperCase()}! Hãy cùng xem thành quả chiến lợi phẩm.`}
+            : mode === 'lesson'
+              ? 'Con đã hoàn thành các câu hỏi củng cố! Hãy quay lại để xác nhận lĩnh hội bài học nhé.'
+              : `Đã hoàn thành phụ bản ${mode.toUpperCase()}! Hãy cùng xem thành quả chiến lợi phẩm.`}
         </p>
 
         {/* Reward card */}
@@ -359,7 +375,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
           onClick={handleEscape}
           className="px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-border-cyan cursor-pointer transition-all duration-300 shadow-[0_0_15px_rgba(0,240,255,0.4)]"
         >
-          Trở Lại Bản Đồ 🗺️
+          {mode === 'lesson' ? 'Hoàn Thành Học Bài 🎓' : 'Trở Lại Bản Đồ 🗺️'}
         </button>
       </div>
     );

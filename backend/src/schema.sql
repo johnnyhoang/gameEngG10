@@ -124,3 +124,26 @@ CREATE TABLE IF NOT EXISTS ge10_custom_questions (
 
 -- Force promote hoang.hoa@gmail.com to admin (in case they pre-existed in DB as student)
 UPDATE ge10_users SET role = 'admin' WHERE email = 'hoang.hoa@gmail.com';
+
+-- Lessons Table
+CREATE TABLE IF NOT EXISTS ge10_lessons (
+    id VARCHAR(255) PRIMARY KEY,
+    subject VARCHAR(50) NOT NULL,
+    topic VARCHAR(255) NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    theory TEXT NOT NULL,
+    category VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- User Lesson Progress Table
+CREATE TABLE IF NOT EXISTS ge10_user_lessons_progress (
+    user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
+    lesson_id VARCHAR(255) REFERENCES ge10_lessons(id) ON DELETE CASCADE,
+    completed BOOLEAN DEFAULT TRUE,
+    completed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (user_id, lesson_id)
+);
+
+-- Add lesson_id to custom questions table
+ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS lesson_id VARCHAR(255) REFERENCES ge10_lessons(id) ON DELETE SET NULL;

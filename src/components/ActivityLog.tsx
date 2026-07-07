@@ -7,13 +7,13 @@ export const ActivityLog: React.FC = () => {
   const logs = useGameState(state => state.logs);
   const uiTheme = useGameState(state => state.uiTheme);
   const isUnicorn = uiTheme === 'unicorn-dream';
-  const [visibleCount, setVisibleCount] = useState(20);
+  const [visibleCount, setVisibleCount] = useState(15);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const loadMoreLockRef = useRef(false);
-  const pageSize = 20;
+  const pageSize = 15;
 
   useEffect(() => {
-    setVisibleCount(20);
+    setVisibleCount(15);
   }, [logs.length]);
 
   const visibleLogs = useMemo(() => logs.slice(0, visibleCount), [logs, visibleCount]);
@@ -115,7 +115,7 @@ export const ActivityLog: React.FC = () => {
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1 select-none"
+          className="flex-1 min-h-0 max-h-[480px] overflow-y-auto space-y-2 pr-1 select-none"
         >
           {visibleLogs.length > 0 ? (
             <>
