@@ -1,10 +1,36 @@
-import React from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { Target, Clock, Gift, ShieldAlert, Award, FileText, CheckCircle2 } from 'lucide-react';
 
 export const ActivityLog: React.FC = () => {
   const dailyMission = useGameState(state => state.dailyMission);
   const logs = useGameState(state => state.logs);
+  const [visibleCount, setVisibleCount] = useState(20);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const loadMoreLockRef = useRef(false);
+  const pageSize = 20;
+
+  useEffect(() => {
+    setVisibleCount(20);
+  }, [logs.length]);
+
+  const visibleLogs = useMemo(() => logs.slice(0, visibleCount), [logs, visibleCount]);
+
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el || loadMoreLockRef.current) return;
+
+    const threshold = 120;
+    const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
+    if (!nearBottom) return;
+    if (visibleCount >= logs.length) return;
+
+    loadMoreLockRef.current = true;
+    setVisibleCount(prev => Math.min(prev + pageSize, logs.length));
+    window.setTimeout(() => {
+      loadMoreLockRef.current = false;
+    }, 150);
+  };
 
   const getLogIcon = (type: string) => {
     switch (type) {
@@ -80,9 +106,18 @@ export const ActivityLog: React.FC = () => {
           <Clock className="w-4 h-4" /> Activity Feed
         </h3>
 
-        <div className="flex-1 overflow-y-auto space-y-2 pr-1 select-none">
-          {logs.length > 0 ? (
-            logs.map(log => (
+        <div
+          ref={scrollRef}
+          onScroll={handleScroll}
+          className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1 select-none"
+        >
+          {visibleLogs.length > 0 ? (
+            <>
+              <div className="flex items-center justify-between text-[10px] text-synth-text-muted font-bold uppercase tracking-wider mb-2 sticky top-0 z-10 bg-synth-bg/90 backdrop-blur-sm py-1">
+                <span>Hiển thị {visibleLogs.length}/{logs.length}</span>
+                {visibleLogs.length < logs.length && <span>Kéo xuống để tải thêm</span>}
+              </div>
+              {visibleLogs.map(log => (
               <div 
                 key={log.id} 
                 className="bg-synth-gray/30 rounded-lg p-2.5 border border-white/5 flex gap-2.5 items-start text-xs hover:bg-synth-gray/40 transition-all duration-200"
@@ -123,10 +158,16 @@ export const ActivityLog: React.FC = () => {
                   )}
                 </div>
               </div>
-            ))
+              ))}
+            </>
           ) : (
             <div className="text-center py-8 text-synth-text-muted text-xs">
               Chưa có dữ liệu hoạt động hôm nay.
+            </div>
+          )}
+          {visibleLogs.length < logs.length && (
+            <div className="py-3 text-center text-[10px] text-synth-text-muted font-bold uppercase tracking-wider">
+              Đang sẵn sàng tải thêm...
             </div>
           )}
         </div>
