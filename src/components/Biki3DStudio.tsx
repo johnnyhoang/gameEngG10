@@ -658,8 +658,9 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
   const [history, setHistory] = useState<CommandHistoryItem[]>([]);
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [boardTool, setBoardTool] = useState<'ai' | 'vertex-vertex' | 'vertex-edge'>('ai');
+  const [boardTool, setBoardTool] = useState<'ai' | 'vertex-vertex' | 'vertex-edge' | 'perpendicular' | 'plane-3p'>('ai');
   const [pickedVertex, setPickedVertex] = useState<string | null>(null);
+  const [pickedVertices, setPickedVertices] = useState<string[]>([]);
   const [analysisStatus, setAnalysisStatus] = useState<'idle' | 'loading' | 'error' | 'success'>('idle');
   const [analysisError, setAnalysisError] = useState('');
   const playTimerRef = useRef<number | null>(null);
@@ -677,6 +678,7 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
 
   useEffect(() => {
     setPickedVertex(null);
+    setPickedVertices([]);
   }, [boardTool]);
 
   const baseSteps = useMemo(() => buildBaseSteps(shape, model, prompt), [model, prompt, shape]);
@@ -827,6 +829,37 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
     return 'Đề bài chưa đủ dấu hiệu để nhận dạng tự động, nhưng mô hình vẫn có thể dựng thủ công bằng chọn hình bên cạnh.';
   }, [detectedShape, prompt]);
 
+  const promptHints = useMemo(() => {
+    const normalized = stripVietnamese(prompt).toLowerCase();
+    const hints: string[] = [];
+
+    if (normalized.includes('duong cao')) {
+      hints.push('Ưu tiên xác định đỉnh cần hạ vuông góc và mặt đáy liên quan.');
+      hints.push('Bấm công cụ Vuông góc rồi chọn đỉnh, sau đó chọn cạnh đáy phù hợp.');
+    }
+
+    if (normalized.includes('trung diem')) {
+      hints.push('Xác định đúng cạnh có trung điểm, rồi nối trung điểm đó với đỉnh còn lại.');
+      hints.push('Có thể dùng công cụ Đỉnh → cạnh để chốt đoạn dựng phụ.');
+    }
+
+    if (normalized.includes('mat phang')) {
+      hints.push('Tìm đủ 3 điểm không thẳng hàng để tạo mặt phẳng.');
+      hints.push('Bấm công cụ Mặt phẳng 3 điểm rồi chấm lần lượt 3 đỉnh.');
+    }
+
+    if (normalized.includes('song song')) {
+      hints.push('Đối chiếu các cạnh tương ứng hoặc các mặt cùng phương.');
+    }
+
+    if (hints.length === 0) {
+      hints.push('Dùng AI phân tích nếu đề dài hoặc nhiều ý phụ.');
+      hints.push('Nếu đã biết hình, chọn đúng loại hình ở cột bên trái trước khi dựng.');
+    }
+
+    return hints.slice(0, 3);
+  }, [prompt]);
+
   const runCommand = () => {
     if (!commandText.trim()) return;
     const result = parseCommand(commandText, model, history.length + 1);
@@ -945,6 +978,25 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
     appendHistoryItem(item);
   };
 
+  const addManualFaceByVertices = (vertices: string[], summary: string, note: string, color: string) => {
+    const cleanVertices = vertices.map(normalizeVertexId);
+    const annotation: OverlayAnnotation = {
+      id: `manual-${Date.now()}-a1`,
+      type: 'face',
+      title: summary,
+      body: note,
+      points: cleanVertices,
+      color,
+      opacity: 0.3
+    };
+    createManualConstruction(summary, [annotation], [{
+      title: 'Chọn mặt phẳng',
+      body: note,
+      focus: cleanVertices,
+      annotationIds: [annotation.id]
+    }]);
+  };
+
   const handleVertexClick = (vertexId: string) => {
     if (boardTool === 'vertex-vertex') {
       if (!pickedVertex) {
@@ -985,34 +1037,70 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
       return;
     }
 
-    if (boardTool === 'vertex-edge') {
+    if (boardTool === 'vertex-edge' || boardTool === 'perpendicular') {
       setPickedVertex(prev => (prev === vertexId ? null : vertexId));
+      return;
+    }
+
+    if (boardTool === 'plane-3p') {
+      setPickedVertices(prev => {
+        const next = prev.includes(vertexId) ? prev : [...prev, vertexId];
+        if (next.length === 3) {
+          addManualFaceByVertices(
+            next,
+            `Mặt phẳng qua ${next.join(', ')}`,
+            `Tô nổi mặt phẳng đi qua ba điểm ${next.join(', ')} để học sinh dễ theo dõi và trình bày.`,
+            '#22c55e'
+          );
+          return [];
+        }
+        return next;
+      });
     }
   };
 
   const handleEdgeClick = (from: string, to: string) => {
-    if (boardTool !== 'vertex-edge' || !pickedVertex) return;
+    if ((boardTool !== 'vertex-edge' && boardTool !== 'perpendicular') || !pickedVertex) return;
 
     const edgeId = `${normalizeVertexId(from)}${normalizeVertexId(to)}`;
+    const isPerpendicular = boardTool === 'perpendicular';
     const annotation: OverlayAnnotation = {
       id: `manual-${Date.now()}-a1`,
       type: 'line',
-      title: `${pickedVertex} tới cạnh ${edgeId}`,
-      body: `Nối đỉnh ${pickedVertex} tới cạnh ${edgeId} bằng trung điểm của cạnh.`,
+      title: isPerpendicular ? `Vuông góc từ ${pickedVertex}` : `${pickedVertex} tới cạnh ${edgeId}`,
+      body: isPerpendicular
+        ? `Dựng đường vuông góc từ ${pickedVertex} xuống cạnh ${edgeId}.`
+        : `Nối đỉnh ${pickedVertex} tới cạnh ${edgeId} bằng trung điểm của cạnh.`,
       from: pickedVertex,
       to: `EDGE:${edgeId}`,
-      color: '#f59e0b',
+      color: isPerpendicular ? '#00f0ff' : '#f59e0b',
       opacity: 1,
       dashed: true
     };
+    const marker: OverlayAnnotation = {
+      id: `manual-${Date.now()}-a2`,
+      type: 'marker',
+      title: isPerpendicular ? 'Vuông góc' : 'Trung điểm',
+      body: isPerpendicular
+        ? `Đánh dấu chân đường vuông góc trên cạnh ${edgeId}.`
+        : `Đánh dấu trung điểm của cạnh ${edgeId}.`,
+      at: `EDGE:${edgeId}`,
+      color: isPerpendicular ? '#ffffff' : '#f8fafc',
+      opacity: 1,
+      dashed: isPerpendicular
+    };
     createManualConstruction(
-      `Nối đỉnh ${pickedVertex} tới cạnh ${edgeId}`,
-      [annotation],
+      isPerpendicular
+        ? `Vẽ đường vuông góc từ ${pickedVertex} xuống cạnh ${edgeId}`
+        : `Nối đỉnh ${pickedVertex} tới cạnh ${edgeId}`,
+      [annotation, marker],
       [{
-        title: 'Nối đỉnh với cạnh',
-        body: `Chọn đỉnh ${pickedVertex}, sau đó nối đến cạnh ${edgeId} để hỗ trợ dựng mặt phẳng hoặc chứng minh.`,
+        title: isPerpendicular ? 'Vẽ vuông góc' : 'Nối đỉnh với cạnh',
+        body: isPerpendicular
+          ? `Chọn đỉnh ${pickedVertex}, sau đó bấm cạnh ${edgeId} để dựng đường vuông góc.`
+          : `Chọn đỉnh ${pickedVertex}, sau đó nối đến cạnh ${edgeId} để hỗ trợ dựng mặt phẳng hoặc chứng minh.`,
         focus: [pickedVertex, edgeId],
-        annotationIds: [annotation.id]
+        annotationIds: [annotation.id, marker.id]
       }]
     );
     setPickedVertex(null);
@@ -1282,13 +1370,14 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
               {model.vertices.map(vertex => {
                 const point = pointCoords(vertex.id);
                 if (!point) return null;
+                const isPicked = pickedVertex === vertex.id || pickedVertices.includes(vertex.id);
                 return (
                   <g key={vertex.id}>
                     <circle
                       cx={point.x}
                       cy={point.y}
                       r={5.8}
-                      fill={pickedVertex === vertex.id ? '#f59e0b' : '#f8fafc'}
+                      fill={isPicked ? '#f59e0b' : '#f8fafc'}
                       stroke="#0f172a"
                       strokeWidth={1.5}
                       filter="url(#biki-shadow)"
@@ -1381,9 +1470,30 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
                 >
                   Đỉnh → cạnh
                 </button>
+                <button
+                  onClick={() => { setBoardTool('perpendicular'); setPickedVertex(null); }}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border cursor-pointer ${
+                    boardTool === 'perpendicular' ? 'border-synth-magenta/30 bg-synth-magenta/10 text-synth-magenta' : 'border-white/10 bg-white/5 text-white'
+                  }`}
+                >
+                  Vuông góc
+                </button>
+                <button
+                  onClick={() => { setBoardTool('plane-3p'); setPickedVertex(null); setPickedVertices([]); }}
+                  className={`px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider border cursor-pointer ${
+                    boardTool === 'plane-3p' ? 'border-synth-green/30 bg-synth-green/10 text-synth-green' : 'border-white/10 bg-white/5 text-white'
+                  }`}
+                >
+                  Mặt phẳng 3 điểm
+                </button>
                 {pickedVertex && (
                   <span className="text-[10px] font-bold text-synth-orange uppercase tracking-wider">
                     Đã chọn: {pickedVertex}
+                  </span>
+                )}
+                {boardTool === 'plane-3p' && pickedVertices.length > 0 && (
+                  <span className="text-[10px] font-bold text-synth-green uppercase tracking-wider">
+                    Đang chọn: {pickedVertices.join(', ')}
                   </span>
                 )}
               </div>
@@ -1406,6 +1516,20 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
 
             <div className="mt-3 text-[10px] text-slate-400">
               Mẹo: dùng tên đỉnh đang xuất hiện trên hình. Nếu đề có ghi ký hiệu khác, nhập đúng theo đề gốc.
+            </div>
+
+            <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-3">
+              <div className="text-[10px] uppercase tracking-[0.22em] text-slate-400 font-bold">
+                Gợi ý nhanh từ đề
+              </div>
+              <ul className="mt-2 space-y-1.5 text-xs text-slate-200 leading-relaxed">
+                {promptHints.map(hint => (
+                  <li key={hint} className="flex gap-2">
+                    <span className="text-synth-cyan">•</span>
+                    <span>{hint}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
 
             {analysisStatus === 'error' && analysisError && (
