@@ -36,6 +36,7 @@ function App() {
   const [playMode, setPlayMode] = useState<'grammar' | 'reading' | 'vocabulary' | 'mixed' | 'revenge' | 'boss'>('mixed');
   const [bossId, setBossId] = useState<string | undefined>(undefined);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
 
   // Auto-switch screen for admin users on login
   useEffect(() => {
@@ -77,6 +78,8 @@ function App() {
 
   // Listen for Supabase Auth state changes globally immediately on app mount
   useEffect(() => {
+    let mounted = true;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session && session.user) {
         const user: UserProfile = {
@@ -96,12 +99,37 @@ function App() {
           useGameState.getState().logout();
         }
       }
+
+      if (mounted) {
+        setAuthLoading(false);
+      }
+    });
+
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session && mounted) {
+        setAuthLoading(false);
+      }
     });
 
     return () => {
+      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen synth-grid-bg bg-synth-bg flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-synth-cyan mx-auto"></div>
+          <p className="font-orbitron text-xs text-synth-cyan font-bold tracking-widest uppercase animate-pulse">
+            Đang kết nối đấu trường...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (!currentUser) {
     return <GoogleLoginScreen />;
