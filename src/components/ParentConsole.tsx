@@ -984,7 +984,7 @@ export const ParentConsole: React.FC = () => {
                         {q.options.map((opt, idx) => (
                           <div
                             key={idx}
-                            className={`rounded-lg px-3 py-2 border ${Array.isArray(q.correctAnswer) ? q.correctAnswer.includes(opt) : q.correctAnswer === opt ? 'border-synth-green text-synth-green bg-synth-green/10' : 'border-white/5 text-synth-text-muted bg-white/5'}`}
+                            className={`rounded-lg px-3 py-2 border ${(Array.isArray(q.correctAnswer) ? q.correctAnswer.includes(opt) : q.correctAnswer === opt) ? 'border-synth-green text-synth-green bg-synth-green/10' : 'border-white/5 text-synth-text-muted bg-white/5'}`}
                           >
                             {opt}
                           </div>

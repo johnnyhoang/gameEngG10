@@ -1052,7 +1052,7 @@ export const useGameState = create<GameState>()(
 
           const performanceScore = Math.max(0, Math.min(1, scoreRatio));
           const effectiveCorrect = performanceScore >= 0.6;
-          const newRecentResults = [...currentStat.recentResults, effectiveCorrect].slice(-10); // Keep last 10
+          const newRecentResults = [...(currentStat.recentResults || []), effectiveCorrect].slice(-10); // Keep last 10
           const correctCount = newRecentResults.filter(Boolean).length;
           const rollingAccuracy = correctCount / newRecentResults.length;
 

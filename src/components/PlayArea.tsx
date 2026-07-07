@@ -148,7 +148,9 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
 
     if (activeQuestion.type === 'mcq' && activeQuestion.options) {
       // 50/50: remove two wrong options
-      const correctOpt = activeQuestion.correctAnswer as string;
+      const correctOpt = Array.isArray(activeQuestion.correctAnswer)
+        ? activeQuestion.correctAnswer[0]
+        : activeQuestion.correctAnswer;
       const wrongOpts = activeQuestion.options.filter(opt => opt !== correctOpt);
       const randomWrongs = wrongOpts.sort(() => Math.random() - 0.5).slice(0, 2);
       setRevealedHint(`Gợi ý: Hai lựa chọn này là sai: "${randomWrongs.join(' và ')}"`);
@@ -207,7 +209,10 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
       .replace(/[₂]/g, '2');
 
     if (activeQuestion.type === 'mcq') {
-      isCorrect = cleanAnswer(selectedAnswer) === cleanAnswer(activeQuestion.correctAnswer as string);
+      const correctAnsStr = Array.isArray(activeQuestion.correctAnswer)
+        ? activeQuestion.correctAnswer[0]
+        : activeQuestion.correctAnswer;
+      isCorrect = cleanAnswer(selectedAnswer) === cleanAnswer(correctAnsStr);
       scoreRatio = isCorrect ? 1 : 0;
     } else {
       const answers = Array.isArray(activeQuestion.correctAnswer)
@@ -505,7 +510,10 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
                   {activeQuestion.options.map((option, idx) => {
                     const cleanOpt = option.trim();
                     const isSelected = selectedAnswer === cleanOpt;
-                    const isCorrectOpt = cleanOpt.toLowerCase() === (activeQuestion.correctAnswer as string).toLowerCase();
+                    const correctAnsStr = Array.isArray(activeQuestion.correctAnswer)
+                      ? activeQuestion.correctAnswer[0]
+                      : activeQuestion.correctAnswer;
+                    const isCorrectOpt = cleanOpt.toLowerCase() === correctAnsStr.toLowerCase();
 
                     let borderClass = 'border-white/10 hover:border-synth-cyan/40 bg-synth-gray/10';
                     if (isSelected) borderClass = 'border-synth-cyan bg-synth-cyan/15 text-white';
@@ -574,7 +582,10 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, onFinish }) =>
                 {activeQuestion.options.map((option, idx) => {
                   const cleanOpt = option.trim();
                   const isSelected = selectedAnswer === cleanOpt;
-                  const isCorrectOpt = cleanOpt.toLowerCase() === (activeQuestion.correctAnswer as string).toLowerCase();
+                  const correctAnsStr = Array.isArray(activeQuestion.correctAnswer)
+                    ? activeQuestion.correctAnswer[0]
+                    : activeQuestion.correctAnswer;
+                  const isCorrectOpt = cleanOpt.toLowerCase() === correctAnsStr.toLowerCase();
 
                   let borderClass = 'border-white/10 hover:border-synth-cyan/40 bg-synth-gray/10';
                   if (isSelected) borderClass = 'border-synth-cyan bg-synth-cyan/15 text-white';

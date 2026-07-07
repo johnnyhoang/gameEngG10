@@ -1,6 +1,6 @@
 {
   "short_name": "MIKAWAII",
-  "name": "MIKAWAII - Luyện Thi Tiếng Anh Lớp 10",
+  "name": "MIKAWAII - Đấu Trường Học Thuật",
   "icons": [
     {
       "src": "/apple-touch-icon.png",
@@ -21,3 +21,4 @@
   "display": "standalone",
   "orientation": "portrait"
 }
+
