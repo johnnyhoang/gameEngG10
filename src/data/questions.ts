@@ -682,6 +682,71 @@ export const INITIAL_QUESTIONS: Question[] = [
     subject: 'math',
     metadata: { examPart: 'Bài 8', mathTopic: 'tangent-geometry', answerMode: 'proof', solutionStyle: 'proof-outline', subparts: ['a', 'b', 'c'], solutionSteps: ['Chứng minh tam giác ABC vuông tại C.', 'Dùng hệ thức tiếp tuyến - cát tuyến.', 'Khai thác góc vuông và phương tích để suy ra tứ giác nội tiếp và tiếp tuyến.'], diagramHint: 'Đường tròn đường kính AB, điểm C trên đường tròn, tiếp tuyến tại A cắt BC tại M, đường cao CH và trung điểm I.', tags: ['official-exam', 'hcmc-2026'] }
   } as any,
+  {
+    id: 'hcmc-math-2025-q1',
+    type: 'multi-part',
+    category: 'function-graph',
+    prompt: `Cho Parabol (P): y = 1/2 * x^2 và đường thẳng (d): y = x + 4.
+a) Vẽ (P) và (d) trên cùng một hệ trục tọa độ.
+b) Tìm tọa độ giao điểm của (P) và (d) bằng phép tính.`,
+    correctAnswer: ['y = 1/2 * x^2', 'y = x + 4', '(4; 8)', '(-2; 2)', 'x^2 - 2x - 8 = 0'],
+    explanation: 'a) Lập bảng giá trị của (P) (tối thiểu 5 điểm) và (d) (tối thiểu 2 điểm). Vẽ Parabol (P) và đường thẳng (d) chính xác trên cùng một hệ trục tọa độ Oxy.\nb) Phương trình hoành độ giao điểm: 1/2 * x^2 = x + 4 <=> x^2 - 2x - 8 = 0. Giải phương trình bậc hai thu được x = 4 => y = 8 và x = -2 => y = 2. Kết luận tọa độ giao điểm là (4; 8) và (-2; 2).',
+    difficulty: 5,
+    source: 'Đề thi chính thức Tuyển sinh lớp 10 môn Toán TP.HCM 2025',
+    subject: 'math',
+    metadata: { examPart: 'Bài 1', mathTopic: 'function-graph', answerMode: 'multi-part', solutionStyle: 'diagram', subparts: ['a', 'b'], solutionSteps: ['Lập bảng giá trị của (P) (tối thiểu 5 điểm) và (d) (tối thiểu 2 điểm).', 'Vẽ (P) và (d) trên cùng hệ trục tọa độ Oxy.', 'Lập phương trình hoành độ giao điểm: 1/2 * x^2 = x + 4 <=> x^2 - 2x - 8 = 0.', 'Giải phương trình bậc hai thu được x = 4 hoặc x = -2.', 'Thay giá trị x vào phương trình đường thẳng để tính tung độ: y(4) = 8, y(-2) = 2.', 'Kết luận tọa độ giao điểm là (4; 8) và (-2; 2).'], tags: ['official-exam', 'hcmc-2025'] }
+  } as any,
+  {
+    id: 'hcmc-math-2025-q2',
+    type: 'short-answer',
+    category: 'quadratic-equation',
+    prompt: `Cho phương trình x^2 - 5x + 3 = 0 có hai nghiệm x1, x2.
+Không giải phương trình, hãy tính giá trị của biểu thức: A = x1^2 + x2^2 - 3x1x2.`,
+    correctAnswer: ['10'],
+    explanation: 'Theo hệ thức Vi-ét ta có: S = x1 + x2 = 5, P = x1 * x2 = 3.\nBiến đổi biểu thức: A = x1^2 + x2^2 - 3x1x2 = (x1 + x2)^2 - 5x1x2 = S^2 - 5P.\nThay số vào: A = 5^2 - 5 * 3 = 25 - 15 = 10.',
+    difficulty: 5,
+    source: 'Đề thi chính thức Tuyển sinh lớp 10 môn Toán TP.HCM 2025',
+    subject: 'math',
+    metadata: { examPart: 'Bài 2', mathTopic: 'quadratic-equation', answerMode: 'short-answer', solutionStyle: 'worked', solutionSteps: ['Kiểm tra Delta = 25 - 12 = 13 > 0 để đảm bảo phương trình có hai nghiệm.', 'Áp dụng định lý Vi-ét tính tổng S = 5 và tích P = 3.', 'Biến đổi biểu thức A thành S^2 - 5P.', 'Thay giá trị S = 5, P = 3 để tính giá trị A = 10.'], tags: ['official-exam', 'hcmc-2025'] }
+  } as any,
+  {
+    id: 'hcmc-math-2025-q4',
+    type: 'short-answer',
+    category: 'percentage-discount',
+    prompt: `Một cửa hàng thời trang giảm giá 20% cho tất cả các mặt hàng quần áo. Nếu khách hàng có thẻ thành viên thì được giảm thêm 5% trên giá đã giảm. Bạn An mua một bộ quần áo có giá niêm yết ban đầu là 800.000 đồng và bạn có thẻ thành viên. Hỏi bạn An phải trả bao nhiêu tiền?`,
+    correctAnswer: ['608.000 đồng', '608000'],
+    explanation: 'Giá tiền bộ quần áo sau khi giảm 20%: 800.000 × (1 - 0.2) = 640.000 đồng.\nGiá tiền An phải trả sau khi giảm tiếp 5% (có thẻ thành viên): 640.000 × (1 - 0.05) = 608.000 đồng.',
+    difficulty: 4,
+    source: 'Đề thi chính thức Tuyển sinh lớp 10 môn Toán TP.HCM 2025',
+    subject: 'math',
+    metadata: { examPart: 'Bài 4', mathTopic: 'percentage-discount', answerMode: 'short-answer', solutionStyle: 'worked', solutionSteps: ['Tính giá bộ quần áo sau đợt giảm giá đầu tiên 20%: 800.000 * 0.8 = 640.000 đồng.', 'Tính số tiền An thực tế phải trả sau khi giảm tiếp 5% có thẻ thành viên: 640.000 * 0.95 = 608.000 đồng.'], tags: ['official-exam', 'hcmc-2025'] }
+  } as any,
+  {
+    id: 'hcmc-math-2025-q6',
+    type: 'short-answer',
+    category: 'solid-geometry',
+    prompt: `Một cái xô dạng hình trụ có bán kính đáy r = 15 cm và chiều cao h = 40 cm. Người ta dùng cái xô này để múc nước đổ vào một bể chứa. Hỏi cần ít nhất bao nhiêu xô nước đầy để đổ đầy một bể chứa nước hình hộp chữ nhật có kích thước dài 1,2 m, rộng 1 m và cao 0,6 m? (Lấy pi ≈ 3,14).`,
+    correctAnswer: ['26 xô', '26'],
+    explanation: 'Thể tích xô hình trụ V = pi * r^2 * h ≈ 3.14 * 15^2 * 40 = 28.260 cm³ = 0,02826 m³.\nThể tích bể chứa hình hộp chữ nhật V_bể = 1.2 * 1 * 0.6 = 0.72 m³.\nSố xô nước cần dùng: 0.72 / 0,02826 ≈ 25.48 xô.\nVì cần đổ đầy bể và số xô nước phải là số nguyên, ta làm tròn lên thành 26 xô nước.',
+    difficulty: 6,
+    source: 'Đề thi chính thức Tuyển sinh lớp 10 môn Toán TP.HCM 2025',
+    subject: 'math',
+    metadata: { examPart: 'Bài 6', mathTopic: 'solid-geometry', answerMode: 'short-answer', solutionStyle: 'worked', solutionSteps: ['Tính thể tích của xô nước hình trụ: V_xô = pi * 15^2 * 40 ≈ 28.260 cm³ = 0,02826 m³.', 'Tính thể tích bể chứa hình hộp chữ nhật: V_bể = 1.2 * 1 * 0.6 = 0.72 m³.', 'Lập tỉ lệ số xô nước cần dùng: 0.72 / 0,02826 ≈ 25.48 xô.', 'Biện luận làm tròn lên số nguyên gần nhất để đổ đầy bể: Cần ít nhất 26 xô.'], tags: ['official-exam', 'hcmc-2025'] }
+  } as any,
+  {
+    id: 'hcmc-math-2025-q8',
+    type: 'proof',
+    category: 'plane-geometry',
+    prompt: `Cho đường tròn (O; R) có đường kính AB. Lấy điểm C thuộc (O) sao cho AC < BC. Tiếp tuyến tại A của (O) cắt đường thẳng BC tại D.
+a) Chứng minh tam giác ABC vuông và AD^2 = DC * DB.
+b) Qua O kẻ đường thẳng vuông góc với BC tại H, cắt tiếp tuyến tại A ở điểm M. Chứng minh tứ giác AHOB nội tiếp và MC là tiếp tuyến của (O).`,
+    correctAnswer: ['tam giác ABC vuông tại C', 'AD^2 = DC * DB', 'tứ giác AHOB nội tiếp', 'MC là tiếp tuyến của (O)'],
+    explanation: 'a) Góc ACB chắn nửa đường tròn nên góc ACB = 90 độ => AC vuông góc với BD. Xét tam giác ABD vuông tại A có đường cao AC, áp dụng hệ thức lượng ta có AD^2 = DC * DB.\nb) MH vuông góc với BC tại H nên góc MHB = 90 độ, tiếp tuyến tại A của (O) nên góc MAB = 90 độ => Tứ giác AHOB có hai góc đối diện cùng bằng 90 độ hoặc cùng thuộc đường tròn đường kính MB. Chứng minh tam giác MAO bằng tam giác MCO (c-g-c) => góc MCO = góc MAO = 90 độ => MC vuông góc OC tại C, suy ra MC là tiếp tuyến.',
+    difficulty: 8,
+    source: 'Đề thi chính thức Tuyển sinh lớp 10 môn Toán TP.HCM 2025',
+    subject: 'math',
+    metadata: { examPart: 'Bài 8', mathTopic: 'plane-geometry', answerMode: 'proof', solutionStyle: 'proof-outline', subparts: ['a', 'b'], solutionSteps: ['Chứng minh góc ACB = 90 độ (góc nội tiếp chắn nửa đường tròn) => tam giác ABC vuông tại C.', 'Xét tam giác ABD vuông tại A có đường cao AC, áp dụng hệ thức lượng để suy ra AD^2 = DC * DB.', 'Chứng minh tứ giác AHOB nội tiếp bằng cách chỉ ra tổng hai góc đối diện bằng 180 độ hoặc cùng thuộc đường tròn đường kính MB.', 'Sử dụng tính chất tam giác MAO bằng tam giác MCO để chứng minh góc MCO = 90 độ.', 'Kết luận MC vuông góc với OC tại C trên (O) nên MC là tiếp tuyến của (O).'], tags: ['official-exam', 'hcmc-2025'] }
+  } as any,
 
   // ==================== LITERATURE SUBJECT QUESTIONS ====================
   {
