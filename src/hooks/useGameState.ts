@@ -304,6 +304,7 @@ interface GameState {
   importQuestions: (questions: Question[]) => void;
   deleteQuestion: (questionId: string) => Promise<boolean>;
   updateQuestion: (questionId: string, updatedQuestion: Partial<Question>) => Promise<boolean>;
+  flagQuestionConfused: (question: Question) => Promise<boolean>;
   resetProgress: () => void; // Keeps questions, resets student stats
 
   // Systems Reset
@@ -797,7 +798,10 @@ export const useGameState = create<GameState>()(
               set(_state => {
                 const mergedQuestions = [...INITIAL_QUESTIONS];
                 dbCustomQs.forEach((q: any) => {
-                  if (!mergedQuestions.some(eq => eq.id === q.id || eq.prompt === q.prompt)) {
+                  const idx = mergedQuestions.findIndex(eq => eq.id === q.id);
+                  if (idx !== -1) {
+                    mergedQuestions[idx] = q;
+                  } else if (!mergedQuestions.some(eq => eq.prompt === q.prompt)) {
                     mergedQuestions.push(q);
                   }
                 });
@@ -1529,7 +1533,7 @@ export const useGameState = create<GameState>()(
           const question = state.questions.find(q => q.id === questionId);
           if (!question) return false;
 
-          const isCustomQuestion = question.source?.startsWith('AI Ingested');
+          const isCustomQuestion = question.source?.startsWith('AI Ingested') || question.isConfused;
           if (isCustomQuestion && !questionId.startsWith('ai-')) {
             try {
               const session = (await supabase.auth.getSession()).data.session;
@@ -1567,7 +1571,7 @@ export const useGameState = create<GameState>()(
           const question = state.questions.find(q => q.id === questionId);
           if (!question) return false;
 
-          const isCustomQuestion = question.source?.startsWith('AI Ingested');
+          const isCustomQuestion = question.source?.startsWith('AI Ingested') || question.isConfused;
           const nextQuestion = { ...question, ...updatedQuestion } as Question;
 
           if (isCustomQuestion) {
@@ -1601,6 +1605,41 @@ export const useGameState = create<GameState>()(
             questions: state.questions.map(q => q.id === questionId ? nextQuestion : q)
           }));
           logActivity('parent_approve', 'Cập nhật câu hỏi', `Ba đã cập nhật câu hỏi mã số ${questionId}`, 0, 0);
+          return true;
+        },
+
+        flagQuestionConfused: async (question) => {
+          const nextQuestion = { ...question, isConfused: true } as Question;
+
+          try {
+            const session = (await supabase.auth.getSession()).data.session;
+            const token = session?.access_token;
+            if (!token) return false;
+
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+            const res = await fetch(`${backendUrl}/api/questions/confused`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify(question)
+            });
+            if (!res.ok) {
+              const errData = await res.json();
+              toast.error(errData.error || 'Không thể đánh dấu câu hỏi.');
+              return false;
+            }
+          } catch (error) {
+            console.error('Error flagging question:', error);
+            toast.error('Lỗi kết nối khi đánh dấu câu hỏi.');
+            return false;
+          }
+
+          set(state => ({
+            questions: state.questions.map(q => q.id === question.id ? nextQuestion : q)
+          }));
+          logActivity('exercise', 'Hổng hiểu - Lướt', `Đã bỏ qua câu hỏi mã số ${question.id} và đánh dấu cần hỗ trợ.`, 0, 0);
           return true;
         },
 

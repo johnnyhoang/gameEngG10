@@ -119,7 +119,8 @@ CREATE TABLE IF NOT EXISTS ge10_custom_questions (
     source VARCHAR(255),
     subject VARCHAR(50) DEFAULT 'english',
     image_url TEXT,
-    metadata JSONB DEFAULT '{}'::jsonb
+    metadata JSONB DEFAULT '{}'::jsonb,
+    is_confused BOOLEAN DEFAULT FALSE
 );
 
 -- Force promote hoang.hoa@gmail.com to admin (in case they pre-existed in DB as student)

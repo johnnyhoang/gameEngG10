@@ -28,6 +28,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const answerQuestion = useGameState(state => state.answerQuestion);
   const currentSubject = useGameState(state => state.currentSubject);
   const buyHint = useGameState(state => state.buyHint);
+  const flagQuestionConfused = useGameState(state => state.flagQuestionConfused);
   const failedQuestionIds = useGameState(state => state.failedQuestionIds || []);
   
   // Game states
@@ -379,6 +380,33 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           setRunFinished(true);
         }
       }, 1500);
+    }
+  };
+
+  const handleSkipConfused = async () => {
+    if (!activeQuestion) return;
+    
+    const success = await flagQuestionConfused(activeQuestion);
+    if (success) {
+      toast.success('Đã đánh dấu "Hổng hiểu" và lướt qua. Ba sẽ nhìn thấy câu này để hướng dẫn con!');
+      sound.playNext();
+      
+      setChecked(false);
+      setSelectedAnswer('');
+      setTypedAnswer('');
+      setHintUsed(false);
+      setRevealedHint('');
+      setLastRubricScore(null);
+      setLastRubricMissing([]);
+      setAiFeedback('');
+      setAiSuggestions([]);
+      setAiWarningMessage('');
+
+      if (currentIndex + 1 < currentQuestions.length) {
+        setCurrentIndex(prev => prev + 1);
+      } else {
+        setRunFinished(true);
+      }
     }
   };
 
@@ -876,6 +904,15 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
             className="px-4 py-3 rounded-xl border border-synth-orange/40 hover:bg-synth-orange/5 text-synth-orange font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 w-full sm:w-auto text-center"
           >
             Mua Gợi Ý (50 NP)
+          </button>
+        )}
+
+        {!checked && (
+          <button
+            onClick={handleSkipConfused}
+            className="px-4 py-3 rounded-xl border border-red-500/40 hover:bg-red-500/10 text-red-400 font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 w-full sm:w-auto text-center flex items-center justify-center gap-1.5"
+          >
+            Hổng hiểu - Lướt 🧠
           </button>
         )}
 

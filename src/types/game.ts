@@ -49,6 +49,7 @@ export interface Question {
   subject?: 'english' | 'math' | 'literature';
   imageUrl?: string;
   metadata?: QuestionMeta;
+  isConfused?: boolean;
 }
 
 export interface QuestionMeta {

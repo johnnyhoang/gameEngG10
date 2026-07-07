@@ -1035,5 +1035,283 @@ Tiếp tục các cụm động từ thông dụng nhất hỗ trợ viết lạ
 - **Put off:** Trì hoãn (= postpone).
 - **Put on:** Mặc (quần áo), đi (giày).
 - **Put up with:** Chịu đựng.`
+  },
+  {
+    id: 'math-eq-product',
+    subject: 'math',
+    topic: 'Phương trình và Hệ phương trình',
+    title: 'Phương trình tích',
+    category: 'real-equations',
+    theory: `# Phương trình tích
+
+Phương pháp giải phương trình dạng tích $A(x) \\cdot B(x) = 0$.
+
+## 1. Công thức giải cơ bản
+Phương trình $A(x) \\cdot B(x) = 0$ tương đương với:
+$$A(x) = 0 \\quad \\text{hoặc} \\quad B(x) = 0$$
+
+## 2. Các bước giải phương trình tích phức tạp
+- **Bước 1:** Chuyển tất cả các hạng tử sang vế trái để vế phải bằng 0.
+- **Bước 2:** Phân tích đa thức ở vế trái thành nhân tử (dùng hằng đẳng thức, đặt nhân tử chung, hoặc nhóm hạng tử).
+- **Bước 3:** Cho từng nhân tử bằng 0 và giải tìm nghiệm.
+- **Bước 4:** Kết luận tập nghiệm $S$.`
+  },
+  {
+    id: 'math-eq-rational',
+    subject: 'math',
+    topic: 'Phương trình và Hệ phương trình',
+    title: 'Phương trình chứa ẩn ở mẫu',
+    category: 'real-equations',
+    theory: `# Phương trình chứa ẩn ở mẫu
+
+Quy trình giải phương trình chứa ẩn ở mẫu thức để tránh nghiệm ngoại lai.
+
+## 1. Quy trình gồm 4 bước chuẩn
+- **Bước 1: Tìm điều kiện xác định (ĐKXĐ):** Tìm các giá trị của ẩn làm cho các mẫu thức khác 0.
+- **Bước 2: Quy đồng mẫu hai vế:** Tìm mẫu thức chung (MTC), quy đồng và khử mẫu hai vế.
+- **Bước 3: Giải phương trình vừa nhận được.**
+- **Bước 4: Đối chiếu điều kiện và kết luận:** Loại bỏ các giá trị không thỏa mãn ĐKXĐ.
+
+## 2. Ví dụ thực hành
+Giải phương trình: $\\frac{x+2}{x-2} - \\frac{1}{x} = 2$.
+- ĐKXĐ: $x \\neq 0$ và $x \\neq 2$.
+- MTC: $x(x-2)$.`
+  },
+  {
+    id: 'math-system-eq-1',
+    subject: 'math',
+    topic: 'Phương trình và Hệ phương trình',
+    title: 'Hệ phương trình - Cộng đại số và Thế',
+    category: 'real-equations',
+    theory: `# Hệ phương trình - Phương pháp thế và cộng đại số
+
+Khái niệm và cách giải hệ hai phương trình bậc nhất hai ẩn.
+
+## 1. Phương pháp thế
+- Từ một phương trình, biểu diễn một ẩn (ví dụ $x$) theo ẩn kia (ví dụ $y$).
+- Thế biểu thức này vào phương trình còn lại để được phương trình một ẩn.
+- Giải phương trình một ẩn tìm nghiệm, rồi thế ngược lại tìm ẩn còn lại.
+
+## 2. Phương pháp cộng đại số
+- Nhân hai vế của mỗi phương trình với số thích hợp sao cho hệ số của một ẩn nào đó bằng nhau hoặc đối nhau.
+- Cộng hoặc trừ từng vế hai phương trình để triệt tiêu một ẩn.
+- Giải phương trình một ẩn vừa thu được, rồi tìm ẩn còn lại.`
+  },
+  {
+    id: 'math-system-eq-2',
+    subject: 'math',
+    topic: 'Phương trình và Hệ phương trình',
+    title: 'Hệ phương trình chứa tham số m',
+    category: 'real-equations',
+    theory: `# Hệ phương trình chứa tham số m
+
+Biện luận số nghiệm của hệ hai phương trình bậc nhất hai ẩn chứa tham số $m$.
+
+## 1. Điều kiện tồn tại nghiệm
+Cho hệ phương trình:
+$$\\begin{cases} ax + by = c \\\\ a'x + b'y = c' \\end{cases}$$
+- **Hệ có nghiệm duy nhất:** $\\frac{a}{a'} \\neq \\frac{b}{b'}$.
+- **Hệ vô nghiệm:** $\\frac{a}{a'} = \\frac{b}{b'} \\neq \frac{c}{c'}$.
+- **Hệ vô số nghiệm:** $\\frac{a}{a'} = \\frac{b}{b'} = \\frac{c}{c'}$.
+*(Lưu ý: Chỉ lập tỉ số khi các hệ số dưới mẫu khác 0. Nếu chứa tham số $m$ ở mẫu, cần xét các trường hợp $m$ làm mẫu bằng 0 riêng).*`
+  },
+  {
+    id: 'math-right-triangle-ratio',
+    subject: 'math',
+    topic: 'Hệ thức lượng',
+    title: 'Hệ thức về cạnh và đường cao',
+    category: 'real-geometry',
+    theory: `# Hệ thức lượng về cạnh và đường cao
+
+Các hệ thức cơ bản giữa cạnh và đường cao trong tam giác vuông.
+
+## 1. Các hệ thức trong tam giác vuông
+Cho tam giác $ABC$ vuông tại $A$, đường cao $AH$ chia cạnh huyền $BC$ thành hai hình chiếu $HB$ và $HC$:
+- Định lý Pitago: $a^2 = b^2 + c^2$
+- Hệ thức 1 (Cạnh góc vuông và hình chiếu): $b^2 = a \\cdot b'$ và $c^2 = a \\cdot c'$
+- Hệ thức 2 (Đường cao và hình chiếu): $h^2 = b' \\cdot c'$
+- Hệ thức 3 (Đường cao và hai cạnh góc vuông): $a \\cdot h = b \\cdot c$
+- Hệ thức 4 (Đường cao nghịch đảo): $\\frac{1}{h^2} = \\frac{1}{b^2} + \\frac{1}{c^2}$`
+  },
+  {
+    id: 'lit-modern-conflict-1',
+    subject: 'literature',
+    topic: 'Đọc hiểu văn bản',
+    title: 'Xung đột truyện và tình huống kịch tính',
+    category: 'literature-reading-prose',
+    theory: `# Xung đột truyện và tình huống kịch tính
+
+Phân tích xung đột nghệ thuật và vai trò của tình huống kịch tính trong tác phẩm văn xuôi hiện đại.
+
+## 1. Xung đột truyện
+- **Khái niệm:** Là sự mâu thuẫn, đối lập giữa các lực lượng xã hội, các tính cách nhân vật hoặc mâu thuẫn ngay trong nội tâm của một nhân vật.
+- **Tác dụng:** Thúc đẩy cốt truyện phát triển và bộc lộ chủ đề tư tưởng của tác phẩm.
+
+## 2. Tình huống kịch tính
+- Là sự kiện đặc biệt, bước ngoặt làm thay đổi mối quan hệ giữa các nhân vật và đẩy xung đột lên đỉnh điểm (ví dụ: khoảnh khắc bé Thu nhận ra cha trước lúc ông Sáu lên đường).`
+  },
+  {
+    id: 'lit-modern-conflict-2',
+    subject: 'literature',
+    topic: 'Đọc hiểu văn bản',
+    title: 'Diễn biến tâm lý nhân vật',
+    category: 'literature-reading-prose',
+    theory: `# Diễn biến tâm lý nhân vật
+
+Phương pháp phân tích sự thay đổi cảm xúc và suy nghĩ nội tâm của nhân vật.
+
+## 1. Các bước phân tích diễn biến tâm lý
+- **Bước 1:** Xác định hoàn cảnh tác động trực tiếp đến nhân vật.
+- **Bước 2:** Chỉ ra những biểu hiện cụ thể (nét mặt, cử chỉ, hành động, độc thoại nội tâm).
+- **Bước 3:** Đánh giá ý nghĩa sự chuyển đổi tâm lý đối với việc khắc họa tính cách nhân vật.
+
+## 2. Nghệ thuật miêu tả nội tâm
+- Miêu tả trực tiếp qua dòng suy nghĩ (độc thoại nội tâm) hoặc gián tiếp qua cử chỉ hành động và cảnh vật xung quanh (tả cảnh ngụ tình).`
+  },
+  {
+    id: 'lit-poem-rhythm-1',
+    subject: 'literature',
+    topic: 'Đọc hiểu văn bản',
+    title: 'Vần, nhịp và bố cục bài thơ',
+    category: 'literature-reading-poetry',
+    theory: `# Vần, nhịp và bố cục bài thơ
+
+Cách nhận diện và phân tích cấu trúc hình thức của một văn bản thơ lớp 9.
+
+## 1. Vần và Nhịp thơ
+- **Vần:** Vần chân (gieo ở cuối câu) và vần lưng (gieo ở giữa câu); tác dụng tạo sự kết nối hài hòa giữa các dòng thơ.
+- **Nhịp:** Cách ngắt quãng khi đọc câu thơ (ví dụ: nhịp 4/3 trong thơ bảy chữ, nhịp tự do). Tạo nhạc điệu và nhịp điệu cảm xúc.
+
+## 2. Bố cục bài thơ
+- Cách chia đoạn thơ theo mạch lô-gích nội dung hoặc mạch cảm xúc của nhân vật trữ tình.`
+  },
+  {
+    id: 'lit-poem-rhythm-2',
+    subject: 'literature',
+    topic: 'Đọc hiểu văn bản',
+    title: 'Mạch cảm xúc và hình ảnh biểu tượng',
+    category: 'literature-reading-poetry',
+    theory: `# Mạch cảm xúc và hình ảnh biểu tượng trong thơ
+
+Phân tích mạch vận động cảm xúc và ý nghĩa của các hình ảnh thơ mang tính biểu tượng.
+
+## 1. Mạch cảm xúc
+- Là dòng chảy cảm xúc xuyên suốt tác phẩm (ví dụ: từ hoài niệm quá khứ $\\rightarrow$ suy ngẫm hiện tại $\\rightarrow$ ước nguyện tương lai trong Viếng lăng Bác).
+
+## 2. Hình ảnh biểu tượng
+- Là hình ảnh cụ thể gợi liên tưởng đến những khái niệm trừu tượng, khái quát (ví dụ: "mặt trời trong lăng", "tràng hoa dâng bảy mươi chín mùa xuân").`
+  },
+  {
+    id: 'lit-grammar-isolated-2',
+    subject: 'literature',
+    topic: 'Tiếng Việt',
+    title: 'Thành phần biệt lập nâng cao',
+    category: 'literature-vietnamese',
+    theory: `# Thành phần biệt lập nâng cao
+
+Phân biệt chi tiết bốn thành phần biệt lập và cách ứng dụng trong bài viết văn.
+
+## 1. Bốn thành phần biệt lập cốt lõi
+- **Tình thái:** Thể hiện độ tin cậy (*chắc chắn, có lẽ, hình như*).
+- **Cảm thán:** Thể hiện cảm xúc (*ôi, trời ơi, thay*).
+- **Gọi - đáp:** Tạo lập, duy trì cuộc thoại (*này, dạ, thưa*).
+- **Phụ chú:** Giải thích thêm chi tiết phụ (nằm giữa hai dấu phẩy/gạch ngang/ngoặc đơn).
+
+## 2. Ứng dụng trong làm văn
+- Giúp câu văn giàu sắc thái biểu cảm, lập luận chặt chẽ và truyền tải thông tin phụ một cách khéo léo.`
+  },
+  {
+    id: 'eng-wordform-advanced',
+    subject: 'english',
+    topic: 'Ngữ pháp lõi',
+    title: 'Biến đổi từ loại nâng cao',
+    category: 'wordform',
+    theory: `# Biến đổi từ loại nâng cao
+
+Cách nhận diện và sử dụng tiền tố phủ định và hậu tố đặc biệt để biến đổi từ loại.
+
+## 1. Tiền tố tạo nghĩa trái ngược (Negative Prefixes)
+Thêm tiền tố trước gốc từ:
+- \`un-\` (happy $\\rightarrow$ unhappy, comfortable $\\rightarrow$ uncomfortable)
+- \`im-\` (polite $\\rightarrow$ impolite, patient $\\rightarrow$ impatient)
+- \`in-\` (correct $\\rightarrow$ incorrect, active $\\rightarrow$ inactive)
+- \`dis-\` (agree $\\rightarrow$ disagree, honest $\\rightarrow$ dishonest)
+
+## 2. Hậu tố tạo Danh từ trừu tượng
+- \`-ness\` (sad $\\rightarrow$ sadness), \`-ity\` (able $\\rightarrow$ ability), \`-ment\` (develop $\\rightarrow$ development), \`-ance/-ence\` (import $\rightarrow$ importance, differ $\rightarrow$ difference).`
+  },
+  {
+    id: 'eng-reading-skills-1',
+    subject: 'english',
+    topic: 'Kỹ năng Đọc',
+    title: 'Kỹ thuật Skimming & Scanning',
+    category: 'grammar',
+    theory: `# Kỹ thuật Skimming & Scanning
+
+Hai kỹ năng đọc hiểu cốt lõi giúp tối ưu hóa thời gian làm bài thi đọc hiểu tiếng Anh.
+
+## 1. Skimming (Đọc lướt lấy ý chính)
+- **Mục đích:** Tìm chủ đề bao quát hoặc ý chính của cả bài đọc.
+- **Cách thực hiện:** Đọc tiêu đề, đoạn mở đầu, câu đầu tiên và câu cuối cùng của mỗi đoạn văn; bỏ qua chi tiết nhỏ.
+
+## 2. Scanning (Đọc dò tìm thông tin chi tiết)
+- **Mục đích:** Tìm thông tin cụ thể (ngày tháng, tên riêng, con số).
+- **Cách thực hiện:** Xác định từ khóa trong câu hỏi, đưa mắt quét nhanh qua bài đọc để định vị chính xác từ khóa đó.`
+  },
+  {
+    id: 'eng-reading-skills-2',
+    subject: 'english',
+    topic: 'Kỹ năng Đọc',
+    title: 'Đoán nghĩa từ mới theo ngữ cảnh',
+    category: 'grammar',
+    theory: `# Đoán nghĩa từ mới theo ngữ cảnh
+
+Phương pháp suy đoán nghĩa của từ chưa biết trong bài thi mà không cần dùng từ điển.
+
+## 1. Dựa vào từ đồng nghĩa/trái nghĩa xung quanh
+- Tìm các từ liên kết như \`and, or, like, such as\` để tìm từ đồng nghĩa.
+- Tìm từ chỉ tương phản \`but, however, although, despite\` để tìm từ trái nghĩa.
+
+## 2. Dựa vào ví dụ minh họa và định nghĩa
+- Xem câu sau có giải thích hoặc đưa ra ví dụ để làm rõ nghĩa của từ đó không.
+- Phân tích cấu trúc từ (tiền tố, hậu tố) để phán đoán sắc thái nghĩa tích cực hay tiêu cực.`
+  },
+  {
+    id: 'eng-writing-paragraph-1',
+    subject: 'english',
+    topic: 'Kỹ năng Viết',
+    title: 'Viết đoạn văn mô tả địa điểm/lối sống',
+    category: 'rewrite',
+    theory: `# Viết đoạn văn mô tả địa điểm hoặc lối sống
+
+Phương pháp tổ chức ý và các cấu trúc diễn đạt khi viết đoạn văn 80-100 từ.
+
+## 1. Cấu trúc 3 phần chuẩn
+- **Topic sentence (Câu chủ đề):** Giới thiệu địa điểm/lối sống cần mô tả.
+- **Supporting sentences (Các câu bổ trợ):** Nêu chi tiết đặc điểm nổi bật, hoạt động, cảm nhận.
+- **Concluding sentence (Câu kết luận):** Khẳng định lại ấn tượng hoặc mong ước của bản thân.
+
+## 2. Mẫu câu hữu ích
+- *One of the most interesting features of... is...*
+- *People here are friendly and they lead a simple life.*`
+  },
+  {
+    id: 'eng-writing-paragraph-2',
+    subject: 'english',
+    topic: 'Kỹ năng Viết',
+    title: 'Viết đoạn văn trình bày quan điểm cá nhân',
+    category: 'rewrite',
+    theory: `# Viết đoạn văn trình bày quan điểm cá nhân
+
+Hướng dẫn cấu trúc lập luận bày tỏ sự đồng ý hoặc không đồng ý với một vấn đề.
+
+## 1. Bố cục đoạn văn lập luận
+- **Mở đoạn:** Nêu rõ quan điểm đồng ý hoặc không đồng ý với luận điểm đề bài đưa ra.
+- **Thân đoạn:** Đưa ra 2-3 lý do kèm ví dụ thực tế. Sử dụng liên từ liên kết (*Firstly, Secondly, In addition, For example*).
+- **Kết đoạn:** Khẳng định lại quan điểm một lần nữa.
+
+## 2. Các cụm từ bày tỏ ý kiến
+- *From my perspective, I strongly agree/disagree that...*
+- *There are several reasons why I support this idea.*`
   }
 ];

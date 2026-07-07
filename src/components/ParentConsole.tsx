@@ -94,6 +94,7 @@ export const ParentConsole: React.FC = () => {
   const [questionTypeFilter, setQuestionTypeFilter] = useState<'all' | Question['type']>('all');
   const [examPartFilter, setExamPartFilter] = useState('all');
   const [topicFilter, setTopicFilter] = useState('all');
+  const [confusedFilter, setConfusedFilter] = useState<'all' | 'confused'>('all');
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
   const [editType, setEditType] = useState<Question['type']>('mcq');
   const [editPrompt, setEditPrompt] = useState('');
@@ -356,6 +357,7 @@ export const ParentConsole: React.FC = () => {
       if (questionTypeFilter !== 'all' && q.type !== questionTypeFilter) return false;
       if (examPartFilter !== 'all' && (q.metadata?.examPart || 'Chưa gắn part') !== examPartFilter) return false;
       if (topicFilter !== 'all' && (q.category || 'Chưa phân loại') !== topicFilter) return false;
+      if (confusedFilter === 'confused' && !q.isConfused) return false;
       if (!query) return true;
       const haystack = [
         q.prompt,
@@ -379,7 +381,7 @@ export const ParentConsole: React.FC = () => {
         .toLowerCase();
       return haystack.includes(query);
     });
-  }, [questions, questionQuery, subjectFilter, questionTypeFilter, examPartFilter, topicFilter]);
+  }, [questions, questionQuery, subjectFilter, questionTypeFilter, examPartFilter, topicFilter, confusedFilter]);
 
   const filteredSubjectCounts = useMemo(() => {
     return filteredQuestions.reduce((acc: Record<string, number>, q) => {
@@ -938,6 +940,17 @@ export const ParentConsole: React.FC = () => {
                         ))}
                       </select>
                     </label>
+                    <label className="space-y-1.5 text-[10px]">
+                      <span className="block uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">Trạng thái câu hỏi</span>
+                      <select
+                        value={confusedFilter}
+                        onChange={(e) => setConfusedFilter(e.target.value as any)}
+                        className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                      >
+                        <option value="all">Tất cả câu hỏi</option>
+                        <option value="confused">Con hổng hiểu 🧠 ({questions.filter(q => q.isConfused).length})</option>
+                      </select>
+                    </label>
                   </div>
                 </div>
 
@@ -1211,12 +1224,17 @@ export const ParentConsole: React.FC = () => {
                   <div className="space-y-3 max-h-[560px] overflow-y-auto pr-1">
                     {filteredQuestions.length > 0 ? (
                       filteredQuestions.map(q => {
-                        const isCustom = q.source?.startsWith('AI Ingested') || q.id.startsWith('hcmc-') || q.id.startsWith('mock-');
+                        const isCustom = q.source?.startsWith('AI Ingested') || q.id.startsWith('hcmc-') || q.id.startsWith('mock-') || q.isConfused;
                         return (
                           <div key={q.id} className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-3">
                             <div className="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
                               <div className="space-y-2 min-w-0">
                                 <div className="flex flex-wrap items-center gap-2">
+                                  {q.isConfused && (
+                                    <span className="text-[10px] px-2 py-0.5 rounded bg-red-500/20 text-red-400 font-bold uppercase font-orbitron border border-red-500/40 animate-pulse">
+                                      Con hổng hiểu 🧠
+                                    </span>
+                                  )}
                                   <span className="text-[10px] px-2 py-0.5 rounded bg-synth-cyan/20 text-synth-cyan font-bold uppercase font-orbitron">
                                     {QUESTION_TYPE_LABELS[q.type] || q.type}
                                   </span>

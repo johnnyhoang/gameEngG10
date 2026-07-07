@@ -35,6 +35,7 @@ const initDB = async () => {
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS subject VARCHAR(50) DEFAULT 'english';`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS image_url TEXT;`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;`);
+    await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS is_confused BOOLEAN DEFAULT FALSE;`);
     await pool.query(`ALTER TABLE ge10_player_profiles ADD COLUMN IF NOT EXISTS server_updated_at TIMESTAMP DEFAULT NOW();`);
 
     // Seed lessons
@@ -285,8 +286,8 @@ const persistCustomQuestion = async (userId: string, question: any) => {
   }
 
   await pool.query(
-    `INSERT INTO ge10_custom_questions (id, user_id, type, category, prompt, options, correct_answer, explanation, difficulty, source, subject, image_url, metadata, lesson_id)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+    `INSERT INTO ge10_custom_questions (id, user_id, type, category, prompt, options, correct_answer, explanation, difficulty, source, subject, image_url, metadata, lesson_id, is_confused)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
      ON CONFLICT (id) DO UPDATE SET
        type = EXCLUDED.type,
        category = EXCLUDED.category,
@@ -299,7 +300,8 @@ const persistCustomQuestion = async (userId: string, question: any) => {
        subject = EXCLUDED.subject,
        image_url = EXCLUDED.image_url,
        metadata = EXCLUDED.metadata,
-       lesson_id = EXCLUDED.lesson_id`,
+       lesson_id = EXCLUDED.lesson_id,
+       is_confused = EXCLUDED.is_confused`,
     [
       question.id,
       userId,
@@ -314,7 +316,8 @@ const persistCustomQuestion = async (userId: string, question: any) => {
       question.subject || 'english',
       question.imageUrl || question.image_url || null,
       question.metadata ? JSON.stringify(question.metadata) : null,
-      lessonId
+      lessonId,
+      question.isConfused || false
     ]
   );
 };
@@ -478,7 +481,8 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
       source: row.source,
       subject: row.subject,
       imageUrl: row.image_url,
-      lessonId: row.lesson_id
+      lessonId: row.lesson_id,
+      isConfused: row.is_confused
     }));
 
     res.json({
@@ -746,11 +750,25 @@ app.get('/api/questions/custom', authMiddleware, async (req: any, res) => {
       source: row.source,
       subject: row.subject,
       imageUrl: row.image_url,
-      metadata: row.metadata || undefined
+      metadata: row.metadata || undefined,
+      isConfused: row.is_confused
     })));
   } catch (error) {
     console.error('Error loading custom questions:', error);
     res.status(500).json({ error: 'Failed to retrieve questions.' });
+  }
+});
+
+// POST /api/questions/confused: Flags any question as confused/not understood
+app.post('/api/questions/confused', authMiddleware, async (req: any, res) => {
+  const userId = req.user.sub;
+  const question = req.body;
+  try {
+    await persistCustomQuestion(userId, { ...question, isConfused: true });
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Error flagging question confused:', error.message);
+    res.status(500).json({ error: 'Failed to flag question as confused.' });
   }
 });
 
