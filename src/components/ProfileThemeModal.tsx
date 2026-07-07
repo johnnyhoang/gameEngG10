@@ -19,7 +19,8 @@ const getThemeCardClass = (themeId: UiThemeId, isActive: boolean) => {
     'cute-pink-pastel': 'border-pink-200/50 bg-gradient-to-br from-pink-100 via-fuchsia-50 to-rose-100',
     'space-adventure': 'border-cyan-300/30 bg-gradient-to-br from-slate-950 via-indigo-950 to-cyan-900/40',
     'fantasy-forest': 'border-emerald-200/40 bg-gradient-to-br from-lime-50 via-amber-50 to-green-100',
-    'pixel-arcade': 'border-lime-300/40 bg-gradient-to-br from-slate-950 via-slate-900 to-green-900/40'
+    'pixel-arcade': 'border-lime-300/40 bg-gradient-to-br from-slate-950 via-slate-900 to-green-900/40',
+    'unicorn-dream': 'border-violet-200/60 bg-gradient-to-br from-fuchsia-50 via-white to-cyan-50'
   };
 
   return `${base} ${variants[themeId]} ${isActive ? 'ring-2 ring-offset-2 ring-offset-slate-950 ring-white/70 scale-[1.01]' : 'hover:-translate-y-1'}`;
@@ -35,6 +36,8 @@ const getTextToneClass = (themeId: UiThemeId) => {
       return 'text-emerald-900';
     case 'pixel-arcade':
       return 'text-lime-300';
+    case 'unicorn-dream':
+      return 'text-violet-700';
     default:
       return 'text-cyan-200';
   }

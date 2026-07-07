@@ -127,6 +127,29 @@ body[data-theme='fantasy-forest'] {
   --theme-border: rgba(132, 204, 22, 0.18);
 }
 
+:root[data-theme='unicorn-dream'] {
+  --color-synth-bg: #fdf8ff;
+  --color-synth-card: rgba(255, 255, 255, 0.82);
+  --color-synth-card-solid: #fff8ff;
+  --color-synth-cyan: #7dd3fc;
+  --color-synth-magenta: #f9a8d4;
+  --color-synth-purple: #c084fc;
+  --color-synth-orange: #fbcfe8;
+  --color-synth-green: #a7f3d0;
+  --color-synth-blue: #e9d5ff;
+  --color-synth-gray: #eadcf7;
+  --color-synth-text-muted: #8b6f9c;
+  --font-orbitron: 'Fredoka', 'Nunito', sans-serif;
+  --font-inter: 'Nunito', 'Inter', sans-serif;
+  --theme-card: rgba(255, 255, 255, 0.88);
+  --theme-card-strong: rgba(252, 245, 255, 0.98);
+  --theme-border: rgba(192, 132, 252, 0.18);
+}
+
+body[data-theme='unicorn-dream'] {
+  color: #5f3c77;
+}
+
 @keyframes neon-glow-cyan {
   from {
     box-shadow: 0 0 4px rgba(0, 240, 255, 0.2), 0 0 8px rgba(0, 240, 255, 0.1);
@@ -333,6 +356,21 @@ body {
   background-size: 100% 100%, 22px 22px, 22px 22px;
 }
 
+.app-shell[data-theme='unicorn-dream']::before {
+  background-image:
+    radial-gradient(circle at 16% 18%, rgba(255, 255, 255, 0.92) 0 2px, transparent 3px),
+    radial-gradient(circle at 30% 12%, rgba(249, 168, 212, 0.55) 0 14px, transparent 15px),
+    radial-gradient(circle at 78% 16%, rgba(125, 211, 252, 0.45) 0 16px, transparent 17px),
+    radial-gradient(circle at 84% 74%, rgba(192, 132, 252, 0.34) 0 18px, transparent 19px),
+    radial-gradient(circle at 22% 80%, rgba(167, 243, 208, 0.38) 0 20px, transparent 21px),
+    linear-gradient(180deg, rgba(255, 249, 255, 0.96), rgba(245, 239, 255, 0.98));
+  background-size: 100% 100%;
+}
+
+.app-shell[data-theme='unicorn-dream'] {
+  color: #5f3c77;
+}
+
 .app-shell[data-theme='cute-pink-pastel']::after,
 .app-shell[data-theme='space-adventure']::after,
 .app-shell[data-theme='fantasy-forest']::after,
@@ -383,6 +421,16 @@ body {
   animation: pixel-pop 1.8s steps(2, end) infinite;
 }
 
+.app-shell[data-theme='unicorn-dream']::after {
+  background:
+    radial-gradient(circle at 18% 22%, rgba(255, 255, 255, 0.95) 0 1.5px, transparent 2px),
+    radial-gradient(circle at 38% 28%, rgba(249, 168, 212, 0.55) 0 1.5px, transparent 3px),
+    radial-gradient(circle at 65% 24%, rgba(125, 211, 252, 0.5) 0 2px, transparent 3px),
+    radial-gradient(circle at 84% 40%, rgba(192, 132, 252, 0.6) 0 1.5px, transparent 3px),
+    radial-gradient(circle at 70% 76%, rgba(167, 243, 208, 0.45) 0 2px, transparent 3px);
+  animation: bubble-rise 8s ease-in-out infinite;
+}
+
 body[data-theme='cute-pink-pastel'] :is(.text-white, .text-slate-100, .text-slate-200),
 .app-shell[data-theme='cute-pink-pastel'] :is(.text-white, .text-slate-100, .text-slate-200) {
   color: #4b2d66;
@@ -393,8 +441,14 @@ body[data-theme='fantasy-forest'] :is(.text-white, .text-slate-100, .text-slate-
   color: #23412a;
 }
 
+body[data-theme='unicorn-dream'] :is(.text-white, .text-slate-100, .text-slate-200),
+.app-shell[data-theme='unicorn-dream'] :is(.text-white, .text-slate-100, .text-slate-200) {
+  color: #5f3c77;
+}
+
 body[data-theme='cute-pink-pastel'] .glass-panel,
 body[data-theme='fantasy-forest'] .glass-panel,
+.app-shell[data-theme='unicorn-dream'] .glass-panel,
 .app-shell[data-theme='cute-pink-pastel'] .glass-panel,
 .app-shell[data-theme='fantasy-forest'] .glass-panel {
   box-shadow: 0 18px 50px rgba(124, 58, 237, 0.08);

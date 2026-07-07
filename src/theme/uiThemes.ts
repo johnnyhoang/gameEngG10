@@ -69,6 +69,17 @@ export const UI_THEMES: UiThemeConfig[] = [
     iconSet: ['🟩', '🪙', '💎'],
     accentLabel: '8-bit green + blue + orange',
     fontLabel: 'Pixel display'
+  },
+  {
+    id: 'unicorn-dream',
+    name: 'Unicorn Dream',
+    shortName: 'Unicorn',
+    tagline: 'Thế giới thần tiên tri thức',
+    description: 'Không gian mềm mại, trong trẻo và đầy phép màu để bé cùng Unicorn khám phá tri thức mỗi ngày.',
+    mood: 'Dreamy, magical, cozy, sparkly, fantasy, kawaii',
+    iconSet: ['🦄', '🌈', '✨'],
+    accentLabel: 'Lilac + pearl pink + mint',
+    fontLabel: 'Rounded magical display'
   }
 ];
 
