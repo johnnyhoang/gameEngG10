@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { INITIAL_LESSONS } from '../data/lessons';
+import { HANG_TRACKS } from '../data/hangLuyenCong';
 import {
   Compass, Sword, ShieldAlert, Star, Zap, BookOpen,
   ChevronDown, ChevronUp, Skull, Swords, BookMarked, BrainCircuit, Heart, Volume2
@@ -300,6 +301,134 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
                   <div className="flex items-center gap-2 flex-wrap">
                     <h4 className="font-orbitron font-black text-base text-synth-cyan">🏰 {card.title}</h4>
                     <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-synth-cyan/15 border border-synth-cyan/30 text-synth-cyan">English</span>
+                  </div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-400">{card.subtitle}</div>
+                  <p className="text-xs text-slate-300 leading-relaxed">{card.description}</p>
+                  <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
+                    Phần thưởng: <span className="text-white">{card.reward}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {currentSubject === 'math' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {[
+              {
+                title: HANG_TRACKS.math[0].title,
+                subtitle: 'Phương trình bậc hai',
+                description: HANG_TRACKS.math[0].summary,
+                icon: <BookOpen className="w-8 h-8 text-synth-cyan" />,
+                mode: 'grammar' as const,
+                reward: HANG_TRACKS.math[0].focus.join(' · ')
+              },
+              {
+                title: HANG_TRACKS.math[1].title,
+                subtitle: 'Bài toán thực tế',
+                description: HANG_TRACKS.math[1].summary,
+                icon: <Star className="w-8 h-8 text-synth-cyan" />,
+                mode: 'vocabulary' as const,
+                reward: HANG_TRACKS.math[1].focus.join(' · ')
+              },
+              {
+                title: HANG_TRACKS.math[2].title,
+                subtitle: 'Hình học phẳng',
+                description: HANG_TRACKS.math[2].summary,
+                icon: <Compass className="w-8 h-8 text-synth-cyan" />,
+                mode: 'reading' as const,
+                reward: HANG_TRACKS.math[2].focus.join(' · ')
+              },
+              {
+                title: HANG_TRACKS.math[3].title,
+                subtitle: 'Hình học không gian',
+                description: HANG_TRACKS.math[3].summary,
+                icon: <ShieldAlert className="w-8 h-8 text-synth-cyan" />,
+                mode: 'mixed' as const,
+                reward: HANG_TRACKS.math[3].focus.join(' · ')
+              }
+            ].map(card => (
+              <div
+                key={card.title}
+                onClick={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 10)}
+                className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
+              >
+                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(0,240,255,0.08),transparent_60%)]" />
+                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white">
+                  <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 10}
+                </div>
+                <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
+                  {card.icon}
+                </div>
+                <div className="space-y-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="font-orbitron font-black text-base text-synth-cyan">🏰 {card.title}</h4>
+                    <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-synth-cyan/15 border border-synth-cyan/30 text-synth-cyan">Toán</span>
+                  </div>
+                  <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-400">{card.subtitle}</div>
+                  <p className="text-xs text-slate-300 leading-relaxed">{card.description}</p>
+                  <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
+                    Phần thưởng: <span className="text-white">{card.reward}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {currentSubject === 'literature' && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {[
+              {
+                title: HANG_TRACKS.literature[0].title,
+                subtitle: 'Đọc hiểu văn bản',
+                description: HANG_TRACKS.literature[0].summary,
+                icon: <BookOpen className="w-8 h-8 text-synth-cyan" />,
+                mode: 'grammar' as const,
+                reward: HANG_TRACKS.literature[0].focus.join(' · ')
+              },
+              {
+                title: HANG_TRACKS.literature[1].title,
+                subtitle: 'Tiếng Việt',
+                description: HANG_TRACKS.literature[1].summary,
+                icon: <BookMarked className="w-8 h-8 text-synth-cyan" />,
+                mode: 'reading' as const,
+                reward: HANG_TRACKS.literature[1].focus.join(' · ')
+              },
+              {
+                title: HANG_TRACKS.literature[2].title,
+                subtitle: 'Viết đoạn và bài nghị luận',
+                description: HANG_TRACKS.literature[2].summary,
+                icon: <Compass className="w-8 h-8 text-synth-cyan" />,
+                mode: 'vocabulary' as const,
+                reward: HANG_TRACKS.literature[2].focus.join(' · ')
+              },
+              {
+                title: HANG_TRACKS.literature[3].title,
+                subtitle: 'Nghị luận văn học',
+                description: HANG_TRACKS.literature[3].summary,
+                icon: <Volume2 className="w-8 h-8 text-synth-cyan" />,
+                mode: 'mixed' as const,
+                reward: HANG_TRACKS.literature[3].focus.join(' · ')
+              }
+            ].map(card => (
+              <div
+                key={card.title}
+                onClick={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 10)}
+                className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
+              >
+                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(0,240,255,0.08),transparent_60%)]" />
+                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white">
+                  <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 10}
+                </div>
+                <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
+                  {card.icon}
+                </div>
+                <div className="space-y-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="font-orbitron font-black text-base text-synth-cyan">🏰 {card.title}</h4>
+                    <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-synth-cyan/15 border border-synth-cyan/30 text-synth-cyan">Văn</span>
                   </div>
                   <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-400">{card.subtitle}</div>
                   <p className="text-xs text-slate-300 leading-relaxed">{card.description}</p>
