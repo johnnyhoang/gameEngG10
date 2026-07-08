@@ -381,7 +381,7 @@ const INITIAL_PLAYER: PlayerProfile = {
 };
 
 const INITIAL_PET: PetState = {
-  name: 'Rồng Con',
+  name: 'Heo Maikawaii',
   stage: 'egg',
   level: 1,
   exp: 0,
@@ -818,7 +818,7 @@ export const useGameState = create<GameState>()(
               };
 
               const newPet = state.petStates[user.id] || {
-                name: 'Rồng Con',
+                name: 'Heo Maikawaii',
                 stage: 'egg',
                 level: 1,
                 exp: 0,
@@ -900,7 +900,7 @@ export const useGameState = create<GameState>()(
                     badges: []
                   },
                   pet: data.pet || {
-                    name: 'Rồng Con',
+                    name: 'Heo Maikawaii',
                     stage: 'egg',
                     level: 1,
                     exp: 0,

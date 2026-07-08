@@ -86,9 +86,17 @@ Vận hành nền kinh tế vi mô trong game:
     *   *Mở khóa Phong Vị (Cá Tính):* Phong Vị Đào Hoa, Trúc Lâm, Tinh Không, Tuyết Sơn... giúp cá nhân hóa không gian học.
     *   *Phần thưởng Phụ huynh (Parent Rewards):* Đổi Coin lấy các voucher đặc quyền ngoài đời.
 
-### 2.5 🐉 Sân Nuôi Thú (Pet Sanctuary / PetState)
+### 2.5 🐷 Sân Nuôi Thú (Pet Sanctuary - Heo Maikawaii)
 Đại diện trực quan cho tiến trình học tập của học sinh:
-*   Thú cưng (Rồng Con) phát triển qua 4 giai đoạn: **Trứng (Egg) -> Sơ sinh (Baby) -> Rồng Con (Dragon) -> Huyền thoại (Legend)**.
+*   Thú cưng dã thú (**Heo Maikawaii**) phát triển qua 4 giai đoạn tiến hóa đặc trưng (Evolution):
+    *   **Đám Mây & Nấm Sơ Sinh (Egg):** Sinh ra từ một đám mây bông, mưa rơi xuống mặt đất nhiều lá khô mọc thành mầm nấm múp míp xinh đẹp.
+    *   **Heo Con Mũm Mĩm (Baby):** Cây nấm nứt vỡ ra chú heo con mũm mĩm, hồng hào, cực kỳ đáng yêu.
+    *   **Heo Hiệp Sĩ Trưởng Thành (Dragon):** Heo con khôn lớn, mang phong thái võ hiệp với khăn trán hoặc nón lá và đeo kiếm gỗ sau lưng.
+    *   **Thần Heo Maikawaii (Legend):** Thần thú tối thượng mũm mĩm siêu cấp, đeo vòng kim cô vàng lấp lánh và cưỡi mây Cân Đẩu Vân.
+*   **Cơ chế tương tác thông minh:**
+    *   *Thọt lét (Tickle):* Khi click thọt lét chú heo, heo sẽ nhảy dựng lên vui sướng và nói các câu thoại ngộ nghĩnh, linh tinh khó hiểu.
+    *   *Nhắc nhở bài vở (Study Reminder):* Nhắc thiếu hiệp môn học hôm nay nên ôn luyện dựa trên năng lượng/tiến trình.
+    *   *Khen thưởng (Praise):* Nhận biết điểm số, số câu đúng và Ngân lượng nhận được trong ngày của học sinh để đưa ra những lời khen ngợi ngọt ngào.
 *   Học sinh cho thú ăn để duy trì tâm trạng vui vẻ và tăng cấp cho thú. Việc cho thú ăn sẽ tiêu tốn cả Coins (NP) và một lượng XP cố định của thiếu hiệp, chấp nhận việc thiếu hiệp có thể bị tụt cấp độ (Level) tạm thời nếu dành quá nhiều tài nguyên chăm sóc thú cưng.
 
 ### 2.6 ⚙️ Bảng Quản Trị Viện Chủ (Admin Console)
