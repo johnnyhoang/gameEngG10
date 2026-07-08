@@ -6,6 +6,7 @@ import { ENGLISH_ANSWER_MODE_LABELS, ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS }
 import { MATH_ANSWER_MODE_LABELS, MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
 import { LITERATURE_ANSWER_MODE_LABELS, LITERATURE_TASK_LABELS, LITERATURE_TEXT_GENRE_LABELS } from '../data/literatureExamBlueprint';
 import { Scratchpad } from './Scratchpad';
+import { GeometryTool } from './GeometryTool';
 import { 
   Award, Flame, Check, X, ArrowRight, Volume2, VolumeX 
 } from 'lucide-react';
@@ -51,6 +52,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const [hintUsed, setHintUsed] = useState(false);
   const [revealedHint, setRevealedHint] = useState('');
   const [showScratchpad, setShowScratchpad] = useState(false);
+  const [showGeometryTool, setShowGeometryTool] = useState(false);
   const [isMuted, setIsMuted] = useState(sound.isMuted());
 
   const toggleMute = () => {
@@ -190,43 +192,43 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         : activeQuestion.correctAnswer;
       const wrongOpts = activeQuestion.options.filter(opt => opt !== correctOpt);
       const randomWrongs = wrongOpts.sort(() => Math.random() - 0.5).slice(0, 2);
-      setRevealedHint(`Gợi ý: Hai lựa chọn này là sai: "${randomWrongs.join(' và ')}"`);
+      setRevealedHint(`Gợi ý: Hai lựa chọn này lệch nhịp: "${randomWrongs.join(' và ')}"`);
     } else if (currentSubject === 'english' && englishTask) {
       const skillLabel = englishSkill ? ENGLISH_SKILL_LABELS[englishSkill] || englishSkill : '';
       const taskLabel = ENGLISH_TASK_LABELS[englishTask] || englishTask;
       if (englishTask === 'guided-cloze') {
-        setRevealedHint('Gợi ý: Nhìn câu trước và sau chỗ trống để chọn đúng loại từ và collocation.');
+        setRevealedHint('Gợi ý: So câu trước sau chỗ trống rồi chốt loại từ, collocation.');
       } else if (englishTask === 'reading-true-false') {
-        setRevealedHint('Gợi ý: Scan keywords trong statement rồi đối chiếu đúng từng ý trong passage.');
+        setRevealedHint('Gợi ý: Quét keyword trong statement rồi đối chiếu từng ý trong passage.');
       } else if (englishTask === 'reading-mcq') {
-        setRevealedHint('Gợi ý: Tìm từ khóa chính và xác định đoạn chứa thông tin liên quan nhất.');
+        setRevealedHint('Gợi ý: Bắt keyword chính rồi lần về đoạn chứa dữ kiện.');
       } else if (englishTask === 'word-form') {
-        setRevealedHint('Gợi ý: Xác định loại từ cần điền: noun, verb, adjective hay adverb.');
+        setRevealedHint('Gợi ý: Chốt loại từ cần điền: noun, verb, adjective hay adverb.');
       } else if (mode === 'pronunciation') {
-        setRevealedHint('Gợi ý: Chú ý đuôi -ed/-s, nguyên âm gần âm và trọng âm của từ.');
+        setRevealedHint('Gợi ý: Canh đuôi -ed/-s, âm gần nhau và trọng âm.');
       } else if (englishTask === 'rearrangement') {
-        setRevealedHint('Gợi ý: Bắt đầu từ chủ ngữ, động từ và các cụm bổ nghĩa cố định trước.');
+        setRevealedHint('Gợi ý: Đi từ chủ ngữ, động từ và cụm cố định trước.');
       } else if (englishTask === 'transformation') {
-        setRevealedHint('Gợi ý: Xác định cấu trúc mục tiêu trước: tense, reported speech, passive, clause...');
+        setRevealedHint('Gợi ý: Chốt cấu trúc trước: tense, reported speech, passive, clause...');
       } else {
         setRevealedHint(`Gợi ý${skillLabel ? ` (${skillLabel})` : ''}: Tập trung vào dạng ${taskLabel.toLowerCase()} và quy tắc ngữ pháp liên quan.`);
       }
     } else if (currentSubject === 'literature' && literatureTask === 'social-essay') {
       const steps = activeQuestion.metadata?.solutionSteps || [];
-      setRevealedHint(`Gợi ý: Bám bố cục nghị luận và nêu dàn ý rõ ràng${steps[0] ? `, bắt đầu từ "${steps[0]}"` : ''}.`);
+      setRevealedHint(`Gợi ý: Bám bố cục nghị luận, dựng dàn ý rõ ràng${steps[0] ? `, bắt đầu từ "${steps[0]}"` : ''}.`);
     } else if (currentSubject === 'literature' && literatureTask) {
       const genreLabel = textGenre ? LITERATURE_TEXT_GENRE_LABELS[textGenre] || textGenre : '';
       const taskLabel = LITERATURE_TASK_LABELS[literatureTask] || literatureTask;
       setRevealedHint(`Gợi ý${genreLabel ? ` (${genreLabel})` : ''}: Tập trung vào ý ${taskLabel.toLowerCase()} và nêu đúng chi tiết trọng tâm.`);
     } else if (answerMode === 'proof' || activeQuestion.type === 'proof') {
-      setRevealedHint('Gợi ý: Bài chứng minh nên đi từ giả thiết, dựng hình hoặc biến đổi trung gian trước khi kết luận.');
+      setRevealedHint('Gợi ý: Đi từ giả thiết, dựng hình hoặc biến đổi trung gian rồi mới chốt.');
     } else if (answerMode === 'multi-part' || activeQuestion.type === 'multi-part') {
-      setRevealedHint('Gợi ý: Chia bài thành từng ý a/b/c, làm ý dễ trước để lấy dữ kiện cho ý sau.');
+      setRevealedHint('Gợi ý: Chia a/b/c rõ ràng, hạ ý dễ trước để lấy đà.');
     } else if (activeQuestion.type === 'wordform' || answerMode === 'short-answer' || answerMode === 'numeric' || answerMode === 'expression') {
       const correctStr = Array.isArray(activeQuestion.correctAnswer)
         ? activeQuestion.correctAnswer[0]
         : activeQuestion.correctAnswer;
-      setRevealedHint(`Gợi ý: Đáp án có thể bắt đầu bằng "${correctStr.substring(0, 2).toUpperCase()}..."`);
+      setRevealedHint(`Gợi ý: Đáp án thường mở bằng "${correctStr.substring(0, 2).toUpperCase()}..."`);
     } else {
       const extra = mathTopic ? ` (${MATH_TOPIC_LABELS[mathTopic] || mathTopic})` : '';
       setRevealedHint(`Gợi ý${extra}: ${activeQuestion.explanation.substring(0, 50)}...`);
@@ -328,7 +330,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         }
       } catch (err: any) {
         console.error('Lỗi khi gọi AI chấm bài, chuyển sang backup:', err);
-        setAiWarningMessage('Sư phụ hết công lực chấm bài, phải sử dụng máy chấm điểm cho nên kết quả có thể không được chính xác lắm');
+        setAiWarningMessage('AI phải chấm dự phòng. Kết quả vẫn ổn, nhưng nên coi như mốc tham chiếu.');
         const fallbackResult = runOldGradingBackup();
         isCorrect = fallbackResult.isCorrect;
         scoreRatio = fallbackResult.scoreRatio;
@@ -391,7 +393,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     
     const success = await flagQuestionConfused(activeQuestion);
     if (success) {
-      toast.success('Đã đánh dấu "Hổng hiểu" và lướt qua. Ba sẽ nhìn thấy câu này để hướng dẫn con!');
+      toast.success('Đã đánh dấu "hổng hiểu". Câu này sẽ vào sổ để truy lại sau.');
       sound.playNext();
       
       setChecked(false);
@@ -404,6 +406,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       setAiFeedback('');
       setAiSuggestions([]);
       setAiWarningMessage('');
+      setShowGeometryTool(false);
 
       if (currentIndex + 1 < currentQuestions.length) {
         setCurrentIndex(prev => prev + 1);
@@ -425,6 +428,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     setAiFeedback('');
     setAiSuggestions([]);
     setAiWarningMessage('');
+    setShowGeometryTool(false);
 
     if (currentIndex + 1 < currentQuestions.length) {
       setCurrentIndex(prev => prev + 1);
@@ -526,7 +530,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           </h2>
           
           <p className="text-sm text-synth-text-muted leading-relaxed">
-            Tuyệt vời! Con không có câu hỏi làm sai nào cần sửa ở môn{' '}
+            Chuẩn xác, không có câu nào cần sửa ở môn{' '}
             <span className="text-synth-orange font-bold font-orbitron uppercase">
               {currentSubject === 'english' ? 'Tiếng Anh' : currentSubject === 'math' ? 'Toán Học' : 'Ngữ Văn'}
             </span>. Hãy tiếp tục duy trì phong độ xuất sắc này nhé!
@@ -541,7 +545,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         </div>
       );
     }
-    return <div className="text-center py-10 font-orbitron text-theme-text-info">Đang nạp câu hỏi...</div>;
+    return <div className="text-center py-10 font-orbitron text-theme-text-info">Đang rút câu vào ải...</div>;
   }
 
   // Check if we should render split screen for literature passages
@@ -552,6 +556,19 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const questionText = isLitSplit 
     ? activeQuestion.prompt.split('\n\n').slice(-1)[0]
     : activeQuestion.prompt;
+
+  const isGeometry = activeQuestion.subject === 'math' && (
+    (activeQuestion.category || '').toLowerCase().includes('geometry') ||
+    (activeQuestion.metadata?.mathTopic || '').toLowerCase().includes('geometry') ||
+    (activeQuestion.prompt || '').toLowerCase().includes('hình học') ||
+    (activeQuestion.prompt || '').toLowerCase().includes('đường tròn') ||
+    (activeQuestion.prompt || '').toLowerCase().includes('tam giác') ||
+    (activeQuestion.prompt || '').toLowerCase().includes('tứ giác') ||
+    (activeQuestion.prompt || '').toLowerCase().includes('tiếp tuyến') ||
+    (activeQuestion.prompt || '').toLowerCase().includes('hình trụ') ||
+    (activeQuestion.prompt || '').toLowerCase().includes('hình nón') ||
+    (activeQuestion.prompt || '').toLowerCase().includes('hình cầu')
+  );
 
   return (
     <div className="relative glass-panel rounded-2xl border border-synth-cyan/15 p-6 max-w-2xl mx-auto space-y-6">
@@ -624,7 +641,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
               className="px-2.5 py-1 rounded bg-synth-magenta/20 border border-synth-magenta/40 hover:bg-synth-magenta/40 text-[10px] text-synth-magenta font-bold cursor-pointer transition-colors font-orbitron"
               title="Mở bảng nháp để tính toán"
             >
-              BẢNG NHÁP ✏️
+              SỔ NHÁP ✏️
             </button>
           )}
 
@@ -639,7 +656,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         {/* Timer */}
         {timeLeft > 0 && (
           <div className="px-3 py-1 rounded bg-synth-gray border border-white/10 text-xs font-orbitron text-white">
-            Hạn Giờ: {formatTime(timeLeft)}
+            Thời hạn: {formatTime(timeLeft)}
           </div>
         )}
       </div>
@@ -725,7 +742,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                   <textarea
                     value={typedAnswer}
                     onChange={(e) => !checked && setTypedAnswer(e.target.value)}
-                    placeholder="Gõ bài làm văn của con vào đây..."
+                    placeholder="Gõ bài làm vào đây, rồi trình bày cho gọn tay..."
                     disabled={checked}
                     rows={8}
                     className="w-full p-3.5 rounded-xl border border-white/10 focus:border-synth-cyan bg-synth-gray/20 text-white text-xs outline-none transition-all duration-300 font-serif"
@@ -737,7 +754,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                     type="text"
                     value={typedAnswer}
                     onChange={(e) => !checked && setTypedAnswer(e.target.value)}
-                    placeholder="Gõ câu trả lời chính xác của con vào đây..."
+                    placeholder="Nhập đáp án gọn và đúng vào đây..."
                     disabled={checked}
                     className="w-full p-3.5 rounded-xl border border-white/10 focus:border-synth-cyan bg-synth-gray/20 text-white text-xs outline-none transition-all duration-300"
                   />
@@ -768,6 +785,31 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
               {activeQuestion.prompt}
             </p>
           </div>
+
+          {/* Geometry drawing board */}
+          {isGeometry && (
+            <div className="border border-synth-cyan/20 rounded-xl bg-synth-gray/10 overflow-hidden transition-all duration-300">
+              <button
+                type="button"
+                onClick={() => setShowGeometryTool(!showGeometryTool)}
+                className="w-full px-4 py-2.5 bg-synth-cyan/10 hover:bg-synth-cyan/15 flex items-center justify-between text-xs font-orbitron font-bold text-synth-cyan uppercase tracking-wider cursor-pointer text-left"
+              >
+                <span className="flex items-center gap-2">
+                  📐 Bảng Vẽ Hình Học (Phẳng & Không Gian)
+                  <span className="text-[10px] text-synth-text-muted lowercase font-normal italic">
+                    (Nhấp để {showGeometryTool ? 'thu gọn' : 'mở rộng'})
+                  </span>
+                </span>
+                <span>{showGeometryTool ? '▼' : '▲'}</span>
+              </button>
+              
+              {showGeometryTool && (
+                <div className="p-2 border-t border-synth-cyan/15 bg-black/20">
+                  <GeometryTool />
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Answer Forms */}
           <div className="space-y-3">
@@ -808,7 +850,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                 <textarea
                   value={typedAnswer}
                   onChange={(e) => !checked && setTypedAnswer(e.target.value)}
-                  placeholder="Gõ bài làm văn của con vào đây..."
+                  placeholder="Gõ bài làm vào đây, rồi trình bày cho gọn tay..."
                   disabled={checked}
                   rows={10}
                   className="w-full p-4 rounded-xl border border-white/10 focus:border-synth-cyan bg-synth-gray/20 text-white text-sm outline-none transition-all duration-300 font-serif"
@@ -823,7 +865,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                   type="text"
                   value={typedAnswer}
                   onChange={(e) => !checked && setTypedAnswer(e.target.value)}
-                  placeholder="Gõ câu trả lời chính xác của con vào đây..."
+                  placeholder="Nhập đáp án gọn và đúng vào đây..."
                   disabled={checked}
                   className="w-full p-4 rounded-xl border border-white/10 focus:border-synth-cyan bg-synth-gray/20 text-white text-sm outline-none transition-all duration-300"
                 />
@@ -856,8 +898,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           <div className="space-y-2">
             <h5 className="font-bold uppercase tracking-wider mb-1">
               {currentSubject === 'literature' && activeQuestion.category === 'literature-writing'
-                ? isLastCorrect ? 'Bài viết đạt rubric' : 'Bài viết cần cải thiện theo rubric'
-                : isLastCorrect ? 'Chính xác! Cực tốt con ơi.' : 'Sai rồi! Đừng nản lòng.'}
+                ? isLastCorrect ? 'Bài viết qua ải rubric' : 'Bài viết còn hở rubric'
+                : isLastCorrect ? 'Chuẩn xác, khá đấy.' : 'Lệch nhịp rồi. Sửa tay đi.'}
             </h5>
             {currentSubject === 'literature' && activeQuestion.category === 'literature-writing' ? (
               <p className="text-theme-text-highlight mb-2 font-medium">
@@ -865,7 +907,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
               </p>
             ) : (
               <p className="text-theme-text-highlight mb-2 font-medium">
-                Đáp án đúng: <span className="font-bold underline text-theme-text-success">
+                Đáp án chuẩn: <span className="font-bold underline text-theme-text-success">
                   {Array.isArray(activeQuestion.correctAnswer) ? activeQuestion.correctAnswer.join(' | ') : activeQuestion.correctAnswer}
                 </span>
               </p>
@@ -887,13 +929,13 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
             )}
             {aiFeedback && (
               <div className="text-theme-text-highlight/95 space-y-1 mt-2">
-                <p className="font-bold uppercase tracking-wider text-[10px] text-theme-text-info">Nhận xét chi tiết từ AI</p>
+                <p className="font-bold uppercase tracking-wider text-[10px] text-theme-text-info">AI luận giải</p>
                 <p className="text-theme-text-highlight/90 italic leading-relaxed bg-synth-gray/25 p-2 rounded-lg">{aiFeedback}</p>
               </div>
             )}
             {aiSuggestions && aiSuggestions.length > 0 && (
               <div className="text-theme-text-highlight/95 space-y-1 mt-2">
-                <p className="font-bold uppercase tracking-wider text-[10px] text-theme-text-info">Gợi ý cải thiện</p>
+                <p className="font-bold uppercase tracking-wider text-[10px] text-theme-text-info">Bí kíp sửa bài</p>
                 <ul className="list-disc pl-4 space-y-0.5 text-theme-text-highlight/80">
                   {aiSuggestions.map((item, idx) => (
                     <li key={idx}>{item}</li>
@@ -912,7 +954,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                     <li key={step}>{step}</li>
                   ))}
                 </ol>
-                <p className="text-synth-text-muted text-[10px] italic">Không viết hộ đáp án hoàn chỉnh; chỉ chấm và chỉ ra điểm cần cải thiện.</p>
+                <p className="text-synth-text-muted text-[10px] italic">Chỉ chấm, không viết hộ đáp án hoàn chỉnh.</p>
               </div>
             ) : null}
           </div>
@@ -920,58 +962,64 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       )}
 
       {/* Bottom Controls */}
-      <div className="flex flex-col sm:flex-row gap-3 border-t border-synth-gray/50 pt-4">
-        {/* Hint button */}
-        {!checked && (
-          <button
-            onClick={handleUseHint}
-            disabled={hintUsed}
-            className="px-4 py-3 rounded-xl border border-synth-orange/40 hover:bg-synth-orange/5 text-synth-orange font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 w-full sm:w-auto text-center"
-          >
-            Mua Gợi Ý (50 NP)
-          </button>
-        )}
+      <div className="flex flex-wrap items-center justify-between gap-2.5 border-t border-synth-gray/50 pt-4">
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Check/Next button */}
+          {!checked ? (
+            <button
+              onClick={handleCheckAnswer}
+              disabled={isAiGrading || (activeQuestion.type === 'mcq' ? !selectedAnswer : !typedAnswer.trim())}
+              className="px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 disabled:opacity-40 text-center flex items-center justify-center gap-2"
+            >
+              {isAiGrading ? (
+                <>
+                  <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full"></span>
+                  Đang chấm...
+                </>
+              ) : (
+                'Chốt Đáp Án'
+              )}
+            </button>
+          ) : (
+            <button
+              onClick={handleNextQuestion}
+              className="px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-magenta text-black hover:synth-glow-magenta cursor-pointer transition-all duration-300 flex items-center justify-center gap-2 text-center"
+            >
+              Sang câu kế <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          )}
 
-        {!checked && (
-          <button
-            onClick={handleSkipConfused}
-            className="px-4 py-3 rounded-xl border border-red-500/40 hover:bg-red-500/10 text-red-400 font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 w-full sm:w-auto text-center flex items-center justify-center gap-1.5"
-          >
-            Hổng hiểu - Lướt 🧠
-          </button>
-        )}
+          {/* Hint button */}
+          {!checked && (
+            <button
+              onClick={handleUseHint}
+              disabled={hintUsed}
+              className="px-4 py-2.5 rounded-xl border border-synth-orange/40 hover:bg-synth-orange/5 text-synth-orange font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 text-center"
+            >
+              Rút gợi ý (50 NP)
+            </button>
+          )}
+        </div>
 
-        {/* Check/Next button */}
-        {!checked ? (
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Escape button */}
           <button
-            onClick={handleCheckAnswer}
-            disabled={isAiGrading || (activeQuestion.type === 'mcq' ? !selectedAnswer : !typedAnswer.trim())}
-            className="flex-1 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 disabled:opacity-40 text-center flex items-center justify-center gap-2"
+            onClick={handleEscape}
+            className="px-4 py-2.5 rounded-xl border border-synth-gray hover:bg-synth-gray/20 text-synth-text-muted font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 text-center"
           >
-            {isAiGrading ? (
-              <>
-                <span className="animate-spin inline-block w-4 h-4 border-2 border-black border-t-transparent rounded-full"></span>
-                Đang chấm bài bằng AI...
-              </>
-            ) : (
-              'Kiểm Tra Đáp Án'
-            )}
+            Mắc Lười (Thoát)
           </button>
-        ) : (
-          <button
-            onClick={handleNextQuestion}
-            className="flex-1 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-magenta text-black hover:synth-glow-magenta cursor-pointer transition-all duration-300 flex items-center justify-center gap-2 text-center"
-          >
-            Câu Tiếp Theo <ArrowRight className="w-4 h-4" />
-          </button>
-        )}
 
-        <button
-          onClick={handleEscape}
-          className="px-4 py-3 rounded-xl border border-synth-gray hover:bg-synth-gray/20 text-synth-text-muted font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 w-full sm:w-auto text-center"
-        >
-          Trốn Chạy (Thoát)
-        </button>
+          {/* Skip confused button */}
+          {!checked && (
+            <button
+              onClick={handleSkipConfused}
+              className="px-4 py-2.5 rounded-xl border border-red-500/40 hover:bg-red-500/10 text-red-400 font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 text-center flex items-center justify-center gap-1.5"
+            >
+              Khó hiểu (Lướt) 🧠
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

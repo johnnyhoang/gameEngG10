@@ -50,10 +50,10 @@ export const ActivityLog: React.FC = () => {
     <div className={`glass-panel rounded-2xl p-5 flex flex-col h-full overflow-hidden ${
       isUnicorn ? 'border-violet-200/35 bg-white/80' : 'border-synth-cyan/15'
     }`}>
-      {/* Daily Mission Section */}
+      {/* Nhiệm vụ ngày Section */}
       <div className={`mb-6 pb-4 ${isUnicorn ? 'border-b border-violet-200/35' : 'border-b border-synth-gray'}`}>
         <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 mb-3 ${isUnicorn ? 'text-violet-700' : 'text-synth-orange'}`}>
-          <Target className={`w-4 h-4 ${isUnicorn ? 'text-fuchsia-500' : ''}`} /> Daily Mission
+          <Target className={`w-4 h-4 ${isUnicorn ? 'text-fuchsia-500' : ''}`} /> Nhiệm vụ ngày
         </h3>
 
         {dailyMission ? (
@@ -65,7 +65,7 @@ export const ActivityLog: React.FC = () => {
               <span className={`text-[10px] px-1.5 py-0.5 rounded font-orbitron font-semibold ${
                 dailyMission.completed ? 'bg-synth-green/20 text-synth-green border border-synth-green/30' : 'bg-synth-orange/20 text-synth-orange border border-synth-orange/30'
               }`}>
-                {dailyMission.completed ? 'COMPLETED' : 'IN PROGRESS'}
+                {dailyMission.completed ? 'ĐÃ XONG' : 'ĐANG ĐÁNH'}
               </span>
             </div>
 
@@ -101,7 +101,7 @@ export const ActivityLog: React.FC = () => {
           </div>
         ) : (
           <div className="text-center py-4 bg-synth-gray/10 rounded-lg border border-dashed border-synth-gray">
-            <span className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>Làm bài luyện tập hôm nay để nhận Nhiệm Vụ Ngày!</span>
+            <span className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>Vào ải hôm nay để nhận Nhiệm vụ ngày!</span>
           </div>
         )}
       </div>
@@ -109,7 +109,7 @@ export const ActivityLog: React.FC = () => {
       {/* Activity Logs Section */}
       <div className="flex-1 flex flex-col min-h-0">
         <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 mb-3 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
-          <Clock className={`w-4 h-4 ${isUnicorn ? 'text-fuchsia-500' : ''}`} /> Activity Feed
+          <Clock className={`w-4 h-4 ${isUnicorn ? 'text-fuchsia-500' : ''}`} /> Dòng hoạt động
         </h3>
 
         <div
@@ -123,7 +123,7 @@ export const ActivityLog: React.FC = () => {
                 isUnicorn ? 'bg-white/85 text-violet-600/80' : 'bg-synth-bg/90 text-synth-text-muted'
               }`}>
                 <span>Hiển thị {visibleLogs.length}/{logs.length}</span>
-                {visibleLogs.length < logs.length && <span>Kéo xuống để tải thêm</span>}
+                {visibleLogs.length < logs.length && <span>Kéo xuống để rút thêm</span>}
               </div>
               {visibleLogs.map(log => (
               <div 
@@ -170,12 +170,12 @@ export const ActivityLog: React.FC = () => {
             </>
           ) : (
             <div className="text-center py-8 text-synth-text-muted text-xs">
-              Chưa có dữ liệu hoạt động hôm nay.
+              Hôm nay chưa có dấu vết nào.
             </div>
           )}
           {visibleLogs.length < logs.length && (
             <div className="py-3 text-center text-[10px] text-synth-text-muted font-bold uppercase tracking-wider">
-              Đang sẵn sàng tải thêm...
+              Đang rút thêm...
             </div>
           )}
         </div>

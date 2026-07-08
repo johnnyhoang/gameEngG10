@@ -15,18 +15,18 @@ export const ItemShop: React.FC = () => {
   const handleBuyShield = () => {
     const success = buyStreakShield();
     if (!success) {
-      toast.error('Không đủ Coins (NP) hoặc con đã sở hữu Khiên rồi!');
+      toast.error('Thiếu NP hoặc bạn đã có Khiên rồi.');
     } else {
-      toast.success('Mua Khiên Bảo Vệ thành công.');
+      toast.success('Mua Khiên thành công.');
     }
   };
 
   const handleBuyHeart = () => {
     const success = buyHeart();
     if (!success) {
-      toast.error('Không đủ Coins (NP) hoặc con đã có tối đa 3 Mạng rồi!');
+      toast.error('Thiếu NP hoặc đã chạm trần 3 tim rồi.');
     } else {
-      toast.success('Hồi mạng (Heart) thành công.');
+      toast.success('Hồi tim thành công.');
     }
   };
 
@@ -35,7 +35,7 @@ export const ItemShop: React.FC = () => {
     if (!success) {
       toast.error('Không đủ Coins (NP) để đổi quà này!');
     } else {
-      toast.success('Yêu cầu đổi quà đã được gửi. Chờ Ba duyệt nhé.');
+      toast.success('Yêu cầu đổi quà đã gửi. Chờ duyệt.');
     }
   };
 
@@ -62,7 +62,7 @@ export const ItemShop: React.FC = () => {
       }`}>
         <div className="space-y-1">
           <h2 className={`font-orbitron text-lg font-black uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-            Item Shop & Cửa Hàng Đổi Quà
+            Cửa hàng đổi quà
           </h2>
           <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
             Dùng Nanite Points (NP) tích lũy được từ việc làm đúng để mua bổ trợ hoặc đổi quà thực tế từ Ba.
@@ -91,9 +91,9 @@ export const ItemShop: React.FC = () => {
                 <Shield className="w-8 h-8 text-synth-cyan fill-synth-cyan/20 animate-pulse" />
               </div>
               <div className="space-y-1">
-                <h4 className="font-orbitron font-bold text-base text-white">Khiên Bảo Vệ Streak</h4>
+                <h4 className="font-orbitron font-bold text-base text-white">Khiên giữ chuỗi</h4>
                 <p className="text-xs text-synth-text-muted">
-                  Tự bảo vệ chuỗi Streak học không bị reset về 0 và tránh bị phạt nếu lỡ bỏ quên 1 ngày học.
+                  Giữ chuỗi không bị đứt và tránh bị phạt nếu lỡ mất một ngày.
                 </p>
               </div>
             </div>
@@ -115,9 +115,9 @@ export const ItemShop: React.FC = () => {
                 <Heart className="w-8 h-8 text-synth-magenta fill-synth-magenta/20 animate-pulse" />
               </div>
               <div className="space-y-1">
-                <h4 className="font-orbitron font-bold text-base text-white">Nano-Heart (Hồi mạng)</h4>
+                <h4 className="font-orbitron font-bold text-base text-white">Tim hồi phục</h4>
                 <p className="text-xs text-synth-text-muted">
-                  Hồi phục lại 1 Cyber-Heart (Mạng) bị mất trong chế độ Đấu Boss hoặc Chế độ Sinh tồn.
+                  Hồi lại 1 tim đã mất trong Boss hoặc Sinh tồn.
                 </p>
               </div>
             </div>
@@ -135,7 +135,7 @@ export const ItemShop: React.FC = () => {
       {/* Parent rewards redeem ledger */}
       <div>
         <h3 className={`font-orbitron font-bold text-base uppercase tracking-wider mb-4 flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-white'}`}>
-          <Gift className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-orange'}`} /> Cửa Hàng Phần Thưởng Của Ba
+          <Gift className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-orange'}`} /> Quầy phần thưởng của Ba
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

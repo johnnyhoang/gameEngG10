@@ -1313,5 +1313,310 @@ Hướng dẫn cấu trúc lập luận bày tỏ sự đồng ý hoặc không 
 ## 2. Các cụm từ bày tỏ ý kiến
 - *From my perspective, I strongly agree/disagree that...*
 - *There are several reasons why I support this idea.*`
+  },
+  {
+    id: 'math-trig-relations',
+    subject: 'math',
+    topic: 'Hệ thức lượng',
+    title: 'Các hệ thức lượng giác cơ bản',
+    category: 'real-geometry',
+    theory: `# Các hệ thức lượng giác cơ bản
+
+Các công thức liên hệ giữa các tỉ số lượng giác của một góc nhọn $\\alpha$.
+
+## 1. Hệ thức lượng giác cốt lõi
+Với mọi góc nhọn $\\alpha$, ta luôn có:
+- $\\sin^2 \\alpha + \\cos^2 \\alpha = 1$
+- $\\tan \\alpha = \\frac{\\sin \\alpha}{\\cos \\alpha}$
+- $\\cot \\alpha = \\frac{\\cos \\alpha}{\\sin \\alpha}$
+- $\\tan \\alpha \\cdot \\cot \\alpha = 1$
+- $1 + \\tan^2 \\alpha = \\frac{1}{\\cos^2 \\alpha}$
+- $1 + \\cot^2 \\alpha = \\frac{1}{\\sin^2 \\alpha}$
+
+## 2. Ứng dụng giải toán
+- Tính các tỉ số lượng giác còn lại của góc $\\alpha$ khi biết một tỉ số lượng giác.
+- Chứng minh đẳng thức lượng giác, rút gọn biểu thức lượng giác đơn giản.`
+  },
+  {
+    id: 'math-circle-concept',
+    subject: 'math',
+    topic: 'Đường tròn',
+    title: 'Khái niệm và sự xác định đường tròn',
+    category: 'plane-geometry',
+    theory: `# Khái niệm đường tròn và sự xác định
+
+Định nghĩa đường tròn, các yếu tố liên quan và cách xác định một đường tròn.
+
+## 1. Định nghĩa đường tròn
+Đường tròn tâm $O$ bán kính $R$ (kí hiệu $(O; R)$) là hình gồm các điểm cách điểm $O$ một khoảng bằng $R$.
+- Điểm $M$ nằm trong đường tròn $(O; R)$ khi $OM < R$.
+- Điểm $M$ nằm trên đường tròn $(O; R)$ khi $OM = R$.
+- Điểm $M$ nằm ngoài đường tròn $(O; R)$ khi $OM > R$.
+
+## 2. Cách xác định đường tròn
+- Một đường tròn được xác định khi biết tâm và bán kính, hoặc biết một đoạn thẳng là đường kính.
+- Qua ba điểm không thẳng hàng, ta vẽ được một và chỉ một đường tròn (tâm là giao điểm ba đường trung trực tam giác).`
+  },
+  {
+    id: 'math-circle-position',
+    subject: 'math',
+    topic: 'Đường tròn',
+    title: 'Vị trí tương đối trong đường tròn',
+    category: 'plane-geometry',
+    theory: `# Vị trí tương đối trong hình học đường tròn
+
+Xác định mối quan hệ giữa đường thẳng và đường tròn, và giữa hai đường tròn.
+
+## 1. Vị trí tương đối giữa đường thẳng và đường tròn
+Gọi $d$ là khoảng cách từ tâm $O$ đến đường thẳng, $R$ là bán kính:
+- **Cắt nhau:** $d < R$ (có 2 điểm chung).
+- **Tiếp xúc nhau:** $d = R$ (có 1 điểm chung). Đường thẳng được gọi là tiếp tuyến.
+- **Không giao nhau:** $d > R$ (không có điểm chung).
+
+## 2. Vị trí tương đối giữa hai đường tròn $(O; R)$ và $(O'; r)$ (với $R \\geq r$)
+Gọi $d = OO'$ là khoảng cách giữa hai tâm:
+- **Cắt nhau:** $R - r < d < R + r$ (có 2 điểm chung).
+- **Tiếp xúc ngoài:** $d = R + r$ (có 1 điểm chung).
+- **Tiếp xúc trong:** $d = R - r$ (có 1 điểm chung).
+- **Ngoài nhau:** $d > R + r$ (không có điểm chung).
+- **Đựng nhau:** $d < R - r$ (không có điểm chung).`
+  },
+  {
+    id: 'math-circle-length-area',
+    subject: 'math',
+    topic: 'Đường tròn',
+    title: 'Chu vi, diện tích hình tròn và hình quạt',
+    category: 'plane-geometry',
+    theory: `# Độ dài và Diện tích hình tròn, hình quạt
+
+Các công thức tính chu vi, diện tích đường tròn và hình quạt tròn.
+
+## 1. Độ dài đường tròn và cung tròn
+- **Chu vi đường tròn:** $C = 2\\pi R = \\pi d$ (với $d$ là đường kính).
+- **Độ dài cung tròn $n^\\circ$:**
+  $$l = \\frac{\\pi R n}{180}$$
+
+## 2. Diện tích hình tròn và hình quạt tròn
+- **Diện tích hình tròn:** $S = \\pi R^2$.
+- **Diện tích hình quạt tròn bán kính $R$, cung $n^\\circ$:**
+  $$S_{q} = \\frac{\\pi R^2 n}{360} = \\frac{l \\cdot R}{2}$$
+*(Lưu ý: Trong các bài thi tuyển sinh thực tế, ta thường dùng giá trị xấp xỉ $\\pi \\approx 3,14$).*`
+  },
+  {
+    id: 'math-circle-polygon',
+    subject: 'math',
+    topic: 'Đường tròn',
+    title: 'Tứ giác nội tiếp đường tròn',
+    category: 'plane-geometry',
+    theory: `# Tứ giác nội tiếp đường tròn
+
+Dấu hiệu nhận biết và ứng dụng của tứ giác nội tiếp trong các bài thi hình học tuyển sinh 10.
+
+## 1. Định nghĩa
+Tứ giác có bốn đỉnh nằm trên một đường tròn được gọi là tứ giác nội tiếp đường tròn.
+
+## 2. Dấu hiệu nhận biết cốt lõi (Thường dùng để chứng minh)
+- **Dấu hiệu 1:** Tứ giác có tổng hai góc đối diện bằng $180^\\circ$.
+- **Dấu hiệu 2:** Tứ giác có góc ngoài tại một đỉnh bằng góc trong tại đỉnh đối diện.
+- **Dấu hiệu 3:** Tứ giác có hai đỉnh kề nhau cùng nhìn cạnh chứa hai đỉnh còn lại dưới một góc bằng nhau (ví dụ: $\\widehat{ADB} = \\widehat{ACB}$).
+- **Dấu hiệu 4:** Tứ giác có bốn đỉnh cách đều một điểm xác định.`
+  },
+  {
+    id: 'lit-drama-conflict-1',
+    subject: 'literature',
+    topic: 'Đọc hiểu văn bản',
+    title: 'Xung đột kịch - Bi kịch và Hài kịch',
+    category: 'literature-reading-prose',
+    theory: `# Xung đột kịch - Bi kịch và Hài kịch
+
+Đặc điểm thể loại kịch, cách nhận diện xung đột kịch và sự khác biệt giữa bi kịch và hài kịch.
+
+## 1. Xung đột kịch
+- Xung đột kịch là động lực phát triển của tác phẩm kịch, nảy sinh từ sự va chạm giữa các quan niệm sống, lợi ích hoặc tính cách đối lập.
+- Xung đột có thể diễn ra giữa các cá nhân (xung đột bên ngoài) hoặc trong chính nội tâm nhân vật (xung đột nội tâm).
+
+## 2. Bi kịch và Hài kịch
+- **Bi kịch:** Phản ánh những mâu thuẫn gay gắt giữa cái đẹp, cái cao thượng với thế lực hắc ám, kết thúc bằng tổn thất nặng nề hoặc cái chết đau thương.
+- **Hài kịch:** Khai thác các khía cạnh nực cười, kệch cỡm của đời sống để phê phán cái xấu, cái lạc hậu, hướng tới sự phê phán nhẹ nhàng hoặc tiếng cười trào phúng.`
+  },
+  {
+    id: 'lit-drama-conflict-2',
+    subject: 'literature',
+    topic: 'Đọc hiểu văn bản',
+    title: 'Hành động kịch và Ngôn ngữ kịch',
+    category: 'literature-reading-prose',
+    theory: `# Hành động kịch và Ngôn ngữ kịch
+
+Phương pháp phân tích hành động và các hình thức ngôn ngữ đặc thù trong văn bản kịch.
+
+## 1. Hành động kịch
+- Là những sự kiện, hành vi cụ thể của nhân vật trực tiếp thúc đẩy xung đột kịch phát triển từ thắt nút, phát triển, cao trào đến mở nút.
+
+## 2. Ngôn ngữ kịch
+Được thể hiện qua ba hình thức giao tiếp chính:
+- **Đối thoại:** Cuộc trò chuyện qua lại giữa hai hoặc nhiều nhân vật.
+- **Độc thoại:** Nhân vật nói chuyện một mình để bộc lộ suy nghĩ thầm kín.
+- **Bàng thoại:** Nhân vật nói nhỏ trực tiếp với khán giả (các nhân vật khác trên sân khấu không nghe thấy).`
+  },
+  {
+    id: 'lit-vocab-context-1',
+    subject: 'literature',
+    topic: 'Tiếng Việt',
+    title: 'Giải nghĩa từ theo ngữ cảnh và Từ mượn',
+    category: 'literature-vietnamese',
+    theory: `# Giải nghĩa từ theo ngữ cảnh và Từ mượn
+
+Phương pháp tìm nghĩa của từ dựa vào văn cảnh trực tiếp và phân loại các từ mượn trong tiếng Việt.
+
+## 1. Giải nghĩa từ theo ngữ cảnh
+- **Cách thực hiện:** Đọc kỹ câu văn chứa từ và các câu xung quanh; xác định quan hệ ngữ pháp và trường từ vựng để suy đoán nghĩa gốc hoặc nghĩa chuyển của từ.
+
+## 2. Phân loại từ mượn
+- **Từ mượn tiếng Hán (từ Hán Việt):** Chiếm bộ phận lớn nhất, mang sắc thái trang trọng, trừu tượng (*sơn hà, phụ mẫu, quốc gia*).
+- **Từ mượn tiếng Pháp, tiếng Anh:** Dùng trong công nghệ, khoa học, đời sống thường nhật (*ti vi, ra-đi-o, xà phòng*).`
+  },
+  {
+    id: 'lit-vocab-context-2',
+    subject: 'literature',
+    topic: 'Tiếng Việt',
+    title: 'Điển tích và điển cố trong văn học',
+    category: 'literature-vietnamese',
+    theory: `# Điển tích, điển cố trong văn học
+
+Cách nhận diện và phân tích ý nghĩa biểu đạt của các điển tích, điển cố trong văn học trung đại.
+
+## 1. Khái niệm Điển tích, Điển cố
+- **Điển tích:** Những câu chuyện lịch sử, sự kiện cổ xưa được thu gọn trong một vài từ để biểu đạt ý nghĩa sâu sắc.
+- **Điển cố:** Những câu thơ, lời văn cổ mẫu mực được dùng lại để tăng tính cô đọng, hàm súc.
+
+## 2. Cách phân tích điển tích trong thơ văn lớp 9
+- Tra cứu nguồn gốc xuất hiện của điển tích.
+- Giải thích hàm ý mà tác giả muốn truyền tải thông qua hình ảnh đó.
+  *Ví dụ:* Hình ảnh "vọng phu" gợi nỗi cô đơn chờ chồng, "liễu chương đài" gợi cảnh ly tán hao gầy.`
+  },
+  {
+    id: 'lit-grammar-expand-1',
+    subject: 'literature',
+    topic: 'Tiếng Việt',
+    title: 'Mở rộng câu bằng cụm từ',
+    category: 'literature-vietnamese',
+    theory: `# Mở rộng câu bằng cụm từ
+
+Phương pháp mở rộng các thành phần câu bằng các cụm danh từ, cụm động từ hoặc cụm chủ - vị.
+
+## 1. Mở rộng bằng cụm từ chính phụ
+- Biến đổi một danh từ/động từ/tính từ đơn lẻ thành cụm từ tương ứng để bổ sung chi tiết về không gian, thời gian, đặc điểm.
+  *Ví dụ:* "Hoa nở" $\\rightarrow$ "Những bông hoa hồng nhung đỏ thắm đang nở rộ dưới ánh nắng ban mai".
+
+## 2. Mở rộng bằng cụm chủ - vị (C-V)
+- Dùng cụm C-V làm thành phần phụ ngữ trong cụm từ hoặc trực tiếp làm chủ ngữ/vị ngữ trong câu phức.
+  *Ví dụ:* "Quyển sách tôi mua hôm qua rất hay" (cụm C-V "tôi mua hôm qua" bổ nghĩa cho danh từ "quyển sách").`
+  },
+  {
+    id: 'eng-pronunciation-stress',
+    subject: 'english',
+    topic: 'Từ vựng & Phát âm',
+    title: 'Trọng âm từ - Quy tắc và Ngoại lệ',
+    category: 'wordform',
+    theory: `# Trọng âm từ - Quy tắc và Ngoại lệ
+
+Phương pháp xác định trọng âm của từ có 2 và 3 âm tiết trở lên phục vụ làm bài thi trắc nghiệm.
+
+## 1. Quy tắc trọng âm cơ bản
+- **Từ có 2 âm tiết:**
+  - Danh từ và Tính từ: Trọng âm thường rơi vào âm tiết **thứ nhất** (*table, happy*).
+  - Động từ: Trọng âm thường rơi vào âm tiết **thứ hai** (*begin, enjoy*).
+
+## 2. Quy tắc theo hậu tố (Suffixes)
+- Các hậu tố không làm thay đổi trọng âm: \`-ful, -less, -ly, -ment, -ness\`.
+- Trọng âm rơi vào chính nó: \`-ee, -eer, -ese, -ique\` (*employee, Chinese*).
+- Trọng âm rơi vào âm tiết trước nó: \`-tion, -sion, -ic, -ity, -ical\` (*information, decision, magic*).`
+  },
+  {
+    id: 'eng-pronunciation-sounds',
+    subject: 'english',
+    topic: 'Từ vựng & Phát âm',
+    title: 'Phát âm đuôi -ed và -s/-es',
+    category: 'wordform',
+    theory: `# Phát âm đuôi -ed và -s/-es
+
+Hai quy tắc phát âm đuôi bắt buộc phải nhớ cho phần trắc nghiệm phát âm đề thi vào 10 HCMC.
+
+## 1. Cách phát âm đuôi -ed
+Có 3 cách phát âm chính:
+- **/ɪd/**: Khi động từ kết thúc bằng âm /t/ hoặc /d/ (*wanted, decided*).
+- **/t/**: Khi kết thúc bằng âm vô thanh /p, k, f, s, ʃ, tʃ/ (*stopped, cooked, washed*).
+- **/d/**: Các trường hợp còn lại (*played, lived*).
+
+## 2. Cách phát âm đuôi -s/-es
+Có 3 cách phát âm chính:
+- **/ɪz/**: Khi kết thúc bằng âm xuýt /s, z, ʃ, ʒ, tʃ, dʒ/ (*boxes, washes, changes*).
+- **/s/**: Khi kết thúc bằng âm vô thanh /p, t, k, f, θ/ (*books, cats, laughs*).
+- **/z/**: Các trường hợp còn lại (*dogs, pens, played*).`
+  },
+  {
+    id: 'eng-cloze-1',
+    subject: 'english',
+    topic: 'Kỹ năng Đọc',
+    title: 'Cloze Test - Điền từ theo loại từ',
+    category: 'grammar',
+    theory: `# Cloze Test - Điền từ theo loại từ và ngữ pháp
+
+Chiến lược phân tích ngữ pháp để chọn đáp án chính xác trong bài đọc điền từ vào ô trống.
+
+## 1. Xác định loại từ cần điền
+Trước khi xem đáp án, hãy nhìn vị trí ô trống để xác định loại từ:
+- Đứng trước danh từ $\\rightarrow$ chọn **Tính từ** (Adj).
+- Đứng sau động từ thường $\\rightarrow$ chọn **Trạng từ** (Adv).
+- Làm chủ ngữ hoặc sau giới từ $\\rightarrow$ chọn **Danh từ** (Noun).
+
+## 2. Kiểm tra ngữ pháp và cấu trúc câu
+- Xem động từ chia ở thì nào, chủ ngữ số ít hay số nhiều.
+- Nhận biết các cấu trúc đi kèm giới từ đặc trưng (*interested in, fond of, focus on*).`
+  },
+  {
+    id: 'eng-cloze-2',
+    subject: 'english',
+    topic: 'Kỹ năng Đọc',
+    title: 'Cloze Test - Điền từ theo ngữ nghĩa',
+    category: 'grammar',
+    theory: `# Cloze Test - Điền từ theo ngữ nghĩa và Collocation
+
+Chiến lược kết hợp ngữ cảnh nghĩa và các cụm từ cố định để giải quyết bài đọc điền từ.
+
+## 1. Nhận diện Collocation (Cụm từ cố định)
+Các từ thường đi liền với nhau theo thói quen bản xứ:
+- \`make\` $\\rightarrow$ *make a decision, make a mistake, make progress*.
+- \`do\` $\\rightarrow$ *do homework, do research, do business*.
+- \`take\` $\\rightarrow$ *take a photo, take part in, take responsibility*.
+
+## 2. Điền từ nối Logic (Cohesive Devices)
+Hiểu quan hệ giữa các câu để điền liên từ thích hợp:
+- Tương phản: \`however, but, although\`.
+- Nguyên nhân - kết quả: \`because, therefore, so\`.
+- Bổ sung: \`in addition, moreover\`.`
+  },
+  {
+    id: 'eng-rewrite-advanced',
+    subject: 'english',
+    topic: 'Kỹ năng Viết',
+    title: 'Viết lại câu nâng cao tổng hợp',
+    category: 'rewrite',
+    theory: `# Viết lại câu nâng cao tổng hợp
+
+Tổng hợp các cấu trúc biến đổi câu phức tạp thường gặp nhất trong đề thi tuyển sinh 10.
+
+## 1. Cấu trúc biến đổi thì và trạng thái
+- Hiện tại hoàn thành $\\leftrightarrow$ Quá khứ đơn:
+  *Ví dụ: I haven't seen him for 2 years. $\\leftrightarrow$ The last time I saw him was 2 years ago.*
+
+## 2. Cấu trúc Too / Enough / So / Such
+- S + be + too + Adj + (for O) + to + V-inf.
+- S + be + Adj + enough + (for O) + to + V-inf.
+- S + be + so + Adj + that + mệnh đề.
+- S + be + such + (a/an) + Adj + N + that + mệnh đề.
+
+## 3. Cấu trúc chỉ ước muốn (Wish)
+- Ước ở hiện tại: S + wish + S + V2/ed (were).*`
   }
 ];

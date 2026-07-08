@@ -38,7 +38,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [rememberedCount, setRememberedCount] = useState(0);
   
-  // Interactive mock state for Match Pairs
+  // Interactive mock state for Ghép cặp
   const [matchedPairsCount, setMatchedPairsCount] = useState(0);
   const [selectedMatchItems, setSelectedMatchItems] = useState<string[]>([]);
   const matchItems = [
@@ -66,7 +66,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
 
   const handleMarkAsRemembered = () => {
     setRememberedCount(prev => prev + 1);
-    toast.success('Đã đánh dấu thuộc lòng! Con siêu quá!');
+    toast.success('Đã ghi nhận là thuộc rồi. Khá đấy.');
     handleNextCard();
   };
 
@@ -82,10 +82,10 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
       const item2 = matchItems.find(x => x.id === newSelection[1]);
       
       if (item1 && item2 && (item1.pair === item2.id || item2.pair === item1.id)) {
-        toast.success('Chính xác! Ghép cặp thành công 🎉');
+        toast.success('Chuẩn xác, ghép đúng rồi 🎉');
         setMatchedPairsCount(prev => prev + 1);
       } else {
-        toast.error('Chưa chính xác rồi, thử lại nhé!');
+        toast.error('Lệch một nhịp, ghép lại đi!');
       }
       setSelectedMatchItems([]);
     } else {
@@ -117,7 +117,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
             </h1>
           </div>
           <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
-            Không gian học tập tương tác sáng tạo, học mà chơi, giải tỏa căng thẳng sau các trận đấu hạng kịch tính.
+            Chỗ luyện đầu óc nhẹ nhịp, chơi mà nhớ, nghỉ mà vẫn lên tay.
           </p>
         </div>
       </div>
@@ -125,11 +125,11 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
       {/* Tabs */}
       <div className="flex flex-wrap gap-2 border-b border-synth-gray/30 pb-3">
         {[
-          { id: 'flashcards', label: '🎴 Flashcard Studio', desc: 'Thẻ nhớ thông minh' },
-          { id: 'match', label: '🔗 Match Pairs', desc: 'Ghép cặp bài trùng' },
-          { id: 'mindmap', label: '🗺️ Mind Map', desc: 'Sơ đồ tư duy' },
-          { id: 'story', label: '🎭 Story Mode', desc: 'Cốt truyện phiêu lưu' },
-          { id: 'adventure', label: '🧭 Adventure', desc: 'Hành trình bản đồ' },
+          { id: 'flashcards', label: '🎴 Xưởng thẻ nhớ', desc: 'Thẻ nhớ gọn, dễ thuộc' },
+          { id: 'match', label: '🔗 Ghép cặp', desc: 'Ghép đúng là ăn điểm' },
+          { id: 'mindmap', label: '🗺️ Sơ đồ tư duy', desc: 'Sơ đồ tư duy' },
+          { id: 'story', label: '🎭 Tình huống', desc: 'Phiêu lưu theo tình huống' },
+          { id: 'adventure', label: '🧭 Du khảo', desc: 'Hành trình bản đồ' },
         ].map(tab => (
           <button
             key={tab.id}
@@ -258,7 +258,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                       : 'bg-synth-green text-black shadow-[0_0_12px_rgba(57,255,20,0.25)]'
                   }`}
                 >
-                  <Award className="w-4 h-4 text-black" /> Thuộc Lòng Thẻ Này
+                  <Award className="w-4 h-4 text-black" /> Thuộc luôn thẻ này
                 </button>
               </div>
             </div>
@@ -271,7 +271,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                 <h3 className={`font-orbitron font-black text-sm uppercase tracking-wide flex items-center gap-1.5 ${
                   isUnicorn ? 'text-violet-800' : 'text-synth-cyan'
                 }`}>
-                  <Brain className="w-4 h-4" /> Flashcard Stats
+                  <Brain className="w-4 h-4" /> Thống kê thẻ
                 </h3>
 
                 <div className="space-y-3">
@@ -291,7 +291,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                 </div>
 
                 <div className="space-y-2 pt-2">
-                  <h4 className={`text-xs font-bold ${isUnicorn ? 'text-violet-900' : 'text-white'}`}>Tính năng hỗ trợ:</h4>
+                  <h4 className={`text-xs font-bold ${isUnicorn ? 'text-violet-900' : 'text-white'}`}>Công năng hỗ trợ:</h4>
                   <ul className="list-disc list-inside text-[11px] text-slate-400 space-y-1">
                     <li>Ghi nhớ chủ động qua lật thẻ.</li>
                     <li>Sắp xếp thuật toán SRS lặp lại ngắt quãng (sắp ra mắt).</li>
@@ -314,7 +314,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
             isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-magenta/30'
           }`}>
             <div className="max-w-md mx-auto space-y-2">
-              <h3 className={`font-orbitron font-black text-lg ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>🔗 Match Pairs - Ghép Cặp Bài Trùng</h3>
+              <h3 className={`font-orbitron font-black text-lg ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>🔗 Ghép cặp - Ghép Cặp Bài Trùng</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
                 Nối từ vựng với định nghĩa, công thức với tên gọi để rèn luyện phản xạ siêu tốc. Chọn 2 ô liên kết để ghép cặp.
               </p>
@@ -371,7 +371,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
               }`}>
                 🗺️
               </div>
-              <h3 className={`font-orbitron font-black text-lg ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>🗺️ Mind Map Builder - Kiến Tạo Sơ Đồ Tư Duy</h3>
+              <h3 className={`font-orbitron font-black text-lg ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>🗺️ Sơ đồ tư duy Builder - Kiến Tạo Sơ Đồ Tư Duy</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
                 Tự tay kết nối các bài học, công thức toán, hoặc nhân vật văn học để thấy bức tranh toàn cảnh của môn học.
               </p>
@@ -407,7 +407,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
             <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider font-orbitron ${
               isUnicorn ? 'bg-violet-100 text-violet-700' : 'bg-synth-cyan/10 border border-synth-cyan/20 text-synth-cyan'
             }`}>
-              <Clock className="w-3.5 h-3.5 animate-spin" /> Đang phát triển · Bản thử nghiệm sớm
+              <Clock className="w-3.5 h-3.5 animate-spin" /> Đang rèn · Bản thử nghiệm
             </div>
           </div>
         )}
@@ -435,13 +435,13 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 <button 
-                  onClick={() => toast.error('Kẻ gác cổng lắc đầu! Hãy chọn lại.')}
+                  onClick={() => toast.error('Cửa ải lắc đầu. Chọn lại đi.')}
                   className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-left cursor-pointer transition-all"
                 >
                   A) Flew (Quá khứ đơn)
                 </button>
                 <button 
-                  onClick={() => toast.success('Đúng rồi! Cầu vồng lửa đã hạ xuống cho con qua!')}
+                  onClick={() => toast.success('Chuẩn xác. Cầu vồng lửa hạ xuống, qua đi.')}
                   className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/5 text-left cursor-pointer transition-all"
                 >
                   B) Flown (Quá khứ phân từ)
@@ -452,7 +452,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
             <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider font-orbitron ${
               isUnicorn ? 'bg-fuchsia-100 text-fuchsia-700' : 'bg-synth-purple/10 border border-synth-purple/20 text-synth-purple'
             }`}>
-              <Clock className="w-3.5 h-3.5 animate-spin" /> Đang phát triển · Bản thử nghiệm sớm
+              <Clock className="w-3.5 h-3.5 animate-spin" /> Đang rèn · Bản thử nghiệm
             </div>
           </div>
         )}
@@ -467,9 +467,9 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
               }`}>
                 🧭
               </div>
-              <h3 className={`font-orbitron font-black text-lg ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>🧭 Adventure Journey - Chuyến Du Khảo Kỳ Thú</h3>
+              <h3 className={`font-orbitron font-black text-lg ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>🧭 Du khảo Journey - Chuyến Du Khảo Kỳ Thú</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Biến những bài học tẻ nhạt thành các ải nhiệm vụ trên một bản đồ phiêu lưu kỳ thú. Vượt ải để khám phá những vùng đất mới lạ!
+                Biến bài học thành ải nhiệm vụ. Qua ải là mở thêm đất.
               </p>
             </div>
 
@@ -491,7 +491,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
             <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider font-orbitron ${
               isUnicorn ? 'bg-amber-100 text-amber-700' : 'bg-synth-orange/10 border border-synth-orange/20 text-synth-orange'
             }`}>
-              <Clock className="w-3.5 h-3.5 animate-spin" /> Đang phát triển · Bản thử nghiệm sớm
+              <Clock className="w-3.5 h-3.5 animate-spin" /> Đang rèn · Bản thử nghiệm
             </div>
           </div>
         )}

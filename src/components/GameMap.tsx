@@ -109,8 +109,8 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
           </div>
           <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
             {dailyMission?.completed
-              ? 'Tuyệt vời! Con đã hoàn thành tất cả nhiệm vụ hôm nay. Hãy nhận Hòm Bí Mật!'
-              : 'Hoàn thành chỉ tiêu học tập hôm nay để mở khóa Hòm Bí Mật và Ví Thưởng.'}
+              ? 'Khá đấy. Hôm nay đã dọn sạch nhiệm vụ. Mở Hòm Bí Mật đi.'
+              : 'Dọn xong chỉ tiêu hôm nay thì Hòm Bí Mật và Ví Thưởng sẽ mở.'}
           </p>
         </div>
 
@@ -135,7 +135,7 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
                   : 'bg-synth-cyan text-black hover:synth-glow-cyan shadow-[0_0_15px_#00f0ff]'
               }`}
             >
-              Hành Trình Ngẫu Nhiên ⚡
+              Vào ải ngẫu nhiên ⚡
             </button>
           )}
 
@@ -161,11 +161,11 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
             <div className="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/25 flex items-center justify-center">
               <BrainCircuit className="w-5 h-5 text-amber-400" />
             </div>
-            <span className="font-orbitron font-bold text-xs uppercase text-amber-300 tracking-wider">Sư Phụ AI</span>
+            <span className="font-orbitron font-bold text-xs uppercase text-amber-300 tracking-wider">Chỉ ải AI</span>
           </div>
           <p className="text-xs text-slate-300 flex-1 leading-relaxed">
             Con đang yếu ở chuyên đề <span className="text-amber-300 font-bold">{weakLesson.title}</span> (chỉ{' '}
-            {Math.round((weakCategories[0].accuracy) * 100)}% chính xác). Hãy ôn luyện ngay để lấp lỗ hổng kiến thức!
+            {Math.round((weakCategories[0].accuracy) * 100)}% chính xác). Ôn lại ngay, đừng để lỗ hổng phình ra.
           </p>
           <div className="flex gap-2 shrink-0">
             {onStudyLesson && (
@@ -173,7 +173,7 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
                 onClick={() => onStudyLesson(weakLesson.id)}
                 className="px-3 py-2 rounded-lg border border-amber-400/30 bg-amber-400/10 text-amber-300 text-[10px] font-bold uppercase tracking-wider hover:bg-amber-400/20 transition-colors cursor-pointer"
               >
-                Học Lý Thuyết 📖
+                Xem bí kíp 📖
               </button>
             )}
             {onStartLessonPractice && (
@@ -181,7 +181,7 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
                 onClick={() => onStartLessonPractice(weakLesson.id)}
                 className="px-3 py-2 rounded-lg bg-amber-400 text-black text-[10px] font-bold uppercase tracking-wider hover:bg-amber-300 transition-colors cursor-pointer"
               >
-                Luyện Tập ⚔️
+                Vào ải ⚔️
               </button>
             )}
           </div>
@@ -500,7 +500,7 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
               <ShieldAlert className="w-7 h-7 text-synth-orange" />
             </div>
             <div className="space-y-1 min-w-0">
-              <h4 className="font-orbitron font-bold text-base text-synth-orange">💀 Hầm Ngục Sửa Sai</h4>
+              <h4 className="font-orbitron font-bold text-base text-synth-orange">💀 Sửa sai truy tung</h4>
               <p className="text-xs text-slate-400 leading-relaxed">Tập hợp toàn bộ câu hỏi đã từng làm sai để giải lại và sửa chữa lỗi lầm.</p>
               <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">Phần thưởng: <span className="text-white">XP hồi phục / Xoá sai cũ</span></div>
             </div>
@@ -547,7 +547,7 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
           <div className="border-t border-white/10 p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
             {subjectLessons.length === 0 && (
               <div className="col-span-2 text-center text-slate-400 text-sm py-4">
-                Chưa có chuyên đề nào cho môn này.
+                Môn này chưa có chuyên đề. Bổ sung rồi quay lại.
               </div>
             )}
             {subjectLessons.map(lesson => {
@@ -577,7 +577,7 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
                     </div>
                     <div className="shrink-0 text-right">
                       {isCompleted ? (
-                        <span className="text-[9px] font-bold text-synth-cyan font-orbitron uppercase">Đã lĩnh ngộ 🌟</span>
+                        <span className="text-[9px] font-bold text-synth-cyan font-orbitron uppercase">Qua ải 🌟</span>
                       ) : (
                         <span className="text-[9px] font-semibold text-slate-400 uppercase">Chưa xong ⏳</span>
                       )}

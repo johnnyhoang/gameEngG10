@@ -16,6 +16,22 @@ Các tính năng tập trung vào luyện tập, củng cố kiến thức và t
   - *Mô tả:* Sắp xếp các bước giải toán, các ý trong bài văn hoặc cấu trúc câu tiếng Anh theo đúng trình tự bằng kéo thả.
   - *Phân bổ phù hợp:* **Hang luyện công** (Giúp rèn luyện tư duy logic mạch lạc, phương pháp làm bài).
 
+- [ ] **🏞️ Phrase Valley (Thung lũng Cụm từ)**
+  - *Mô tả:* Luyện collocation, phrasal verbs và nhóm từ đi kèm trong ngữ cảnh thật để tăng độ tự nhiên khi làm bài tiếng Anh.
+  - *Phân bổ phù hợp:* **Đấu trường** (Card riêng cho từ vựng nâng cao) hoặc **Hang luyện công** (Luyện sâu môn Anh).
+
+- [ ] **🏘️ Conversation Town (Phố hội thoại)**
+  - *Mô tả:* Thực hành mẫu câu giao tiếp, đáp lời và hoàn thành đoạn hội thoại theo tình huống ngắn.
+  - *Phân bổ phù hợp:* **Đấu trường** (Card luyện phản xạ) hoặc **Hang luyện công** (Khởi động phần Speaking/Communication).
+
+- [ ] **📝 Writing Pavilion (Nhà viết)**
+  - *Mô tả:* Luyện viết câu, nối câu, viết lại câu và hoàn chỉnh đoạn văn theo tiêu chí chấm điểm.
+  - *Phân bổ phù hợp:* **Đấu trường** (Card riêng cho viết) hoặc **Hang luyện công** (Luyện viết có rubric).
+
+- [ ] **🌊 Listening Lake (Hồ nghe)**
+  - *Mô tả:* Nghe câu ngắn, chọn ý chính, nhận diện từ khóa và trả lời theo tín hiệu âm thanh.
+  - *Phân bổ phù hợp:* **Đấu trường** (Card luyện nghe) hoặc **Hang luyện công** (Bài luyện cảm âm).
+
 - [ ] **📖 Reading Challenge (Thử thách Đọc hiểu)**
   - *Mô tả:* Đọc một đoạn văn hoặc bài học rồi thực hiện các nhiệm vụ như tìm ý chính, tô sáng từ khóa, xác định luận điểm hoặc chi tiết quan trọng.
   - *Phân bổ phù hợp:* **Hang luyện công** (Luyện kỹ năng đọc hiểu sâu môn Tiếng Anh và Ngữ Văn).

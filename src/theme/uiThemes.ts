@@ -19,22 +19,22 @@ export const UI_THEMES: UiThemeConfig[] = [
     name: 'Cyber Neon',
     shortName: 'Cyber',
     tagline: 'Phong cách hiện tại',
-    description: 'Giữ vibe cyber neon gốc với cảm giác game hóa rõ nét, sáng và mạnh.',
-    mood: 'Neon, hiện đại, công nghệ',
+    description: 'Giữ chất cyber neon gốc nhưng gọn chữ, dễ đọc và vẫn đủ lực.',
+    mood: 'Sáng, gọn, công nghệ',
     iconSet: ['⚡', '🎛️', '✨'],
     accentLabel: 'Cyan + Magenta',
-    fontLabel: 'Orbitron + Inter'
+    fontLabel: 'Be Vietnam Pro, dễ đọc'
   },
   {
     id: 'cute-pink-pastel',
     name: 'Cute Pink Pastel',
     shortName: 'Cute Pink',
     tagline: 'Style MIKAWAII đáng yêu nhất',
-    description: 'Hồng pastel, tím nhạt, trắng kem. Nhẹ nhàng, mềm mại, nhiều bong bóng và lấp lánh.',
-    mood: 'Nữ tính, đáng yêu, ngọt ngào',
+    description: 'Hồng pastel, tím nhạt, trắng kem. Nhẹ, mềm, không nhòe chữ.',
+    mood: 'Mềm, sáng, đáng yêu',
     iconSet: ['🌸', '🎀', '🐰'],
     accentLabel: 'Hồng pastel + tím sữa',
-    fontLabel: 'Rounded display',
+    fontLabel: 'Be Vietnam Pro, bo tròn',
     recommended: true
   },
   {
@@ -42,44 +42,44 @@ export const UI_THEMES: UiThemeConfig[] = [
     name: 'Space Adventure',
     shortName: 'Space',
     tagline: 'Vũ trụ nhẹ và mơ',
-    description: 'Tông xanh tím sáng hơn, bầu trời thoáng hơn, vẫn có tàu vũ trụ, sao băng và phi hành gia.',
-    mood: 'Khám phá, khoa học, phiêu lưu',
+    description: 'Tông xanh tím thoáng hơn, rõ chữ, vẫn giữ cảm giác du hành.',
+    mood: 'Khám phá, phiêu lưu, hiện đại',
     iconSet: ['🚀', '🪐', '🤖'],
     accentLabel: 'Sky navy + lavender + cyan nhẹ',
-    fontLabel: 'Sharp futuristic'
+    fontLabel: 'Lexend, chắc chữ'
   },
   {
     id: 'fantasy-forest',
     name: 'Fantasy Forest',
     shortName: 'Forest',
     tagline: 'Rừng cổ tích xanh mát',
-    description: 'Xanh lá, vàng nhạt, nâu. Lá rơi, đom đóm, cây và sinh vật rừng thân thiện.',
-    mood: 'Thiên nhiên, cổ tích, ấm áp',
+    description: 'Xanh lá, vàng nhạt, nâu. Mềm mắt nhưng vẫn rõ nét.',
+    mood: 'Thiên nhiên, ấm áp, cổ tích',
     iconSet: ['🌳', '🍄', '🦊'],
     accentLabel: 'Xanh lá + vàng kem',
-    fontLabel: 'Soft storybook'
+    fontLabel: 'Be Vietnam Pro, êm chữ'
   },
   {
     id: 'pixel-arcade',
     name: 'Pixel Arcade',
     shortName: 'Pixel',
     tagline: 'Game hóa mạnh kiểu 8-bit',
-    description: 'Xanh lá, xanh dương, cam. Pixel, block, coin và hiệu ứng arcade mạnh tay.',
-    mood: 'Retro game, năng lượng, vui nhộn',
+    description: 'Xanh lá, xanh dương, cam. Chữ phải rõ trước, hiệu ứng tính sau.',
+    mood: 'Retro game, năng lượng, vui',
     iconSet: ['🟩', '🪙', '💎'],
     accentLabel: '8-bit green + blue + orange',
-    fontLabel: 'Pixel display'
+    fontLabel: 'Lexend, rõ chữ'
   },
   {
     id: 'unicorn-dream',
     name: 'Unicorn Dream',
     shortName: 'Unicorn',
     tagline: 'Thế giới thần tiên tri thức',
-    description: 'Không gian mềm mại, trong trẻo và đầy phép màu để bé cùng Unicorn khám phá tri thức mỗi ngày.',
-    mood: 'Dreamy, magical, cozy, sparkly, fantasy, kawaii',
+    description: 'Không gian mềm mại, trong trẻo và rõ nét để khám phá tri thức mỗi ngày.',
+    mood: 'Mơ mộng, phép màu, ấm áp',
     iconSet: ['🦄', '🌈', '✨'],
     accentLabel: 'Lilac + pearl pink + mint',
-    fontLabel: 'Rounded magical display'
+    fontLabel: 'Be Vietnam Pro, sáng chữ'
   }
 ];
 
