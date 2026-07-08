@@ -830,6 +830,112 @@ function unionEdges(faces: Face[]) {
   return [...map.values()];
 }
 
+export function parse3DProblemText(text: string, currentShape: ShapeKind): { detectedShape: ShapeKind; annotations: OverlayAnnotation[]; steps: LessonStep[] } {
+  const normalized = stripVietnamese(text).toLowerCase();
+
+  // 1. Detect shape
+  let detectedShape = currentShape;
+  if (normalized.includes('hinh hop') || normalized.includes('cuboid') || normalized.includes('hinh hop chu nhat')) {
+    detectedShape = 'cuboid';
+  } else if (normalized.includes('hinh chop') || normalized.includes('pyramid') || normalized.includes('chop tam giac') || normalized.includes('chop tu giac')) {
+    detectedShape = 'pyramid';
+  } else if (normalized.includes('tu dien') || normalized.includes('tetrahedron')) {
+    detectedShape = 'tetrahedron';
+  } else if (normalized.includes('lang tru') || normalized.includes('prism')) {
+    detectedShape = 'prism';
+  } else if (normalized.includes('hinh tru') || normalized.includes('cylinder')) {
+    detectedShape = 'cylinder';
+  }
+
+  const annotations: OverlayAnnotation[] = [];
+  const steps: LessonStep[] = [
+    {
+      title: 'Dựng hình cơ sở',
+      body: `Vẽ hình không gian (${SHAPE_LABELS[detectedShape]?.label || detectedShape}) làm nền tảng.`,
+      annotationIds: []
+    }
+  ];
+
+  const sentences = text.split(/[.,;\n]/);
+  sentences.forEach((sentence) => {
+    const sNorm = stripVietnamese(sentence).toLowerCase();
+    if (!sNorm.trim()) return;
+
+    // Check for drawing altitude (đường cao từ S xuống mặt đáy, hoặc AH...)
+    const altMatch = sNorm.match(/(?:duong cao|chieu cao|ke|ve)\s*([a-z])([a-z])\s*(?:vuong goc|xuong|\(|den)/i);
+    if (altMatch) {
+      const from = altMatch[1].toUpperCase();
+      const to = altMatch[2].toUpperCase();
+      const annoId = `alt-${Date.now()}-${annotations.length}`;
+      annotations.push({
+        id: annoId,
+        type: 'line',
+        title: `Đường cao ${from}${to}`,
+        body: `Kẻ đường cao ${from}${to} vuông góc với đáy.`,
+        from,
+        to: `FACE:ABCD`,
+        color: '#f43f5e',
+        opacity: 1,
+        dashed: true
+      });
+      steps.push({
+        title: `Kẻ đường cao ${from}${to}`,
+        body: `Từ đỉnh ${from}, kẻ đường cao ${from}${to} vuông góc với mặt đáy.`,
+        annotationIds: [annoId]
+      });
+      return;
+    }
+
+    // Check for connecting two vertices
+    const connMatch = sNorm.match(/(?:noi|ve doan thail)\s*([a-z])\s*(?:den|voi|va)\s*([a-z])/i) || sNorm.match(/(?:ke|ve)\s*([a-z])([a-z])/i);
+    if (connMatch) {
+      const from = connMatch[1].toUpperCase();
+      const to = connMatch[2].toUpperCase();
+      const annoId = `conn-${Date.now()}-${annotations.length}`;
+      annotations.push({
+        id: annoId,
+        type: 'line',
+        title: `Nối ${from}${to}`,
+        body: `Nối ${from} với ${to} theo đề bài.`,
+        from,
+        to,
+        color: '#10b981',
+        opacity: 1
+      });
+      steps.push({
+        title: `Nối ${from} với ${to}`,
+        body: `Vẽ đoạn thẳng nối đỉnh ${from} và đỉnh ${to}.`,
+        annotationIds: [annoId]
+      });
+      return;
+    }
+
+    // Highlight face
+    if (sNorm.includes('mat phang') || sNorm.includes('mat ben') || sNorm.includes('mat day')) {
+      const pts = getLabelTokens(sentence);
+      if (pts.length >= 3) {
+        const annoId = `face-${Date.now()}-${annotations.length}`;
+        annotations.push({
+          id: annoId,
+          type: 'face',
+          title: `Mặt phẳng ${pts.join('')}`,
+          body: `Nhấn mạnh mặt phẳng ${pts.join('')}.`,
+          points: pts,
+          color: '#3b82f6',
+          opacity: 0.25
+        });
+        steps.push({
+          title: `Xét mặt phẳng ${pts.join('')}`,
+          body: `Làm nổi bật mặt phẳng ${pts.join('')} để phục vụ chứng minh hoặc tính toán.`,
+          annotationIds: [annoId]
+        });
+      }
+    }
+  });
+
+  return { detectedShape, annotations, steps };
+}
+
 export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
   const detectedShape = detectShape(problemText);
   const cylinderEvidence = useMemo(() => extractCylinderEvidence(problemText), [problemText]);
@@ -1159,8 +1265,20 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
       appendHistoryItem(item);
       setAnalysisStatus('success');
     } catch (error: any) {
-      setAnalysisStatus('error');
-      setAnalysisError(error.message || 'Không thể gọi AI phân tích hình.');
+      console.warn('Lỗi gọi AI phân tích 3D, sử dụng bộ phân tích quy tắc dự phòng:', error.message);
+      const fallbackResult = parse3DProblemText(text, shape);
+      const item: CommandHistoryItem = {
+        id: `fallback-${Date.now()}`,
+        text,
+        summary: `Hệ thống đã tự động phân tích và chia nhỏ đề bài thành các bước vẽ.`,
+        annotations: fallbackResult.annotations,
+        steps: fallbackResult.steps
+      };
+
+      setManualShape(fallbackResult.detectedShape);
+      setAutoResolve(true);
+      appendHistoryItem(item, true);
+      setAnalysisStatus('success');
     }
   };
 

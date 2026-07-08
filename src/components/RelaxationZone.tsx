@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { 
-  ArrowLeft, Sparkles, Brain, Award, RefreshCw, HelpCircle
+  ArrowLeft, Sparkles, Brain, Award, RefreshCw, HelpCircle, Send, Check, X
 } from 'lucide-react';
 import { toast } from '../utils/toast';
 import type { Question } from '../types/game';
@@ -28,6 +28,19 @@ interface MindmapNode {
   children?: MindmapNode[];
 }
 
+interface StepItem {
+  id: string;
+  text: string;
+  correctOrder: number;
+}
+
+interface DiagramSlot {
+  id: string;
+  label: string;
+  expectedLabel: string;
+  currentLabel: string;
+}
+
 export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   const uiTheme = useGameState(state => state.uiTheme);
   const questions = useGameState(state => state.questions);
@@ -35,7 +48,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   
   const isUnicorn = uiTheme === 'unicorn-dream';
   
-  const [activeTab, setActiveTab] = useState<'flashcards' | 'match' | 'mindmap' | 'story' | 'adventure'>('flashcards');
+  const [activeTab, setActiveTab] = useState<'flashcards' | 'match' | 'mindmap' | 'story' | 'adventure' | 'stepbuilder' | 'reading' | 'explain' | 'dragdiagram'>('flashcards');
 
   // ----------------------------------------------------
   // Tab 1: Xưởng Thẻ Nhớ (Dynamic SRS Flashcards)
@@ -47,12 +60,10 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   const [fcRememberedCount, setFcRememberedCount] = useState(0);
 
   useEffect(() => {
-    // Generate flashcards from repository questions
     let filtered = questions;
     if (flashcardSubject !== 'all') {
       filtered = questions.filter(q => q.subject === flashcardSubject);
     }
-    // Shuffle slightly or take first 15
     const shuffled = [...filtered].sort(() => 0.5 - Math.random()).slice(0, 15);
     setActiveFlashcards(shuffled);
     setFcIndex(0);
@@ -76,8 +87,6 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   const handleFcRemembered = () => {
     if (activeFlashcards.length === 0) return;
     setFcRememberedCount(prev => prev + 1);
-    
-    // Reward player 5 Coins and 10 XP for active recall memorization
     awardCoinsAndXp(5, 10, 'Thuộc thẻ nhớ', `Ghi nhớ câu hỏi: ${activeFlashcards[fcIndex].prompt.slice(0, 20)}...`);
     toast.success('Đã ghi nhận! Thưởng +5 NP, +10 XP 🎉');
     handleFcNext();
@@ -92,7 +101,6 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   const [selectedCards, setSelectedCards] = useState<string[]>([]);
   const [matchStatus, setMatchStatus] = useState<'playing' | 'victory'>('playing');
 
-  // Hardcoded pair banks representing core curricula
   const ENGLISH_PAIRS = [
     { word: 'Procrastinate', mean: 'Trì hoãn, khất lần' },
     { word: 'Benevolent', mean: 'Nhân từ, rộng lượng' },
@@ -125,10 +133,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
     if (matchSubject === 'math') source = MATH_PAIRS;
     else if (matchSubject === 'literature') source = LITERATURE_PAIRS;
 
-    // Pick 5 random pairs
     const pairs = [...source].sort(() => 0.5 - Math.random()).slice(0, 5);
-
-    // Create cards list
     const cards: MatchItem[] = [];
     pairs.forEach((p, idx) => {
       const pairId = `pair-${idx}`;
@@ -136,7 +141,6 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
       cards.push({ id: `b-${idx}`, text: p.mean, pairId, isMatched: false });
     });
 
-    // Shuffle cards
     setMatchCards(cards.sort(() => 0.5 - Math.random()));
     setSelectedCards([]);
     setMatchStatus('playing');
@@ -158,7 +162,6 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
       const card2 = matchCards.find(c => c.id === newSelected[1])!;
 
       if (card1.pairId === card2.pairId) {
-        // MATCH!
         setTimeout(() => {
           setMatchCards(prev => prev.map(c => 
             c.pairId === card1.pairId ? { ...c, isMatched: true } : c
@@ -166,19 +169,16 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
           setSelectedCards([]);
           toast.success('Hợp nhất thành công! 🎉');
 
-          // Check win condition
           setMatchCards(current => {
             const allMatched = current.every(c => c.isMatched || c.pairId === card1.pairId);
             if (allMatched) {
               setMatchStatus('victory');
-              // Reward 30 Coins and 40 XP
               awardCoinsAndXp(30, 40, 'Ghép cặp thành công', `Hoàn thành bảng ghép cặp chủ đề ${matchSubject}`);
             }
             return current;
           });
         }, 300);
       } else {
-        // MISMATCH!
         setTimeout(() => {
           setSelectedCards([]);
           toast.error('Không khớp nhau rồi!');
@@ -275,7 +275,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   // ----------------------------------------------------
   // Tab 4: Kịch Bản Tình Huống (RPG Text Adventure)
   // ----------------------------------------------------
-  const [storyStep, setStoryStep] = useState<number>(0); // 0: intro, 1: math node, 2: eng node, 3: lit node, 4: win, 5: gameover
+  const [storyStep, setStoryStep] = useState<number>(0); 
   const [storyLives, setStoryLives] = useState<number>(3);
   const [storyInventory, setStoryInventory] = useState<string[]>([]);
   const [activeStoryQuest, setActiveStoryQuest] = useState<Question | null>(null);
@@ -301,7 +301,6 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
       : activeStoryQuest.correctAnswer;
 
     if (selectedOption.trim().toLowerCase() === correctAnsStr.trim().toLowerCase()) {
-      // Correct!
       toast.success('Chính xác! Con vượt qua thử thách này.');
       if (storyStep === 1) {
         setStoryInventory(prev => [...prev, '🔑 Chìa Khóa Vàng']);
@@ -313,18 +312,16 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
         initStoryQuest('literature');
       } else if (storyStep === 3) {
         setStoryInventory(prev => [...prev, '📜 Cuộn Sách Cổ']);
-        setStoryStep(4); // Win
+        setStoryStep(4); 
         awardCoinsAndXp(60, 50, 'Phiêu lưu tình huống', 'Giải thoát Rồng Con thành công');
       }
     } else {
-      // Incorrect!
       toast.error('Ôi không, đáp án chưa đúng rồi!');
       const nextLives = storyLives - 1;
       setStoryLives(nextLives);
       if (nextLives <= 0) {
-        setStoryStep(5); // Game Over
+        setStoryStep(5); 
       } else {
-        // Redraw a new question of the same subject
         initStoryQuest(activeStoryQuest.subject as any);
       }
     }
@@ -334,7 +331,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   // ----------------------------------------------------
   // Tab 5: Hành Trình Du Khảo (Trivia Board Game)
   // ----------------------------------------------------
-  const [boardPosition, setBoardPosition] = useState<number>(0); // 0 to 9
+  const [boardPosition, setBoardPosition] = useState<number>(0); 
   const [diceRolling, setDiceRolling] = useState<boolean>(false);
   const [rolledNumber, setRolledNumber] = useState<number>(0);
   const [activeBoardQuestion, setActiveBoardQuestion] = useState<Question | null>(null);
@@ -347,7 +344,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
 
     let rolls = 0;
     const interval = setInterval(() => {
-      setRolledNumber(Math.floor(Math.random() * 3) + 1); // Dice 1 to 3
+      setRolledNumber(Math.floor(Math.random() * 3) + 1); 
       rolls++;
       if (rolls > 8) {
         clearInterval(interval);
@@ -355,7 +352,6 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
         const rolled = Math.floor(Math.random() * 3) + 1;
         setRolledNumber(rolled);
         
-        // Calculate new position
         const nextPos = Math.min(9, boardPosition + rolled);
         setBoardPosition(nextPos);
 
@@ -364,7 +360,6 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
           awardCoinsAndXp(100, 80, 'Về đích Du khảo', 'Đạt vạch đích rương báu sơn trang');
           toast.success('Chúc mừng con đã hoàn thành bản đồ du khảo! 🏆');
         } else {
-          // Trigger trivia at new tile
           setBoardStatus('answering');
           const randomQ = questions[Math.floor(Math.random() * questions.length)];
           setActiveBoardQuestion(randomQ);
@@ -398,6 +393,316 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   };
 
 
+  // ----------------------------------------------------
+  // Tab 6: Sắp Xếp Trình Tự (Step Builder)
+  // ----------------------------------------------------
+  const [stepSubject, setStepSubject] = useState<'math' | 'english' | 'literature'>('math');
+  const [scrambledSteps, setScrambledSteps] = useState<StepItem[]>([]);
+  const [stepStatus, setStepStatus] = useState<'playing' | 'won'>('playing');
+
+  const STEP_DATA = {
+    math: [
+      { id: 's-m1', text: '1. Xác định hệ số a, b, c của phương trình ax² + bx + c = 0', correctOrder: 0 },
+      { id: 's-m2', text: '2. Tính biệt thức Delta = b² - 4ac', correctOrder: 1 },
+      { id: 's-m3', text: '3. So sánh Delta với số 0 (lớn hơn, bằng hoặc nhỏ hơn 0)', correctOrder: 2 },
+      { id: 's-m4', text: '4. Kết luận số nghiệm và áp dụng công thức tìm x₁, x₂', correctOrder: 3 }
+    ],
+    english: [
+      { id: 's-e1', text: '1. Xác định tân ngữ của câu chủ động đưa lên làm chủ ngữ mới', correctOrder: 0 },
+      { id: 's-e2', text: '2. Chia động từ BE theo đúng thì của câu chủ động gốc', correctOrder: 1 },
+      { id: 's-e3', text: '3. Đưa động từ chính về dạng Quá khứ phân từ V3/ed', correctOrder: 2 },
+      { id: 's-e4', text: '4. Thêm cụm "by + tác nhân hành động" ở cuối câu', correctOrder: 3 }
+    ],
+    literature: [
+      { id: 's-l1', text: '1. Tìm hiểu hoàn cảnh sáng tác, tác giả và đề tài chính của tác phẩm', correctOrder: 0 },
+      { id: 's-l2', text: '2. Đọc văn bản, phân tích kết cấu và xác định bố cục liên kết', correctOrder: 1 },
+      { id: 's-l3', text: '3. Khai thác sâu các biện pháp tu từ, hình ảnh thơ/chi tiết truyện đặc sắc', correctOrder: 2 },
+      { id: 's-l4', text: '4. Khái quát giá trị nhân văn nghệ thuật và bài học tư tưởng rút ra', correctOrder: 3 }
+    ]
+  };
+
+  const initStepGame = () => {
+    const list = [...STEP_DATA[stepSubject]];
+    // Shuffle the steps
+    const shuffled = list.sort(() => 0.5 - Math.random());
+    setScrambledSteps(shuffled);
+    setStepStatus('playing');
+  };
+
+  useEffect(() => {
+    initStepGame();
+  }, [stepSubject]);
+
+  const moveStep = (index: number, direction: 'up' | 'down') => {
+    if (stepStatus !== 'playing') return;
+    const targetIdx = direction === 'up' ? index - 1 : index + 1;
+    if (targetIdx < 0 || targetIdx >= scrambledSteps.length) return;
+
+    const list = [...scrambledSteps];
+    const temp = list[index];
+    list[index] = list[targetIdx];
+    list[targetIdx] = temp;
+    setScrambledSteps(list);
+  };
+
+  const checkStepOrder = () => {
+    const isCorrect = scrambledSteps.every((step, idx) => step.correctOrder === idx);
+    if (isCorrect) {
+      setStepStatus('won');
+      awardCoinsAndXp(30, 25, 'Hoàn thành Sắp xếp', `Sắp xếp trình tự giải chủ đề ${stepSubject}`);
+      toast.success('Chính xác! Con sắp xếp trình tự rất chuẩn! 🎉');
+    } else {
+      toast.error('Trình tự chưa đúng rồi, hãy suy nghĩ lại nhé!');
+    }
+  };
+
+
+  // ----------------------------------------------------
+  // Tab 7: Thử Thách Đọc Hiểu (Reading Challenge)
+  // ----------------------------------------------------
+  const [readingSubject, setReadingSubject] = useState<'english' | 'math' | 'literature'>('english');
+  const [highlightedIndices, setHighlightedIndices] = useState<number[]>([]);
+  const [selectedReadingOption, setSelectedReadingOption] = useState<string>('');
+  const [readingChecked, setReadingChecked] = useState<boolean>(false);
+  const [readingResult, setReadingResult] = useState<'success' | 'fail' | null>(null);
+
+  const READING_DATA = {
+    english: {
+      passage: 'Sử dụng năng lượng sạch là giải pháp cấp bách. Solar energy represents a clean, renewable, and infinitely abundant source of power. Harnessing this energy helps decrease emissions dramatically.',
+      words: ['Solar', 'energy', 'represents', 'a', 'clean,', 'renewable,', 'and', 'infinitely', 'abundant', 'source', 'of', 'power.'],
+      targetWords: ['Solar', 'energy', 'clean,', 'renewable,'],
+      question: 'Ý chính của đoạn văn trên thảo luận về điều gì?',
+      options: ['A. Sự hạn chế của điện than truyền thống', 'B. Lợi ích vượt trội của nguồn năng lượng mặt trời', 'C. Cơ chế chuyển đổi nhiệt lượng Trái đất'],
+      correctOption: 'B. Lợi ích vượt trội của nguồn năng lượng mặt trời'
+    },
+    math: {
+      passage: 'Một tam giác vuông luôn có tổng hai góc nhọn phụ nhau. Theo định lý Pythagoras, bình phương cạnh huyền bằng tổng bình phương hai cạnh góc vuông.',
+      words: ['Theo', 'định', 'lý', 'Pythagoras,', 'bình', 'phương', 'cạnh', 'huyền', 'bằng', 'tổng', 'bình', 'phương', 'hai', 'cạnh', 'góc', 'vuông.'],
+      targetWords: ['Pythagoras,', 'cạnh', 'huyền'],
+      question: 'Phát biểu Pythagoras áp dụng cho loại tam giác nào?',
+      options: ['A. Tam giác đều', 'B. Tam giác cân', 'C. Tam giác vuông'],
+      correctOption: 'C. Tam giác vuông'
+    },
+    literature: {
+      passage: 'Xuân Quỳnh đã tạo ra một ẩn dụ độc đáo. Trong bài thơ Sóng, hình tượng sóng là biểu tượng sinh động của tâm trạng người phụ nữ đang yêu.',
+      words: ['hình', 'tượng', 'sóng', 'là', 'biểu', 'tượng', 'sinh', 'động', 'của', 'tâm', 'trạng', 'người', 'phụ', 'nữ', 'đang', 'yêu.'],
+      targetWords: ['sóng', 'tâm', 'trạng', 'người', 'phụ', 'nữ'],
+      question: 'Hình tượng sóng trong bài thơ trữ tình của Xuân Quỳnh ẩn dụ cho điều gì?',
+      options: ['A. Sự dữ dội của bão tố thiên tai', 'B. Vẻ đẹp kỳ vĩ của đại dương xanh', 'C. Tâm trạng thiết tha thủy chung của người con gái đang yêu'],
+      correctOption: 'C. Tâm trạng thiết tha thủy chung của người con gái đang yêu'
+    }
+  };
+
+  const initReadingGame = () => {
+    setHighlightedIndices([]);
+    setSelectedReadingOption('');
+    setReadingChecked(false);
+    setReadingResult(null);
+  };
+
+  useEffect(() => {
+    initReadingGame();
+  }, [readingSubject]);
+
+  const toggleWordHighlight = (index: number) => {
+    if (readingChecked) return;
+    setHighlightedIndices(prev => 
+      prev.includes(index) ? prev.filter(x => x !== index) : [...prev, index]
+    );
+  };
+
+  const checkReadingChallenge = () => {
+    const data = READING_DATA[readingSubject];
+    const selectedAns = selectedReadingOption.trim();
+    if (!selectedAns) {
+      toast.error('Vui lòng chọn một đáp án trắc nghiệm!');
+      return;
+    }
+
+    // Check highlighted words match at least 50% of targets
+    const highlightedWords = highlightedIndices.map(idx => data.words[idx].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g,""));
+    const matchCount = highlightedWords.filter(w => 
+      data.targetWords.some(tw => tw.toLowerCase().includes(w.toLowerCase()))
+    ).length;
+
+    const isOptionCorrect = selectedAns === data.correctOption;
+    const isHighlightAcceptable = matchCount >= 1;
+
+    setReadingChecked(true);
+    if (isOptionCorrect && isHighlightAcceptable) {
+      setReadingResult('success');
+      awardCoinsAndXp(35, 30, 'Đọc hiểu sâu', `Hoàn thành thử thách đọc hiểu môn ${readingSubject}`);
+      toast.success('Xuất sắc! Con tìm đúng từ khóa và trả lời đúng câu hỏi cốt lõi! 🎉');
+    } else {
+      setReadingResult('fail');
+      toast.error('Đáp án hoặc từ khóa tô sáng chưa chính xác rồi.');
+    }
+  };
+
+
+  // ----------------------------------------------------
+  // Tab 8: Giảng Giải Cho AI (Explain / Teach to AI)
+  // ----------------------------------------------------
+  const [explainTopic, setExplainTopic] = useState<'pythagoras' | 'present_perfect' | 'song_poem'>('pythagoras');
+  const [studentText, setStudentText] = useState<string>('');
+  const [aiFeedback, setAiFeedback] = useState<string>('');
+  const [aiCounterQuestion, setAiCounterQuestion] = useState<{ q: string; opts: string[]; ans: string } | null>(null);
+  const [counterAnswer, setCounterAnswer] = useState<string>('');
+  const [explainPhase, setExplainPhase] = useState<'input' | 'feedback' | 'won'>('input');
+
+  const EXPLAIN_TOPICS = {
+    pythagoras: {
+      title: 'Định lý Pythagoras (Toán 9)',
+      keywords: ['vuông', 'cạnh huyền', 'bình phương', 'cộng', 'tổng'],
+      missingAlert: 'đặc điểm tam giác vuông hoặc mối quan hệ bình phương cạnh huyền',
+      successFeedback: 'Chào thầy cô! Em là AI học sinh. Bài giảng của thầy cô rất rõ ràng! Em đã hiểu là trong tam giác vuông, bình phương độ dài cạnh huyền bằng tổng bình phương độ dài hai cạnh góc vuông: a² + b² = c².',
+      counterQ: 'Vậy nếu một tam giác có độ dài ba cạnh lần lượt là 3cm, 4cm, 5cm thì đó có phải là tam giác vuông không ạ?',
+      opts: ['A. Đúng, vì 3² + 4² = 5² (9 + 16 = 25)', 'B. Sai, vì tam giác vuông phải có cạnh huyền lớn gấp đôi cạnh góc vuông'],
+      correctOpt: 'A. Đúng, vì 3² + 4² = 5² (9 + 16 = 25)'
+    },
+    present_perfect: {
+      title: 'Thì Hiện tại hoàn thành (Tiếng Anh)',
+      keywords: ['have', 'has', 'past participle', 'v3', 'hoàn thành', 'trước đây'],
+      missingAlert: 'công thức dùng Have/Has đi kèm động từ phân từ hai (V3/ed)',
+      successFeedback: 'Hi Teacher! Con là học sinh AI. Nhờ cô giảng mà con biết thì Hiện tại hoàn thành dùng cấu trúc "Subject + have/has + V3/ed" để kể về trải nghiệm đã xảy ra mà không cần mốc thời gian rõ ràng!',
+      counterQ: 'Cô ơi, vậy câu nào dưới đây chia đúng thì Hiện tại hoàn thành ạ?',
+      opts: ['A. She has gone to Paris three times.', 'B. She went to Paris yesterday.', 'C. She goes to Paris every year.'],
+      correctOpt: 'A. She has gone to Paris three times.'
+    },
+    song_poem: {
+      title: 'Ý nghĩa hình tượng "Sóng" của Xuân Quỳnh (Văn)',
+      keywords: ['tình yêu', 'phụ nữ', 'thủy chung', 'xuân quỳnh', 'biểu tượng', 'ẩn dụ'],
+      missingAlert: 'khái niệm ẩn dụ biểu tượng cho tâm trạng thủy chung của người phụ nữ đang yêu',
+      successFeedback: 'Em chào thầy cô! Bài phân tích văn học của thầy cô sâu sắc quá. Em hiểu rằng hình tượng "Sóng" vừa là hình ảnh tự nhiên, vừa là biểu tượng ẩn dụ cho tâm hồn rạo rực, khao khát tình yêu chân thành, chung thủy của người phụ nữ.',
+      counterQ: 'Vậy trong bài thơ, hình tượng nào luôn song hành và hòa quyện cùng hình tượng "Sóng" ạ?',
+      opts: ['A. Thuyền', 'B. Em', 'C. Biển'],
+      correctOpt: 'B. Em'
+    }
+  };
+
+  const handleTeachAI = () => {
+    const data = EXPLAIN_TOPICS[explainTopic];
+    const text = studentText.toLowerCase().trim();
+
+    if (text.length < 20) {
+      toast.error('Bài giảng quá ngắn! Con hãy giải thích chi tiết hơn một chút nhé.');
+      return;
+    }
+
+    // Match keywords
+    const matches = data.keywords.filter(kw => text.includes(kw));
+    const isQualityLecture = matches.length >= 2;
+
+    if (isQualityLecture) {
+      setAiFeedback(data.successFeedback);
+      setAiCounterQuestion({
+        q: data.counterQ,
+        opts: data.opts,
+        ans: data.correctOpt
+      });
+      setExplainPhase('feedback');
+    } else {
+      setAiFeedback(`Dạ, con (học sinh AI) vẫn chưa hiểu lắm. Cô/Thầy giải thích thiếu ý về [${data.missingAlert}]. Cô/Thầy giảng giải lại giúp con được không ạ?`);
+      setExplainPhase('feedback');
+      setAiCounterQuestion(null);
+    }
+  };
+
+  const handleCounterAnswerSubmit = () => {
+    if (!aiCounterQuestion) return;
+    if (counterAnswer === aiCounterQuestion.ans) {
+      setExplainPhase('won');
+      awardCoinsAndXp(40, 40, 'Giảng giải cho AI', `Giảng bài thành công chủ đề ${explainTopic}`);
+      toast.success('Chính xác! Học sinh AI đã hoàn toàn thông suốt bài học này. (+40 NP, +40 XP)');
+    } else {
+      toast.error('Nhầm rồi thầy cô ơi! Học sinh AI vặn ngược lại và thầy cô trả lời sai rồi. Hãy thử lại!');
+    }
+  };
+
+  const restartExplainGame = () => {
+    setStudentText('');
+    setAiFeedback('');
+    setAiCounterQuestion(null);
+    setCounterAnswer('');
+    setExplainPhase('input');
+  };
+
+
+  // ----------------------------------------------------
+  // Tab 9: Ghép Sơ Đồ Kéo Thả (Drag & Drop Diagram)
+  // ----------------------------------------------------
+  const [diagramSubject, setDiagramSubject] = useState<'math' | 'english' | 'literature'>('math');
+  const [selectedLabel, setSelectedLabel] = useState<string>('');
+  const [diagramSlots, setDiagramSlots] = useState<DiagramSlot[]>([]);
+  const [diagramLabels, setDiagramLabels] = useState<string[]>([]);
+  const [diagramStatus, setDiagramStatus] = useState<'playing' | 'won'>('playing');
+
+  const DIAGRAM_DATA = {
+    math: {
+      slots: [
+        { id: 'ds-m1', label: 'Cạnh đối diện góc vuông', expectedLabel: 'Cạnh huyền', currentLabel: '' },
+        { id: 'ds-m2', label: 'Cạnh đứng kề góc vuông', expectedLabel: 'Cạnh góc vuông 1', currentLabel: '' },
+        { id: 'ds-m3', label: 'Cạnh đáy kề góc vuông', expectedLabel: 'Cạnh góc vuông 2', currentLabel: '' }
+      ],
+      pool: ['Cạnh huyền', 'Cạnh góc vuông 1', 'Cạnh góc vuông 2', 'Đường trung trực']
+    },
+    english: {
+      slots: [
+        { id: 'ds-e1', label: 'Từ: "The students"', expectedLabel: 'Chủ ngữ (Subject)', currentLabel: '' },
+        { id: 'ds-e2', label: 'Từ: "solved"', expectedLabel: 'Động từ (Verb)', currentLabel: '' },
+        { id: 'ds-e3', label: 'Từ: "the equations"', expectedLabel: 'Tân ngữ (Object)', currentLabel: '' }
+      ],
+      pool: ['Chủ ngữ (Subject)', 'Động từ (Verb)', 'Tân ngữ (Object)', 'Trạng ngữ (Adverb)']
+    },
+    literature: {
+      slots: [
+        { id: 'ds-l1', label: 'Tác phẩm: "Lão Hạc"', expectedLabel: 'Truyện ngắn hiện thực', currentLabel: '' },
+        { id: 'ds-l2', label: 'Tác phẩm: "Sóng"', expectedLabel: 'Thơ tình yêu trữ tình', currentLabel: '' },
+        { id: 'ds-l3', label: 'Tác phẩm: "Vũ Như Tô"', expectedLabel: 'Kịch lịch sử', currentLabel: '' }
+      ],
+      pool: ['Truyện ngắn hiện thực', 'Thơ tình yêu trữ tình', 'Kịch lịch sử', 'Tùy bút']
+    }
+  };
+
+  const initDiagramGame = () => {
+    const data = DIAGRAM_DATA[diagramSubject];
+    setDiagramSlots(data.slots.map(s => ({ ...s })));
+    setDiagramLabels(data.pool);
+    setSelectedLabel('');
+    setDiagramStatus('playing');
+  };
+
+  useEffect(() => {
+    initDiagramGame();
+  }, [diagramSubject]);
+
+  const handlePlaceLabel = (slotId: string) => {
+    if (!selectedLabel || diagramStatus !== 'playing') return;
+
+    setDiagramSlots(prev => prev.map(s => 
+      s.id === slotId ? { ...s, currentLabel: selectedLabel } : s
+    ));
+    setSelectedLabel('');
+  };
+
+  const checkDiagram = () => {
+    const allFilled = diagramSlots.every(s => s.currentLabel !== '');
+    if (!allFilled) {
+      toast.error('Hãy điền nhãn dán vào tất cả các ô trống!');
+      return;
+    }
+
+    const isCorrect = diagramSlots.every(s => s.currentLabel === s.expectedLabel);
+    if (isCorrect) {
+      setDiagramStatus('won');
+      awardCoinsAndXp(30, 35, 'Ghép sơ đồ thành công', `Hoàn thành ghép sơ đồ môn ${diagramSubject}`);
+      toast.success('Chính xác! Con đã lắp ghép sơ đồ hoàn hảo! 🎉');
+    } else {
+      toast.error('Có một số nhãn lắp sai vị trí rồi!');
+    }
+  };
+
+
   return (
     <div className="space-y-6">
       {/* Header HUD */}
@@ -428,16 +733,20 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
       {/* Navigation Tabs */}
       <div className="flex flex-wrap gap-2 border-b border-synth-gray/30 pb-3">
         {[
-          { id: 'flashcards', label: '🎴 Xưởng Thẻ Nhớ', desc: 'Active Recall thực tế' },
+          { id: 'flashcards', label: '🎴 Xưởng Thẻ Nhớ', desc: 'Active Recall lật mặt' },
           { id: 'match', label: '🔗 Ghép Cặp', desc: 'Chọn ô liên kết kiến thức' },
-          { id: 'mindmap', label: '🗺️ Sơ Đồ Tư Duy', desc: 'Xem tóm tắt bài học' },
+          { id: 'mindmap', label: '🗺️ Sơ Đồ Ôn Tập', desc: 'Tóm tắt bài học' },
           { id: 'story', label: '🎭 Tình Huống RPG', desc: 'Phiêu lưu giải đố' },
           { id: 'adventure', label: '🧭 Du Khảo Kỳ Thú', desc: 'Tung xúc xắc trivia' },
+          { id: 'stepbuilder', label: '🧩 Trình Tự Giải', desc: 'Sắp xếp bước giải toán' },
+          { id: 'reading', label: '📖 Đọc Hiểu Sâu', desc: 'Tô sáng & tìm ý chính' },
+          { id: 'explain', label: '✍️ Giảng Cho AI', desc: 'Thử làm giáo viên' },
+          { id: 'dragdiagram', label: '🧱 Ghép Sơ Đồ', desc: 'Lắp ghép nhãn dán' }
         ].map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id as any)}
-            className={`px-4 py-2.5 rounded-xl font-orbitron text-xs font-bold tracking-wide uppercase transition-all duration-300 cursor-pointer text-left flex flex-col ${
+            className={`px-3 py-2 rounded-xl font-orbitron text-[10px] font-bold tracking-wide uppercase transition-all duration-300 cursor-pointer text-left flex flex-col ${
               activeTab === tab.id
                 ? isUnicorn
                   ? 'bg-gradient-to-r from-fuchsia-100 to-violet-100 text-violet-900 border border-violet-300'
@@ -448,7 +757,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
             }`}
           >
             <span>{tab.label}</span>
-            <span className="text-[9px] font-semibold opacity-60 normal-case mt-0.5">{tab.desc}</span>
+            <span className="text-[8px] font-semibold opacity-60 normal-case mt-0.5">{tab.desc}</span>
           </button>
         ))}
       </div>
@@ -484,7 +793,6 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
 
               {activeFlashcards.length > 0 ? (
                 <>
-                  {/* Card deck container */}
                   <div 
                     onClick={() => setFcFlipped(!fcFlipped)}
                     className="w-full max-w-lg aspect-[5/3] cursor-pointer group [perspective:1000px]"
@@ -540,7 +848,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                           <span className={`text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded font-orbitron ${
                             isUnicorn ? 'bg-fuchsia-100 text-fuchsia-700' : 'bg-synth-magenta/15 text-synth-magenta'
                           }`}>
-                            Đáp Án & Giải Thích
+                            Đáp An & Giải Thích
                           </span>
                           <span className="text-[10px] font-bold font-orbitron text-slate-400">
                             Thẻ {fcIndex + 1}/{activeFlashcards.length}
@@ -563,7 +871,6 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                     </div>
                   </div>
 
-                  {/* Flashcard Action Buttons */}
                   <div className="flex gap-4 items-center">
                     <button
                       onClick={handleFcPrev}
@@ -602,7 +909,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
               )}
             </div>
 
-            {/* Right Guide & Stats */}
+            {/* Right stats info */}
             <div className={`glass-panel rounded-2xl p-5 border flex flex-col justify-between ${
               isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-cyan/15'
             }`}>
@@ -632,9 +939,8 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                 <div className="space-y-2 pt-2 border-t border-white/5">
                   <h4 className={`text-xs font-bold ${isUnicorn ? 'text-violet-900' : 'text-white'}`}>Hướng dẫn:</h4>
                   <ul className="list-disc list-inside text-[10px] text-slate-400 space-y-1">
-                    <li>Đọc kỹ câu hỏi, tự suy nghĩ đáp án.</li>
-                    <li>Lật mặt sau để tự đối chứng câu trả lời.</li>
-                    <li>Nhấn nút "Thuộc rồi" nếu nhớ đúng để nhận xu và thăng hạng!</li>
+                    <li>Tự nhớ đáp án trước khi nhấn vào thẻ để lật xem lời giải.</li>
+                    <li>Sử dụng nút lọc để đổi chủ đề câu hỏi.</li>
                   </ul>
                 </div>
               </div>
@@ -642,7 +948,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
               <div className={`p-3 rounded-xl text-center text-[9px] text-slate-400 border border-dashed ${
                 isUnicorn ? 'border-violet-200 text-violet-700/80' : 'border-synth-cyan/35 text-synth-cyan/85'
               } mt-4`}>
-                💡 Active Recall (Gợi nhớ chủ động) tăng hiệu suất lưu giữ tri thức lên tới 150% so với đọc thụ động!
+                💡 Kỹ thuật lặp lại ngắt quãng (SRS) giúp tiết kiệm 70% thời gian ôn luyện mà ghi nhớ lâu gấp 3 lần!
               </div>
             </div>
           </div>
@@ -659,7 +965,6 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                 Nối từ vựng với nghĩa, công thức với tên gọi để rèn luyện phản xạ siêu tốc.
               </p>
 
-              {/* Subject selectors */}
               <div className="flex gap-1.5 bg-black/20 p-1 rounded-lg border border-white/5 mt-2">
                 {[
                   { id: 'english', label: 'Từ vựng 🇬🇧' },
@@ -706,7 +1011,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
               </div>
             ) : (
               <div className="py-10 space-y-4 max-w-md mx-auto">
-                <div className="text-4xl">🎉🏆🥇</div>
+                <div className="text-4xl animate-bounce">🎉🏆🥇</div>
                 <h4 className="font-orbitron font-black text-xl text-synth-green uppercase">Hoàn Thành Tuyệt Đối</h4>
                 <p className="text-xs text-slate-300">
                   Con đã ghép thành công tất cả các cặp liên kết! Thưởng vượt ải thành công: **+30 NP coins, +40 XP**
@@ -736,17 +1041,15 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
           </div>
         )}
 
-        {/* TAB 3: SƠ ĐỒ TƯ DUY (MINDMAP) */}
+        {/* TAB 3: SƠ ĐỒ ÔN TẬP (MINDMAP) */}
         {activeTab === 'mindmap' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            {/* Subject Selector & Mindmap Tree */}
             <div className={`lg:col-span-2 glass-panel rounded-3xl border p-5 space-y-4 ${
               isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-cyan/25'
             }`}>
               <div className="flex justify-between items-center border-b border-white/5 pb-3">
                 <h3 className="font-orbitron font-black text-xs uppercase tracking-wider text-synth-cyan">
-                  🗺️ Sơ Đồ Tư Duy Tri Thức
+                  🗺️ Sơ Đồ Ôn Tập Tri Thức
                 </h3>
                 <div className="flex gap-1.5 bg-black/20 p-1 rounded-lg border border-white/5">
                   {[
@@ -770,20 +1073,16 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                 </div>
               </div>
 
-              {/* Mindmap Interactive Visualization */}
               <div className="bg-black/30 rounded-2xl p-4 min-h-[300px] relative overflow-hidden flex flex-col justify-center gap-3">
                 <div className="absolute inset-0 synth-grid-bg opacity-10" />
 
                 <div className="relative z-10 flex flex-col items-center gap-6">
-                  {/* Root Node */}
                   <div className="px-4 py-2 rounded-xl bg-synth-cyan/15 border border-synth-cyan text-synth-cyan font-bold font-orbitron text-xs shadow-[0_0_12px_rgba(0,240,255,0.15)]">
                     {MINDMAP_DATA[selectedMapSubject].label}
                   </div>
 
-                  {/* Horizontal Connector Line decoration */}
                   <div className="w-0.5 h-4 bg-white/20" />
 
-                  {/* Branches */}
                   <div className="flex flex-col sm:flex-row gap-4 justify-center w-full">
                     {MINDMAP_DATA[selectedMapSubject].children?.map((branch) => (
                       <div key={branch.id} className="flex flex-col items-center gap-3 bg-white/5 border border-white/5 p-3 rounded-xl min-w-[130px] flex-1">
@@ -813,7 +1112,6 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
               </div>
             </div>
 
-            {/* Right Node Cheat-Sheet detail view */}
             <div className={`glass-panel rounded-2xl p-5 border flex flex-col justify-between ${
               isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-cyan/15'
             }`}>
@@ -850,12 +1148,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                   </p>
                 </div>
               )}
-
-              <div className="p-3 bg-synth-cyan/5 border border-synth-cyan/15 rounded-xl text-[9px] text-synth-cyan/90 leading-normal mt-4">
-                💡 Sử dụng sơ đồ tư duy giúp liên kết não bộ cực nhanh khi ôn tập trước các kỳ kiểm tra chính khóa!
-              </div>
             </div>
-
           </div>
         )}
 
@@ -871,7 +1164,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                 </div>
                 <h3 className="font-orbitron font-black text-lg text-white uppercase">Giải Cứu Rồng Con</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Chú Pet **Rồng Con** thân yêu của con đang bị giam cầm tại ngôi đền cổ xưa. Hãy dùng tri thức Toán học, Tiếng Anh và Ngữ văn để vượt qua 3 thử thách bảo vệ thần đền và đưa Pet trở về!
+                  Chú Pet **Rồng Con** đang bị giam cầm tại đền cổ. Con hãy dùng tri thức Toán học, Tiếng Anh và Ngữ văn để vượt qua 3 thử thách cổ đại nhé!
                 </p>
                 <button
                   onClick={handleStartStory}
@@ -884,10 +1177,9 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
 
             {(storyStep >= 1 && storyStep <= 3) && (
               <div className="max-w-2xl mx-auto text-left space-y-5">
-                {/* Story HUD */}
                 <div className="flex justify-between items-center border-b border-white/5 pb-3">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-xs text-slate-300 font-orbitron font-bold">Lượt Mạng:</span>
+                    <span className="text-xs text-slate-300 font-orbitron font-bold">Mạng:</span>
                     {Array.from({ length: 3 }).map((_, i) => (
                       <span key={i} className={`text-xs ${i < storyLives ? 'text-red-500' : 'text-slate-600'}`}>
                         ❤️
@@ -913,19 +1205,17 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                   </span>
                 </div>
 
-                {/* Scenario description text */}
                 <div className="bg-synth-purple/5 border border-synth-purple/20 p-4 rounded-xl space-y-1">
                   <h4 className="text-xs font-bold text-synth-purple uppercase font-orbitron flex items-center gap-1">
                     📖 Kịch Bản Tình Huống:
                   </h4>
                   <p className="text-xs text-slate-300 italic leading-relaxed">
-                    {storyStep === 1 && '"Con tiếp cận Cổng Thần Thạch. Thần Đá rầm rập bước ra và cất giọng ồm ồm: Muốn đi tiếp thì phải mở khóa mật mã toán học này..."'}
-                    {storyStep === 2 && '"Đi qua cổng, con đi sâu vào rừng sương mù và gặp một Hiệp sĩ người Anh Quốc. Ông ấy cần con giải đáp câu hỏi ngữ pháp tiếng Anh này để nhận la bàn..."'}
-                    {storyStep === 3 && '"Ngay trước ngục đá, Thần Rùa gác cửa yêu cầu con xác định chính xác kiến thức Ngữ Văn lớp 9 này để hoàn trả Pet..."'}
+                    {storyStep === 1 && '"Con tiếp cận Cổng Thần Thạch. Thần Đá rầm rập yêu cầu con mở khóa mật mã toán học này..."'}
+                    {storyStep === 2 && '"Qua cổng rừng sương mù, Hiệp sĩ Anh yêu cầu con trả lời đúng ngữ pháp này..."'}
+                    {storyStep === 3 && '"Trước ngục đá, Thần Rùa gác cổng yêu cầu con phân tích đúng kiến thức văn học này..."'}
                   </p>
                 </div>
 
-                {/* Active Question Challenge block */}
                 {activeStoryQuest ? (
                   <div className="space-y-4 bg-synth-gray/10 p-4 rounded-xl border border-white/5">
                     <div className="text-[10px] text-slate-400 font-semibold uppercase flex justify-between">
@@ -962,7 +1252,6 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
               </div>
             )}
 
-            {/* Win state */}
             {storyStep === 4 && (
               <div className="max-w-md mx-auto space-y-4 py-8">
                 <div className="text-5xl animate-bounce">🏆🦅🐉</div>
@@ -988,13 +1277,12 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
               </div>
             )}
 
-            {/* Game Over state */}
             {storyStep === 5 && (
               <div className="max-w-md mx-auto space-y-4 py-8">
                 <div className="text-5xl">💀🥀</div>
                 <h3 className="font-orbitron font-black text-xl text-red-500 uppercase">Thất Bại Tiếc Nuối</h3>
                 <p className="text-xs text-slate-300">
-                  Lượt mạng của con đã cạn kiệt trước khi giải cứu được Rồng Con! Hãy ôn lại bài thật kỹ và thử sức lại nhé.
+                  Lượt mạng đã cạn kiệt! Hãy thử sức lại nhé.
                 </p>
                 <button
                   onClick={handleStartStory}
@@ -1015,11 +1303,10 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
             <div className="max-w-md mx-auto space-y-2">
               <h3 className={`font-orbitron font-black text-lg ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>🧭 Du Khảo Kỳ Thú</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Tung xúc xắc 🎲 để tiến bước trên bản đồ hành trình du khảo. Trả lời đúng trivia ở mỗi ô để về đích lấy rương kho báu!
+                Tung xúc xắc 🎲 để tiến bước trên bản đồ. Trả lời đúng trivia ở mỗi ô để về đích lấy rương báu!
               </p>
             </div>
 
-            {/* Virtual Board Map representation (10 tiles) */}
             <div className="grid grid-cols-5 sm:grid-cols-10 gap-2 max-w-3xl mx-auto py-3 bg-black/40 p-4 rounded-2xl border border-white/5 relative">
               {Array.from({ length: 10 }).map((_, idx) => {
                 const isCurrent = boardPosition === idx;
@@ -1038,7 +1325,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                     <span>Ô {idx}</span>
                     {isCurrent && (
                       <span className="text-[9px] px-1 bg-synth-orange text-black rounded font-sans scale-90 animate-bounce">
-                        Bé ở đây
+                        Con ở đây
                       </span>
                     )}
                     {isGoal && !isCurrent && (
@@ -1049,7 +1336,6 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
               })}
             </div>
 
-            {/* Active challenge window when landing on a tile */}
             {boardStatus === 'answering' && activeBoardQuestion && (
               <div className="max-w-xl mx-auto text-left bg-synth-gray/20 border border-synth-orange/30 p-5 rounded-2xl space-y-4">
                 <div className="flex justify-between text-[9px] font-bold font-orbitron text-synth-orange uppercase">
@@ -1080,7 +1366,6 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
               </div>
             )}
 
-            {/* Dice Rolling HUD */}
             {boardStatus === 'idle' && (
               <div className="flex flex-col items-center gap-3 py-4">
                 {rolledNumber > 0 && (
@@ -1099,7 +1384,6 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
               </div>
             )}
 
-            {/* Victory overlay */}
             {boardStatus === 'won' && (
               <div className="py-6 space-y-3 max-w-md mx-auto">
                 <div className="text-5xl animate-bounce">🎁👑✨</div>
@@ -1112,6 +1396,498 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                   className="px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-green text-black cursor-pointer hover:scale-105 transition-all font-semibold"
                 >
                   Du Khảo Lần Nữa 🧭
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 6: TRÌNH TỰ GIẢI (STEP BUILDER) */}
+        {activeTab === 'stepbuilder' && (
+          <div className={`glass-panel rounded-3xl border p-6 text-center space-y-6 ${
+            isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-cyan/30'
+          }`}>
+            <div className="max-w-md mx-auto space-y-2 flex flex-col items-center">
+              <h3 className={`font-orbitron font-black text-lg ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>🧩 Sắp Xếp Trình Tự</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Di chuyển các bước lên xuống để tạo thành trình tự giải hoặc lập luận hoàn hảo!
+              </p>
+
+              <div className="flex gap-1.5 bg-black/20 p-1 rounded-lg border border-white/5 mt-2">
+                {[
+                  { id: 'math', label: 'Giải toán 📐' },
+                  { id: 'english', label: 'Chuyển bị động 🇬🇧' },
+                  { id: 'literature', label: 'Phân tích thơ ✍' }
+                ].map(opt => (
+                  <button
+                    key={opt.id}
+                    onClick={() => setStepSubject(opt.id as any)}
+                    className={`px-3 py-1 rounded-md text-[10px] font-bold font-orbitron uppercase cursor-pointer ${
+                      stepSubject === opt.id ? 'bg-synth-cyan text-black' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {stepStatus === 'playing' ? (
+              <div className="max-w-xl mx-auto space-y-2.5 py-2">
+                {scrambledSteps.map((step, idx) => (
+                  <div 
+                    key={step.id} 
+                    className="p-3.5 rounded-xl border border-white/5 bg-synth-gray/20 flex justify-between items-center text-xs font-semibold text-white text-left"
+                  >
+                    <span>{step.text}</span>
+                    <div className="flex gap-1 shrink-0">
+                      <button
+                        onClick={() => moveStep(idx, 'up')}
+                        disabled={idx === 0}
+                        className="px-2 py-1 bg-white/5 border border-white/10 rounded text-[9px] hover:bg-white/10 disabled:opacity-30 cursor-pointer font-bold"
+                      >
+                        ▲
+                      </button>
+                      <button
+                        onClick={() => moveStep(idx, 'down')}
+                        disabled={idx === scrambledSteps.length - 1}
+                        className="px-2 py-1 bg-white/5 border border-white/10 rounded text-[9px] hover:bg-white/10 disabled:opacity-30 cursor-pointer font-bold"
+                      >
+                        ▼
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                <button
+                  onClick={checkStepOrder}
+                  className="w-full mt-4 px-6 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-cyan text-black cursor-pointer hover:synth-glow-cyan"
+                >
+                  Kiểm Tra Trình Tự ✔️
+                </button>
+              </div>
+            ) : (
+              <div className="py-10 space-y-4 max-w-md mx-auto">
+                <div className="text-4xl animate-bounce">🧩🏆🎉</div>
+                <h4 className="font-orbitron font-black text-xl text-synth-green uppercase">Hoàn Thành Trình Tự</h4>
+                <p className="text-xs text-slate-300">
+                  Con đã sắp xếp chính xác các bước lập luận lô-gích! Thưởng: **+30 NP coins, +25 XP**
+                </p>
+                <button
+                  onClick={initStepGame}
+                  className="px-6 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-cyan text-black cursor-pointer hover:scale-105 transition-all"
+                >
+                  Trộn Lại Bước Giải 🔁
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* TAB 7: ĐỌC HIỂU SÂU (READING CHALLENGE) */}
+        {activeTab === 'reading' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className={`lg:col-span-2 glass-panel rounded-3xl border p-5 space-y-4 ${
+              isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-cyan/25'
+            }`}>
+              <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                <h3 className="font-orbitron font-black text-xs uppercase tracking-wider text-synth-cyan">
+                  📖 Thử Thách Đọc Hiểu
+                </h3>
+                <div className="flex gap-1.5 bg-black/20 p-1 rounded-lg border border-white/5">
+                  {[
+                    { id: 'english', label: 'Tiếng Anh 🇬🇧' },
+                    { id: 'math', label: 'Toán Học 📐' },
+                    { id: 'literature', label: 'Ngữ Văn ✍️' }
+                  ].map(opt => (
+                    <button
+                      key={opt.id}
+                      onClick={() => setReadingSubject(opt.id as any)}
+                      className={`px-3 py-1 rounded-md text-[9px] font-bold font-orbitron uppercase cursor-pointer ${
+                        readingSubject === opt.id ? 'bg-synth-cyan text-black' : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Interactive highlight reader area */}
+              <div className="space-y-4">
+                <div className="bg-synth-cyan/5 border border-synth-cyan/10 p-3 rounded-xl text-[10px] text-synth-cyan font-semibold">
+                  👉 Nhấp chọn các từ khóa chính liên quan đến chủ đề của bài học bên dưới để tô sáng:
+                </div>
+
+                <div className="bg-black/30 border border-white/5 rounded-2xl p-4 leading-relaxed flex flex-wrap gap-1.5 text-xs text-white">
+                  {READING_DATA[readingSubject].words.map((word, idx) => {
+                    const isHighlighted = highlightedIndices.includes(idx);
+                    return (
+                      <span
+                        key={idx}
+                        onClick={() => toggleWordHighlight(idx)}
+                        className={`px-1.5 py-0.5 rounded cursor-pointer transition-all ${
+                          isHighlighted 
+                            ? 'bg-synth-cyan/30 border border-synth-cyan/50 text-synth-cyan font-bold scale-105 shadow-[0_0_8px_rgba(0,240,255,0.2)]'
+                            : 'bg-transparent border border-transparent hover:bg-white/5 hover:border-white/10'
+                        }`}
+                      >
+                        {word}
+                      </span>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Multiple choice question below */}
+              <div className="bg-white/5 p-4 rounded-2xl border border-white/5 space-y-3 text-left">
+                <h4 className="text-xs font-bold text-white">
+                  Câu hỏi: {READING_DATA[readingSubject].question}
+                </h4>
+                
+                <div className="grid grid-cols-1 gap-2">
+                  {READING_DATA[readingSubject].options.map((opt, i) => (
+                    <button
+                      key={i}
+                      onClick={() => !readingChecked && setSelectedReadingOption(opt)}
+                      disabled={readingChecked}
+                      className={`p-2.5 rounded-xl border text-xs text-left cursor-pointer transition-all ${
+                        selectedReadingOption === opt
+                          ? 'border-synth-cyan bg-synth-cyan/15 text-synth-cyan font-semibold'
+                          : 'border-white/5 bg-white/5 text-slate-300 hover:bg-white/10'
+                      }`}
+                    >
+                      {opt}
+                    </button>
+                  ))}
+                </div>
+
+                {!readingChecked ? (
+                  <button
+                    onClick={checkReadingChallenge}
+                    className="w-full px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-cyan text-black cursor-pointer hover:synth-glow-cyan"
+                  >
+                    Xác Nhận Thử Thách ✔️
+                  </button>
+                ) : (
+                  <button
+                    onClick={initReadingGame}
+                    className="w-full px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-white/5 border border-white/10 text-white cursor-pointer hover:bg-white/10"
+                  >
+                    Thử Lại Màn Khác 🔁
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Right Guide Info */}
+            <div className={`glass-panel rounded-2xl p-5 border flex flex-col justify-between ${
+              isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-cyan/15'
+            }`}>
+              <div className="space-y-4">
+                <h3 className="font-orbitron font-bold text-sm text-white uppercase flex items-center gap-1">
+                  🏆 Kết quả đọc hiểu
+                </h3>
+
+                {readingResult === 'success' && (
+                  <div className="p-4 rounded-xl border border-synth-green bg-synth-green/5 text-center space-y-2">
+                    <Check className="w-10 h-10 text-synth-green mx-auto animate-bounce" />
+                    <h4 className="font-bold text-xs text-synth-green">Tô Sáng Chuẩn Xác</h4>
+                    <p className="text-[10px] text-slate-400">
+                      Con đạt đủ chỉ tiêu từ khóa cốt lõi và lựa chọn đáp án hoàn hảo! (+35 NP, +30 XP)
+                    </p>
+                  </div>
+                )}
+
+                {readingResult === 'fail' && (
+                  <div className="p-4 rounded-xl border border-red-500 bg-red-500/5 text-center space-y-2">
+                    <X className="w-10 h-10 text-red-500 mx-auto" />
+                    <h4 className="font-bold text-xs text-red-500">Chưa Đạt Yêu Cầu</h4>
+                    <p className="text-[10px] text-slate-400">
+                      Hãy chú ý các từ khóa mang tính mấu chốt của luận điểm và chọn đúng ý nghĩa của đoạn văn.
+                    </p>
+                  </div>
+                )}
+
+                {readingResult === null && (
+                  <div className="text-center py-10 text-slate-500 text-[10px] flex flex-col items-center gap-2">
+                    <HelpCircle className="w-10 h-10 text-slate-600" />
+                    Đang đợi con hoàn thành thách thức đọc...
+                  </div>
+                )}
+
+                <div className="space-y-2 pt-2 border-t border-white/5">
+                  <h4 className="text-xs font-bold text-white">Lợi ích:</h4>
+                  <p className="text-[10px] text-slate-400 leading-normal">
+                    Kỹ năng lọc thông tin, xác định cấu trúc cốt lõi giúp cải thiện tốc độ giải bài trắc nghiệm đọc hiểu Tiếng Anh và làm văn nghị luận văn học.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 8: GIẢNG BÀI CHO AI (EXPLAIN TO AI) */}
+        {activeTab === 'explain' && (
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className={`lg:col-span-2 glass-panel rounded-3xl border p-5 space-y-4 ${
+              isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-purple/25'
+            }`}>
+              <div className="flex justify-between items-center border-b border-white/5 pb-3">
+                <h3 className="font-orbitron font-black text-xs uppercase tracking-wider text-synth-purple">
+                  ✍️ Trải Nghiệm Giảng Bài Cho AI
+                </h3>
+                <div className="flex gap-1.5 bg-black/20 p-1 rounded-lg border border-white/5">
+                  {[
+                    { id: 'pythagoras', label: 'Pythagoras 📐' },
+                    { id: 'present_perfect', label: 'Hiện tại hoàn thành 🇬🇧' },
+                    { id: 'song_poem', label: 'Bài thơ Sóng ✍️' }
+                  ].map(opt => (
+                    <button
+                      key={opt.id}
+                      onClick={() => {
+                        setExplainTopic(opt.id as any);
+                        restartExplainGame();
+                      }}
+                      className={`px-3 py-1 rounded-md text-[9px] font-bold font-orbitron uppercase cursor-pointer ${
+                        explainTopic === opt.id ? 'bg-synth-purple text-black' : 'text-slate-400 hover:text-white'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {explainPhase === 'input' && (
+                <div className="space-y-4 text-left">
+                  <div className="bg-synth-purple/5 border border-synth-purple/10 p-3 rounded-xl text-xs text-slate-300">
+                    Chủ đề: <span className="font-bold text-white">{EXPLAIN_TOPICS[explainTopic].title}</span>.
+                    Con hãy viết lời giải thích của con về khái niệm này vào ô dưới đây như thể con đang đứng bục giảng dạy cho một học sinh AI.
+                  </div>
+
+                  <textarea
+                    value={studentText}
+                    onChange={(e) => setStudentText(e.target.value)}
+                    placeholder="Nhập bài giảng giải của con vào đây (tối thiểu 20 ký tự)..."
+                    rows={6}
+                    className="w-full p-3.5 rounded-xl border border-white/10 focus:border-synth-purple bg-synth-gray/20 text-white text-xs outline-none transition-all"
+                  />
+
+                  <button
+                    onClick={handleTeachAI}
+                    className="w-full px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-purple text-black font-semibold cursor-pointer hover:synth-border-purple flex items-center justify-center gap-1.5"
+                  >
+                    <Send className="w-3.5 h-3.5" /> Gửi Bài Giảng Cho Học Sinh AI
+                  </button>
+                </div>
+              )}
+
+              {explainPhase === 'feedback' && (
+                <div className="space-y-5 text-left">
+                  <div className="bg-white/5 p-4 rounded-xl border border-white/5 space-y-2">
+                    <h4 className="text-xs font-bold text-synth-purple font-orbitron">💬 Phản hồi từ học sinh AI:</h4>
+                    <p className="text-xs leading-relaxed text-slate-200 italic">
+                      "{aiFeedback}"
+                    </p>
+                  </div>
+
+                  {aiCounterQuestion && (
+                    <div className="bg-synth-purple/5 border border-synth-purple/20 p-4 rounded-xl space-y-3">
+                      <h4 className="text-xs font-bold text-white font-orbitron flex items-center gap-1">
+                        ❓ Câu hỏi kiểm tra từ học sinh AI:
+                      </h4>
+                      <p className="text-xs text-slate-300">
+                        {aiCounterQuestion.q}
+                      </p>
+
+                      <div className="grid grid-cols-1 gap-2">
+                        {aiCounterQuestion.opts.map((opt, i) => (
+                          <button
+                            key={i}
+                            onClick={() => setCounterAnswer(opt)}
+                            className={`p-2.5 rounded-xl border text-xs text-left cursor-pointer transition-all ${
+                              counterAnswer === opt
+                                ? 'border-synth-purple bg-synth-purple/10 text-white font-semibold'
+                                : 'border-white/5 bg-white/5 text-slate-300 hover:bg-white/10'
+                            }`}
+                          >
+                            {opt}
+                          </button>
+                        ))}
+                      </div>
+
+                      <button
+                        onClick={handleCounterAnswerSubmit}
+                        className="w-full px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-purple text-black font-semibold cursor-pointer hover:synth-border-purple"
+                      >
+                        Trả Lời Học Sinh AI ✔
+                      </button>
+                    </div>
+                  )}
+
+                  {!aiCounterQuestion && (
+                    <button
+                      onClick={restartExplainGame}
+                      className="w-full px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-white/5 border border-white/10 text-white cursor-pointer hover:bg-white/10"
+                    >
+                      Quay Lại Giảng Bài 🔁
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {explainPhase === 'won' && (
+                <div className="py-12 space-y-4">
+                  <div className="text-5xl animate-bounce">🎓🦉🎖️</div>
+                  <h4 className="font-orbitron font-black text-lg text-synth-green uppercase">
+                    Bài Giảng Xuất Sắc
+                  </h4>
+                  <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
+                    Học sinh AI đã thông suốt kiến thức! Con vừa nhận được **+40 xu (NP), +40 XP** nhờ phương pháp học đỉnh cao Feynman (học bằng cách dạy lại cho người khác).
+                  </p>
+                  <button
+                    onClick={restartExplainGame}
+                    className="px-6 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-purple text-black font-semibold cursor-pointer hover:scale-105 transition-all"
+                  >
+                    Dạy Bài Khác 🔁
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Right Guide box */}
+            <div className={`glass-panel rounded-2xl p-5 border flex flex-col justify-between ${
+              isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-purple/15'
+            }`}>
+              <div className="space-y-4">
+                <h3 className="font-orbitron font-bold text-xs text-synth-purple uppercase">
+                  💡 Phương pháp Feynman
+                </h3>
+                <p className="text-[10px] text-slate-400 leading-relaxed">
+                  Bằng cách chuyển giao kiến thức thành lời giải thích dễ hiểu cho một thực thể khác (ở đây là học sinh AI), con sẽ phát hiện ngay những lỗ hổng lập luận của chính mình để hoàn thiện sâu sắc!
+                </p>
+                <div className="border border-white/5 p-3 rounded-xl bg-white/5 text-[9px] text-slate-300 space-y-1">
+                  <span className="font-bold text-synth-orange uppercase">Từ khóa học sinh AI tìm kiếm:</span>
+                  <ul className="list-disc list-inside text-slate-400 space-y-0.5">
+                    <li>**Toán**: vuông, cạnh huyền, bình phương, cộng...</li>
+                    <li>**Anh**: have/has, past participle, v3...</li>
+                    <li>**Văn**: tình yêu, phụ nữ, thủy chung, biểu tượng...</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB 9: GHÉP SƠ ĐỒ (DRAG & DROP DIAGRAM) */}
+        {activeTab === 'dragdiagram' && (
+          <div className={`glass-panel rounded-3xl border p-6 text-center space-y-6 ${
+            isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-cyan/30'
+          }`}>
+            <div className="max-w-md mx-auto space-y-2 flex flex-col items-center">
+              <h3 className="font-orbitron font-black text-lg text-white uppercase">🧱 Lắp Ghép Sơ Đồ</h3>
+              <p className="text-xs text-slate-400 leading-relaxed">
+                Nhấp chọn một nhãn dán ở bể chứa, sau đó nhấp vào ô trống tương ứng trên sơ đồ để lắp ráp!
+              </p>
+
+              <div className="flex gap-1.5 bg-black/20 p-1 rounded-lg border border-white/5 mt-2">
+                {[
+                  { id: 'math', label: 'Tam giác vuông 📐' },
+                  { id: 'english', label: 'Cấu trúc câu 🇬🇧' },
+                  { id: 'literature', label: 'Thể loại tác phẩm ✍️' }
+                ].map(opt => (
+                  <button
+                    key={opt.id}
+                    onClick={() => setDiagramSubject(opt.id as any)}
+                    className={`px-3 py-1 rounded-md text-[10px] font-bold font-orbitron uppercase cursor-pointer ${
+                      diagramSubject === opt.id ? 'bg-synth-cyan text-black' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {diagramStatus === 'playing' ? (
+              <div className="space-y-6 max-w-xl mx-auto py-2 text-left">
+                {/* Selected label notification */}
+                <div className="p-3 bg-white/5 border border-white/5 rounded-xl flex justify-between items-center text-xs">
+                  <span className="text-slate-400">Nhãn dán đang chọn:</span>
+                  <span className={`px-3 py-1 rounded font-bold uppercase ${
+                    selectedLabel ? 'bg-synth-cyan text-black' : 'text-slate-500 italic'
+                  }`}>
+                    {selectedLabel || 'Chưa chọn'}
+                  </span>
+                </div>
+
+                {/* Pool of Labels */}
+                <div className="space-y-2">
+                  <span className="text-[10px] font-bold text-slate-400 font-orbitron uppercase">Bể chứa nhãn dán:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {diagramLabels.map((lbl, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedLabel(lbl)}
+                        className={`px-3 py-2 rounded-xl border text-[11px] font-bold uppercase transition-all cursor-pointer ${
+                          selectedLabel === lbl
+                            ? 'bg-synth-cyan border-synth-cyan text-black'
+                            : 'bg-white/5 border-white/5 text-white hover:bg-white/10'
+                        }`}
+                      >
+                        🏷️ {lbl}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Diagram Target Slots */}
+                <div className="space-y-3 pt-3 border-t border-white/5">
+                  <span className="text-[10px] font-bold text-slate-400 font-orbitron uppercase">Vị trí lắp ráp sơ đồ:</span>
+                  
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {diagramSlots.map((slot) => (
+                      <div 
+                        key={slot.id}
+                        className="p-3 rounded-xl border border-white/5 bg-black/20 flex justify-between items-center text-xs"
+                      >
+                        <span className="text-slate-300 font-medium">{slot.label}</span>
+                        
+                        <button
+                          onClick={() => handlePlaceLabel(slot.id)}
+                          className={`px-4 py-2 rounded-lg border text-[11px] font-bold uppercase min-w-[150px] text-center cursor-pointer transition-all ${
+                            slot.currentLabel
+                              ? 'bg-white/10 border-white/20 text-synth-cyan'
+                              : 'border-dashed border-synth-cyan/40 bg-synth-cyan/5 text-synth-cyan/60 animate-pulse'
+                          }`}
+                        >
+                          {slot.currentLabel || '➕ Nhấp để dán'}
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  onClick={checkDiagram}
+                  className="w-full mt-4 px-6 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-cyan text-black cursor-pointer hover:synth-glow-cyan"
+                >
+                  Kiểm Tra Sơ Đồ Lắp Ráp ✔️
+                </button>
+              </div>
+            ) : (
+              <div className="py-10 space-y-4 max-w-md mx-auto">
+                <div className="text-4xl animate-bounce">🧱🏆🎉</div>
+                <h4 className="font-orbitron font-black text-xl text-synth-green uppercase">Ghép Sơ Đồ Thành Công</h4>
+                <p className="text-xs text-slate-300">
+                  Con đã ghép thành công tất cả các nhãn sơ đồ! Nhận thưởng: **+30 xu (NP), +35 XP**
+                </p>
+                <button
+                  onClick={initDiagramGame}
+                  className="px-6 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-cyan text-black cursor-pointer hover:scale-105 transition-all"
+                >
+                  Ghép Bảng Sơ Đồ Mới 🔁
                 </button>
               </div>
             )}
