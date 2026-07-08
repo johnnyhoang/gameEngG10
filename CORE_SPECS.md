@@ -14,8 +14,8 @@ Tài liệu đặc tả này định hình ý tưởng cốt lõi, kiến trúc 
 ### 1.2 Mô hình Phân Quyền Vai Trò Độc Lập (Independent Role-Based Model)
 Mỗi tài khoản người dùng tại một thời điểm chỉ đảm nhận duy nhất một vai trò hoạt động hoạt động (Học sinh hoặc Admin/Phụ huynh), hoàn toàn phân tách về mặt chức năng và giao diện:
 *   **Học sinh (Student):** Chỉ tiếp cận các chức năng học tập, bản đồ game, hang luyện công, đấu trường, cửa hàng và thú cưng.
-*   **Quản trị/Phụ huynh (Admin/Parent):** Chỉ tiếp cận Bảng Phụ Huynh (`ParentConsole`) để giám sát, phê duyệt phần thưởng, quản lý ngân hàng câu hỏi và ingest đề bằng AI.
-*   **Duy trì dữ liệu khi chuyển đổi vai trò:** Hệ thống hỗ trợ cập nhật vai trò tài khoản (ví dụ: thăng cấp tài khoản Học sinh lên Admin). Khi một tài khoản được thay đổi vai trò sang Admin, toàn bộ giao diện và chức năng của người đó sẽ chuyển đổi sang quyền quản trị, nhưng **toàn bộ dữ liệu tiến trình học tập của học sinh trước đó (level, XP, coins, streak, lịch sử làm bài, thú cưng...) vẫn được lưu giữ nguyên vẹn** trong cơ sở dữ liệu để tránh thất thoát và sẵn sàng hoạt động lại khi tài khoản chuyển về vai trò Học sinh.
+*   **Quản trị/Phụ huynh (Admin/Parent):** Chỉ tiếp cận Bảng Quản trị Viện Chủ để giám sát, phê duyệt phần thưởng, cấu hình hệ thống và quản lý câu hỏi.
+*   **Duy trì dữ liệu & Ẩn danh tính khi chuyển đổi vai trò:** Hệ thống hỗ trợ cập nhật vai trò tài khoản. Khi một tài khoản học sinh được chuyển sang Admin, toàn bộ giao diện và chức năng sẽ đổi sang quản trị, **tài khoản này sẽ tự động ẩn khỏi danh sách học sinh của Viện Chủ và bảng xếp hạng (Leaderboard)** để tránh gian lận. Toàn bộ dữ liệu tiến trình học tập cũ (level, XP, coins, streak, thú cưng...) vẫn được lưu giữ nguyên vẹn để hoạt động lại khi chuyển vai trò về Học sinh.
 
 ---
 
@@ -47,6 +47,7 @@ Nơi kiểm tra năng lực và rèn luyện phản xạ thi cử dưới các c
 *   **Sinh tồn (Survival):** Giới hạn mạng chơi (`hearts` - tối đa 3 tim). Trả lời sai mất 1 tim. Mất hết tim là kết thúc đợt luyện.
 *   **Quyết đấu Boss (Boss Battle):** Đấu trường thi thử theo thời gian thực (20 phút). Đề thi được chọn lọc bám sát cấu trúc đề chính thức các năm (2024, 2025, 2026).
 *   **Truy tìm lỗi sai (Revenge):** Chế độ ôn tập riêng các câu trả lời sai trong lịch sử để khắc phục lỗ hổng kiến thức.
+*   **Quy tắc Khấu trừ Chân Khí (Energy Upfront Deduction):** Chân khí được khấu trừ một lần duy nhất ngay khi thiếu hiệp xác nhận bắt đầu trận đấu. Khi đã vào trận (đặc biệt là bài thi Boss 20 phút), thiếu hiệp được tu học liên tục cho đến hết mà không bị dừng đột ngột kể cả khi chân khí cạn kiệt giữa chừng.
 
 ### 2.2 🕳️ Hang Luyện Công (Training Cave / HangLuyenCong)
 Không gian tự học, hệ thống hóa lý thuyết sâu sắc theo từng môn:
@@ -74,6 +75,7 @@ Các mô-đun tương tác học tập nhẹ nhàng, kết hợp trực quan hó
 *   *Giải thích cho AI (Explain to AI):* Học sinh tự nói hoặc gõ giải thích khái niệm bằng ngôn ngữ của mình, AI chấm nhận xét và bổ sung (Feynman method).
 *   *Dạy học cho AI (Teach the AI):* Người học đóng vai giáo viên hướng dẫn AI giải bài; AI giả lập học sinh đặt câu hỏi phản biện để kiểm tra độ hiểu sâu.
 *   *Kéo thả sơ đồ (Drag & Drop Diagram):* Kéo thả nhãn công thức, thành phần vào đúng vị trí của hình vẽ, sơ đồ khoa học/địa lý.
+*   **Cơ chế Fallback Học liệu (Learning Asset Fallback):** Đối với các môn cơ bản chưa được Viện Chủ nạp đủ dữ liệu cấu trúc phức tạp (như Sắp xếp bước giải, Ghép sơ đồ), hệ thống sẽ tự động chuyển đổi các câu hỏi trắc nghiệm/từ vựng thông thường của môn học đó thành dữ liệu ghép cặp hoặc thẻ nhớ tương đương để thiếu hiệp vẫn có thể tu học nhẹ nhàng, hoặc tạm ẩn tab mini-game đó nếu không thể tự động chuyển đổi nhằm tránh lỗi hiển thị trống.
 
 ### 2.4 🛒 Cửa Hàng (Item Shop)
 Vận hành nền kinh tế vi mô trong game:
@@ -87,7 +89,7 @@ Vận hành nền kinh tế vi mô trong game:
 ### 2.5 🐉 Sân Nuôi Thú (Pet Sanctuary / PetState)
 Đại diện trực quan cho tiến trình học tập của học sinh:
 *   Thú cưng (Rồng Con) phát triển qua 4 giai đoạn: **Trứng (Egg) -> Sơ sinh (Baby) -> Rồng Con (Dragon) -> Huyền thoại (Legend)**.
-*   Học sinh cho thú ăn (tiêu tốn Coins/XP) để duy trì tâm trạng vui vẻ và tăng cấp cho thú. Thú tăng cấp tương ứng với lượng kiến thức học sinh đã tích lũy.
+*   Học sinh cho thú ăn để duy trì tâm trạng vui vẻ và tăng cấp cho thú. Việc cho thú ăn sẽ tiêu tốn cả Coins (NP) và một lượng XP cố định của thiếu hiệp, chấp nhận việc thiếu hiệp có thể bị tụt cấp độ (Level) tạm thời nếu dành quá nhiều tài nguyên chăm sóc thú cưng.
 
 ### 2.6 ⚙️ Bảng Quản Trị Viện Chủ (Admin Console)
 Hệ thống quản lý, giám sát và cung cấp tài nguyên, được phân chia thành các khu vực chuyên biệt:
@@ -118,9 +120,10 @@ Hệ thống quản lý, giám sát và cung cấp tài nguyên, được phân 
  [Đổi Parent Reward] ──> [Phụ huynh phê duyệt] ──> [Nhận VND thực tế / Quà thật]
 ```
 
-### 3.1 Quy tắc ví tiền mặt thực tế (VND Wallet)
-*   Mỗi khi hoàn thành Đợt Quyết đấu Boss (thi thử đề chuẩn năm học), học sinh sẽ nhận được phần thưởng tiền mặt giả lập (ví dụ: 10,000đ - 20,000đ).
-*   Khi quy đổi Quà Phụ Huynh có giá trị VND, hệ thống sẽ chuyển đổi Coin của học sinh thành yêu cầu rút tiền. Phụ huynh phê duyệt đồng nghĩa với việc đưa tiền mặt thật cho con và hệ thống trừ số dư tương ứng. Điều này tạo động lực thực tế cực kỳ mạnh mẽ.
+### 3.1 Quy tắc ví tiền mặt thực tế (VND Wallet) & Đổi quà bằng Coins (NP)
+*   **Đổi quà bằng Coins (NP):** Quà tặng Phụ huynh được định giá bằng Coins (NP). Khi thiếu hiệp yêu cầu đổi quà, hệ thống sẽ trừ lượng Coins tương ứng của thiếu hiệp và tự động quy đổi thành yêu cầu rút tiền VND chuyển đến cho Viện Chủ dựa trên tỷ giá quy đổi do phụ huynh tự thiết lập trong Ngân Các (ví dụ: 100 Coins = 10,000đ).
+*   **Thưởng ví VND từ thi Boss:** Mỗi khi hoàn thành xuất sắc Đợt Quyết đấu Boss (thi thử đề chuẩn năm học), học sinh sẽ nhận được phần thưởng tiền mặt trực tiếp cộng thẳng vào Ví VND (ví dụ: 10,000đ - 20,000đ).
+*   **Phê duyệt và giải ngân:** Viện Chủ phê duyệt yêu cầu đồng nghĩa với việc giao tiền mặt/quà thật cho con ngoài đời, hệ thống sẽ khấu trừ số dư tương ứng trên ứng dụng để đảm bảo tính minh bạch.
 
 ---
 
