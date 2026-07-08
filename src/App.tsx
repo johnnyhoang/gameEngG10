@@ -263,9 +263,9 @@ function App() {
               mode={playMode}
               bossId={bossId}
               lessonId={selectedLessonId || undefined}
-              onFinish={async () => {
+              onFinish={async (summary) => {
                 if (playMode === 'lesson' && selectedLessonId) {
-                  await masterLesson(selectedLessonId);
+                  await masterLesson(selectedLessonId, summary?.accuracyRatio);
                   setScreen('hang');
                 } else {
                   setScreen('map');

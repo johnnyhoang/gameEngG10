@@ -546,57 +546,60 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
         </div>
       </section>
 
-      <section className="glass-panel rounded-3xl border border-white/10 p-5 md:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between flex-wrap mb-4">
-          <div>
-            <h2 className="font-orbitron font-black text-lg md:text-xl text-white uppercase tracking-wider">
-              Mật thất nhanh - {meta.shortLabel}
-            </h2>
-            <p className="text-xs text-slate-300 mt-1">
-              {track.sampleDescription}
-            </p>
+      {/* Mật thất Biki (CORE_SPECS §2.2): chỉ áp dụng đối với Môn phái Toán. */}
+      {selectedSubject === 'math' && (
+        <section className="glass-panel rounded-3xl border border-white/10 p-5 md:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between flex-wrap mb-4">
+            <div>
+              <h2 className="font-orbitron font-black text-lg md:text-xl text-white uppercase tracking-wider">
+                Mật thất nhanh - {meta.shortLabel}
+              </h2>
+              <p className="text-xs text-slate-300 mt-1">
+                {track.sampleDescription}
+              </p>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="rounded-full border border-synth-cyan/30 bg-synth-cyan/10 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-synth-cyan font-bold">
+                Đang xem: {meta.label}
+              </span>
+              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-slate-300 font-bold">
+                {track.focusLabel}
+              </span>
+            </div>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="rounded-full border border-synth-cyan/30 bg-synth-cyan/10 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-synth-cyan font-bold">
-              Đang xem: {meta.label}
-            </span>
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-slate-300 font-bold">
-              {track.focusLabel}
-            </span>
-          </div>
-        </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-          {MAT_THAT_CARDS.map(card => {
-            const onOpen = card.id === 'biki3d'
-              ? onOpenMatThat3D
-              : card.id === 'bikiplane'
-                ? onOpenMatThatPlane
-                : onOpenMatThatGraph;
-            return (
-              <button
-                key={card.id}
-                onClick={onOpen}
-                className="rounded-2xl border border-white/10 bg-white/5 p-4 text-left hover:border-synth-cyan/30 hover:bg-white/7 transition-all duration-200 cursor-pointer"
-              >
-                <div className="flex items-center justify-between gap-3">
-                  <div className="inline-flex items-center gap-2 font-orbitron font-black uppercase tracking-wider text-white">
-                    {card.icon}
-                    {card.title}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+            {MAT_THAT_CARDS.map(card => {
+              const onOpen = card.id === 'biki3d'
+                ? onOpenMatThat3D
+                : card.id === 'bikiplane'
+                  ? onOpenMatThatPlane
+                  : onOpenMatThatGraph;
+              return (
+                <button
+                  key={card.id}
+                  onClick={onOpen}
+                  className="rounded-2xl border border-white/10 bg-white/5 p-4 text-left hover:border-synth-cyan/30 hover:bg-white/7 transition-all duration-200 cursor-pointer"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="inline-flex items-center gap-2 font-orbitron font-black uppercase tracking-wider text-white">
+                      {card.icon}
+                      {card.title}
+                    </div>
+                    <ExternalLink className="w-4 h-4 text-slate-400" />
                   </div>
-                  <ExternalLink className="w-4 h-4 text-slate-400" />
-                </div>
-                <p className="text-xs text-slate-300 mt-3 leading-relaxed">
-                  {card.description}
-                </p>
-                <div className="mt-4 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-synth-cyan">
-                  Mở mật thất
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </div>
-              </button>
-            );
-          })}
-        </div>
-      </section>
+                  <p className="text-xs text-slate-300 mt-3 leading-relaxed">
+                    {card.description}
+                  </p>
+                  <div className="mt-4 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-synth-cyan">
+                    Mở mật thất
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+      )}
 
       <section className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-5 md:gap-6 items-start">
         <div className="xl:col-span-2 space-y-6">

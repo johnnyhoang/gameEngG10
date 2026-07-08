@@ -1044,13 +1044,14 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
   }, [extraVertexMap, vertexMap]);
 
   const projectPoint = useCallback((point: Point3D) => {
-    const center = { x: 500, y: 320 };
+    // Tâm chiếu & hệ số tỉ lệ khớp khung an toàn 800x560 (CORE_SPECS §5 Khuôn khổ dựng hình).
+    const center = { x: 400, y: 280 };
     const rotated = rotatePoint(point, yaw, pitch, roll);
-    const perspective = 540 * zoom;
+    const perspective = 432 * zoom;
     const scale = perspective / (perspective + rotated.z + 4);
     return {
-      x: center.x + rotated.x * 160 * scale + panX,
-      y: center.y - rotated.y * 160 * scale + panY,
+      x: center.x + rotated.x * 128 * scale + panX,
+      y: center.y - rotated.y * 128 * scale + panY,
       z: rotated.z
     };
   }, [panX, panY, pitch, roll, yaw, zoom]);
@@ -1642,7 +1643,7 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
       <section className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,0.9fr)] gap-6 items-start">
         <div className="space-y-4">
           <div className="glass-panel rounded-2xl border border-white/10 p-4">
-            <svg viewBox="0 0 1000 640" className="w-full h-[420px] md:h-[520px] rounded-2xl bg-[radial-gradient(circle_at_top,rgba(0,240,255,0.1),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(255,0,127,0.08),transparent_32%),linear-gradient(180deg,rgba(7,10,19,0.95),rgba(7,10,19,0.8))]">
+            <svg viewBox="0 0 800 560" className="w-full h-[420px] md:h-[520px] rounded-2xl bg-[radial-gradient(circle_at_top,rgba(0,240,255,0.1),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(255,0,127,0.08),transparent_32%),linear-gradient(180deg,rgba(7,10,19,0.95),rgba(7,10,19,0.8))]">
               <defs>
                 <filter id="biki-shadow">
                   <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#00f0ff" floodOpacity="0.25" />

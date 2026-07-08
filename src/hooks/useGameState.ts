@@ -21,7 +21,7 @@ import type {
   HandbookPage
 } from '../types/game';
 import { getStudentRankForLevel, SUBJECTS_CONFIG } from '../types/game';
-import { DEFAULT_UI_THEME } from '../theme/uiThemes';
+import { DEFAULT_UI_THEME, UI_THEMES } from '../theme/uiThemes';
 
 export const INITIAL_HANDBOOK_PAGES: HandbookPage[] = [
   {
@@ -364,11 +364,14 @@ const HELP_TOPICS: Record<string, { title: string; bullets: string[] }> = {
   buyStreakShield: () => boolean;
   buyHeart: () => boolean;
   buyHint: () => boolean;
+  buyTheme: (themeId: UiThemeId) => boolean;
   claimParentReward: (rewardId: string) => boolean;
-  feedPet: () => void;
+  feedPet: () => boolean;
   spinWheel: () => { rewardType: string; amount: number; message: string };
   openMysteryBox: () => { rewardType: string; amount: number; message: string };
-  masterLesson: (lessonId: string) => Promise<void>;
+  masterLesson: (lessonId: string, accuracyRatio?: number) => Promise<void>;
+  applyDefeatPenalty: (coinsEarnedInRun: number, xpEarnedInRun: number) => void;
+  completeBossVictory: () => void;
 
   // Parent Actions
   verifyPIN: (pin: string) => boolean;
@@ -395,7 +398,8 @@ const DEFAULT_PIN = '1234';
 const PLAYER_ENERGY_MAX = 1000;
 const DEFAULT_GAME_SETTINGS: GameSettings = {
   bossBountiesVnd: [10000, 15000, 20000],
-  challengeEnergyCosts: [10, 10, 15, 10],
+  // Hao tổn Chân khí (CORE_SPECS §3.A): ải thường tiêu 30 Chân khí mỗi lượt.
+  challengeEnergyCosts: [30, 30, 30, 30],
   maxEnergy: 1000,
   baseXP: 15,
   baseCoins: 5
@@ -413,8 +417,13 @@ const INITIAL_PLAYER: PlayerProfile = {
   energy: PLAYER_ENERGY_MAX,
   hearts: 3,
   lastActive: new Date().toISOString(),
-  badges: []
+  badges: [],
+  unlockedThemes: ['current']
 };
+
+// 🎭 Phong Vị (CORE_SPECS §2.4): 'current' (Nguyệt Dạ) luôn miễn phí mặc định, các Phong Vị còn lại tốn NP để mở khóa tại Bách Hóa Phường.
+export const THEME_UNLOCK_COST = 200;
+const FREE_UI_THEME: UiThemeId = 'current';
 
 const INITIAL_PET: PetState = {
   name: 'Heo Maikawaii',
@@ -542,7 +551,9 @@ export const useGameState = create<GameState>()(
           detail,
           coinsChanged: coins,
           xpChanged: xp,
-          walletChanged: wallet
+          walletChanged: wallet,
+          // Cô lập nhật ký theo môn phái đang hoạt động (CORE_SPECS §1.3 Sect Isolation)
+          subject: get().currentSubject
         };
         set(state => ({
           logs: [newLog, ...state.logs].slice(0, 200) // Keep last 200 logs
@@ -555,34 +566,41 @@ export const useGameState = create<GameState>()(
         let xp = currentXp;
         const badges = [...(get().player.badges || [])];
         let badgesChanged = false;
-        
+
         const oldRank = getStudentRankForLevel(currentLevel);
-        
+
         // Define simple linear-exponential progression: next level costs Level * 200 XP
-        while (xp >= level * 200) {
-          xp -= level * 200;
-          level += 1;
-          logActivity('exercise', 'Thăng cấp!', `Bạn vừa chạm Level ${level}.`, 50, 0, 0);
-          eventBus.publish('PET_GROWTH', { levelUp: true });
-        }
-        
+        const applyLevelUps = () => {
+          while (xp >= level * 200) {
+            xp -= level * 200;
+            level += 1;
+            logActivity('exercise', 'Thăng cấp!', `Bạn vừa chạm Level ${level}.`, 50, 0, 0);
+            eventBus.publish('PET_GROWTH', { levelUp: true });
+          }
+        };
+        applyLevelUps();
+
         const newRank = getStudentRankForLevel(level);
         if (newRank.id !== oldRank.id) {
           const badgeName = `Danh hiệu: ${newRank.name}`;
           if (!badges.includes(badgeName)) {
             badges.push(badgeName);
             badgesChanged = true;
+            // Cơ chế Thăng hạng (CORE_SPECS §7.3): thưởng đột biến Coin/XP khi chạm cột mốc cấp bậc.
+            const rankUpBonusXp = 100;
+            xp += rankUpBonusXp;
+            applyLevelUps(); // XP thưởng có thể đẩy tiếp lên level mới
+            logActivity(
+              'challenge',
+              'Thăng cấp danh hiệu!',
+              `Chúc mừng Thiếu hiệp đã thăng cấp danh hiệu lên ${newRank.icon} ${newRank.name}! Nhận thêm +100 Coin và +${rankUpBonusXp} XP.`,
+              100, // Extra coin reward for thăng hạng
+              rankUpBonusXp,
+              0
+            );
           }
-          logActivity(
-            'challenge',
-            'Thăng cấp danh hiệu!',
-            `Chúc mừng Thiếu hiệp đã thăng cấp danh hiệu lên ${newRank.icon} ${newRank.name}!`,
-            100, // Extra coin reward for thăng hạng
-            0,
-            0
-          );
         }
-        
+
         return { level, xp, badges, badgesChanged };
       };
 
@@ -1007,7 +1025,12 @@ export const useGameState = create<GameState>()(
         },
 
         setUiTheme: (themeId) => {
-          const userId = get().currentUser?.id;
+          const state = get();
+          const unlocked = state.player.unlockedThemes || [FREE_UI_THEME];
+          // Chỉ cho phép chọn Phong Vị đã mở khóa (mặc định 'current' luôn miễn phí) — CORE_SPECS §2.4.
+          if (themeId !== FREE_UI_THEME && !unlocked.includes(themeId)) return;
+
+          const userId = state.currentUser?.id;
           set(prev => ({
             uiTheme: themeId,
             uiThemesByUser: userId
@@ -1268,10 +1291,10 @@ export const useGameState = create<GameState>()(
           if (performanceScore > 0) {
             if (effectiveCorrect) newCombo += 1;
             
-            // Set multipliers
-            if (newCombo >= 30) comboMultiplier = 2.0;
-            else if (newCombo >= 20) comboMultiplier = 1.5;
-            else if (newCombo >= 10) comboMultiplier = 1.2;
+            // Hệ số Combo (CORE_SPECS §3.A): đúng liên tiếp 3 câu là mốc đầu tiên, tăng dần theo bội số của 3.
+            if (newCombo >= 9) comboMultiplier = 2.0;
+            else if (newCombo >= 6) comboMultiplier = 1.5;
+            else if (newCombo >= 3) comboMultiplier = 1.2;
 
             // Base scores adjusted by difficulty
             const baseXP = state.gameSettings.baseXP ?? 15;
@@ -1290,6 +1313,9 @@ export const useGameState = create<GameState>()(
             if (gameMode === 'survival') {
               expGained = Math.round(expGained * 1.5);
               coinsGained = Math.round(coinsGained * 1.5);
+            } else if (gameMode === 'boss') {
+              // Quyết đấu Boss (CORE_SPECS §3.A): nhân đôi XP cho mọi câu trả lời đúng trong trận.
+              expGained = Math.round(expGained * 2);
             }
           } else {
             newCombo = 0; // Combo resets
@@ -1452,7 +1478,27 @@ export const useGameState = create<GameState>()(
           return true;
         },
 
-        masterLesson: async (lessonId) => {
+        // 🎭 Phong Vị (CORE_SPECS §2.4): mở khóa phong cách giao diện cá tính bằng NP tại Bách Hóa Phường.
+        buyTheme: (themeId) => {
+          const state = get();
+          const unlocked = state.player.unlockedThemes || [FREE_UI_THEME];
+          if (themeId === FREE_UI_THEME || unlocked.includes(themeId)) return false;
+          if (state.player.coins < THEME_UNLOCK_COST) return false;
+
+          set({
+            player: {
+              ...state.player,
+              coins: state.player.coins - THEME_UNLOCK_COST,
+              unlockedThemes: [...unlocked, themeId]
+            }
+          });
+
+          const themeConfig = UI_THEMES.find(t => t.id === themeId);
+          logActivity('shop', 'Mở khóa Phong Vị', `Đã lĩnh ngộ Phong Vị "${themeConfig?.name || themeId}" mới.`, -THEME_UNLOCK_COST, 0);
+          return true;
+        },
+
+        masterLesson: async (lessonId, accuracyRatio) => {
           const state = get();
           const lesson = state.lessons.find(l => l.id === lessonId) || INITIAL_LESSONS.find(l => l.id === lessonId);
           if (!lesson) return;
@@ -1463,7 +1509,9 @@ export const useGameState = create<GameState>()(
           }
 
           const expGained = 50;
-          const coinsGained = 20;
+          // Rương Báu Ải (CORE_SPECS §3.A): đạt độ chính xác từ 90% trở lên khi hoàn thành ải mới nhận thêm +20 NP.
+          const hitTreasureChest = (accuracyRatio ?? 0) >= 0.9;
+          const coinsGained = hitTreasureChest ? 20 : 0;
 
           const updatedXP = state.player.xp + expGained;
           const levelCheck = checkLevelUp(updatedXP, state.player.level);
@@ -1482,7 +1530,79 @@ export const useGameState = create<GameState>()(
             }
           });
 
-          logActivity('exercise', 'Lĩnh ngộ bài học!', `Đã qua ải chuyên đề: ${lesson.title}`, coinsGained, expGained, 0);
+          logActivity(
+            'exercise',
+            hitTreasureChest ? 'Lĩnh ngộ bài học! Mở Rương Báu Ải 🎁' : 'Lĩnh ngộ bài học!',
+            hitTreasureChest
+              ? `Đã qua ải chuyên đề: ${lesson.title}. Độ chính xác ≥90% mở thêm Rương Báu Ải!`
+              : `Đã qua ải chuyên đề: ${lesson.title}.`,
+            coinsGained,
+            expGained,
+            0
+          );
+        },
+
+        // Luật "Tẩu Hỏa Nhập Ma" (CORE_SPECS §3.A): hết Tim trước khi hoàn thành ải Sinh Tồn/Boss
+        // chỉ giữ được 50% XP/NP đã thu trong trận (thu hồi lại phần vừa cấp) và Pet giảm 5 điểm vui vẻ.
+        applyDefeatPenalty: (coinsEarnedInRun, xpEarnedInRun) => {
+          const state = get();
+          const coinsClawback = Math.floor(Math.max(0, coinsEarnedInRun) / 2);
+          const xpClawback = Math.floor(Math.max(0, xpEarnedInRun) / 2);
+
+          set({
+            player: {
+              ...state.player,
+              coins: Math.max(0, state.player.coins - coinsClawback),
+              xp: Math.max(0, state.player.xp - xpClawback)
+            },
+            pet: {
+              ...state.pet,
+              energy: Math.max(0, state.pet.energy - 5),
+              mood: 'sad'
+            }
+          });
+
+          if (coinsClawback > 0 || xpClawback > 0) {
+            logActivity(
+              'exercise',
+              'Tẩu Hỏa Nhập Ma!',
+              'Hết Tim giữa trận, chỉ giữ được 50% chiến lợi phẩm thu được. Pet buồn thiu vì thấy con thất bại.',
+              -coinsClawback,
+              -xpClawback,
+              0
+            );
+          }
+        },
+
+        // Quyết đấu Boss thắng trận (CORE_SPECS §3.A + §3.1): +150 XP và thưởng tiền mặt trực tiếp vào Ví Thưởng (10.000đ-20.000đ).
+        completeBossVictory: () => {
+          const state = get();
+          const bonusXP = 150;
+          const vndBonusOptions = [10000, 15000, 20000];
+          const vndBonus = vndBonusOptions[Math.floor(Math.random() * vndBonusOptions.length)];
+
+          const updatedXP = state.player.xp + bonusXP;
+          const levelCheck = checkLevelUp(updatedXP, state.player.level);
+
+          set({
+            player: {
+              ...state.player,
+              xp: levelCheck.xp,
+              level: levelCheck.level,
+              badges: levelCheck.badges,
+              coins: state.player.coins + (levelCheck.badgesChanged ? 100 : 0),
+              walletVND: state.player.walletVND + vndBonus
+            }
+          });
+
+          logActivity(
+            'boss',
+            'Hạ Gục Boss! 🔥',
+            `Đánh bại Boss xuất sắc! Nhận thêm +${bonusXP} XP và ${vndBonus.toLocaleString()}đ thưởng nóng vào Ví Thưởng.`,
+            0,
+            bonusXP,
+            vndBonus
+          );
         },
 
         claimParentReward: (rewardId) => {
@@ -1504,18 +1624,48 @@ export const useGameState = create<GameState>()(
 
         feedPet: () => {
           const state = get();
-          if (state.pet.mood === 'happy' && state.pet.energy >= 100) return;
+          if (state.pet.mood === 'happy' && state.pet.energy >= 100) return false;
 
-          set(prev => ({
+          // Luật "Lực Bất Tòng Tâm" (CORE_SPECS §3.B): cho Pet ăn tốn 50 NP và 30 XP của Thiếu Hiệp.
+          const coinsCost = 50;
+          const xpCost = 30;
+          if (state.player.coins < coinsCost) return false;
+
+          // Vì tiêu hao trực tiếp XP, Thiếu hiệp chấp nhận tụt Level tạm thời nếu dồn quá nhiều tài nguyên chăm Pet.
+          let newLevel = state.player.level;
+          let newXp = state.player.xp - xpCost;
+          while (newXp < 0 && newLevel > 1) {
+            newLevel -= 1;
+            newXp += newLevel * 200;
+          }
+          newXp = Math.max(0, newXp);
+          const didDeLevel = newLevel < state.player.level;
+
+          set({
+            player: {
+              ...state.player,
+              coins: state.player.coins - coinsCost,
+              xp: newXp,
+              level: newLevel
+            },
             pet: {
-              ...prev.pet,
-              energy: Math.min(100, prev.pet.energy + 20),
+              ...state.pet,
+              energy: Math.min(100, state.pet.energy + 20),
               mood: 'happy',
               lastFed: new Date().toISOString()
             }
-          }));
+          });
 
-          logActivity('pet_interact', 'Cho thú nuôi ăn', 'Pet của con rất vui mừng và đầy năng lượng!');
+          logActivity(
+            'pet_interact',
+            didDeLevel ? 'Cho thú nuôi ăn (tụt cấp tạm thời)' : 'Cho thú nuôi ăn',
+            didDeLevel
+              ? `Pet của con rất vui mừng, nhưng dồn quá nhiều tài nguyên khiến con tạm tụt xuống Level ${newLevel}. Quay lại Hang Luyện Công cày XP để lên cấp lại nhé!`
+              : 'Pet của con rất vui mừng và đầy năng lượng!',
+            -coinsCost,
+            -xpCost
+          );
+          return true;
         },
 
         spinWheel: () => {
@@ -1819,9 +1969,8 @@ export const useGameState = create<GameState>()(
             } else {
               streakBroken = true;
               newStreak = 0;
-              if (diffDays >= 3) {
-                penaltyApplied = true;
-              }
+              // Luật "Phế Bỏ Võ Công" (CORE_SPECS §3.A): không học bài quá 24h là streak reset VÀ phạt -50 NP ngay lập tức, không chờ đến ngày thứ 3.
+              penaltyApplied = true;
               eventBus.publish('STREAK_RESET', { brokenDays: diffDays });
             }
           }

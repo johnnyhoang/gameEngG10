@@ -34,6 +34,8 @@ export interface PlayerProfile {
   hearts: number; // 0 - 3 (or max hearts)
   lastActive: string; // ISO String date
   badges: string[];
+  /** Phong Vị (theme giao diện) đã mở khóa bằng NP tại Bách Hóa Phường (CORE_SPECS §2.4). 'current' luôn miễn phí mặc định. */
+  unlockedThemes?: UiThemeId[];
 }
 
 export interface Question {
@@ -106,6 +108,8 @@ export interface HistoryLog {
   coinsChanged: number;
   xpChanged: number;
   walletChanged: number;
+  /** Môn phái đang hoạt động tại thời điểm ghi log — dùng để cô lập nhật ký theo Sect Isolation Principle (CORE_SPECS §1.3) */
+  subject?: SubjectId;
 }
 
 export interface Challenge {

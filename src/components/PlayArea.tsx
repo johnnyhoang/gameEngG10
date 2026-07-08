@@ -19,7 +19,7 @@ interface PlayAreaProps {
   mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'lesson' | 'survival';
   bossId?: string;
   lessonId?: string;
-  onFinish: () => void;
+  onFinish: (summary?: { accuracyRatio: number }) => void;
 }
 
 export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFinish }) => {
@@ -32,7 +32,9 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const buyHint = useGameState(state => state.buyHint);
   const flagQuestionConfused = useGameState(state => state.flagQuestionConfused);
   const failedQuestionIds = useGameState(state => state.failedQuestionIds || []);
-  
+  const applyDefeatPenalty = useGameState(state => state.applyDefeatPenalty);
+  const completeBossVictory = useGameState(state => state.completeBossVictory);
+
   // Game states
   const [currentQuestions, setCurrentQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -41,7 +43,10 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const [checked, setChecked] = useState(false);
   const [isLastCorrect, setIsLastCorrect] = useState(false);
   const [rewardsEarned, setRewardsEarned] = useState({ coins: 0, xp: 0 });
+  const [sessionAnswered, setSessionAnswered] = useState(0);
+  const [sessionCorrect, setSessionCorrect] = useState(0);
   const [runFinished, setRunFinished] = useState(false);
+  const runEndHandledRef = useRef(false);
   const [lastRubricScore, setLastRubricScore] = useState<number | null>(null);
   const [lastRubricMissing, setLastRubricMissing] = useState<string[]>([]);
   const [isAiGrading, setIsAiGrading] = useState(false);
@@ -53,7 +58,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const [hintUsed, setHintUsed] = useState(false);
   const [revealedHint, setRevealedHint] = useState('');
   const [showScratchpad, setShowScratchpad] = useState(false);
-  const [showGeometryTool, setShowGeometryTool] = useState(false);
+  const [showBikiBoard, setShowBikiBoard] = useState(false);
   const [isMuted, setIsMuted] = useState(sound.isMuted());
 
   const toggleMute = () => {
@@ -64,7 +69,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
 
   const handleEscape = () => {
     sound.playEscape();
-    onFinish();
+    const accuracyRatio = sessionAnswered > 0 ? sessionCorrect / sessionAnswered : 0;
+    onFinish({ accuracyRatio });
   };
 
   // Timer states
@@ -137,7 +143,10 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     setCurrentQuestions(pool.sort(() => Math.random() - 0.5));
     setCurrentIndex(0);
     setRewardsEarned({ coins: 0, xp: 0 });
+    setSessionAnswered(0);
+    setSessionCorrect(0);
     setRunFinished(false);
+    runEndHandledRef.current = false;
 
     // Initialize timer for speed challenges / Bosses
     if (mode === 'boss') {
@@ -165,6 +174,20 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [timeLeft, runFinished]);
+
+  // Xử lý kết cục trận đấu một lần duy nhất khi trận kết thúc (CORE_SPECS §3.A):
+  // Tẩu Hỏa Nhập Ma (hết Tim giữa trận Sinh Tồn/Boss) hoặc Boss thắng trận.
+  useEffect(() => {
+    if (!runFinished || runEndHandledRef.current) return;
+    runEndHandledRef.current = true;
+
+    const isDefeat = player.hearts <= 0 && (mode === 'boss' || mode === 'survival');
+    if (isDefeat) {
+      applyDefeatPenalty(rewardsEarned.coins, rewardsEarned.xp);
+    } else if (mode === 'boss') {
+      completeBossVictory();
+    }
+  }, [runFinished]);
 
   const activeQuestion = currentQuestions[currentIndex];
 
@@ -377,6 +400,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       coins: prev.coins + outcome.coinsGained,
       xp: prev.xp + outcome.expGained
     }));
+    setSessionAnswered(prev => prev + 1);
+    if (isCorrect) setSessionCorrect(prev => prev + 1);
 
     // If hearts hit 0 in Survival/Boss, terminate
     if (scoreRatio < 0.35 && (mode === 'boss' || mode === 'survival') && player.hearts <= 1) {
@@ -407,7 +432,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       setAiFeedback('');
       setAiSuggestions([]);
       setAiWarningMessage('');
-      setShowGeometryTool(false);
+      setShowBikiBoard(false);
 
       if (currentIndex + 1 < currentQuestions.length) {
         setCurrentIndex(prev => prev + 1);
@@ -429,7 +454,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     setAiFeedback('');
     setAiSuggestions([]);
     setAiWarningMessage('');
-    setShowGeometryTool(false);
+    setShowBikiBoard(false);
 
     if (currentIndex + 1 < currentQuestions.length) {
       setCurrentIndex(prev => prev + 1);
@@ -469,18 +494,21 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                   : 'Phụ bản bài học';
 
   if (runFinished) {
-    const isGameOver = player.hearts <= 0 && mode === 'boss';
+    // Luật "Tẩu Hỏa Nhập Ma" (CORE_SPECS §3.A): hết Tim giữa trận Sinh Tồn hoặc Boss đều tính là thất bại.
+    const isDefeat = player.hearts <= 0 && (mode === 'boss' || mode === 'survival');
+    const displayedCoins = isDefeat ? Math.floor(rewardsEarned.coins / 2) : rewardsEarned.coins;
+    const displayedXp = isDefeat ? Math.floor(rewardsEarned.xp / 2) : rewardsEarned.xp;
     return (
       <div className="glass-panel rounded-2xl border border-synth-magenta/30 p-8 max-w-xl mx-auto text-center space-y-6">
         <Award className="w-16 h-16 mx-auto text-synth-orange animate-bounce" />
-        
+
         <h2 className="font-orbitron font-black text-2xl text-white uppercase tracking-wider">
-          {isGameOver ? 'GAME OVER - BOSS THẤT BẠI' : 'CHINH PHỤC THÀNH CÔNG'}
+          {isDefeat ? `TẨU HỎA NHẬP MA - ${mode === 'boss' ? 'BOSS' : 'SINH TỒN'} THẤT BẠI` : 'CHINH PHỤC THÀNH CÔNG'}
         </h2>
-        
+
         <p className="text-xs text-synth-text-muted">
-          {isGameOver 
-            ? 'Hết tim rồi. Lần sau ra tay chắc hơn.' 
+          {isDefeat
+            ? 'Hết tim rồi. Chỉ giữ được 50% chiến lợi phẩm thu được trong trận. Lần sau ra tay chắc hơn.'
             : mode === 'lesson'
               ? 'Củng cố xong. Muốn kiểm tra lại thì quay về bản đồ.'
               : mode === 'vocabulary'
@@ -491,23 +519,23 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         </p>
 
         {/* Reward card */}
-        {!isGameOver && (
+        {
           <div className="bg-synth-gray/40 rounded-xl p-5 border border-synth-cyan/20 grid grid-cols-2 gap-4">
             <div className="text-center font-orbitron">
               <span className="text-[10px] text-synth-text-muted uppercase">Nanite Vàng</span>
-              <p className="text-2xl font-black text-synth-orange">+{rewardsEarned.coins} NP</p>
+              <p className="text-2xl font-black text-synth-orange">+{displayedCoins} NP</p>
             </div>
             <div className="text-center font-orbitron">
               <span className="text-[10px] text-synth-text-muted uppercase">Điểm Kinh Nghiệm</span>
-              <p className="text-2xl font-black text-synth-cyan">+{rewardsEarned.xp} XP</p>
+              <p className="text-2xl font-black text-synth-cyan">+{displayedXp} XP</p>
             </div>
           </div>
-        )}
+        }
 
         {/* Payout note */}
-        {mode === 'boss' && !isGameOver && (
+        {mode === 'boss' && !isDefeat && (
           <div className="bg-synth-magenta/10 border border-synth-magenta/30 rounded-lg p-3 text-xs text-synth-magenta">
-            🔥 Đánh bại Boss: Thưởng tiền mặt đã tự động cộng thêm vào Ví Thưởng!
+            🔥 Đánh bại Boss: +150 XP và tiền mặt (10.000đ-20.000đ) đã tự động cộng thêm vào Ví Thưởng!
           </div>
         )}
 
@@ -805,19 +833,19 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
             <div className="border border-synth-cyan/20 rounded-xl bg-synth-gray/10 overflow-hidden transition-all duration-300">
               <button
                 type="button"
-                onClick={() => setShowGeometryTool(!showGeometryTool)}
+                onClick={() => setShowBikiBoard(!showBikiBoard)}
                 className="w-full px-4 py-2.5 bg-synth-cyan/10 hover:bg-synth-cyan/15 flex items-center justify-between text-xs font-orbitron font-bold text-synth-cyan uppercase tracking-wider cursor-pointer text-left"
               >
                 <span className="flex items-center gap-2">
                   📐 Bảng Vẽ Hình Học (Phẳng & Không Gian)
                   <span className="text-[10px] text-synth-text-muted lowercase font-normal italic">
-                    (Nhấp để {showGeometryTool ? 'thu gọn' : 'mở rộng'})
+                    (Nhấp để {showBikiBoard ? 'thu gọn' : 'mở rộng'})
                   </span>
                 </span>
-                <span>{showGeometryTool ? '▼' : '▲'}</span>
+                <span>{showBikiBoard ? '▼' : '▲'}</span>
               </button>
               
-              {showGeometryTool && (
+              {showBikiBoard && (
                 <div className="p-3 border-t border-synth-cyan/15 bg-black/25 space-y-4">
                   {is3D ? (
                     <Biki3DStudio problemText={activeQuestion.prompt} />

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { CheckCircle2, Palette, Sparkles, X, Clock, Award, Shield } from 'lucide-react';
 import { UI_THEMES, type UiThemeConfig } from '../theme/uiThemes';
 import type { UiThemeId, UserProfile } from '../types/game';
-import { useGameState } from '../hooks/useGameState';
+import { useGameState, THEME_UNLOCK_COST } from '../hooks/useGameState';
 import { SUBJECTS_CONFIG } from '../types/game';
 import type { SubjectId } from '../types/game';
 import { toast } from '../utils/toast';
@@ -100,6 +100,7 @@ export const ProfileThemeModal: React.FC<ProfileThemeModalProps> = ({
   const currentSubject = useGameState(state => state.currentSubject);
   const setSubject = useGameState(state => state.setSubject);
   const player = useGameState(state => state.player);
+  const buyTheme = useGameState(state => state.buyTheme);
 
   const [activeTab, setActiveTab] = useState<'identity' | 'themes'>('identity');
   const [isCamNangOpen, setIsCamNangOpen] = useState(false);
@@ -387,15 +388,28 @@ export const ProfileThemeModal: React.FC<ProfileThemeModalProps> = ({
                 const isActive = theme.id === currentTheme;
                 const toneClass = getTextToneClass(theme.id);
                 const isUnicorn = theme.id === 'unicorn-dream';
+                const isUnlocked = theme.id === 'current' || (player.unlockedThemes || ['current']).includes(theme.id);
 
                 return (
                   <button
                     key={theme.id}
                     onClick={() => {
-                      onSelectTheme(theme.id);
-                      onClose();
+                      if (isUnlocked) {
+                        onSelectTheme(theme.id);
+                        onClose();
+                        return;
+                      }
+                      // 🎭 Phong Vị (CORE_SPECS §2.4): mở khóa bằng NP tại chỗ, tự áp dụng ngay sau khi mua thành công.
+                      const bought = buyTheme(theme.id);
+                      if (bought) {
+                        toast.success(`Đã mở khóa "${theme.name}" (-${THEME_UNLOCK_COST} NP)! Đang áp dụng...`);
+                        onSelectTheme(theme.id);
+                        onClose();
+                      } else {
+                        toast.error(`Không đủ NP. Cần ${THEME_UNLOCK_COST} NP để mở khóa Phong Vị này.`);
+                      }
                     }}
-                    className={getThemeCardClass(theme.id, isActive)}
+                    className={`${getThemeCardClass(theme.id, isActive)} ${!isUnlocked ? 'opacity-80' : ''}`}
                   >
                     <div className={`absolute right-4 top-4 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.2em] shadow-sm ${
                       isUnicorn ? 'bg-white/90 text-violet-700' : 'bg-white/85 text-slate-600'
@@ -409,6 +423,12 @@ export const ProfileThemeModal: React.FC<ProfileThemeModalProps> = ({
                       }`}>
                         <CheckCircle2 className="h-3.5 w-3.5" />
                         Đang dùng
+                      </div>
+                    )}
+
+                    {!isActive && !isUnlocked && (
+                      <div className="absolute left-4 top-4 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-sm bg-slate-800/90">
+                        🔒 {THEME_UNLOCK_COST} NP
                       </div>
                     )}
 

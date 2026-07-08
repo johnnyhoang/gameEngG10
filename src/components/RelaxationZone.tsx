@@ -88,8 +88,9 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   const handleFcRemembered = () => {
     if (activeFlashcards.length === 0) return;
     setFcRememberedCount(prev => prev + 1);
-    awardCoinsAndXp(5, 10, 'Thuộc thẻ nhớ', `Ghi nhớ câu hỏi: ${activeFlashcards[fcIndex].prompt.slice(0, 20)}...`);
-    toast.success('Ghi nhận rồi. +5 NP, +10 XP 🎉');
+    // Luyện thẻ nhớ (CORE_SPECS §3.B): trả lời đúng mỗi thẻ được +5 XP và +2 NP.
+    awardCoinsAndXp(2, 5, 'Thuộc thẻ nhớ', `Ghi nhớ câu hỏi: ${activeFlashcards[fcIndex].prompt.slice(0, 20)}...`);
+    toast.success('Ghi nhận rồi. +2 NP, +5 XP 🎉');
     handleFcNext();
   };
 
@@ -174,7 +175,8 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
             const allMatched = current.every(c => c.isMatched || c.pairId === card1.pairId);
             if (allMatched) {
               setMatchStatus('victory');
-              awardCoinsAndXp(30, 40, 'Ghép cặp thành công', `Hoàn thành bảng ghép cặp chủ đề ${matchSubject}`);
+              // Ghép cặp (CORE_SPECS §3.B): hoàn thành bảng ghép cặp được +20 XP và +10 NP.
+              awardCoinsAndXp(10, 20, 'Ghép cặp thành công', `Hoàn thành bảng ghép cặp chủ đề ${matchSubject}`);
             }
             return current;
           });
@@ -613,8 +615,9 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
     if (!aiCounterQuestion) return;
     if (counterAnswer === aiCounterQuestion.ans) {
       setExplainPhase('won');
-      awardCoinsAndXp(40, 40, 'Giảng giải cho AI', `Giảng bài thành công chủ đề ${explainTopic}`);
-      toast.success('Chuẩn xác. AI đã thông suốt bài này. (+40 NP, +40 XP)');
+      // Đàm đạo Linh Sư / Giảng-Dạy AI (CORE_SPECS §3.B): đàm đạo thành công được +30 XP và +15 NP.
+      awardCoinsAndXp(15, 30, 'Giảng giải cho AI', `Giảng bài thành công chủ đề ${explainTopic}`);
+      toast.success('Chuẩn xác. AI đã thông suốt bài này. (+15 NP, +30 XP)');
     } else {
       toast.error('Lệch rồi nhé. AI bắt ngược lại luôn, thử lại đi.');
     }
@@ -896,7 +899,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                           : 'bg-synth-green text-black shadow-[0_0_12px_rgba(57,255,20,0.25)]'
                       }`}
                     >
-                      <Award className="w-4 h-4 text-black" /> Thuộc rồi (+5 NP)
+                      <Award className="w-4 h-4 text-black" /> Thuộc rồi (+2 NP, +5 XP)
                     </button>
 
                     <button
@@ -963,8 +966,8 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                     </div>
                     <div className="bg-white/5 p-2 rounded border border-white/5 space-y-1">
                       <span className="font-bold text-white block">🤖 Dạy Học Cho AI (Teach the AI)</span>
-                      <span className="text-slate-400 block leading-normal">Đóng vai giáo sư dạy AI giải bài; AI đặt câu hỏi phản biện để kiểm tra độ hiểu sâu.</span>
-                      <span className="inline-block px-1 rounded bg-yellow-500/20 text-yellow-400 text-[8px] font-semibold font-orbitron">Đang Thiết Kế</span>
+                      <span className="text-slate-400 block leading-normal">Đóng vai giáo sư dạy AI giải bài; AI đặt câu hỏi phản biện để kiểm tra độ hiểu sâu. Đã có ở tab "Giảng Cho AI" phía trên — giảng đạt rồi trả lời câu hỏi phản biện của AI để nhận thưởng.</span>
+                      <span className="inline-block px-1 rounded bg-synth-green/20 text-synth-green text-[8px] font-semibold font-orbitron">Đã Ra Mắt ✓</span>
                     </div>
                     <div className="bg-white/5 p-2 rounded border border-white/5 space-y-1">
                       <span className="font-bold text-white block">⚔️ Ghép Cặp So Tài (PvP Match)</span>
@@ -1049,7 +1052,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                 <div className="text-4xl animate-bounce">🎉🏆🥇</div>
                 <h4 className="font-orbitron font-black text-xl text-synth-green uppercase">Hoàn Thành Tuyệt Đối</h4>
                 <p className="text-xs text-slate-300">
-                  Ghép xong toàn bộ cặp liên kết. Thưởng qua ải: **+30 NP coins, +40 XP**
+                  Ghép xong toàn bộ cặp liên kết. Thưởng qua ải: **+10 NP coins, +20 XP**
                 </p>
                 <button
                   onClick={initMatchGame}
@@ -1779,7 +1782,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                     Bài Giảng Xuất Sắc
                   </h4>
                   <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
-                    AI đã ngấm bài. Bạn nhận **+40 xu (NP), +40 XP** nhờ kiểu học Feynman.
+                    AI đã ngấm bài. Bạn nhận **+15 xu (NP), +30 XP** nhờ kiểu học Feynman.
                   </p>
                   <button
                     onClick={restartExplainGame}

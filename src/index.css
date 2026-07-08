@@ -1,11 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Fredoka:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Lexend:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;700;900&family=Press+Start+2P&family=Silkscreen:wght@400;700&family=Space+Grotesk:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800;900&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Fredoka:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Lexend:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;700;900&family=Press+Start+2P&family=Silkscreen:wght@400;700&family=Space+Grotesk:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800;900&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Noto+Serif:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&display=swap');
 
+/*
+  Chữ tiếng Việt (nhất là dấu chồng như ệ, ẵ, ắ) rất dễ bị vỡ/mờ khi dùng font hệ thống
+  chung chung (Tailwind font-serif mặc định) hoặc chữ nghiêng giả lập (không có bộ italic riêng).
+  Noto Serif được Google thiết kế để phủ đầy đủ dấu tiếng Việt kể cả ở dạng nghiêng, nên dùng làm
+  font chính cho mọi khối "kiểu sách cổ" trong app (Cẩm Nang, lời thoại Pet, trích dẫn...).
+*/
 .font-ancient-book {
-  font-family: 'Lora', Georgia, 'Times New Roman', serif;
+  font-family: 'Noto Serif', 'Lora', Georgia, 'Times New Roman', serif;
 }
 @import "tailwindcss";
 
 @theme {
+  --font-serif: 'Noto Serif', 'Lora', Georgia, 'Times New Roman', serif;
   --color-synth-bg: #0b0c10;
   --color-synth-card: rgba(20, 23, 34, 0.75);
   --color-synth-card-solid: #141722;

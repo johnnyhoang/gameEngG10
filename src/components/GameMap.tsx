@@ -72,18 +72,19 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
     ? subjectLessons.find(l => l.category === weakCategories[0].cat)
     : null;
 
+  // Hao tổn Chân khí (CORE_SPECS §3.A): Quyết đấu Boss tiêu 100 Chân khí mỗi lượt vào trận.
   const bosses = currentSubject === 'math' ? [
-    { id: 'b-2024', name: 'Đại Ca Toán HCMC 2024', year: '2024', energy: 20 },
-    { id: 'b-2025', name: 'Cự Long Toán HCMC 2025', year: '2025', energy: 20 },
-    { id: 'b-2026', name: 'Cổ Long Toán HCMC 2026 (Mock)', year: '2026', energy: 25 }
+    { id: 'b-2024', name: 'Đại Ca Toán HCMC 2024', year: '2024', energy: 100 },
+    { id: 'b-2025', name: 'Cự Long Toán HCMC 2025', year: '2025', energy: 100 },
+    { id: 'b-2026', name: 'Cổ Long Toán HCMC 2026 (Mock)', year: '2026', energy: 100 }
   ] : currentSubject === 'literature' ? [
-    { id: 'b-2024', name: 'Đại Ca Văn HCMC 2024', year: '2024', energy: 20 },
-    { id: 'b-2025', name: 'Cự Long Văn HCMC 2025', year: '2025', energy: 20 },
-    { id: 'b-2026', name: 'Cổ Long Văn HCMC 2026 (Mock)', year: '2026', energy: 25 }
+    { id: 'b-2024', name: 'Đại Ca Văn HCMC 2024', year: '2024', energy: 100 },
+    { id: 'b-2025', name: 'Cự Long Văn HCMC 2025', year: '2025', energy: 100 },
+    { id: 'b-2026', name: 'Cổ Long Văn HCMC 2026 (Mock)', year: '2026', energy: 100 }
   ] : [
-    { id: 'b-2024', name: 'Đại Ca HCMC 2024', year: '2024', energy: 20 },
-    { id: 'b-2025', name: 'Cự Long HCMC 2025', year: '2025', energy: 20 },
-    { id: 'b-2026', name: 'Cổ Long HCMC 2026 (Mock)', year: '2026', energy: 25 }
+    { id: 'b-2024', name: 'Đại Ca HCMC 2024', year: '2024', energy: 100 },
+    { id: 'b-2025', name: 'Cự Long HCMC 2025', year: '2025', energy: 100 },
+    { id: 'b-2026', name: 'Cổ Long HCMC 2026 (Mock)', year: '2026', energy: 100 }
   ];
 
   const completedLessons = subjectLessons.filter(l => lessonsProgress[l.id]).length;
@@ -128,7 +129,7 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
             </button>
           ) : (
             <button
-              onClick={() => handleLaunchZone('mixed', 10)}
+              onClick={() => handleLaunchZone('mixed', challengeEnergyCosts[1] ?? 30)}
               className={`px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 ${
                 isUnicorn
                   ? 'bg-gradient-to-r from-cyan-200 via-white to-fuchsia-200 text-violet-900 shadow-[0_0_15px_rgba(125,211,252,0.28)]'
@@ -287,12 +288,12 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
             ].map(card => (
               <div
                 key={card.title}
-                onClick={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 10)}
+                onClick={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 30)}
                 className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
               >
                 <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(0,240,255,0.08),transparent_60%)]" />
                 <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white">
-                  <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 10}
+                  <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
                 </div>
                 <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
                   {card.icon}
@@ -351,12 +352,12 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
             ].map(card => (
               <div
                 key={card.title}
-                onClick={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 10)}
+                onClick={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 30)}
                 className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
               >
                 <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(0,240,255,0.08),transparent_60%)]" />
                 <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white">
-                  <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 10}
+                  <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
                 </div>
                 <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
                   {card.icon}
@@ -415,12 +416,12 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
             ].map(card => (
               <div
                 key={card.title}
-                onClick={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 10)}
+                onClick={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 30)}
                 className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
               >
                 <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(0,240,255,0.08),transparent_60%)]" />
                 <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white">
-                  <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 10}
+                  <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
                 </div>
                 <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
                   {card.icon}
@@ -445,13 +446,13 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
 
           {/* Survival Mode – prominent */}
           <div
-            onClick={() => handleLaunchZone('survival', challengeEnergyCosts[0] ?? 15)}
+            onClick={() => handleLaunchZone('survival', challengeEnergyCosts[0] ?? 30)}
             className="glass-panel glass-panel-hover rounded-2xl border border-red-500/40 hover:border-red-400 bg-gradient-to-br from-red-500/10 via-orange-500/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 md:col-span-2"
           >
             {/* glow backdrop */}
             <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(239,68,68,0.07),transparent_60%)]" />
             <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-red-500/20 border border-red-500/40 text-red-400">
-              <Zap className="w-3 h-3 text-red-400 fill-red-400" /> {challengeEnergyCosts[0] ?? 15}
+              <Zap className="w-3 h-3 text-red-400 fill-red-400" /> {challengeEnergyCosts[0] ?? 30}
             </div>
             <div className="w-14 h-14 rounded-xl border border-red-500/30 bg-red-500/10 flex items-center justify-center shrink-0">
               <Skull className="w-8 h-8 text-red-400" />
@@ -472,11 +473,11 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
 
           {/* Mixed random */}
           <div
-            onClick={() => handleLaunchZone('mixed', challengeEnergyCosts[1] ?? 10)}
+            onClick={() => handleLaunchZone('mixed', challengeEnergyCosts[1] ?? 30)}
             className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
           >
             <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white">
-              <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 10}
+              <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
             </div>
             <div className="w-12 h-12 rounded-xl border border-white/5 bg-synth-gray/50 flex items-center justify-center shrink-0">
               <Star className="w-7 h-7 text-synth-cyan" />
@@ -490,11 +491,11 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
 
           {/* Revenge Dungeon */}
           <div
-            onClick={() => handleLaunchZone('revenge', challengeEnergyCosts[2] ?? 10)}
+            onClick={() => handleLaunchZone('revenge', challengeEnergyCosts[2] ?? 30)}
             className="glass-panel glass-panel-hover rounded-2xl border border-synth-orange/30 hover:border-synth-orange bg-gradient-to-br from-synth-orange/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
           >
             <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-orange/20 text-white">
-              <Zap className="w-3 h-3 text-synth-orange fill-synth-orange" /> {challengeEnergyCosts[2] ?? 10}
+              <Zap className="w-3 h-3 text-synth-orange fill-synth-orange" /> {challengeEnergyCosts[2] ?? 30}
             </div>
             <div className="w-12 h-12 rounded-xl border border-white/5 bg-synth-gray/50 flex items-center justify-center shrink-0">
               <ShieldAlert className="w-7 h-7 text-synth-orange" />

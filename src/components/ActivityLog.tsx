@@ -5,6 +5,7 @@ import { Target, Clock, Gift, ShieldAlert, Award, FileText, CheckCircle2 } from 
 export const ActivityLog: React.FC = () => {
   const dailyMission = useGameState(state => state.dailyMission);
   const logs = useGameState(state => state.logs);
+  const currentSubject = useGameState(state => state.currentSubject);
   const uiTheme = useGameState(state => state.uiTheme);
   const isUnicorn = uiTheme === 'unicorn-dream';
   const [visibleCount, setVisibleCount] = useState(15);
@@ -12,11 +13,18 @@ export const ActivityLog: React.FC = () => {
   const loadMoreLockRef = useRef(false);
   const pageSize = 15;
 
+  // Cô lập nhật ký hoạt động theo Môn phái đang hoạt động (CORE_SPECS §1.3 Sect Isolation Principle).
+  // Log cũ chưa có field subject (trước bản cập nhật) vẫn được giữ hiển thị để không mất dấu vết lịch sử.
+  const sectLogs = useMemo(
+    () => logs.filter(log => !log.subject || log.subject === currentSubject),
+    [logs, currentSubject]
+  );
+
   useEffect(() => {
     setVisibleCount(15);
-  }, [logs.length]);
+  }, [sectLogs.length, currentSubject]);
 
-  const visibleLogs = useMemo(() => logs.slice(0, visibleCount), [logs, visibleCount]);
+  const visibleLogs = useMemo(() => sectLogs.slice(0, visibleCount), [sectLogs, visibleCount]);
 
   const handleScroll = () => {
     const el = scrollRef.current;
@@ -25,10 +33,10 @@ export const ActivityLog: React.FC = () => {
     const threshold = 120;
     const nearBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - threshold;
     if (!nearBottom) return;
-    if (visibleCount >= logs.length) return;
+    if (visibleCount >= sectLogs.length) return;
 
     loadMoreLockRef.current = true;
-    setVisibleCount(prev => Math.min(prev + pageSize, logs.length));
+    setVisibleCount(prev => Math.min(prev + pageSize, sectLogs.length));
     window.setTimeout(() => {
       loadMoreLockRef.current = false;
     }, 150);
@@ -122,8 +130,8 @@ export const ActivityLog: React.FC = () => {
               <div className={`flex items-center justify-between text-[10px] font-bold uppercase tracking-wider mb-2 sticky top-0 z-10 backdrop-blur-sm py-1 ${
                 isUnicorn ? 'bg-white/85 text-violet-600/80' : 'bg-synth-bg/90 text-synth-text-muted'
               }`}>
-                <span>Hiển thị {visibleLogs.length}/{logs.length}</span>
-                {visibleLogs.length < logs.length && <span>Kéo xuống để rút thêm</span>}
+                <span>Hiển thị {visibleLogs.length}/{sectLogs.length}</span>
+                {visibleLogs.length < sectLogs.length && <span>Kéo xuống để rút thêm</span>}
               </div>
               {visibleLogs.map(log => (
               <div 
@@ -173,7 +181,7 @@ export const ActivityLog: React.FC = () => {
               Hôm nay chưa có dấu vết nào.
             </div>
           )}
-          {visibleLogs.length < logs.length && (
+          {visibleLogs.length < sectLogs.length && (
             <div className="py-3 text-center text-[10px] text-synth-text-muted font-bold uppercase tracking-wider">
               Đang rút thêm...
             </div>

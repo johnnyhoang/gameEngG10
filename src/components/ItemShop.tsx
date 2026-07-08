@@ -1,7 +1,8 @@
 import React from 'react';
-import { useGameState } from '../hooks/useGameState';
-import { Shield, Coins, Gift } from 'lucide-react';
+import { useGameState, THEME_UNLOCK_COST } from '../hooks/useGameState';
+import { Shield, Coins, Gift, Palette } from 'lucide-react';
 import { toast } from '../utils/toast';
+import { UI_THEMES } from '../theme/uiThemes';
 
 export const ItemShop: React.FC = () => {
   const player = useGameState(state => state.player);
@@ -9,9 +10,21 @@ export const ItemShop: React.FC = () => {
   const buyStreakShield = useGameState(state => state.buyStreakShield);
   const buyHeart = useGameState(state => state.buyHeart);
   const buyHint = useGameState(state => state.buyHint);
+  const buyTheme = useGameState(state => state.buyTheme);
+  const setUiTheme = useGameState(state => state.setUiTheme);
   const claimParentReward = useGameState(state => state.claimParentReward);
   const uiTheme = useGameState(state => state.uiTheme);
   const isUnicorn = uiTheme === 'unicorn-dream';
+  const unlockedThemes = player.unlockedThemes || ['current'];
+
+  const handleBuyTheme = (themeId: typeof UI_THEMES[number]['id']) => {
+    const success = buyTheme(themeId);
+    if (!success) {
+      toast.error(`Thiếu Ngân lượng. Cần ${THEME_UNLOCK_COST} NP để mở khóa Phong Vị này.`);
+    } else {
+      toast.success('🎭 Mở khóa Phong Vị thành công! Vào Thân Phận để mặc thử ngay.');
+    }
+  };
 
   const handleBuyShield = () => {
     const success = buyStreakShield();
@@ -194,6 +207,72 @@ export const ItemShop: React.FC = () => {
             </button>
           </div>
 
+        </div>
+      </div>
+
+      {/* 🎭 Phong Vị */}
+      <div>
+        <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider mb-4 flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
+          <Palette className="w-4 h-4" /> 🎭 Phong Vị
+        </h3>
+        <p className={`text-xs mb-4 ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}`}>
+          Mở khóa phong cách giao diện cá tính để cá nhân hóa không gian học tập của thiếu hiệp.
+        </p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {UI_THEMES.map(theme => {
+            const isUnlocked = theme.id === 'current' || unlockedThemes.includes(theme.id);
+            const isActive = theme.id === uiTheme;
+            return (
+              <div
+                key={theme.id}
+                className={`glass-panel rounded-2xl p-5 flex justify-between items-center ${
+                  isUnicorn ? 'border-violet-200/35 bg-gradient-to-tr from-white/85 via-violet-50/70 to-fuchsia-50/70' : 'border-synth-purple/20 bg-gradient-to-tr from-synth-purple/5 to-transparent'
+                }`}
+              >
+                <div className="flex gap-4 items-center min-w-0">
+                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl border shrink-0 ${
+                    isUnicorn ? 'bg-violet-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-purple/30'
+                  }`}>
+                    {theme.iconSet[0]}
+                  </div>
+                  <div className="space-y-1 min-w-0">
+                    <h4 className={`font-orbitron font-bold text-sm truncate ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{theme.name}</h4>
+                    <p className={`text-xs line-clamp-2 ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}`}>
+                      {theme.tagline}
+                    </p>
+                    {isActive && (
+                      <span className="text-[10px] font-bold text-synth-green border border-synth-green/40 px-1.5 py-0.5 rounded font-orbitron inline-block">
+                        Đang dùng ✓
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {isActive ? null : isUnlocked ? (
+                  <button
+                    onClick={() => setUiTheme(theme.id)}
+                    className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${
+                      isUnicorn
+                        ? 'bg-gradient-to-r from-violet-300 to-fuchsia-300 text-violet-900 shadow-md hover:brightness-105'
+                        : 'bg-synth-purple text-white hover:shadow-[0_0_10px_rgba(168,85,247,0.4)]'
+                    }`}
+                  >
+                    Mặc Ngay
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => handleBuyTheme(theme.id)}
+                    className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${
+                      isUnicorn
+                        ? 'bg-gradient-to-r from-cyan-300 to-violet-300 text-violet-900 shadow-md hover:brightness-105'
+                        : 'bg-synth-cyan text-black hover:shadow-[0_0_10px_rgba(0,240,255,0.4)]'
+                    }`}
+                  >
+                    🔒 {THEME_UNLOCK_COST} NP
+                  </button>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import type { Question, QuestionMeta } from '../types/game';
-import { SUBJECTS_CONFIG } from '../types/game';
+import { SUBJECTS_CONFIG, getStudentRankForLevel } from '../types/game';
 import type { SubjectId } from '../types/game';
 import { ENGLISH_ANSWER_MODE_LABELS, ENGLISH_EXAM_BLUEPRINT, ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../data/englishExamBlueprint';
 import { MATH_ANSWER_MODE_LABELS, MATH_EXAM_BLUEPRINT, MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
@@ -50,6 +50,7 @@ const getTopicLabel = (question: Question) => {
 
 export const ParentConsole: React.FC = () => {
   const verifyPIN = useGameState(state => state.verifyPIN);
+  const changePIN = useGameState(state => state.changePIN);
   const approveReward = useGameState(state => state.approveReward);
   const rejectReward = useGameState(state => state.rejectReward);
   const addParentReward = useGameState(state => state.addParentReward);
@@ -84,6 +85,12 @@ export const ParentConsole: React.FC = () => {
   const [isUnlocked, setIsUnlocked] = useState(currentUser?.role === 'admin');
   const [pinError, setPinError] = useState(false);
 
+  // Đổi PIN bảo mật (Chính Điện — CORE_SPECS §2.6)
+  const [changePinCurrent, setChangePinCurrent] = useState('');
+  const [changePinNew, setChangePinNew] = useState('');
+  const [changePinConfirm, setChangePinConfirm] = useState('');
+  const [changePinFeedback, setChangePinFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
 
 
   // Create Reward States
@@ -94,10 +101,10 @@ export const ParentConsole: React.FC = () => {
   const [bossBounty2024, setBossBounty2024] = useState(10000);
   const [bossBounty2025, setBossBounty2025] = useState(15000);
   const [bossBounty2026, setBossBounty2026] = useState(20000);
-  const [challengeCost1, setChallengeCost1] = useState(10);
-  const [challengeCost2, setChallengeCost2] = useState(10);
-  const [challengeCost3, setChallengeCost3] = useState(15);
-  const [challengeCost4, setChallengeCost4] = useState(10);
+  const [challengeCost1, setChallengeCost1] = useState(30);
+  const [challengeCost2, setChallengeCost2] = useState(30);
+  const [challengeCost3, setChallengeCost3] = useState(30);
+  const [challengeCost4, setChallengeCost4] = useState(30);
   const [questionQuery, setQuestionQuery] = useState('');
   const [subjectFilter, setSubjectFilter] = useState<'all' | 'english' | 'math' | 'literature'>('all');
   const [questionTypeFilter, setQuestionTypeFilter] = useState<'all' | Question['type']>('all');
@@ -132,7 +139,7 @@ export const ParentConsole: React.FC = () => {
   const [baseXPVal, setBaseXPVal] = useState(15);
   const [baseCoinsVal, setBaseCoinsVal] = useState(5);
 
-  const [activeTab, setActiveTab] = useState<'chinh_dien' | 'thien_co_cac' | 'van_quyen_cac' | 'ngan_cac'>('chinh_dien');
+  const [activeTab, setActiveTab] = useState<'chinh_dien' | 'thien_co_cac' | 'van_quyen_cac' | 'ngan_cac' | 'than_phan'>('chinh_dien');
   const [viewingStudentId, setViewingStudentId] = useState<string | null>(null);
 
   // Load students list on mount for admin users
@@ -174,7 +181,9 @@ export const ParentConsole: React.FC = () => {
     setEditCorrectAnswer(Array.isArray(editingQuestion.correctAnswer) ? editingQuestion.correctAnswer.join('\n') : editingQuestion.correctAnswer);
     setEditSource(editingQuestion.source);
     setEditImageUrl(editingQuestion.imageUrl || '');
-    setEditSubject(editingQuestion.subject || 'english');
+    // Khóa môn học theo ngữ cảnh Vạn Quyển Các đang chọn (CORE_SPECS §1.3 Parent In-Context Banking) —
+    // tránh Viện Chủ lỡ tay lưu câu hỏi sang sai môn phái khi đang thao tác trong 1 ngữ cảnh khác.
+    setEditSubject(selectedSect || editingQuestion.subject || 'english');
     setEditExamPart(editingQuestion.metadata?.examPart || '');
     setEditMathTopic(editingQuestion.metadata?.mathTopic || '');
     setEditEnglishPart(editingQuestion.metadata?.englishPart || '');
@@ -186,7 +195,7 @@ export const ParentConsole: React.FC = () => {
     setEditAnswerMode(editingQuestion.metadata?.answerMode || '');
     setEditSolutionStyle(editingQuestion.metadata?.solutionStyle || '');
     setEditSolutionSteps(Array.isArray(editingQuestion.metadata?.solutionSteps) ? editingQuestion.metadata.solutionSteps.join('\n') : '');
-  }, [editingQuestion]);
+  }, [editingQuestion, selectedSect]);
 
   const handleUnlock = (e: React.FormEvent) => {
     e.preventDefault();
@@ -197,6 +206,27 @@ export const ParentConsole: React.FC = () => {
       setPinError(true);
       setPin('');
     }
+  };
+
+  const handleChangePin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!verifyPIN(changePinCurrent)) {
+      setChangePinFeedback({ type: 'error', text: 'PIN hiện tại không đúng.' });
+      return;
+    }
+    if (!/^\d{4,6}$/.test(changePinNew)) {
+      setChangePinFeedback({ type: 'error', text: 'PIN mới phải gồm 4-6 chữ số.' });
+      return;
+    }
+    if (changePinNew !== changePinConfirm) {
+      setChangePinFeedback({ type: 'error', text: 'Xác nhận PIN mới không khớp.' });
+      return;
+    }
+    changePIN(changePinNew);
+    setChangePinCurrent('');
+    setChangePinNew('');
+    setChangePinConfirm('');
+    setChangePinFeedback({ type: 'success', text: 'Đã đổi PIN bảo mật thành công.' });
   };
 
   const handleSaveQuestion = async () => {
@@ -479,9 +509,10 @@ export const ParentConsole: React.FC = () => {
 
         {/* Tab Controls */}
         <div className="hidden md:flex gap-2 flex-wrap">
-          {(['chinh_dien', 'thien_co_cac', 'van_quyen_cac', 'ngan_cac'] as const).map(tab => {
+          {(['chinh_dien', 'than_phan', 'thien_co_cac', 'van_quyen_cac', 'ngan_cac'] as const).map(tab => {
             const tabNames: Record<string, string> = {
               chinh_dien: '🏛️ Chính Điện',
+              than_phan: '👑 Thân Phận',
               thien_co_cac: '📖 Thiên Cơ Các',
               van_quyen_cac: '📚 Vạn Quyển Các',
               ngan_cac: '💰 Ngân Các'
@@ -666,7 +697,7 @@ export const ParentConsole: React.FC = () => {
           {!viewingStudentId ? (
             <div className="glass-panel rounded-2xl border border-white/5 p-8 text-center space-y-3">
               <p className="text-xs text-synth-text-muted">
-                Chọn tài khoản thiếu hiệp tại tab <strong className="text-synth-magenta">Thành viên</strong> để duyệt yêu cầu đổi Phúc Lợi hoặc thiết lập Phúc Lợi Gia Môn dành riêng cho con.
+                Chọn tài khoản thiếu hiệp tại tab <strong className="text-synth-magenta">🏛️ Chính Điện</strong> (bấm "Xem Hoạt Động") để duyệt yêu cầu đổi Phúc Lợi hoặc thiết lập Phúc Lợi Gia Môn dành riêng cho con.
               </p>
             </div>
           ) : (
@@ -1632,15 +1663,19 @@ export const ParentConsole: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
               <label className="space-y-2 text-xs">
-                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Môn học</span>
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">
+                  Môn học {selectedSect && <span className="text-synth-cyan normal-case">🔒 khóa theo ngữ cảnh Vạn Quyển Các</span>}
+                </span>
                 <select
                   value={editSubject}
                   onChange={(e) => setEditSubject(e.target.value as any)}
-                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                  disabled={!!selectedSect}
+                  title={selectedSect ? 'Đổi "Đổi môn phái" ở Vạn Quyển Các để quản lý ngân hàng câu hỏi môn khác, tránh trộn lẫn dữ liệu giữa các môn phái.' : undefined}
+                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan disabled:opacity-70 disabled:cursor-not-allowed"
                 >
-                  <option value="english">🇬🇧 Tiếng Anh</option>
-                  <option value="math">📐 Toán học</option>
-                  <option value="literature">✍️ Ngữ văn</option>
+                  {Object.values(SUBJECTS_CONFIG).map(sub => (
+                    <option key={sub.id} value={sub.id}>{sub.icon} {sub.name}</option>
+                  ))}
                 </select>
               </label>
               <label className="space-y-2 text-xs">
@@ -1936,15 +1971,17 @@ export const ParentConsole: React.FC = () => {
           };
         });
 
-        const totalStudents = adminStudents.length;
-        const totalXP = adminStudents.reduce((acc, s) => acc + (s.player?.xp || 0), 0);
-        const totalCoins = adminStudents.reduce((acc, s) => acc + (s.player?.coins || 0), 0);
-        const avgLevel = totalStudents > 0 
-          ? Math.round(adminStudents.reduce((acc, s) => acc + (s.player?.level || 1), 0) / totalStudents)
+        // Tài khoản Viện Chủ (admin) tự động ẩn khỏi thống kê & bảng xếp hạng thiếu hiệp để tránh gian lận (CORE_SPECS §1.2)
+        const nonAdminStudents = adminStudents.filter((s: any) => s.role !== 'admin');
+        const totalStudents = nonAdminStudents.length;
+        const totalXP = nonAdminStudents.reduce((acc, s) => acc + (s.player?.xp || 0), 0);
+        const totalCoins = nonAdminStudents.reduce((acc, s) => acc + (s.player?.coins || 0), 0);
+        const avgLevel = totalStudents > 0
+          ? Math.round(nonAdminStudents.reduce((acc, s) => acc + (s.player?.level || 1), 0) / totalStudents)
           : 0;
 
         // Sort students by Level desc for mini-leaderboard
-        const sortedStudents = [...adminStudents].sort((a, b) => (b.player?.level || 1) - (a.player?.level || 1));
+        const sortedStudents = [...nonAdminStudents].sort((a, b) => (b.player?.level || 1) - (a.player?.level || 1));
 
         return (
           <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-6">
@@ -2060,13 +2097,10 @@ export const ParentConsole: React.FC = () => {
                     ) : (
                       sortedStudents.map((stud, idx) => {
                         const lv = stud.player?.level || 1;
-                        let rankName = 'Tân Đệ Tử';
-                        let rankIcon = '🌱';
-                        if (lv >= 80) { rankName = 'Tông Sư'; rankIcon = '👑'; }
-                        else if (lv >= 50) { rankName = 'Đại Hiệp'; rankIcon = '🐉'; }
-                        else if (lv >= 30) { rankName = 'Cao Thủ'; rankIcon = '⭐'; }
-                        else if (lv >= 15) { rankName = 'Thiếu Hiệp'; rankIcon = '⚔️'; }
-                        else if (lv >= 5) { rankName = 'Đệ Tử'; rankIcon = '🥋'; }
+                        // Dùng chung hàm chuẩn getStudentRankForLevel (CORE_SPECS §7.3) thay vì tự viết lại thang rank.
+                        const studentRank = getStudentRankForLevel(lv);
+                        const rankName = studentRank.name;
+                        const rankIcon = studentRank.icon;
 
                         return (
                           <tr key={stud.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
@@ -2106,14 +2140,70 @@ export const ParentConsole: React.FC = () => {
         );
       })()}
 
-      {/* Members Tab */}
-      {activeTab === 'chinh_dien' && (
+      {/* Members Tab (Chính Điện) + Thân Phận (hồ sơ chi tiết thiếu hiệp) */}
+      {(activeTab === 'chinh_dien' || activeTab === 'than_phan') && (
         <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-6">
-          {!viewingStudentId ? (
+          {activeTab === 'chinh_dien' ? (
             <div className="space-y-4">
               <h3 className="font-orbitron font-bold text-sm text-synth-magenta uppercase tracking-wider flex items-center gap-2">
                 🏛️ Chính Điện — Quản lý thiếu hiệp & Cấp quyền
               </h3>
+
+              {/* Thiết lập PIN bảo mật (CORE_SPECS §2.6) */}
+              <details className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                <summary className="cursor-pointer font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">
+                  🔐 Đổi PIN bảo mật Viện Chủ
+                </summary>
+                <form onSubmit={handleChangePin} className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <label className="space-y-1.5 text-xs">
+                    <span className="block text-synth-text-muted font-bold uppercase tracking-wider">PIN hiện tại</span>
+                    <input
+                      type="password"
+                      inputMode="numeric"
+                      value={changePinCurrent}
+                      onChange={e => setChangePinCurrent(e.target.value)}
+                      className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                      placeholder="••••"
+                    />
+                  </label>
+                  <label className="space-y-1.5 text-xs">
+                    <span className="block text-synth-text-muted font-bold uppercase tracking-wider">PIN mới (4-6 số)</span>
+                    <input
+                      type="password"
+                      inputMode="numeric"
+                      value={changePinNew}
+                      onChange={e => setChangePinNew(e.target.value)}
+                      className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                      placeholder="••••"
+                    />
+                  </label>
+                  <label className="space-y-1.5 text-xs">
+                    <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Xác nhận PIN mới</span>
+                    <input
+                      type="password"
+                      inputMode="numeric"
+                      value={changePinConfirm}
+                      onChange={e => setChangePinConfirm(e.target.value)}
+                      className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                      placeholder="••••"
+                    />
+                  </label>
+                  <div className="md:col-span-3 flex items-center gap-3">
+                    <button
+                      type="submit"
+                      className="px-4 py-2 rounded-lg font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:shadow-[0_0_10px_rgba(0,240,255,0.4)] cursor-pointer"
+                    >
+                      Đổi PIN
+                    </button>
+                    {changePinFeedback && (
+                      <span className={`text-xs font-semibold ${changePinFeedback.type === 'success' ? 'text-synth-green' : 'text-red-400'}`}>
+                        {changePinFeedback.text}
+                      </span>
+                    )}
+                  </div>
+                </form>
+              </details>
+
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
@@ -2151,6 +2241,7 @@ export const ParentConsole: React.FC = () => {
                               onClick={() => {
                                 setViewingStudentId(usr.id);
                                 fetchStudentProfile(usr.id);
+                                setActiveTab('than_phan');
                               }}
                               className="px-2.5 py-1 rounded bg-synth-blue/30 border border-synth-cyan/30 text-synth-cyan hover:bg-synth-cyan/20 font-semibold cursor-pointer transition-colors"
                             >
@@ -2183,12 +2274,31 @@ export const ParentConsole: React.FC = () => {
                 </table>
               </div>
             </div>
+          ) : !viewingStudentId ? (
+            <div className="text-center py-16 space-y-3">
+              <span className="text-4xl block">👑</span>
+              <h3 className="font-orbitron font-bold text-sm text-synth-magenta uppercase tracking-wider">
+                Thân Phận — Hồ sơ Thiếu Hiệp
+              </h3>
+              <p className="text-xs text-synth-text-muted max-w-sm mx-auto">
+                Chưa chọn thiếu hiệp nào để xem hồ sơ. Vào Chính Điện, bấm "Xem Hoạt Động" trên một thiếu hiệp để mở Thân Phận của con.
+              </p>
+              <button
+                onClick={() => setActiveTab('chinh_dien')}
+                className="px-4 py-2 rounded-lg font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-magenta text-black hover:shadow-[0_0_10px_rgba(255,0,127,0.4)] cursor-pointer"
+              >
+                🏛️ Đến Chính Điện
+              </button>
+            </div>
           ) : (
             <div className="space-y-6">
               {/* Inspection Header */}
               <div className="flex justify-between items-center border-b border-white/10 pb-4">
                 <button
-                  onClick={() => setViewingStudentId(null)}
+                  onClick={() => {
+                    setViewingStudentId(null);
+                    setActiveTab('chinh_dien');
+                  }}
                   className="px-3 py-1.5 rounded bg-synth-gray/30 border border-white/10 text-white hover:bg-white/10 font-bold cursor-pointer transition-colors"
                 >
                   ← Quay lại danh sách
@@ -2476,7 +2586,7 @@ export const ParentConsole: React.FC = () => {
       )}
 
       {/* Mobile Admin Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-3 py-2.5 pb-3 grid grid-cols-4 gap-1 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-3 py-2.5 pb-3 grid grid-cols-5 gap-1 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)]">
         <button
           onClick={() => {
             setActiveTab('chinh_dien');
@@ -2488,6 +2598,16 @@ export const ParentConsole: React.FC = () => {
         >
           <span className="text-base">🏛️</span>
           <span>Chính Điện</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('than_phan')}
+          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
+            activeTab === 'than_phan' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
+          }`}
+        >
+          <span className="text-base">👑</span>
+          <span>Thân Phận</span>
         </button>
 
         <button

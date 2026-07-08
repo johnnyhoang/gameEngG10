@@ -15,7 +15,7 @@ import {
 import { supabase } from '../utils/supabaseClient';
 
 type PlaneFigureKind = 'triangle' | 'quadrilateral' | 'circle' | 'mixed' | 'unknown';
-type PlaneTool = 'move' | 'connect-vertex' | 'connect-edge' | 'altitude' | 'median' | 'perpendicular' | 'parallel' | 'angle-mark';
+type PlaneTool = 'move' | 'connect-vertex' | 'connect-edge' | 'altitude' | 'median' | 'perpendicular' | 'parallel' | 'angle-mark' | 'tangent';
 
 interface PlanePoint {
   id: string;
@@ -41,7 +41,7 @@ interface PlaneCircleShape {
 
 interface PlaneOverlay {
   id: string;
-  type: 'segment' | 'marker' | 'parallel' | 'angle' | 'altitude' | 'median' | 'perpendicular';
+  type: 'segment' | 'marker' | 'parallel' | 'angle' | 'altitude' | 'median' | 'perpendicular' | 'tangent';
   from?: string;
   to?: string;
   at?: string;
@@ -256,6 +256,25 @@ function deriveOverlayGeometry(scene: PlaneScene, overlay: PlaneOverlay) {
 
   if (overlay.type === 'angle' && fromPoint) {
     return { x1: fromPoint.x - 12, y1: fromPoint.y - 12, x2: fromPoint.x + 12, y2: fromPoint.y + 12 };
+  }
+
+  // Tiếp tuyến (CORE_SPECS §2.2): đường thẳng qua tiếp điểm, vuông góc với bán kính tại tiếp điểm đó.
+  if (overlay.type === 'tangent' && fromPoint && scene.circle) {
+    const center = pointMap.get(scene.circle.center);
+    if (center) {
+      const dx = fromPoint.x - center.x;
+      const dy = fromPoint.y - center.y;
+      const len = Math.hypot(dx, dy) || 1;
+      const perpX = -dy / len;
+      const perpY = dx / len;
+      const halfLength = 150;
+      return {
+        x1: fromPoint.x - perpX * halfLength,
+        y1: fromPoint.y - perpY * halfLength,
+        x2: fromPoint.x + perpX * halfLength,
+        y2: fromPoint.y + perpY * halfLength
+      };
+    }
   }
 
   return null;
@@ -532,6 +551,28 @@ export function BikiHinhHocPhang({ problemText = '' }: BikiHinhHocPhangProps) {
       return;
     }
 
+    if (boardTool === 'tangent') {
+      if (!scene.circle) {
+        addHistory('Tiếp tuyến chỉ dựng được trên hình Đường tròn.');
+        return;
+      }
+      addOverlay(
+        {
+          id: `overlay-${Date.now()}`,
+          type: 'tangent',
+          from: pointId,
+          color: '#a855f7',
+          label: 'Tiếp tuyến'
+        },
+        {
+          title: 'Dựng tiếp tuyến',
+          body: `Qua tiếp điểm ${pointId} kẻ tiếp tuyến vuông góc với bán kính ${scene.circle.center}${pointId} tại tiếp điểm đó.`
+        },
+        `Tiếp tuyến tại ${pointId}`
+      );
+      return;
+    }
+
     if (!selectedPointId) {
       setSelectedPointId(pointId);
       return;
@@ -757,7 +798,8 @@ export function BikiHinhHocPhang({ problemText = '' }: BikiHinhHocPhangProps) {
             { id: 'median', label: 'Trung tuyến', icon: <Square className="w-4 h-4" /> },
             { id: 'perpendicular', label: 'Vuông góc', icon: <Square className="w-4 h-4" /> },
             { id: 'parallel', label: 'Song song', icon: <RefreshCw className="w-4 h-4" /> },
-            { id: 'angle-mark', label: 'Đánh dấu góc', icon: <Circle className="w-4 h-4" /> }
+            { id: 'angle-mark', label: 'Đánh dấu góc', icon: <Circle className="w-4 h-4" /> },
+            { id: 'tangent', label: 'Tiếp tuyến', icon: <ArrowRight className="w-4 h-4" /> }
           ].map(tool => {
             const isActive = boardTool === tool.id;
             return (

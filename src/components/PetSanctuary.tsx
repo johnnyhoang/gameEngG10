@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { Activity } from 'lucide-react';
 import type { HistoryLog } from '../types/game';
+import { toast } from '../utils/toast';
 
 export const PetSanctuary: React.FC = () => {
   const pet = useGameState(state => state.pet);
@@ -17,9 +18,13 @@ export const PetSanctuary: React.FC = () => {
   const isUnicorn = uiTheme === 'unicorn-dream';
 
   const handleFeed = () => {
+    const success = feedPet();
+    if (!success) {
+      toast.error('Không đủ 50 NP để cho Pet ăn. Kiếm thêm Ngân Lượng ở Hang Luyện Công nhé!');
+      return;
+    }
     setInteracting(true);
-    feedPet();
-    setSpeech('Chao ôi... ngon quá! Ngon múp míp luôn á! Cảm ơn thiếu hiệp! 🍖🐷');
+    setSpeech('Chao ôi... ngon quá! Ngon múp míp luôn á! Cảm ơn thiếu hiệp! 🍖🐷 (-50 NP, -30 XP)');
     setTimeout(() => {
       setInteracting(false);
     }, 2000);
@@ -514,7 +519,7 @@ export const PetSanctuary: React.FC = () => {
               : 'bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-border-cyan shadow-[0_0_12px_rgba(0,240,255,0.2)]'
           }`}
         >
-          {interacting ? 'Đang Cho Ăn Heo... 🍖' : `Cho ${pet.name} Ăn 🍖`}
+          {interacting ? 'Đang Cho Ăn Heo... 🍖' : `Cho ${pet.name} Ăn 🍖 (-50 NP, -30 XP)`}
         </button>
       </div>
     </div>
