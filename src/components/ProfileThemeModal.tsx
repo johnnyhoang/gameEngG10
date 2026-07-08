@@ -176,7 +176,7 @@ export const ProfileThemeModal: React.FC<ProfileThemeModalProps> = ({
               ? 'border-violet-200/40 bg-white/70 text-violet-700 hover:bg-white'
               : 'border-white/10 bg-white/10 text-white hover:bg-white/20'
           }`}
-          aria-label="Đóng profile"
+          aria-label="Đóng Thân Phận"
         >
           <X className="h-4 w-4" />
         </button>

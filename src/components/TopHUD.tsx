@@ -201,7 +201,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             >
               <Zap className="w-4 h-4 text-synth-cyan fill-synth-cyan animate-pulse" />
               <div className="flex flex-col">
-                <span className="text-[8px] text-synth-cyan font-orbitron font-bold uppercase tracking-wider hidden sm:inline">Energy</span>
+                <span className="text-[8px] text-synth-cyan font-orbitron font-bold uppercase tracking-wider hidden sm:inline">Chân Khí</span>
                 <span className="text-xs font-semibold font-orbitron text-white">{player.energy}/1000 <span className="text-[8px] opacity-50">?</span></span>
               </div>
             </div>
@@ -228,11 +228,11 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             <div 
               onClick={() => showHelp('nanite')}
               className={`col-span-2 md:col-span-1 ${statChipClass}`} 
-              title="Tiền vàng Nanite NP - Nhấp để xem hướng dẫn"
+              title="Ngân lượng NP - Nhấp để xem hướng dẫn"
             >
               <Coins className="w-4 h-4 text-synth-orange fill-synth-orange" />
               <div className="flex flex-col">
-                <span className="text-[8px] text-synth-orange font-orbitron font-bold uppercase tracking-wider hidden sm:inline">Nanite NP</span>
+                <span className="text-[8px] text-synth-orange font-orbitron font-bold uppercase tracking-wider hidden sm:inline">Ngân Lượng</span>
                 <span className="text-xs font-semibold font-orbitron text-white">{player.coins} <span className="text-[8px] opacity-50">?</span></span>
               </div>
             </div>
@@ -246,7 +246,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
               <div className="flex items-center justify-center gap-1.5">
                 <Flame className={`w-4 h-4 ${player.streak > 0 ? 'text-orange-500 fill-orange-500 animate-bounce' : 'text-synth-gray'}`} />
                 <div className="flex flex-col">
-                  <span className="text-[8px] text-orange-400 font-orbitron font-bold uppercase tracking-wider hidden sm:inline">Streak</span>
+                  <span className="text-[8px] text-orange-400 font-orbitron font-bold uppercase tracking-wider hidden sm:inline">Chuỗi</span>
                   <span className="text-xs font-semibold font-orbitron text-white">{player.streak}d <span className="text-[8px] opacity-50">?</span></span>
                 </div>
                 {hasShield && (
@@ -318,7 +318,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                   : 'bg-transparent border-synth-magenta/50 text-synth-magenta hover:bg-synth-magenta/10'
               }`}
             >
-              Admin Hub
+              Bảng Viện Chủ 👑
             </button>
           )}
 
@@ -332,7 +332,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
               }`}
             >
               <Palette className="w-4 h-4" />
-              <span className="hidden sm:inline">Profile</span>
+              <span className="hidden sm:inline">Thân Phận</span>
             </button>
           )}
 
