@@ -22,198 +22,193 @@ import { DEFAULT_UI_THEME } from '../theme/uiThemes';
 
 const HELP_TOPICS: Record<string, { title: string; bullets: string[] }> = {
   xp: {
-    title: 'Cấp độ & Kinh Nghiệm (XP)',
+    title: 'Cấp độ và XP',
     bullets: [
-      '• Làm đúng mỗi câu hỏi trắc nghiệm sẽ cộng thêm từ 10 - 25 XP tùy độ khó.',
-      '• Đủ điểm XP quy định sẽ thăng cấp (Level Up) giúp tăng giới hạn và tiến hóa Thú cưng.',
-      '• Chiến thắng Boss hoặc hoàn thành Nhiệm vụ ngày nhận lượng XP siêu khủng.'
+      '• Làm đúng câu hỏi là có XP. Câu càng khó, XP càng nặng tay.',
+      '• Đủ XP thì lên cấp, mở thêm giới hạn và tiến hóa thú cưng.',
+      '• Boss và nhiệm vụ ngày là hai mỏ thưởng lớn nhất.'
     ]
   },
   energy: {
-    title: 'Chỉ số Năng lượng (Energy)',
+    title: 'Năng lượng',
     bullets: [
-      '• Giới hạn 1000 Energy mỗi ngày, tự động nạp đầy 100% vào lúc 0h sáng.',
-      '• Mỗi lần làm bài luyện tập thường tiêu hao 10 Energy.',
-      '• Các trận đấu Boss hoặc khiêu chiến Dungeon tiêu hao 20 Energy.',
-      '• Giới hạn này giúp bảo vệ mắt và sức khỏe của con, tránh học tập quá sức.'
+      '• Energy hồi đầy mỗi ngày lúc 0h.',
+      '• Mỗi lượt luyện thường tốn 10 Energy.',
+      '• Boss và một số ải nặng tay có thể tốn nhiều hơn.',
+      '• Cạn Energy thì nghỉ nhịp, đừng cố kéo liều.'
     ]
   },
   hearts: {
-    title: 'Trái tim sinh mệnh (Hearts)',
+    title: 'Tim sinh mệnh',
     bullets: [
-      '• Con có tối đa 3 trái tim khi tham gia Đấu trường hoặc làm bài thi.',
-      '• Mỗi câu trả lời sai sẽ làm mất 1 trái tim.',
-      '• Nếu mất hết cả 3 trái tim, lượt thi đấu sẽ thất bại và con phải làm lại từ đầu.',
-      '• Năng lượng không bị mất khi con làm sai, chỉ mất mạng chơi.'
+      '• Boss và đấu trường cho tối đa 3 tim.',
+      '• Sai câu là mất tim, nên đừng ham lao bừa.',
+      '• Hết tim thì lượt đó gãy, phải làm lại cho gọn hơn.',
+      '• Tim không trừ vì sai thường, chỉ trừ trong chế độ sinh tử.'
     ]
   },
   nanite: {
-    title: 'Nanite Points (Xu NP)',
+    title: 'Nanite Points (NP)',
     bullets: [
-      '• Đây là tiền ảo trong game nhận được mỗi khi con trả lời đúng câu hỏi.',
-      '• Số xu kiếm được tương xứng với lượng XP nhận được.',
-      '• Con dùng xu vàng NP này trong Cửa hàng để mua Khiên bảo vệ Streak hoặc đổi các phần quà thực tế từ Ba Mẹ.'
+      '• NP là tiền ảo trong game, trả công cho câu đúng.',
+      '• NP dùng để mua gợi ý, khiên, tim và đổi quà.',
+      '• Kiếm NP đều tay thì chơi mượt hơn nhiều.'
     ]
   },
   wallet: {
-    title: 'Ví tích lũy VND từ Ba Mẹ',
+    title: 'Ví Ba Mẹ',
     bullets: [
-      '• Hiển thị số tiền mặt thực tế con tích lũy được từ việc học tập.',
-      '• Khi con dùng xu NP để đổi các phần quà có giá trị tiền mặt (ví dụ: Ly trà sữa, 1h chơi iPad), yêu cầu sẽ gửi tới Ba Mẹ.',
-      '• Khi Ba Mẹ bấm duyệt yêu cầu trên trang Admin, số tiền sẽ được cộng vào Ví này và con có thể rút ra chi tiêu.'
+      '• Đây là phần thưởng thật bằng tiền mặt.',
+      '• Đổi quà xong thì yêu cầu sẽ chờ Ba duyệt.',
+      '• Ba duyệt xong, tiền vào ví và con có thể chi tiêu.'
     ]
   },
   dragon: {
-    title: 'Thú cưng Rồng Đồng Hành',
+    title: 'Rồng đồng hành',
     bullets: [
-      '• Rồng con sẽ đồng hành cùng con trong suốt quá trình làm bài tập.',
-      '• Rồng tiến hóa qua 4 giai đoạn: Trứng (Egg) -> Rồng con (Hatchling) -> Rồng thiếu niên (Teen) -> Rồng trưởng thành (Adult).',
-      '• Thú cưng thăng cấp dựa trên Cấp độ học tập của con.',
-      '• Con cần dùng xu NP mua thức ăn trong shop để cho Rồng ăn thường xuyên, giữ chỉ số cảm xúc vui vẻ.'
+      '• Rồng lớn lên theo quá trình học.',
+      '• Cho rồng ăn đều tay thì nó giữ mood tốt.',
+      '• Muốn rồng mạnh, con phải học đều chứ không được bỏ ải.'
     ]
   },
   prediction: {
-    title: 'AI Dự đoán điểm thi lớp 10',
+    title: 'Dự đoán điểm thi',
     bullets: [
-      '• Công cụ phân tích thông minh sử dụng thuật toán máy học đánh giá kết quả làm bài của con.',
-      '• Yêu cầu con làm tối thiểu 20 câu hỏi để AI bắt đầu có dữ liệu phân tích.',
-      '• Luyện tập trên 200 câu giúp giảm biên độ sai số xuống cực thấp (±0.2 điểm).',
-      '• Điểm số dự kiến mô phỏng sát nhất với kết quả làm bài thi thật vào lớp 10.'
+      '• Hệ thống nhìn vào kết quả làm bài để ước tính điểm thi.',
+      '• Càng làm nhiều câu thì ước lượng càng chắc.',
+      '• Con nên lấy đó làm mốc luyện chứ đừng xem như phán quyết cuối.'
     ]
   },
   'ai-ingest': {
-    title: 'Tự động Nhập Đề thi bằng AI',
+    title: 'Nhập đề bằng AI',
     bullets: [
-      '• Ba Mẹ chỉ cần copy văn bản thô, tài liệu đề thi học kỳ hoặc gõ câu hỏi vào khung nhập liệu.',
-      '• Nhấn nút "Phân tích bằng AI" để AI tự động bóc tách thành các câu hỏi trắc nghiệm hoàn chỉnh (có đề bài, 4 đáp án lựa chọn, đáp án đúng và lời giải chi tiết).',
-      '• Nhấn "Xác nhận nhập" để lưu trực tiếp câu hỏi vào ngân hàng đề thi của con.'
+      '• Dán đề thô hoặc file câu hỏi vào khung nhập.',
+      '• AI sẽ tách câu, lựa chọn đáp án và gợi ý lời giải.',
+      '• Xác nhận xong là câu hỏi vào kho đề ngay.'
     ]
   },
   'parent-console': {
-    title: 'Hướng dẫn sử dụng Bảng Quản Trị',
+    title: 'Bảng quản trị',
     bullets: [
-      '• Tab Thành viên: Hiển thị danh sách các con. Nhấp "Xem Hoạt Động" để xem chi tiết tiến trình học, biểu đồ năng lực, trạng thái pet và 50 lịch sử gần nhất.',
-      '• Tab Ngân hàng: Có bộ đếm theo loại câu, theo part, theo chuyên đề và nút mở help cho từng môn.',
-      '• Duyệt đổi quà: Phê duyệt nhanh các món quà con gửi yêu cầu ngay trong bảng Xem Hoạt Động.',
-      '• AI Ingest: Nơi ba mẹ tự biên soạn hoặc nạp thêm ngân hàng câu hỏi mới cho con làm bài.'
+      '• Tab Thành viên: xem tiến trình, năng lực và lịch sử gần nhất.',
+      '• Tab Ngân hàng: lọc theo môn, dạng và thang chấm.',
+      '• Tab Đổi quà: duyệt nhanh các yêu cầu từ học sinh.',
+      '• AI Ingest: nạp thêm câu hỏi mới vào ngân hàng.'
     ]
   },
   'bank-structure': {
-    title: 'Cách đọc ngân hàng câu hỏi',
+    title: 'Cấu trúc ngân hàng',
     bullets: [
-      '• Mỗi câu nên có subject, category và metadata để UI lọc đúng dạng.',
-      '• examPart dùng để chia đề theo phần / bài; answerMode cho biết cách chấm.',
-      '• solutionStyle và solutionSteps là khung chấm điểm nhanh cho CRUD và AI.'
+      '• Mỗi câu nên có subject, category và metadata rõ ràng.',
+      '• examPart giúp chia đề, answerMode quyết định cách chấm.',
+      '• solutionSteps dùng để chấm rubric và giải thích.'
     ]
   },
   'math-bank': {
-    title: 'Dạng Toán & cách chấm',
+    title: 'Dạng Toán',
     bullets: [
-      '• Giữ đủ 8 bài: đồ thị, Viète, hàm bậc nhất, tăng trưởng %, giảm giá, thể tích dâng nước, mua hàng khuyến mãi, hình học chứng minh.',
-      '• Bài nhiều ý nên dùng answerMode = multi-part và subparts = [a, b, c].',
-      '• proof / diagram nên có solutionSteps rõ từng ý để chấm rubric không lệch.'
+      '• Giữ đủ các mảng: đại số, đồ thị, hình học, thực tế.',
+      '• Bài nhiều ý nên tách a/b/c và solutionSteps theo từng ý.',
+      '• proof hoặc diagram phải có bước trung gian rõ ràng.'
     ]
   },
   'english-bank': {
     title: 'Dạng Tiếng Anh',
     bullets: [
-      '• Part I là MCQ: grammar, vocabulary, pronunciation, stress, communication, signs.',
-      '• Part II - III nên gắn guided-cloze hoặc reading để lọc đúng bài đọc.',
-      '• Part IV - VI nên lưu word-form, rearrangement, transformation và các đáp án chấp nhận được.'
+      '• MCQ tách riêng grammar, vocabulary, pronunciation, stress, reading.',
+      '• Tự luận nên lưu đáp án chấp nhận được và biến thể.',
+      '• Chấm theo dạng bài, không chấm cảm tính.'
     ]
   },
   'literature-bank': {
     title: 'Dạng Ngữ văn',
     bullets: [
-      '• Tách rõ reading, tiếng Việt, nghị luận xã hội và nghị luận văn học.',
-      '• Bài đọc hiểu nên lưu textGenre và literatureTask để lọc đúng câu hỏi.',
-      '• Bài nghị luận nên dùng solutionSteps + correctAnswer dạng rubric để chấm từng ý.'
+      '• Tách đọc hiểu, tiếng Việt, nghị luận xã hội và nghị luận văn học.',
+      '• Bài văn nên có rubric, câu mấu chốt và ý cần đạt.',
+      '• Chấm theo bố cục, lập luận, dẫn chứng và diễn đạt.'
     ]
   },
   rubric: {
-    title: 'Cách trình bày và chấm điểm',
+    title: 'Cách chấm',
     bullets: [
-      '• Bố cục rõ: mở bài, thân bài, kết luận hoặc từng ý a/b/c.',
-      '• Ghi đủ bước biến đổi, công thức, và đơn vị để AI chấm không phải đoán.',
-      '• Ưu tiên answerMode phù hợp: short-answer cho đáp số, proof cho chứng minh, multi-part cho bài phân hóa.'
+      '• Bố cục phải rõ, ý phải mạch, không viết kiểu phóng tay.',
+      '• Dẫn chứng và bước giải phải đủ để AI không phải đoán.',
+      '• Chấm theo rubric, không chấm theo cảm giác.'
     ]
   },
   'question-type-mcq': {
     title: 'Trắc nghiệm',
     bullets: [
-      '• Chỉ nên lưu 1 đáp án đúng duy nhất trong correctAnswer.',
-      '• Giữ 4 lựa chọn rõ ràng, cùng định dạng, tránh đáp án dài ngắn lệch nhau.',
-      '• Khi giải thích, nêu vì sao đáp án đúng và vì sao các phương án còn lại sai.'
+      '• Chỉ lưu một đáp án đúng.',
+      '• Bốn lựa chọn phải cùng kiểu, cùng độ dài tương đối.',
+      '• Giải thích ngắn, gọn, đủ để thấy vì sao đúng và sai.'
     ]
   },
   'question-type-short-answer': {
     title: 'Tự luận ngắn',
     bullets: [
-      '• Nên có đáp số cuối rõ ràng, kèm đơn vị nếu có.',
-      '• solutionSteps nên chia 2-4 bước ngắn, đúng trọng tâm.',
-      '• Chấm theo đáp số + lập luận; không nên viết dài lan man.'
+      '• Đáp số phải rõ ràng, có đơn vị nếu cần.',
+      '• Bước làm chỉ cần vừa đủ, không lan man.',
+      '• Chấm cả kết quả lẫn cách đi tới kết quả.'
     ]
   },
   'question-type-proof': {
     title: 'Chứng minh',
     bullets: [
-      '• Trình bày theo giả thiết -> suy luận -> kết luận.',
-      '• Mỗi ý chứng minh nên có mốc riêng để chấm rubric.',
-      '• Nếu là hình học, nên nêu rõ góc, tam giác đồng dạng, hệ thức lượng hoặc phương tích.'
+      '• Đi từ giả thiết sang suy luận rồi chốt kết luận.',
+      '• Mỗi ý nên có một mốc chấm riêng.',
+      '• Hình học thì ghi rõ góc, tam giác, hệ thức hoặc đồng dạng.'
     ]
   },
   'question-type-multi-part': {
     title: 'Nhiều ý',
     bullets: [
-      '• Tách từng ý a/b/c trong prompt và solutionSteps.',
-      '• Mỗi ý cần kết quả riêng để hệ thống chấm từng phần.',
-      '• Nếu một ý là điều kiện, ý sau là tính toán, phải ghi rõ trình tự để UI không lẫn.'
+      '• Tách rõ a/b/c ngay từ đầu.',
+      '• Ý nào ra kết quả riêng thì chấm riêng.',
+      '• Đừng để một ý sai kéo sập cả bài nếu các ý khác vẫn ổn.'
     ]
   },
   'question-type-wordform': {
     title: 'Word form',
     bullets: [
-      '• Lưu đúng từ gốc và các đáp án chấp nhận được.',
-      '• Nếu có nhiều biến thể đúng, liệt kê hết trong correctAnswer.',
-      '• Khi chấm, ưu tiên đúng loại từ và đúng ngữ cảnh câu.'
+      '• Lưu từ gốc và các đáp án chấp nhận được.',
+      '• Chấm đúng loại từ, đúng ngữ cảnh, đúng chính tả.',
+      '• Nếu có biến thể hợp lệ thì phải ghi vào.'
     ]
   },
   'question-type-rewrite': {
-    title: 'Rewrite / Transformation',
+    title: 'Viết lại câu',
     bullets: [
-      '• Giữ nguyên nghĩa, đổi đúng cấu trúc được yêu cầu.',
-      '• Lưu nhiều đáp án chấp nhận được nếu đề cho phép biến thể.',
-      '• Chấm theo đúng dạng chuyển đổi: passive, reported speech, clause, inversion, etc.'
+      '• Giữ nghĩa, đổi đúng cấu trúc đề yêu cầu.',
+      '• Có nhiều đáp án đúng thì lưu hết.',
+      '• Chấm theo mục tiêu chuyển đổi, không soi từng chữ vụn.'
     ]
   },
   'question-type-cloze': {
-    title: 'Cloze',
+    title: 'Điền khuyết',
     bullets: [
-      '• Chú ý ngữ cảnh trước và sau chỗ trống.',
-      '• Nếu là guided cloze, nên ghi rõ dạng từ cần điền và collocation.',
-      '• Chấm theo đáp án đúng hoặc các biến thể được chấp nhận.'
+      '• Nhìn trước và sau chỗ trống.',
+      '• Ưu tiên collocation, từ loại và ngữ cảnh.',
+      '• Nếu đề có gợi ý thì dùng gợi ý để khóa đáp án.'
     ]
   },
   'question-type-reading': {
-    title: 'Reading',
+    title: 'Đọc hiểu',
     bullets: [
-      '• Luôn gắn đoạn đọc / ngữ liệu gốc ở đầu prompt.',
-      '• Câu hỏi nên ghi rõ cần main idea, detail, reference hay true/false.',
-      '• Chấm theo ý chính, không chỉ theo từ khóa rời rạc.'
+      '• Luôn gắn ngữ liệu gốc ở đầu câu.',
+      '• Câu hỏi phải nói rõ cần ý chính, chi tiết hay suy luận.',
+      '• Chấm theo nội dung đúng, không chỉ theo từ khóa lẻ.'
     ]
   },
   streak: {
-    title: 'Chuỗi học tập liên tục (Streak)',
+    title: 'Chuỗi học tập',
     bullets: [
-      '• Chuỗi ngày liên tiếp con đăng nhập làm bài tập.',
-      '• Duy trì chuỗi Streak giúp nhân đôi lượng XP nhận được.',
-      '• Nếu một ngày con không học tập, chuỗi Streak sẽ bị reset về 0.',
-      '• Mẹo: Mua Khiên bảo vệ Streak (Streak Shield) trong cửa hàng để tự động giữ chuỗi nếu bận đột xuất.'
+      '• Học đều thì chuỗi tăng.',
+      '• Bỏ một ngày là chuỗi dễ gãy.',
+      '• Có khiên thì còn cứu được, nhưng đừng ỷ lại.'
     ]
   }
-};
-
-interface GameState {
+};interface GameState {
   // State
   currentUser: UserProfile | null;
   player: PlayerProfile;
@@ -482,7 +477,7 @@ export const useGameState = create<GameState>()(
         while (xp >= level * 200) {
           xp -= level * 200;
           level += 1;
-          logActivity('exercise', 'Thăng cấp!', `Con đã đạt Level ${level}!`, 50, 0, 0);
+          logActivity('exercise', 'Thăng cấp!', `Bạn vừa chạm Level ${level}.`, 50, 0, 0);
           eventBus.publish('PET_GROWTH', { levelUp: true });
         }
         return { level, xp };
@@ -522,7 +517,7 @@ export const useGameState = create<GameState>()(
 
         setSubject: (subject) => {
           set({ currentSubject: subject });
-          logActivity('exercise', 'Chuyển môn học', `Con đã chuyển sang học môn ${subject === 'math' ? 'Toán Học' : subject === 'literature' ? 'Ngữ Văn' : 'Tiếng Anh'}.`, 0, 0, 0);
+          logActivity('exercise', 'Chuyển môn học', `Bạn đã chuyển sang học môn ${subject === 'math' ? 'Toán Học' : subject === 'literature' ? 'Ngữ Văn' : 'Tiếng Anh'}.`, 0, 0, 0);
         },
 
         // Initialize listeners
@@ -762,7 +757,7 @@ export const useGameState = create<GameState>()(
                 uiTheme: resolvedTheme
               };
             });
-            logActivity('energy_refill', 'Đăng nhập thành công', `Chào mừng ${user.name} đã gia nhập CyberEnglish!`);
+            logActivity('energy_refill', 'Đã vào sân', `Chào mừng ${user.name}. Sân học đã mở.`);
             return;
           }
 
@@ -843,7 +838,7 @@ export const useGameState = create<GameState>()(
                   lessonsProgress: data.lessonsProgress || {}
                 };
               });
-              logActivity('energy_refill', 'Đồng bộ Đám mây', `Tải dữ liệu học tập thành công cho ${user.name}!`);
+              logActivity('energy_refill', 'Đồng bộ Đám mây', `Dữ liệu học tập đã được kéo về cho ${user.name}!`);
             }
           } catch (e) {
             console.error('Lỗi khi tải thông tin từ backend Supabase:', e);
@@ -1107,7 +1102,7 @@ export const useGameState = create<GameState>()(
                 ...payload
               }
             }));
-            toast.success('Cập nhật cấu hình trò chơi thành công.');
+            toast.success('Cấu hình đã được cập nhật.');
           } catch (e) {
             console.error('Error updating game settings:', e);
             toast.error('Lỗi kết nối khi cập nhật cấu hình.');
@@ -1335,7 +1330,7 @@ export const useGameState = create<GameState>()(
             }
           });
 
-          logActivity('shop', 'Mua Gợi Ý', 'Dùng 50 NP mua 1 gợi ý cứu trợ trong bài làm', -cost, 0);
+          logActivity('shop', 'Rút gợi ý', 'Dùng 50 NP để mua một mũi cứu trợ trong bài làm.', -cost, 0);
           return true;
         },
 
@@ -1368,7 +1363,7 @@ export const useGameState = create<GameState>()(
             }
           });
 
-          logActivity('exercise', 'Lĩnh ngộ bài học!', `Đã lĩnh ngộ thành công chuyên đề: ${lesson.title}`, coinsGained, expGained, 0);
+          logActivity('exercise', 'Lĩnh ngộ bài học!', `Đã qua ải chuyên đề: ${lesson.title}`, coinsGained, expGained, 0);
         },
 
         claimParentReward: (rewardId) => {
@@ -1413,7 +1408,7 @@ export const useGameState = create<GameState>()(
             { type: 'energy', amount: 30, message: 'Hồi phục +30 Năng lượng!' },
             { type: 'wallet', amount: 5000, message: 'May mắn nhận 5.000đ từ Ví thưởng!' },
             { type: 'wallet', amount: 10000, message: 'Siêu cấp may mắn nhận 10.000đ từ Ví thưởng!' },
-            { type: 'nothing', amount: 0, message: 'Gặp may mắn lần sau nhé con!' }
+            { type: 'nothing', amount: 0, message: 'Trượt tay lần này, gỡ ở lần sau.' }
           ];
 
           const resultIndex = Math.floor(Math.random() * rewardsOptions.length);
@@ -1525,7 +1520,7 @@ export const useGameState = create<GameState>()(
               questions: [...state.questions, ...filteredNew]
             };
           });
-          logActivity('parent_approve', 'Ba nhập Đề thi mới', `Thêm thành công ${importedQuestions.length} câu hỏi vào Kho đề.`, 0, 0);
+          logActivity('parent_approve', 'Nhập Đề thi mới', `Đã nạp ${importedQuestions.length} câu hỏi vào kho đề.`, 0, 0);
         },
 
         deleteQuestion: async (questionId) => {
@@ -1639,7 +1634,7 @@ export const useGameState = create<GameState>()(
           set(state => ({
             questions: state.questions.map(q => q.id === question.id ? nextQuestion : q)
           }));
-          logActivity('exercise', 'Hổng hiểu - Lướt', `Đã bỏ qua câu hỏi mã số ${question.id} và đánh dấu cần hỗ trợ.`, 0, 0);
+          logActivity('exercise', 'Bỏ qua câu này', `Đã gác lại câu hỏi mã số ${question.id} để truy lại sau.`, 0, 0);
           return true;
         },
 
@@ -1654,7 +1649,7 @@ export const useGameState = create<GameState>()(
             dailyMission: null,
             logs: []
           });
-          logActivity('parent_approve', 'Khởi tạo lại tiến độ', 'Ba đã reset toàn bộ tiến độ của con học sinh.', 0, 0);
+          logActivity('parent_approve', 'Khởi tạo lại tiến độ', 'Đã reset toàn bộ tiến độ.', 0, 0);
         },
 
         // System Resets
@@ -1678,7 +1673,7 @@ export const useGameState = create<GameState>()(
           if (diffDays === 1) {
             // Streak continued!
             newStreak += 1;
-            logActivity('exercise', 'Duy trì Streak học tập!', `Chuỗi học liên tục tăng lên ${newStreak} ngày!`, 0, 0);
+            logActivity('exercise', 'Duy trì Streak học tập!', `Chuỗi học tăng lên ${newStreak} ngày!`, 0, 0);
           } else if (diffDays > 1) {
             // Streak broken! Check for shield
             const hasShield = state.player.badges.includes('Streak Shield');
@@ -1689,7 +1684,7 @@ export const useGameState = create<GameState>()(
                   badges: state.player.badges.filter(b => b !== 'Streak Shield')
                 }
               });
-              logActivity('shop', 'Kích hoạt Khiên bảo vệ', 'Khiên chắn tự động nổ tung để bảo vệ chuỗi Streak học của con!', 0, 0);
+              logActivity('shop', 'Kích hoạt Khiên', 'Khiên đã nổ để giữ chuỗi.', 0, 0);
             } else {
               streakBroken = true;
               newStreak = 0;

@@ -458,14 +458,14 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         : mode === 'reading'
           ? 'Reading Forest'
           : mode === 'mixed'
-            ? 'Mixed Dungeon'
+            ? 'Phụ bản hỗn hợp'
             : mode === 'revenge'
-              ? 'Revenge Dungeon'
+              ? 'Phụ bản trả bài'
               : mode === 'boss'
-                ? 'Boss Arena'
+                ? 'Đấu trường Boss'
                 : mode === 'survival'
-                  ? 'Survival Arena'
-                  : 'Lesson Dungeon';
+                  ? 'Đấu trường sinh tồn'
+                  : 'Phụ bản bài học';
 
   if (runFinished) {
     const isGameOver = player.hearts <= 0 && mode === 'boss';
@@ -479,14 +479,14 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         
         <p className="text-xs text-synth-text-muted">
           {isGameOver 
-            ? 'Rất tiếc, con đã cạn kiệt mạng (Hearts) khi chiến đấu với Boss. Hãy quay lại ôn tập thêm nhé!' 
+            ? 'Hết tim rồi. Lần sau ra tay chắc hơn.' 
             : mode === 'lesson'
-              ? 'Con đã hoàn thành các câu hỏi củng cố! Hãy quay lại để xác nhận lĩnh hội bài học nhé.'
+              ? 'Củng cố xong. Muốn kiểm tra lại thì quay về bản đồ.'
               : mode === 'vocabulary'
-                ? 'Con đã chinh phục Vocabulary Castle! Từ vựng và word form sẽ được ưu tiên ở lượt sau.'
+                ? 'Khá đấy. Vocabulary Castle đã gục. Lượt sau từ vựng và word form sẽ được ưu tiên hơn.'
                 : mode === 'pronunciation'
-                  ? 'Con đã chinh phục Pronunciation Peak! Hãy giữ nhịp phát âm và trọng âm thật chắc.'
-                  : `Đã hoàn thành phụ bản ${mode.toUpperCase()}! Hãy cùng xem thành quả chiến lợi phẩm.`}
+                  ? 'Khá lắm. Pronunciation Peak đã qua. Giữ nhịp phát âm và trọng âm cho chắc tay.'
+                  : `Qua ải ${mode.toUpperCase()}. Nhận chiến lợi phẩm rồi tính tiếp.`}
         </p>
 
         {/* Reward card */}
@@ -1007,7 +1007,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
             onClick={handleEscape}
             className="px-4 py-2.5 rounded-xl border border-synth-gray hover:bg-synth-gray/20 text-synth-text-muted font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 text-center"
           >
-            Mắc Lười (Thoát)
+            Rút khỏi ải
           </button>
 
           {/* Skip confused button */}
@@ -1016,7 +1016,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
               onClick={handleSkipConfused}
               className="px-4 py-2.5 rounded-xl border border-red-500/40 hover:bg-red-500/10 text-red-400 font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 text-center flex items-center justify-center gap-1.5"
             >
-              Khó hiểu (Lướt) 🧠
+              Bỏ qua câu này 🧠
             </button>
           )}
         </div>

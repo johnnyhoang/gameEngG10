@@ -47,7 +47,7 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
     bossId?: string
   ) => {
     if (player.energy < energyCost) {
-      toast.error('Không đủ năng lượng. Hãy đợi hồi phục hoặc hoàn thành thử thách khác.');
+      toast.error('Hết năng lượng rồi. Nghỉ một nhịp hoặc đánh tiếp ải khác.');
       return;
     }
     consumeEnergy(energyCost);
@@ -482,7 +482,7 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
               <Star className="w-7 h-7 text-synth-cyan" />
             </div>
             <div className="space-y-1 min-w-0">
-              <h4 className="font-orbitron font-bold text-base text-synth-cyan">🌀 Hành Trình Ngẫu Nhiên</h4>
+              <h4 className="font-orbitron font-bold text-base text-synth-cyan">🌀 Vào ải ngẫu nhiên</h4>
               <p className="text-xs text-slate-400 leading-relaxed">10 câu hỏi ngẫu nhiên từ toàn bộ chuyên đề, ưu tiên câu yếu.</p>
               <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">Phần thưởng: <span className="text-white">+15 XP / +5 NP</span></div>
             </div>

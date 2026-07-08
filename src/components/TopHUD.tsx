@@ -238,7 +238,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                       : 'bg-transparent border-synth-orange/50 text-synth-orange hover:bg-synth-orange/10'
                 }`}
               >
-                Item Shop
+                Cửa hàng
               </button>
 
               <button
