@@ -300,6 +300,7 @@ const HELP_TOPICS: Record<string, { title: string; bullets: string[] }> = {
   deleteQuestion: (questionId: string) => Promise<boolean>;
   updateQuestion: (questionId: string, updatedQuestion: Partial<Question>) => Promise<boolean>;
   flagQuestionConfused: (question: Question) => Promise<boolean>;
+  awardCoinsAndXp: (coins: number, xp: number, activityTitle: string, activityDetails: string) => void;
   resetProgress: () => void; // Keeps questions, resets student stats
 
   // Systems Reset
@@ -1636,6 +1637,18 @@ export const useGameState = create<GameState>()(
           }));
           logActivity('exercise', 'Bỏ qua câu này', `Đã gác lại câu hỏi mã số ${question.id} để truy lại sau.`, 0, 0);
           return true;
+        },
+
+        awardCoinsAndXp: (coins, xp, activityTitle, activityDetails) => {
+          const state = get();
+          set({
+            player: {
+              ...state.player,
+              coins: state.player.coins + coins,
+              xp: state.player.xp + xp
+            }
+          });
+          logActivity('box_open', activityTitle, activityDetails, coins, xp);
         },
 
         resetProgress: () => {

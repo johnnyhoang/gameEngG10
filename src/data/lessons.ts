@@ -1618,5 +1618,298 @@ Tổng hợp các cấu trúc biến đổi câu phức tạp thường gặp nh
 
 ## 3. Cấu trúc chỉ ước muốn (Wish)
 - Ước ở hiện tại: S + wish + S + V2/ed (were).*`
+  },
+  {
+    id: 'math-cylinder-detail',
+    subject: 'math',
+    topic: 'Hình học không gian',
+    title: 'Hình trụ - Bài toán thực tế',
+    category: 'real-geometry',
+    theory: `# Hình trụ - Bài toán thực tế
+
+Phương pháp tính diện tích xung quanh, diện tích toàn phần và thể tích hình trụ trong thực tế.
+
+## 1. Công thức cơ bản
+Cho hình trụ có bán kính đáy $R$ và chiều cao $h$:
+- **Diện tích xung quanh:** $S_{xq} = 2\\pi R h$.
+- **Diện tích toàn phần (gồm 2 đáy):** $S_{tp} = S_{xq} + 2S_{đáy} = 2\\pi R h + 2\\pi R^2$.
+- **Thể tích:** $V = S_{đáy} \\cdot h = \\pi R^2 h$.
+
+## 2. Ứng dụng thực tế và cách giải
+- Đọc kỹ đề bài để phân biệt giữa bán kính $R$ và đường kính $d$ ($R = d/2$).
+- Xác định hình trụ có hở nắp hay không để tính diện tích toàn phần chính xác (ví dụ lon nước ngọt hở 1 nắp thì $S_{tp} = S_{xq} + \\pi R^2$).
+- Đồng bộ đơn vị đo trước khi tính toán.`
+  },
+  {
+    id: 'math-cone-detail',
+    subject: 'math',
+    topic: 'Hình học không gian',
+    title: 'Hình nón và hình nón cụt',
+    category: 'real-geometry',
+    theory: `# Hình nón và Hình nón cụt
+
+Công thức tính toán diện tích, thể tích hình nón và hình nón cụt bám sát đề thi tuyển sinh.
+
+## 1. Hình nón
+Cho hình nón có bán kính đáy $R$, chiều cao $h$, và đường sinh $l$:
+- Quan hệ: $l = \\sqrt{R^2 + h^2}$ (định lý Pitago).
+- **Diện tích xung quanh:** $S_{xq} = \\pi R l$.
+- **Diện tích toàn phần:** $S_{tp} = \\pi R l + \\pi R^2$.
+- **Thể tích:** $V = \\frac{1}{3}\\pi R^2 h$.
+
+## 2. Hình nón cụt
+Cho hình nón cụt có hai bán kính đáy là $R_1, R_2$ ($R_1 > R_2$) và chiều cao $h$:
+- **Thể tích:** $V = \\frac{1}{3}\\pi h (R_1^2 + R_2^2 + R_1 R_2)$.`
+  },
+  {
+    id: 'math-cone-sphere-combined',
+    subject: 'math',
+    topic: 'Hình học không gian',
+    title: 'Hình cầu và bài toán kết hợp',
+    category: 'real-geometry',
+    theory: `# Hình cầu và Bài toán kết hợp hình khối
+
+Phương pháp tính toán diện tích và thể tích hình cầu, cùng các bài toán liên kết nhiều hình khối.
+
+## 1. Công thức hình cầu
+Cho hình cầu có bán kính $R$:
+- **Diện tích mặt cầu:** $S = 4\\pi R^2 = \\pi d^2$ (với $d = 2R$).
+- **Thể tích hình cầu:** $V = \\frac{4}{3}\\pi R^3$.
+
+## 2. Bài toán kết hợp hình khối thực tế
+- Thường gặp dạng: đồ chơi có một đầu là hình bán cầu (nửa hình cầu), thân là hình trụ hoặc hình nón.
+- **Phương pháp giải:** Chia nhỏ vật thể thành các khối hình học cơ bản, tính diện tích hoặc thể tích từng phần rồi cộng lại.`
+  },
+  {
+    id: 'math-quadratic-applied',
+    subject: 'math',
+    topic: 'Hàm số và Phương trình',
+    title: 'Bài toán thực tế bậc hai',
+    category: 'real-equations',
+    theory: `# Bài toán thực tế bậc hai
+
+Cách lập phương trình bậc hai một ẩn từ các bài toán thực tế như kinh tế, hình học, chuyển động.
+
+## 1. Quy trình giải
+- **Bước 1: Chọn ẩn:** Chọn ẩn số trực tiếp hoặc gián tiếp, đặt điều kiện thích hợp cho ẩn (ví dụ kích thước phải dương, vận tốc lớn hơn 0).
+- **Bước 2: Lập phương trình:** Biểu diễn các đại lượng chưa biết theo ẩn và lập mối quan hệ để có phương trình bậc hai $ax^2 + bx + c = 0$.
+- **Bước 3: Giải phương trình và kết luận:** Giải phương trình, đối chiếu điều kiện để chọn nghiệm phù hợp.
+
+## 2. Các dạng toán phổ biến
+- **Diện tích hình học:** Tăng/giảm chiều dài, rộng của vườn/sân.
+- **Toán kinh tế:** Tăng giá bán ảnh hưởng đến số lượng sản phẩm bán ra.`
+  },
+  {
+    id: 'math-right-triangle-ratio-2',
+    subject: 'math',
+    topic: 'Hệ thức lượng',
+    title: 'Ứng dụng hệ thức lượng nâng cao',
+    category: 'real-geometry',
+    theory: `# Ứng dụng hệ thức lượng nâng cao
+
+Các phương pháp kết hợp hệ thức lượng, định lý Pitago để giải các bài toán tính toán hình học phức tạp.
+
+## 1. Các bước giải bài toán tính toán
+- **Bước 1:** Vẽ hình đúng tỉ lệ và ký hiệu các góc vuông, đường cao.
+- **Bước 2:** Xác định tam giác vuông chứa các đại lượng đã biết và đại lượng cần tìm.
+- **Bước 3:** Lựa chọn hệ thức phù hợp. Nếu chưa đủ dữ kiện, đặt ẩn phụ ($x$) cho một cạnh hình chiếu để thiết lập phương trình liên hệ.
+
+## 2. Mẹo thi cử
+- Luôn tìm các tam giác đồng dạng nếu không trực tiếp dùng được hệ thức lượng trong một tam giác vuông duy nhất.`
+  },
+  {
+    id: 'lit-nlxh-doc-hieu-2',
+    subject: 'literature',
+    topic: 'Đọc hiểu văn bản',
+    title: 'Cách lập luận trong nghị luận xã hội',
+    category: 'literature-reading-prose',
+    theory: `# Phân tích cách lập luận trong văn nghị luận xã hội
+
+Cách nhận diện các thao tác lập luận và kiểu bố cục lập luận trong đoạn văn hoặc bài viết nghị luận xã hội.
+
+## 1. Các thao tác lập luận cơ bản
+- **Giải thích:** Làm rõ khái niệm, nghĩa của từ ngữ, hiện tượng.
+- **Phân tích:** Chia nhỏ vấn đề để xem xét tường tận các khía cạnh.
+- **Chứng minh:** Dùng dẫn chứng thực tế để làm sáng tỏ lý lẽ.
+- **Bình luận:** Bày tỏ ý kiến đánh giá đúng/sai, tốt/xấu về vấn đề.
+
+## 2. Kiểu lập luận của đoạn văn
+- **Diễn dịch:** Ý khái quát ở đầu, các câu sau triển khai cụ thể.
+- **Quy nạp:** Các ý cụ thể đi trước, câu kết luận tổng hợp ở cuối.
+- **Tổng - phân - hợp:** Mở đoạn nêu chủ đề, thân đoạn phân tích, kết đoạn tổng hợp và nâng cao.`
+  },
+  {
+    id: 'lit-nlvh-doc-hieu-2',
+    subject: 'literature',
+    topic: 'Đọc hiểu văn bản',
+    title: 'Lý lẽ và dẫn chứng trong nghị luận văn học',
+    category: 'literature-reading-prose',
+    theory: `# Phân tích lý lẽ và dẫn chứng trong nghị luận văn học
+
+Cách khai thác dẫn chứng nghệ thuật và liên kết hệ thống lập luận khi đọc hiểu văn bản nghị luận văn học.
+
+## 1. Vai trò của Lý lẽ và Dẫn chứng
+- **Lý lẽ:** Ý kiến, quan điểm của người viết về giá trị tác phẩm.
+- **Dẫn chứng:** Các chi tiết, câu thơ, trích đoạn lấy trực tiếp từ tác phẩm để chứng minh cho lý lẽ đó.
+
+## 2. Cách phân tích cấu trúc nghị luận văn học
+- Chỉ ra mối liên hệ tương hỗ: Dẫn chứng văn học này phục vụ cho việc chứng minh lý lẽ nào?
+- Đánh giá tính thuyết phục của việc lựa chọn dẫn chứng (dẫn chứng có tiêu biểu và lột tả được tinh thần của tác phẩm không).`
+  },
+  {
+    id: 'lit-rhetoric-advanced-1',
+    subject: 'literature',
+    topic: 'Tiếng Việt',
+    title: 'Điệp từ, chơi chữ, nói mỉa và nghịch ngữ',
+    category: 'literature-vietnamese',
+    theory: `# Điệp từ, chơi chữ, nói mỉa và nghịch ngữ
+
+Nhận diện và phân tích hiệu quả nghệ thuật của các biện pháp tu từ nâng cao trong văn bản.
+
+## 1. Điệp từ và Điệp ngữ
+- Lặp lại từ ngữ để nhấn mạnh cảm xúc, tạo nhịp điệu.
+
+## 2. Chơi chữ (Puns)
+- Lợi dụng hiện tượng đồng âm, đồng nghĩa, gần âm để tạo nghĩa độc đáo, hóm hỉnh.
+
+## 3. Nói mỉa (Irony) và Nghịch ngữ (Oxymoron)
+- **Nói mỉa:** Dùng từ trái ngược với ý định thực sự để châm biếm, phê phán.
+- **Nghịch ngữ:** Kết hợp các từ có nghĩa đối lập hoàn toàn đứng cạnh nhau (*sự im lặng ồn ào, niềm đau ngọt ngào*).`
+  },
+  {
+    id: 'lit-rhetoric-advanced-2',
+    subject: 'literature',
+    topic: 'Tiếng Việt',
+    title: 'Biện pháp nói giảm nói tránh và nói quá',
+    category: 'literature-vietnamese',
+    theory: `# Biện pháp nói giảm nói tránh và nói quá
+
+Phân biệt khái niệm và hiệu quả tu từ của biện pháp nói giảm nói tránh và nói quá.
+
+## 1. Nói giảm nói tránh (Euphemism)
+- **Khái niệm:** Dùng cách diễn đạt tế nhị, uyển chuyển.
+- **Tác dụng:** Tránh gây cảm giác quá đau buồn, ghê sợ hoặc thiếu lịch sự.
+  *Ví dụ: "Bác đã đi rồi sao Bác ơi!" (Tố Hữu) - dùng từ "đi" thay cho từ chết.*
+
+## 2. Nói quá (Hyperbole)
+- **Khái niệm:** Phóng đại quy mô, mức độ của sự vật, hiện tượng.
+- **Tác dụng:** Nhấn mạnh, gây ấn tượng mạnh, tăng tính biểu cảm.`
+  },
+  {
+    id: 'lit-grammar-expand-2',
+    subject: 'literature',
+    topic: 'Tiếng Việt',
+    title: 'Thực hành viết câu chất lượng cao',
+    category: 'literature-vietnamese',
+    theory: `# Thực hành viết câu chất lượng cao
+
+Kỹ năng phối hợp các thành phần câu để tạo nên những câu văn mạch lạc, giàu tính tạo hình phục vụ viết bài làm văn.
+
+## 1. Tránh các lỗi câu thường gặp
+- Lỗi câu thiếu chủ ngữ hoặc vị ngữ.
+- Lỗi dùng từ không hợp lô-gích quan hệ nghĩa.
+
+## 2. Bí quyết nâng cấp câu văn
+- Sử dụng các cặp quan hệ từ thích hợp để nhấn mạnh logic (*Không những... mà còn..., Sở dĩ... là vì...*).
+- Đưa thêm thành phần phụ chú hoặc tình thái để thể hiện quan điểm cá nhân một cách tinh tế và tăng tính học thuật cho bài viết.`
+  },
+  {
+    id: 'eng-phonetics-stress-exam',
+    subject: 'english',
+    topic: 'Từ vựng & Phát âm',
+    title: 'Ngữ âm và trọng âm dạng đề thi',
+    category: 'wordform',
+    theory: `# Trắc nghiệm Trọng âm và Phát âm dạng đề thi
+
+Tổng hợp các bẫy thường gặp và danh sách từ vựng trọng tâm trong các câu hỏi ngữ âm đề thi tuyển sinh 10.
+
+## 1. Các bẫy phát âm nguyên âm phổ biến
+- Đuôi \`-ed\` và \`-s/-es\` (quy tắc chuẩn kèm từ đặc biệt: *wanted, sacred, dogs, cats*).
+- Nguyên âm đơn khác nhau: \`u\` phát âm là /ʌ/ (*cut*) hay /juː/ (*mute*), \`a\` phát âm là /æ/ (*cat*) hay /eɪ/ (*date*).
+
+## 2. Bẫy trọng âm đặc biệt
+- Động từ có 2 âm tiết nhưng âm thứ hai chứa nguyên âm ngắn /ə/ hoặc /oʊ/ $\\rightarrow$ trọng âm rơi vào âm thứ nhất (*open, answer, follow*).
+- Danh từ có 2 âm tiết nhưng âm thứ nhất chứa nguyên âm ngắn và âm thứ hai chứa nguyên âm dài $\\rightarrow$ trọng âm rơi vào âm thứ hai (*design, balloon*).`
+  },
+  {
+    id: 'eng-grammar-mcq-2',
+    subject: 'english',
+    topic: 'Ngữ pháp lõi',
+    title: 'Biển báo và thông báo thực tế',
+    category: 'grammar',
+    theory: `# Biển báo và Thông báo thực tế - Signs & Notices
+
+Phương pháp phân tích hình ảnh biển báo và thông báo ngắn xuất hiện trong đề tuyển sinh 10 TP.HCM.
+
+## 1. Đặc điểm dạng bài
+- Đề thi thường cho hình ảnh một biển báo công cộng hoặc một mẩu giấy nhắn nhắn tin ngắn và yêu cầu học sinh chọn câu giải thích đúng ý nghĩa nhất.
+
+## 2. Các từ khóa quan trọng cần nhớ
+- **Bắt buộc / Cho phép:** \`must, have to, allowed to, permitted\`.
+- **Cấm đoán:** \`mustn't, strictly prohibited, not allowed, forbidden\`.
+- **Khuyên bảo / Cảnh báo:** \`should, warning, caution, beware of\`.`
+  },
+  {
+    id: 'eng-reading-comprehension-1',
+    subject: 'english',
+    topic: 'Kỹ năng Đọc',
+    title: 'Trắc nghiệm đọc hiểu MCQ',
+    category: 'grammar',
+    theory: `# Kỹ thuật trả lời trắc nghiệm đọc hiểu MCQ
+
+Cách giải quyết các câu hỏi đọc hiểu chọn đáp án đúng nhất (Multiple Choice Questions).
+
+## 1. Nhận diện các loại câu hỏi
+- **Câu hỏi chi tiết (Detail Questions):** Tìm thông tin cụ thể trong văn bản.
+- **Câu hỏi tham chiếu (Reference Questions):** Từ *it, they, them, this* chỉ cái gì.
+- **Câu hỏi từ vựng (Vocabulary Questions):** Tìm từ đồng nghĩa trong đoạn văn.
+- **Câu hỏi ý chính (Main Idea):** Tiêu đề hoặc mục đích chính của bài đọc.
+
+## 2. Kỹ thuật loại trừ bẫy
+- Loại đáp án chứa từ mang nghĩa tuyệt đối (*always, never, only*) trừ khi bài viết khẳng định rõ.
+- Cảnh giác với đáp án bê nguyên xi từ ngữ trong bài đọc nhưng sai logic.`
+  },
+  {
+    id: 'eng-reading-comprehension-2',
+    subject: 'english',
+    topic: 'Kỹ năng Đọc',
+    title: 'Đọc hiểu True/False/Not Given',
+    category: 'grammar',
+    theory: `# Kỹ thuật đọc hiểu True/False/Not Given
+
+Phương pháp phân tích thông tin để giải quyết dạng bài Đúng/Sai/Không đề cập trong đề thi.
+
+## 1. Phân biệt rõ các trạng thái
+- **True (Đúng):** Thông tin trong câu hỏi khớp hoàn toàn về nghĩa với thông tin trong bài (được diễn đạt lại - paraphrase).
+- **False (Sai):** Thông tin trong câu hỏi trái ngược hoàn toàn hoặc phủ nhận thông tin trong bài.
+- **Not Given (Không đề cập):** Bài đọc không nhắc tới hoặc không thể kiểm chứng thông tin đó.
+
+## 2. Các bước làm bài
+- **Bước 1:** Đọc câu hỏi và gạch chân các từ khóa cốt lõi (tên riêng, số liệu, tính từ mạnh).
+- **Bước 2:** Quét bài đọc để tìm vị trí chứa từ khóa.
+- **Bước 3:** Đọc kỹ 2-3 câu xung quanh vị trí đó để đối chiếu nghĩa.`
+  },
+  {
+    id: 'eng-vocab-community',
+    subject: 'english',
+    topic: 'Từ vựng & Phát âm',
+    title: 'Từ vựng chủ điểm Our Communities',
+    category: 'vocabulary',
+    theory: `# Từ vựng chủ điểm Our Communities
+
+Các từ vựng, cụm động từ và cấu trúc thường gặp xoay quanh chủ điểm Cộng đồng và Làng nghề truyền thống.
+
+## 1. Từ vựng trọng tâm (Vocabularies)
+- **Traditional craft:** Nghề thủ công truyền thống.
+- **Artisan:** Nghệ nhân.
+- **Attraction:** Điểm thu hút khách du lịch.
+- **Preserve:** Bảo tồn.
+- **Community:** Cộng đồng.
+
+## 2. Cụm động từ liên quan (Phrasal Verbs)
+- **Pass down:** Truyền lại (qua các thế hệ).
+- **Live on:** Sống dựa vào (thu nhập, nghề nghiệp).
+- **Set up:** Thành lập (doanh nghiệp, xưởng tranh).
+- **Deal with:** Giải quyết, đối phó.`
   }
 ];
