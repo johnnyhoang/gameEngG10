@@ -83,7 +83,7 @@ Vận hành nền kinh tế vi mô trong game:
     *   *Gợi ý (Hint):* Hỗ trợ loại bỏ đáp án nhiễu hoặc hướng dẫn giải nhanh.
     *   *Tim hồi phục (Hearts):* Phục vụ chế độ Sinh tồn/Quyết đấu Boss.
     *   *Khiên bảo vệ chuỗi (Streak Shield):* Giữ chuỗi học tập khi lỡ quên đăng nhập một ngày.
-    *   *Mở khóa giao diện (UI Themes):* Space Adventure, Cute Pastel, Pixel Arcade... giúp cá nhân hóa không gian học.
+    *   *Mở khóa Phong Vị (Cá Tính):* Phong Vị Đào Hoa, Trúc Lâm, Tinh Không, Tuyết Sơn... giúp cá nhân hóa không gian học.
     *   *Phần thưởng Phụ huynh (Parent Rewards):* Đổi Coin lấy các voucher đặc quyền ngoài đời.
 
 ### 2.5 🐉 Sân Nuôi Thú (Pet Sanctuary / PetState)
@@ -167,7 +167,7 @@ Khi học sinh làm câu nghị luận xã hội/nghị luận văn học (hoặ
 ## 5. Quy Tắc Thiết Kế Trực Quan & Hệ Thống Giao Diện (Visual Spec)
 
 Để duy trì tính thẩm mỹ vượt trội (Wow factor), ứng dụng tuân thủ:
-*   **Aesthetic Theme:** Sử dụng phong cách **Synthwave / Cyberpunk Neon** làm chủ đạo, kết hợp với các bảng màu Cute Pastel dịu mắt tùy biến theo thiết lập chủ đề của học sinh.
+*   **Aesthetic Theme:** Sử dụng phong cách **Synthwave / Cyberpunk Neon** làm chủ đạo, kết hợp với các bảng màu dịu mắt tùy biến theo thiết lập Phong Vị (Cá Tính) của học sinh.
 *   **Bảng màu Neon Harmonic:**
     *   *English (Cyan):* `#00f0ff` đại diện cho công nghệ, kết nối ngôn ngữ.
     *   *Math (Magenta/Pink):* `#ff007f` đại diện cho sự chính xác, sắc nét tư duy toán học.

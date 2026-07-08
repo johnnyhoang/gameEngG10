@@ -214,7 +214,7 @@ export const ProfileThemeModal: React.FC<ProfileThemeModalProps> = ({
             }`}>
               <div className="flex items-center gap-2">
                 <Sparkles className={`h-4 w-4 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-cyan'}`} />
-                <span className="font-semibold font-orbitron">Theme đang dùng</span>
+                <span className="font-semibold font-orbitron">Phong Vị đang dùng</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-lg">{activeTheme.iconSet[0]}</span>
@@ -244,7 +244,7 @@ export const ProfileThemeModal: React.FC<ProfileThemeModalProps> = ({
                   : 'bg-white/5 border border-white/5 text-slate-400 hover:text-white'
               }`}
             >
-              🎨 Cài Đặt Theme
+              🎨 Cá Tính & Phong Vị
             </button>
           </div>
 
@@ -460,6 +460,23 @@ export const ProfileThemeModal: React.FC<ProfileThemeModalProps> = ({
                   </button>
                 );
               })}
+
+              {/* Todo card for missing wuxia themes and features */}
+              <div className="relative overflow-hidden rounded-3xl border border-dashed border-stone-700/50 bg-stone-900/10 p-5 flex flex-col justify-between text-left h-[260px]">
+                <div>
+                  <div className="inline-block text-[9px] font-black bg-stone-800 text-stone-400 px-2 py-0.5 rounded-full mb-3 uppercase tracking-wider font-mono">
+                    Đang thiết kế 🛠️
+                  </div>
+                  <h4 className="text-sm font-bold text-amber-200 font-serif">Mở Rộng Cá Tính & Phong Vị</h4>
+                  <ul className="text-xs text-stone-400 space-y-2 mt-3 list-disc list-inside font-serif">
+                    <li>🌅 **Phong Vị Hoàng Hôn** (cam vàng - Đang nghiên cứu)</li>
+                    <li>🌊 **Phong Vị Thương Hải** (xanh đại dương - Đang nghiên cứu)</li>
+                    <li>🥋 **Trang phục môn phái** (Cá nhân hóa nhân vật)</li>
+                    <li>🧬 **Thần binh & Tọa kỵ** (Vũ khí & Thú cưỡi đồng hành)</li>
+                  </ul>
+                </div>
+                <p className="text-[10px] text-slate-500 italic font-serif">Hệ thống đang tinh luyện các phong vị bổ sung, thiếu hiệp hãy đón chờ!</p>
+              </div>
             </div>
           )}
         </div>
