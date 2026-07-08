@@ -6,7 +6,8 @@ import { ENGLISH_ANSWER_MODE_LABELS, ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS }
 import { MATH_ANSWER_MODE_LABELS, MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
 import { LITERATURE_ANSWER_MODE_LABELS, LITERATURE_TASK_LABELS, LITERATURE_TEXT_GENRE_LABELS } from '../data/literatureExamBlueprint';
 import { Scratchpad } from './Scratchpad';
-import { GeometryTool } from './GeometryTool';
+import { BikiHinhHocPhang } from './BikiHinhHocPhang';
+import { Biki3DStudio } from './Biki3DStudio';
 import { 
   Award, Flame, Check, X, ArrowRight, Volume2, VolumeX 
 } from 'lucide-react';
@@ -570,6 +571,19 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     (activeQuestion.prompt || '').toLowerCase().includes('hình cầu')
   );
 
+  const is3D = isGeometry && (
+    (activeQuestion.category || '').toLowerCase().includes('real-geometry') ||
+    (activeQuestion.category || '').toLowerCase().includes('space') ||
+    (activeQuestion.metadata?.mathTopic || '').toLowerCase().includes('space') ||
+    (activeQuestion.prompt || '').toLowerCase().includes('hình trụ') ||
+    (activeQuestion.prompt || '').toLowerCase().includes('hình nón') ||
+    (activeQuestion.prompt || '').toLowerCase().includes('hình cầu') ||
+    (activeQuestion.prompt || '').toLowerCase().includes('hình hộp') ||
+    (activeQuestion.prompt || '').toLowerCase().includes('lăng trụ') ||
+    (activeQuestion.prompt || '').toLowerCase().includes('tứ diện') ||
+    (activeQuestion.prompt || '').toLowerCase().includes('hình chóp')
+  );
+
   return (
     <div className="relative glass-panel rounded-2xl border border-synth-cyan/15 p-6 max-w-2xl mx-auto space-y-6">
       {/* Scratchpad overlay */}
@@ -804,8 +818,12 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
               </button>
               
               {showGeometryTool && (
-                <div className="p-2 border-t border-synth-cyan/15 bg-black/20">
-                  <GeometryTool />
+                <div className="p-3 border-t border-synth-cyan/15 bg-black/25 space-y-4">
+                  {is3D ? (
+                    <Biki3DStudio problemText={activeQuestion.prompt} />
+                  ) : (
+                    <BikiHinhHocPhang problemText={activeQuestion.prompt} />
+                  )}
                 </div>
               )}
             </div>

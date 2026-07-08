@@ -88,7 +88,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
     if (activeFlashcards.length === 0) return;
     setFcRememberedCount(prev => prev + 1);
     awardCoinsAndXp(5, 10, 'Thuộc thẻ nhớ', `Ghi nhớ câu hỏi: ${activeFlashcards[fcIndex].prompt.slice(0, 20)}...`);
-    toast.success('Đã ghi nhận! Thưởng +5 NP, +10 XP 🎉');
+    toast.success('Ghi nhận rồi. +5 NP, +10 XP 🎉');
     handleFcNext();
   };
 
@@ -167,7 +167,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
             c.pairId === card1.pairId ? { ...c, isMatched: true } : c
           ));
           setSelectedCards([]);
-          toast.success('Hợp nhất thành công! 🎉');
+          toast.success('Ghép khớp. 🎉');
 
           setMatchCards(current => {
             const allMatched = current.every(c => c.isMatched || c.pairId === card1.pairId);
@@ -181,7 +181,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
       } else {
         setTimeout(() => {
           setSelectedCards([]);
-          toast.error('Không khớp nhau rồi!');
+          toast.error('Lệch cặp rồi, ghép lại đi!');
         }, 800);
       }
     }
@@ -301,7 +301,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
       : activeStoryQuest.correctAnswer;
 
     if (selectedOption.trim().toLowerCase() === correctAnsStr.trim().toLowerCase()) {
-      toast.success('Chính xác! Con vượt qua thử thách này.');
+      toast.success('Chuẩn, bạn qua ải này rồi.');
       if (storyStep === 1) {
         setStoryInventory(prev => [...prev, '🔑 Chìa Khóa Vàng']);
         setStoryStep(2);
@@ -313,10 +313,10 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
       } else if (storyStep === 3) {
         setStoryInventory(prev => [...prev, '📜 Cuộn Sách Cổ']);
         setStoryStep(4); 
-        awardCoinsAndXp(60, 50, 'Phiêu lưu tình huống', 'Giải thoát Rồng Con thành công');
+        awardCoinsAndXp(60, 50, 'Phiêu lưu tình huống', 'Giải thoát Rồng con thành công');
       }
     } else {
-      toast.error('Ôi không, đáp án chưa đúng rồi!');
+      toast.error('Lệch rồi, chỉnh lại đi.');
       const nextLives = storyLives - 1;
       setStoryLives(nextLives);
       if (nextLives <= 0) {
@@ -358,7 +358,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
         if (nextPos >= 9) {
           setBoardStatus('won');
           awardCoinsAndXp(100, 80, 'Về đích Du khảo', 'Đạt vạch đích rương báu sơn trang');
-          toast.success('Chúc mừng con đã hoàn thành bản đồ du khảo! 🏆');
+          toast.success('Bạn đã clear xong bản đồ du khảo! 🏆');
         } else {
           setBoardStatus('answering');
           const randomQ = questions[Math.floor(Math.random() * questions.length)];
@@ -376,11 +376,11 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
       : activeBoardQuestion.correctAnswer;
 
     if (selectedOption.trim().toLowerCase() === correctAnsStr.trim().toLowerCase()) {
-      toast.success('Tuyệt vời! Con trả lời đúng, ô này an toàn! (+15 NP)');
+      toast.success('Chuẩn xác, ô này an toàn. (+15 NP)');
       awardCoinsAndXp(15, 10, 'Đúng ô du khảo', 'Trả lời chính xác ô trivia trên bản đồ du khảo');
       setBoardStatus('idle');
     } else {
-      toast.error('Nhầm đường rồi! Con bị thụt lùi 1 ô.');
+      toast.error('Lạc nhịp rồi, lùi 1 ô.');
       setBoardPosition(prev => Math.max(0, prev - 1));
       setBoardStatus('idle');
     }
@@ -450,7 +450,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
     if (isCorrect) {
       setStepStatus('won');
       awardCoinsAndXp(30, 25, 'Hoàn thành Sắp xếp', `Sắp xếp trình tự giải chủ đề ${stepSubject}`);
-      toast.success('Chính xác! Con sắp xếp trình tự rất chuẩn! 🎉');
+      toast.success('Chuẩn xác, xếp trình tự ngon rồi! 🎉');
     } else {
       toast.error('Trình tự chưa đúng rồi, hãy suy nghĩ lại nhé!');
     }
@@ -532,7 +532,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
     if (isOptionCorrect && isHighlightAcceptable) {
       setReadingResult('success');
       awardCoinsAndXp(35, 30, 'Đọc hiểu sâu', `Hoàn thành thử thách đọc hiểu môn ${readingSubject}`);
-      toast.success('Xuất sắc! Con tìm đúng từ khóa và trả lời đúng câu hỏi cốt lõi! 🎉');
+      toast.success('Chuẩn, bạn bắt đúng từ khóa và chốt đúng ý cốt lõi! 🎉');
     } else {
       setReadingResult('fail');
       toast.error('Đáp án hoặc từ khóa tô sáng chưa chính xác rồi.');
@@ -564,7 +564,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
       title: 'Thì Hiện tại hoàn thành (Tiếng Anh)',
       keywords: ['have', 'has', 'past participle', 'v3', 'hoàn thành', 'trước đây'],
       missingAlert: 'công thức dùng Have/Has đi kèm động từ phân từ hai (V3/ed)',
-      successFeedback: 'Hi Teacher! Con là học sinh AI. Nhờ cô giảng mà con biết thì Hiện tại hoàn thành dùng cấu trúc "Subject + have/has + V3/ed" để kể về trải nghiệm đã xảy ra mà không cần mốc thời gian rõ ràng!',
+      successFeedback: 'Hi teacher! Mình là học sinh AI. Nhờ bạn giảng mà mình đã nắm: hiện tại hoàn thành dùng cấu trúc "Subject + have/has + V3/ed" để kể trải nghiệm chưa cần mốc thời gian rõ ràng.',
       counterQ: 'Cô ơi, vậy câu nào dưới đây chia đúng thì Hiện tại hoàn thành ạ?',
       opts: ['A. She has gone to Paris three times.', 'B. She went to Paris yesterday.', 'C. She goes to Paris every year.'],
       correctOpt: 'A. She has gone to Paris three times.'
@@ -585,7 +585,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
     const text = studentText.toLowerCase().trim();
 
     if (text.length < 20) {
-      toast.error('Bài giảng quá ngắn! Con hãy giải thích chi tiết hơn một chút nhé.');
+      toast.error('Bài giảng ngắn quá. Bạn bung ý thêm chút đi.');
       return;
     }
 
@@ -602,7 +602,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
       });
       setExplainPhase('feedback');
     } else {
-      setAiFeedback(`Dạ, con (học sinh AI) vẫn chưa hiểu lắm. Cô/Thầy giải thích thiếu ý về [${data.missingAlert}]. Cô/Thầy giảng giải lại giúp con được không ạ?`);
+      setAiFeedback(`Mình vẫn chưa ngấm lắm. Bạn còn thiếu ý về [${data.missingAlert}]. Bạn giảng lại thêm một nhịp được không?`);
       setExplainPhase('feedback');
       setAiCounterQuestion(null);
     }
@@ -613,9 +613,9 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
     if (counterAnswer === aiCounterQuestion.ans) {
       setExplainPhase('won');
       awardCoinsAndXp(40, 40, 'Giảng giải cho AI', `Giảng bài thành công chủ đề ${explainTopic}`);
-      toast.success('Chính xác! Học sinh AI đã hoàn toàn thông suốt bài học này. (+40 NP, +40 XP)');
+      toast.success('Chuẩn xác. AI đã thông suốt bài này. (+40 NP, +40 XP)');
     } else {
-      toast.error('Nhầm rồi thầy cô ơi! Học sinh AI vặn ngược lại và thầy cô trả lời sai rồi. Hãy thử lại!');
+      toast.error('Lệch rồi nhé. AI bắt ngược lại luôn, thử lại đi.');
     }
   };
 
@@ -688,7 +688,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   const checkDiagram = () => {
     const allFilled = diagramSlots.every(s => s.currentLabel !== '');
     if (!allFilled) {
-      toast.error('Hãy điền nhãn dán vào tất cả các ô trống!');
+      toast.error('Điền hết nhãn vào các ô trống đi!');
       return;
     }
 
@@ -696,7 +696,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
     if (isCorrect) {
       setDiagramStatus('won');
       awardCoinsAndXp(30, 35, 'Ghép sơ đồ thành công', `Hoàn thành ghép sơ đồ môn ${diagramSubject}`);
-      toast.success('Chính xác! Con đã lắp ghép sơ đồ hoàn hảo! 🎉');
+      toast.success('Chuẩn xác, sơ đồ khớp rồi! 🎉');
     } else {
       toast.error('Có một số nhãn lắp sai vị trí rồi!');
     }
@@ -1014,7 +1014,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                 <div className="text-4xl animate-bounce">🎉🏆🥇</div>
                 <h4 className="font-orbitron font-black text-xl text-synth-green uppercase">Hoàn Thành Tuyệt Đối</h4>
                 <p className="text-xs text-slate-300">
-                  Con đã ghép thành công tất cả các cặp liên kết! Thưởng vượt ải thành công: **+30 NP coins, +40 XP**
+                  Ghép xong toàn bộ cặp liên kết. Thưởng qua ải: **+30 NP coins, +40 XP**
                 </p>
                 <button
                   onClick={initMatchGame}
@@ -1144,7 +1144,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                 <div className="flex flex-col items-center justify-center text-center py-12 text-slate-400 space-y-3 h-full">
                   <HelpCircle className="w-12 h-12 text-slate-500 animate-bounce" />
                   <p className="text-[11px]">
-                    Hãy nhấp chọn một chủ đề nhánh ở sơ đồ bên trái để xem nhanh lý thuyết ôn tập gọn gàng!
+                    Bấm chọn một nhánh bên trái để xem nhanh lý thuyết.
                   </p>
                 </div>
               )}
@@ -1162,9 +1162,9 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                 <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl bg-synth-purple/15 border border-synth-purple/35">
                   🎭
                 </div>
-                <h3 className="font-orbitron font-black text-lg text-white uppercase">Giải Cứu Rồng Con</h3>
+                <h3 className="font-orbitron font-black text-lg text-white uppercase">Giải Cứu Rồng</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Chú Pet **Rồng Con** đang bị giam cầm tại đền cổ. Con hãy dùng tri thức Toán học, Tiếng Anh và Ngữ văn để vượt qua 3 thử thách cổ đại nhé!
+                  Chú pet **Rồng nhỏ** đang bị giam cầm tại đền cổ. Bạn dùng tri thức Toán học, Tiếng Anh và Ngữ văn để vượt qua 3 thử thách cổ đại nhé!
                 </p>
                 <button
                   onClick={handleStartStory}
@@ -1210,9 +1210,9 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                     📖 Kịch Bản Tình Huống:
                   </h4>
                   <p className="text-xs text-slate-300 italic leading-relaxed">
-                    {storyStep === 1 && '"Con tiếp cận Cổng Thần Thạch. Thần Đá rầm rập yêu cầu con mở khóa mật mã toán học này..."'}
-                    {storyStep === 2 && '"Qua cổng rừng sương mù, Hiệp sĩ Anh yêu cầu con trả lời đúng ngữ pháp này..."'}
-                    {storyStep === 3 && '"Trước ngục đá, Thần Rùa gác cổng yêu cầu con phân tích đúng kiến thức văn học này..."'}
+                    {storyStep === 1 && '"Bạn tiến vào Cổng Thần Thạch. Thần Đá yêu cầu mở khóa mật mã toán học này..."'}
+                    {storyStep === 2 && '"Qua cổng rừng sương mù, Hiệp sĩ Anh yêu cầu trả lời đúng ngữ pháp này..."'}
+                    {storyStep === 3 && '"Trước ngục đá, Thần Rùa gác cổng yêu cầu phân tích đúng kiến thức văn học này..."'}
                   </p>
                 </div>
 
@@ -1257,7 +1257,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                 <div className="text-5xl animate-bounce">🏆🦅🐉</div>
                 <h3 className="font-orbitron font-black text-xl text-synth-green uppercase">Giải Cứu Hoàn Tất</h3>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  Con đã giải quyết toàn bộ tình huống thành công! Rồng Con vẫy đuôi sung sướng và bay trở lại vòng tay con!
+                  Bạn đã xử đẹp toàn bộ tình huống! Rồng nhỏ vẫy đuôi rồi bay về.
                   Phần thưởng vượt ải thành công: **+60 NP coins, +50 XP**
                 </p>
                 <div className="flex gap-2 justify-center">
@@ -1282,7 +1282,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                 <div className="text-5xl">💀🥀</div>
                 <h3 className="font-orbitron font-black text-xl text-red-500 uppercase">Thất Bại Tiếc Nuối</h3>
                 <p className="text-xs text-slate-300">
-                  Lượt mạng đã cạn kiệt! Hãy thử sức lại nhé.
+                  Lượt mạng đã cạn kiệt. Thử lại ván mới đi.
                 </p>
                 <button
                   onClick={handleStartStory}
@@ -1325,7 +1325,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                     <span>Ô {idx}</span>
                     {isCurrent && (
                       <span className="text-[9px] px-1 bg-synth-orange text-black rounded font-sans scale-90 animate-bounce">
-                        Con ở đây
+                        Bạn ở đây
                       </span>
                     )}
                     {isGoal && !isCurrent && (
@@ -1471,7 +1471,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                 <div className="text-4xl animate-bounce">🧩🏆🎉</div>
                 <h4 className="font-orbitron font-black text-xl text-synth-green uppercase">Hoàn Thành Trình Tự</h4>
                 <p className="text-xs text-slate-300">
-                  Con đã sắp xếp chính xác các bước lập luận lô-gích! Thưởng: **+30 NP coins, +25 XP**
+                  Bạn đã xếp đúng chuỗi lập luận. Thưởng: **+30 NP coins, +25 XP**
                 </p>
                 <button
                   onClick={initStepGame}
@@ -1594,7 +1594,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                     <Check className="w-10 h-10 text-synth-green mx-auto animate-bounce" />
                     <h4 className="font-bold text-xs text-synth-green">Tô Sáng Chuẩn Xác</h4>
                     <p className="text-[10px] text-slate-400">
-                      Con đạt đủ chỉ tiêu từ khóa cốt lõi và lựa chọn đáp án hoàn hảo! (+35 NP, +30 XP)
+                      Bạn chốt đúng từ khóa cốt lõi và đáp án. (+35 NP, +30 XP)
                     </p>
                   </div>
                 )}
@@ -1604,7 +1604,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                     <X className="w-10 h-10 text-red-500 mx-auto" />
                     <h4 className="font-bold text-xs text-red-500">Chưa Đạt Yêu Cầu</h4>
                     <p className="text-[10px] text-slate-400">
-                      Hãy chú ý các từ khóa mang tính mấu chốt của luận điểm và chọn đúng ý nghĩa của đoạn văn.
+                      Bắt đúng từ khóa mấu chốt rồi chọn ý nghĩa chuẩn của đoạn văn.
                     </p>
                   </div>
                 )}
@@ -1612,7 +1612,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                 {readingResult === null && (
                   <div className="text-center py-10 text-slate-500 text-[10px] flex flex-col items-center gap-2">
                     <HelpCircle className="w-10 h-10 text-slate-600" />
-                    Đang đợi con hoàn thành thách thức đọc...
+                    Đang đợi bạn chốt xong thử thách đọc...
                   </div>
                 )}
 
@@ -1663,13 +1663,13 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                 <div className="space-y-4 text-left">
                   <div className="bg-synth-purple/5 border border-synth-purple/10 p-3 rounded-xl text-xs text-slate-300">
                     Chủ đề: <span className="font-bold text-white">{EXPLAIN_TOPICS[explainTopic].title}</span>.
-                    Con hãy viết lời giải thích của con về khái niệm này vào ô dưới đây như thể con đang đứng bục giảng dạy cho một học sinh AI.
+                    Bạn hãy viết lời giải thích của mình vào ô dưới đây, như thể đang đứng lớp dạy AI.
                   </div>
 
                   <textarea
                     value={studentText}
                     onChange={(e) => setStudentText(e.target.value)}
-                    placeholder="Nhập bài giảng giải của con vào đây (tối thiểu 20 ký tự)..."
+                    placeholder="Nhập bài giảng giải của bạn vào đây (tối thiểu 20 ký tự)..."
                     rows={6}
                     className="w-full p-3.5 rounded-xl border border-white/10 focus:border-synth-purple bg-synth-gray/20 text-white text-xs outline-none transition-all"
                   />
@@ -1678,7 +1678,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                     onClick={handleTeachAI}
                     className="w-full px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-purple text-black font-semibold cursor-pointer hover:synth-border-purple flex items-center justify-center gap-1.5"
                   >
-                    <Send className="w-3.5 h-3.5" /> Gửi Bài Giảng Cho Học Sinh AI
+                    <Send className="w-3.5 h-3.5" /> Đẩy bài cho AI
                   </button>
                 </div>
               )}
@@ -1721,7 +1721,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                         onClick={handleCounterAnswerSubmit}
                         className="w-full px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-purple text-black font-semibold cursor-pointer hover:synth-border-purple"
                       >
-                        Trả Lời Học Sinh AI ✔
+                        Đáp lại AI ✔
                       </button>
                     </div>
                   )}
@@ -1744,7 +1744,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                     Bài Giảng Xuất Sắc
                   </h4>
                   <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed">
-                    Học sinh AI đã thông suốt kiến thức! Con vừa nhận được **+40 xu (NP), +40 XP** nhờ phương pháp học đỉnh cao Feynman (học bằng cách dạy lại cho người khác).
+                    AI đã ngấm bài. Bạn nhận **+40 xu (NP), +40 XP** nhờ kiểu học Feynman.
                   </p>
                   <button
                     onClick={restartExplainGame}
@@ -1765,7 +1765,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                   💡 Phương pháp Feynman
                 </h3>
                 <p className="text-[10px] text-slate-400 leading-relaxed">
-                  Bằng cách chuyển giao kiến thức thành lời giải thích dễ hiểu cho một thực thể khác (ở đây là học sinh AI), con sẽ phát hiện ngay những lỗ hổng lập luận của chính mình để hoàn thiện sâu sắc!
+                  Khi bạn dạy lại cho AI bằng lời dễ hiểu, hổng nào trong lập luận cũng lộ ra ngay.
                 </p>
                 <div className="border border-white/5 p-3 rounded-xl bg-white/5 text-[9px] text-slate-300 space-y-1">
                   <span className="font-bold text-synth-orange uppercase">Từ khóa học sinh AI tìm kiếm:</span>
@@ -1881,7 +1881,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                 <div className="text-4xl animate-bounce">🧱🏆🎉</div>
                 <h4 className="font-orbitron font-black text-xl text-synth-green uppercase">Ghép Sơ Đồ Thành Công</h4>
                 <p className="text-xs text-slate-300">
-                  Con đã ghép thành công tất cả các nhãn sơ đồ! Nhận thưởng: **+30 xu (NP), +35 XP**
+                  Bạn đã ghép xong toàn bộ nhãn sơ đồ. Nhận thưởng: **+30 xu (NP), +35 XP**
                 </p>
                 <button
                   onClick={initDiagramGame}

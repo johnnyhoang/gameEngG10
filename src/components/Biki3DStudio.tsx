@@ -780,7 +780,7 @@ function buildBaseSteps(shape: ShapeKind, model: SceneModel, problemText: string
       {
         title: 'Diện tích xung quanh và thể tích',
         body: hasExactData && lateralArea && volume
-          ? `Áp dụng công thức: Sxq = 2πrh = ${formatNumber(lateralArea)} cm² và V = πr²h = ${formatNumber(volume)} cm³.`
+          ? `Dùng lệnh công thức: Sxq = 2πrh = ${formatNumber(lateralArea)} cm² và V = πr²h = ${formatNumber(volume)} cm³.`
           : 'Sau khi có r và h, tính diện tích xung quanh theo Sxq = 2πrh và thể tích theo V = πr²h.',
         focus: ['O', 'M'],
         annotationIds: ['guide-om']
@@ -1633,7 +1633,7 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
               </div>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-xs text-slate-300">
-              Gợi ý lệnh: <span className="text-white">"vẽ đường cao từ S"</span>, <span className="text-white">"nối trung điểm BC với đỉnh S"</span>, <span className="text-white">"tô màu mặt ABCD"</span>, <span className="text-white">"vẽ OM vuông góc AB"</span>.
+              Mẹo lệnh: <span className="text-white">"vẽ đường cao từ S"</span>, <span className="text-white">"nối trung điểm BC với đỉnh S"</span>, <span className="text-white">"tô màu mặt ABCD"</span>, <span className="text-white">"vẽ OM vuông góc AB"</span>.
             </div>
           </div>
         </div>
@@ -1733,8 +1733,8 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
             >
               <RotateCcw className="w-5 h-5 text-synth-orange" />
               <div>
-                <div className="text-xs font-orbitron font-bold uppercase tracking-wider text-white">Reset</div>
-                <div className="text-[10px] text-slate-400">Xóa lệnh, trả về góc mặc định</div>
+                <div className="text-xs font-orbitron font-bold uppercase tracking-wider text-white">Reset bảng</div>
+                <div className="text-[10px] text-slate-400">Xóa lệnh và quay về góc mặc định</div>
               </div>
             </button>
           </div>
@@ -1742,7 +1742,7 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
           <div className="glass-panel rounded-2xl border border-white/10 p-4">
             <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
               <div>
-                <h3 className="font-orbitron font-black text-sm text-white uppercase tracking-wider">Lệnh cập nhật tức thì</h3>
+                <h3 className="font-orbitron font-black text-sm text-white uppercase tracking-wider">Cập nhật tức thì</h3>
                 <p className="text-xs text-slate-400 mt-1">Nhập yêu cầu dựng hình, rồi AI cập nhật mô hình ngay trên màn hình.</p>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -1759,7 +1759,7 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
                   className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-synth-magenta/20 bg-synth-magenta/10 text-synth-magenta text-xs font-orbitron font-bold uppercase tracking-wider cursor-pointer disabled:opacity-50"
                 >
                   <Sparkles className="w-4 h-4" />
-                  {analysisStatus === 'loading' ? 'AI đang phân tích...' : 'Phân tích AI thật'}
+                  {analysisStatus === 'loading' ? 'AI đang soi đề...' : 'Soi đề bằng AI'}
                 </button>
               </div>
             </div>
@@ -1831,7 +1831,7 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
                 onClick={runCommand}
                 className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-synth-cyan to-synth-purple text-black font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer"
               >
-                Áp dụng <ArrowRight className="w-4 h-4" />
+                Dùng lệnh <ArrowRight className="w-4 h-4" />
               </button>
             </div>
 
@@ -1841,7 +1841,7 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
 
             <div className="mt-3 rounded-2xl border border-white/10 bg-white/5 p-3">
               <div className="text-[10px] uppercase tracking-[0.22em] text-slate-400 font-bold">
-                Gợi ý nhanh từ đề
+                Mẹo nhanh từ đề
               </div>
               <ul className="mt-2 space-y-1.5 text-xs text-slate-200 leading-relaxed">
                 {promptHints.map(hint => (
@@ -1940,7 +1940,7 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
           <div className="glass-panel rounded-2xl border border-white/10 p-4 space-y-3">
             <div className="flex items-center gap-2 text-white">
               <Sparkles className="w-5 h-5 text-synth-cyan" />
-              <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Lịch sử lệnh</h3>
+              <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Lịch sử thao tác</h3>
             </div>
             {history.length > 0 ? (
               <div className="space-y-2 max-h-[240px] overflow-y-auto pr-1">
@@ -1953,7 +1953,7 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
               </div>
             ) : (
               <div className="text-sm text-slate-300">
-                Chưa có lệnh nào. Hãy nhập ví dụ như "vẽ đường cao từ S" để bắt đầu.
+                Chưa có lệnh nào. Nhập thử kiểu "vẽ đường cao từ S" để khởi động.
               </div>
             )}
           </div>

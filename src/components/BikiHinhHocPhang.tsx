@@ -390,7 +390,7 @@ export function BikiHinhHocPhang({ problemText = '' }: BikiHinhHocPhangProps) {
 
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.error || 'Phân tích AI thất bại.');
+        throw new Error(errData.error || 'Soi đề AI thất bại.');
       }
 
       const data = await res.json() as { success: boolean; result: PlaneAiResult };
@@ -417,7 +417,7 @@ export function BikiHinhHocPhang({ problemText = '' }: BikiHinhHocPhangProps) {
       };
 
       setScene(nextScene);
-      setLessonSteps(result.stepByStep.length > 0 ? result.stepByStep : [{ title: 'Phân tích AI', body: result.summary }]);
+      setLessonSteps(result.stepByStep.length > 0 ? result.stepByStep : [{ title: 'Soi đề AI', body: result.summary }]);
       addHistory(result.summary || result.title || 'AI phân tích hình học phẳng xong.');
       if (result.commands.length > 0) {
         setCommandText(result.commands[0]);
@@ -738,7 +738,7 @@ export function BikiHinhHocPhang({ problemText = '' }: BikiHinhHocPhangProps) {
           <div className="flex items-center gap-2 text-white">
             <Sparkles className="w-5 h-5 text-synth-cyan" />
             <div>
-              <h3 className="font-orbitron font-black uppercase tracking-wider text-sm md:text-base">Bí Kíp Hình Học phẳng</h3>
+              <h3 className="font-orbitron font-black uppercase tracking-wider text-sm md:text-base">Phòng Hình Học phẳng</h3>
               <p className="text-xs text-slate-300 mt-1">Dựng hình, kéo thả, kẻ đường cao, trung tuyến và cập nhật lời giải ngay trên bảng.</p>
             </div>
           </div>
@@ -916,13 +916,13 @@ export function BikiHinhHocPhang({ problemText = '' }: BikiHinhHocPhangProps) {
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="text-xs uppercase tracking-[0.26em] text-slate-400 font-bold">Đề bài</div>
-                <p className="text-sm text-white mt-1">Nhập nguyên văn bài toán rồi bấm phân tích AI để dựng lời giải và điểm mốc.</p>
+                <p className="text-sm text-white mt-1">Nhập nguyên văn bài toán rồi bấm soi AI để dựng lời giải và điểm mốc.</p>
               </div>
               <button
                 onClick={handleAiAnalyze}
                 className="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-synth-cyan to-synth-green px-4 py-2 text-xs font-black uppercase tracking-wider text-black cursor-pointer"
               >
-                Phân tích AI <ArrowRight className="w-4 h-4" />
+                Soi đề AI <ArrowRight className="w-4 h-4" />
               </button>
             </div>
             <textarea
@@ -990,7 +990,7 @@ export function BikiHinhHocPhang({ problemText = '' }: BikiHinhHocPhangProps) {
                 </div>
               )) : (
                 <div className="rounded-2xl border border-dashed border-white/15 bg-white/5 px-3 py-4 text-xs text-slate-400">
-                  Chưa có thao tác nào. Hãy click lên điểm hoặc cạnh trên bảng.
+                  Chưa có thao tác nào. Bấm vào điểm hoặc cạnh trên bảng đi.
                 </div>
               )}
             </div>
