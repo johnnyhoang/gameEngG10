@@ -313,7 +313,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
       } else if (storyStep === 3) {
         setStoryInventory(prev => [...prev, '📜 Cuộn Sách Cổ']);
         setStoryStep(4); 
-        awardCoinsAndXp(60, 50, 'Phiêu lưu tình huống', 'Giải thoát Rồng con thành công');
+        awardCoinsAndXp(60, 50, 'Phiêu lưu tình huống', 'Giải thoát Rồng nhỏ thành công');
       }
     } else {
       toast.error('Lệch rồi, chỉnh lại đi.');
@@ -555,7 +555,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
       title: 'Định lý Pythagoras (Toán 9)',
       keywords: ['vuông', 'cạnh huyền', 'bình phương', 'cộng', 'tổng'],
       missingAlert: 'đặc điểm tam giác vuông hoặc mối quan hệ bình phương cạnh huyền',
-      successFeedback: 'Chào thầy cô! Em là AI học sinh. Bài giảng của thầy cô rất rõ ràng! Em đã hiểu là trong tam giác vuông, bình phương độ dài cạnh huyền bằng tổng bình phương độ dài hai cạnh góc vuông: a² + b² = c².',
+      successFeedback: 'Chào bạn! Mình đã ngấm bài. Trong tam giác vuông, bình phương cạnh huyền bằng tổng bình phương hai cạnh góc vuông: a² + b² = c².',
       counterQ: 'Vậy nếu một tam giác có độ dài ba cạnh lần lượt là 3cm, 4cm, 5cm thì đó có phải là tam giác vuông không ạ?',
       opts: ['A. Đúng, vì 3² + 4² = 5² (9 + 16 = 25)', 'B. Sai, vì tam giác vuông phải có cạnh huyền lớn gấp đôi cạnh góc vuông'],
       correctOpt: 'A. Đúng, vì 3² + 4² = 5² (9 + 16 = 25)'
@@ -573,7 +573,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
       title: 'Ý nghĩa hình tượng "Sóng" của Xuân Quỳnh (Văn)',
       keywords: ['tình yêu', 'phụ nữ', 'thủy chung', 'xuân quỳnh', 'biểu tượng', 'ẩn dụ'],
       missingAlert: 'khái niệm ẩn dụ biểu tượng cho tâm trạng thủy chung của người phụ nữ đang yêu',
-      successFeedback: 'Em chào thầy cô! Bài phân tích văn học của thầy cô sâu sắc quá. Em hiểu rằng hình tượng "Sóng" vừa là hình ảnh tự nhiên, vừa là biểu tượng ẩn dụ cho tâm hồn rạo rực, khao khát tình yêu chân thành, chung thủy của người phụ nữ.',
+      successFeedback: 'Chào bạn! Mình đã bắt được ý. Hình tượng "Sóng" vừa là hình ảnh tự nhiên, vừa là biểu tượng ẩn dụ cho tâm hồn rạo rực, khao khát tình yêu chân thành, chung thủy của người phụ nữ.',
       counterQ: 'Vậy trong bài thơ, hình tượng nào luôn song hành và hòa quyện cùng hình tượng "Sóng" ạ?',
       opts: ['A. Thuyền', 'B. Em', 'C. Biển'],
       correctOpt: 'B. Em'
