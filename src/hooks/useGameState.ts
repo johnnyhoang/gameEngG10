@@ -16,8 +16,10 @@ import type {
   Challenge,
   DailyMission,
   UiThemeId,
-  GameSettings
+  GameSettings,
+  SubjectId
 } from '../types/game';
+import { getStudentRankForLevel, STUDENT_RANKS, SUBJECTS_CONFIG } from '../types/game';
 import { DEFAULT_UI_THEME } from '../theme/uiThemes';
 
 const HELP_TOPICS: Record<string, { title: string; bullets: string[] }> = {
@@ -226,8 +228,8 @@ const HELP_TOPICS: Record<string, { title: string; bullets: string[] }> = {
   maxCombo: number;
 
   // Subject States
-  currentSubject: 'english' | 'math' | 'literature';
-  setSubject: (subject: 'english' | 'math' | 'literature') => void;
+  currentSubject: SubjectId;
+  setSubject: (subject: SubjectId) => void;
   lastSyncTime: string | null;
 
   // Admin and management states
@@ -473,6 +475,10 @@ export const useGameState = create<GameState>()(
       const checkLevelUp = (currentXp: number, currentLevel: number) => {
         let level = currentLevel;
         let xp = currentXp;
+        const badges = [...(get().player.badges || [])];
+        let badgesChanged = false;
+        
+        const oldRank = getStudentRankForLevel(currentLevel);
         
         // Define simple linear-exponential progression: next level costs Level * 200 XP
         while (xp >= level * 200) {
@@ -481,7 +487,25 @@ export const useGameState = create<GameState>()(
           logActivity('exercise', 'Thăng cấp!', `Bạn vừa chạm Level ${level}.`, 50, 0, 0);
           eventBus.publish('PET_GROWTH', { levelUp: true });
         }
-        return { level, xp };
+        
+        const newRank = getStudentRankForLevel(level);
+        if (newRank.id !== oldRank.id) {
+          const badgeName = `Danh hiệu: ${newRank.name}`;
+          if (!badges.includes(badgeName)) {
+            badges.push(badgeName);
+            badgesChanged = true;
+          }
+          logActivity(
+            'challenge',
+            'Thăng cấp danh hiệu!',
+            `Chúc mừng Thiếu hiệp đã thăng cấp danh hiệu lên ${newRank.icon} ${newRank.name}!`,
+            100, // Extra coin reward for thăng hạng
+            0,
+            0
+          );
+        }
+        
+        return { level, xp, badges, badgesChanged };
       };
 
       return {
@@ -518,7 +542,8 @@ export const useGameState = create<GameState>()(
 
         setSubject: (subject) => {
           set({ currentSubject: subject });
-          logActivity('exercise', 'Chuyển môn học', `Bạn đã chuyển sang học môn ${subject === 'math' ? 'Toán Học' : subject === 'literature' ? 'Ngữ Văn' : 'Tiếng Anh'}.`, 0, 0, 0);
+          const subjectName = SUBJECTS_CONFIG[subject]?.name || subject;
+          logActivity('exercise', 'Chuyển môn phái', `Bạn đã chuyển sang môn phái ${subjectName}.`, 0, 0, 0);
         },
 
         // Initialize listeners
@@ -1215,7 +1240,8 @@ export const useGameState = create<GameState>()(
               ...state.player,
               xp: levelCheck.xp,
               level: levelCheck.level,
-              coins: state.player.coins + coinsGained,
+              coins: state.player.coins + coinsGained + (levelCheck.badgesChanged ? 100 : 0),
+              badges: levelCheck.badges,
               lastActive: new Date().toISOString()
             }
           });
@@ -1360,7 +1386,8 @@ export const useGameState = create<GameState>()(
               ...state.player,
               xp: levelCheck.xp,
               level: levelCheck.level,
-              coins: state.player.coins + coinsGained
+              coins: state.player.coins + coinsGained + (levelCheck.badgesChanged ? 100 : 0),
+              badges: levelCheck.badges
             }
           });
 
@@ -1809,7 +1836,7 @@ export const useGameState = create<GameState>()(
             } else {
               categoriesPool.push('literature-vietnamese', 'literature-reading-poetry', 'literature-reading-prose', 'literature-reading-argument', 'literature-writing');
             }
-          } else {
+          } else if (state.currentSubject === 'english') {
             if (mode === 'grammar') {
               categoriesPool.push('grammar', 'passive-voice', 'relative-clauses', 'tenses', 'rewrite');
             } else if (mode === 'reading') {
@@ -1820,6 +1847,19 @@ export const useGameState = create<GameState>()(
               categoriesPool.push('pronunciation', 'stress');
             } else {
               categoriesPool.push('grammar', 'passive-voice', 'relative-clauses', 'tenses', 'rewrite', 'reading', 'cloze', 'vocabulary', 'wordform', 'pronunciation', 'stress');
+            }
+          } else {
+            // Generic fallback for basic subjects: gather categories dynamically from questions of that subject
+            const uniqCategories = Array.from(new Set(
+              state.questions
+                .filter(q => q.subject === state.currentSubject)
+                .map(q => q.category)
+            )).filter(Boolean);
+            
+            if (uniqCategories.length > 0) {
+              categoriesPool.push(...uniqCategories);
+            } else {
+              categoriesPool.push('basic-general');
             }
           }
 

@@ -1,4 +1,6 @@
-export type HangSubjectId = 'english' | 'math' | 'literature';
+import { SubjectId } from '../types/game';
+
+export type HangSubjectId = SubjectId;
 
 export interface HangTopic {
   title: string;
@@ -92,6 +94,63 @@ export const HANG_TRACKS: Record<HangSubjectId, HangTopic[]> = {
       summary: 'Rèn dàn ý cảm nhận tác phẩm, nhân vật và hình ảnh thơ theo hướng ngắn gọn, rõ ý.',
       focus: ['Dàn ý', 'Dẫn thơ', 'Phân tích chi tiết', 'Giọng điệu nghệ thuật']
     }
+  ],
+  science: [
+    {
+      title: 'Vật lý (Lớp 9)',
+      summary: 'Hệ thống hóa lý thuyết Điện học, Điện từ học, Quang học và Sự bảo toàn năng lượng.',
+      focus: ['Điện trở', 'Định luật Ôm', 'Thấu kính hội tụ', 'Khúc xạ ánh sáng']
+    },
+    {
+      title: 'Hóa học (Lớp 9)',
+      summary: 'Các hợp chất vô cơ, Kim loại, Phi kim và Sơ lược hóa học hữu cơ.',
+      focus: ['Oxit - Axit - Bazơ', 'Bảng tuần hoàn', 'Hiđrocacbon', 'Polime']
+    },
+    {
+      title: 'Sinh học (Lớp 9)',
+      summary: 'Di truyền học, Biến dị, Sinh vật và Môi trường sống.',
+      focus: ['Quy luật Men-đen', 'Cấu trúc ADN và Gen', 'Hệ sinh thái', 'Bảo vệ môi trường']
+    }
+  ],
+  history_geography: [
+    {
+      title: 'Lịch sử lớp 9',
+      summary: 'Lịch sử thế giới hiện đại từ 1945 và tiến trình cách mạng Việt Nam từ năm 1919.',
+      focus: ['Cách mạng Việt Nam', 'Chiến dịch lịch sử', 'Các kỳ đại hội Đảng']
+    },
+    {
+      title: 'Địa lý lớp 9',
+      summary: 'Địa lý dân cư Việt Nam và sự phát triển, phân bố của các ngành kinh tế.',
+      focus: ['Phân bố dân cư', 'Nông - Lâm - Ngư nghiệp', 'Các vùng kinh tế trọng điểm']
+    }
+  ],
+  civics: [
+    {
+      title: 'Đạo đức & Pháp luật',
+      summary: 'Nghĩa vụ công dân, quyền tự do dân chủ và trách nhiệm với gia đình, xã hội.',
+      focus: ['Quyền tự do ngôn luận', 'Nghĩa vụ học tập', 'Hiến pháp nước CHXHCN Việt Nam']
+    }
+  ],
+  technology: [
+    {
+      title: 'Công nghệ lắp đặt & Đời sống',
+      summary: 'Lý thuyết mạch điện sinh hoạt trong nhà và quy trình lắp đặt an toàn.',
+      focus: ['Thiết bị bảo vệ mạng điện', 'Sơ đồ lắp đặt điện', 'An toàn lao động']
+    }
+  ],
+  informatics: [
+    {
+      title: 'Lập trình & Mạng máy tính',
+      summary: 'Tư duy thuật toán căn bản ( Scratch / Python ), Cơ sở dữ liệu và sử dụng Internet an toàn.',
+      focus: ['Cấu trúc điều khiển', 'Biến và kiểu dữ liệu', 'Bảo mật thông tin cá nhân']
+    }
+  ],
+  arts: [
+    {
+      title: 'Âm nhạc & Mỹ thuật',
+      summary: 'Nhạc lý cơ bản, các nhạc sĩ tiêu biểu và Mỹ thuật ứng dụng vẽ tranh đề tài.',
+      focus: ['Quãng và Hợp xướng', 'Tỉ lệ hình họa', 'Phối màu cơ bản trong trang trí']
+    }
   ]
 };
 
@@ -140,12 +199,6 @@ export const HANG_TOOLS: HangTool[] = [
     title: 'Bản đồ kiến thức',
     description: 'Xem nhanh khung ôn tập theo từng môn và từng mảng trọng tâm.',
     actionLabel: 'Mở bản đồ'
-  },
-  {
-    id: 'flashcards',
-    title: 'Thẻ nhớ tốc hành',
-    description: 'Lật nhanh công thức, khái niệm, và các mẹo ghi nhớ ngắn.',
-    actionLabel: 'Lật thẻ'
   },
   {
     id: 'drill',

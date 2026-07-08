@@ -18,10 +18,10 @@ import {
   ChevronRight
 } from 'lucide-react';
 import {
-  HANG_FLASHCARDS,
   HANG_SOURCES,
   type HangSubjectId
 } from '../data/hangLuyenCong';
+import { SubjectId } from '../types/game';
 
 interface HangLuyenCongProps {
   onStartPractice: () => void;
@@ -32,14 +32,15 @@ interface HangLuyenCongProps {
   onOpenMatThatGraph: () => void;
 }
 
-type StudyPanelId = 'flashcards' | 'drill' | 'notes' | 'sources';
+type HangSubjectId = SubjectId;
+
+type StudyPanelId = 'drill' | 'notes' | 'sources';
 
 const STUDY_PANELS: Array<{
   id: StudyPanelId;
   label: string;
   icon: React.ReactNode;
 }> = [
-  { id: 'flashcards', label: 'Thẻ nhớ', icon: <ScrollText className="w-4 h-4" /> },
   { id: 'drill', label: 'Học lý thuyết', icon: <Target className="w-4 h-4" /> },
   { id: 'notes', label: 'Sổ tay', icon: <CheckCircle2 className="w-4 h-4" /> },
   { id: 'sources', label: 'Nguồn', icon: <NotebookTabs className="w-4 h-4" /> }
@@ -67,7 +68,6 @@ const MAT_THAT_CARDS = [
 ] as const;
 
 const STUDY_PANEL_LABELS: Record<StudyPanelId, string> = {
-  flashcards: 'Thẻ nhớ',
   drill: 'Luyện nhanh',
   notes: 'Sổ tay',
   sources: 'Nguồn'
@@ -99,6 +99,48 @@ const SUBJECT_META: Record<HangSubjectId, {
     shortLabel: 'Văn',
     accent: 'text-synth-orange',
     accentSoft: 'from-synth-orange/20 to-synth-cyan/10',
+    icon: <BookOpen className="w-5 h-5" />
+  },
+  science: {
+    label: 'Khoa Học Tự Nhiên',
+    shortLabel: 'KHTN',
+    accent: 'text-emerald-400',
+    accentSoft: 'from-emerald-500/20 to-teal-500/10',
+    icon: <Sparkles className="w-5 h-5" />
+  },
+  history_geography: {
+    label: 'Lịch Sử & Địa Lý',
+    shortLabel: 'Sử Địa',
+    accent: 'text-amber-400',
+    accentSoft: 'from-amber-500/20 to-orange-500/10',
+    icon: <NotebookTabs className="w-5 h-5" />
+  },
+  civics: {
+    label: 'Giáo Dục Công Dân',
+    shortLabel: 'GDCD',
+    accent: 'text-blue-400',
+    accentSoft: 'from-blue-500/20 to-indigo-500/10',
+    icon: <Target className="w-5 h-5" />
+  },
+  technology: {
+    label: 'Công Nghệ',
+    shortLabel: 'CN',
+    accent: 'text-indigo-400',
+    accentSoft: 'from-indigo-500/20 to-cyan-500/10',
+    icon: <Calculator className="w-5 h-5" />
+  },
+  informatics: {
+    label: 'Tin Học',
+    shortLabel: 'Tin',
+    accent: 'text-cyan-400',
+    accentSoft: 'from-cyan-500/20 to-blue-500/10',
+    icon: <Layers3 className="w-5 h-5" />
+  },
+  arts: {
+    label: 'Nghệ Thuật',
+    shortLabel: 'Arts',
+    accent: 'text-fuchsia-400',
+    accentSoft: 'from-fuchsia-500/20 to-pink-500/10',
     icon: <BookOpen className="w-5 h-5" />
   }
 };
@@ -168,8 +210,116 @@ const SUBJECT_TRACKS: Record<HangSubjectId, {
     sampleTitle: 'Câu mẫu Anh',
     sampleDescription: 'Mỗi câu đại diện cho một nhóm dạng thường gặp trong đề thi.',
     toolTitle: 'Bảng công cụ Anh',
-    toolDescription: 'Dùng thẻ nhớ, luyện nhanh, sổ tay và nguồn tài liệu theo đúng thứ tự.',
+    toolDescription: 'Dùng luyện nhanh, sổ tay và nguồn tài liệu theo đúng thứ tự.',
     notePlaceholder: 'Ví dụ: nhầm thì, nhầm mạo từ, chọn sai dạng word form, thiếu từ trong rewrite...'
+  },
+  science: {
+    tag: 'KHTN - lý thuyết, thí nghiệm, thực hành',
+    title: 'Track KHTN: tích hợp Vật lý, Hóa học, Sinh học',
+    description: 'Nắm chắc kiến thức cốt lõi lớp 9, hiểu hiện tượng tự nhiên và công thức cơ bản.',
+    focusLabel: 'Trọng tâm KHTN',
+    focusPoints: [
+      'Hiểu bản chất hiện tượng Vật lý, Hóa học, Sinh học',
+      'Ghi nhớ công thức tính toán cơ bản và bảng tuần hoàn',
+      'Ứng dụng kiến thức giải thích đời sống'
+    ],
+    lessonTitle: 'Chuyên đề KHTN',
+    lessonDescription: 'Học lý thuyết tích hợp trước khi thực hành trả lời.',
+    sampleTitle: 'Câu mẫu KHTN',
+    sampleDescription: 'Bộ câu hỏi mẫu cho 3 phân môn KHTN.',
+    toolTitle: 'Công cụ KHTN',
+    toolDescription: 'Tập trung luyện tập lý thuyết và bài tập.',
+    notePlaceholder: 'Ví dụ: nhầm công thức thấu kính, quên cân bằng phương trình hóa học...'
+  },
+  history_geography: {
+    tag: 'Sử Địa - dòng sự kiện, bản đồ, số liệu',
+    title: 'Track Sử Địa: mốc thời gian và phân tích lược đồ',
+    description: 'Học Sử qua câu chuyện, Địa qua bản đồ và số liệu thực tế lớp 9.',
+    focusLabel: 'Trọng tâm Sử Địa',
+    focusPoints: [
+      'Ghi nhớ các mốc sự kiện lịch sử Việt Nam và thế giới',
+      'Đọc hiểu bản đồ địa lý, biểu đồ số liệu tự nhiên',
+      'Rèn luyện kỹ năng phân tích mối liên hệ nhân quả'
+    ],
+    lessonTitle: 'Chuyên đề Sử Địa',
+    lessonDescription: 'Nắm vững dòng lịch sử và kiến thức địa lý.',
+    sampleTitle: 'Câu mẫu Sử Địa',
+    sampleDescription: 'Câu hỏi kiểm tra mốc lịch sử và phân tích địa lý.',
+    toolTitle: 'Công cụ Sử Địa',
+    toolDescription: 'Học tập bằng sơ đồ tư duy và dữ liệu bản đồ.',
+    notePlaceholder: 'Ví dụ: nhớ sai mốc thời gian sự kiện, đọc nhầm biểu đồ nhiệt độ lượng mưa...'
+  },
+  civics: {
+    tag: 'GDCD - pháp luật, đạo đức, quyền công dân',
+    title: 'Track GDCD: tình huống pháp luật lớp 9',
+    description: 'Phân tích các tình huống đạo đức và pháp luật thực tế gần gũi.',
+    focusLabel: 'Trọng tâm GDCD',
+    focusPoints: [
+      'Nắm chắc quyền và nghĩa vụ công dân cơ bản',
+      'Phân biệt các hành vi đạo đức và vi phạm pháp luật',
+      'Giải quyết tình huống thực tế thường gặp'
+    ],
+    lessonTitle: 'Chuyên đề GDCD',
+    lessonDescription: 'Học lý thuyết chuẩn mực đạo đức và pháp luật.',
+    sampleTitle: 'Câu mẫu GDCD',
+    sampleDescription: 'Các tình huống trắc nghiệm pháp luật.',
+    toolTitle: 'Công cụ GDCD',
+    toolDescription: 'Ôn luyện chuẩn kiến thức.',
+    notePlaceholder: 'Ví dụ: nhầm lẫn giữa nghĩa vụ và quyền lợi...'
+  },
+  technology: {
+    tag: 'Công nghệ - an toàn điện, quy trình kỹ thuật',
+    title: 'Track Công nghệ: mạch điện gia đình và đời sống',
+    description: 'Hiểu nguyên lý hoạt động của thiết bị và quy trình kỹ thuật an toàn.',
+    focusLabel: 'Trọng tâm Công nghệ',
+    focusPoints: [
+      'Nhận diện các thiết bị điện và sơ đồ mạch điện',
+      'Hiểu quy trình kỹ thuật lắp ráp, nuôi trồng cơ bản',
+      'Áp dụng quy tắc an toàn lao động'
+    ],
+    lessonTitle: 'Chuyên đề Công nghệ',
+    lessonDescription: 'Ôn tập lý thuyết kỹ thuật.',
+    sampleTitle: 'Câu mẫu Công nghệ',
+    sampleDescription: 'Câu hỏi sơ đồ mạch điện và thiết bị.',
+    toolTitle: 'Công cụ Công nghệ',
+    toolDescription: 'Luyện câu hỏi thực hành lý thuyết.',
+    notePlaceholder: 'Ví dụ: đọc sai sơ đồ lắp đặt, nhầm công dụng cầu chì...'
+  },
+  informatics: {
+    tag: 'Tin học - thuật toán, tin học văn phòng, internet',
+    title: 'Track Tin học: tư duy lập trình và sử dụng máy tính',
+    description: 'Rèn luyện tư duy thuật toán lớp 9, sử dụng phần mềm và mạng internet an toàn.',
+    focusLabel: 'Trọng tâm Tin học',
+    focusPoints: [
+      'Hiểu cấu trúc rẽ nhánh, lặp trong lập trình cơ bản',
+      'Sử dụng các công cụ văn phòng và tìm kiếm thông tin',
+      'Nguyên tắc bảo mật thông tin cá nhân trên mạng'
+    ],
+    lessonTitle: 'Chuyên đề Tin học',
+    lessonDescription: 'Học lý thuyết thuật toán và phần cứng/mạng.',
+    sampleTitle: 'Câu mẫu Tin học',
+    sampleDescription: 'Các đoạn code mẫu và câu hỏi tin học.',
+    toolTitle: 'Công cụ Tin học',
+    toolDescription: 'Tải tài liệu và ôn luyện.',
+    notePlaceholder: 'Ví dụ: nhầm lẫn điều kiện dừng vòng lặp, hiểu sai khái niệm IP/DNS...'
+  },
+  arts: {
+    tag: 'Nghệ thuật - nhạc lý, phối màu, mỹ thuật',
+    title: 'Track Nghệ thuật: nhạc lý cơ bản và phối màu mỹ thuật',
+    description: 'Tìm hiểu về lịch sử âm nhạc, mỹ thuật, nhạc lý và bố cục màu sắc.',
+    focusLabel: 'Trọng tâm Nghệ thuật',
+    focusPoints: [
+      'Ghi nhớ nhạc lý cơ bản và tác giả tác phẩm tiêu biểu',
+      'Phân biệt gam màu, bố cục tạo hình mỹ thuật',
+      'Cảm thụ văn hóa nghệ thuật dân tộc và thế giới'
+    ],
+    lessonTitle: 'Chuyên đề Nghệ thuật',
+    lessonDescription: 'Kiến thức nhạc lý và lý thuyết mỹ thuật.',
+    sampleTitle: 'Câu mẫu Nghệ thuật',
+    sampleDescription: 'Nhận diện nốt nhạc và phân tích tranh vẽ.',
+    toolTitle: 'Công cụ Nghệ thuật',
+    toolDescription: 'Tài liệu hướng dẫn trực quan.',
+    notePlaceholder: 'Ví dụ: nhớ sai tên nhạc sĩ, nhầm màu tương phản...'
   }
 };
 
@@ -188,8 +338,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   const lessonsProgress = useGameState(state => state.lessonsProgress);
 
   const [selectedSubject, setSelectedSubject] = useState<HangSubjectId>(currentSubject);
-  const [selectedStudyPanel, setSelectedStudyPanel] = useState<StudyPanelId>('flashcards');
-  const [flashcardIndex, setFlashcardIndex] = useState(0);
+  const [selectedStudyPanel, setSelectedStudyPanel] = useState<StudyPanelId>('drill');
   const [noteText, setNoteText] = useState('');
 
   useEffect(() => {
@@ -216,27 +365,25 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
 
 
   const sampleQuestions = useMemo(() => {
-    const allowedCategories: Record<HangSubjectId, string[]> = {
+    const allowedCategories: Record<string, string[]> = {
       english: ['grammar', 'passive-voice', 'relative-clauses', 'tenses', 'rewrite', 'reading', 'cloze', 'vocabulary', 'wordform', 'pronunciation', 'stress'],
       math: ['parabol-line', 'viet-relation', 'real-equations', 'real-geometry', 'real-finance', 'plane-geometry'],
       literature: ['literature-vietnamese', 'literature-reading-poetry', 'literature-reading-prose', 'literature-reading-argument', 'literature-writing']
     };
 
-    return subjectQuestions.filter(q => allowedCategories[selectedSubject].includes(q.category)).slice(0, 3);
+    const targetCategories = allowedCategories[selectedSubject] || Array.from(new Set(
+      subjectQuestions.map(q => q.category)
+    )).filter(Boolean);
+
+    return subjectQuestions.filter(q => targetCategories.includes(q.category)).slice(0, 3);
   }, [selectedSubject, subjectQuestions]);
 
-  const activeFlashcards = useMemo(() => {
-    return HANG_FLASHCARDS.filter(card => card.subject === selectedSubject);
-  }, [selectedSubject]);
-
-  const currentFlashcard = activeFlashcards[flashcardIndex % activeFlashcards.length];
   const meta = SUBJECT_META[selectedSubject];
   const track = SUBJECT_TRACKS[selectedSubject];
 
   const handleSelectSubject = (subject: HangSubjectId) => {
     setSelectedSubject(subject);
     setSubject(subject);
-    setFlashcardIndex(0);
   };
 
   const handleStart = () => {
@@ -586,51 +733,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-synth-gray/20 p-4 space-y-4">
-              {selectedStudyPanel === 'flashcards' && currentFlashcard && (
-                <>
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 text-white">
-                      <ScrollText className="w-5 h-5 text-synth-magenta" />
-                      <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Thẻ nhớ tốc hành - {meta.shortLabel}</h3>
-                    </div>
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider">
-                      {flashcardIndex + 1}/{activeFlashcards.length}
-                    </span>
-                  </div>
-                  <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/8 to-transparent p-4 min-h-[180px] flex flex-col justify-between gap-4">
-                    <div className="text-xs font-bold text-synth-cyan uppercase tracking-wider">
-                      {SUBJECT_META[currentFlashcard.subject].label}
-                    </div>
-                    <div>
-                      <p className="text-base font-semibold text-white leading-relaxed">
-                        {currentFlashcard.front}
-                      </p>
-                      <p className="text-sm text-slate-200 mt-3 leading-relaxed">
-                        {currentFlashcard.back}
-                      </p>
-                    </div>
-                    <div className="text-[10px] text-slate-400 border-t border-white/10 pt-3">
-                      {currentFlashcard.note}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between gap-3">
-                    <button
-                      onClick={() => setFlashcardIndex(prev => Math.max(0, prev - 1))}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-xs font-bold uppercase tracking-wider cursor-pointer"
-                    >
-                      <ChevronLeft className="w-4 h-4" />
-                      Trước
-                    </button>
-                    <button
-                      onClick={() => setFlashcardIndex(prev => prev + 1)}
-                      className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 text-synth-cyan text-xs font-bold uppercase tracking-wider cursor-pointer"
-                    >
-                      Sau
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                </>
-              )}
+
 
               {selectedStudyPanel === 'drill' && (
                 <>

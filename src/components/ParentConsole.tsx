@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import type { Question, QuestionMeta } from '../types/game';
+import { SUBJECTS_CONFIG, SubjectId } from '../types/game';
 import { ENGLISH_ANSWER_MODE_LABELS, ENGLISH_EXAM_BLUEPRINT, ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../data/englishExamBlueprint';
 import { MATH_ANSWER_MODE_LABELS, MATH_EXAM_BLUEPRINT, MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
 import { LITERATURE_ANSWER_MODE_LABELS, LITERATURE_EXAM_BLUEPRINT, LITERATURE_TASK_LABELS, LITERATURE_TEXT_GENRE_LABELS } from '../data/literatureExamBlueprint';
@@ -105,7 +106,8 @@ export const ParentConsole: React.FC = () => {
   const [editCorrectAnswer, setEditCorrectAnswer] = useState('');
   const [editSource, setEditSource] = useState('');
   const [editImageUrl, setEditImageUrl] = useState('');
-  const [editSubject, setEditSubject] = useState<'english' | 'math' | 'literature'>('english');
+  const [editSubject, setEditSubject] = useState<SubjectId>('english');
+  const [selectedSect, setSelectedSect] = useState<SubjectId | null>(null);
   const [editExamPart, setEditExamPart] = useState('');
   const [editMathTopic, setEditMathTopic] = useState('');
   const [editEnglishPart, setEditEnglishPart] = useState('');
@@ -122,8 +124,7 @@ export const ParentConsole: React.FC = () => {
   const [baseXPVal, setBaseXPVal] = useState(15);
   const [baseCoinsVal, setBaseCoinsVal] = useState(5);
 
-  // Active Tab
-  const [activeTab, setActiveTab] = useState<'rewards' | 'ingestion' | 'members' | 'settings'>('members');
+  const [activeTab, setActiveTab] = useState<'chinh_dien' | 'thien_co_cac' | 'van_quyen_cac' | 'ngan_cac'>('chinh_dien');
   const [viewingStudentId, setViewingStudentId] = useState<string | null>(null);
 
   // Load students list on mount for admin users
@@ -350,7 +351,10 @@ export const ParentConsole: React.FC = () => {
   const filteredQuestions = useMemo(() => {
     const query = questionQuery.trim().toLowerCase();
     return questions.filter(q => {
-      if (subjectFilter !== 'all') {
+      if (selectedSect !== null) {
+        const qSubject = q.subject || 'english';
+        if (qSubject !== selectedSect) return false;
+      } else if (subjectFilter !== 'all') {
         const qSubject = q.subject || 'english';
         if (qSubject !== subjectFilter) return false;
       }
@@ -381,7 +385,7 @@ export const ParentConsole: React.FC = () => {
         .toLowerCase();
       return haystack.includes(query);
     });
-  }, [questions, questionQuery, subjectFilter, questionTypeFilter, examPartFilter, topicFilter, confusedFilter]);
+  }, [questions, questionQuery, subjectFilter, selectedSect, questionTypeFilter, examPartFilter, topicFilter, confusedFilter]);
 
   const filteredSubjectCounts = useMemo(() => {
     return filteredQuestions.reduce((acc: Record<string, number>, q) => {
@@ -416,10 +420,10 @@ export const ParentConsole: React.FC = () => {
         </div>
         
         <h2 className="font-orbitron font-black text-xl text-white uppercase tracking-wider">
-          Phụ Huynh Lockscreen
+          Viện Chủ Lockscreen
         </h2>
         <p className="text-xs text-synth-text-muted">
-          Nhập mã PIN của Ba Mẹ để duyệt phần thưởng, xem thống kê chi tiết hoặc nhập thêm đề thi cho con.
+          Nhập mã PIN của Viện Chủ để duyệt phần thưởng, xem thống kê chi tiết hoặc thiết lập giáo án khảo hạch cho thiếu hiệp.
         </p>
 
         <form onSubmit={handleUnlock} className="space-y-4">
@@ -454,7 +458,7 @@ export const ParentConsole: React.FC = () => {
         <div className="flex items-center gap-3">
           <Unlock className="w-6 h-6 text-synth-magenta" />
           <h2 className="font-orbitron text-lg font-black text-white uppercase tracking-wider flex items-center gap-1.5">
-            Bảng Quản Trị Của Ba Mẹ
+            Bảng Quản Trị Viện Chủ 👑
             <button
               onClick={() => showHelp('parent-console')}
               className="w-5 h-5 rounded-full bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta text-[10px] font-black flex items-center justify-center hover:bg-synth-magenta/40 cursor-pointer transition-colors"
@@ -467,18 +471,19 @@ export const ParentConsole: React.FC = () => {
 
         {/* Tab Controls */}
         <div className="hidden md:flex gap-2 flex-wrap">
-          {['members', 'rewards', 'ingestion'].map(tab => {
+          {(['chinh_dien', 'thien_co_cac', 'van_quyen_cac', 'ngan_cac'] as const).map(tab => {
             const tabNames: Record<string, string> = {
-              members: 'Thành viên',
-              rewards: 'Phần thưởng & Cấu hình',
-              ingestion: 'Ngân hàng câu hỏi'
+              chinh_dien: '🏛️ Chính Điện',
+              thien_co_cac: '📖 Thiên Cơ Các',
+              van_quyen_cac: '📚 Vạn Quyển Các',
+              ngan_cac: '💰 Ngân Các'
             };
             return (
               <button
                 key={tab}
                 onClick={() => {
-                  setActiveTab(tab as any);
-                  if (tab === 'members') {
+                  setActiveTab(tab);
+                  if (tab === 'chinh_dien') {
                     fetchAdminStudents();
                   }
                 }}
@@ -518,20 +523,20 @@ export const ParentConsole: React.FC = () => {
             }}
             className="px-3 py-1.5 rounded bg-synth-gray/30 border border-white/10 text-xs text-white hover:bg-white/10 font-bold cursor-pointer transition-colors"
           >
-            Đổi học sinh khác
+            Đổi thiếu hiệp khác
           </button>
         </div>
       )}
 
-      {/* Rewards tab */}
-      {activeTab === 'rewards' && (
+      {/* Ngân Các Tab */}
+      {activeTab === 'ngan_cac' && (
         <div className="space-y-6">
           {/* Game configuration panel - always visible */}
           <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5">
             <div className="flex items-center gap-2">
               <SlidersHorizontal className="w-4 h-4 text-synth-cyan" />
-              <h3 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">
-                Cấu hình Game & Mức thưởng
+              <h3 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
+                💰 Ngân Các — Quản lý tài nguyên, chi phí & phần thưởng
               </h3>
             </div>
 
@@ -630,7 +635,7 @@ export const ParentConsole: React.FC = () => {
 
             <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between bg-white/5 rounded-xl border border-white/5 p-4">
               <p className="text-[10px] text-synth-text-muted leading-relaxed">
-                Các cấu hình này sẽ tự động áp dụng trực tiếp cho tất cả học sinh trên ứng dụng (Boss Arena, đảo thử thách, lượng năng lượng tối đa nhận mỗi ngày, và điểm thưởng học tập).
+                Các cấu hình này sẽ tự động áp dụng trực tiếp cho tất cả thiếu hiệp trên ứng dụng (Quyết đấu Boss, Đảo thử thách, lượng chân khí tối đa nhận mỗi ngày, và điểm thưởng tu học).
               </p>
               <button
                 onClick={async () => {
@@ -780,9 +785,70 @@ export const ParentConsole: React.FC = () => {
         </div>
       )}
 
-      {/* Ingestion tab */}
-      {activeTab === 'ingestion' && (
-        <div className="space-y-6">
+      {/* Vạn Quyển Các Tab */}
+      {activeTab === 'van_quyen_cac' && (
+        selectedSect === null ? (
+          <div className="glass-panel rounded-2xl border border-white/5 p-8 max-w-4xl mx-auto space-y-6">
+            <div className="text-center space-y-2">
+              <div className="w-16 h-16 mx-auto rounded-full bg-synth-cyan/10 border border-synth-cyan/30 flex items-center justify-center">
+                <Database className="w-8 h-8 text-synth-cyan" />
+              </div>
+              <h2 className="font-orbitron font-black text-xl text-white uppercase tracking-wider flex items-center justify-center gap-2">
+                📚 VẠN QUYỂN CÁC (KHO TRI THỨC & KHẢO HẠCH)
+              </h2>
+              <p className="text-xs text-synth-text-muted">
+                Kính xin Viện Chủ lựa chọn Môn phái cần thiết lập giáo án và khảo hạch để tiếp tục.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pt-4">
+              {Object.values(SUBJECTS_CONFIG).map(sub => (
+                <button
+                  key={sub.id}
+                  onClick={() => {
+                    setSelectedSect(sub.id);
+                    setEditSubject(sub.id);
+                  }}
+                  className="rounded-2xl border border-white/5 bg-synth-gray/10 p-5 text-left hover:border-white/10 hover:bg-synth-gray/20 transition-all cursor-pointer group shadow-lg"
+                  style={{ borderLeft: `4px solid ${sub.color}` }}
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">{sub.icon}</span>
+                    <div>
+                      <span className="block text-xs font-black uppercase font-orbitron text-white group-hover:text-synth-cyan transition-colors">
+                        {sub.name}
+                      </span>
+                      <span className="block text-[10px] text-synth-text-muted mt-0.5">
+                        {sub.group === 'chuyen_sau' ? 'Môn thi Chuyên Sâu Lớp 10' : 'Môn tu học Cơ Bản Lớp 9'}
+                      </span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {/* Header context info with Back/Change button */}
+            <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-white/5 bg-synth-gray/10">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{SUBJECTS_CONFIG[selectedSect].icon}</span>
+                <div>
+                  <span className="block text-xs font-black uppercase font-orbitron text-white">
+                    Môn phái đang quản lý: {SUBJECTS_CONFIG[selectedSect].name}
+                  </span>
+                  <span className="block text-[10px] text-synth-text-muted">
+                    Ngữ cảnh được cô lập để tránh trộn lẫn ngân hàng câu hỏi.
+                  </span>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedSect(null)}
+                className="text-[10px] px-3 py-1.5 rounded-lg border border-white/10 text-synth-text-muted hover:text-white uppercase font-bold cursor-pointer transition-colors"
+              >
+                Đổi môn phái
+              </button>
+            </div>
           <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5">
             <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-4">
               <div className="space-y-2">
@@ -848,42 +914,22 @@ export const ParentConsole: React.FC = () => {
                     </p>
                   </div>
 
-                  <div className="space-y-2">
-                    {(['all', 'english', 'math', 'literature'] as const).map(sub => {
-                      const label = sub === 'all' ? 'Tất cả' : sub === 'english' ? 'Tiếng Anh' : sub === 'math' ? 'Toán học' : 'Ngữ văn';
-                      const count = sub === 'all' ? questions.length : sub === 'english' ? bankStats.english : sub === 'math' ? bankStats.math : bankStats.literature;
-                      const tone = sub === 'math' ? 'magenta' : sub === 'literature' ? 'orange' : 'cyan';
-                      const toneClasses = tone === 'magenta'
-                        ? 'border-synth-magenta/40 text-synth-magenta bg-synth-magenta/10'
-                        : tone === 'orange'
-                          ? 'border-synth-orange/40 text-synth-orange bg-synth-orange/10'
-                          : 'border-synth-cyan/40 text-synth-cyan bg-synth-cyan/10';
-
-                      return (
-                        <button
-                          key={sub}
-                          type="button"
-                          onClick={() => setSubjectFilter(sub)}
-                          className={`w-full rounded-xl border px-3 py-3 text-left transition-all duration-200 ${
-                            subjectFilter === sub
-                              ? toneClasses
-                              : 'border-white/5 bg-synth-gray/10 text-synth-text-muted hover:text-white hover:border-white/10'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between gap-3">
-                            <div className="space-y-0.5">
-                              <span className="block text-[11px] uppercase font-orbitron font-bold tracking-wider">{label}</span>
-                              <span className="block text-[10px] text-inherit/70">
-                                {sub === 'all' ? 'Xem tổng quan' : 'Chỉ câu của môn này'}
-                              </span>
-                            </div>
-                            <span className="min-w-12 text-center px-2.5 py-1 rounded-full bg-white/10 text-xs font-black">
-                              {count}
-                            </span>
-                          </div>
-                        </button>
-                      );
-                    })}
+                  <div className="rounded-xl border border-white/5 bg-black/10 p-4 space-y-3 text-center">
+                    <span className="text-[36px] block">{selectedSect ? SUBJECTS_CONFIG[selectedSect].icon : '📚'}</span>
+                    <span className="block text-xs font-black uppercase font-orbitron text-white">
+                      {selectedSect ? SUBJECTS_CONFIG[selectedSect].name : 'Chưa chọn'}
+                    </span>
+                    <span className="block text-[9px] text-synth-text-muted uppercase font-orbitron">
+                      {selectedSect && SUBJECTS_CONFIG[selectedSect].group === 'chuyen_sau' ? 'Môn Chuyên Sâu Lớp 10' : 'Môn Cơ Bản Lớp 9'}
+                    </span>
+                    <div className="pt-2">
+                      <button
+                        onClick={() => setSelectedSect(null)}
+                        className="text-[10px] px-3 py-2 rounded-lg border border-synth-cyan/35 text-synth-cyan hover:bg-synth-cyan/15 uppercase font-bold cursor-pointer transition-all w-full text-center"
+                      >
+                        Đổi môn phái
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -1438,7 +1484,7 @@ export const ParentConsole: React.FC = () => {
               </div>
             </div>
           </div>
-        </div>
+        )
       )}
 
       {editingQuestion && (
@@ -1763,13 +1809,196 @@ export const ParentConsole: React.FC = () => {
         </div>
       )}
 
+      {/* Tab 2: Thiên Cơ Các (Dashboard & Statistics) */}
+      {activeTab === 'thien_co_cac' && (() => {
+        const totalQuestions = questions.length;
+        const subjectQuestionStats = Object.values(SUBJECTS_CONFIG).map(sub => {
+          const count = questions.filter(q => q.subject === sub.id).length;
+          return {
+            name: sub.name,
+            icon: sub.icon,
+            color: sub.color,
+            count
+          };
+        });
+
+        const totalStudents = adminStudents.length;
+        const totalXP = adminStudents.reduce((acc, s) => acc + (s.player?.xp || 0), 0);
+        const totalCoins = adminStudents.reduce((acc, s) => acc + (s.player?.coins || 0), 0);
+        const avgLevel = totalStudents > 0 
+          ? Math.round(adminStudents.reduce((acc, s) => acc + (s.player?.level || 1), 0) / totalStudents)
+          : 0;
+
+        // Sort students by Level desc for mini-leaderboard
+        const sortedStudents = [...adminStudents].sort((a, b) => (b.player?.level || 1) - (a.player?.level || 1));
+
+        return (
+          <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-6">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">📖</span>
+              <h3 className="font-orbitron font-bold text-sm text-synth-cyan uppercase tracking-wider">
+                Thiên Cơ Các — Báo cáo & Cơ mật thống kê toàn viện
+              </h3>
+            </div>
+
+            {/* Overview Stats Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white/5 border border-white/5 rounded-xl p-4 flex flex-col justify-between">
+                <span className="text-[10px] uppercase text-slate-400 font-bold font-orbitron">Tổng Số Thiếu Hiệp</span>
+                <span className="text-2xl font-black text-synth-cyan font-orbitron mt-1">{totalStudents}</span>
+              </div>
+              <div className="bg-white/5 border border-white/5 rounded-xl p-4 flex flex-col justify-between">
+                <span className="text-[10px] uppercase text-slate-400 font-bold font-orbitron">Cấp Độ Trung Bình</span>
+                <span className="text-2xl font-black text-synth-magenta font-orbitron mt-1">LV.{avgLevel}</span>
+              </div>
+              <div className="bg-white/5 border border-white/5 rounded-xl p-4 flex flex-col justify-between">
+                <span className="text-[10px] uppercase text-slate-400 font-bold font-orbitron">Tổng Tích Lũy Chân Lý (XP)</span>
+                <span className="text-2xl font-black text-synth-green font-orbitron mt-1">{totalXP.toLocaleString()}</span>
+              </div>
+              <div className="bg-white/5 border border-white/5 rounded-xl p-4 flex flex-col justify-between">
+                <span className="text-[10px] uppercase text-slate-400 font-bold font-orbitron">Tổng Ngân Sách (NP/Coins)</span>
+                <span className="text-2xl font-black text-synth-orange font-orbitron mt-1">{totalCoins.toLocaleString()} NP</span>
+              </div>
+            </div>
+
+            {/* Question Bank Distribution Chart & Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="bg-white/5 border border-white/5 rounded-xl p-4 lg:col-span-2 space-y-4">
+                <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
+                  Mật Độ Câu Hỏi Trong Vạn Quyển Các
+                </h4>
+                <div className="h-64 w-full text-xs">
+                  {totalQuestions > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={subjectQuestionStats}>
+                        <XAxis dataKey="name" stroke="#888888" fontSize={9} tickLine={false} />
+                        <YAxis stroke="#888888" fontSize={9} tickLine={false} />
+                        <Tooltip 
+                          contentStyle={{ backgroundColor: '#181b2a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
+                          labelStyle={{ color: '#fff', fontWeight: 'bold' }}
+                        />
+                        <Bar dataKey="count" fill="#00f0ff" radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center text-synth-text-muted">
+                      Vạn Quyển Các chưa được nạp câu hỏi nào.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Subject Breakdown List */}
+              <div className="bg-white/5 border border-white/5 rounded-xl p-4 space-y-3">
+                <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
+                  Kho Tàng Tri Thức (Tỷ Lệ)
+                </h4>
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                  {subjectQuestionStats.map(stat => {
+                    const percent = totalQuestions > 0 ? Math.round((stat.count / totalQuestions) * 100) : 0;
+                    return (
+                      <div key={stat.name} className="space-y-1">
+                        <div className="flex justify-between text-[10px] font-bold text-slate-300">
+                          <span className="flex items-center gap-1">
+                            <span>{stat.icon}</span>
+                            <span>{stat.name}</span>
+                          </span>
+                          <span>{stat.count} câu ({percent}%)</span>
+                        </div>
+                        <div className="w-full h-1.5 bg-black/30 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full rounded-full transition-all duration-500" 
+                            style={{ width: `${percent}%`, backgroundColor: stat.color }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            {/* Bảng Tinh Anh Thiếu Hiệp (Student Leaderboard Overview) */}
+            <div className="bg-white/5 border border-white/5 rounded-xl p-4 space-y-4">
+              <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
+                Bảng Tinh Anh Thiếu Hiệp (Xếp Hạng Tu Học)
+              </h4>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead>
+                    <tr className="border-b border-white/10 text-slate-400 font-orbitron uppercase text-[9px] tracking-wider">
+                      <th className="py-2.5 px-3">Xếp hạng</th>
+                      <th className="py-2.5 px-3">Thiếu Hiệp</th>
+                      <th className="py-2.5 px-3">Vai Trò Hệ Thống</th>
+                      <th className="py-2.5 px-3">Cấp Độ</th>
+                      <th className="py-2.5 px-3">Danh Hiệu Kiếm Hiệp</th>
+                      <th className="py-2.5 px-3">Chuỗi Ngày</th>
+                      <th className="py-2.5 px-3 text-right">Tích Lũy Chân Lý (XP)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedStudents.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="py-8 text-center text-synth-text-muted">
+                          Chưa có tài khoản thiếu hiệp nào đăng ký học viện.
+                        </td>
+                      </tr>
+                    ) : (
+                      sortedStudents.map((stud, idx) => {
+                        const lv = stud.player?.level || 1;
+                        let rankName = 'Tân Đệ Tử';
+                        let rankIcon = '🌱';
+                        if (lv >= 80) { rankName = 'Tông Sư'; rankIcon = '👑'; }
+                        else if (lv >= 50) { rankName = 'Đại Hiệp'; rankIcon = '🐉'; }
+                        else if (lv >= 30) { rankName = 'Cao Thủ'; rankIcon = '⭐'; }
+                        else if (lv >= 15) { rankName = 'Thiếu Hiệp'; rankIcon = '⚔️'; }
+                        else if (lv >= 5) { rankName = 'Đệ Tử'; rankIcon = '🥋'; }
+
+                        return (
+                          <tr key={stud.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                            <td className="py-2.5 px-3 font-orbitron font-bold text-slate-400">#{idx + 1}</td>
+                            <td className="py-2.5 px-3 font-bold text-white flex items-center gap-2">
+                              <img 
+                                src={stud.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'} 
+                                alt={stud.name} 
+                                className="w-5 h-5 rounded-full"
+                              />
+                              {stud.name}
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <span className={`px-1.5 py-0.5 rounded font-bold uppercase text-[9px] ${
+                                stud.role === 'admin' ? 'bg-synth-magenta/20 text-synth-magenta' : 'bg-synth-cyan/20 text-synth-cyan'
+                              }`}>
+                                {stud.role === 'admin' ? 'Viện Chủ' : 'Thiếu Hiệp'}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3 font-orbitron font-black text-synth-magenta">LV.{lv}</td>
+                            <td className="py-2.5 px-3 font-bold text-synth-orange">
+                              {rankIcon} {rankName}
+                            </td>
+                            <td className="py-2.5 px-3 text-orange-400 font-semibold">{stud.player?.streak || 0} Ngày</td>
+                            <td className="py-2.5 px-3 text-right font-orbitron text-synth-green font-bold">
+                              {stud.player?.xp || 0} XP
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Members Tab */}
-      {activeTab === 'members' && (
+      {activeTab === 'chinh_dien' && (
         <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-6">
           {!viewingStudentId ? (
             <div className="space-y-4">
-              <h3 className="font-orbitron font-bold text-sm text-synth-magenta uppercase tracking-wider">
-                Đội ngũ quản trị & Danh sách tài khoản con
+              <h3 className="font-orbitron font-bold text-sm text-synth-magenta uppercase tracking-wider flex items-center gap-2">
+                🏛️ Chính Điện — Quản lý thiếu hiệp & Cấp quyền
               </h3>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
@@ -2133,38 +2362,48 @@ export const ParentConsole: React.FC = () => {
       )}
 
       {/* Mobile Admin Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-3 py-2.5 pb-3 grid grid-cols-3 gap-1.5 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-3 py-2.5 pb-3 grid grid-cols-4 gap-1 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)]">
         <button
           onClick={() => {
-            setActiveTab('members');
+            setActiveTab('chinh_dien');
             fetchAdminStudents();
           }}
-          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
-            activeTab === 'members' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
+          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
+            activeTab === 'chinh_dien' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
           }`}
         >
-          <span className="text-lg">👥</span>
-          <span>Thành viên</span>
+          <span className="text-base">🏛️</span>
+          <span>Chính Điện</span>
         </button>
 
         <button
-          onClick={() => setActiveTab('rewards')}
-          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
-            activeTab === 'rewards' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
+          onClick={() => setActiveTab('thien_co_cac')}
+          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
+            activeTab === 'thien_co_cac' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
           }`}
         >
-          <span className="text-lg">🎁</span>
-          <span>Thưởng & Cấu hình</span>
+          <span className="text-base">📖</span>
+          <span>Thiên Cơ</span>
         </button>
 
         <button
-          onClick={() => setActiveTab('ingestion')}
-          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
-            activeTab === 'ingestion' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
+          onClick={() => setActiveTab('van_quyen_cac')}
+          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
+            activeTab === 'van_quyen_cac' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
           }`}
         >
-          <span className="text-lg">🤖</span>
-          <span>Ngân hàng</span>
+          <span className="text-base">📚</span>
+          <span>Vạn Quyển</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('ngan_cac')}
+          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
+            activeTab === 'ngan_cac' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
+          }`}
+        >
+          <span className="text-base">💰</span>
+          <span>Ngân Các</span>
         </button>
       </nav>
     </div>

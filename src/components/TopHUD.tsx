@@ -1,6 +1,7 @@
 import React from 'react';
 import { useGameState } from '../hooks/useGameState';
-import { Zap, Heart, Coins, Flame, Shield, Award, LogOut, Palette } from 'lucide-react';
+import { Zap, Heart, Coins, Flame, Shield, Award, LogOut, Palette, ChevronDown, BookOpen } from 'lucide-react';
+import { SUBJECTS_CONFIG, getStudentRankForLevel, SubjectId } from '../types/game';
 
 interface TopHUDProps {
   currentScreen: 'map' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang';
@@ -21,6 +22,9 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   const currentSubject = useGameState(state => state.currentSubject);
   const setSubject = useGameState(state => state.setSubject);
   const uiTheme = useGameState(state => state.uiTheme);
+
+  const [dropdownOpen, setDropdownOpen] = React.useState(false);
+  const activeSubjectConfig = SUBJECTS_CONFIG[currentSubject as SubjectId];
 
   // Calculate percentage of XP to next level
   const xpNeeded = player.level * 200;
@@ -47,50 +51,95 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             <span className={`font-orbitron text-2xl font-black bg-gradient-to-r ${isUnicorn ? 'from-fuchsia-500 via-violet-500 to-cyan-400' : 'from-synth-cyan to-synth-magenta'} bg-clip-text text-transparent group-hover:synth-glow-cyan transition-all duration-300`}>
               MIKAWAII
             </span>
-            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase font-orbitron animate-pulse ${
-              currentSubject === 'math' 
-                ? 'border-synth-magenta text-synth-magenta shadow-[0_0_6px_rgba(255,0,128,0.3)]' 
-                : currentSubject === 'literature'
-                ? 'border-synth-orange text-synth-orange shadow-[0_0_6px_rgba(255,165,0,0.3)]'
-                : 'border-synth-cyan text-synth-cyan shadow-[0_0_6px_rgba(0,240,255,0.3)]'
-            }`}>
-              {currentSubject === 'math' ? 'MATH' : currentSubject === 'literature' ? 'LIT' : 'ENGLISH'}
+            <span className="text-[10px] font-bold px-1.5 py-0.5 rounded border uppercase font-orbitron animate-pulse" style={{ borderColor: activeSubjectConfig?.color, color: activeSubjectConfig?.color, boxShadow: `0 0 6px ${activeSubjectConfig?.color}4D` }}>
+              {activeSubjectConfig?.icon} {activeSubjectConfig?.name.toUpperCase()}
             </span>
           </div>
 
-          {/* Subject Switcher */}
+          {/* Subject Dropdown Switcher */}
           {currentUser && currentUser.role !== 'admin' && (
-            <div className="flex items-center bg-synth-gray/30 rounded-xl p-0.5 border border-white/10 font-orbitron text-[9px] shrink-0">
+            <div className="relative shrink-0 z-50">
               <button
-                onClick={() => setSubject('english')}
-                className={`px-2 py-1 rounded-lg font-bold transition-all duration-200 cursor-pointer ${
-                  currentSubject === 'english'
-                    ? 'bg-gradient-to-r from-synth-purple to-synth-cyan text-black shadow-[0_0_8px_rgba(0,240,255,0.4)]'
-                    : 'text-synth-text-muted hover:text-white'
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-[11px] font-bold cursor-pointer font-orbitron transition-all duration-200 ${
+                  isUnicorn
+                    ? 'bg-white/80 border-violet-200/50 text-violet-800 hover:bg-white'
+                    : 'bg-synth-gray/40 border-synth-cyan/35 text-synth-cyan hover:bg-synth-gray/70 shadow-[0_0_8px_rgba(0,240,255,0.15)]'
                 }`}
               >
-                ANH
+                <span>{activeSubjectConfig?.icon} {activeSubjectConfig?.name}</span>
+                <ChevronDown className="w-3.5 h-3.5 opacity-70" />
               </button>
-              <button
-                onClick={() => setSubject('math')}
-                className={`px-2 py-1 rounded-lg font-bold transition-all duration-200 cursor-pointer ${
-                  currentSubject === 'math'
-                    ? 'bg-gradient-to-r from-synth-purple to-synth-magenta text-white shadow-[0_0_8px_rgba(255,0,128,0.4)]'
-                    : 'text-synth-text-muted hover:text-white'
-                }`}
-              >
-                TOÁN
-              </button>
-              <button
-                onClick={() => setSubject('literature')}
-                className={`px-2 py-1 rounded-lg font-bold transition-all duration-200 cursor-pointer ${
-                  currentSubject === 'literature'
-                    ? 'bg-gradient-to-r from-synth-purple to-synth-orange text-white shadow-[0_0_8px_rgba(255,165,0,0.4)]'
-                    : 'text-synth-text-muted hover:text-white'
-                }`}
-              >
-                VĂN
-              </button>
+
+              {dropdownOpen && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setDropdownOpen(false)} />
+                  
+                  <div className={`absolute top-full left-0 mt-1 w-64 rounded-xl border p-3 z-50 shadow-2xl ${
+                    isUnicorn
+                      ? 'bg-white border-violet-100 text-violet-800'
+                      : 'bg-synth-gray border-synth-cyan/30 text-white'
+                  }`}>
+                    {/* Section 1: Môn Chuyên Sâu */}
+                    <div className="mb-2">
+                      <span className="text-[9px] font-black uppercase font-orbitron text-synth-magenta/80 tracking-wider block mb-1">
+                        Môn Chuyên Sâu (Lớp 10)
+                      </span>
+                      <div className="grid grid-cols-1 gap-1">
+                        {Object.values(SUBJECTS_CONFIG)
+                          .filter(s => s.group === 'chuyen_sau')
+                          .map(sub => (
+                            <button
+                              key={sub.id}
+                              onClick={() => {
+                                setSubject(sub.id);
+                                setDropdownOpen(false);
+                              }}
+                              className={`flex items-center gap-2 w-full text-left px-2 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                                currentSubject === sub.id
+                                  ? 'bg-synth-purple/20 text-white border-l-2'
+                                  : 'hover:bg-white/5 text-synth-text-muted hover:text-white'
+                              }`}
+                              style={{ borderLeftColor: currentSubject === sub.id ? sub.color : 'transparent' }}
+                            >
+                              <span>{sub.icon}</span>
+                              <span>{sub.name}</span>
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+
+                    {/* Section 2: Môn Cơ Bản */}
+                    <div>
+                      <span className="text-[9px] font-black uppercase font-orbitron text-synth-cyan/80 tracking-wider block mb-1">
+                        Môn Cơ Bản (Lớp 9)
+                      </span>
+                      <div className="grid grid-cols-1 gap-1 max-h-48 overflow-y-auto pr-1 scrollbar-thin">
+                        {Object.values(SUBJECTS_CONFIG)
+                          .filter(s => s.group === 'co_ban')
+                          .map(sub => (
+                            <button
+                              key={sub.id}
+                              onClick={() => {
+                                setSubject(sub.id);
+                                setDropdownOpen(false);
+                              }}
+                              className={`flex items-center gap-2 w-full text-left px-2 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                                currentSubject === sub.id
+                                  ? 'bg-synth-purple/20 text-white border-l-2'
+                                  : 'hover:bg-white/5 text-synth-text-muted hover:text-white'
+                              }`}
+                              style={{ borderLeftColor: currentSubject === sub.id ? sub.color : 'transparent' }}
+                            >
+                              <span>{sub.icon}</span>
+                              <span>{sub.name}</span>
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
@@ -110,15 +159,15 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                 </span>
                 {currentUser?.role === 'admin' ? (
                   <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-synth-magenta/30 text-synth-magenta border border-synth-magenta/20 uppercase font-orbitron shadow-[0_0_8px_rgba(255,0,127,0.2)]">
-                    ADMIN
+                    VIỆN CHỦ 👑
                   </span>
                 ) : (
                   <span 
                     onClick={() => showHelp('xp')}
-                    className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-synth-purple/30 text-synth-cyan border border-synth-cyan/20 uppercase font-orbitron cursor-pointer hover:bg-synth-purple/50 flex items-center gap-0.5"
-                    title="Cấp độ - Nhấp để xem hướng dẫn"
+                    className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-synth-purple/30 text-synth-cyan border border-synth-cyan/20 uppercase font-orbitron cursor-pointer hover:bg-synth-purple/50 flex items-center gap-0.5 shadow-[0_0_6px_rgba(0,240,255,0.15)]"
+                    title={`Danh hiệu: ${getStudentRankForLevel(player.level).name} - Cấp độ ${player.level}. Nhấp để xem hướng dẫn.`}
                   >
-                    LV.{player.level} <span className="text-[8px] opacity-60">?</span>
+                    {getStudentRankForLevel(player.level).icon} {getStudentRankForLevel(player.level).name.toUpperCase()} (Lvl.{player.level}) <span className="text-[8px] opacity-60">?</span>
                   </span>
                 )}
               </div>

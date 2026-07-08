@@ -4,7 +4,7 @@ import {
   ArrowLeft, Sparkles, Brain, Award, RefreshCw, HelpCircle, Send, Check, X
 } from 'lucide-react';
 import { toast } from '../utils/toast';
-import type { Question } from '../types/game';
+import { SUBJECTS_CONFIG, SubjectId, Question } from '../types/game';
 
 interface RelaxationZoneProps {
   onBack: () => void;
@@ -53,7 +53,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   // ----------------------------------------------------
   // Tab 1: Xưởng Thẻ Nhớ (Dynamic SRS Flashcards)
   // ----------------------------------------------------
-  const [flashcardSubject, setFlashcardSubject] = useState<'all' | 'english' | 'math' | 'literature'>('all');
+  const [flashcardSubject, setFlashcardSubject] = useState<'all' | SubjectId>('all');
   const [activeFlashcards, setActiveFlashcards] = useState<Question[]>([]);
   const [fcIndex, setFcIndex] = useState(0);
   const [fcFlipped, setFcFlipped] = useState(false);
@@ -770,23 +770,29 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6 flex flex-col items-center">
               {/* Filter controls */}
-              <div className="flex gap-2 w-full max-w-lg bg-black/20 p-1.5 rounded-xl border border-white/5 justify-between">
-                {[
-                  { id: 'all', label: 'Tất Cả' },
-                  { id: 'english', label: 'Tiếng Anh 🇬🇧' },
-                  { id: 'math', label: 'Toán Học 📐' },
-                  { id: 'literature', label: 'Ngữ Văn ✍️' }
-                ].map(opt => (
+              <div className="flex flex-wrap gap-2 w-full max-w-2xl bg-black/20 p-2 rounded-xl border border-white/5 justify-start">
+                <button
+                  onClick={() => setFlashcardSubject('all')}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-bold font-orbitron uppercase cursor-pointer transition-all ${
+                    flashcardSubject === 'all'
+                      ? 'bg-synth-cyan text-black shadow-[0_0_8px_rgba(0,240,255,0.4)]'
+                      : 'text-synth-text-muted hover:text-white'
+                  }`}
+                >
+                  Tất Cả
+                </button>
+                {Object.values(SUBJECTS_CONFIG).map(opt => (
                   <button
                     key={opt.id}
-                    onClick={() => setFlashcardSubject(opt.id as any)}
+                    onClick={() => setFlashcardSubject(opt.id)}
                     className={`px-3 py-1.5 rounded-lg text-[10px] font-bold font-orbitron uppercase cursor-pointer transition-all ${
                       flashcardSubject === opt.id
-                        ? 'bg-synth-cyan text-black'
+                        ? 'text-black shadow-[0_0_8px_rgba(0,240,255,0.4)]'
                         : 'text-synth-text-muted hover:text-white'
                     }`}
+                    style={{ backgroundColor: flashcardSubject === opt.id ? opt.color : 'transparent' }}
                   >
-                    {opt.label}
+                    {opt.icon} {opt.name}
                   </button>
                 ))}
               </div>
@@ -942,6 +948,34 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                     <li>Tự nhớ đáp án trước khi nhấn vào thẻ để lật xem lời giải.</li>
                     <li>Sử dụng nút lọc để đổi chủ đề câu hỏi.</li>
                   </ul>
+                </div>
+
+                <div className="space-y-2 pt-4 border-t border-white/5 text-left">
+                  <h4 className={`text-xs font-black uppercase font-orbitron tracking-wider ${isUnicorn ? 'text-violet-900' : 'text-synth-magenta'}`}>
+                    🧭 ĐỊNH HƯỚNG MINI-GAME TƯƠNG LAI
+                  </h4>
+                  <div className="space-y-2 text-[10px]">
+                    <div className="bg-white/5 p-2 rounded border border-white/5 space-y-1">
+                      <span className="font-bold text-white block">🧭 Hành Trình Phiêu Lưu (World Map)</span>
+                      <span className="text-slate-400 block leading-normal">Bản đồ thế giới mở, mở khóa đảo mới khi clear bài học.</span>
+                      <span className="inline-block px-1 rounded bg-yellow-500/20 text-yellow-400 text-[8px] font-semibold font-orbitron">Đang Thiết Kế</span>
+                    </div>
+                    <div className="bg-white/5 p-2 rounded border border-white/5 space-y-1">
+                      <span className="font-bold text-white block">🤖 Dạy Học Cho AI (Teach the AI)</span>
+                      <span className="text-slate-400 block leading-normal">Đóng vai giáo sư dạy AI giải bài; AI đặt câu hỏi phản biện để kiểm tra độ hiểu sâu.</span>
+                      <span className="inline-block px-1 rounded bg-yellow-500/20 text-yellow-400 text-[8px] font-semibold font-orbitron">Đang Thiết Kế</span>
+                    </div>
+                    <div className="bg-white/5 p-2 rounded border border-white/5 space-y-1">
+                      <span className="font-bold text-white block">⚔️ Ghép Cặp So Tài (PvP Match)</span>
+                      <span className="text-slate-400 block leading-normal">Thách đấu lật thẻ tính giờ trực tiếp với các thiếu hiệp khác.</span>
+                      <span className="inline-block px-1 rounded bg-yellow-500/20 text-yellow-400 text-[8px] font-semibold font-orbitron">Đang Thiết Kế</span>
+                    </div>
+                    <div className="bg-white/5 p-2 rounded border border-white/5 space-y-1">
+                      <span className="font-bold text-white block">🏆 Đấu Trường Đại Hội Võ Lâm</span>
+                      <span className="text-slate-400 block leading-normal">Giải đấu liên môn tổng hợp theo quý tranh cúp học viện.</span>
+                      <span className="inline-block px-1 rounded bg-yellow-500/20 text-yellow-400 text-[8px] font-semibold font-orbitron">Đang Lập Kế Hoạch</span>
+                    </div>
+                  </div>
                 </div>
               </div>
 

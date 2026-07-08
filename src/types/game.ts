@@ -46,7 +46,7 @@ export interface Question {
   explanation: string;
   difficulty: number; // 1 to 10 scale
   source: string; // e.g. "HCMC 2024 Exam", "Specialized 2025 Mock"
-  subject?: 'english' | 'math' | 'literature';
+  subject?: SubjectId;
   imageUrl?: string;
   metadata?: QuestionMeta;
   isConfused?: boolean;
@@ -142,4 +142,65 @@ export interface GameEvent {
   timestamp: number;
   type: 'QUESTION_ANSWERED' | 'EXAM_COMPLETED' | 'DAILY_CHECK_IN' | 'REWARD_CLAIMED' | 'STREAK_RESET' | 'MISSION_COMPLETED' | 'CHALLENGE_COMPLETED' | 'PET_GROWTH' | 'ENERGY_CHANGE' | 'BOOST_ACTIVATED';
   payload: any;
+}
+
+// ==================== SUBJECT DEFINITIONS ====================
+export type SubjectId = 
+  | 'english' 
+  | 'math' 
+  | 'literature' 
+  | 'science' 
+  | 'history_geography' 
+  | 'civics' 
+  | 'technology' 
+  | 'informatics' 
+  | 'arts';
+
+export interface SubjectConfig {
+  id: SubjectId;
+  name: string;
+  icon: string;
+  color: string;
+  group: 'chuyen_sau' | 'co_ban';
+}
+
+export const SUBJECTS_CONFIG: Record<SubjectId, SubjectConfig> = {
+  english: { id: 'english', name: 'Tiếng Anh', icon: '🇬🇧', color: '#00f0ff', group: 'chuyen_sau' },
+  math: { id: 'math', name: 'Toán Học', icon: '📐', color: '#ff007f', group: 'chuyen_sau' },
+  literature: { id: 'literature', name: 'Ngữ Văn', icon: '📖', color: '#f97316', group: 'chuyen_sau' },
+  science: { id: 'science', name: 'Khoa Học Tự Nhiên', icon: '🧪', color: '#10b981', group: 'co_ban' },
+  history_geography: { id: 'history_geography', name: 'Lịch Sử & Địa Lý', icon: '🗺️', color: '#8b5cf6', group: 'co_ban' },
+  civics: { id: 'civics', name: 'Giáo Dục Công Dân', icon: '⚖️', color: '#f59e0b', group: 'co_ban' },
+  technology: { id: 'technology', name: 'Công Nghệ', icon: '🛠️', color: '#3b82f6', group: 'co_ban' },
+  informatics: { id: 'informatics', name: 'Tin Học', icon: '💻', color: '#ec4899', group: 'co_ban' },
+  arts: { id: 'arts', name: 'Nghệ Thuật', icon: '🎨', color: '#14b8a6', group: 'co_ban' }
+};
+
+// ==================== WUXIA RANK DEFINITIONS ====================
+export type StudentRankId = 'tan-de-tu' | 'de-tu' | 'thieu-hiep' | 'cao-thu' | 'dai-hiep' | 'tong-su';
+
+export interface StudentRank {
+  id: StudentRankId;
+  name: string;
+  icon: string;
+  minLevel: number;
+  description: string;
+}
+
+export const STUDENT_RANKS: StudentRank[] = [
+  { id: 'tan-de-tu', name: 'Tân Đệ Tử', icon: '🌱', minLevel: 1, description: 'Mới nhập môn võ học học viện, làm quen với các khái niệm căn bản.' },
+  { id: 'de-tu', name: 'Đệ Tử', icon: '🥋', minLevel: 5, description: 'Đã bắt đầu tu học kiến thức chuyên sâu của các môn phái.' },
+  { id: 'thieu-hiep', name: 'Thiếu Hiệp', icon: '⚔️', minLevel: 15, description: 'Có nền tảng vững vàng, đã tự mình vượt qua nhiều thử thách.' },
+  { id: 'cao-thu', name: 'Cao Thủ', icon: '⭐', minLevel: 30, description: 'Đạt được những thành tích nổi bật và độ chính xác cao khi giải bài.' },
+  { id: 'dai-hiep', name: 'Đại Hiệp', icon: '🐉', minLevel: 50, description: 'Võ công thượng thừa, nằm trong danh sách các thiếu hiệp đứng đầu môn phái.' },
+  { id: 'tong-su', name: 'Tông Sư', icon: '👑', minLevel: 80, description: 'Đỉnh phong võ học, danh hiệu cao nhất chỉ dành cho rất ít người xuất chúng.' }
+];
+
+export function getStudentRankForLevel(level: number): StudentRank {
+  for (let i = STUDENT_RANKS.length - 1; i >= 0; i--) {
+    if (level >= STUDENT_RANKS[i].minLevel) {
+      return STUDENT_RANKS[i];
+    }
+  }
+  return STUDENT_RANKS[0];
 }

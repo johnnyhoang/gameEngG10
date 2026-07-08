@@ -331,7 +331,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         }
       } catch (err: any) {
         console.error('Lỗi khi gọi AI chấm bài, chuyển sang backup:', err);
-        setAiWarningMessage('AI phải chấm dự phòng. Kết quả vẫn ổn, nhưng nên coi như mốc tham chiếu.');
+        setAiWarningMessage('Linh Sư phải chấm dự phòng. Kết quả vẫn ổn, nhưng nên coi như mốc tham chiếu.');
         const fallbackResult = runOldGradingBackup();
         isCorrect = fallbackResult.isCorrect;
         scoreRatio = fallbackResult.scoreRatio;
@@ -947,7 +947,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
             )}
             {aiFeedback && (
               <div className="text-theme-text-highlight/95 space-y-1 mt-2">
-                <p className="font-bold uppercase tracking-wider text-[10px] text-theme-text-info">AI luận giải</p>
+                <p className="font-bold uppercase tracking-wider text-[10px] text-theme-text-info">Linh Sư luận giải</p>
                 <p className="text-theme-text-highlight/90 italic leading-relaxed bg-synth-gray/25 p-2 rounded-lg">{aiFeedback}</p>
               </div>
             )}
@@ -992,7 +992,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
               {isAiGrading ? (
                 <>
                   <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full"></span>
-                  Đang chấm...
+                  Linh Sư đang chấm...
                 </>
               ) : (
                 'Chốt Đáp Án'

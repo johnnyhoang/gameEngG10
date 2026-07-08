@@ -1,6 +1,8 @@
+import { SubjectId } from '../types/game';
+
 export interface Lesson {
   id: string;
-  subject: 'english' | 'math' | 'literature';
+  subject: SubjectId;
   topic: string;
   title: string;
   theory: string;
