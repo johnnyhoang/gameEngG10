@@ -121,6 +121,13 @@ export interface Challenge {
   category?: string; // If restricted to a specific category
 }
 
+export interface HandbookPage {
+  id: string;
+  category: string;
+  title: string;
+  content: string;
+}
+
 export interface DailyMission {
   id: string;
   date: string; // YYYY-MM-DD

@@ -5,6 +5,7 @@ import type { UiThemeId, UserProfile } from '../types/game';
 import { useGameState } from '../hooks/useGameState';
 import { SUBJECTS_CONFIG, SubjectId } from '../types/game';
 import { toast } from '../utils/toast';
+import { GiangHoCamNang } from './GiangHoCamNang';
 
 interface ProfileThemeModalProps {
   isOpen: boolean;
@@ -98,6 +99,7 @@ export const ProfileThemeModal: React.FC<ProfileThemeModalProps> = ({
   const player = useGameState(state => state.player);
 
   const [activeTab, setActiveTab] = useState<'identity' | 'themes'>('identity');
+  const [isCamNangOpen, setIsCamNangOpen] = useState(false);
 
   const activeTheme = UI_THEMES.find(theme => theme.id === currentTheme) || UI_THEMES[0];
   const isUnicorn = currentTheme === 'unicorn-dream';
@@ -268,6 +270,30 @@ export const ProfileThemeModal: React.FC<ProfileThemeModalProps> = ({
                   <span className="font-orbitron font-black text-synth-green text-base">{player.streak} Ngày</span>
                 </div>
               </div>
+
+              {/* Cẩm Nang Bí Lục Banner */}
+              <div className="flex flex-col sm:flex-row justify-between items-center bg-gradient-to-r from-amber-950/60 to-stone-900/60 p-4 rounded-2xl border border-amber-800/25 gap-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">📖</span>
+                  <div>
+                    <h4 className="text-sm font-bold text-amber-100 font-serif">Giang Hồ Cẩm Nang Bí Lục</h4>
+                    <p className="text-xs text-slate-300 font-serif">Sổ tay tra cứu quy tắc võ học, điều kiện thăng cấp và kinh nghiệm giang hồ.</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsCamNangOpen(true)}
+                  className="w-full sm:w-auto px-5 py-2.5 bg-amber-900 hover:bg-amber-800 text-amber-100 font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer shadow-lg shadow-amber-950/50 border border-amber-800/30 hover:scale-[1.02]"
+                >
+                  MỞ SÁCH LỤC 📜
+                </button>
+              </div>
+
+              {isCamNangOpen && (
+                <GiangHoCamNang
+                  isOpen={isCamNangOpen}
+                  onClose={() => setIsCamNangOpen(false)}
+                />
+              )}
 
               {/* Subject Sects Grid */}
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

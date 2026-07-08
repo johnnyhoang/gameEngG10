@@ -9,6 +9,7 @@ import { ItemShop } from './components/ItemShop';
 import { ParentConsole } from './components/ParentConsole';
 import { GoogleLoginScreen } from './components/GoogleLoginScreen';
 import { ProfileThemeModal } from './components/ProfileThemeModal';
+import { GiangHoCamNang } from './components/GiangHoCamNang';
 import { HangLuyenCong } from './components/HangLuyenCong';
 import { HangMatThatPage } from './components/HangMatThatPage';
 import { LessonStudyView } from './components/LessonStudyView';
@@ -44,12 +45,42 @@ function App() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
 
-  // Auto-switch screen for admin users on login
-  useEffect(() => {
+  // Cẩm Nang Bí Lục states
+  const [handbookPageToShow, setHandbookPageToShow] = useState<any | null>(null);
+  const [isHandbookOpen, setIsHandbookOpen] = useState(false);
+  const [isLogoutHandbookOpen, setIsLogoutHandbookOpen] = useState(false);
+  const logout = useGameState(state => state.logout);
+  const handbookPages = useGameState(state => state.handbookPages);
+
+  const handleLogoutIntercept = () => {
     if (currentUser?.role === 'admin') {
-      setScreen('parent');
+      logout();
+      return;
+    }
+    if (handbookPages && handbookPages.length > 0) {
+      const randomIndex = Math.floor(Math.random() * handbookPages.length);
+      setHandbookPageToShow(handbookPages[randomIndex]);
+      setIsLogoutHandbookOpen(true);
     } else {
-      setScreen('map');
+      logout();
+    }
+  };
+
+  // Auto-switch screen for admin users on login & show handbook on student login
+  useEffect(() => {
+    if (currentUser) {
+      if (currentUser.role === 'admin') {
+        setScreen('parent');
+      } else {
+        setScreen('map');
+        // Trigger random handbook page on student login
+        const pages = useGameState.getState().handbookPages || [];
+        if (pages.length > 0) {
+          const randomIndex = Math.floor(Math.random() * pages.length);
+          setHandbookPageToShow(pages[randomIndex]);
+          setIsHandbookOpen(true);
+        }
+      }
     }
   }, [currentUser]);
 
@@ -199,6 +230,7 @@ function App() {
         onOpenHang={() => setScreen('hang')}
         onOpenProfile={() => setIsProfileOpen(true)}
         onBackToMap={() => setScreen('map')}
+        onLogout={handleLogoutIntercept}
         currentScreen={topHudScreen}
       />
 
@@ -409,6 +441,34 @@ function App() {
           currentTheme={uiTheme}
           onClose={() => setIsProfileOpen(false)}
           onSelectTheme={setUiTheme}
+        />
+      )}
+
+      {isHandbookOpen && handbookPageToShow && (
+        <GiangHoCamNang
+          isOpen={isHandbookOpen}
+          activePage={handbookPageToShow}
+          onClose={() => {
+            setIsHandbookOpen(false);
+            setHandbookPageToShow(null);
+          }}
+        />
+      )}
+
+      {isLogoutHandbookOpen && handbookPageToShow && (
+        <GiangHoCamNang
+          isOpen={isLogoutHandbookOpen}
+          activePage={handbookPageToShow}
+          isLogoutMode={true}
+          onClose={() => {
+            setIsLogoutHandbookOpen(false);
+            setHandbookPageToShow(null);
+          }}
+          onLogoutConfirm={() => {
+            setIsLogoutHandbookOpen(false);
+            setHandbookPageToShow(null);
+            logout();
+          }}
         />
       )}
 

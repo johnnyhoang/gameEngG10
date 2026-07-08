@@ -10,10 +10,11 @@ interface TopHUDProps {
   onOpenHang: () => void;
   onOpenProfile: () => void;
   onBackToMap: () => void;
+  onLogout?: () => void;
 }
 
 export const TopHUD: React.FC<TopHUDProps> = ({ 
-  currentScreen, onOpenShop, onOpenParent, onOpenHang, onOpenProfile, onBackToMap 
+  currentScreen, onOpenShop, onOpenParent, onOpenHang, onOpenProfile, onBackToMap, onLogout 
 }) => {
   const player = useGameState(state => state.player);
   const currentUser = useGameState(state => state.currentUser);
@@ -337,7 +338,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
 
           {currentUser && (
             <button 
-              onClick={logout}
+              onClick={onLogout || logout}
               className="p-2 rounded-lg border border-red-500/30 text-red-500 hover:bg-red-500/15 cursor-pointer hover:synth-glow-red transition-all duration-300 flex items-center justify-center"
               title="Đăng xuất tài khoản"
             >

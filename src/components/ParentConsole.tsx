@@ -6,7 +6,7 @@ import { ENGLISH_ANSWER_MODE_LABELS, ENGLISH_EXAM_BLUEPRINT, ENGLISH_SKILL_LABEL
 import { MATH_ANSWER_MODE_LABELS, MATH_EXAM_BLUEPRINT, MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
 import { LITERATURE_ANSWER_MODE_LABELS, LITERATURE_EXAM_BLUEPRINT, LITERATURE_TASK_LABELS, LITERATURE_TEXT_GENRE_LABELS } from '../data/literatureExamBlueprint';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { Lock, Unlock, Check, X, Award, Database, Plus, SlidersHorizontal, Search, Pencil, Trash2 } from 'lucide-react';
+import { Lock, Unlock, Check, X, Award, Database, Plus, SlidersHorizontal, Search, Pencil, Trash2, BookOpen } from 'lucide-react';
 import { toast } from '../utils/toast';
 
 const QUESTION_TYPE_LABELS: Record<Question['type'], string> = {
@@ -70,6 +70,13 @@ export const ParentConsole: React.FC = () => {
   const questions = useGameState(state => state.questions);
   const deleteQuestion = useGameState(state => state.deleteQuestion);
   const updateQuestion = useGameState(state => state.updateQuestion);
+  const handbookPages = useGameState(state => state.handbookPages || []);
+  const addHandbookPage = useGameState(state => state.addHandbookPage);
+
+  // Cẩm Nang Bí Lục local states
+  const [hbCategory, setHbCategory] = useState('Dặn Dò của Viện Chủ');
+  const [hbTitle, setHbTitle] = useState('');
+  const [hbContent, setHbContent] = useState('');
 
   // PIN Lock States
   const [pin, setPin] = useState('');
@@ -778,6 +785,111 @@ export const ParentConsole: React.FC = () => {
                       Chưa có phần thưởng nào đang chờ duyệt.
                     </div>
                   )}
+                </div>
+              </div>
+            </div>
+
+            {/* Cẩm Nang Bí Lục Management Panel */}
+            <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-synth-magenta" />
+                  <h3 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-1.5">
+                    📖 Cẩm Nang Bí Lục — Sổ tay dặn dò & Giang Hồ Quy Tắc
+                  </h3>
+                </div>
+              </div>
+
+              {/* Form to add new handbook page */}
+              <div className="bg-synth-gray/10 p-4 rounded-xl border border-white/5">
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3">
+                  Nạp thêm trang dặn dò / quy định mới 📜
+                </h4>
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!hbTitle || !hbContent) {
+                      toast.error('Vui lòng điền tiêu đề và nội dung trang sách!');
+                      return;
+                    }
+                    addHandbookPage({
+                      category: hbCategory,
+                      title: hbTitle,
+                      content: hbContent
+                    });
+                    toast.success('Đã nạp thêm trang dặn dò thành công vào cẩm nang của thiếu hiệp! ✍️');
+                    setHbTitle('');
+                    setHbContent('');
+                  }}
+                  className="space-y-3"
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    <label className="space-y-1">
+                      <span className="text-synth-text-muted font-semibold block">Chương (Category)</span>
+                      <select
+                        value={hbCategory}
+                        onChange={(e) => setHbCategory(e.target.value)}
+                        className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-magenta cursor-pointer"
+                      >
+                        <option value="Dặn Dò của Viện Chủ">Dặn Dò của Viện Chủ 👑</option>
+                        <option value="Võ Học & Tinh Tấn">Võ Học & Tinh Tấn ⚔️</option>
+                        <option value="Đấu Trường Kỳ Ngộ">Đấu Trường Kỳ Ngộ 🏟️</option>
+                        <option value="Giang Hồ Quy Tắc">Giang Hồ Quy Tắc 📜</option>
+                      </select>
+                    </label>
+                    <label className="space-y-1">
+                      <span className="text-synth-text-muted font-semibold block">Tiêu đề trang</span>
+                      <input
+                        type="text"
+                        placeholder="Ví dụ: Giờ tự học buổi tối"
+                        value={hbTitle}
+                        onChange={(e) => setHbTitle(e.target.value)}
+                        className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-magenta"
+                      />
+                    </label>
+                  </div>
+                  <label className="space-y-1 text-xs block">
+                    <span className="text-synth-text-muted font-semibold block">Nội dung ghi chép (Văn bản tự do)</span>
+                    <textarea
+                      rows={4}
+                      placeholder="Viết lời dặn dò, nhắc nhở hoặc quy tắc học tập của gia đình..."
+                      value={hbContent}
+                      onChange={(e) => setHbContent(e.target.value)}
+                      className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-magenta font-serif leading-relaxed"
+                    />
+                  </label>
+                  <button
+                    type="submit"
+                    className="w-full py-2 bg-synth-magenta text-black font-orbitron font-bold text-xs uppercase tracking-wider rounded-lg shadow-[0_0_8px_#ff007f] hover:bg-synth-magenta/95 transition cursor-pointer"
+                  >
+                    Ghi chép vào Cẩm Nang ✍️
+                  </button>
+                </form>
+              </div>
+
+              {/* View all handbook pages in admin console */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+                  Danh sách các trang hiện có ({handbookPages.length} trang)
+                </h4>
+                <div className="grid gap-3 sm:grid-cols-2 max-h-[350px] overflow-y-auto pr-1 scrollbar-thin">
+                  {handbookPages.map(page => (
+                    <div 
+                      key={page.id}
+                      className="bg-white/5 border border-white/5 p-3 rounded-xl space-y-2 flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="flex justify-between items-start gap-2">
+                          <span className="text-[9px] font-black uppercase bg-synth-magenta/15 text-synth-magenta px-2 py-0.5 rounded-full font-mono">
+                            {page.category}
+                          </span>
+                          <span className="text-[9px] text-stone-500 font-mono">ID: {page.id}</span>
+                        </div>
+                        <h5 className="text-xs font-bold text-white mt-1.5 font-serif">{page.title}</h5>
+                        <p className="text-[11px] text-slate-400 mt-1 line-clamp-3 font-serif whitespace-pre-wrap">{page.content}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>

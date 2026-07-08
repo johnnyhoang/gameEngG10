@@ -99,6 +99,16 @@ Hệ thống quản lý, giám sát và cung cấp tài nguyên, được phân 
 *   👑 **Thân Phận:** Hồ sơ cá nhân của thiếu hiệp (profile), hiển thị danh hiệu kiếm hiệp (Tân Đệ Tử, Đệ Tử, Thiếu Hiệp...), cấp độ tu học, badges và lịch sử truyền công.
 *   💰 **Ngân Các:** Quản lý kho tài nguyên, phê duyệt yêu cầu đổi quà tiêu vặt (VND Wallet), cấu hình chi phí chân khí khi làm bài, định mức NP/XP thưởng và danh mục quà tặng.
 
+### 2.7 📖 Cẩm Nang Bí Lục (Giang Hồ Cẩm Nang)
+Sổ tay quy tắc, kinh nghiệm tu hành của học viện được biên soạn dưới dạng sách cổ bí kíp:
+*   **Cơ cấu nội dung:** Chia thành nhiều Chương (Võ Học & Tinh Tấn, Đấu Trường Kỳ Ngộ, Giang Hồ Quy Tắc, Dặn Dò của Viện Chủ) và các trang chi tiết về XP, Ngân lượng, Chân khí, Boss, nhiệm vụ ngày.
+*   **Điểm chạm tương tác của Thiếu Hiệp:**
+    *   *Login Trigger:* Mỗi khi đăng nhập vào hệ thống, một trang ngẫu nhiên của cẩm nang sẽ tự động hiển thị. Thiếu hiệp bắt buộc phải đọc và bấm nút "Đã Lĩnh Ngộ" để có thể đóng sách và tiếp tục tu học ở Đấu trường.
+    *   *Logout Trigger:* Mỗi khi thiếu hiệp bấm Đăng xuất (thoát), một trang cẩm nang sẽ mở ra để dặn dò trước khi rời giang hồ. Bấm "Đã Lĩnh Ngộ" để hoàn tất đăng xuất.
+    *   *Thân Phận (Profile Page):* Thiếu hiệp có thể mở toàn bộ cuốn cẩm nang để lật xem từng trang, từng chương bất kỳ lúc nào để tra cứu quy tắc.
+*   **Giao diện Sách cổ (Antique Book UI):** Hiển thị trên nền giấy dó/kraft vàng nâu cổ kính, nét chữ mực đen kiểu thư pháp, tiêu đề đỏ son, tạo cảm giác như đang cầm trên tay một cuốn bí kíp võ công thật sự.
+*   **Quyền quản trị của Viện Chủ:** Tại **Ngân Các** (hoặc bảng quản trị), Viện Chủ có thể tra cứu toàn bộ cuốn sách và có một biểu mẫu riêng để **nạp thêm các trang dặn dò** (Quy định riêng của gia đình, nhắc nhở ôn bài, lịch học thực tế) vào cuốn cẩm nang của thiếu hiệp. Dữ liệu các trang mới này được đồng bộ và lưu trữ tự động.
+
 ---
 
 ## 3. Cơ Chế Gamification & Luồng Kinh Tế Trực Quan
