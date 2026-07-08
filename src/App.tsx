@@ -505,8 +505,8 @@ function App() {
               screen === 'shop' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
             }`}
           >
-            <span className="text-lg">🛒</span>
-            <span>Shop</span>
+            <span className="text-lg">🏮</span>
+            <span>Bách Hóa</span>
           </button>
 
           <button

@@ -666,7 +666,7 @@ export const ParentConsole: React.FC = () => {
           {!viewingStudentId ? (
             <div className="glass-panel rounded-2xl border border-white/5 p-8 text-center space-y-3">
               <p className="text-xs text-synth-text-muted">
-                Chọn tài khoản con tại tab <strong className="text-synth-magenta">Thành viên</strong> để duyệt yêu cầu đổi quà hoặc thiết kế các phần quà tặng dành riêng cho con.
+                Chọn tài khoản thiếu hiệp tại tab <strong className="text-synth-magenta">Thành viên</strong> để duyệt yêu cầu đổi Phúc Lợi hoặc thiết lập Phúc Lợi Gia Môn dành riêng cho con.
               </p>
             </div>
           ) : (
@@ -674,12 +674,12 @@ export const ParentConsole: React.FC = () => {
               {/* Create Reward Form */}
               <div className="glass-panel rounded-2xl border border-synth-orange/20 p-5 h-fit">
                 <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider mb-4 flex items-center gap-1.5">
-                  <Plus className="w-4 h-4" /> Thêm Quà tặng mới
+                   <Plus className="w-4 h-4" /> Thêm Phúc Lợi Gia Môn mới
                 </h4>
 
                 <form onSubmit={handleCreateReward} className="space-y-4">
                   <div className="flex flex-col gap-1">
-                    <label className="text-[10px] text-synth-text-muted uppercase">Tên Quà Tặng</label>
+                     <label className="text-[10px] text-synth-text-muted uppercase">Tên Phúc Lợi</label>
                     <input
                       type="text"
                       value={rewardTitle}
@@ -714,7 +714,7 @@ export const ParentConsole: React.FC = () => {
                     type="submit"
                     className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-orange text-black hover:synth-glow-orange cursor-pointer transition-all duration-300"
                   >
-                    Tạo Phần Thưởng
+                    Tạo Phúc Lợi Gia Môn
                   </button>
                 </form>
               </div>
@@ -722,7 +722,7 @@ export const ParentConsole: React.FC = () => {
               {/* Approvals ledger */}
               <div className="glass-panel rounded-2xl border border-white/5 p-5 md:col-span-2 space-y-4">
                 <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
-                  <Award className="w-4 h-4" /> Danh sách duyệt quy đổi phần thưởng của con
+                   <Award className="w-4 h-4" /> Danh sách Phúc Lợi Gia Môn — Chờ Viện Chủ phê duyệt
                 </h4>
 
                 <div className="space-y-2 overflow-y-auto max-h-[300px]">
@@ -2311,12 +2311,12 @@ export const ParentConsole: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Pet Dragon Sanctuary */}
+                          {/* Pet Heo Maikawaii */}
                   {selectedStudentProfile.pet && (
                     <div className="glass-panel rounded-xl border border-white/5 p-4 space-y-3 bg-gradient-to-r from-synth-cyan/5 to-transparent">
                       <div className="flex justify-between items-center">
                         <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">
-                          Companion Dragon
+                           🐷 Heo Maikawaii
                         </h4>
                         <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-synth-cyan/20 border border-synth-cyan/30 text-synth-cyan font-orbitron">
                           Giai đoạn: {selectedStudentProfile.pet.stage.toUpperCase()}
@@ -2324,7 +2324,7 @@ export const ParentConsole: React.FC = () => {
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
                         <div>
-                          <span className="text-synth-text-muted block text-[10px]">Tên rồng:</span>
+                          <span className="text-synth-text-muted block text-[10px]">Tên Heo:</span>
                           <span className="font-bold text-white">{selectedStudentProfile.pet.name}</span>
                         </div>
                         <div>

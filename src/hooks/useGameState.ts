@@ -134,19 +134,19 @@ const HELP_TOPICS: Record<string, { title: string; bullets: string[] }> = {
     ]
   },
   wallet: {
-    title: 'Ví Ba Mẹ',
+    title: 'Phúc Lợi Gia Môn',
     bullets: [
-      '• Đây là phần thưởng thật bằng tiền mặt.',
-      '• Đổi quà xong thì yêu cầu sẽ chờ Ba duyệt.',
-      '• Ba duyệt xong, tiền vào ví và con có thể chi tiêu.'
+      '• Đây là phần thưởng thật bằng tiền mặt từ Viện Chủ.',
+      '• Đổi Phúc Lợi xong thì yêu cầu sẽ chờ Viện Chủ phê duyệt.',
+      '• Viện Chủ phê duyệt xong, tiền vào ví và con có thể chi tiêu.'
     ]
   },
   dragon: {
-    title: 'Rồng đồng hành',
+    title: 'Heo Maikawaii',
     bullets: [
-      '• Rồng lớn lên theo quá trình học.',
-      '• Cho rồng ăn đều tay thì nó giữ mood tốt.',
-      '• Muốn rồng mạnh, con phải học đều chứ không được bỏ ải.'
+      '• Heo Maikawaii lớn lên theo tiến trình tu luyện của con.',
+      '• Cho Heo Maikawaii ăn đều tay thì nó giữ tâm trạng vui vẻ.',
+      '• Muốn Heo Maikawaii khôn lớn, con phải học đều chứ không được bỏ ải.'
     ]
   },
   prediction: {
@@ -1415,7 +1415,7 @@ export const useGameState = create<GameState>()(
             }
           });
 
-          logActivity('shop', 'Mua Khiên Bảo Vệ', 'Đã mua 1 Khiên bảo vệ Chuỗi Streak học tập', -cost, 0);
+          logActivity('shop', 'Lĩnh Hộ Tâm Phù', 'Đã nhận 1 Hộ Tâm Phù bảo vệ Chuỗi Tu Luyện', -cost, 0);
           return true;
         },
 
@@ -1432,7 +1432,7 @@ export const useGameState = create<GameState>()(
             }
           });
 
-          logActivity('shop', 'Mua Mạng (Heart)', 'Đã hồi phục 1 mạng', -cost, 0);
+          logActivity('shop', 'Nhận Hồi Nguyên Đan', 'Đã hồi phục 1 Tim sinh lực', -cost, 0);
           return true;
         },
 
@@ -1448,7 +1448,7 @@ export const useGameState = create<GameState>()(
             }
           });
 
-          logActivity('shop', 'Rút gợi ý', 'Dùng 50 NP để mua một mũi cứu trợ trong bài làm.', -cost, 0);
+          logActivity('shop', 'Khai Ngộ Quyển', 'Dùng 50 NP lĩnh Khai Ngộ Quyển hỗ trợ trong bài làm.', -cost, 0);
           return true;
         },
 
@@ -1498,7 +1498,7 @@ export const useGameState = create<GameState>()(
             rewards: prev.rewards.map(r => r.id === rewardId ? { ...r, status: 'approved' } : r)
           }));
 
-          logActivity('shop', 'Yêu cầu Phần thưởng', `Đã quy đổi "${reward.title}" gửi cho Ba duyệt`, -reward.costCoins, 0);
+          logActivity('shop', 'Yêu cầu Phúc Lợi Gia Môn', `Đã quy đổi "${reward.title}" gửi Viện Chủ phê duyệt`, -reward.costCoins, 0);
           return true;
         },
 
@@ -1595,7 +1595,7 @@ export const useGameState = create<GameState>()(
             rewards: prev.rewards.map(r => r.id === rewardId ? { ...r, status: 'claimed' } : r)
           }));
 
-          logActivity('parent_approve', 'Ba duyệt Phần thưởng', `Đã duyệt hoàn thành quà tặng: "${reward.title}"`, 0, 0, -reward.cashValueVND);
+          logActivity('parent_approve', 'Viện Chủ duyệt Phúc Lợi', `Đã phê duyệt hoàn thành Phúc Lợi Gia Môn: "${reward.title}"`, 0, 0, -reward.cashValueVND);
         },
 
         rejectReward: (rewardId) => {
@@ -1611,7 +1611,7 @@ export const useGameState = create<GameState>()(
             rewards: prev.rewards.map(r => r.id === rewardId ? { ...r, status: 'pending' } : r) // Revert status
           }));
 
-          logActivity('parent_approve', 'Ba hoàn trả Coins', `Từ chối quà tặng: "${reward.title}". Đã hoàn lại ${reward.costCoins} NP cho con`, reward.costCoins, 0);
+          logActivity('parent_approve', 'Viện Chủ hoàn trả Ngân Lượng', `Từ chối Phúc Lợi: "${reward.title}". Đã hoàn lại ${reward.costCoins} NP`, reward.costCoins, 0);
         },
 
         addParentReward: (title, costCoins, cashValueVND) => {
@@ -1626,7 +1626,7 @@ export const useGameState = create<GameState>()(
           set(state => ({
             rewards: [...state.rewards, newReward]
           }));
-          logActivity('parent_approve', 'Ba thêm Quà mới', `Quà mới: "${title}" trị giá ${costCoins} NP`, 0, 0);
+          logActivity('parent_approve', 'Viện Chủ thêm Phúc Lợi mới', `Phúc Lợi mới: "${title}" trị giá ${costCoins} NP`, 0, 0);
         },
 
         importQuestions: (importedQuestions) => {
@@ -1676,7 +1676,7 @@ export const useGameState = create<GameState>()(
           set(state => ({
             questions: state.questions.filter(q => q.id !== questionId)
           }));
-          logActivity('parent_approve', 'Xóa câu hỏi', `Ba đã xóa câu hỏi mã số ${questionId}`, 0, 0);
+          logActivity('parent_approve', 'Xóa câu hỏi', `Viện Chủ đã xóa câu hỏi mã số ${questionId}`, 0, 0);
           return true;
         },
 
@@ -1718,7 +1718,7 @@ export const useGameState = create<GameState>()(
           set(state => ({
             questions: state.questions.map(q => q.id === questionId ? nextQuestion : q)
           }));
-          logActivity('parent_approve', 'Cập nhật câu hỏi', `Ba đã cập nhật câu hỏi mã số ${questionId}`, 0, 0);
+          logActivity('parent_approve', 'Cập nhật câu hỏi', `Viện Chủ đã cập nhật câu hỏi mã số ${questionId}`, 0, 0);
           return true;
         },
 

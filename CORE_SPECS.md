@@ -9,12 +9,12 @@ Tài liệu đặc tả này định hình ý tưởng cốt lõi, kiến trúc 
 ### 1.1 Sứ mệnh (Mission)
 **GameEngG10** là nền tảng ôn thi tuyển sinh lớp 10 (mô phỏng theo cấu trúc đề tuyển sinh lớp 10 của Sở GD&ĐT TP.HCM) tích hợp cơ chế trò chơi hóa (gamification) sâu sắc. Nền tảng giải quyết bài toán:
 *   **Học sinh:** Biến việc ôn luyện căng thẳng, khô khan thành các đợt chinh phục thử thách (chế độ chơi), tăng phản xạ tư duy và trực quan hóa kiến thức phức tạp (đồ thị, hình học).
-*   **Phụ huynh:** Đóng vai trò là nhà tài trợ, kiểm soát và khích lệ bằng cách liên kết kết quả học tập trong thế giới ảo với các phần thưởng thực tế ngoài đời thực.
+*   **Viện Chủ:** Đóng vai trò là nhà tài trợ, kiểm soát và khích lệ bằng cách liên kết kết quả học tập trong thế giới ảo với các phần thưởng thực tế ngoài đời thực.
 
 ### 1.2 Mô hình Phân Quyền Vai Trò Độc Lập (Independent Role-Based Model)
-Mỗi tài khoản người dùng tại một thời điểm chỉ đảm nhận duy nhất một vai trò hoạt động hoạt động (Học sinh hoặc Admin/Phụ huynh), hoàn toàn phân tách về mặt chức năng và giao diện:
+Mỗi tài khoản người dùng tại một thời điểm chỉ đảm nhận duy nhất một vai trò hoạt động hoạt động (Học sinh hoặc Quản trị/Viện Chủ), hoàn toàn phân tách về mặt chức năng và giao diện:
 *   **Học sinh (Student):** Chỉ tiếp cận các chức năng học tập, bản đồ game, hang luyện công, đấu trường, cửa hàng và thú cưng.
-*   **Quản trị/Phụ huynh (Admin/Parent):** Chỉ tiếp cận Bảng Quản trị Viện Chủ để giám sát, phê duyệt phần thưởng, cấu hình hệ thống và quản lý câu hỏi.
+*   **Quản trị/Viện Chủ (Admin):** Chỉ tiếp cận Bảng Quản trị Viện Chủ để giám sát, phê duyệt phần thưởng, cấu hình hệ thống và quản lý câu hỏi.
 *   **Duy trì dữ liệu & Ẩn danh tính khi chuyển đổi vai trò:** Hệ thống hỗ trợ cập nhật vai trò tài khoản. Khi một tài khoản học sinh được chuyển sang Admin, toàn bộ giao diện và chức năng sẽ đổi sang quản trị, **tài khoản này sẽ tự động ẩn khỏi danh sách học sinh của Viện Chủ và bảng xếp hạng (Leaderboard)** để tránh gian lận. Toàn bộ dữ liệu tiến trình học tập cũ (level, XP, coins, streak, thú cưng...) vẫn được lưu giữ nguyên vẹn để hoạt động lại khi chuyển vai trò về Học sinh.
 
 ---
@@ -77,14 +77,13 @@ Các mô-đun tương tác học tập nhẹ nhàng, kết hợp trực quan hó
 *   *Kéo thả sơ đồ (Drag & Drop Diagram):* Kéo thả nhãn công thức, thành phần vào đúng vị trí của hình vẽ, sơ đồ khoa học/địa lý.
 *   **Cơ chế Fallback Học liệu (Learning Asset Fallback):** Đối với các môn cơ bản chưa được Viện Chủ nạp đủ dữ liệu cấu trúc phức tạp (như Sắp xếp bước giải, Ghép sơ đồ), hệ thống sẽ tự động chuyển đổi các câu hỏi trắc nghiệm/từ vựng thông thường của môn học đó thành dữ liệu ghép cặp hoặc thẻ nhớ tương đương để thiếu hiệp vẫn có thể tu học nhẹ nhàng, hoặc tạm ẩn tab mini-game đó nếu không thể tự động chuyển đổi nhằm tránh lỗi hiển thị trống.
 
-### 2.4 🛒 Cửa Hàng (Item Shop)
-Vận hành nền kinh tế vi mô trong game:
-*   Tiêu thụ **NP (Ngoại tệ / Coins)** kiếm được để mua:
-    *   *Gợi ý (Hint):* Hỗ trợ loại bỏ đáp án nhiễu hoặc hướng dẫn giải nhanh.
-    *   *Tim hồi phục (Hearts):* Phục vụ chế độ Sinh tồn/Quyết đấu Boss.
-    *   *Khiên bảo vệ chuỗi (Streak Shield):* Giữ chuỗi học tập khi lỡ quên đăng nhập một ngày.
-    *   *Mở khóa Phong Vị (Cá Tính):* Phong Vị Đào Hoa, Trúc Lâm, Tinh Không, Tuyết Sơn... giúp cá nhân hóa không gian học.
-    *   *Phần thưởng Phụ huynh (Parent Rewards):* Đổi Coin lấy các voucher đặc quyền ngoài đời.
+### 2.4 🏮 Bách Hóa Phường (Item Shop)
+Vận hành nền kinh tế vi mô trong học viện. Tiêu hao **Ngân lượng (NP)** để đổi các vật phẩm và đặc quyền:
+*   📜 **Khai Ngộ Quyển:** Gợi mở hướng giải hoặc loại bỏ đáp án nhiễu (trước đây gọi là Gợi ý / Hint).
+*   ❤️ **Hồi Nguyên Đan:** Khôi phục 1 tim sinh lực cho các chế độ thử thách Sinh tồn / Boss (trước đây gọi là Tim hồi phục / Heart).
+*   🛡️ **Hộ Tâm Phù:** Duy trì chuỗi tu luyện (Streak) khi bỏ lỡ một ngày, tránh bị áp Luật Phế Bỏ Võ Công (trước đây gọi là Khiên giữ chuỗi / Streak Shield).
+*   🎭 **Phong Vị:** Mở khóa các phong cách giao diện cá tính như Đào Hoa, Trúc Lâm, Tinh Không, Tuyết Sơn... để thiếu hiệp cá nhân hóa không gian học tập.
+*   🎁 **Phúc Lợi Gia Môn:** Đổi Ngân lượng lấy các phần thưởng thực tế do Viện Chủ thiết lập (trước đây gọi là Phần thưởng Phụ huynh / Parent Rewards).
 
 ### 2.5 🐷 Sân Nuôi Thú (Pet Sanctuary - Heo Maikawaii)
 Đại diện trực quan cho tiến trình học tập của học sinh:
@@ -158,7 +157,7 @@ Mỗi lần đăng nhập hoặc hoàn thành bài luyện tập ở Hang Luyệ
 *   *Khảo Hạch Kỳ Ngộ (Thách thức):* Linh Sư xuất hiện yêu cầu trả lời nhanh 1 câu hỏi ngẫu nhiên. Đúng nhận **+100 NP**, sai bị phạt **-30 Chân khí** hoặc **-1 Tim**.
 
 ### 3.1 Quy tắc ví tiền mặt thực tế (VND Wallet) & Đổi quà bằng Coins (NP)
-*   **Đổi quà bằng Coins (NP):** Quà tặng Phụ huynh được định giá bằng Coins (NP). Khi thiếu hiệp yêu cầu đổi quà, hệ thống sẽ trừ lượng Coins tương ứng của thiếu hiệp và tự động quy đổi thành yêu cầu rút tiền VND chuyển đến cho Viện Chủ dựa trên tỷ giá quy đổi do phụ huynh tự thiết lập trong Ngân Các (ví dụ: 100 Coins = 10,000đ).
+*   **Đổi quà bằng Coins (NP):** Quà tặng Viện Chủ được định giá bằng Coins (NP). Khi thiếu hiệp yêu cầu đổi quà, hệ thống sẽ trừ lượng Coins tương ứng của thiếu hiệp và tự động quy đổi thành yêu cầu rút tiền VND chuyển đến cho Viện Chủ dựa trên tỷ giá quy đổi do Viện Chủ tự thiết lập trong Ngân Các (ví dụ: 100 Coins = 10,000đ).
 *   **Thưởng ví VND từ thi Boss:** Mỗi khi hoàn thành xuất sắc Đợt Quyết đấu Boss (thi thử đề chuẩn năm học), học sinh sẽ nhận được phần thưởng tiền mặt trực tiếp cộng thẳng vào Ví VND (ví dụ: 10,000đ - 20,000đ).
 *   **Phê duyệt và giải ngân:** Viện Chủ phê duyệt yêu cầu đồng nghĩa với việc giao tiền mặt/quà thật cho con ngoài đời, hệ thống sẽ khấu trừ số dư tương ứng trên ứng dụng để đảm bảo tính minh bạch.
 
@@ -210,7 +209,7 @@ Hệ thống được thiết kế dạng mô-đun rời (decoupled) để dễ 
 1.  **Mở rộng Môn học mới (Lớp 10 / THPT):** Cấu trúc dữ liệu `subject` hỗ trợ enum mở rộng. Có thể dễ dàng thêm Lý, Hóa, Sinh bằng cách tạo thêm track môn và bảng ánh xạ chủ đề.
 2.  **Chế độ Chơi mạng (Multiplayer Arena):** Cơ chế PvP thời gian thực, bảng xếp hạng liên trường hoặc liên nhóm lớp.
 3.  **Tích hợp Thư viện vẽ nâng cao:** Chuyển đổi các mật thất Biki từ vẽ SVG sang Canvas 2D/WebGL để tối ưu hóa hiệu năng xoay mô hình 3D phức tạp.
-4.  **Cổng kết nối Phụ huynh liên ứng dụng:** Tách riêng cổng Phụ huynh thành một ứng dụng nhỏ hoặc kênh chatbox (Telegram/Zalo) nhận thông báo thời gian thực mỗi khi con hoàn thành bài học hoặc gửi yêu cầu phê duyệt quà.
+4.  **Cổng kết nối Viện Chủ liên ứng dụng:** Tách riêng cổng Viện Chủ thành một ứng dụng nhỏ hoặc kênh chatbox (Telegram/Zalo) nhận thông báo thời gian thực mỗi khi con hoàn thành bài học hoặc gửi yêu cầu phê duyệt quà.
 
 ---
 
