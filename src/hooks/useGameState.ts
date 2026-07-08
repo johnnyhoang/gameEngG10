@@ -27,38 +27,38 @@ export const INITIAL_HANDBOOK_PAGES: HandbookPage[] = [
   {
     id: 'hb-1',
     category: 'Võ Học & Tinh Tấn',
-    title: 'Quy tắc tích lũy XP (Kinh Nghiệm)',
-    content: `Thiếu hiệp đạt được điểm kinh nghiệm (XP) thông qua các hoạt động tu học sau:\n1. **Luyện tập thường:** Trả lời đúng mỗi câu nhận **+15 XP**.\n2. **Quyết đấu Boss:** Mỗi câu đúng nhận **+30 XP** (gấp đôi).\n3. **Hoàn thành bài học:** Nhận thêm **+50 XP**.\n\nTích lũy đủ XP giúp thiếu hiệp thăng cấp và đột phá danh hiệu (Tân Đệ Tử -> Đệ Tử -> Thiếu Hiệp -> Cao Thủ -> Đại Hiệp -> Tông Sư).`
+    title: 'Kinh nghiệm tu luyện & Luật Lực Bất Tòng Tâm',
+    content: `Kinh nghiệm tu vi (XP) đo lường trình độ võ học của Thiếu Hiệp:\n1. **Luyện tập thường:** Trả lời đúng mỗi câu nhận **+15 XP**.\n2. **Vượt ải thành công:** Nhận thêm **+50 XP**.\n3. **Quyết đấu Boss:** Tiêu diệt Boss nhận **+150 XP** và được **nhân đôi XP** cho tất cả câu đúng trong trận (**+30 XP/câu**).\n\n*Luật "Lực Bất Tòng Tâm" (Cực kỳ quan trọng):* Mỗi lượt cho Pet (Rồng Con) ăn để tăng cấp thú cưng sẽ tiêu tốn **30 XP** và **50 Ngân Lượng** của Thiếu hiệp. Điều này có thể khiến Thiếu hiệp bị **tụt cấp độ (Level) tạm thời**. Để khôi phục cấp độ, thiếu hiệp phải tích cực quay lại Hang Luyện Công làm bài tập cày lại XP.`
   },
   {
     id: 'hb-2',
     category: 'Võ Học & Tinh Tấn',
-    title: 'Quy tắc thưởng Ngân Lượng (NP)',
-    content: `Ngân Lượng (Nanite NP) là tài sản giao dịch ảo trong học viện:\n1. Trả lời đúng câu hỏi thường: Nhận **+5 NP**.\n2. Vượt qua ải trong hang luyện công: Nhận **+20 NP**.\n3. Thuộc lòng thẻ nhớ trong Khu Thư Giãn: Nhận **+5 NP**.\n\nNgân lượng dùng để mua Tim hồi phục, Chân khí làm bài, vật phẩm gợi ý trong Cửa Hàng, hoặc đổi Quà tặng thực tế từ Viện Chủ.`
+    title: 'Quy tắc thưởng Ngân Lượng & Liên Hoàn Kích',
+    content: `Ngân Lượng (NP) dùng để mua sắm đan dược chân khí, tim hồi phục, khiên bảo vệ hoặc đổi voucher quà thật:\n1. **Đấu trường:** Đúng câu thường nhận **+5 NP**. Hoàn thành ải đạt độ chính xác từ 90% trở lên thưởng thêm **+20 NP** (Rương Báu Ải).\n2. **Khu Thư Giãn:** Đàm đạo Linh Sư thành công nhận **+15 NP**, Ghép cặp nhận **+10 NP**, Luyện thẻ nhớ nhận **+2 NP**.\n3. **Luật "Liên Hoàn Kích" (Combo):** Đúng liên tiếp từ 3 câu trở lên sẽ nhận hệ số nhân Ngân Lượng (x1.2, x1.5, x2.0). Chỉ một câu sai sẽ lập tức cắt đứt chuỗi combo.`
   },
   {
     id: 'hb-3',
     category: 'Đấu Trường Kỳ Ngộ',
-    title: 'Chân khí (Energy) tu luyện',
-    content: `Chân khí giới hạn số lượng bài luyện công mỗi ngày của thiếu hiệp:\n* Mỗi lượt luyện tập tiêu hao **20 - 50 Chân khí** tùy theo độ khó.\n* Lượng Chân khí được khấu trừ một lần duy nhất ngay khi bước vào trận.\n* Khi Chân khí cạn kiệt, thiếu hiệp cần đợi thời gian tự phục hồi hoặc dùng Ngân Lượng mua Đan dược bổ sung trong Cửa Hàng.`
+    title: 'Chân khí tu luyện & Luật Chân Khí Tán Thất',
+    content: `Chân khí (Energy) duy trì khả năng xuất chiêu rèn luyện bài tập:\n* Mỗi lượt vào ải thường tiêu hao **30 Chân khí**.\n* Mỗi lượt quyết đấu Boss tiêu hao **100 Chân khí**.\n\n*Luật "Chân Khí Tán Thất":* Lượng chân khí khấu trừ ngay khi bước vào trận. Nếu thiếu hiệp rút lui giữa chừng hoặc thất bại, chân khí đã nạp sẽ tiêu tán hoàn toàn và không được hoàn lại.`
   },
   {
     id: 'hb-4',
     category: 'Đấu Trường Kỳ Ngộ',
-    title: 'Sinh Tồn Đấu Trường',
-    content: `Quy định sinh mệnh trong Đấu trường:\n* Thiếu hiệp có tối đa **3 Tim** sinh mệnh.\n* Mỗi câu trả lời sai sẽ bị khấu trừ **1 Tim**.\n* Khi hết Tim, đợt luyện công sẽ kết thúc lập tức. Hãy bình tĩnh suy nghĩ kỹ trước khi chốt đáp án!`
+    title: 'Sinh Mệnh Đấu Trường & Luật Tẩu Hỏa Nhập Ma',
+    content: `Đấu trường có tính thử thách cực kỳ khắc nghiệt:\n* Thiếu hiệp có tối đa **3 Tim** sinh mệnh mỗi lượt đấu.\n* Mỗi câu trả lời sai sẽ bị khấu hao **1 Tim**.\n\n*Luật "Tẩu Hỏa Nhập Ma" (Thua cuộc):* Hết Tim giữa trận sẽ thất bại lập tức, chỉ nhận được 50% số XP và Ngân Lượng thu hoạch được trong trận đấu đó, đồng thời làm Pet buồn bã (giảm 5 điểm vui vẻ).`
   },
   {
     id: 'hb-5',
-    category: 'Đấu Trường Kỳ Ngộ',
-    title: 'Quyết Đấu Boss',
-    content: `Chiến trường khảo hạch thử thách cao độ:\n* Đề thi gồm 30 câu hỏi mô phỏng đề tuyển sinh chính thức lớp 10, giới hạn thời gian **20 phút**.\n* Đánh bại Boss giúp thiếu hiệp tích lũy tiền thưởng thực tế vào **Ví VND** (từ 10,000đ - 20,000đ mỗi trận).`
+    category: 'Giang Hồ Quy Tắc',
+    title: 'Luật Phế Bỏ Võ Công (Reset Chuỗi)',
+    content: `Võ học giang hồ đòi hỏi sự chuyên cần chuyên nhất:\n* Thiếu hiệp cần đăng nhập học tập mỗi ngày để duy trì Chuỗi luyện công (Streak).\n* Nếu bỏ quên không học quá 24 giờ, luật "Phế Bỏ Võ Công" sẽ kích hoạt: Chuỗi ngày bị reset về 0 và thiếu hiệp bị phạt **-50 NP** vì sự lười biếng.\n* Hãy chuẩn bị sẵn *Streak Shield* (Khiên bảo vệ) mua từ Trân Bảo Các để phòng thân.`
   },
   {
     id: 'hb-6',
     category: 'Giang Hồ Quy Tắc',
-    title: 'Quy đổi quà thực tế (Parent Rewards)',
-    content: `Thiếu hiệp có thể quy đổi công sức tu học lấy quà thực tế ngoài đời:\n1. Vào **Cửa Hàng** chọn mua gói Quà tặng Phụ huynh (trà sữa, đồ chơi, tiền mặt).\n2. Yêu cầu đổi quà sẽ được gửi trực tiếp đến **Viện Chủ** phê duyệt.\n3. Khi Viện Chủ phê duyệt và giao quà ngoài đời, hệ thống sẽ tự động trừ số dư NP/VND tương ứng.`
+    title: 'Kỳ Ngộ Giang Hồ (Sự Kiện Ngẫu Nhiên)',
+    content: `Khi bôn tẩu giang hồ (Đăng nhập hoặc hoàn thành bài luyện tập), thiếu hiệp có 5% xác suất gặp Kỳ Ngộ:\n1. **Linh Dược Kỳ Ngộ (Tốt):** Đạo sư ban tặng nhân sâm đan dược phục hồi miễn phí **+100 Chân khí** hoặc **+50 NP**.\n2. **Khảo Hạch Kỳ Ngộ (Thách thức):** Linh Sư bất ngờ xuất hiện đưa ra một câu hỏi ngẫu nhiên bắt buộc trả lời nhanh. Đúng nhận ngay **+100 NP**, sai bị phạt **-30 Chân khí** hoặc **-1 Tim**.`
   }
 ];
 
