@@ -97,6 +97,11 @@ Vận hành nền kinh tế vi mô trong học viện. Tiêu hao **Ngân lượn
     *   *Nhắc nhở bài vở (Study Reminder):* Nhắc thiếu hiệp môn học hôm nay nên ôn luyện dựa trên năng lượng/tiến trình.
     *   *Khen thưởng (Praise):* Nhận biết điểm số, số câu đúng và Ngân lượng nhận được trong ngày của học sinh để đưa ra những lời khen ngợi ngọt ngào.
 *   Học sinh cho thú ăn để duy trì tâm trạng vui vẻ và tăng cấp cho thú. Việc cho thú ăn sẽ tiêu tốn cả Coins (NP) và một lượng XP cố định của thiếu hiệp, chấp nhận việc thiếu hiệp có thể bị tụt cấp độ (Level) tạm thời nếu dành quá nhiều tài nguyên chăm sóc thú cưng.
+*   **Album Kỷ Niệm (Pet Memory Album):**
+    *   *Xem lại hành trình:* Tích hợp tính năng album kỷ niệm cho phép thiếu hiệp lật xem lại hành trình của Heo Maikawaii qua các nút bấm Next/Prev. Album chứa các hình ảnh từ thuở sơ khai qua từng giai đoạn phát triển, các câu chuyện kỷ niệm đáng nhớ và những bức hình chụp chung kỷ niệm giữa thiếu hiệp và thú cưng.
+    *   *Ẩn giấu tương lai:* Thiếu hiệp không thể xem trước hình ảnh ở các giai đoạn tương lai chưa đạt tới. Chỉ khi kiên trì chăm sóc, nâng cấp và phát triển Heo Maikawaii thành công, album mới mở khóa thêm nhiều hình ảnh và nội dung mới.
+    *   *Hoàn thiện giao diện:* Phần giao diện (UI) của Album Kỷ Niệm sẽ được ClaudeCode tiến hành review, audit kỹ lưỡng và phát triển tiếp tục để tối ưu hóa trải nghiệm trực quan.
+
 
 ### 2.6 ⚙️ Bảng Quản Trị Viện Chủ (Admin Console)
 Hệ thống quản lý, giám sát và cung cấp tài nguyên, được phân chia thành các khu vực chuyên biệt:
