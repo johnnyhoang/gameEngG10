@@ -11,7 +11,7 @@ interface LessonStudyViewProps {
   onBack: () => void;
 }
 
-const SUBJECT_META = {
+const SUBJECT_META: Record<string, any> = {
   english: {
     label: 'Tiếng Anh',
     accent: 'text-synth-cyan',
@@ -32,6 +32,13 @@ const SUBJECT_META = {
     border: 'border-synth-orange/30',
     bg: 'from-synth-orange/10 to-synth-cyan/5',
     icon: <BookOpen className="w-5 h-5 text-synth-orange" />
+  },
+  science: {
+    label: 'Khoa Học',
+    accent: 'text-synth-green',
+    border: 'border-synth-green/30',
+    bg: 'from-synth-green/10 to-synth-cyan/5',
+    icon: <BookOpen className="w-5 h-5 text-synth-green" />
   }
 } as const;
 

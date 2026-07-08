@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import type { Question, QuestionMeta } from '../types/game';
-import { SUBJECTS_CONFIG, SubjectId } from '../types/game';
+import { SUBJECTS_CONFIG } from '../types/game';
+import type { SubjectId } from '../types/game';
 import { ENGLISH_ANSWER_MODE_LABELS, ENGLISH_EXAM_BLUEPRINT, ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../data/englishExamBlueprint';
 import { MATH_ANSWER_MODE_LABELS, MATH_EXAM_BLUEPRINT, MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
 import { LITERATURE_ANSWER_MODE_LABELS, LITERATURE_EXAM_BLUEPRINT, LITERATURE_TASK_LABELS, LITERATURE_TEXT_GENRE_LABELS } from '../data/literatureExamBlueprint';
@@ -526,7 +527,7 @@ export const ParentConsole: React.FC = () => {
           <button
             onClick={() => {
               setViewingStudentId(null);
-              setActiveTab('members');
+              setActiveTab('chinh_dien');
             }}
             className="px-3 py-1.5 rounded bg-synth-gray/30 border border-white/10 text-xs text-white hover:bg-white/10 font-bold cursor-pointer transition-colors"
           >
@@ -788,8 +789,9 @@ export const ParentConsole: React.FC = () => {
                 </div>
               </div>
             </div>
+          )}
 
-            {/* Cẩm Nang Bí Lục Management Panel */}
+          {/* Cẩm Nang Bí Lục Management Panel */}
             <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
@@ -873,7 +875,7 @@ export const ParentConsole: React.FC = () => {
                   Danh sách các trang hiện có ({handbookPages.length} trang)
                 </h4>
                 <div className="grid gap-3 sm:grid-cols-2 max-h-[350px] overflow-y-auto pr-1 scrollbar-thin">
-                  {handbookPages.map(page => (
+                  {handbookPages.map((page) => (
                     <div 
                       key={page.id}
                       className="bg-white/5 border border-white/5 p-3 rounded-xl space-y-2 flex flex-col justify-between"
@@ -893,9 +895,8 @@ export const ParentConsole: React.FC = () => {
                 </div>
               </div>
             </div>
-          )}
-        </div>
-      )}
+          </div>
+        )}
 
       {/* Vạn Quyển Các Tab */}
       {activeTab === 'van_quyen_cac' && (
@@ -1596,8 +1597,9 @@ export const ParentConsole: React.FC = () => {
               </div>
             </div>
           </div>
-        )
-      )}
+        </div>
+      )
+    )}
 
       {editingQuestion && (
         <div className="fixed inset-0 z-[90] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">

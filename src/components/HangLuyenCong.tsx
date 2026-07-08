@@ -1,35 +1,32 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import {
-  BookOpen,
-  Calculator,
-  ExternalLink,
-  Languages,
-  Layers3,
-  LineChart,
-  Move3D,
-  Target,
-  ScrollText,
-  NotebookTabs,
-  Sparkles,
-  ArrowRight,
-  CheckCircle2,
-  ChevronLeft,
-  ChevronRight
+   BookOpen,
+   Calculator,
+   ExternalLink,
+   Languages,
+   Layers3,
+   LineChart,
+   Move3D,
+   Target,
+   NotebookTabs,
+   Sparkles,
+   ArrowRight,
+   CheckCircle2,
+   ChevronLeft
 } from 'lucide-react';
 import {
-  HANG_SOURCES,
-  type HangSubjectId
+   HANG_SOURCES
 } from '../data/hangLuyenCong';
-import { SubjectId } from '../types/game';
+import type { SubjectId } from '../types/game';
 
 interface HangLuyenCongProps {
-  onStartPractice: () => void;
-  onStudyLesson: (lessonId: string) => void;
-  onBackToMap: () => void;
-  onOpenMatThat3D: () => void;
-  onOpenMatThatPlane: () => void;
-  onOpenMatThatGraph: () => void;
+   onStartPractice: () => void;
+   onStudyLesson: (lessonId: string) => void;
+   onBackToMap: () => void;
+   onOpenMatThat3D: () => void;
+   onOpenMatThatPlane: () => void;
+   onOpenMatThatGraph: () => void;
 }
 
 type HangSubjectId = SubjectId;
@@ -73,13 +70,7 @@ const STUDY_PANEL_LABELS: Record<StudyPanelId, string> = {
   sources: 'Nguồn'
 };
 
-const SUBJECT_META: Record<HangSubjectId, {
-  label: string;
-  shortLabel: string;
-  accent: string;
-  accentSoft: string;
-  icon: React.ReactNode;
-}> = {
+const SUBJECT_META: Record<string, any> = {
   english: {
     label: 'Tiếng Anh',
     shortLabel: 'Anh',
@@ -391,10 +382,16 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
     onStartPractice();
   };
 
-  const subjectTotals = {
+  const subjectTotals: Record<SubjectId, number> = {
     english: questions.filter(q => (q.subject || 'english') === 'english').length,
     math: questions.filter(q => q.subject === 'math').length,
-    literature: questions.filter(q => q.subject === 'literature').length
+    literature: questions.filter(q => q.subject === 'literature').length,
+    science: questions.filter(q => q.subject === 'science').length,
+    history_geography: 0,
+    civics: 0,
+    technology: 0,
+    informatics: 0,
+    arts: 0
   };
 
   const subjectTabOrder: HangSubjectId[] = ['math', 'literature', 'english'];

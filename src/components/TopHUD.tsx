@@ -1,7 +1,8 @@
 import React from 'react';
 import { useGameState } from '../hooks/useGameState';
-import { Zap, Heart, Coins, Flame, Shield, Award, LogOut, Palette, ChevronDown, BookOpen } from 'lucide-react';
-import { SUBJECTS_CONFIG, getStudentRankForLevel, SubjectId } from '../types/game';
+import { Zap, Heart, Coins, Flame, Shield, Award, LogOut, Palette, ChevronDown } from 'lucide-react';
+import { SUBJECTS_CONFIG, getStudentRankForLevel } from '../types/game';
+import type { SubjectId } from '../types/game';
 
 interface TopHUDProps {
   currentScreen: 'map' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang';

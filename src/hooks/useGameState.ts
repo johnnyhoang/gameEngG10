@@ -20,7 +20,7 @@ import type {
   SubjectId,
   HandbookPage
 } from '../types/game';
-import { getStudentRankForLevel, STUDENT_RANKS, SUBJECTS_CONFIG } from '../types/game';
+import { getStudentRankForLevel, SUBJECTS_CONFIG } from '../types/game';
 import { DEFAULT_UI_THEME } from '../theme/uiThemes';
 
 export const INITIAL_HANDBOOK_PAGES: HandbookPage[] = [

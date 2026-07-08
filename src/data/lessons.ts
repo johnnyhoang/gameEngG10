@@ -1,4 +1,4 @@
-import { SubjectId } from '../types/game';
+import type { SubjectId } from '../types/game';
 
 export interface Lesson {
   id: string;

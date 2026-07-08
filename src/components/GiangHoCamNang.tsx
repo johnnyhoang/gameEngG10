@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, ChevronLeft, ChevronRight, X, Sparkles, Feather } from 'lucide-react';
+import { ChevronLeft, ChevronRight, X, Sparkles, Feather } from 'lucide-react';
 import type { HandbookPage } from '../types/game';
 import { useGameState } from '../hooks/useGameState';
 

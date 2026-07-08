@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Palette, Sparkles, X, BookOpen, Clock, Award, Shield } from 'lucide-react';
+import { CheckCircle2, Palette, Sparkles, X, Clock, Award, Shield } from 'lucide-react';
 import { UI_THEMES, type UiThemeConfig } from '../theme/uiThemes';
 import type { UiThemeId, UserProfile } from '../types/game';
 import { useGameState } from '../hooks/useGameState';
-import { SUBJECTS_CONFIG, SubjectId } from '../types/game';
+import { SUBJECTS_CONFIG } from '../types/game';
+import type { SubjectId } from '../types/game';
 import { toast } from '../utils/toast';
 import { GiangHoCamNang } from './GiangHoCamNang';
 
@@ -110,7 +111,7 @@ export const ProfileThemeModal: React.FC<ProfileThemeModalProps> = ({
     const subjectCategories = Array.from(new Set(questions.filter(q => q.subject === subId).map(q => q.category)));
     
     // Calculate correct questions count
-    const correctCount = subjectCategories.reduce((sum, cat) => sum + (categoryStats[cat]?.correctAnswers || 0), 0);
+    const correctCount = subjectCategories.reduce((sum, cat) => sum + (categoryStats[cat]?.totalCorrect || 0), 0);
     const totalQuestions = questions.filter(q => q.subject === subId).length;
     
     // Calculate lessons progress

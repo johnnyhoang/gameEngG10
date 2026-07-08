@@ -4,7 +4,8 @@ import {
   ArrowLeft, Sparkles, Brain, Award, RefreshCw, HelpCircle, Send, Check, X
 } from 'lucide-react';
 import { toast } from '../utils/toast';
-import { SUBJECTS_CONFIG, SubjectId, Question } from '../types/game';
+import { SUBJECTS_CONFIG } from '../types/game';
+import type { SubjectId, Question } from '../types/game';
 
 interface RelaxationZoneProps {
   onBack: () => void;
