@@ -14,6 +14,7 @@ interface ProfileThemeModalProps {
   currentTheme: UiThemeId;
   onClose: () => void;
   onSelectTheme: (themeId: UiThemeId) => void;
+  onGoToScreen?: (screenName: 'map' | 'hang') => void;
 }
 
 const getThemeCardClass = (themeId: UiThemeId, isActive: boolean) => {
@@ -86,7 +87,8 @@ export const ProfileThemeModal: React.FC<ProfileThemeModalProps> = ({
   currentUser,
   currentTheme,
   onClose,
-  onSelectTheme
+  onSelectTheme,
+  onGoToScreen
 }) => {
   if (!isOpen) return null;
 
@@ -478,6 +480,34 @@ export const ProfileThemeModal: React.FC<ProfileThemeModalProps> = ({
                 </div>
                 <p className="text-[10px] text-slate-500 italic font-serif">Hệ thống đang tinh luyện các phong vị bổ sung, thiếu hiệp hãy đón chờ!</p>
               </div>
+            </div>
+          )}
+
+          {/* Action Gates to exit/navigate */}
+          {onGoToScreen && (
+            <div className={`mt-8 pt-5 border-t flex flex-col sm:flex-row gap-3 justify-end ${
+              isUnicorn ? 'border-violet-200/35' : 'border-white/10'
+            }`}>
+              <button
+                onClick={() => onGoToScreen('map')}
+                className={`px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02] border ${
+                  isUnicorn
+                    ? 'bg-white hover:bg-violet-50 border-violet-200/50 text-violet-700 shadow-sm'
+                    : 'bg-slate-900 hover:bg-slate-800 border-white/10 text-white'
+                }`}
+              >
+                🚪 Bôn Tẩu Giang Hồ
+              </button>
+              <button
+                onClick={() => onGoToScreen('hang')}
+                className={`px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-1.5 cursor-pointer hover:scale-[1.02] ${
+                  isUnicorn
+                    ? 'bg-gradient-to-r from-fuchsia-300 to-violet-300 text-violet-900 shadow-md shadow-fuchsia-200/40 hover:brightness-105'
+                    : 'bg-synth-magenta hover:bg-synth-magenta/90 text-black shadow-[0_0_15px_rgba(255,0,127,0.45)]'
+                }`}
+              >
+                ⚔️ Vào Hang Luyện Công
+              </button>
             </div>
           )}
         </div>

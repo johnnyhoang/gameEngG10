@@ -45,18 +45,18 @@ export const GiangHoCamNang: React.FC<GiangHoCamNangProps> = ({
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center bg-black/85 p-4 backdrop-blur-md">
       {/* Ancient Book Container */}
-      <div className="relative w-full max-w-2xl overflow-hidden rounded-[2.5rem] border-8 border-amber-950 bg-[#ebdcb9] p-6 text-stone-900 shadow-[0_30px_90px_rgba(0,0,0,0.8)] md:p-10 font-serif">
+      <div className="relative w-full max-w-md overflow-hidden rounded-[2rem] border-8 border-amber-950 bg-[#ebdcb9] p-5 text-stone-900 shadow-[0_30px_90px_rgba(0,0,0,0.8)] font-ancient-book">
         {/* Decorative Calligraphy Brush Pattern Background */}
         <div className="absolute inset-0 opacity-[0.04] pointer-events-none bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:16px_16px]" />
         
         {/* Silk Ribbon Border */}
-        <div className="absolute inset-2 border-2 border-stone-800/25 pointer-events-none rounded-[2rem]" />
+        <div className="absolute inset-2 border-2 border-stone-800/25 pointer-events-none rounded-[1.5rem]" />
         
         {/* Book Header decoration */}
-        <div className="flex justify-between items-center border-b-2 border-stone-800/20 pb-3 mb-6">
+        <div className="flex justify-between items-center border-b-2 border-stone-800/20 pb-2 mb-4">
           <div className="flex items-center gap-2">
-            <Feather className="w-5 h-5 text-red-800 animate-pulse" />
-            <span className="text-xs font-black uppercase tracking-widest text-stone-700 font-mono">
+            <Feather className="w-4 h-4 text-red-800 animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-widest text-stone-700 font-mono">
               🏯 CẨM NANG BÍ LỤC • GIANG HỒ KỶ YẾU 📖
             </span>
           </div>
@@ -66,14 +66,14 @@ export const GiangHoCamNang: React.FC<GiangHoCamNangProps> = ({
               className="text-stone-600 hover:text-stone-900 transition-colors p-1"
               title="Khép lại cẩm nang"
             >
-              <X className="w-5 h-5" />
+              <X className="w-4 h-4" />
             </button>
           )}
         </div>
 
         {/* Dynamic Category Selector (Only in full reader mode) */}
         {!activePage && (
-          <div className="flex gap-2 overflow-x-auto pb-3 mb-6 scrollbar-thin border-b border-stone-800/10">
+          <div className="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-thin border-b border-stone-800/10">
             {categories.map(cat => (
               <button
                 key={cat}
@@ -81,9 +81,9 @@ export const GiangHoCamNang: React.FC<GiangHoCamNangProps> = ({
                   setSelectedCategory(cat);
                   setPageIndex(0);
                 }}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                className={`px-2.5 py-1 rounded-md text-[10px] font-bold whitespace-nowrap transition-all ${
                   selectedCategory === cat
-                    ? 'bg-red-950 text-white shadow-md'
+                    ? 'bg-red-950 text-white shadow-sm'
                     : 'bg-stone-800/5 hover:bg-stone-800/10 text-stone-700'
                 }`}
               >
@@ -95,21 +95,21 @@ export const GiangHoCamNang: React.FC<GiangHoCamNangProps> = ({
 
         {/* Content Page Section */}
         {currentPage ? (
-          <div className="min-h-[260px] flex flex-col justify-between">
+          <div className="min-h-[180px] flex flex-col justify-between">
             <div>
               {/* Category tag */}
-              <span className="inline-block text-[10px] font-black bg-stone-900/10 text-stone-800 px-2 py-0.5 rounded-full mb-3 uppercase tracking-wider font-mono">
+              <span className="inline-block text-[9px] font-black bg-stone-900/10 text-stone-800 px-2 py-0.5 rounded-full mb-2 uppercase tracking-wider font-mono">
                 {currentPage.category}
               </span>
               
               {/* Page Title */}
-              <h2 className="text-2xl font-black text-red-950 mb-4 font-serif flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-amber-600" />
+              <h2 className="text-base font-black text-red-950 mb-3 flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-amber-600" />
                 {currentPage.title}
               </h2>
 
               {/* Page Body text */}
-              <div className="text-stone-800 leading-relaxed text-sm md:text-base font-serif whitespace-pre-line bg-stone-900/[0.02] p-4 rounded-xl border border-stone-800/5">
+              <div className="text-stone-800 leading-relaxed text-xs md:text-sm whitespace-pre-line bg-stone-900/[0.02] p-3.5 rounded-xl border border-stone-800/5">
                 {currentPage.content}
               </div>
             </div>

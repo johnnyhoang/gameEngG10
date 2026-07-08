@@ -27,38 +27,74 @@ export const INITIAL_HANDBOOK_PAGES: HandbookPage[] = [
   {
     id: 'hb-1',
     category: 'Võ Học & Tinh Tấn',
-    title: 'Kinh nghiệm tu luyện & Luật Lực Bất Tòng Tâm',
-    content: `Kinh nghiệm tu vi (XP) đo lường trình độ võ học của Thiếu Hiệp:\n1. **Luyện tập thường:** Trả lời đúng mỗi câu nhận **+15 XP**.\n2. **Vượt ải thành công:** Nhận thêm **+50 XP**.\n3. **Quyết đấu Boss:** Tiêu diệt Boss nhận **+150 XP** và được **nhân đôi XP** cho tất cả câu đúng trong trận (**+30 XP/câu**).\n\n*Luật "Lực Bất Tòng Tâm" (Cực kỳ quan trọng):* Mỗi lượt cho Pet (Rồng Con) ăn để tăng cấp thú cưng sẽ tiêu tốn **30 XP** và **50 Ngân Lượng** của Thiếu hiệp. Điều này có thể khiến Thiếu hiệp bị **tụt cấp độ (Level) tạm thời**. Để khôi phục cấp độ, thiếu hiệp phải tích cực quay lại Hang Luyện Công làm bài tập cày lại XP.`
+    title: 'Tu Vi & Kinh Nghiệm (XP)',
+    content: 'Tu vi (XP) đo lường trình độ võ học của Thiếu hiệp trên giang hồ. Khi làm đúng mỗi câu hỏi thường ở Hang Luyện Công, con sẽ tích lũy được +15 XP.'
   },
   {
     id: 'hb-2',
     category: 'Võ Học & Tinh Tấn',
-    title: 'Quy tắc thưởng Ngân Lượng & Liên Hoàn Kích',
-    content: `Ngân Lượng (NP) dùng để mua sắm đan dược chân khí, tim hồi phục, khiên bảo vệ hoặc đổi voucher quà thật:\n1. **Đấu trường:** Đúng câu thường nhận **+5 NP**. Hoàn thành ải đạt độ chính xác từ 90% trở lên thưởng thêm **+20 NP** (Rương Báu Ải).\n2. **Khu Thư Giãn:** Đàm đạo Linh Sư thành công nhận **+15 NP**, Ghép cặp nhận **+10 NP**, Luyện thẻ nhớ nhận **+2 NP**.\n3. **Luật "Liên Hoàn Kích" (Combo):** Đúng liên tiếp từ 3 câu trở lên sẽ nhận hệ số nhân Ngân Lượng (x1.2, x1.5, x2.0). Chỉ một câu sai sẽ lập tức cắt đứt chuỗi combo.`
+    title: 'Vượt Ải & Diệt Boss',
+    content: 'Lĩnh ngộ thành công mỗi chuyên đề võ học sẽ giúp con nhận thêm +50 XP. Quyết đấu thắng Boss nhận +150 XP và được nhân đôi điểm XP câu đúng trong trận.'
   },
   {
     id: 'hb-3',
-    category: 'Đấu Trường Kỳ Ngộ',
-    title: 'Chân khí tu luyện & Luật Chân Khí Tán Thất',
-    content: `Chân khí (Energy) duy trì khả năng xuất chiêu rèn luyện bài tập:\n* Mỗi lượt vào ải thường tiêu hao **30 Chân khí**.\n* Mỗi lượt quyết đấu Boss tiêu hao **100 Chân khí**.\n\n*Luật "Chân Khí Tán Thất":* Lượng chân khí khấu trừ ngay khi bước vào trận. Nếu thiếu hiệp rút lui giữa chừng hoặc thất bại, chân khí đã nạp sẽ tiêu tán hoàn toàn và không được hoàn lại.`
+    category: 'Võ Học & Tinh Tấn',
+    title: 'Luật Lực Bất Tòng Tâm',
+    content: 'Cho Heo Maikawaii ăn tăng cấp sẽ tiêu tốn 30 XP và 50 Ngân Lượng của con. Điều này có thể khiến con bị tụt cấp độ tạm thời để tập trung nuôi dưỡng pet.'
   },
   {
     id: 'hb-4',
-    category: 'Đấu Trường Kỳ Ngộ',
-    title: 'Sinh Mệnh Đấu Trường & Luật Tẩu Hỏa Nhập Ma',
-    content: `Đấu trường có tính thử thách cực kỳ khắc nghiệt:\n* Thiếu hiệp có tối đa **3 Tim** sinh mệnh mỗi lượt đấu.\n* Mỗi câu trả lời sai sẽ bị khấu hao **1 Tim**.\n\n*Luật "Tẩu Hỏa Nhập Ma" (Thua cuộc):* Hết Tim giữa trận sẽ thất bại lập tức, chỉ nhận được 50% số XP và Ngân Lượng thu hoạch được trong trận đấu đó, đồng thời làm Pet buồn bã (giảm 5 điểm vui vẻ).`
+    category: 'Võ Học & Tinh Tấn',
+    title: 'Quy Tắc Thưởng Ngân Lượng',
+    content: 'Ngân Lượng (NP) là tiền tệ để con mua sắm chân khí đan, mạng hồi phục, khiên bảo vệ trong shop. Làm đúng câu hỏi Đấu trường sẽ thưởng cho con +5 NP.'
   },
   {
     id: 'hb-5',
-    category: 'Giang Hồ Quy Tắc',
-    title: 'Luật Phế Bỏ Võ Công (Reset Chuỗi)',
-    content: `Võ học giang hồ đòi hỏi sự chuyên cần chuyên nhất:\n* Thiếu hiệp cần đăng nhập học tập mỗi ngày để duy trì Chuỗi luyện công (Streak).\n* Nếu bỏ quên không học quá 24 giờ, luật "Phế Bỏ Võ Công" sẽ kích hoạt: Chuỗi ngày bị reset về 0 và thiếu hiệp bị phạt **-50 NP** vì sự lười biếng.\n* Hãy chuẩn bị sẵn *Streak Shield* (Khiên bảo vệ) mua từ Trân Bảo Các để phòng thân.`
+    category: 'Võ Học & Tinh Tấn',
+    title: 'Luật Liên Hoàn Kích (Combo)',
+    content: 'Làm đúng liên tiếp từ 3 câu trở lên sẽ nhận hệ số nhân Ngân Lượng cực lớn x1.2, x1.5, x2.0. Chỉ cần làm sai một câu, chuỗi liên hoàn kích sẽ bị reset.'
   },
   {
     id: 'hb-6',
+    category: 'Đấu Trường Kỳ Ngộ',
+    title: 'Chân Khí Học Tập',
+    content: 'Chân khí (Energy) là năng lượng cần thiết để xuất chiêu làm bài tập ở Đấu trường. Mỗi lượt luyện tập thường tiêu hao 30 Chân khí của thiếu hiệp.'
+  },
+  {
+    id: 'hb-7',
+    category: 'Đấu Trường Kỳ Ngộ',
+    title: 'Luật Chân Khí Tán Thất',
+    content: 'Mỗi trận quyết đấu Boss tiêu hao 100 Chân khí và được trừ ngay khi vào trận. Nếu con bỏ cuộc giữa chừng, lượng chân khí này sẽ tiêu tán hoàn toàn.'
+  },
+  {
+    id: 'hb-8',
+    category: 'Đấu Trường Kỳ Ngộ',
+    title: 'Sinh Mệnh & Tim Đấu Trường',
+    content: 'Thiếu hiệp có tối đa 3 Tim sinh mệnh trong mỗi lượt đấu sinh tử ở Đấu trường. Mỗi câu làm sai sẽ bị phạt khấu trừ 1 Tim sinh mệnh của con.'
+  },
+  {
+    id: 'hb-9',
+    category: 'Đấu Trường Kỳ Ngộ',
+    title: 'Luật Tẩu Hỏa Nhập Ma',
+    content: 'Hết Tim giữa trận đấu sẽ thất bại và bị khấu hao 50% số Ngân Lượng và XP kiếm được. Đồng thời Heo Maikawaii sẽ buồn bã giảm 5 điểm vui vẻ.'
+  },
+  {
+    id: 'hb-10',
     category: 'Giang Hồ Quy Tắc',
-    title: 'Kỳ Ngộ Giang Hồ (Sự Kiện Ngẫu Nhiên)',
-    content: `Khi bôn tẩu giang hồ (Đăng nhập hoặc hoàn thành bài luyện tập), thiếu hiệp có 5% xác suất gặp Kỳ Ngộ:\n1. **Linh Dược Kỳ Ngộ (Tốt):** Đạo sư ban tặng nhân sâm đan dược phục hồi miễn phí **+100 Chân khí** hoặc **+50 NP**.\n2. **Khảo Hạch Kỳ Ngộ (Thách thức):** Linh Sư bất ngờ xuất hiện đưa ra một câu hỏi ngẫu nhiên bắt buộc trả lời nhanh. Đúng nhận ngay **+100 NP**, sai bị phạt **-30 Chân khí** hoặc **-1 Tim**.`
+    title: 'Duy Trì Chuỗi Luyện Công',
+    content: 'Con cần chăm chỉ học tập mỗi ngày để duy trì Chuỗi học tập (Streak) của bản thân. Chuỗi học tập tăng giúp rèn luyện thói quen và nhận thưởng lớn.'
+  },
+  {
+    id: 'hb-11',
+    category: 'Giang Hồ Quy Tắc',
+    title: 'Luật Phế Bỏ Võ Công',
+    content: 'Nếu bỏ quên không học tập quá 24 giờ, Chuỗi học tập của con sẽ lập tức bị reset về 0. Đồng thời con bị phạt -50 Ngân lượng vì sự lười biếng.'
+  },
+  {
+    id: 'hb-12',
+    category: 'Giang Hồ Quy Tắc',
+    title: 'Kỳ Ngộ Giang Hồ',
+    content: 'Khi luyện công hoặc đăng nhập, con có 5% cơ hội gặp Kỳ Ngộ nhận miễn phí +100 Chân khí, hoặc gặp Khảo Hạch bất ngờ từ Linh Sư.'
   }
 ];
 

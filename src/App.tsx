@@ -441,6 +441,10 @@ function App() {
           currentTheme={uiTheme}
           onClose={() => setIsProfileOpen(false)}
           onSelectTheme={setUiTheme}
+          onGoToScreen={(screenName) => {
+            setScreen(screenName);
+            setIsProfileOpen(false);
+          }}
         />
       )}
 
