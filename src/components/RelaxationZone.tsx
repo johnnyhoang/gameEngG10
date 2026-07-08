@@ -316,7 +316,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
       } else if (storyStep === 3) {
         setStoryInventory(prev => [...prev, '📜 Cuộn Sách Cổ']);
         setStoryStep(4); 
-        awardCoinsAndXp(60, 50, 'Phiêu lưu tình huống', 'Giải thoát Rồng nhỏ thành công');
+        awardCoinsAndXp(60, 50, 'Phiêu lưu tình huống', 'Giải thoát Heo Maikawaii thành công');
       }
     } else {
       toast.error('Lệch rồi, chỉnh lại đi.');
@@ -1200,9 +1200,9 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
                 <div className="w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl bg-synth-purple/15 border border-synth-purple/35">
                   🎭
                 </div>
-                <h3 className="font-orbitron font-black text-lg text-white uppercase">Giải Cứu Rồng</h3>
+                <h3 className="font-orbitron font-black text-lg text-white uppercase">Giải Cứu Heo Maikawaii</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Chú pet **Rồng nhỏ** đang bị giam cầm tại đền cổ. Bạn dùng tri thức Toán học, Tiếng Anh và Ngữ văn để vượt qua 3 thử thách cổ đại nhé!
+                  Bé **Heo Maikawaii** đang bị giam cầm tại đền cổ. Bạn dùng tri thức Toán học, Tiếng Anh và Ngữ văn để vượt qua 3 thử thách cổ đại nhé!
                 </p>
                 <button
                   onClick={handleStartStory}
@@ -1292,10 +1292,10 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
 
             {storyStep === 4 && (
               <div className="max-w-md mx-auto space-y-4 py-8">
-                <div className="text-5xl animate-bounce">🏆🦅🐉</div>
+                <div className="text-5xl animate-bounce">🏆🦅🐷</div>
                 <h3 className="font-orbitron font-black text-xl text-synth-green uppercase">Giải Cứu Hoàn Tất</h3>
                 <p className="text-xs text-slate-300 leading-relaxed">
-                  Bạn đã xử đẹp toàn bộ tình huống! Rồng nhỏ vẫy đuôi rồi bay về.
+                  Bạn đã xử đẹp toàn bộ tình huống! Heo Maikawaii ủn ỉn vẫy đuôi chạy về.
                   Phần thưởng vượt ải thành công: **+60 NP coins, +50 XP**
                 </p>
                 <div className="flex gap-2 justify-center">

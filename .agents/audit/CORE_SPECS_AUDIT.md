@@ -7,6 +7,15 @@ Nguyên tắc: KHÔNG xóa tính năng. Ưu tiên nâng cấp/refactor/enable tr
 
 ---
 
+## Đợt cập nhật: Header HUD + bug "rồng" + TODO Môn Chủ Hỏi Tội
+
+- [x] **Header (TopHUD) rối, box chồng lấn, cao thấp không đều.** Viết lại toàn bộ TopHUD.tsx: gộp Khối Định Danh (avatar+tên+rank+XP+Chân Khí) và Khối Tài Nguyên (Tim/NP/Chuỗi/Ví) thành 2 box cùng chiều cao (h-14), nav Bách Hóa/Hang Luyện Công rút gọn icon, nút Thân Phận mang chấm màu môn phái, Đăng Xuất đổi tên "Thoái Ẩn Giang Hồ". Đã kiểm chứng qua DOM bounding-box: không overlap, không tràn hàng ở cả desktop (1280px) và mobile (390px).
+- [x] **Đổi môn phái dồn hẳn về Thân Phận, bỏ dropdown ở HUD** — user xác nhận qua AskUserQuestion. Đã sửa CORE_SPECS §1.3 khớp lại với §7.4 (trước đó 2 mục mâu thuẫn nhau).
+- [x] **Bug: còn sót chữ "rồng"/🐉 dù pet đã đổi thành Heo Maikawaii.** Sửa: ParentConsole.tsx (nhãn "Cấp độ rồng:" → "Cấp độ Heo:", `pet.stage.toUpperCase()` lộ "DRAGON" → map qua `PET_STAGE_LABELS` mới thêm ở types/game.ts), RelaxationZone.tsx (minigame "Giải Cứu Rồng" → "Giải Cứu Heo Maikawaii", mọi text "Rồng nhỏ" → "Heo Maikawaii"), App.tsx (icon bottom-nav Pet 🐉→🐷). Icon 🐉 ở rank "Đại Hiệp" (§7.2) KHÔNG đổi vì đó là biểu tượng đẳng cấp wuxia, không liên quan pet.
+- [ ] **(TODO-tương lai, đã ghi vào CORE_SPECS §3.A mục D + §7.1) Cơ chế "Môn Chủ Hỏi Tội"** — chặn nút Bỏ qua bằng hộp thoại chọn lý do (Quá khó/Quá dài/Quá khùng) + mức độ 1-5, giới hạn 3 lượt Bỏ qua/ngày toàn app, Viện Chủ xem review ở Vạn Quyển Các. Đã tạo 4 task riêng (Task #16-19) để triển khai đợt sau, CHƯA code.
+
+---
+
 ## §1. Role Model & Sect Isolation
 
 - [x] **1.2b Auto-hide admin khỏi student list/leaderboard.** Đã lọc `role !== 'admin'` trong tab Thiên Cơ Các (ParentConsole.tsx, biến `nonAdminStudents`) cho cả 4 số liệu tổng quan lẫn mini-leaderboard. Chính Điện (quản lý tài khoản) vẫn cố tình hiện đủ mọi role vì đó là nơi thăng/hạ cấp — đúng theo spec 1.2b chỉ yêu cầu ẩn khỏi "danh sách học sinh"/leaderboard, không phải khỏi quản trị tài khoản.
@@ -61,6 +70,8 @@ Nguyên tắc: KHÔNG xóa tính năng. Ưu tiên nâng cấp/refactor/enable tr
 - [x] **VND wallet approval flow tham chiếu tab "Thành viên" không còn tồn tại** — đã sửa help text trỏ đúng "🏛️ Chính Điện".
 - [ ] **(TODO-tương lai vừa, không cấp thiết) "Danh mục quà tặng" hiện là instance riêng theo từng học sinh, không phải catalog dùng chung** — cân nhắc refactor thành catalog toàn viện + gán riêng, tránh Viện Chủ phải tạo lại quà giống nhau cho từng thiếu hiệp.
 - Handbook (Cẩm Nang): tổng thể MATCH tốt (12 trang, 3 chương, style, 2 trigger, free-browse). Không cần sửa lớn.
+- [x] **Cẩm Nang phải đổi màu theo Phong Vị đang chọn (góp ý người dùng).** Đã thêm 15 CSS token `--handbook-*` per theme (index.css, cả 6 Phong Vị) thay cho màu giấy dó cố định; `GiangHoCamNang.tsx` chuyển toàn bộ sang class `bg-handbook-paper`/`text-handbook-ink`/... Theme mặc định (Nguyệt Dạ) giữ nguyên y hệt màu cũ để không phá trải nghiệm hiện có.
+- [x] **Hợp nhất toàn bộ hệ thống Help ("?") khắp app vào Cẩm Nang Bí Lục (góp ý người dùng) — "cốt lõi Cẩm Nang là help/guide".** 23 mục `HELP_TOPICS` cũ (modal riêng `{title,bullets}` tách biệt) đã chuyển thành `HandbookPage` thật (`id: help-<topic>`), chia 3 category mới: "Trợ Giúp Nhanh" (8 trang, học sinh), "Trợ Giúp Quản Trị" (7 trang, chỉ Viện Chủ), "Trợ Giúp Dạng Câu Hỏi" (8 trang, chỉ Viện Chủ) — dùng field `audience` mới trên `HandbookPage` để lọc theo vai trò khi duyệt tự do. `showHelp(topic)` giờ mở thẳng `GiangHoCamNang` ở chế độ duyệt (không khóa, vẫn lật trang/đổi mục/đóng X được) thay vì modal `glass-panel` riêng biệt — đã xóa modal cũ trong App.tsx. Thêm `merge()` vào persist config để user cũ (đã có handbookPages 12 trang trong localStorage) tự bù các trang mặc định mới bị thiếu theo id, không mất dữ liệu cẩm nang tự thêm của Viện Chủ. Đã kiểm chứng trực tiếp: đổi Phong Vị → mở Cẩm Nang đổi màu đúng; bấm "?" ở TopHUD (học sinh) → mở đúng trang, chỉ thấy 4 category (không thấy 2 category Viện Chủ); bấm "Help" ở Vạn Quyển Các (Viện Chủ) → mở đúng trang, thấy đủ 6 category.
 
 ## §4 AI Engine
 

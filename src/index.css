@@ -45,6 +45,23 @@
   --color-theme-border-success: var(--theme-border-success);
   --color-theme-border-error: var(--theme-border-error);
   --color-theme-text-highlight: var(--theme-text-highlight);
+
+  /* Cẩm Nang Bí Lục (Giang Hồ Cẩm Nang) — đổi màu theo Phong Vị đang chọn thay vì cố định 1 màu giấy dó */
+  --color-handbook-paper: var(--theme-handbook-paper);
+  --color-handbook-border: var(--theme-handbook-border);
+  --color-handbook-border-soft: var(--theme-handbook-border-soft);
+  --color-handbook-ink: var(--theme-handbook-ink);
+  --color-handbook-ink-soft: var(--theme-handbook-ink-soft);
+  --color-handbook-title: var(--theme-handbook-title);
+  --color-handbook-accent: var(--theme-handbook-accent);
+  --color-handbook-tag-bg: var(--theme-handbook-tag-bg);
+  --color-handbook-tag-text: var(--theme-handbook-tag-text);
+  --color-handbook-tab-active-bg: var(--theme-handbook-tab-active-bg);
+  --color-handbook-tab-active-text: var(--theme-handbook-tab-active-text);
+  --color-handbook-content-bg: var(--theme-handbook-content-bg);
+  --color-handbook-seal: var(--theme-handbook-seal);
+  --color-handbook-seal-hover: var(--theme-handbook-seal-hover);
+  --color-handbook-seal-text: var(--theme-handbook-seal-text);
 }
 
 :root,
@@ -68,6 +85,23 @@ body,
   --theme-border-success: rgba(57, 255, 20, 0.35);
   --theme-border-error: rgba(255, 0, 127, 0.35);
   --theme-text-highlight: #ffffff;
+
+  /* Cẩm Nang mặc định (Nguyệt Dạ) — giữ nguyên màu giấy dó cổ kính gốc, không đổi giao diện cho user chưa chọn Phong Vị */
+  --theme-handbook-paper: #ebdcb9;
+  --theme-handbook-border: #451a03;
+  --theme-handbook-border-soft: rgba(41, 37, 36, 0.25);
+  --theme-handbook-ink: #1c1917;
+  --theme-handbook-ink-soft: #57534e;
+  --theme-handbook-title: #450a0a;
+  --theme-handbook-accent: #d97706;
+  --theme-handbook-tag-bg: rgba(28, 25, 23, 0.1);
+  --theme-handbook-tag-text: #1c1917;
+  --theme-handbook-tab-active-bg: #450a0a;
+  --theme-handbook-tab-active-text: #ffffff;
+  --theme-handbook-content-bg: rgba(28, 25, 23, 0.02);
+  --theme-handbook-seal: #7f1d1d;
+  --theme-handbook-seal-hover: #991b1b;
+  --theme-handbook-seal-text: #ffffff;
 }
 
 :root[data-theme='cute-pink-pastel'] {
@@ -97,6 +131,23 @@ body,
   --theme-border-success: rgba(22, 163, 74, 0.22);
   --theme-border-error: rgba(190, 24, 93, 0.22);
   --theme-text-highlight: #4b2d66;
+
+  /* Cẩm Nang Phong Vị Đào Hoa */
+  --theme-handbook-paper: #fdeef5;
+  --theme-handbook-border: #9d174d;
+  --theme-handbook-border-soft: rgba(157, 23, 77, 0.18);
+  --theme-handbook-ink: #5b2340;
+  --theme-handbook-ink-soft: #8a4a6b;
+  --theme-handbook-title: #be185d;
+  --theme-handbook-accent: #ec4899;
+  --theme-handbook-tag-bg: rgba(190, 24, 93, 0.1);
+  --theme-handbook-tag-text: #9d174d;
+  --theme-handbook-tab-active-bg: #be185d;
+  --theme-handbook-tab-active-text: #ffffff;
+  --theme-handbook-content-bg: rgba(157, 23, 77, 0.05);
+  --theme-handbook-seal: #be185d;
+  --theme-handbook-seal-hover: #9d174d;
+  --theme-handbook-seal-text: #ffffff;
 }
 
 body[data-theme='cute-pink-pastel'] {
@@ -130,6 +181,23 @@ body[data-theme='cute-pink-pastel'] {
   --theme-border-success: rgba(141, 247, 194, 0.3);
   --theme-border-error: rgba(216, 180, 254, 0.3);
   --theme-text-highlight: #ffffff;
+
+  /* Cẩm Nang Phong Vị Tinh Không */
+  --theme-handbook-paper: #101a33;
+  --theme-handbook-border: #6b7fd7;
+  --theme-handbook-border-soft: rgba(155, 231, 255, 0.18);
+  --theme-handbook-ink: #dbe9ff;
+  --theme-handbook-ink-soft: #9fb3dd;
+  --theme-handbook-title: #9be7ff;
+  --theme-handbook-accent: #d8b4fe;
+  --theme-handbook-tag-bg: rgba(155, 231, 255, 0.1);
+  --theme-handbook-tag-text: #9be7ff;
+  --theme-handbook-tab-active-bg: #2c3e73;
+  --theme-handbook-tab-active-text: #ffffff;
+  --theme-handbook-content-bg: rgba(155, 231, 255, 0.06);
+  --theme-handbook-seal: #2c3e73;
+  --theme-handbook-seal-hover: #3a4f94;
+  --theme-handbook-seal-text: #ffffff;
 }
 
 body[data-theme='space-adventure'] {
@@ -163,6 +231,23 @@ body[data-theme='space-adventure'] {
   --theme-border-success: rgba(21, 128, 61, 0.22);
   --theme-border-error: rgba(190, 18, 60, 0.22);
   --theme-text-highlight: #1e3a1e;
+
+  /* Cẩm Nang Phong Vị Trúc Lâm */
+  --theme-handbook-paper: #f4f0da;
+  --theme-handbook-border: #14532d;
+  --theme-handbook-border-soft: rgba(20, 83, 45, 0.18);
+  --theme-handbook-ink: #33422a;
+  --theme-handbook-ink-soft: #5b6b4a;
+  --theme-handbook-title: #166534;
+  --theme-handbook-accent: #65a30d;
+  --theme-handbook-tag-bg: rgba(22, 101, 52, 0.1);
+  --theme-handbook-tag-text: #166534;
+  --theme-handbook-tab-active-bg: #166534;
+  --theme-handbook-tab-active-text: #ffffff;
+  --theme-handbook-content-bg: rgba(20, 83, 45, 0.05);
+  --theme-handbook-seal: #166534;
+  --theme-handbook-seal-hover: #14532d;
+  --theme-handbook-seal-text: #ffffff;
 }
 
 body[data-theme='fantasy-forest'] {
@@ -196,6 +281,23 @@ body[data-theme='fantasy-forest'] {
   --theme-border-success: rgba(132, 204, 22, 0.25);
   --theme-border-error: rgba(251, 113, 133, 0.25);
   --theme-text-highlight: #ffffff;
+
+  /* Cẩm Nang Phong Vị Thu Phong */
+  --theme-handbook-paper: #ecdab3;
+  --theme-handbook-border: #5c2c06;
+  --theme-handbook-border-soft: rgba(92, 44, 6, 0.2);
+  --theme-handbook-ink: #3a2413;
+  --theme-handbook-ink-soft: #6b4a2a;
+  --theme-handbook-title: #b45309;
+  --theme-handbook-accent: #f59e0b;
+  --theme-handbook-tag-bg: rgba(180, 83, 9, 0.12);
+  --theme-handbook-tag-text: #7c2d12;
+  --theme-handbook-tab-active-bg: #7c2d12;
+  --theme-handbook-tab-active-text: #ffffff;
+  --theme-handbook-content-bg: rgba(92, 44, 6, 0.05);
+  --theme-handbook-seal: #7c2d12;
+  --theme-handbook-seal-hover: #5c2c06;
+  --theme-handbook-seal-text: #ffffff;
 }
 
 :root[data-theme='unicorn-dream'] {
@@ -225,6 +327,23 @@ body[data-theme='fantasy-forest'] {
   --theme-border-success: rgba(4, 120, 87, 0.22);
   --theme-border-error: rgba(185, 28, 28, 0.22);
   --theme-text-highlight: #371c4a;
+
+  /* Cẩm Nang Phong Vị Tuyết Sơn */
+  --theme-handbook-paper: #f7f4ff;
+  --theme-handbook-border: #a78bfa;
+  --theme-handbook-border-soft: rgba(124, 58, 237, 0.16);
+  --theme-handbook-ink: #4c3a66;
+  --theme-handbook-ink-soft: #7c6a94;
+  --theme-handbook-title: #7c3aed;
+  --theme-handbook-accent: #38bdf8;
+  --theme-handbook-tag-bg: rgba(124, 58, 237, 0.1);
+  --theme-handbook-tag-text: #7c3aed;
+  --theme-handbook-tab-active-bg: #7c3aed;
+  --theme-handbook-tab-active-text: #ffffff;
+  --theme-handbook-content-bg: rgba(124, 58, 237, 0.05);
+  --theme-handbook-seal: #7c3aed;
+  --theme-handbook-seal-hover: #6d28d9;
+  --theme-handbook-seal-text: #ffffff;
 }
 
 body[data-theme='unicorn-dream'] {

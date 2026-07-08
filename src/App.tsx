@@ -29,7 +29,7 @@ function App() {
   const initEventSubscriptions = useGameState(state => state.initEventSubscriptions);
   const openMysteryBox = useGameState(state => state.openMysteryBox);
   const spinWheel = useGameState(state => state.spinWheel);
-  const activeHelp = useGameState(state => state.activeHelp);
+  const helpPageId = useGameState(state => state.helpPageId);
   const closeHelp = useGameState(state => state.closeHelp);
   const uiTheme = useGameState(state => state.uiTheme);
   const setUiTheme = useGameState(state => state.setUiTheme);
@@ -408,30 +408,13 @@ function App() {
         </div>
       )}
 
-      {/* Help Topic Modal */}
-      {activeHelp && (
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-fade-in">
-          <div className="glass-panel rounded-3xl border border-synth-cyan/40 p-6 max-w-md w-full space-y-4 shadow-[0_0_30px_rgba(0,240,255,0.2)]">
-            <h3 className="font-orbitron font-black text-base text-synth-cyan uppercase tracking-wider border-b border-synth-cyan/20 pb-2 flex items-center gap-2">
-              💡 Hướng dẫn: {activeHelp.title}
-            </h3>
-            
-            <div className="space-y-3 py-2">
-              {activeHelp.bullets.map((b, i) => (
-                <p key={i} className="text-xs text-slate-200 leading-relaxed font-medium">
-                  {b}
-                </p>
-              ))}
-            </div>
-
-            <button
-              onClick={closeHelp}
-              className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 shadow-[0_0_12px_rgba(0,240,255,0.3)]"
-            >
-              Đã hiểu
-            </button>
-          </div>
-        </div>
+      {/* Mọi "?" trong app đều mở thẳng trang tương ứng trong Cẩm Nang Bí Lục — cốt lõi Cẩm Nang là help/guide (CORE_SPECS §2.7) */}
+      {helpPageId && (
+        <GiangHoCamNang
+          isOpen={true}
+          initialPageId={helpPageId}
+          onClose={closeHelp}
+        />
       )}
 
       {isProfileOpen && currentUser && (
@@ -495,7 +478,7 @@ function App() {
               screen === 'pet' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
             }`}
           >
-            <span className="text-lg">🐉</span>
+            <span className="text-lg">🐷</span>
             <span>Pet</span>
           </button>
 

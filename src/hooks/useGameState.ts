@@ -98,195 +98,202 @@ export const INITIAL_HANDBOOK_PAGES: HandbookPage[] = [
   }
 ];
 
-const HELP_TOPICS: Record<string, { title: string; bullets: string[] }> = {
-  xp: {
-    title: 'Cấp độ và XP',
+// Cốt lõi Cẩm Nang Bí Lục là help/guide — mọi điểm chạm "?" trong app đều mở thẳng 1 trang ở đây
+// (thay vì một modal help riêng biệt), mỗi trang có id `help-<topic>` khớp với tham số truyền vào showHelp(topic).
+const HELP_HANDBOOK_PAGES: HandbookPage[] = [
+  {
+    id: 'help-xp', category: 'Trợ Giúp Nhanh', title: 'Cấp độ và XP', content: '', audience: 'student',
     bullets: [
       '• Làm đúng câu hỏi là có XP. Câu càng khó, XP càng nặng tay.',
       '• Đủ XP thì lên cấp, mở thêm giới hạn và tiến hóa thú cưng.',
       '• Boss và nhiệm vụ ngày là hai mỏ thưởng lớn nhất.'
     ]
   },
-  energy: {
-    title: 'Năng lượng',
+  {
+    id: 'help-energy', category: 'Trợ Giúp Nhanh', title: 'Chân Khí (Energy)', content: '', audience: 'student',
     bullets: [
-      '• Energy hồi đầy mỗi ngày lúc 0h.',
-      '• Mỗi lượt luyện thường tốn 10 Energy.',
-      '• Boss và một số ải nặng tay có thể tốn nhiều hơn.',
-      '• Cạn Energy thì nghỉ nhịp, đừng cố kéo liều.'
+      '• Chân Khí hồi đầy mỗi ngày lúc 0h.',
+      '• Mỗi lượt luyện thường tốn 30 Chân Khí.',
+      '• Quyết đấu Boss tốn 100 Chân Khí, trừ ngay khi vào trận.',
+      '• Cạn Chân Khí thì nghỉ nhịp, đừng cố kéo liều.'
     ]
   },
-  hearts: {
-    title: 'Tim sinh mệnh',
+  {
+    id: 'help-hearts', category: 'Trợ Giúp Nhanh', title: 'Tim sinh mệnh', content: '', audience: 'student',
     bullets: [
-      '• Boss và đấu trường cho tối đa 3 tim.',
+      '• Boss và Sinh Tồn cho tối đa 3 tim.',
       '• Sai câu là mất tim, nên đừng ham lao bừa.',
-      '• Hết tim thì lượt đó gãy, phải làm lại cho gọn hơn.',
+      '• Hết tim thì thua trận, chỉ giữ được 50% chiến lợi phẩm.',
       '• Tim không trừ vì sai thường, chỉ trừ trong chế độ sinh tử.'
     ]
   },
-  nanite: {
-    title: 'Nanite Points (NP)',
+  {
+    id: 'help-nanite', category: 'Trợ Giúp Nhanh', title: 'Ngân Lượng (NP)', content: '', audience: 'student',
     bullets: [
-      '• NP là tiền ảo trong game, trả công cho câu đúng.',
-      '• NP dùng để mua gợi ý, khiên, tim và đổi quà.',
+      '• NP là tiền tệ trong game, trả công cho câu đúng.',
+      '• NP dùng để mua Khai Ngộ Quyển, Hộ Tâm Phù, Hồi Nguyên Đan, Phong Vị và đổi quà.',
       '• Kiếm NP đều tay thì chơi mượt hơn nhiều.'
     ]
   },
-  wallet: {
-    title: 'Phúc Lợi Gia Môn',
+  {
+    id: 'help-wallet', category: 'Trợ Giúp Nhanh', title: 'Phúc Lợi Gia Môn', content: '', audience: 'student',
     bullets: [
       '• Đây là phần thưởng thật bằng tiền mặt từ Viện Chủ.',
       '• Đổi Phúc Lợi xong thì yêu cầu sẽ chờ Viện Chủ phê duyệt.',
       '• Viện Chủ phê duyệt xong, tiền vào ví và con có thể chi tiêu.'
     ]
   },
-  dragon: {
-    title: 'Heo Maikawaii',
+  {
+    id: 'help-dragon', category: 'Trợ Giúp Nhanh', title: 'Heo Maikawaii', content: '', audience: 'student',
     bullets: [
       '• Heo Maikawaii lớn lên theo tiến trình tu luyện của con.',
-      '• Cho Heo Maikawaii ăn đều tay thì nó giữ tâm trạng vui vẻ.',
+      '• Cho Heo Maikawaii ăn tốn 50 NP và 30 XP, có thể khiến con tụt Level tạm thời.',
       '• Muốn Heo Maikawaii khôn lớn, con phải học đều chứ không được bỏ ải.'
     ]
   },
-  prediction: {
-    title: 'Dự đoán điểm thi',
+  {
+    id: 'help-prediction', category: 'Trợ Giúp Nhanh', title: 'Dự đoán điểm thi', content: '', audience: 'student',
     bullets: [
       '• Hệ thống nhìn vào kết quả làm bài để ước tính điểm thi.',
       '• Càng làm nhiều câu thì ước lượng càng chắc.',
       '• Con nên lấy đó làm mốc luyện chứ đừng xem như phán quyết cuối.'
     ]
   },
-  'ai-ingest': {
-    title: 'Nhập đề bằng AI',
+  {
+    id: 'help-streak', category: 'Trợ Giúp Nhanh', title: 'Chuỗi học tập', content: '', audience: 'student',
+    bullets: [
+      '• Học đều thì chuỗi tăng.',
+      '• Bỏ quá 24h không học là chuỗi gãy, bị phạt -50 NP ngay.',
+      '• Có Hộ Tâm Phù thì còn cứu được, nhưng đừng ỷ lại.'
+    ]
+  },
+  {
+    id: 'help-ai-ingest', category: 'Trợ Giúp Quản Trị', title: 'Nhập đề bằng AI', content: '', audience: 'admin',
     bullets: [
       '• Dán đề thô hoặc file câu hỏi vào khung nhập.',
       '• AI sẽ tách câu, lựa chọn đáp án và gợi ý lời giải.',
       '• Xác nhận xong là câu hỏi vào kho đề ngay.'
     ]
   },
-  'parent-console': {
-    title: 'Bảng quản trị',
+  {
+    id: 'help-parent-console', category: 'Trợ Giúp Quản Trị', title: 'Bảng quản trị', content: '', audience: 'admin',
     bullets: [
-      '• Tab Thành viên: xem tiến trình, năng lực và lịch sử gần nhất.',
-      '• Tab Ngân hàng: lọc theo môn, dạng và thang chấm.',
-      '• Tab Đổi quà: duyệt nhanh các yêu cầu từ học sinh.',
-      '• AI Ingest: nạp thêm câu hỏi mới vào ngân hàng.'
+      '• Chính Điện: quản lý tài khoản thiếu hiệp và cấp quyền toàn viện.',
+      '• Vạn Quyển Các: lọc ngân hàng câu hỏi theo môn, dạng và thang chấm.',
+      '• Ngân Các: duyệt đổi quà, cấu hình chân khí và định mức NP/XP.',
+      '• Thân Phận: xem hồ sơ chi tiết từng thiếu hiệp.'
     ]
   },
-  'bank-structure': {
-    title: 'Cấu trúc ngân hàng',
+  {
+    id: 'help-bank-structure', category: 'Trợ Giúp Quản Trị', title: 'Cấu trúc ngân hàng', content: '', audience: 'admin',
     bullets: [
       '• Mỗi câu nên có subject, category và metadata rõ ràng.',
       '• examPart giúp chia đề, answerMode quyết định cách chấm.',
       '• solutionSteps dùng để chấm rubric và giải thích.'
     ]
   },
-  'math-bank': {
-    title: 'Dạng Toán',
+  {
+    id: 'help-math-bank', category: 'Trợ Giúp Quản Trị', title: 'Dạng Toán', content: '', audience: 'admin',
     bullets: [
       '• Giữ đủ các mảng: đại số, đồ thị, hình học, thực tế.',
       '• Bài nhiều ý nên tách a/b/c và solutionSteps theo từng ý.',
       '• proof hoặc diagram phải có bước trung gian rõ ràng.'
     ]
   },
-  'english-bank': {
-    title: 'Dạng Tiếng Anh',
+  {
+    id: 'help-english-bank', category: 'Trợ Giúp Quản Trị', title: 'Dạng Tiếng Anh', content: '', audience: 'admin',
     bullets: [
       '• MCQ tách riêng grammar, vocabulary, pronunciation, stress, reading.',
       '• Tự luận nên lưu đáp án chấp nhận được và biến thể.',
       '• Chấm theo dạng bài, không chấm cảm tính.'
     ]
   },
-  'literature-bank': {
-    title: 'Dạng Ngữ văn',
+  {
+    id: 'help-literature-bank', category: 'Trợ Giúp Quản Trị', title: 'Dạng Ngữ văn', content: '', audience: 'admin',
     bullets: [
       '• Tách đọc hiểu, tiếng Việt, nghị luận xã hội và nghị luận văn học.',
       '• Bài văn nên có rubric, câu mấu chốt và ý cần đạt.',
       '• Chấm theo bố cục, lập luận, dẫn chứng và diễn đạt.'
     ]
   },
-  rubric: {
-    title: 'Cách chấm',
+  {
+    id: 'help-rubric', category: 'Trợ Giúp Quản Trị', title: 'Cách chấm', content: '', audience: 'admin',
     bullets: [
       '• Bố cục phải rõ, ý phải mạch, không viết kiểu phóng tay.',
       '• Dẫn chứng và bước giải phải đủ để AI không phải đoán.',
       '• Chấm theo rubric, không chấm theo cảm giác.'
     ]
   },
-  'question-type-mcq': {
-    title: 'Trắc nghiệm',
+  {
+    id: 'help-question-type-mcq', category: 'Trợ Giúp Dạng Câu Hỏi', title: 'Trắc nghiệm', content: '', audience: 'admin',
     bullets: [
       '• Chỉ lưu một đáp án đúng.',
       '• Bốn lựa chọn phải cùng kiểu, cùng độ dài tương đối.',
       '• Giải thích ngắn, gọn, đủ để thấy vì sao đúng và sai.'
     ]
   },
-  'question-type-short-answer': {
-    title: 'Tự luận ngắn',
+  {
+    id: 'help-question-type-short-answer', category: 'Trợ Giúp Dạng Câu Hỏi', title: 'Tự luận ngắn', content: '', audience: 'admin',
     bullets: [
       '• Đáp số phải rõ ràng, có đơn vị nếu cần.',
       '• Bước làm chỉ cần vừa đủ, không lan man.',
       '• Chấm cả kết quả lẫn cách đi tới kết quả.'
     ]
   },
-  'question-type-proof': {
-    title: 'Chứng minh',
+  {
+    id: 'help-question-type-proof', category: 'Trợ Giúp Dạng Câu Hỏi', title: 'Chứng minh', content: '', audience: 'admin',
     bullets: [
       '• Đi từ giả thiết sang suy luận rồi chốt kết luận.',
       '• Mỗi ý nên có một mốc chấm riêng.',
       '• Hình học thì ghi rõ góc, tam giác, hệ thức hoặc đồng dạng.'
     ]
   },
-  'question-type-multi-part': {
-    title: 'Nhiều ý',
+  {
+    id: 'help-question-type-multi-part', category: 'Trợ Giúp Dạng Câu Hỏi', title: 'Nhiều ý', content: '', audience: 'admin',
     bullets: [
       '• Tách rõ a/b/c ngay từ đầu.',
       '• Ý nào ra kết quả riêng thì chấm riêng.',
       '• Đừng để một ý sai kéo sập cả bài nếu các ý khác vẫn ổn.'
     ]
   },
-  'question-type-wordform': {
-    title: 'Word form',
+  {
+    id: 'help-question-type-wordform', category: 'Trợ Giúp Dạng Câu Hỏi', title: 'Word form', content: '', audience: 'admin',
     bullets: [
       '• Lưu từ gốc và các đáp án chấp nhận được.',
       '• Chấm đúng loại từ, đúng ngữ cảnh, đúng chính tả.',
       '• Nếu có biến thể hợp lệ thì phải ghi vào.'
     ]
   },
-  'question-type-rewrite': {
-    title: 'Viết lại câu',
+  {
+    id: 'help-question-type-rewrite', category: 'Trợ Giúp Dạng Câu Hỏi', title: 'Viết lại câu', content: '', audience: 'admin',
     bullets: [
       '• Giữ nghĩa, đổi đúng cấu trúc đề yêu cầu.',
       '• Có nhiều đáp án đúng thì lưu hết.',
       '• Chấm theo mục tiêu chuyển đổi, không soi từng chữ vụn.'
     ]
   },
-  'question-type-cloze': {
-    title: 'Điền khuyết',
+  {
+    id: 'help-question-type-cloze', category: 'Trợ Giúp Dạng Câu Hỏi', title: 'Điền khuyết', content: '', audience: 'admin',
     bullets: [
       '• Nhìn trước và sau chỗ trống.',
       '• Ưu tiên collocation, từ loại và ngữ cảnh.',
       '• Nếu đề có gợi ý thì dùng gợi ý để khóa đáp án.'
     ]
   },
-  'question-type-reading': {
-    title: 'Đọc hiểu',
+  {
+    id: 'help-question-type-reading', category: 'Trợ Giúp Dạng Câu Hỏi', title: 'Đọc hiểu', content: '', audience: 'admin',
     bullets: [
       '• Luôn gắn ngữ liệu gốc ở đầu câu.',
       '• Câu hỏi phải nói rõ cần ý chính, chi tiết hay suy luận.',
       '• Chấm theo nội dung đúng, không chỉ theo từ khóa lẻ.'
     ]
-  },
-  streak: {
-    title: 'Chuỗi học tập',
-    bullets: [
-      '• Học đều thì chuỗi tăng.',
-      '• Bỏ một ngày là chuỗi dễ gãy.',
-      '• Có khiên thì còn cứu được, nhưng đừng ỷ lại.'
-    ]
   }
-};interface GameState {
+];
+
+// Toàn bộ trang Cẩm Nang mặc định: lore gốc + mọi trang trợ giúp quy đổi từ hệ thống help cũ.
+export const ALL_HANDBOOK_PAGES: HandbookPage[] = [...INITIAL_HANDBOOK_PAGES, ...HELP_HANDBOOK_PAGES];
+
+interface GameState {
   // State
   currentUser: UserProfile | null;
   player: PlayerProfile;
@@ -316,8 +323,8 @@ const HELP_TOPICS: Record<string, { title: string; bullets: string[] }> = {
   failedQuestionIds: string[];
   recentlyPlayedQuestionIds: string[];
 
-  // Help States
-  activeHelp: { title: string; bullets: string[] } | null;
+  // Help States — trỏ thẳng vào 1 trang trong Cẩm Nang Bí Lục (HandbookPage.id), không còn modal help riêng.
+  helpPageId: string | null;
   showHelp: (topic: string) => void;
   closeHelp: () => void;
 
@@ -622,11 +629,11 @@ export const useGameState = create<GameState>()(
         dailyMission: null,
         logs: [],
         parentPIN: DEFAULT_PIN,
-        handbookPages: INITIAL_HANDBOOK_PAGES,
+        handbookPages: ALL_HANDBOOK_PAGES,
         activeCombo: 0,
         adminStudents: [],
         selectedStudentProfile: null,
-        activeHelp: null,
+        helpPageId: null,
         maxCombo: 0,
         lastSyncTime: null,
 
@@ -1019,7 +1026,7 @@ export const useGameState = create<GameState>()(
             activeCombo: 0,
             adminStudents: [],
             selectedStudentProfile: null,
-            activeHelp: null,
+            helpPageId: null,
             uiTheme: DEFAULT_UI_THEME
           });
         },
@@ -1040,12 +1047,12 @@ export const useGameState = create<GameState>()(
         },
 
         showHelp: (topic) => {
-          const content = HELP_TOPICS[topic] || null;
-          set({ activeHelp: content });
+          // "?" ở bất kỳ đâu trong app đều mở thẳng trang tương ứng trong Cẩm Nang Bí Lục.
+          set({ helpPageId: `help-${topic}` });
         },
 
         closeHelp: () => {
-          set({ activeHelp: null });
+          set({ helpPageId: null });
         },
 
         fetchAdminStudents: async () => {
@@ -2152,7 +2159,18 @@ export const useGameState = create<GameState>()(
         failedQuestionIds: state.failedQuestionIds,
         recentlyPlayedQuestionIds: state.recentlyPlayedQuestionIds,
         handbookPages: state.handbookPages
-      })
+      }),
+      // Người dùng đã có dữ liệu cũ trong localStorage sẽ không tự có các trang Cẩm Nang mặc định mới
+      // (vd các trang help vừa hợp nhất) vì persist ghi đè nguyên mảng. Bù lại các trang mặc định bị thiếu
+      // theo id, đồng thời giữ nguyên mọi trang Viện Chủ tự thêm.
+      merge: (persistedState, currentState) => {
+        const merged = { ...currentState, ...(persistedState as object) } as GameState;
+        const persistedPages = merged.handbookPages || [];
+        const existingIds = new Set(persistedPages.map(p => p.id));
+        const missingDefaults = ALL_HANDBOOK_PAGES.filter(p => !existingIds.has(p.id));
+        merged.handbookPages = [...persistedPages, ...missingDefaults];
+        return merged;
+      }
     }
   )
 );

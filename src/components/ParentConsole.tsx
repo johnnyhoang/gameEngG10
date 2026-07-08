@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
-import type { Question, QuestionMeta } from '../types/game';
-import { SUBJECTS_CONFIG, getStudentRankForLevel } from '../types/game';
+import type { Question, QuestionMeta, PetStage } from '../types/game';
+import { SUBJECTS_CONFIG, getStudentRankForLevel, PET_STAGE_LABELS } from '../types/game';
 import type { SubjectId } from '../types/game';
 import { ENGLISH_ANSWER_MODE_LABELS, ENGLISH_EXAM_BLUEPRINT, ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../data/englishExamBlueprint';
 import { MATH_ANSWER_MODE_LABELS, MATH_EXAM_BLUEPRINT, MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
@@ -2429,7 +2429,7 @@ export const ParentConsole: React.FC = () => {
                            🐷 Heo Maikawaii
                         </h4>
                         <span className="text-[10px] uppercase px-2 py-0.5 rounded bg-synth-cyan/20 border border-synth-cyan/30 text-synth-cyan font-orbitron">
-                          Giai đoạn: {selectedStudentProfile.pet.stage.toUpperCase()}
+                          Giai đoạn: {PET_STAGE_LABELS[selectedStudentProfile.pet.stage as PetStage] || selectedStudentProfile.pet.stage}
                         </span>
                       </div>
                       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
@@ -2438,7 +2438,7 @@ export const ParentConsole: React.FC = () => {
                           <span className="font-bold text-white">{selectedStudentProfile.pet.name}</span>
                         </div>
                         <div>
-                          <span className="text-synth-text-muted block text-[10px]">Cấp độ rồng:</span>
+                          <span className="text-synth-text-muted block text-[10px]">Cấp độ Heo:</span>
                           <span className="font-bold text-white">LV.{selectedStudentProfile.pet.level}</span>
                         </div>
                         <div>

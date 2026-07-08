@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { Activity } from 'lucide-react';
-import type { HistoryLog } from '../types/game';
+import type { HistoryLog, PetStage } from '../types/game';
+import { PET_STAGE_LABELS } from '../types/game';
 import { toast } from '../utils/toast';
 
 export const PetSanctuary: React.FC = () => {
@@ -121,15 +122,7 @@ export const PetSanctuary: React.FC = () => {
   }, [logs, interacting, tickled]);
 
   // Get evolutionary stage display names
-  const getStageTitle = (stage: string) => {
-    switch (stage) {
-      case 'egg': return 'Đám Mây & Nấm Sơ Sinh 🍄';
-      case 'baby': return 'Heo Con Mũm Mĩm 🐷';
-      case 'dragon': return 'Heo Hiệp Sĩ Trưởng Thành ⚔️';
-      case 'legend': return 'Thần Heo Maikawaii 👑';
-      default: return 'Heo Maikawaii';
-    }
-  };
+  const getStageTitle = (stage: string) => PET_STAGE_LABELS[stage as PetStage] || 'Heo Maikawaii';
 
   // SVG graphic for different Heo Maikawaii stages
   const renderPetAvatar = () => {

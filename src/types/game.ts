@@ -3,6 +3,15 @@ export type ChallengeType = 'daily' | 'weekly' | 'achievement' | 'one-time';
 export type RewardStatus = 'pending' | 'approved' | 'claimed';
 export type PetStage = 'egg' | 'baby' | 'dragon' | 'legend';
 export type PetMood = 'happy' | 'neutral' | 'sad' | 'sleeping';
+
+/** Nhãn hiển thị cho từng giai đoạn tiến hóa của Heo Maikawaii. Giá trị nội bộ `PetStage` giữ tên cũ ('dragon')
+ *  vì đổi tên enum sẽ chạm rất nhiều nơi, nhưng KHÔNG được để lộ chữ "rồng"/"dragon" ra UI — luôn hiển thị qua map này. */
+export const PET_STAGE_LABELS: Record<PetStage, string> = {
+  egg: 'Đám Mây & Nấm Sơ Sinh 🍄',
+  baby: 'Heo Con Mũm Mĩm 🐷',
+  dragon: 'Heo Hiệp Sĩ Trưởng Thành ⚔️',
+  legend: 'Thần Heo Maikawaii 👑'
+};
 export type UiThemeId = 'current' | 'cute-pink-pastel' | 'space-adventure' | 'fantasy-forest' | 'pixel-arcade' | 'unicorn-dream';
 
 export interface GameSettings {
@@ -130,6 +139,10 @@ export interface HandbookPage {
   category: string;
   title: string;
   content: string;
+  /** Danh sách gạch đầu dòng — dùng cho các trang tra cứu nhanh (thay cho content dạng đoạn văn). */
+  bullets?: string[];
+  /** Đối tượng xem trang: 'admin' chỉ hiện khi duyệt Cẩm Nang với vai trò Viện Chủ. Bỏ trống = ai cũng xem được. */
+  audience?: 'student' | 'admin';
 }
 
 export interface DailyMission {
