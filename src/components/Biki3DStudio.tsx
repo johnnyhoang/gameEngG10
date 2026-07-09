@@ -628,7 +628,6 @@ function buildAnnotationsFromAiResult(result: AiGeometryResult, model: SceneMode
   const vertexMap = getVertexMap(model);
   const annotations: OverlayAnnotation[] = [];
   const steps: LessonStep[] = [];
-  const generatedIds: string[] = [];
 
   (result.stepByStep || []).forEach(step => {
     steps.push({
