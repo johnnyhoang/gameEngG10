@@ -14,6 +14,7 @@ import { ProfileThemeModal } from './components/ProfileThemeModal';
 import { GiangHoCamNang } from './components/GiangHoCamNang';
 import { HangLuyenCong } from './components/HangLuyenCong';
 import { HangMatThatPage } from './components/HangMatThatPage';
+import { DesktopCentralNav } from './components/DesktopCentralNav';
 import { LessonStudyView } from './components/LessonStudyView';
 import { RelaxationZone } from './components/RelaxationZone';
 import { Biki3DStudio } from './components/Biki3DStudio';
@@ -241,6 +242,12 @@ function App() {
         
         {/* Dynamic Center Stage */}
         <section className="flex-1 min-w-0">
+          
+          {/* Desktop Central Navigation Hub */}
+          {['arena', 'hang', 'shop', 'relax', 'pet'].includes(screen) && !isDungeonScreen && !isHangMatterScreen && currentUser?.role !== 'admin' && (
+            <DesktopCentralNav currentScreen={screen} onNavigate={(s) => setScreen(s)} />
+          )}
+
           {screen === 'map' && (
             <WorldMap
               onOpenArena={() => setScreen('arena')}
