@@ -284,7 +284,7 @@ Mỗi lần đăng nhập hoặc hoàn thành bài luyện tập ở Hang Luyệ
 *   *Linh Dược Kỳ Ngộ (Tốt):* Gặp đạo sư ban tặng nhân sâm hồi phục **+100 Chân khí** hoặc **+50 NP** miễn phí.
 *   *Khảo Hạch Kỳ Ngộ (Thách thức):* Linh Sư xuất hiện yêu cầu trả lời nhanh 1 câu hỏi ngẫu nhiên. Đúng nhận **+100 NP**, sai bị phạt **-30 Chân khí** hoặc **-1 Tim**.
 
-#### D. Cơ Chế "Môn Chủ Hỏi Tội" (Chống Né Tránh Thử Thách) — *(TODO: chưa triển khai)*
+#### D. Cơ Chế "Môn Chủ Hỏi Tội" (Chống Né Tránh Thử Thách)
 Nút "Bỏ qua câu này" xuất hiện xuyên suốt mọi khu vực làm bài (Đấu Trường, Hang Luyện Công...) hiện cho phép bỏ qua tự do, không có rào cản. Để tránh Thiếu Hiệp lạm dụng né tránh thử thách thay vì cố gắng tư duy, bổ sung quy tắc sau:
 *   **Vấn Tội trước khi Bỏ qua:** Khi bấm "Bỏ qua câu này", hệ thống **không** bỏ qua ngay mà hiện hộp thoại **Môn Chủ Hỏi Tội** với giọng điệu nghiêm khắc, bắt buộc Thiếu Hiệp chọn 1 trong các lý do né tránh trước khi được xác nhận bỏ qua:
     *   🥵 *Quá khó* — vượt quá năng lực hiện tại.

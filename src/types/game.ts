@@ -45,6 +45,8 @@ export interface PlayerProfile {
   badges: string[];
   /** Phong Vị (theme giao diện) đã mở khóa bằng NP tại Bách Hóa Phường (CORE_SPECS §2.4). 'current' luôn miễn phí mặc định. */
   unlockedThemes?: UiThemeId[];
+  /** Track daily skips for Môn Chủ Hỏi Tội */
+  dailySkips?: { date: string, count: number };
 }
 
 export interface Question {
@@ -61,6 +63,8 @@ export interface Question {
   imageUrl?: string;
   metadata?: QuestionMeta;
   isConfused?: boolean;
+  skipReason?: 'quá khó' | 'quá dài' | 'quá khùng';
+  skipSeverity?: number;
 }
 
 export interface QuestionMeta {

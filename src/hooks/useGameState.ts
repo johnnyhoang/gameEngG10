@@ -388,8 +388,8 @@ interface GameState {
   addParentReward: (title: string, costCoins: number, cashValueVND: number) => void;
   importQuestions: (questions: Question[]) => void;
   deleteQuestion: (questionId: string) => Promise<boolean>;
-  updateQuestion: (questionId: string, updatedQuestion: Partial<Question>) => Promise<boolean>;
-  flagQuestionConfused: (question: Question) => Promise<boolean>;
+  updateQuestion: (questionId: string, payload: Partial<Question>) => Promise<boolean>;
+  flagQuestionConfused: (question: Question, reason?: 'quá khó' | 'quá dài' | 'quá khùng', severity?: number) => Promise<boolean>;
   awardCoinsAndXp: (coins: number, xp: number, activityTitle: string, activityDetails: string) => void;
   resetProgress: () => void; // Keeps questions, resets student stats
 
@@ -1879,8 +1879,8 @@ export const useGameState = create<GameState>()(
           return true;
         },
 
-        flagQuestionConfused: async (question) => {
-          const nextQuestion = { ...question, isConfused: true } as Question;
+        flagQuestionConfused: async (question, reason?: 'quá khó' | 'quá dài' | 'quá khùng', severity?: number) => {
+          const nextQuestion = { ...question, isConfused: true, skipReason: reason, skipSeverity: severity } as Question;
 
           try {
             const session = (await supabase.auth.getSession()).data.session;
@@ -1907,10 +1907,21 @@ export const useGameState = create<GameState>()(
             return false;
           }
 
-          set(state => ({
-            questions: state.questions.map(q => q.id === question.id ? nextQuestion : q)
-          }));
-          logActivity('exercise', 'Bỏ qua câu này', `Đã gác lại câu hỏi mã số ${question.id} để truy lại sau.`, 0, 0);
+          set(state => {
+            const todayStr = new Date().toISOString().split('T')[0];
+            let newSkips = state.player.dailySkips || { date: todayStr, count: 0 };
+            if (newSkips.date !== todayStr) {
+              newSkips = { date: todayStr, count: 1 };
+            } else {
+              newSkips = { date: todayStr, count: newSkips.count + 1 };
+            }
+
+            return {
+              questions: state.questions.map(q => q.id === question.id ? nextQuestion : q),
+              player: { ...state.player, dailySkips: newSkips }
+            };
+          });
+          logActivity('exercise', 'Bỏ qua câu này', `Đã gác lại câu hỏi mã số ${question.id} (Lý do: ${reason || 'Không rõ'}).`, 0, 0);
           return true;
         },
 
@@ -2005,7 +2016,8 @@ export const useGameState = create<GameState>()(
               streak: newStreak,
               energy: state.gameSettings.maxEnergy ?? 1000, // Refill energy daily
               hearts: 3, // Refill hearts daily
-              lastActive: new Date().toISOString()
+              lastActive: new Date().toISOString(),
+              dailySkips: { date: todayStr, count: 0 }
             },
             challenges: state.challenges.map(ch => 
               ch.type === 'daily' ? { ...ch, currentCount: 0, completed: false } : ch

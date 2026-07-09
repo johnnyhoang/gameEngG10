@@ -11,6 +11,9 @@ import { Biki3DStudio } from './Biki3DStudio';
 import { 
   Award, Flame, Check, X, ArrowRight, Volume2, VolumeX 
 } from 'lucide-react';
+import { TopHUD } from './TopHUD';
+import { BikiBoard } from './BikiBoard';
+import { MonChuHoiToiDialog } from './MonChuHoiToiDialog';
 import { sound } from '../utils/sound';
 import { toast } from '../utils/toast';
 import { supabase } from '../utils/supabaseClient';
@@ -50,6 +53,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const [lastRubricScore, setLastRubricScore] = useState<number | null>(null);
   const [lastRubricMissing, setLastRubricMissing] = useState<string[]>([]);
   const [isAiGrading, setIsAiGrading] = useState(false);
+  const [isSkipDialogOpen, setIsSkipDialogOpen] = useState(false);
   const [aiFeedback, setAiFeedback] = useState<string>('');
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
   const [aiWarningMessage, setAiWarningMessage] = useState<string>('');
@@ -414,12 +418,19 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     }
   };
 
-  const handleSkipConfused = async () => {
+  const handleSkipConfused = () => {
+    if (!activeQuestion) return;
+    setIsSkipDialogOpen(true);
+  };
+
+  const handleConfirmSkip = async (reason: 'quá khó' | 'quá dài' | 'quá khùng', severity: number) => {
     if (!activeQuestion) return;
     
-    const success = await flagQuestionConfused(activeQuestion);
+    setIsSkipDialogOpen(false);
+    
+    const success = await flagQuestionConfused(activeQuestion, reason, severity);
     if (success) {
-      toast.success('Đã đánh dấu "hổng hiểu". Câu này sẽ vào sổ để truy lại sau.');
+      toast.success('Đã gửi phản ánh tới Môn Chủ. Câu này sẽ được gác lại.');
       sound.playNext();
       
       setChecked(false);
@@ -1067,6 +1078,13 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           )}
         </div>
       </div>
+
+      {isSkipDialogOpen && (
+        <MonChuHoiToiDialog
+          onConfirm={handleConfirmSkip}
+          onCancel={() => setIsSkipDialogOpen(false)}
+        />
+      )}
     </div>
   );
 };
