@@ -1,7 +1,7 @@
-export type QuestionType = 'multiple_choice' | 'text_input' | 'matching' | 'wordform' | 'rewrite' | 'cloze' | 'reading' | 'short-answer' | 'proof' | 'multi-part';
+export type QuestionType = 'mcq' | 'multiple_choice' | 'text_input' | 'matching' | 'wordform' | 'rewrite' | 'cloze' | 'reading' | 'short-answer' | 'proof' | 'multi-part';
 export type ChallengeType = 'daily' | 'weekly' | 'achievement' | 'one-time';
 export type RewardStatus = 'pending' | 'approved' | 'claimed';
-export type PetStage = 'egg' | 'baby' | 'dragon' | 'legend';
+export type PetStage = 'egg' | 'baby' | 'adult' | 'legend';
 export type PetMood = 'happy' | 'neutral' | 'sad' | 'sleeping';
 
 export type PageLevel = 1 | 2 | 3;
@@ -13,23 +13,27 @@ export interface MapPage {
   rootPageId: string;
   name: string;
   icon?: string;
+  decayDays?: number; // Ví dụ: 7 ngày thì bị mờ lại
+  requiredCompletions?: number; // Số lần hoàn thành để mở vĩnh viễn (default: 1)
 }
 
 export interface PageExplorationState {
   studentId: string;
   pageId: string;
-  lastExploredAt: string;
-  explorationCount: number;
+  lastExploredAt: string; // Lần cuối click vào
+  lastCompletedAt: string | null; // Lần cuối thực sự hoàn thành task bên trong
+  explorationCount: number; // Tương đương số lần hoàn thành (completionCount)
+  pendingKeyQuestionId: string | null; // ID câu hỏi gatekeeper nếu giải sai
 }
 
-/** Nhãn hiển thị cho từng giai đoạn tiến hóa của Heo Maikawaii. Giá trị nội bộ `PetStage` giữ tên cũ ('dragon')
- *  vì đổi tên enum sẽ chạm rất nhiều nơi, nhưng KHÔNG được để lộ chữ "rồng"/"dragon" ra UI — luôn hiển thị qua map này. */
+/** Nhãn hiển thị cho từng giai đoạn tiến hóa của Heo Maikawaii. */
 export const PET_STAGE_LABELS: Record<PetStage, string> = {
   egg: 'Đám Mây & Nấm Sơ Sinh 🍄',
   baby: 'Heo Con Mũm Mĩm 🐷',
-  dragon: 'Heo Hiệp Sĩ Trưởng Thành ⚔️',
+  adult: 'Heo Hiệp Sĩ Trưởng Thành ⚔️',
   legend: 'Thần Heo Maikawaii 👑'
 };
+
 export type UiThemeId = 'current' | 'cute-pink-pastel' | 'space-adventure' | 'fantasy-forest' | 'pixel-arcade' | 'unicorn-dream';
 
 export interface GameSettings {

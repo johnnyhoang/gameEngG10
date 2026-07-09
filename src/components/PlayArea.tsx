@@ -11,8 +11,7 @@ import { Biki3DStudio } from './Biki3DStudio';
 import { 
   Award, Flame, Check, X, ArrowRight, Volume2, VolumeX 
 } from 'lucide-react';
-import { TopHUD } from './TopHUD';
-import { BikiBoard } from './BikiBoard';
+
 import { MonChuHoiToiDialog } from './MonChuHoiToiDialog';
 import { sound } from '../utils/sound';
 import { toast } from '../utils/toast';

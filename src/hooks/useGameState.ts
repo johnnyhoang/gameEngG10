@@ -18,7 +18,8 @@ import type {
   UiThemeId,
   GameSettings,
   SubjectId,
-  HandbookPage
+  HandbookPage,
+  PageExplorationState
 } from '../types/game';
 import { getStudentRankForLevel, SUBJECTS_CONFIG } from '../types/game';
 import { DEFAULT_UI_THEME, UI_THEMES } from '../theme/uiThemes';
@@ -144,7 +145,7 @@ const HELP_HANDBOOK_PAGES: HandbookPage[] = [
     ]
   },
   {
-    id: 'help-dragon', category: 'Trợ Giúp Nhanh', title: 'Heo Maikawaii', content: '', audience: 'student',
+    id: 'help-adult', category: 'Trợ Giúp Nhanh', title: 'Heo Maikawaii', content: '', audience: 'student',
     bullets: [
       '• Heo Maikawaii lớn lên theo tiến trình tu luyện của con.',
       '• Cho Heo Maikawaii ăn tốn 50 NP và 30 XP, có thể khiến con tụt Level tạm thời.',
@@ -300,6 +301,7 @@ interface GameState {
   questions: Question[];
   lessons: Lesson[];
   lessonsProgress: Record<string, boolean>;
+  pageExplorationStates: Record<string, PageExplorationState>;
   categoryStats: Record<string, CategoryStat>;
   pet: PetState;
   rewards: ParentReward[];
@@ -379,6 +381,8 @@ interface GameState {
   masterLesson: (lessonId: string, accuracyRatio?: number) => Promise<void>;
   applyDefeatPenalty: (coinsEarnedInRun: number, xpEarnedInRun: number) => void;
   completeBossVictory: () => void;
+  completeLevel3Page: (pageId: string) => void;
+  updatePendingKeyQuestion: (pageId: string, questionId: string | null) => void;
 
   // Parent Actions
   verifyPIN: (pin: string) => boolean;
@@ -618,6 +622,7 @@ export const useGameState = create<GameState>()(
         questions: INITIAL_QUESTIONS,
         lessons: INITIAL_LESSONS,
         lessonsProgress: {},
+        pageExplorationStates: {},
         currentSubject: 'english',
         categoryStats: {},
         failedQuestionIds: [],
@@ -682,7 +687,7 @@ export const useGameState = create<GameState>()(
               }
 
               if (newPetLevel >= 15) newPetStage = 'legend';
-              else if (newPetLevel >= 8) newPetStage = 'dragon';
+              else if (newPetLevel >= 8) newPetStage = 'adult';
               else if (newPetLevel >= 3) newPetStage = 'baby';
 
               return {
@@ -1512,8 +1517,12 @@ export const useGameState = create<GameState>()(
 
           // Tránh cộng trùng thưởng nếu bài học đã được hoàn thành trước đó
           if (state.lessonsProgress[lessonId]) {
+            // Still mark it as completed for Fog of War to increment completion count
+            get().completeLevel3Page(lessonId);
             return;
           }
+
+          get().completeLevel3Page(lessonId);
 
           const expGained = 50;
           // Rương Báu Ải (CORE_SPECS §3.A): đạt độ chính xác từ 90% trở lên khi hoàn thành ải mới nhận thêm +20 NP.
@@ -1601,7 +1610,6 @@ export const useGameState = create<GameState>()(
               walletVND: state.player.walletVND + vndBonus
             }
           });
-
           logActivity(
             'boss',
             'Hạ Gục Boss! 🔥',
@@ -1610,6 +1618,58 @@ export const useGameState = create<GameState>()(
             bonusXP,
             vndBonus
           );
+        },
+
+        completeLevel3Page: (pageId) => {
+          const state = get();
+          const studentId = state.currentUser?.id || state.player.id;
+          const currentExploration = state.pageExplorationStates[pageId] || {
+            studentId,
+            pageId,
+            lastExploredAt: new Date().toISOString(),
+            lastCompletedAt: null,
+            explorationCount: 0,
+            pendingKeyQuestionId: null
+          };
+
+          const updatedExploration = {
+            ...currentExploration,
+            lastCompletedAt: new Date().toISOString(),
+            explorationCount: currentExploration.explorationCount + 1,
+            pendingKeyQuestionId: null // Clear any pending question upon success
+          };
+
+          set({
+            pageExplorationStates: {
+              ...state.pageExplorationStates,
+              [pageId]: updatedExploration
+            }
+          });
+        },
+
+        updatePendingKeyQuestion: (pageId, questionId) => {
+          const state = get();
+          const studentId = state.currentUser?.id || state.player.id;
+          const currentExploration = state.pageExplorationStates[pageId] || {
+            studentId,
+            pageId,
+            lastExploredAt: new Date().toISOString(),
+            lastCompletedAt: null,
+            explorationCount: 0,
+            pendingKeyQuestionId: null
+          };
+
+          const updatedExploration = {
+            ...currentExploration,
+            pendingKeyQuestionId: questionId
+          };
+
+          set({
+            pageExplorationStates: {
+              ...state.pageExplorationStates,
+              [pageId]: updatedExploration
+            }
+          });
         },
 
         claimParentReward: (rewardId) => {
@@ -2165,6 +2225,7 @@ export const useGameState = create<GameState>()(
         maxCombo: state.maxCombo,
         profiles: state.profiles,
         petStates: state.petStates,
+        pageExplorationStates: state.pageExplorationStates,
         categoryStatsAll: state.categoryStatsAll,
         uiTheme: state.uiTheme,
         uiThemesByUser: state.uiThemesByUser,

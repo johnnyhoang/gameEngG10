@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS ge10_player_profiles (
 -- Pet States Table
 CREATE TABLE IF NOT EXISTS ge10_pet_states (
     user_id VARCHAR(255) PRIMARY KEY REFERENCES ge10_users(id) ON DELETE CASCADE,
-    name VARCHAR(255) DEFAULT 'Rồng Con',
+    name VARCHAR(255) DEFAULT 'Heo Con',
     stage VARCHAR(50) DEFAULT 'egg',
     level INTEGER DEFAULT 1,
     exp INTEGER DEFAULT 0,

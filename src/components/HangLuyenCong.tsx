@@ -21,7 +21,11 @@ import {
    HANG_SOURCES
 } from '../data/hangLuyenCong';
 import { SUBJECTS_CONFIG } from '../types/game';
-import type { SubjectId, Lesson } from '../types/game';
+import type { SubjectId } from '../types/game';
+import type { Lesson } from '../data/lessons';
+import { FogCard } from './FogCard';
+import { Level3Overlay } from './Level3Overlay';
+import { LessonStudyView } from './LessonStudyView';
 
 const getElementalDungeon = (lesson: Lesson): 'fire' | 'ice' | 'stone' => {
   const t = (lesson.topic || '').toLowerCase();
@@ -42,6 +46,7 @@ interface HangLuyenCongProps {
    onOpenMatThatPlane: () => void;
    onOpenMatThatGraph: () => void;
    onOpenProfile?: () => void;
+   onStartLessonPractice?: (lessonId: string) => void;
 }
 
 type HangSubjectId = SubjectId;
@@ -336,18 +341,17 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   onOpenMatThat3D,
   onOpenMatThatPlane,
   onOpenMatThatGraph,
-  onOpenProfile
+  onOpenProfile,
+  onStartLessonPractice
 }) => {
   const currentSubject = useGameState(state => state.currentSubject);
   const questions = useGameState(state => state.questions);
   const lessons = useGameState(state => state.lessons);
   const lessonsProgress = useGameState(state => state.lessonsProgress);
 
-  // Cô lập ngữ cảnh tuyệt đối (CORE_SPECS §1.3): không còn bộ chọn môn riêng ở đây,
-  // Hang Luyện Công luôn bám theo Môn Phái đang hoạt động toàn cục.
-  const selectedSubject: HangSubjectId = currentSubject;
   const [selectedStudyPanel, setSelectedStudyPanel] = useState<StudyPanelId>('drill');
   const [noteText, setNoteText] = useState('');
+  const [overlayLessonId, setOverlayLessonId] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem('gameengg10-hang-notes');
@@ -358,6 +362,8 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
     localStorage.setItem('gameengg10-hang-notes', noteText);
   }, [noteText]);
 
+  const selectedSubject: HangSubjectId = currentSubject;
+
   const subjectQuestions = useMemo(() => {
     return questions.filter(q => (q.subject || 'english') === selectedSubject);
   }, [questions, selectedSubject]);
@@ -365,8 +371,6 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   const subjectLessons = useMemo(() => {
     return lessons.filter(l => l.subject === selectedSubject);
   }, [lessons, selectedSubject]);
-
-
 
   const sampleQuestions = useMemo(() => {
     const allowedCategories: Record<string, string[]> = {
@@ -446,8 +450,6 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
             </div>
           </div>
 
-          {/* Cô lập ngữ cảnh tuyệt đối (CORE_SPECS §1.3): Hang Luyện Công không có bộ chọn môn riêng.
-              Đổi Môn Phái chỉ thực hiện tại Thân Phận (nguồn duy nhất, xem ProfileThemeModal). */}
           <div className={`rounded-2xl border border-white/10 bg-gradient-to-r ${meta.accentSoft} p-4 flex items-center justify-between gap-3 flex-wrap`}>
             <div className="flex items-center gap-3">
               <div className={`w-11 h-11 rounded-xl border border-white/15 bg-black/20 flex items-center justify-center ${meta.accent}`}>
@@ -526,7 +528,6 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
         </div>
       </section>
 
-      {/* Mật thất Biki (CORE_SPECS §2.2): đầy đủ cho Toán, giữ chỗ cho các môn phái khác. */}
       <section className="glass-panel rounded-3xl border border-white/10 p-5 md:p-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between flex-wrap mb-4">
           <div>
@@ -632,9 +633,16 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                       {dungeonLessons.map(lesson => {
                         const isCompleted = lessonsProgress[lesson.id] || false;
                         return (
-                          <div key={lesson.id} className={`rounded-2xl border p-4 flex flex-col justify-between gap-4 transition-all duration-200 ${
-                            isCompleted ? 'border-synth-cyan/20 bg-black/40' : 'border-white/10 bg-black/40'
-                          }`}>
+                          <div key={lesson.id} className="relative h-full w-full">
+                            <FogCard 
+                              pageId={lesson.id} 
+                              requiredCompletions={2} 
+                              decayDays={7}
+                              onOpenLevel3={() => setOverlayLessonId(lesson.id)}
+                            >
+                              <div className={`rounded-2xl border p-4 flex flex-col justify-between gap-4 transition-all duration-200 h-full ${
+                                isCompleted ? 'border-synth-cyan/20 bg-black/40' : 'border-white/10 bg-black/40'
+                              }`}>
                             <div className="space-y-2">
                               <div className="flex items-center justify-between gap-2">
                                 <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-slate-300 uppercase tracking-wider">
@@ -670,6 +678,8 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                               <ArrowRight className="w-4 h-4" />
                             </button>
                           </div>
+                          </FogCard>
+                        </div>
                         );
                       })}
                     </div>
@@ -746,8 +756,6 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-synth-gray/20 p-4 space-y-4">
-
-
               {selectedStudyPanel === 'drill' && (
                 <>
                   <div className="flex items-center gap-2 text-white">
@@ -820,6 +828,26 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
           </div>
         </aside>
       </section>
+
+      {overlayLessonId && (
+        <Level3Overlay
+          isOpen={true}
+          onClose={() => setOverlayLessonId(null)}
+          title="CHI TIẾT CHUYÊN ĐỀ"
+        >
+          <LessonStudyView
+            lessonId={overlayLessonId}
+            onStartPractice={(lId) => {
+              if (onStartLessonPractice) {
+                onStartLessonPractice(lId);
+              } else {
+                onStudyLesson(lId);
+              }
+            }}
+            onBack={() => setOverlayLessonId(null)}
+          />
+        </Level3Overlay>
+      )}
     </div>
   );
 };

@@ -255,6 +255,13 @@ interface PageExplorationState {
 6.  *(Đã xong)* Đặt tên/phân loại chính thức cho Daily Quest Banner + AI Sư Phụ banner.
 7.  *(Đã xong)* Thiết kế bảng dữ liệu cho `MapPage` và `PageExplorationState`.
 
+### 2.8.7 Cơ chế "Sương mù Chiến tranh" (Fog of War) và Người Gác Cổng
+Áp dụng cho toàn bộ các Page Cấp 2 (Mật Thất, Hầm, Khu Vực):
+- **Trạng thái Mờ (Shadowed):** Mặc định, mọi khu vực chưa khám phá đều bị che mờ bởi sương mù.
+- **Trạng thái Tạm thời (Temporary):** Khi bấm vào khu vực mờ sương, một "Người Gác Cổng" sẽ xuất hiện và hỏi một câu kiến thức cốt lõi. Nếu trả lời đúng, sương mù tan tạm thời và con có thể vào học.
+- **Tính toán suy giảm (Decay):** Nếu con không tiếp tục luyện tập hoặc đã lâu không quay lại (quá thời hạn `decayDays`), sương mù sẽ dần bao phủ trở lại.
+- **Trạng thái Vĩnh viễn (Permanent):** Nếu con hoàn thành khu vực đó đủ số lần yêu cầu (`requiredCompletions`), khu vực sẽ sáng lên vĩnh viễn (sương mù vĩnh viễn bị xua tan).
+
 ---
 
 ## 3. Cơ Chế Gamification & Luồng Kinh Tế Trực Quan

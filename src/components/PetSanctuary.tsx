@@ -4,8 +4,7 @@ import { Activity, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 import type { HistoryLog, PetStage } from '../types/game';
 import { PET_STAGE_LABELS } from '../types/game';
 import { toast } from '../utils/toast';
-
-const PET_STAGE_ORDER: PetStage[] = ['egg', 'baby', 'dragon', 'legend'];
+const PET_STAGE_ORDER: PetStage[] = ['egg', 'baby', 'adult', 'legend'];
 
 const STAGE_MEMORIES: Record<PetStage, { story: string; photoConcept: string }> = {
   egg: {
@@ -16,7 +15,7 @@ const STAGE_MEMORIES: Record<PetStage, { story: string; photoConcept: string }> 
     story: "Cây nấm múp míp nứt vỡ ra chú heo hồng hào, nhỏ xíu xiu. Kỷ niệm những miếng bánh khô chia đôi bên bếp lửa học viện, những câu thoại ngây ngô và tiếng cười khúc khích khi được thiếu hiệp thọc lét nhột tai.",
     photoConcept: "Ảnh chụp chung đầu tiên: Thiếu hiệp ôm heo con múp míp ngủ gục bên lò sưởi 🔥"
   },
-  dragon: {
+  adult: {
     story: "Heo con oai phong khoác băng trán đỏ, đeo kiếm gỗ sau lưng bôn tẩu giang hồ cùng thiếu hiệp. Tấm hình chụp chung tại Đấu Trường đầy kiêu hãnh: Heo luôn giương kiếm đỡ bụi cỏ gai, đồng hành qua hàng trăm đề thi thử thách.",
     photoConcept: "Ảnh chụp nơi Đấu Trường: Thiếu hiệp làm bài, Heo giương kiếm gỗ bảo vệ ⚔️"
   },
@@ -171,7 +170,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
 
     const glowClass = stage === 'legend' 
       ? 'shadow-[0_0_30px_#f59e0b]' 
-      : stage === 'dragon' 
+      : stage === 'adult' 
         ? 'shadow-[0_0_20px_#ef4444]' 
         : 'shadow-[0_0_10px_rgba(255,0,127,0.2)]';
 
@@ -283,7 +282,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
       );
     }
 
-    if (stage === 'dragon') {
+    if (stage === 'adult') {
       return (
         <div 
           onClick={onClick}
@@ -477,7 +476,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
         <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-1.5 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
           <Activity className="w-4 h-4" /> {isUnicorn ? 'Linh Thú Các' : 'Sân Nuôi Thú'}
           <button
-            onClick={() => showHelp('dragon')}
+            onClick={() => showHelp('adult')}
             className={`w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center cursor-pointer transition-colors ${
               isUnicorn
                 ? 'bg-fuchsia-200/50 border border-violet-200/60 text-violet-700 hover:bg-fuchsia-200/80'

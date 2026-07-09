@@ -58,8 +58,8 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
       const now = Date.now();
       const idleTime = now - lastActiveTime.current;
       
-      // 5 mins idle = 5 * 60 * 1000 = 300000
-      if (idleTime > 300000) {
+      // 10 mins idle = 10 * 60 * 1000 = 600000
+      if (idleTime > 600000) {
         setTriggerReason('idle');
         setIsOpen(true);
       } else {
@@ -67,7 +67,7 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
         const hour = new Date().getHours();
         if (hour >= 22 || hour < 5) {
           // It's sleep time
-          if (now - lastSleepReminder.current > 300000) { // every 5 mins
+          if (now - lastSleepReminder.current > 600000) { // every 10 mins
             setTriggerReason('sleep');
             setIsOpen(true);
             lastSleepReminder.current = now;

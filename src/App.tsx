@@ -20,6 +20,7 @@ import { RelaxationZone } from './components/RelaxationZone';
 import { Biki3DStudio } from './components/Biki3DStudio';
 import { BikiDoThiHamSo } from './components/BikiDoThiHamSo';
 import { BikiHinhHocPhang } from './components/BikiHinhHocPhang';
+import { GatekeeperModal } from './components/GatekeeperModal';
 import { supabase } from './utils/supabaseClient';
 import type { UserProfile } from './types/game';
 
@@ -318,6 +319,7 @@ function App() {
               onOpenMatThatPlane={() => setScreen('hang-plane')}
               onOpenMatThatGraph={() => setScreen('hang-graph')}
               onOpenProfile={() => setIsProfileOpen(true)}
+              onStartLessonPractice={handleStartLessonPracticeFromMap}
             />
           )}
 
@@ -528,6 +530,8 @@ function App() {
 
       {/* Pet Stable Overlay handling smart reminders and floating button */}
       <PetStableOverlay isDungeonScreen={isDungeonScreen || isHangMatterScreen || screen === 'pet'} />
+
+      <GatekeeperModal />
 
       {/* Footer */}
       <footer className="py-6 border-t border-synth-gray/30 text-center space-y-2">

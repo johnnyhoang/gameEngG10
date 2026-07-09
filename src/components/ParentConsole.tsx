@@ -9,7 +9,6 @@ import { LITERATURE_ANSWER_MODE_LABELS, LITERATURE_EXAM_BLUEPRINT, LITERATURE_TA
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { Lock, Unlock, Check, X, Award, Database, Plus, SlidersHorizontal, Search, Pencil, Trash2, BookOpen } from 'lucide-react';
 import { toast } from '../utils/toast';
-
 const QUESTION_TYPE_LABELS: Record<Question['type'], string> = {
   mcq: 'Trắc nghiệm',
   'short-answer': 'Tự luận ngắn',
@@ -18,7 +17,10 @@ const QUESTION_TYPE_LABELS: Record<Question['type'], string> = {
   wordform: 'Word form',
   rewrite: 'Rewrite',
   cloze: 'Cloze',
-  reading: 'Reading'
+  reading: 'Reading',
+  multiple_choice: 'Trắc nghiệm (mới)',
+  text_input: 'Tự luận (mới)',
+  matching: 'Nối đáp án'
 };
 
 const ENGLISH_PART_LABELS = Object.fromEntries(ENGLISH_EXAM_BLUEPRINT.map(part => [part.part, part.title])) as Record<string, string>;
