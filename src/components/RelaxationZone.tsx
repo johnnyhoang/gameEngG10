@@ -5,7 +5,7 @@ import {
 } from 'lucide-react';
 import { toast } from '../utils/toast';
 import { SUBJECTS_CONFIG } from '../types/game';
-import type { SubjectId, Question } from '../types/game';
+import type { Question } from '../types/game';
 
 interface RelaxationZoneProps {
   onBack: () => void;
@@ -46,30 +46,29 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   const uiTheme = useGameState(state => state.uiTheme);
   const questions = useGameState(state => state.questions);
   const awardCoinsAndXp = useGameState(state => state.awardCoinsAndXp);
-  
+  const currentSubject = useGameState(state => state.currentSubject);
+
   const isUnicorn = uiTheme === 'unicorn-dream';
-  
+
   const [activeTab, setActiveTab] = useState<'flashcards' | 'match' | 'mindmap' | 'story' | 'adventure' | 'stepbuilder' | 'reading' | 'explain' | 'dragdiagram'>('flashcards');
 
   // ----------------------------------------------------
   // Tab 1: Xưởng Thẻ Nhớ (Dynamic SRS Flashcards)
+  // Cô lập ngữ cảnh tuyệt đối (CORE_SPECS §1.3): luôn bám Môn Phái đang hoạt động,
+  // không còn lựa chọn "Tất cả môn" trộn lẫn nội dung nhiều môn phái trên cùng 1 màn.
   // ----------------------------------------------------
-  const [flashcardSubject, setFlashcardSubject] = useState<'all' | SubjectId>('all');
   const [activeFlashcards, setActiveFlashcards] = useState<Question[]>([]);
   const [fcIndex, setFcIndex] = useState(0);
   const [fcFlipped, setFcFlipped] = useState(false);
   const [fcRememberedCount, setFcRememberedCount] = useState(0);
 
   useEffect(() => {
-    let filtered = questions;
-    if (flashcardSubject !== 'all') {
-      filtered = questions.filter(q => q.subject === flashcardSubject);
-    }
+    const filtered = questions.filter(q => (q.subject || 'english') === currentSubject);
     const shuffled = [...filtered].sort(() => 0.5 - Math.random()).slice(0, 15);
     setActiveFlashcards(shuffled);
     setFcIndex(0);
     setFcFlipped(false);
-  }, [flashcardSubject, questions]);
+  }, [currentSubject, questions]);
 
   const handleFcNext = () => {
     setFcFlipped(false);
@@ -773,32 +772,14 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
         {activeTab === 'flashcards' && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2 space-y-6 flex flex-col items-center">
-              {/* Filter controls */}
-              <div className="flex flex-wrap gap-2 w-full max-w-2xl bg-black/20 p-2 rounded-xl border border-white/5 justify-start">
-                <button
-                  onClick={() => setFlashcardSubject('all')}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-bold font-orbitron uppercase cursor-pointer transition-all ${
-                    flashcardSubject === 'all'
-                      ? 'bg-synth-cyan text-black shadow-[0_0_8px_rgba(0,240,255,0.4)]'
-                      : 'text-synth-text-muted hover:text-white'
-                  }`}
-                >
-                  Tất Cả
-                </button>
-                {Object.values(SUBJECTS_CONFIG).map(opt => (
-                  <button
-                    key={opt.id}
-                    onClick={() => setFlashcardSubject(opt.id)}
-                    className={`px-3 py-1.5 rounded-lg text-[10px] font-bold font-orbitron uppercase cursor-pointer transition-all ${
-                      flashcardSubject === opt.id
-                        ? 'text-black shadow-[0_0_8px_rgba(0,240,255,0.4)]'
-                        : 'text-synth-text-muted hover:text-white'
-                    }`}
-                    style={{ backgroundColor: flashcardSubject === opt.id ? opt.color : 'transparent' }}
-                  >
-                    {opt.icon} {opt.name}
-                  </button>
-                ))}
+              {/* Cô lập ngữ cảnh tuyệt đối (CORE_SPECS §1.3): thẻ nhớ luôn bám Môn Phái đang hoạt động,
+                  không còn bộ lọc "Tất Cả" trộn lẫn nhiều môn — đổi môn phái tại Thân Phận. */}
+              <div
+                className="flex items-center gap-2 w-full max-w-2xl px-3 py-2 rounded-xl border border-white/5 bg-black/20 text-[10px] font-bold font-orbitron uppercase"
+                style={{ color: SUBJECTS_CONFIG[currentSubject].color }}
+              >
+                <span>{SUBJECTS_CONFIG[currentSubject].icon}</span>
+                <span>{SUBJECTS_CONFIG[currentSubject].name}</span>
               </div>
 
               {activeFlashcards.length > 0 ? (

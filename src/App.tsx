@@ -3,7 +3,8 @@ import { useGameState } from './hooks/useGameState';
 import { TopHUD } from './components/TopHUD';
 import { PetSanctuary } from './components/PetSanctuary';
 import { ActivityLog } from './components/ActivityLog';
-import { GameMap } from './components/GameMap';
+import { WorldMap } from './components/WorldMap';
+import { Arena } from './components/Arena';
 import { PlayArea } from './components/PlayArea';
 import { ItemShop } from './components/ItemShop';
 import { ParentConsole } from './components/ParentConsole';
@@ -35,7 +36,7 @@ function App() {
   const setUiTheme = useGameState(state => state.setUiTheme);
 
   // Screen routing state
-  const [screen, setScreen] = useState<'map' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang' | 'hang-3d' | 'hang-plane' | 'hang-graph' | 'lesson-study' | 'relax'>('map');
+  const [screen, setScreen] = useState<'map' | 'arena' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang' | 'hang-3d' | 'hang-plane' | 'hang-graph' | 'lesson-study' | 'relax'>('map');
   const [playMode, setPlayMode] = useState<'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'lesson' | 'survival'>('mixed');
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const masterLesson = useGameState(state => state.masterLesson);
@@ -237,8 +238,8 @@ function App() {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:py-8 flex flex-col lg:flex-row gap-6 items-stretch pb-20 lg:pb-8">
         
-        {/* Left Companion Panel (Hidden in play area, hidden on mobile) */}
-        {!isDungeonScreen && !isHangMatterScreen && currentUser?.role !== 'admin' && (
+        {/* Left Companion Panel (Hidden in play area, hidden on mobile, hidden when full Pet module đã mở) */}
+        {!isDungeonScreen && !isHangMatterScreen && screen !== 'pet' && currentUser?.role !== 'admin' && (
           <aside className="hidden lg:block w-72 shrink-0 h-fit lg:sticky lg:top-24">
             <PetSanctuary />
           </aside>
@@ -247,14 +248,25 @@ function App() {
         {/* Dynamic Center Stage */}
         <section className="flex-1 min-w-0">
           {screen === 'map' && (
-            <GameMap 
-              onStartPlay={handleStartPlay}
+            <WorldMap
+              onOpenArena={() => setScreen('arena')}
+              onOpenHang={() => setScreen('hang')}
+              onOpenRelax={() => setScreen('relax')}
+              onOpenShop={() => setScreen('shop')}
+              onOpenPet={() => setScreen('pet')}
               onOpenMysteryBox={triggerMysteryBox}
               onSpinWheel={triggerSpinWheel}
-              onOpenHang={() => setScreen('hang')}
               onStudyLesson={handleStudyLessonFromMap}
               onStartLessonPractice={handleStartLessonPracticeFromMap}
-              onOpenRelax={() => setScreen('relax')}
+            />
+          )}
+
+          {screen === 'arena' && (
+            <Arena
+              onStartPlay={handleStartPlay}
+              onBack={() => setScreen('map')}
+              onStudyLesson={handleStudyLessonFromMap}
+              onStartLessonPractice={handleStartLessonPracticeFromMap}
             />
           )}
 
@@ -304,6 +316,7 @@ function App() {
               onOpenMatThat3D={() => setScreen('hang-3d')}
               onOpenMatThatPlane={() => setScreen('hang-plane')}
               onOpenMatThatGraph={() => setScreen('hang-graph')}
+              onOpenProfile={() => setIsProfileOpen(true)}
             />
           )}
 
@@ -362,9 +375,7 @@ function App() {
           )}
 
           {screen === 'pet' && (
-            <div className="lg:hidden">
-              <PetSanctuary />
-            </div>
+            <PetSanctuary variant="full" onBack={() => setScreen('map')} />
           )}
 
           {screen === 'logs' && (
@@ -473,23 +484,13 @@ function App() {
           </button>
 
           <button
-            onClick={() => setScreen('pet')}
+            onClick={() => setScreen('arena')}
             className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
-              screen === 'pet' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
+              screen === 'arena' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
             }`}
           >
-            <span className="text-lg">🐷</span>
-            <span>Pet</span>
-          </button>
-
-          <button
-            onClick={() => setScreen('shop')}
-            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
-              screen === 'shop' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
-            }`}
-          >
-            <span className="text-lg">🏮</span>
-            <span>Bách Hóa</span>
+            <span className="text-lg">⚔️</span>
+            <span>Đấu Trường</span>
           </button>
 
           <button
@@ -503,13 +504,23 @@ function App() {
           </button>
 
           <button
-            onClick={() => setScreen('logs')}
+            onClick={() => setScreen('shop')}
             className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
-              screen === 'logs' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
+              screen === 'shop' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
             }`}
           >
-            <span className="text-lg">📊</span>
-            <span>Nhật ký</span>
+            <span className="text-lg">🏮</span>
+            <span>Bách Hóa</span>
+          </button>
+
+          <button
+            onClick={() => setScreen('pet')}
+            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
+              screen === 'pet' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
+            }`}
+          >
+            <span className="text-lg">🐷</span>
+            <span>Pet</span>
           </button>
         </nav>
       )}

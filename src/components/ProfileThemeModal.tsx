@@ -14,7 +14,7 @@ interface ProfileThemeModalProps {
   currentTheme: UiThemeId;
   onClose: () => void;
   onSelectTheme: (themeId: UiThemeId) => void;
-  onGoToScreen?: (screenName: 'map' | 'hang') => void;
+  onGoToScreen?: (screenName: 'map' | 'hang' | 'logs') => void;
 }
 
 const getThemeCardClass = (themeId: UiThemeId, isActive: boolean) => {
@@ -297,6 +297,26 @@ export const ProfileThemeModal: React.FC<ProfileThemeModalProps> = ({
                   isOpen={isCamNangOpen}
                   onClose={() => setIsCamNangOpen(false)}
                 />
+              )}
+
+              {/* Nhật Ký Truyền Công — không phải 1 trong 5 module chính (CORE_SPECS §2.1),
+                  gói gọn lối vào tại đây thay vì chiếm 1 slot bottom-nav mobile. */}
+              {onGoToScreen && (
+                <div className="flex flex-col sm:flex-row justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/10 gap-4">
+                  <div className="flex items-center gap-3">
+                    <span className="text-3xl">📊</span>
+                    <div>
+                      <h4 className="text-sm font-bold text-white">Nhật Ký Truyền Công</h4>
+                      <p className="text-xs text-slate-400">Xem lại lịch sử hoạt động và tu luyện của môn phái đang mở.</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => onGoToScreen('logs')}
+                    className="w-full sm:w-auto px-5 py-2.5 bg-white/10 hover:bg-white/15 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer border border-white/10 hover:scale-[1.02]"
+                  >
+                    Xem Nhật Ký 📊
+                  </button>
+                </div>
               )}
 
               {/* Subject Sects Grid */}

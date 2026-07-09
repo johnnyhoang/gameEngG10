@@ -1,29 +1,28 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { INITIAL_LESSONS } from '../data/lessons';
 import { HANG_TRACKS } from '../data/hangLuyenCong';
+import { SUBJECTS_CONFIG } from '../types/game';
 import {
   Compass, Sword, ShieldAlert, Star, Zap, BookOpen,
-  ChevronDown, ChevronUp, Skull, Swords, BookMarked, BrainCircuit, Heart, Volume2
+  ChevronDown, ChevronUp, ChevronLeft, Skull, Swords, BookMarked, Heart, Volume2
 } from 'lucide-react';
 import { toast } from '../utils/toast';
 
-interface GameMapProps {
+interface ArenaProps {
   onStartPlay: (
     mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'survival',
     bossId?: string
   ) => void;
-  onOpenMysteryBox: () => void;
-  onSpinWheel: () => void;
-  onOpenHang: () => void;
+  onBack: () => void;
   onStudyLesson?: (lessonId: string) => void;
   onStartLessonPractice?: (lessonId: string) => void;
-  onOpenRelax?: () => void;
 }
 
-export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang, onStudyLesson, onStartLessonPractice, onOpenRelax }: GameMapProps) {
+// Đấu Trường (CORE_SPECS §2.1.A.1): rèn phản xạ thi cử theo Môn Phái đang hoạt động.
+// Nhóm Chuyên Sâu (Toán/Văn/Anh) có Sinh Tồn + Boss theo năm; Nhóm Cơ Bản có Boss theo Học Kỳ, không Sinh Tồn.
+export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractice }: ArenaProps) {
   const player = useGameState(state => state.player);
-  const dailyMission = useGameState(state => state.dailyMission);
   const consumeEnergy = useGameState(state => state.useEnergy);
   const currentSubject = useGameState(state => state.currentSubject);
   const bossBountiesVnd = useGameState(state => state.gameSettings.bossBountiesVnd);
@@ -31,21 +30,28 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
   const uiTheme = useGameState(state => state.uiTheme);
   const categoryStats = useGameState(state => state.categoryStats);
   const lessonsProgress = useGameState(state => state.lessonsProgress);
+  const questions = useGameState(state => state.questions);
   const isUnicorn = uiTheme === 'unicorn-dream';
 
   const [topicOpen, setTopicOpen] = useState(false);
 
-  // Check if weekend for Lucky Wheel
-  const isWeekend = () => {
-    const day = new Date().getDay();
-    return day === 0 || day === 6;
-  };
+  const subjectMeta = SUBJECTS_CONFIG[currentSubject];
+  const isChuyenSau = subjectMeta.group === 'chuyen_sau';
+
+  const subjectQuestionCount = useMemo(
+    () => questions.filter(q => (q.subject || 'english') === currentSubject).length,
+    [questions, currentSubject]
+  );
 
   const handleLaunchZone = (
     mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'survival',
     energyCost: number,
     bossId?: string
   ) => {
+    if (subjectQuestionCount === 0) {
+      toast.error(`Viện Chủ chưa nạp đề cho môn ${subjectMeta.name}, thử chọn môn khác hoặc quay lại sau.`);
+      return;
+    }
     if (player.energy < energyCost) {
       toast.error('Hết năng lượng rồi. Nghỉ một nhịp hoặc đánh tiếp ải khác.');
       return;
@@ -54,37 +60,23 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
     onStartPlay(mode, bossId);
   };
 
-  // Get lessons for current subject
   const subjectLessons = INITIAL_LESSONS.filter(l => l.subject === currentSubject);
 
-  // Find weakest categories (accuracy < 50%) for AI hint
-  const weakCategories = Object.entries(categoryStats)
-    .map(([cat, stat]) => ({
-      cat,
-      accuracy: stat.totalAnswered > 0 ? stat.totalCorrect / stat.totalAnswered : 1
-    }))
-    .filter(x => x.accuracy < 0.5 && categoryStats[x.cat].totalAnswered >= 2)
-    .sort((a, b) => a.accuracy - b.accuracy)
-    .slice(0, 2);
-
-  // Find matching lesson for weak category
-  const weakLesson = weakCategories.length > 0
-    ? subjectLessons.find(l => l.category === weakCategories[0].cat)
-    : null;
-
-  // Hao tổn Chân khí (CORE_SPECS §3.A): Quyết đấu Boss tiêu 100 Chân khí mỗi lượt vào trận.
   const bosses = currentSubject === 'math' ? [
-    { id: 'b-2024', name: 'Đại Ca Toán HCMC 2024', year: '2024', energy: 100 },
-    { id: 'b-2025', name: 'Cự Long Toán HCMC 2025', year: '2025', energy: 100 },
-    { id: 'b-2026', name: 'Cổ Long Toán HCMC 2026 (Mock)', year: '2026', energy: 100 }
+    { id: 'b-2024', name: 'Đại Ca Toán HCMC 2024', tag: '2024', energy: 100 },
+    { id: 'b-2025', name: 'Cự Long Toán HCMC 2025', tag: '2025', energy: 100 },
+    { id: 'b-2026', name: 'Cổ Long Toán HCMC 2026 (Mock)', tag: '2026', energy: 100 }
   ] : currentSubject === 'literature' ? [
-    { id: 'b-2024', name: 'Đại Ca Văn HCMC 2024', year: '2024', energy: 100 },
-    { id: 'b-2025', name: 'Cự Long Văn HCMC 2025', year: '2025', energy: 100 },
-    { id: 'b-2026', name: 'Cổ Long Văn HCMC 2026 (Mock)', year: '2026', energy: 100 }
+    { id: 'b-2024', name: 'Đại Ca Văn HCMC 2024', tag: '2024', energy: 100 },
+    { id: 'b-2025', name: 'Cự Long Văn HCMC 2025', tag: '2025', energy: 100 },
+    { id: 'b-2026', name: 'Cổ Long Văn HCMC 2026 (Mock)', tag: '2026', energy: 100 }
+  ] : currentSubject === 'english' ? [
+    { id: 'b-2024', name: 'Đại Ca HCMC 2024', tag: '2024', energy: 100 },
+    { id: 'b-2025', name: 'Cự Long HCMC 2025', tag: '2025', energy: 100 },
+    { id: 'b-2026', name: 'Cổ Long HCMC 2026 (Mock)', tag: '2026', energy: 100 }
   ] : [
-    { id: 'b-2024', name: 'Đại Ca HCMC 2024', year: '2024', energy: 100 },
-    { id: 'b-2025', name: 'Cự Long HCMC 2025', year: '2025', energy: 100 },
-    { id: 'b-2026', name: 'Cổ Long HCMC 2026 (Mock)', year: '2026', energy: 100 }
+    { id: 'b-hk1', name: `Khảo Hạch ${subjectMeta.name} - Học Kỳ 1`, tag: 'HK1', energy: 100 },
+    { id: 'b-hk2', name: `Khảo Hạch ${subjectMeta.name} - Học Kỳ 2`, tag: 'HK2', energy: 100 }
   ];
 
   const completedLessons = subjectLessons.filter(l => lessonsProgress[l.id]).length;
@@ -92,157 +84,27 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
     ? Math.round((completedLessons / subjectLessons.length) * 100)
     : 0;
 
-  const questBannerClass = isUnicorn
-    ? 'glass-panel rounded-2xl border border-violet-200/35 bg-gradient-to-r from-fuchsia-50/90 via-white/90 to-cyan-50/90 p-5 flex flex-col md:flex-row justify-between items-center gap-4 shadow-[0_10px_28px_rgba(192,132,252,0.12)]'
-    : 'glass-panel rounded-2xl border border-synth-magenta/30 bg-gradient-to-r from-synth-magenta/10 via-synth-purple/10 to-transparent p-5 flex flex-col md:flex-row justify-between items-center gap-4';
-
   return (
     <div className="space-y-6">
 
-      {/* Daily Quest Banner */}
-      <div className={questBannerClass}>
-        <div className="space-y-1 text-center md:text-left">
-          <div className="flex items-center gap-2 justify-center md:justify-start">
-            <span className={`w-2.5 h-2.5 rounded-full animate-ping ${isUnicorn ? 'bg-fuchsia-400' : 'bg-synth-magenta'}`} />
-            <h2 className={`font-orbitron text-lg font-black uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-              Nhiệm Vụ Chiến Dịch Ngày
-            </h2>
-          </div>
-          <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
-            {dailyMission?.completed
-              ? 'Khá đấy. Hôm nay đã dọn sạch nhiệm vụ. Mở Hòm Bí Mật đi.'
-              : 'Dọn xong chỉ tiêu hôm nay thì Hòm Bí Mật và Ví Thưởng sẽ mở.'}
-          </p>
-        </div>
-
-        <div className="flex gap-4 items-center">
-          {dailyMission?.completed ? (
-            <button
-              onClick={onOpenMysteryBox}
-              className={`px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 animate-bounce ${
-                isUnicorn
-                  ? 'bg-gradient-to-r from-fuchsia-400 via-violet-400 to-cyan-300 text-violet-900 shadow-[0_0_15px_rgba(192,132,252,0.35)]'
-                  : 'bg-synth-magenta text-black hover:synth-glow-magenta shadow-[0_0_15px_#ff007f]'
-              }`}
-            >
-              Mở Hòm Bí Mật 🎁
-            </button>
-          ) : (
-            <button
-              onClick={() => handleLaunchZone('mixed', challengeEnergyCosts[1] ?? 30)}
-              className={`px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 ${
-                isUnicorn
-                  ? 'bg-gradient-to-r from-cyan-200 via-white to-fuchsia-200 text-violet-900 shadow-[0_0_15px_rgba(125,211,252,0.28)]'
-                  : 'bg-synth-cyan text-black hover:synth-glow-cyan shadow-[0_0_15px_#00f0ff]'
-              }`}
-            >
-              Vào ải ngẫu nhiên ⚡
-            </button>
-          )}
-
-          {isWeekend() && (
-            <button
-              onClick={onSpinWheel}
-              className={`px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 ${
-                isUnicorn
-                  ? 'bg-gradient-to-r from-fuchsia-200 via-amber-100 to-cyan-200 text-violet-900 shadow-[0_0_15px_rgba(249,168,212,0.25)]'
-                  : 'bg-synth-orange text-black hover:synth-glow-orange shadow-[0_0_15px_#ff9f1c]'
-              }`}
-            >
-              Vòng Quay Cuối Tuần 🎡
-            </button>
-          )}
-        </div>
+      <div className="flex items-center justify-between gap-3">
+        <h2 className={`font-orbitron text-lg font-black uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
+          <Sword className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-magenta'}`} />
+          🏛️ Đấu Trường - {subjectMeta.name}
+        </h2>
+        <button
+          onClick={onBack}
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-white font-orbitron font-bold text-[10px] uppercase tracking-wider hover:bg-white/10 transition-colors cursor-pointer"
+        >
+          <ChevronLeft className="w-4 h-4" /> Trở lại bản đồ
+        </button>
       </div>
 
-      {/* AI Sư Phụ suggestion banner */}
-      {weakLesson && (
-        <div className="glass-panel rounded-2xl border border-amber-400/30 bg-gradient-to-r from-amber-400/10 via-orange-400/5 to-transparent p-4 flex flex-col md:flex-row items-start md:items-center gap-4">
-          <div className="flex items-center gap-3 shrink-0">
-            <div className="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/25 flex items-center justify-center">
-              <BrainCircuit className="w-5 h-5 text-amber-400" />
-            </div>
-            <span className="font-orbitron font-bold text-xs uppercase text-amber-300 tracking-wider">Chỉ ải AI</span>
-          </div>
-          <p className="text-xs text-slate-300 flex-1 leading-relaxed">
-            Con đang yếu ở chuyên đề <span className="text-amber-300 font-bold">{weakLesson.title}</span> (chỉ{' '}
-            {Math.round((weakCategories[0].accuracy) * 100)}% chính xác). Ôn lại ngay, đừng để lỗ hổng phình ra.
-          </p>
-          <div className="flex gap-2 shrink-0">
-            {onStudyLesson && (
-              <button
-                onClick={() => onStudyLesson(weakLesson.id)}
-                className="px-3 py-2 rounded-lg border border-amber-400/30 bg-amber-400/10 text-amber-300 text-[10px] font-bold uppercase tracking-wider hover:bg-amber-400/20 transition-colors cursor-pointer"
-              >
-                Xem bí kíp 📖
-              </button>
-            )}
-            {onStartLessonPractice && (
-              <button
-                onClick={() => onStartLessonPractice(weakLesson.id)}
-                className="px-3 py-2 rounded-lg bg-amber-400 text-black text-[10px] font-bold uppercase tracking-wider hover:bg-amber-300 transition-colors cursor-pointer"
-              >
-                Vào ải ⚔️
-              </button>
-            )}
-          </div>
+      {subjectQuestionCount === 0 && (
+        <div className="glass-panel rounded-2xl border border-dashed border-white/15 bg-white/5 p-4 text-xs text-slate-300">
+          Viện Chủ chưa nạp đề cho môn {subjectMeta.name}. Các ải bên dưới sẽ tạm chưa mở được — thử đổi môn phái ở Thân Phận hoặc quay lại sau.
         </div>
       )}
-
-      {/* Shortcut Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Hang Luyen Cong shortcut */}
-        <div className="glass-panel rounded-2xl border border-synth-cyan/30 bg-gradient-to-r from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex flex-col justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-synth-cyan animate-ping" />
-              <h2 className="font-orbitron text-lg font-black text-white uppercase tracking-wider">
-                Hang Luyện Công
-              </h2>
-            </div>
-            <p className="text-xs text-synth-text-muted">
-              Tổng ôn Toán, Văn, Anh bằng bản đồ kiến thức, thẻ nhớ, sổ tay lỗi sai và đường vào phòng luyện nhanh.
-            </p>
-          </div>
-
-          <button
-            onClick={onOpenHang}
-            className="w-full py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 shadow-[0_0_15px_#00f0ff]"
-          >
-            Vào Hang Luyện Công
-          </button>
-        </div>
-
-        {/* Son Trang Thu Gian shortcut */}
-        <div className={`glass-panel rounded-2xl p-5 flex flex-col justify-between gap-4 border ${
-          isUnicorn 
-            ? 'border-violet-200/35 bg-gradient-to-r from-fuchsia-50/20 via-white/10 to-cyan-50/20 shadow-[0_10px_28px_rgba(192,132,252,0.06)]' 
-            : 'border-synth-magenta/30 bg-gradient-to-r from-synth-magenta/10 via-synth-purple/10 to-transparent'
-        }`}>
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-synth-magenta animate-ping" />
-              <h2 className="font-orbitron text-lg font-black text-white uppercase tracking-wider">
-                Sơn Trang Thư Giãn
-              </h2>
-            </div>
-            <p className="text-xs text-synth-text-muted">
-              Khu vui chơi giải trí nhẹ nhàng, tích hợp flashcards, ghép cặp bài trùng, sơ đồ tư duy sáng tạo và học qua cốt truyện hấp dẫn.
-            </p>
-          </div>
-
-          <button
-            onClick={onOpenRelax}
-            className={`w-full py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 ${
-              isUnicorn
-                ? 'bg-gradient-to-r from-fuchsia-400 via-violet-400 to-cyan-300 text-violet-900 shadow-[0_0_15px_rgba(192,132,252,0.35)]'
-                : 'bg-synth-magenta text-black hover:synth-glow-magenta shadow-[0_0_15px_#ff007f]'
-            }`}
-          >
-            Ghé Sơn Trang Thư Giãn 🏝️
-          </button>
-        </div>
-      </div>
 
       {/* ─── ARENA MODES ─── */}
       <div>
@@ -442,34 +304,63 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-          {/* Survival Mode – prominent */}
-          <div
-            onClick={() => handleLaunchZone('survival', challengeEnergyCosts[0] ?? 30)}
-            className="glass-panel glass-panel-hover rounded-2xl border border-red-500/40 hover:border-red-400 bg-gradient-to-br from-red-500/10 via-orange-500/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 md:col-span-2"
-          >
-            {/* glow backdrop */}
-            <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(239,68,68,0.07),transparent_60%)]" />
-            <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-red-500/20 border border-red-500/40 text-red-400">
-              <Zap className="w-3 h-3 text-red-400 fill-red-400" /> {challengeEnergyCosts[0] ?? 30}
-            </div>
-            <div className="w-14 h-14 rounded-xl border border-red-500/30 bg-red-500/10 flex items-center justify-center shrink-0">
-              <Skull className="w-8 h-8 text-red-400" />
-            </div>
-            <div className="space-y-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h4 className="font-orbitron font-black text-base text-red-400">⚔️ Đấu Trường Sinh Tồn</h4>
-                <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-red-500/20 border border-red-500/30 text-red-300">Survival</span>
+        {!isChuyenSau && (
+          <div className="grid grid-cols-1 mb-4">
+            <div
+              onClick={() => handleLaunchZone('mixed', challengeEnergyCosts[1] ?? 30)}
+              className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
+            >
+              <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(0,240,255,0.08),transparent_60%)]" />
+              <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white">
+                <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed">
-                15 câu hỏi hỗn hợp liên tục – trả lời sai mất 1 mạng <Heart className="inline w-3 h-3 text-red-400 fill-red-400" />. Chỉ có 3 mạng, trả lời đúng liên tiếp nhận thưởng XP và NP tăng theo cấp số nhân!
-              </p>
-              <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
-                Phần thưởng: <span className="text-red-300">+1.5× XP & NP mỗi câu đúng / Combo multiplier</span>
+              <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
+                <BookOpen className="w-8 h-8 text-synth-cyan" />
+              </div>
+              <div className="space-y-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="font-orbitron font-black text-base text-synth-cyan">🏰 Mixed/Skill Practicing - {subjectMeta.name}</h4>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Luyện ngẫu nhiên toàn bộ trọng tâm môn {subjectMeta.name}.
+                </p>
+                <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
+                  Trọng tâm: <span className="text-white">{(HANG_TRACKS[currentSubject]?.[0]?.focus ?? []).join(' · ') || 'Đang cập nhật'}</span>
+                </div>
               </div>
             </div>
           </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          {/* Survival Mode – chỉ Nhóm Chuyên Sâu có Sinh Tồn (CORE_SPECS §1.3) */}
+          {isChuyenSau && (
+            <div
+              onClick={() => handleLaunchZone('survival', challengeEnergyCosts[0] ?? 30)}
+              className="glass-panel glass-panel-hover rounded-2xl border border-red-500/40 hover:border-red-400 bg-gradient-to-br from-red-500/10 via-orange-500/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 md:col-span-2"
+            >
+              <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(239,68,68,0.07),transparent_60%)]" />
+              <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-red-500/20 border border-red-500/40 text-red-400">
+                <Zap className="w-3 h-3 text-red-400 fill-red-400" /> {challengeEnergyCosts[0] ?? 30}
+              </div>
+              <div className="w-14 h-14 rounded-xl border border-red-500/30 bg-red-500/10 flex items-center justify-center shrink-0">
+                <Skull className="w-8 h-8 text-red-400" />
+              </div>
+              <div className="space-y-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="font-orbitron font-black text-base text-red-400">⚔️ Đấu Trường Sinh Tồn</h4>
+                  <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-red-500/20 border border-red-500/30 text-red-300">Survival</span>
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  15 câu hỏi hỗn hợp liên tục – trả lời sai mất 1 mạng <Heart className="inline w-3 h-3 text-red-400 fill-red-400" />. Chỉ có 3 mạng, trả lời đúng liên tiếp nhận thưởng XP và NP tăng theo cấp số nhân!
+                </p>
+                <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
+                  Phần thưởng: <span className="text-red-300">+1.5× XP & NP mỗi câu đúng / Combo multiplier</span>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Mixed random */}
           <div
@@ -527,7 +418,6 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {/* Progress bar */}
             <div className="hidden md:flex items-center gap-2">
               <div className="w-24 h-1.5 rounded-full bg-white/10 overflow-hidden">
                 <div
@@ -622,7 +512,7 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
       {/* ─── BOSS ARENA ─── */}
       <div>
         <h3 className={`font-orbitron font-bold text-base uppercase tracking-wider mb-4 flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-magenta'}`}>
-          <Sword className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : ''}`} /> Boss Arena (Đề thi thử lớp 10 HCMC)
+          <Sword className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : ''}`} /> Boss Arena {isChuyenSau ? '(Đề thi tuyển sinh lớp 10 HCMC)' : '(Đề thi Học Kỳ)'}
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -652,7 +542,9 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
                   {boss.name}
                 </h4>
                 <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
-                  Đề thi chuẩn cấu trúc sở GD HCMC năm {boss.year}. Chỉ 1 mạng duy nhất!
+                  {isChuyenSau
+                    ? `Đề thi chuẩn cấu trúc sở GD HCMC năm ${boss.tag}. Chỉ 1 mạng duy nhất!`
+                    : `Đề thi ${boss.tag === 'HK1' ? 'Học Kỳ 1' : 'Học Kỳ 2'} bám sát chương trình lớp 9. Chỉ 1 mạng duy nhất!`}
                 </p>
               </div>
 
@@ -669,4 +561,3 @@ export function GameMap({ onStartPlay, onOpenMysteryBox, onSpinWheel, onOpenHang
     </div>
   );
 }
-

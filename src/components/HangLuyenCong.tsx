@@ -7,17 +7,20 @@ import {
    Languages,
    Layers3,
    LineChart,
+   Lock,
    Move3D,
    Target,
    NotebookTabs,
    Sparkles,
    ArrowRight,
    CheckCircle2,
-   ChevronLeft
+   ChevronLeft,
+   UserCircle2
 } from 'lucide-react';
 import {
    HANG_SOURCES
 } from '../data/hangLuyenCong';
+import { SUBJECTS_CONFIG } from '../types/game';
 import type { SubjectId } from '../types/game';
 
 interface HangLuyenCongProps {
@@ -27,6 +30,7 @@ interface HangLuyenCongProps {
    onOpenMatThat3D: () => void;
    onOpenMatThatPlane: () => void;
    onOpenMatThatGraph: () => void;
+   onOpenProfile?: () => void;
 }
 
 type HangSubjectId = SubjectId;
@@ -320,21 +324,19 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   onBackToMap,
   onOpenMatThat3D,
   onOpenMatThatPlane,
-  onOpenMatThatGraph
+  onOpenMatThatGraph,
+  onOpenProfile
 }) => {
   const currentSubject = useGameState(state => state.currentSubject);
-  const setSubject = useGameState(state => state.setSubject);
   const questions = useGameState(state => state.questions);
   const lessons = useGameState(state => state.lessons);
   const lessonsProgress = useGameState(state => state.lessonsProgress);
 
-  const [selectedSubject, setSelectedSubject] = useState<HangSubjectId>(currentSubject);
+  // Cô lập ngữ cảnh tuyệt đối (CORE_SPECS §1.3): không còn bộ chọn môn riêng ở đây,
+  // Hang Luyện Công luôn bám theo Môn Phái đang hoạt động toàn cục.
+  const selectedSubject: HangSubjectId = currentSubject;
   const [selectedStudyPanel, setSelectedStudyPanel] = useState<StudyPanelId>('drill');
   const [noteText, setNoteText] = useState('');
-
-  useEffect(() => {
-    setSelectedSubject(currentSubject);
-  }, [currentSubject]);
 
   useEffect(() => {
     const saved = localStorage.getItem('gameengg10-hang-notes');
@@ -372,35 +374,20 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   const meta = SUBJECT_META[selectedSubject];
   const track = SUBJECT_TRACKS[selectedSubject];
 
-  const handleSelectSubject = (subject: HangSubjectId) => {
-    setSelectedSubject(subject);
-    setSubject(subject);
-  };
-
   const handleStart = () => {
-    setSubject(selectedSubject);
     onStartPractice();
   };
 
-  const subjectTotals: Record<SubjectId, number> = {
-    english: questions.filter(q => (q.subject || 'english') === 'english').length,
-    math: questions.filter(q => q.subject === 'math').length,
-    literature: questions.filter(q => q.subject === 'literature').length,
-    science: questions.filter(q => q.subject === 'science').length,
-    history_geography: 0,
-    civics: 0,
-    technology: 0,
-    informatics: 0,
-    arts: 0
-  };
-
-  const subjectTabOrder: HangSubjectId[] = ['math', 'literature', 'english'];
+  const subjectTotals: Record<SubjectId, number> = Object.keys(SUBJECTS_CONFIG).reduce((acc, id) => {
+    acc[id as SubjectId] = questions.filter(q => (q.subject || 'english') === id).length;
+    return acc;
+  }, {} as Record<SubjectId, number>);
 
   const wizardSteps = [
     {
       step: '01',
-      title: 'Chọn môn',
-      body: `Hiện đang mở track ${meta.label}: ${track.tag}.`
+      title: 'Môn phái đang tu luyện',
+      body: `Đang mở track ${meta.label}: ${track.tag}. Đổi môn phái tại Thân Phận.`
     },
     {
       step: '02',
@@ -428,7 +415,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                 Ôn toàn bộ kiến thức vào lớp 10
               </h1>
               <p className="text-sm md:text-base text-slate-200 leading-relaxed max-w-3xl">
-                Một phòng luyện hợp nhất cho Toán, Văn, Anh. Mỗi môn có bản đồ kiến thức, thẻ nhớ, bài luyện nhanh và sổ tay lỗi sai để con ôn tập theo cách phù hợp nhất.
+                Phòng luyện riêng cho môn phái {meta.label} đang tu luyện: bản đồ kiến thức, thẻ nhớ, bài luyện nhanh và sổ tay lỗi sai để con ôn tập theo đúng dạng đề.
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
@@ -448,47 +435,29 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
             </div>
           </div>
 
-          <div className="rounded-2xl border border-white/10 bg-white/5 p-3 md:p-4 space-y-4">
-            <div className="flex items-center justify-between gap-3 flex-wrap">
+          {/* Cô lập ngữ cảnh tuyệt đối (CORE_SPECS §1.3): Hang Luyện Công không có bộ chọn môn riêng.
+              Đổi Môn Phái chỉ thực hiện tại Thân Phận (nguồn duy nhất, xem ProfileThemeModal). */}
+          <div className={`rounded-2xl border border-white/10 bg-gradient-to-r ${meta.accentSoft} p-4 flex items-center justify-between gap-3 flex-wrap`}>
+            <div className="flex items-center gap-3">
+              <div className={`w-11 h-11 rounded-xl border border-white/15 bg-black/20 flex items-center justify-center ${meta.accent}`}>
+                {meta.icon}
+              </div>
               <div>
-                <div className="text-[10px] uppercase tracking-[0.26em] text-synth-cyan font-bold">Tab môn</div>
-                <h2 className="font-orbitron font-black text-sm uppercase tracking-wider text-white mt-1">
-                  Chọn Toán, Văn hoặc Anh
+                <div className="text-[10px] uppercase tracking-[0.26em] text-white/70 font-bold">Đang tu luyện môn phái</div>
+                <h2 className={`font-orbitron font-black text-sm uppercase tracking-wider mt-0.5 ${meta.accent}`}>
+                  {meta.label} · {subjectTotals[selectedSubject]} câu trong kho
                 </h2>
               </div>
-              <span className="text-[10px] uppercase tracking-[0.22em] text-slate-400 font-bold">
-                Đang chọn: {meta.label}
-              </span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {subjectTabOrder.map(subject => {
-                const item = SUBJECT_META[subject];
-                const total = subjectTotals[subject];
-                const active = selectedSubject === subject;
-                return (
-                  <button
-                    key={subject}
-                    type="button"
-                    role="tab"
-                    aria-selected={active}
-                    onClick={() => handleSelectSubject(subject)}
-                    className={`rounded-2xl border p-4 text-left bg-gradient-to-br ${item.accentSoft} transition-all duration-200 cursor-pointer ${
-                      active ? 'border-white/30 shadow-[0_0_18px_rgba(255,255,255,0.08)] scale-[1.01]' : 'border-white/10 hover:border-white/20'
-                    }`}
-                  >
-                    <div className={`flex items-center gap-2 font-orbitron font-black uppercase ${item.accent}`}>
-                      {item.icon}
-                      <span className="text-[11px]">{item.label}</span>
-                    </div>
-                    <div className="mt-3 text-2xl font-black text-white">{total}</div>
-                    <div className="text-[10px] uppercase tracking-wider text-slate-300">câu hiện có</div>
-                    <div className="mt-3 text-[10px] text-slate-200/80 leading-relaxed">
-                      {active ? 'Đang mở tab này' : 'Bấm để chuyển sang tab này'}
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+            {onOpenProfile && (
+              <button
+                onClick={onOpenProfile}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/15 bg-black/20 text-white text-[10px] font-orbitron font-bold uppercase tracking-wider hover:bg-black/30 transition-colors cursor-pointer"
+              >
+                <UserCircle2 className="w-4 h-4" />
+                Đổi môn phái tại Thân Phận
+              </button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-3">
@@ -546,27 +515,27 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
         </div>
       </section>
 
-      {/* Mật thất Biki (CORE_SPECS §2.2): chỉ áp dụng đối với Môn phái Toán. */}
-      {selectedSubject === 'math' && (
-        <section className="glass-panel rounded-3xl border border-white/10 p-5 md:p-6">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between flex-wrap mb-4">
-            <div>
-              <h2 className="font-orbitron font-black text-lg md:text-xl text-white uppercase tracking-wider">
-                Mật thất nhanh - {meta.shortLabel}
-              </h2>
-              <p className="text-xs text-slate-300 mt-1">
-                {track.sampleDescription}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="rounded-full border border-synth-cyan/30 bg-synth-cyan/10 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-synth-cyan font-bold">
-                Đang xem: {meta.label}
-              </span>
-              <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-slate-300 font-bold">
-                {track.focusLabel}
-              </span>
-            </div>
+      {/* Mật thất Biki (CORE_SPECS §2.2): đầy đủ cho Toán, giữ chỗ cho các môn phái khác. */}
+      <section className="glass-panel rounded-3xl border border-white/10 p-5 md:p-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between flex-wrap mb-4">
+          <div>
+            <h2 className="font-orbitron font-black text-lg md:text-xl text-white uppercase tracking-wider">
+              Mật thất nhanh - {meta.shortLabel}
+            </h2>
+            <p className="text-xs text-slate-300 mt-1">
+              {track.sampleDescription}
+            </p>
           </div>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="rounded-full border border-synth-cyan/30 bg-synth-cyan/10 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-synth-cyan font-bold">
+              Đang xem: {meta.label}
+            </span>
+            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-slate-300 font-bold">
+              {track.focusLabel}
+            </span>
+          </div>
+        </div>
+        {selectedSubject === 'math' ? (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
             {MAT_THAT_CARDS.map(card => {
               const onOpen = card.id === 'biki3d'
@@ -598,8 +567,22 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
               );
             })}
           </div>
-        </section>
-      )}
+        ) : (
+          <div className="rounded-2xl border border-dashed border-white/15 bg-white/5 p-6 flex items-center gap-4">
+            <div className="w-11 h-11 rounded-xl border border-white/15 bg-black/20 flex items-center justify-center text-slate-400 shrink-0">
+              <Lock className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="font-orbitron font-black uppercase tracking-wider text-sm text-slate-300">
+                Mật thất tương tác - sắp khai mở cho {meta.label}
+              </div>
+              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                Hiện Mật Thất Biki chỉ dựng đủ 3 phòng cho môn Toán (3D, Hình học phẳng, Đồ thị hàm số). Các mô-đun tương tác trực quan riêng cho {meta.label} đang được phát triển.
+              </p>
+            </div>
+          </div>
+        )}
+      </section>
 
       <section className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-5 md:gap-6 items-start">
         <div className="xl:col-span-2 space-y-6">

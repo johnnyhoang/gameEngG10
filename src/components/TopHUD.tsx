@@ -5,7 +5,7 @@ import { SUBJECTS_CONFIG, getStudentRankForLevel } from '../types/game';
 import type { SubjectId } from '../types/game';
 
 interface TopHUDProps {
-  currentScreen: 'map' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang';
+  currentScreen: 'map' | 'arena' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang';
   onOpenShop: () => void;
   onOpenParent: () => void;
   onOpenHang: () => void;

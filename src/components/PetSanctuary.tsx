@@ -1,11 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
-import { Activity } from 'lucide-react';
+import { Activity, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 import type { HistoryLog, PetStage } from '../types/game';
 import { PET_STAGE_LABELS } from '../types/game';
 import { toast } from '../utils/toast';
 
-export const PetSanctuary: React.FC = () => {
+const PET_STAGE_ORDER: PetStage[] = ['egg', 'baby', 'dragon', 'legend'];
+
+interface PetSanctuaryProps {
+  /** 'sidebar' = widget đồng hành thu gọn (mặc định); 'full' = module Sân Thú Nuôi đầy đủ, gồm Album Kỷ Niệm. */
+  variant?: 'sidebar' | 'full';
+  onBack?: () => void;
+}
+
+export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar', onBack }) => {
+  const isFull = variant === 'full';
   const pet = useGameState(state => state.pet);
   const feedPet = useGameState(state => state.feedPet);
   const showHelp = useGameState(state => state.showHelp);
@@ -15,6 +24,9 @@ export const PetSanctuary: React.FC = () => {
   const [interacting, setInteracting] = useState(false);
   const [tickled, setTickled] = useState(false);
   const [speech, setSpeech] = useState('Ủn ỉn... chào thiếu hiệp! Hôm nay ta cùng tinh tấn học tập nhé! 🌸');
+
+  const unlockedStageCount = PET_STAGE_ORDER.indexOf(pet.stage) + 1;
+  const [albumIndex, setAlbumIndex] = useState(0);
 
   const isUnicorn = uiTheme === 'unicorn-dream';
 
@@ -398,7 +410,23 @@ export const PetSanctuary: React.FC = () => {
   };
 
   return (
-    <div className={`glass-panel rounded-2xl border p-5 flex flex-col h-full ${
+    <div className={isFull ? 'max-w-3xl mx-auto space-y-6' : 'contents'}>
+      {isFull && (
+        <div className="flex items-center justify-between gap-3">
+          <h2 className={`font-orbitron text-lg font-black uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
+            🐷 Sân Thú Nuôi
+          </h2>
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-white font-orbitron font-bold text-[10px] uppercase tracking-wider hover:bg-white/10 transition-colors cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4" /> Trở lại bản đồ
+            </button>
+          )}
+        </div>
+      )}
+    <div className={`glass-panel rounded-2xl border p-5 flex flex-col ${isFull ? 'max-w-md mx-auto' : 'h-full'} ${
       isUnicorn ? 'border-violet-200/35 bg-gradient-to-b from-white/90 via-fuchsia-50/80 to-cyan-50/70' : 'border-synth-cyan/15'
     }`}>
       {/* CSS Styles for floating/wiggling animations */}
@@ -515,6 +543,93 @@ export const PetSanctuary: React.FC = () => {
           {interacting ? 'Đang Cho Ăn Heo... 🍖' : `Cho ${pet.name} Ăn 🍖 (-50 NP, -30 XP)`}
         </button>
       </div>
+    </div>
+
+      {/* Album Kỷ Niệm (CORE_SPECS §2.5): xem lại hành trình tiến hóa, giai đoạn chưa đạt tới bị khóa. */}
+      {isFull && (() => {
+        const viewedStage = PET_STAGE_ORDER[albumIndex];
+        const isUnlocked = albumIndex < unlockedStageCount;
+        return (
+          <div className={`glass-panel rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'border-violet-200/35' : 'border-synth-cyan/15'}`}>
+            <div className="flex items-center justify-between gap-3">
+              <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
+                📔 Album Kỷ Niệm
+              </h3>
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                {albumIndex + 1}/{PET_STAGE_ORDER.length}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-4 gap-2">
+              {PET_STAGE_ORDER.map((stage, idx) => {
+                const unlocked = idx < unlockedStageCount;
+                const active = idx === albumIndex;
+                return (
+                  <button
+                    key={stage}
+                    onClick={() => setAlbumIndex(idx)}
+                    className={`rounded-xl border p-2 flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                      active
+                        ? 'border-synth-cyan/50 bg-synth-cyan/10'
+                        : 'border-white/10 bg-white/5 hover:border-white/20'
+                    }`}
+                  >
+                    {unlocked ? (
+                      <span className="text-xl">🐷</span>
+                    ) : (
+                      <Lock className="w-4 h-4 text-slate-500" />
+                    )}
+                    <span className={`text-[8px] uppercase font-bold text-center leading-tight ${unlocked ? 'text-slate-300' : 'text-slate-600'}`}>
+                      {unlocked ? PET_STAGE_LABELS[stage].replace(/[^\p{L}\p{N} ]/gu, '').trim() : 'Chưa mở'}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="rounded-2xl border border-white/10 bg-black/20 p-6 flex flex-col items-center gap-3 text-center min-h-[160px] justify-center">
+              {isUnlocked ? (
+                <>
+                  <span className="text-5xl">🐷</span>
+                  <div className="font-orbitron font-black uppercase tracking-wider text-sm text-white">
+                    {PET_STAGE_LABELS[viewedStage]}
+                  </div>
+                  <p className="text-xs text-slate-400 max-w-xs">
+                    Kỷ niệm giai đoạn này của {pet.name} — tiếp tục chăm sóc để mở khóa thêm hình ảnh và câu chuyện mới.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Lock className="w-8 h-8 text-slate-500" />
+                  <div className="font-orbitron font-black uppercase tracking-wider text-sm text-slate-500">
+                    Giai đoạn chưa đạt tới
+                  </div>
+                  <p className="text-xs text-slate-500 max-w-xs">
+                    Kiên trì chăm sóc và nâng cấp Heo Maikawaii để mở khóa trang album này.
+                  </p>
+                </>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between gap-3">
+              <button
+                onClick={() => setAlbumIndex(prev => Math.max(0, prev - 1))}
+                disabled={albumIndex === 0}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-[10px] font-bold uppercase tracking-wider hover:bg-white/10 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="w-4 h-4" /> Prev
+              </button>
+              <button
+                onClick={() => setAlbumIndex(prev => Math.min(PET_STAGE_ORDER.length - 1, prev + 1))}
+                disabled={albumIndex === PET_STAGE_ORDER.length - 1}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-[10px] font-bold uppercase tracking-wider hover:bg-white/10 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+              >
+                Next <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };
