@@ -17,6 +17,7 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
   // Track idle time
   const lastActiveTime = useRef(Date.now());
   const lastSleepReminder = useRef(0);
+  const lastHungerReminder = useRef(0);
   
   // Login trigger state
   const hasGreeted = useRef(false);
@@ -85,8 +86,11 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
         const lastFedTime = new Date(pet.lastFed).getTime();
         const twelveHours = 12 * 60 * 60 * 1000;
         if (now - lastFedTime > twelveHours) {
-          setTriggerReason('hunger');
-          setIsOpen(true);
+          if (now - lastHungerReminder.current > 600000) { // remind every 10 mins, not every check
+            setTriggerReason('hunger');
+            setIsOpen(true);
+            lastHungerReminder.current = now;
+          }
         }
       }
     }, 10000); // Check every 10 seconds
