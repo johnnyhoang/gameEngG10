@@ -55,6 +55,7 @@ interface OverlayAnnotation {
 interface LessonStep {
   title: string;
   body: string;
+  command?: string;
   focus?: string[];
   annotationIds: string[];
 }
@@ -75,6 +76,7 @@ interface AiGeometryAction {
   note?: string;
   style?: 'solid' | 'dashed';
   color?: string;
+  stepIndex?: number;
 }
 
 interface AiGeometryResult {
@@ -82,7 +84,7 @@ interface AiGeometryResult {
   title: string;
   summary: string;
   assumptions: string[];
-  stepByStep: { title: string; body: string }[];
+  stepByStep: { title: string; body: string; command?: string }[];
   modelActions: AiGeometryAction[];
   commands: string[];
   warnings: string[];
@@ -628,21 +630,27 @@ function buildAnnotationsFromAiResult(result: AiGeometryResult, model: SceneMode
   const steps: LessonStep[] = [];
   const generatedIds: string[] = [];
 
-  const addAnnotation = (annotation: Omit<OverlayAnnotation, 'id'>) => {
-    const id = `ai-${annotationStartIndex + annotations.length + 1}`;
-    annotations.push({ id, ...annotation });
-    generatedIds.push(id);
-    return id;
-  };
-
   (result.stepByStep || []).forEach(step => {
     steps.push({
       title: step.title,
       body: step.body,
+      command: step.command,
       focus: [],
-      annotationIds: generatedIds
+      annotationIds: []
     });
   });
+
+  const addAnnotation = (annotation: Omit<OverlayAnnotation, 'id'>, stepIndex?: number) => {
+    const id = `ai-${annotationStartIndex + annotations.length + 1}`;
+    annotations.push({ id, ...annotation });
+    if (stepIndex !== undefined && steps[stepIndex]) {
+      steps[stepIndex].annotationIds.push(id);
+    } else {
+      // If no stepIndex, add to all steps so it's always visible
+      steps.forEach(s => s.annotationIds.push(id));
+    }
+    return id;
+  };
 
   (result.modelActions || []).forEach(action => {
     const color = action.color || '#00f0ff';
@@ -656,7 +664,7 @@ function buildAnnotationsFromAiResult(result: AiGeometryResult, model: SceneMode
         points: action.face,
         color,
         opacity: 0.32
-      });
+      }, action.stepIndex);
       return;
     }
 
@@ -670,7 +678,7 @@ function buildAnnotationsFromAiResult(result: AiGeometryResult, model: SceneMode
         color,
         opacity: 1,
         dashed
-      });
+      }, action.stepIndex);
       return;
     }
 
@@ -688,7 +696,7 @@ function buildAnnotationsFromAiResult(result: AiGeometryResult, model: SceneMode
           color,
           opacity: 1,
           dashed
-        });
+        }, action.stepIndex);
       }
       return;
     }
@@ -705,7 +713,7 @@ function buildAnnotationsFromAiResult(result: AiGeometryResult, model: SceneMode
         color,
         opacity: 1,
         dashed: true
-      });
+      }, action.stepIndex);
       addAnnotation({
         type: 'marker',
         title: 'Chân đường cao',
@@ -713,7 +721,7 @@ function buildAnnotationsFromAiResult(result: AiGeometryResult, model: SceneMode
         at: `FACE:${baseFace.join('')}`,
         color: '#ffffff',
         opacity: 1
-      });
+      }, action.stepIndex);
       return;
     }
 
@@ -728,7 +736,7 @@ function buildAnnotationsFromAiResult(result: AiGeometryResult, model: SceneMode
         color,
         opacity: 1,
         dashed
-      });
+      }, action.stepIndex);
     }
   });
 

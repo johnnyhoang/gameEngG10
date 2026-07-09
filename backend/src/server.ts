@@ -996,6 +996,7 @@ Yêu cầu:
 - Khi đề có nhắc đến đường cao, trung điểm, mặt phẳng, vuông góc, song song, phải nêu rõ cách dựng hình và ý nghĩa hình học.
 - Phần lời giải phải theo kiểu Toán 9: giả thiết -> dựng hình -> lập luận -> kết luận.
 - Cho phép đề xuất các thao tác vẽ đơn giản để học sinh thao tác trên bảng.
+- Quan trọng: Phân chia quá trình vẽ thành các bước nhỏ (từ 0). Mỗi modelActions đều phải có trường "stepIndex" tương ứng với vị trí trong mảng stepByStep mà thao tác đó được thực hiện.
 - Nếu không đủ dữ kiện, phải nói rõ thiếu gì cần bổ sung.
 
 Trả về JSON theo schema:
@@ -1005,7 +1006,7 @@ Trả về JSON theo schema:
   "summary": "tóm tắt cách nhìn nhanh",
   "assumptions": ["..."],
   "stepByStep": [
-    { "title": "Bước 1", "body": "..." }
+    { "title": "Bước 1", "body": "...", "command": "lệnh vẽ ngắn gọn để hiện caption" }
   ],
   "modelActions": [
     {
@@ -1015,7 +1016,8 @@ Trả về JSON theo schema:
       "face": ["A", "B", "C"],
       "note": "ghi chú ngắn",
       "style": "solid" | "dashed",
-      "color": "#00f0ff"
+      "color": "#00f0ff",
+      "stepIndex": 1
     }
   ],
   "commands": ["vẽ đường cao từ S", "nối trung điểm BC với đỉnh S"],
@@ -1053,6 +1055,7 @@ Yêu cầu:
 - Nhận dạng đúng dạng hình: tam giác, tứ giác, đường tròn, hỗn hợp hoặc unknown.
 - Ưu tiên mô tả các yếu tố cơ bản mà học sinh cần dựng trên bảng.
 - Có thể đề xuất các thao tác đơn giản như nối đỉnh với đỉnh, nối đỉnh với cạnh, dựng đường cao, trung tuyến, vuông góc, song song, đánh dấu góc.
+- Quan trọng: Phân chia quá trình vẽ thành các bước nhỏ (từ 0). Mỗi đối tượng point, polygon, circle, overlay đều phải có trường "stepIndex" tương ứng với vị trí trong mảng stepByStep mà đối tượng đó bắt đầu xuất hiện.
 - Không bịa quan hệ nếu đề không cho.
 - Lời giải phải ngắn gọn, theo kiểu: giả thiết -> dựng hình -> lập luận -> kết luận.
 - Mọi điểm và tọa độ nên nằm trong khoảng hợp lý trên bảng 800x560 để dựng trực quan.
@@ -1064,23 +1067,25 @@ Trả về JSON theo schema:
   "summary": "mô tả nhanh cách nhìn hình",
   "assumptions": ["..."],
   "stepByStep": [
-    { "title": "Bước 1", "body": "..." }
+    { "title": "Bước 1", "body": "...", "command": "lệnh vẽ ngắn gọn để hiện caption" }
   ],
   "scene": {
     "points": [
-      { "id": "A", "x": 180, "y": 120, "label": "A", "locked": false }
+      { "id": "A", "x": 180, "y": 120, "label": "A", "locked": false, "stepIndex": 0 }
     ],
     "polygon": {
       "id": "tri",
       "points": ["A", "B", "C"],
       "fill": "#38bdf8",
-      "opacity": 0.14
+      "opacity": 0.14,
+      "stepIndex": 0
     },
     "circle": {
       "center": "O",
       "radiusPoint": "A",
       "fill": "#38bdf8",
-      "opacity": 0.08
+      "opacity": 0.08,
+      "stepIndex": 1
     },
     "overlays": [
       {
@@ -1090,7 +1095,8 @@ Trả về JSON theo schema:
         "at": "A",
         "color": "#00f0ff",
         "label": "Đường cao",
-        "dashed": true
+        "dashed": true,
+        "stepIndex": 1
       }
     ]
   },

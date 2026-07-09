@@ -23,6 +23,7 @@ interface PlanePoint {
   y: number;
   label?: string;
   locked?: boolean;
+  stepIndex?: number;
 }
 
 interface PlanePolygon {
@@ -30,6 +31,7 @@ interface PlanePolygon {
   points: string[];
   fill: string;
   opacity: number;
+  stepIndex?: number;
 }
 
 interface PlaneCircleShape {
@@ -37,6 +39,7 @@ interface PlaneCircleShape {
   radiusPoint: string;
   fill: string;
   opacity: number;
+  stepIndex?: number;
 }
 
 interface PlaneOverlay {
@@ -48,11 +51,13 @@ interface PlaneOverlay {
   color: string;
   label: string;
   dashed?: boolean;
+  stepIndex?: number;
 }
 
 interface PlaneLessonStep {
   title: string;
   body: string;
+  command?: string;
 }
 
 interface PlaneScene {
@@ -73,6 +78,7 @@ interface PlaneAiOverlay {
   color?: string;
   label?: string;
   dashed?: boolean;
+  stepIndex?: number;
 }
 
 interface PlaneAiResult {
@@ -332,6 +338,8 @@ export function BikiHinhHocPhang({ problemText = '' }: BikiHinhHocPhangProps) {
   const [isPanning, setIsPanning] = useState(false);
   const [panAnchor, setPanAnchor] = useState<{ clientX: number; clientY: number; viewport: typeof viewport } | null>(null);
   const [dragPointId, setDragPointId] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState<number>(-1);
+  const [maxStep, setMaxStep] = useState<number>(-1);
 
   useEffect(() => {
     setPrompt(problemText);
@@ -352,20 +360,33 @@ export function BikiHinhHocPhang({ problemText = '' }: BikiHinhHocPhangProps) {
     });
   }, [prompt]);
 
-  const pointMap = useMemo(() => getPointMap(scene.points), [scene.points]);
+  const visiblePoints = useMemo(() => scene.points.filter(p => p.stepIndex === undefined || currentStep === -1 || p.stepIndex <= currentStep), [scene.points, currentStep]);
+  const visibleOverlays = useMemo(() => scene.overlays.filter(o => o.stepIndex === undefined || currentStep === -1 || o.stepIndex <= currentStep), [scene.overlays, currentStep]);
+  const visiblePolygon = useMemo(() => {
+    if (!scene.polygon) return undefined;
+    if (scene.polygon.stepIndex !== undefined && currentStep >= 0 && scene.polygon.stepIndex > currentStep) return undefined;
+    return scene.polygon;
+  }, [scene.polygon, currentStep]);
+  const visibleCircle = useMemo(() => {
+    if (!scene.circle) return undefined;
+    if (scene.circle.stepIndex !== undefined && currentStep >= 0 && scene.circle.stepIndex > currentStep) return undefined;
+    return scene.circle;
+  }, [scene.circle, currentStep]);
+
+  const pointMap = useMemo(() => getPointMap(visiblePoints), [visiblePoints]);
   const polygonPoints = useMemo(() => {
-    if (!scene.polygon) return [] as PlanePoint[];
-    return scene.polygon.points.map(pointId => pointMap.get(pointId)).filter(Boolean) as PlanePoint[];
-  }, [pointMap, scene.polygon]);
+    if (!visiblePolygon) return [] as PlanePoint[];
+    return visiblePolygon.points.map(pointId => pointMap.get(pointId)).filter(Boolean) as PlanePoint[];
+  }, [pointMap, visiblePolygon]);
 
   const circleMetrics = useMemo(() => {
-    if (!scene.circle) return null;
-    const center = pointMap.get(scene.circle.center);
-    const radiusPoint = pointMap.get(scene.circle.radiusPoint);
+    if (!visibleCircle) return null;
+    const center = pointMap.get(visibleCircle.center);
+    const radiusPoint = pointMap.get(visibleCircle.radiusPoint);
     if (!center || !radiusPoint) return null;
     const radius = distance(center, radiusPoint);
     return { center, radiusPoint, radius };
-  }, [pointMap, scene.circle]);
+  }, [pointMap, visibleCircle]);
 
   const addHistory = (entry: string) => {
     setHistory(prev => [entry, ...prev].slice(0, 8));
@@ -431,12 +452,17 @@ export function BikiHinhHocPhang({ problemText = '' }: BikiHinhHocPhangProps) {
           at: overlay.at,
           color: overlay.color || '#00f0ff',
           label: overlay.label || '',
-          dashed: overlay.dashed
+          dashed: overlay.dashed,
+          stepIndex: overlay.stepIndex
         })) || scene.overlays
       };
 
       setScene(nextScene);
-      setLessonSteps(result.stepByStep.length > 0 ? result.stepByStep : [{ title: 'Soi đề AI', body: result.summary }]);
+      const steps = result.stepByStep.length > 0 ? result.stepByStep : [{ title: 'Soi đề AI', body: result.summary, command: result.summary }];
+      setLessonSteps(steps);
+      setMaxStep(steps.length - 1);
+      setCurrentStep(0); // Start at step 0 to allow stepping forward
+      
       addHistory(result.summary || result.title || 'AI phân tích hình học phẳng xong.');
       if (result.commands.length > 0) {
         setCommandText(result.commands[0]);
@@ -853,23 +879,23 @@ export function BikiHinhHocPhang({ problemText = '' }: BikiHinhHocPhangProps) {
               <rect x={0} y={0} width={BOARD_WIDTH} height={BOARD_HEIGHT} fill="url(#plane-grid)" />
               <rect x={0} y={0} width={BOARD_WIDTH} height={BOARD_HEIGHT} fill="url(#plane-grid-bold)" opacity="0.6" />
 
-              {scene.circle && circleMetrics ? (
+              {visibleCircle && circleMetrics ? (
                 <circle
                   cx={circleMetrics.center.x}
                   cy={circleMetrics.center.y}
                   r={circleMetrics.radius}
-                  fill={scene.circle.fill}
-                  fillOpacity={scene.circle.opacity}
+                  fill={visibleCircle.fill}
+                  fillOpacity={visibleCircle.opacity}
                   stroke="#7dd3fc"
                   strokeWidth="2.5"
                 />
               ) : null}
 
-              {scene.polygon && polygonPoints.length > 1 ? (
+              {visiblePolygon && polygonPoints.length > 1 ? (
                 <polygon
                   points={polygonPoints.map(point => `${point.x},${point.y}`).join(' ')}
-                  fill={scene.polygon.fill}
-                  fillOpacity={scene.polygon.opacity}
+                  fill={visiblePolygon.fill}
+                  fillOpacity={visiblePolygon.opacity}
                   stroke="#c4b5fd"
                   strokeWidth="2.5"
                   strokeLinejoin="round"
@@ -903,9 +929,9 @@ export function BikiHinhHocPhang({ problemText = '' }: BikiHinhHocPhangProps) {
                 );
               })}
 
-              {scene.overlays.map(renderOverlay)}
+              {visibleOverlays.map(renderOverlay)}
 
-              {scene.points.map(point => (
+              {visiblePoints.map(point => (
                 <g key={point.id}>
                   <circle
                     cx={point.x}
@@ -931,7 +957,7 @@ export function BikiHinhHocPhang({ problemText = '' }: BikiHinhHocPhangProps) {
                 </g>
               ))}
 
-              {scene.circle && circleMetrics ? (
+              {visibleCircle && circleMetrics ? (
                 <g>
                   <circle cx={circleMetrics.center.x} cy={circleMetrics.center.y} r={5} fill="#f472b6" />
                   <text x={circleMetrics.center.x + 10} y={circleMetrics.center.y - 10} fill="#f472b6" fontSize="13" fontWeight="700">
@@ -952,6 +978,29 @@ export function BikiHinhHocPhang({ problemText = '' }: BikiHinhHocPhangProps) {
                 </text>
               ) : null}
             </svg>
+
+            {maxStep >= 0 && (
+              <div className="mt-4 flex items-center justify-between bg-[#0f172a] rounded-xl p-3 border border-white/10">
+                <button
+                  onClick={() => setCurrentStep(prev => Math.max(0, prev - 1))}
+                  disabled={currentStep <= 0}
+                  className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                <div className="flex-1 text-center px-4">
+                  <div className="text-sm font-bold text-synth-cyan">Bước {currentStep + 1} / {maxStep + 1}</div>
+                  <div className="text-xs text-white/80 mt-1">{lessonSteps[currentStep]?.command || lessonSteps[currentStep]?.title}</div>
+                </div>
+                <button
+                  onClick={() => setCurrentStep(prev => Math.min(maxStep, prev + 1))}
+                  disabled={currentStep >= maxStep}
+                  className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-white disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="rounded-3xl border border-white/10 bg-white/5 p-4 space-y-3">

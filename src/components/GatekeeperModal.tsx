@@ -7,6 +7,8 @@ import {
   getRecentlyUsedGatekeeperIds,
   recordGatekeeperUsage,
 } from '../utils/gatekeeper';
+import { BikiHinhHocPhang } from './BikiHinhHocPhang';
+import { Biki3DStudio } from './Biki3DStudio';
 
 interface GatekeeperModalProps {}
 
@@ -19,8 +21,23 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
   const [selectedAnswer, setSelectedAnswer] = useState<string>('');
   const [isError, setIsError] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
+  const [geometryMode, setGeometryMode] = useState<'2d' | '3d' | null>(null);
 
   const { questions, currentSubject, pageExplorationStates, updatePendingKeyQuestion, player } = useGameState();
+
+  const isGeometry2D = React.useMemo(() => {
+    if (!question) return false;
+    if (question.metadata?.mathTopic === 'plane-geometry') return true;
+    const text = question.prompt.toLowerCase();
+    return text.includes('tam giác') || text.includes('hình chữ nhật') || text.includes('hình vuông') || text.includes('hình thang') || text.includes('đường tròn') || text.includes('tứ giác');
+  }, [question]);
+
+  const isGeometry3D = React.useMemo(() => {
+    if (!question) return false;
+    if (question.metadata?.mathTopic === 'solid-geometry') return true;
+    const text = question.prompt.toLowerCase();
+    return text.includes('hình chóp') || text.includes('hình trụ') || text.includes('hình hộp') || text.includes('lăng trụ') || text.includes('tứ diện') || text.includes('mặt cầu');
+  }, [question]);
 
   useEffect(() => {
     const handleOpen = (e: Event) => {
@@ -50,6 +67,7 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
       setSelectedAnswer('');
       setIsError(false);
       setShowWelcome(false);
+      setGeometryMode(null);
       setIsOpen(true);
     };
 
@@ -144,6 +162,27 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
                 {question.prompt}
               </div>
 
+              {(isGeometry2D || isGeometry3D) && (
+                <div className="flex gap-3">
+                  {isGeometry2D && (
+                    <button
+                      onClick={() => setGeometryMode('2d')}
+                      className="px-4 py-2 rounded-xl bg-synth-cyan/10 border border-synth-cyan/30 text-synth-cyan hover:bg-synth-cyan/20 transition-colors text-sm font-bold flex items-center gap-2"
+                    >
+                      <Brain className="w-4 h-4" /> Vẽ Hình 2D
+                    </button>
+                  )}
+                  {isGeometry3D && (
+                    <button
+                      onClick={() => setGeometryMode('3d')}
+                      className="px-4 py-2 rounded-xl bg-synth-purple/10 border border-synth-purple/30 text-synth-purple hover:bg-synth-purple/20 transition-colors text-sm font-bold flex items-center gap-2"
+                    >
+                      <Brain className="w-4 h-4" /> Vẽ Hình 3D
+                    </button>
+                  )}
+                </div>
+              )}
+
               {isError && (
                 <div className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
                   <AlertCircle className="w-5 h-5 shrink-0" />
@@ -203,6 +242,38 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
           )}
         </div>
       </div>
+
+      {geometryMode === '2d' && (
+        <div className="fixed inset-0 z-[110] bg-black/95 flex flex-col items-center justify-center p-6">
+          <div className="w-full max-w-6xl h-full flex flex-col">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-orbitron font-bold text-synth-cyan">Bảng Vẽ 2D</h2>
+              <button onClick={() => setGeometryMode(null)} className="p-2 text-slate-400 hover:text-white bg-white/10 rounded-full">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto bg-[#07111f] rounded-2xl border border-white/10 p-4">
+              <BikiHinhHocPhang problemText={question?.prompt} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {geometryMode === '3d' && (
+        <div className="fixed inset-0 z-[110] bg-black/95 flex flex-col items-center justify-center p-6">
+          <div className="w-full max-w-7xl h-full flex flex-col">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-orbitron font-bold text-synth-purple">Bảng Vẽ 3D</h2>
+              <button onClick={() => setGeometryMode(null)} className="p-2 text-slate-400 hover:text-white bg-white/10 rounded-full">
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-auto bg-[#07111f] rounded-2xl border border-white/10 p-4">
+              <Biki3DStudio problemText={question?.prompt || ''} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
