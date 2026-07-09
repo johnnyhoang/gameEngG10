@@ -13,6 +13,19 @@ Nguyên tắc: KHÔNG xóa tính năng. Ưu tiên nâng cấp/refactor/enable tr
 - [x] **Đổi môn phái dồn hẳn về Thân Phận, bỏ dropdown ở HUD** — user xác nhận qua AskUserQuestion. Đã sửa CORE_SPECS §1.3 khớp lại với §7.4 (trước đó 2 mục mâu thuẫn nhau).
 - [x] **Bug: còn sót chữ "rồng"/🐉 dù pet đã đổi thành Heo Maikawaii.** Sửa: ParentConsole.tsx (nhãn "Cấp độ rồng:" → "Cấp độ Heo:", `pet.stage.toUpperCase()` lộ "DRAGON" → map qua `PET_STAGE_LABELS` mới thêm ở types/game.ts), RelaxationZone.tsx (minigame "Giải Cứu Rồng" → "Giải Cứu Heo Maikawaii", mọi text "Rồng nhỏ" → "Heo Maikawaii"), App.tsx (icon bottom-nav Pet 🐉→🐷). Icon 🐉 ở rank "Đại Hiệp" (§7.2) KHÔNG đổi vì đó là biểu tượng đẳng cấp wuxia, không liên quan pet.
 - [ ] **(TODO-tương lai, đã ghi vào CORE_SPECS §3.A mục D + §7.1) Cơ chế "Môn Chủ Hỏi Tội"** — chặn nút Bỏ qua bằng hộp thoại chọn lý do (Quá khó/Quá dài/Quá khùng) + mức độ 1-5, giới hạn 3 lượt Bỏ qua/ngày toàn app, Viện Chủ xem review ở Vạn Quyển Các. Đã tạo 4 task riêng (Task #16-19) để triển khai đợt sau, CHƯA code.
+- [x] **Phát hiện phụ: CORE_SPECS.md §2.5 (Pet Sanctuary Album) bị lỗi nội dung trùng lặp/xáo trộn** (dòng 106-111 của bản commit 6224dcd — một đoạn của §2.7 Cẩm Nang bị chèn lẫn vào giữa mục Album Kỷ Niệm, có vẻ do một lần sửa file trước đó bị lỗi). Đã dùng `sed` xóa khối trùng lặp và khôi phục lại đúng 1 bản sạch của mục Album Kỷ Niệm, đối chiếu §2.7 vẫn nguyên vẹn không mất nội dung.
+
+---
+
+## Đợt cập nhật: Cơ chế "Thú Về Chuồng" (Pet Stable & Overlay) — TODO-tương lai
+
+- [ ] **(TODO-tương lai, đã ghi vào CORE_SPECS §2.5 mục "Cơ Chế 'Thú Về Chuồng'" + §5 mục "Bố cục 'Chuồng Heo'") Heo Maikawaii chiếm diện tích cố định (`aside w-72`), gây xao nhãng.** Ý tưởng cốt lõi (user, phân tích đầy đủ 5 góc theo GLOBAL RULE):
+    - *Layout:* bỏ cột `aside` cố định trong App.tsx; thay bằng 1 nút "Chuồng Heo" neo góc màn hình (fixed) + overlay đè lên layout khi heo xuất hiện — không đẩy lệch bố cục các trang khác.
+    - *Rule:* 5 trigger xuất hiện — chào sau khi đóng Cẩm Nang lúc đăng nhập (1 lần), triệu hồi thủ công, nhắc học khi idle ~5 phút, nhắc ngủ lặp lại mỗi 5 phút sau 22:00 local, đòi ăn khi đói (dựa `lastFed`). Không có nút đóng — chỉ thoát bằng cho ăn/tương tác/thọt lét. Mọi trigger tự động bị hoãn trong lúc đang thi đấu, dồn lại và bung ra khi về Sơn Trang.
+    - *Content:* cần thêm lời thoại mới cho từng loại trigger (chào/nhắc học/nhắc ngủ/đòi ăn), cập nhật các trang Cẩm Nang/help liên quan đến pet để không gây bối rối vì thiếu nút đóng.
+    - *Admin:* không phát sinh thay đổi cho ParentConsole (view mood/lastFed hiện tại giữ nguyên).
+    - *UI/logic architecture:* cần bộ state mới (idle timer, hàng đợi trigger theo độ ưu tiên, khóa trigger khi đang trong trận), component `PetOverlay` tách khỏi `PetSanctuary` hiện tại (tái sử dụng chứ không xóa), và re-layout GameMap/ItemShop/HangLuyenCong/RelaxationZone để lấp khoảng trống sau khi bỏ `aside`.
+    - Đã tạo 7 task riêng (Task #21-27) để triển khai đợt sau, CHƯA code — đúng theo GLOBAL RULE "phân tích trước, viết todo, hỏi khi conflict với core specs" (mục này không conflict, chỉ mở rộng §2.5/§5 nên cập nhật thẳng, không cần hỏi lại).
 
 ---
 
