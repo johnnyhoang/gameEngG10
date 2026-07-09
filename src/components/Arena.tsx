@@ -261,7 +261,7 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
                 onOpenLevel3={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 30)}
               >
                 <div
-                  onClick={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 30)}
+                  onClick={(e) => { e.stopPropagation(); handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 30); }}
                   className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full"
                 >
                   <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white z-10">
@@ -294,7 +294,7 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
               onOpenLevel3={() => handleLaunchZone('mixed', challengeEnergyCosts[1] ?? 30)}
             >
               <div
-                onClick={() => handleLaunchZone('mixed', challengeEnergyCosts[1] ?? 30)}
+                onClick={(e) => { e.stopPropagation(); handleLaunchZone('mixed', challengeEnergyCosts[1] ?? 30); }}
                 className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full"
               >
                 <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white z-10">
@@ -320,7 +320,7 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
               onOpenLevel3={() => handleLaunchZone('revenge', challengeEnergyCosts[2] ?? 30)}
             >
               <div
-                onClick={() => handleLaunchZone('revenge', challengeEnergyCosts[2] ?? 30)}
+                onClick={(e) => { e.stopPropagation(); handleLaunchZone('revenge', challengeEnergyCosts[2] ?? 30); }}
                 className="glass-panel glass-panel-hover rounded-2xl border border-synth-orange/30 hover:border-synth-orange bg-gradient-to-br from-synth-orange/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full"
               >
                 <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-orange/20 text-white z-10">
@@ -359,7 +359,7 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
                 onOpenLevel3={() => handleLaunchZone('boss', boss.energy, boss.id)}
               >
                 <div
-                  onClick={() => handleLaunchZone('boss', boss.energy, boss.id)}
+                  onClick={(e) => { e.stopPropagation(); handleLaunchZone('boss', boss.energy, boss.id); }}
                   className={`glass-panel glass-panel-hover rounded-2xl p-5 flex flex-col justify-between cursor-pointer relative min-h-[160px] transition-all duration-300 h-full ${
                     isUnicorn
                       ? 'border-violet-200/35 hover:border-violet-300 bg-gradient-to-t from-white/80 to-fuchsia-50/60 shadow-[0_14px_30px_rgba(192,132,252,0.1)]'
@@ -419,7 +419,7 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
               onOpenLevel3={() => handleLaunchZone('survival', challengeEnergyCosts[0] ?? 30)}
             >
               <div
-                onClick={() => handleLaunchZone('survival', challengeEnergyCosts[0] ?? 30)}
+                onClick={(e) => { e.stopPropagation(); handleLaunchZone('survival', challengeEnergyCosts[0] ?? 30); }}
                 className="glass-panel glass-panel-hover rounded-2xl border border-red-500/40 hover:border-red-400 bg-gradient-to-br from-red-500/10 via-orange-500/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
               >
                 <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-red-500/20 border border-red-500/40 text-red-400 z-10">

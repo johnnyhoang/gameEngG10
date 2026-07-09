@@ -138,7 +138,7 @@ export const ItemShop: React.FC = () => {
                   </div>
                 </div>
                 <button
-                  onClick={handleBuyShield}
+                  onClick={(e) => { e.stopPropagation(); handleBuyShield(); }}
                   disabled={hasStreakShield}
                   className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shrink-0 ${
                     isUnicorn
@@ -180,7 +180,7 @@ export const ItemShop: React.FC = () => {
                   </div>
                 </div>
                 <button
-                  onClick={handleBuyHeart}
+                  onClick={(e) => { e.stopPropagation(); handleBuyHeart(); }}
                   disabled={player.hearts >= 3}
                   className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shrink-0 ${
                     isUnicorn
@@ -222,7 +222,7 @@ export const ItemShop: React.FC = () => {
                   </div>
                 </div>
                 <button
-                  onClick={handleBuyHint}
+                  onClick={(e) => { e.stopPropagation(); handleBuyHint(); }}
                   className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${
                     isUnicorn
                       ? 'bg-gradient-to-r from-amber-300 to-orange-300 text-violet-900 shadow-md hover:brightness-105'
@@ -285,7 +285,7 @@ export const ItemShop: React.FC = () => {
                     </div>
                     {isActive ? null : isUnlocked ? (
                       <button
-                        onClick={() => setUiTheme(theme.id)}
+                        onClick={(e) => { e.stopPropagation(); setUiTheme(theme.id); }}
                         className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${
                           isUnicorn
                             ? 'bg-gradient-to-r from-violet-300 to-fuchsia-300 text-violet-900 shadow-md hover:brightness-105'
@@ -296,7 +296,7 @@ export const ItemShop: React.FC = () => {
                       </button>
                     ) : (
                       <button
-                        onClick={() => handleBuyTheme(theme.id)}
+                        onClick={(e) => { e.stopPropagation(); handleBuyTheme(theme.id); }}
                         className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${
                           isUnicorn
                             ? 'bg-gradient-to-r from-cyan-300 to-violet-300 text-violet-900 shadow-md hover:brightness-105'
@@ -376,7 +376,7 @@ export const ItemShop: React.FC = () => {
                           getStatusBadge(reward.status)
                         ) : (
                           <button
-                            onClick={() => handleClaimReward(reward.id)}
+                            onClick={(e) => { e.stopPropagation(); handleClaimReward(reward.id); }}
                             disabled={!isAffordable}
                             className={`px-3.5 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed ${
                               isUnicorn

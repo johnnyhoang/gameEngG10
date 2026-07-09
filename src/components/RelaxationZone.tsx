@@ -94,7 +94,7 @@ const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onO
           >
             <div
               className="rounded-xl border border-white/10 bg-black/40 p-4 flex flex-col gap-3 cursor-pointer hover:border-white/20 transition-all duration-200 h-full group"
-              onClick={() => onOpenGame(game)}
+              onClick={(e) => { e.stopPropagation(); onOpenGame(game); }}
             >
               <div className="flex items-start gap-3">
                 <span className="text-2xl group-hover:scale-110 transition-transform duration-200">{game.icon}</span>
