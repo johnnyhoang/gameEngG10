@@ -8,6 +8,7 @@ import {
   ChevronDown, ChevronUp, ChevronLeft, Skull, Swords, BookMarked, Heart, Volume2
 } from 'lucide-react';
 import { toast } from '../utils/toast';
+import { FogCard } from './FogCard';
 
 interface ArenaProps {
   onStartPlay: (
@@ -19,8 +20,6 @@ interface ArenaProps {
   onStartLessonPractice?: (lessonId: string) => void;
 }
 
-// Đấu Trường (CORE_SPECS §2.1.A.1): rèn phản xạ thi cử theo Môn Phái đang hoạt động.
-// Nhóm Chuyên Sâu (Toán/Văn/Anh) có Sinh Tồn + Boss theo năm; Nhóm Cơ Bản có Boss theo Học Kỳ, không Sinh Tồn.
 export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractice }: ArenaProps) {
   const player = useGameState(state => state.player);
   const consumeEnergy = useGameState(state => state.useEnergy);
@@ -84,9 +83,144 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
     ? Math.round((completedLessons / subjectLessons.length) * 100)
     : 0;
 
+  // Build free practice cards list based on subject
+  const rankedCards = useMemo(() => {
+    if (currentSubject === 'english') {
+      return [
+        {
+          id: 'grammar',
+          title: 'Grammar Cave',
+          subtitle: 'Ngữ pháp cốt lõi',
+          description: 'Bám thì, bị động, mệnh đề quan hệ và viết lại câu ở tốc độ đề thi.',
+          icon: <BookOpen className="w-8 h-8 text-synth-cyan" />,
+          mode: 'grammar' as const,
+          reward: 'Ưu tiên grammar + rewrite'
+        },
+        {
+          id: 'vocabulary',
+          title: 'Vocabulary Castle',
+          subtitle: 'Từ vựng và word form',
+          description: 'Luyện bám nghĩa, collocation và ngữ cảnh, tách riêng vocabulary.',
+          icon: <BookMarked className="w-8 h-8 text-synth-cyan" />,
+          mode: 'vocabulary' as const,
+          reward: 'Ưu tiên vocabulary + word form'
+        },
+        {
+          id: 'reading',
+          title: 'Reading Forest',
+          subtitle: 'Đọc hiểu và cloze',
+          description: 'Đi xuyên qua passage, scan keyword, nối ý và xử lý câu đọc hiểu.',
+          icon: <Compass className="w-8 h-8 text-synth-cyan" />,
+          mode: 'reading' as const,
+          reward: 'Ưu tiên reading + cloze'
+        },
+        {
+          id: 'pronunciation',
+          title: 'Pronunciation Peak',
+          subtitle: 'Phát âm và stress',
+          description: 'Bắt đuôi -ed/-s, trọng âm và minimal pairs trong một đường leo riêng.',
+          icon: <Volume2 className="w-8 h-8 text-synth-cyan" />,
+          mode: 'pronunciation' as const,
+          reward: 'Ưu tiên pronunciation + stress'
+        }
+      ];
+    } else if (currentSubject === 'math') {
+      return [
+        {
+          id: 'math-quad',
+          title: HANG_TRACKS.math[0].title,
+          subtitle: 'Phương trình bậc hai',
+          description: HANG_TRACKS.math[0].summary,
+          icon: <BookOpen className="w-8 h-8 text-synth-cyan" />,
+          mode: 'grammar' as const,
+          reward: HANG_TRACKS.math[0].focus.join(' · ')
+        },
+        {
+          id: 'math-real',
+          title: HANG_TRACKS.math[1].title,
+          subtitle: 'Bài toán thực tế',
+          description: HANG_TRACKS.math[1].summary,
+          icon: <Star className="w-8 h-8 text-synth-cyan" />,
+          mode: 'vocabulary' as const,
+          reward: HANG_TRACKS.math[1].focus.join(' · ')
+        },
+        {
+          id: 'math-plane',
+          title: HANG_TRACKS.math[2].title,
+          subtitle: 'Hình học phẳng',
+          description: HANG_TRACKS.math[2].summary,
+          icon: <Compass className="w-8 h-8 text-synth-cyan" />,
+          mode: 'reading' as const,
+          reward: HANG_TRACKS.math[2].focus.join(' · ')
+        },
+        {
+          id: 'math-solid',
+          title: HANG_TRACKS.math[3].title,
+          subtitle: 'Hình học không gian',
+          description: HANG_TRACKS.math[3].summary,
+          icon: <ShieldAlert className="w-8 h-8 text-synth-cyan" />,
+          mode: 'mixed' as const,
+          reward: HANG_TRACKS.math[3].focus.join(' · ')
+        }
+      ];
+    } else if (currentSubject === 'literature') {
+      return [
+        {
+          id: 'lit-read',
+          title: HANG_TRACKS.literature[0].title,
+          subtitle: 'Đọc hiểu văn bản',
+          description: HANG_TRACKS.literature[0].summary,
+          icon: <BookOpen className="w-8 h-8 text-synth-cyan" />,
+          mode: 'grammar' as const,
+          reward: HANG_TRACKS.literature[0].focus.join(' · ')
+        },
+        {
+          id: 'lit-vn',
+          title: HANG_TRACKS.literature[1].title,
+          subtitle: 'Tiếng Việt',
+          description: HANG_TRACKS.literature[1].summary,
+          icon: <BookMarked className="w-8 h-8 text-synth-cyan" />,
+          mode: 'reading' as const,
+          reward: HANG_TRACKS.literature[1].focus.join(' · ')
+        },
+        {
+          id: 'lit-essay',
+          title: HANG_TRACKS.literature[2].title,
+          subtitle: 'Viết đoạn và bài nghị luận',
+          description: HANG_TRACKS.literature[2].summary,
+          icon: <Compass className="w-8 h-8 text-synth-cyan" />,
+          mode: 'vocabulary' as const,
+          reward: HANG_TRACKS.literature[2].focus.join(' · ')
+        },
+        {
+          id: 'lit-lit',
+          title: HANG_TRACKS.literature[3].title,
+          subtitle: 'Nghị luận văn học',
+          description: HANG_TRACKS.literature[3].summary,
+          icon: <Volume2 className="w-8 h-8 text-synth-cyan" />,
+          mode: 'mixed' as const,
+          reward: HANG_TRACKS.literature[3].focus.join(' · ')
+        }
+      ];
+    } else {
+      // Basic subjects
+      return [
+        {
+          id: 'basic-mixed',
+          title: `Mixed Practice - ${subjectMeta.name}`,
+          subtitle: 'Luyện tập ngẫu nhiên',
+          description: `Rèn luyện toàn bộ trọng tâm môn ${subjectMeta.name}.`,
+          icon: <BookOpen className="w-8 h-8 text-synth-cyan" />,
+          mode: 'mixed' as const,
+          reward: 'Học tập ngẫu nhiên'
+        }
+      ];
+    }
+  }, [currentSubject, subjectMeta]);
+
   return (
     <div className="space-y-6">
-
+      {/* Header HUD */}
       <div className="flex items-center justify-between gap-3">
         <h2 className={`font-orbitron text-lg font-black uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
           <Sword className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-magenta'}`} />
@@ -106,301 +240,212 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
         </div>
       )}
 
-      {/* ─── ARENA MODES ─── */}
-      <div>
-        <h3 className={`font-orbitron font-bold text-base uppercase tracking-wider mb-4 flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-white'}`}>
-          <Compass className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-cyan'}`} /> Đấu Trường Tự Do
-        </h3>
-
-        {currentSubject === 'english' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            {[
-              {
-                title: 'Grammar Cave',
-                subtitle: 'Ngữ pháp cốt lõi',
-                description: 'Bám thì, bị động, mệnh đề quan hệ và viết lại câu ở tốc độ đề thi.',
-                icon: <BookOpen className="w-8 h-8 text-synth-cyan" />,
-                mode: 'grammar' as const,
-                reward: 'Ưu tiên grammar + rewrite'
-              },
-              {
-                title: 'Vocabulary Castle',
-                subtitle: 'Từ vựng và word form',
-                description: 'Luyện bám nghĩa, collocation và ngữ cảnh, tách riêng vocabulary khỏi phần còn lại.',
-                icon: <BookMarked className="w-8 h-8 text-synth-cyan" />,
-                mode: 'vocabulary' as const,
-                reward: 'Ưu tiên vocabulary + word form'
-              },
-              {
-                title: 'Reading Forest',
-                subtitle: 'Đọc hiểu và cloze',
-                description: 'Đi xuyên qua passage, scan keyword, nối ý và xử lý câu hỏi đọc hiểu.',
-                icon: <Compass className="w-8 h-8 text-synth-cyan" />,
-                mode: 'reading' as const,
-                reward: 'Ưu tiên reading + cloze'
-              },
-              {
-                title: 'Pronunciation Peak',
-                subtitle: 'Phát âm và stress',
-                description: 'Bắt đuôi -ed/-s, trọng âm và minimal pairs trong một đường leo riêng.',
-                icon: <Volume2 className="w-8 h-8 text-synth-cyan" />,
-                mode: 'pronunciation' as const,
-                reward: 'Ưu tiên pronunciation + stress'
-              }
-            ].map(card => (
-              <div
-                key={card.title}
-                onClick={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 30)}
-                className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
-              >
-                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(0,240,255,0.08),transparent_60%)]" />
-                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white">
-                  <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
-                </div>
-                <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
-                  {card.icon}
-                </div>
-                <div className="space-y-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="font-orbitron font-black text-base text-synth-cyan">🏰 {card.title}</h4>
-                    <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-synth-cyan/15 border border-synth-cyan/30 text-synth-cyan">English</span>
-                  </div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-400">{card.subtitle}</div>
-                  <p className="text-xs text-slate-300 leading-relaxed">{card.description}</p>
-                  <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
-                    Phần thưởng: <span className="text-white">{card.reward}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
+      {/* CẢNH 1: ĐẤU TRƯỜNG XẾP HẠNG (Level 2 Section) */}
+      <div className={`rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'bg-pink-50/40 border-pink-200/40' : 'bg-synth-magenta/5 border-synth-magenta/10'}`}>
+        <div className="flex items-center justify-between">
+          <div className="space-y-0.5">
+            <h3 className={`font-orbitron font-black text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
+              🏅 Đấu Trường Xếp Hạng
+            </h3>
+            <p className="text-[10px] text-slate-400">Rèn luyện phản xạ và tốc độ theo các kỹ năng/dạng bài chuyên sâu</p>
           </div>
-        )}
-
-        {currentSubject === 'math' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            {[
-              {
-                title: HANG_TRACKS.math[0].title,
-                subtitle: 'Phương trình bậc hai',
-                description: HANG_TRACKS.math[0].summary,
-                icon: <BookOpen className="w-8 h-8 text-synth-cyan" />,
-                mode: 'grammar' as const,
-                reward: HANG_TRACKS.math[0].focus.join(' · ')
-              },
-              {
-                title: HANG_TRACKS.math[1].title,
-                subtitle: 'Bài toán thực tế',
-                description: HANG_TRACKS.math[1].summary,
-                icon: <Star className="w-8 h-8 text-synth-cyan" />,
-                mode: 'vocabulary' as const,
-                reward: HANG_TRACKS.math[1].focus.join(' · ')
-              },
-              {
-                title: HANG_TRACKS.math[2].title,
-                subtitle: 'Hình học phẳng',
-                description: HANG_TRACKS.math[2].summary,
-                icon: <Compass className="w-8 h-8 text-synth-cyan" />,
-                mode: 'reading' as const,
-                reward: HANG_TRACKS.math[2].focus.join(' · ')
-              },
-              {
-                title: HANG_TRACKS.math[3].title,
-                subtitle: 'Hình học không gian',
-                description: HANG_TRACKS.math[3].summary,
-                icon: <ShieldAlert className="w-8 h-8 text-synth-cyan" />,
-                mode: 'mixed' as const,
-                reward: HANG_TRACKS.math[3].focus.join(' · ')
-              }
-            ].map(card => (
-              <div
-                key={card.title}
-                onClick={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 30)}
-                className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
-              >
-                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(0,240,255,0.08),transparent_60%)]" />
-                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white">
-                  <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
-                </div>
-                <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
-                  {card.icon}
-                </div>
-                <div className="space-y-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="font-orbitron font-black text-base text-synth-cyan">🏰 {card.title}</h4>
-                    <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-synth-cyan/15 border border-synth-cyan/30 text-synth-cyan">Toán</span>
-                  </div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-400">{card.subtitle}</div>
-                  <p className="text-xs text-slate-300 leading-relaxed">{card.description}</p>
-                  <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
-                    Phần thưởng: <span className="text-white">{card.reward}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {currentSubject === 'literature' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            {[
-              {
-                title: HANG_TRACKS.literature[0].title,
-                subtitle: 'Đọc hiểu văn bản',
-                description: HANG_TRACKS.literature[0].summary,
-                icon: <BookOpen className="w-8 h-8 text-synth-cyan" />,
-                mode: 'grammar' as const,
-                reward: HANG_TRACKS.literature[0].focus.join(' · ')
-              },
-              {
-                title: HANG_TRACKS.literature[1].title,
-                subtitle: 'Tiếng Việt',
-                description: HANG_TRACKS.literature[1].summary,
-                icon: <BookMarked className="w-8 h-8 text-synth-cyan" />,
-                mode: 'reading' as const,
-                reward: HANG_TRACKS.literature[1].focus.join(' · ')
-              },
-              {
-                title: HANG_TRACKS.literature[2].title,
-                subtitle: 'Viết đoạn và bài nghị luận',
-                description: HANG_TRACKS.literature[2].summary,
-                icon: <Compass className="w-8 h-8 text-synth-cyan" />,
-                mode: 'vocabulary' as const,
-                reward: HANG_TRACKS.literature[2].focus.join(' · ')
-              },
-              {
-                title: HANG_TRACKS.literature[3].title,
-                subtitle: 'Nghị luận văn học',
-                description: HANG_TRACKS.literature[3].summary,
-                icon: <Volume2 className="w-8 h-8 text-synth-cyan" />,
-                mode: 'mixed' as const,
-                reward: HANG_TRACKS.literature[3].focus.join(' · ')
-              }
-            ].map(card => (
-              <div
-                key={card.title}
-                onClick={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 30)}
-                className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
-              >
-                <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(0,240,255,0.08),transparent_60%)]" />
-                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white">
-                  <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
-                </div>
-                <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
-                  {card.icon}
-                </div>
-                <div className="space-y-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="font-orbitron font-black text-base text-synth-cyan">🏰 {card.title}</h4>
-                    <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-synth-cyan/15 border border-synth-cyan/30 text-synth-cyan">Văn</span>
-                  </div>
-                  <div className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-400">{card.subtitle}</div>
-                  <p className="text-xs text-slate-300 leading-relaxed">{card.description}</p>
-                  <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
-                    Phần thưởng: <span className="text-white">{card.reward}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {!isChuyenSau && (
-          <div className="grid grid-cols-1 mb-4">
-            <div
-              onClick={() => handleLaunchZone('mixed', challengeEnergyCosts[1] ?? 30)}
-              className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
-            >
-              <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(0,240,255,0.08),transparent_60%)]" />
-              <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white">
-                <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
-              </div>
-              <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
-                <BookOpen className="w-8 h-8 text-synth-cyan" />
-              </div>
-              <div className="space-y-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="font-orbitron font-black text-base text-synth-cyan">🏰 Mixed/Skill Practicing - {subjectMeta.name}</h4>
-                </div>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  Luyện ngẫu nhiên toàn bộ trọng tâm môn {subjectMeta.name}.
-                </p>
-                <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
-                  Trọng tâm: <span className="text-white">{(HANG_TRACKS[currentSubject]?.[0]?.focus ?? []).join(' · ') || 'Đang cập nhật'}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {rankedCards.map(card => (
+            <div key={card.id} className="relative">
+              <FogCard
+                pageId={`arena-free-${card.id}`}
+                requiredCompletions={3}
+                decayDays={7}
+                onOpenLevel3={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 30)}
+              >
+                <div
+                  onClick={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 30)}
+                  className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full"
+                >
+                  <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white z-10">
+                    <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
+                  </div>
+                  <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
+                    {card.icon}
+                  </div>
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h4 className="font-orbitron font-black text-sm text-synth-cyan">🏰 {card.title}</h4>
+                    </div>
+                    <div className="text-[9px] font-bold uppercase tracking-[0.24em] text-slate-400">{card.subtitle}</div>
+                    <p className="text-xs text-slate-300 leading-relaxed line-clamp-2">{card.description}</p>
+                    <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
+                      Phần thưởng: <span className="text-white">{card.reward}</span>
+                    </div>
+                  </div>
+                </div>
+              </FogCard>
+            </div>
+          ))}
 
-          {/* Survival Mode – chỉ Nhóm Chuyên Sâu có Sinh Tồn (CORE_SPECS §1.3) */}
-          {isChuyenSau && (
-            <div
-              onClick={() => handleLaunchZone('survival', challengeEnergyCosts[0] ?? 30)}
-              className="glass-panel glass-panel-hover rounded-2xl border border-red-500/40 hover:border-red-400 bg-gradient-to-br from-red-500/10 via-orange-500/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 md:col-span-2"
+          {/* Random & Revenge inside Ranked list for more options */}
+          <div className="relative">
+            <FogCard
+              pageId="arena-free-random"
+              requiredCompletions={3}
+              decayDays={7}
+              onOpenLevel3={() => handleLaunchZone('mixed', challengeEnergyCosts[1] ?? 30)}
             >
-              <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_top_right,rgba(239,68,68,0.07),transparent_60%)]" />
-              <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-red-500/20 border border-red-500/40 text-red-400">
-                <Zap className="w-3 h-3 text-red-400 fill-red-400" /> {challengeEnergyCosts[0] ?? 30}
-              </div>
-              <div className="w-14 h-14 rounded-xl border border-red-500/30 bg-red-500/10 flex items-center justify-center shrink-0">
-                <Skull className="w-8 h-8 text-red-400" />
-              </div>
-              <div className="space-y-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h4 className="font-orbitron font-black text-base text-red-400">⚔️ Đấu Trường Sinh Tồn</h4>
-                  <span className="px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider bg-red-500/20 border border-red-500/30 text-red-300">Survival</span>
+              <div
+                onClick={() => handleLaunchZone('mixed', challengeEnergyCosts[1] ?? 30)}
+                className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full"
+              >
+                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white z-10">
+                  <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  15 câu hỏi hỗn hợp liên tục – trả lời sai mất 1 mạng <Heart className="inline w-3 h-3 text-red-400 fill-red-400" />. Chỉ có 3 mạng, trả lời đúng liên tiếp nhận thưởng XP và NP tăng theo cấp số nhân!
-                </p>
-                <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
-                  Phần thưởng: <span className="text-red-300">+1.5× XP & NP mỗi câu đúng / Combo multiplier</span>
+                <div className="w-14 h-14 rounded-xl border border-white/5 bg-synth-gray/50 flex items-center justify-center shrink-0">
+                  <Star className="w-7 h-7 text-synth-cyan" />
+                </div>
+                <div className="space-y-1 min-w-0">
+                  <h4 className="font-orbitron font-bold text-sm text-white">🌀 Vào ải ngẫu nhiên</h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">10 câu hỏi ngẫu nhiên từ toàn bộ chuyên đề, ưu tiên câu yếu.</p>
+                  <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">Phần thưởng: <span className="text-white">+15 XP / +5 NP</span></div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Mixed random */}
-          <div
-            onClick={() => handleLaunchZone('mixed', challengeEnergyCosts[1] ?? 30)}
-            className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
-          >
-            <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white">
-              <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
-            </div>
-            <div className="w-12 h-12 rounded-xl border border-white/5 bg-synth-gray/50 flex items-center justify-center shrink-0">
-              <Star className="w-7 h-7 text-synth-cyan" />
-            </div>
-            <div className="space-y-1 min-w-0">
-              <h4 className="font-orbitron font-bold text-base text-synth-cyan">🌀 Vào ải ngẫu nhiên</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">10 câu hỏi ngẫu nhiên từ toàn bộ chuyên đề, ưu tiên câu yếu.</p>
-              <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">Phần thưởng: <span className="text-white">+15 XP / +5 NP</span></div>
-            </div>
+            </FogCard>
           </div>
 
-          {/* Revenge Dungeon */}
-          <div
-            onClick={() => handleLaunchZone('revenge', challengeEnergyCosts[2] ?? 30)}
-            className="glass-panel glass-panel-hover rounded-2xl border border-synth-orange/30 hover:border-synth-orange bg-gradient-to-br from-synth-orange/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
-          >
-            <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-orange/20 text-white">
-              <Zap className="w-3 h-3 text-synth-orange fill-synth-orange" /> {challengeEnergyCosts[2] ?? 30}
-            </div>
-            <div className="w-12 h-12 rounded-xl border border-white/5 bg-synth-gray/50 flex items-center justify-center shrink-0">
-              <ShieldAlert className="w-7 h-7 text-synth-orange" />
-            </div>
-            <div className="space-y-1 min-w-0">
-              <h4 className="font-orbitron font-bold text-base text-synth-orange">💀 Sửa sai truy tung</h4>
-              <p className="text-xs text-slate-400 leading-relaxed">Tập hợp toàn bộ câu hỏi đã từng làm sai để giải lại và sửa chữa lỗi lầm.</p>
-              <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">Phần thưởng: <span className="text-white">XP hồi phục / Xoá sai cũ</span></div>
-            </div>
+          <div className="relative">
+            <FogCard
+              pageId="arena-free-revenge"
+              requiredCompletions={3}
+              decayDays={7}
+              onOpenLevel3={() => handleLaunchZone('revenge', challengeEnergyCosts[2] ?? 30)}
+            >
+              <div
+                onClick={() => handleLaunchZone('revenge', challengeEnergyCosts[2] ?? 30)}
+                className="glass-panel glass-panel-hover rounded-2xl border border-synth-orange/30 hover:border-synth-orange bg-gradient-to-br from-synth-orange/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full"
+              >
+                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-orange/20 text-white z-10">
+                  <Zap className="w-3 h-3 text-synth-orange fill-synth-orange" /> {challengeEnergyCosts[2] ?? 30}
+                </div>
+                <div className="w-14 h-14 rounded-xl border border-white/5 bg-synth-gray/50 flex items-center justify-center shrink-0">
+                  <ShieldAlert className="w-7 h-7 text-synth-orange" />
+                </div>
+                <div className="space-y-1 min-w-0">
+                  <h4 className="font-orbitron font-bold text-sm text-synth-orange">💀 Sửa sai truy tung</h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">Tập hợp câu hỏi đã làm sai để giải lại và sửa lỗi lầm.</p>
+                  <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">Phần thưởng: <span className="text-white">XP hồi phục / Xoá sai</span></div>
+                </div>
+              </div>
+            </FogCard>
           </div>
         </div>
       </div>
 
-      {/* ─── TOPIC DUNGEON ─── */}
+      {/* CẢNH 2: LÔI ĐÀI THẦN THÚ (Level 2 Section) */}
+      <div className={`rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'bg-violet-50/40 border-violet-200/40' : 'bg-synth-purple/5 border-synth-purple/10'}`}>
+        <div className="space-y-0.5">
+          <h3 className={`font-orbitron font-black text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
+            🐲 Lôi Đài Thần Thú (Boss Battle)
+          </h3>
+          <p className="text-[10px] text-slate-400">Khảo hạch toàn diện bằng các đề thi thật tuyển sinh/học kỳ các năm trước</p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {bosses.map((boss, index) => (
+            <div key={boss.id} className="relative">
+              <FogCard
+                pageId={`arena-boss-${boss.id}`}
+                requiredCompletions={1}
+                decayDays={7}
+                onOpenLevel3={() => handleLaunchZone('boss', boss.energy, boss.id)}
+              >
+                <div
+                  onClick={() => handleLaunchZone('boss', boss.energy, boss.id)}
+                  className={`glass-panel glass-panel-hover rounded-2xl p-5 flex flex-col justify-between cursor-pointer relative min-h-[160px] transition-all duration-300 h-full ${
+                    isUnicorn
+                      ? 'border-violet-200/35 hover:border-violet-300 bg-gradient-to-t from-white/80 to-fuchsia-50/60 shadow-[0_14px_30px_rgba(192,132,252,0.1)]'
+                      : 'border-synth-magenta/20 hover:border-synth-magenta bg-gradient-to-t from-synth-magenta/5 to-transparent'
+                  }`}
+                >
+                  <div className={`absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold z-10 ${
+                    isUnicorn ? 'bg-white/80 border border-violet-200/40 text-violet-700' : 'bg-synth-blue border border-synth-magenta/30 text-synth-magenta'
+                  }`}>
+                    <Zap className={`w-3 h-3 ${isUnicorn ? 'text-fuchsia-500 fill-fuchsia-500' : 'text-synth-magenta fill-synth-magenta'}`} /> {boss.energy}
+                  </div>
+
+                  <div className="space-y-2">
+                    <span className={`text-[9px] font-bold font-orbitron px-2 py-0.5 rounded uppercase ${
+                      isUnicorn ? 'bg-fuchsia-100/80 text-violet-700 border border-violet-200/40' : 'bg-synth-magenta/15 text-synth-magenta border border-synth-magenta/30'
+                    }`}>
+                      Độ Khó: Boss
+                    </span>
+                    <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
+                      {boss.name}
+                    </h4>
+                    <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'} leading-relaxed`}>
+                      {isChuyenSau
+                        ? `Đề thi chuẩn cấu trúc sở GD HCMC năm ${boss.tag}. Chỉ 1 mạng duy nhất!`
+                        : `Đề thi ${boss.tag === 'HK1' ? 'Học Kỳ 1' : 'Học Kỳ 2'} lớp 9. Chỉ 1 mạng duy nhất!`}
+                    </p>
+                  </div>
+
+                  <div className="border-t border-synth-gray/50 pt-3 mt-3 flex justify-between items-center text-xs font-semibold">
+                    <span className={isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}>Vàng săn thưởng:</span>
+                    <span className={`font-orbitron font-bold flex items-center gap-1 ${isUnicorn ? 'text-violet-700' : 'text-synth-green'}`}>
+                      +{(bossBountiesVnd[index] ?? [10000, 15000, 20000][index]).toLocaleString('vi-VN')}đ
+                    </span>
+                  </div>
+                </div>
+              </FogCard>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* CẢNH 3: VỰC SINH TỒN (Level 2 Section) */}
+      {isChuyenSau && (
+        <div className={`rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'bg-red-50/40 border-red-200/40' : 'bg-red-500/5 border-red-500/10'}`}>
+          <div className="space-y-0.5">
+            <h3 className={`font-orbitron font-black text-sm uppercase tracking-wider ${isUnicorn ? 'text-red-800' : 'text-red-400'}`}>
+              🛡️ Vực Sinh Tồn (Survival Mode)
+            </h3>
+            <p className="text-[10px] text-slate-400">Thử thách leo tháp sinh tồn cực hạn dưới giới hạn 3 mạng đỏ</p>
+          </div>
+
+          <div className="relative">
+            <FogCard
+              pageId="arena-survival"
+              requiredCompletions={1}
+              decayDays={7}
+              onOpenLevel3={() => handleLaunchZone('survival', challengeEnergyCosts[0] ?? 30)}
+            >
+              <div
+                onClick={() => handleLaunchZone('survival', challengeEnergyCosts[0] ?? 30)}
+                className="glass-panel glass-panel-hover rounded-2xl border border-red-500/40 hover:border-red-400 bg-gradient-to-br from-red-500/10 via-orange-500/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
+              >
+                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-red-500/20 border border-red-500/40 text-red-400 z-10">
+                  <Zap className="w-3 h-3 text-red-400 fill-red-400" /> {challengeEnergyCosts[0] ?? 30}
+                </div>
+                <div className="w-14 h-14 rounded-xl border border-red-500/30 bg-red-500/10 flex items-center justify-center shrink-0">
+                  <Skull className="w-8 h-8 text-red-400" />
+                </div>
+                <div className="space-y-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h4 className="font-orbitron font-black text-sm text-red-400">⚔️ Đấu Trường Sinh Tồn</h4>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    15 câu hỏi hỗn hợp liên tục – trả lời sai mất 1 mạng <Heart className="inline w-3 h-3 text-red-400 fill-red-400" />. Chỉ có 3 mạng, trả lời đúng liên tiếp nhận thưởng cấp số nhân!
+                  </p>
+                  <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
+                    Phần thưởng: <span className="text-red-300">+1.5× XP & NP mỗi câu đúng / Combo multiplier</span>
+                  </div>
+                </div>
+              </div>
+            </FogCard>
+          </div>
+        </div>
+      )}
+
+      {/* ─── HẦM NGỤC CHUYÊN ĐỀ ─── */}
       <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden">
         <button
           onClick={() => setTopicOpen(prev => !prev)}
@@ -438,7 +483,7 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
           <div className="border-t border-white/10 p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
             {subjectLessons.length === 0 && (
               <div className="col-span-2 text-center text-slate-400 text-sm py-4">
-                Môn này chưa có chuyên đề. Bổ sung rồi quay lại.
+                Môn này chưa có chuyên đề.
               </div>
             )}
             {subjectLessons.map(lesson => {
@@ -507,56 +552,6 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
             })}
           </div>
         )}
-      </div>
-
-      {/* ─── BOSS ARENA ─── */}
-      <div>
-        <h3 className={`font-orbitron font-bold text-base uppercase tracking-wider mb-4 flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-magenta'}`}>
-          <Sword className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : ''}`} /> Boss Arena {isChuyenSau ? '(Đề thi tuyển sinh lớp 10 HCMC)' : '(Đề thi Học Kỳ)'}
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {bosses.map((boss, index) => (
-            <div
-              key={boss.id}
-              onClick={() => handleLaunchZone('boss', boss.energy, boss.id)}
-              className={`glass-panel glass-panel-hover rounded-2xl p-5 flex flex-col justify-between cursor-pointer relative min-h-[160px] transition-all duration-300 ${
-                isUnicorn
-                  ? 'border-violet-200/35 hover:border-violet-300 bg-gradient-to-t from-white/80 to-fuchsia-50/60 shadow-[0_14px_30px_rgba(192,132,252,0.1)]'
-                  : 'border-synth-magenta/20 hover:border-synth-magenta bg-gradient-to-t from-synth-magenta/5 to-transparent'
-              }`}
-            >
-              <div className={`absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold ${
-                isUnicorn ? 'bg-white/80 border border-violet-200/40 text-violet-700' : 'bg-synth-blue border border-synth-magenta/30 text-synth-magenta'
-              }`}>
-                <Zap className={`w-3 h-3 ${isUnicorn ? 'text-fuchsia-500 fill-fuchsia-500' : 'text-synth-magenta fill-synth-magenta'}`} /> {boss.energy}
-              </div>
-
-              <div className="space-y-2">
-                <span className={`text-[10px] font-bold font-orbitron px-2 py-0.5 rounded uppercase ${
-                  isUnicorn ? 'bg-fuchsia-100/80 text-violet-700 border border-violet-200/40' : 'bg-synth-magenta/15 text-synth-magenta border border-synth-magenta/30'
-                }`}>
-                  Độ Khó: Boss
-                </span>
-                <h4 className={`font-orbitron font-bold text-base ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-                  {boss.name}
-                </h4>
-                <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
-                  {isChuyenSau
-                    ? `Đề thi chuẩn cấu trúc sở GD HCMC năm ${boss.tag}. Chỉ 1 mạng duy nhất!`
-                    : `Đề thi ${boss.tag === 'HK1' ? 'Học Kỳ 1' : 'Học Kỳ 2'} bám sát chương trình lớp 9. Chỉ 1 mạng duy nhất!`}
-                </p>
-              </div>
-
-              <div className="border-t border-synth-gray/50 pt-3 mt-3 flex justify-between items-center text-xs font-semibold">
-                <span className={isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}>Vàng săn thưởng:</span>
-                <span className={`font-orbitron font-bold flex items-center gap-1 ${isUnicorn ? 'text-violet-700' : 'text-synth-green'}`}>
-                  +{(bossBountiesVnd[index] ?? [10000, 15000, 20000][index]).toLocaleString('vi-VN')}đ
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     </div>
   );

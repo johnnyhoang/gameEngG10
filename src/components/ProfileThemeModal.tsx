@@ -7,6 +7,7 @@ import { SUBJECTS_CONFIG } from '../types/game';
 import type { SubjectId } from '../types/game';
 import { toast } from '../utils/toast';
 import { GiangHoCamNang } from './GiangHoCamNang';
+import { CORE_KNOWLEDGE_TOPICS } from '../data/coreKnowledge';
 
 interface ProfileThemeModalProps {
   isOpen: boolean;
@@ -115,7 +116,10 @@ export const ProfileThemeModal: React.FC<ProfileThemeModalProps> = ({
     
     // Calculate correct questions count
     const correctCount = subjectCategories.reduce((sum, cat) => sum + (categoryStats[cat]?.totalCorrect || 0), 0);
-    const totalQuestions = questions.filter(q => q.subject === subId).length;
+    
+    // CORE_SPECS §9.4 & §9.E Completion Rate using Core Knowledge minQuestions as the base total
+    const topics = CORE_KNOWLEDGE_TOPICS.filter(t => t.subjectId === subId);
+    const totalQuestions = topics.reduce((sum, t) => sum + t.minQuestions, 0) || questions.filter(q => q.subject === subId).length || 1;
     
     // Calculate lessons progress
     const totalLessons = lessons.filter(l => l.subject === subId).length;

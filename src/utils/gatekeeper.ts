@@ -72,25 +72,40 @@ export function pickGatekeeperQuestion(
   const eligibleTopics = getTopicsBySubjectAndHam(subjectId, ham);
   const eligibleTopicIds = new Set(eligibleTopics.map(t => t.id));
 
-  // Lọc câu hỏi đủ điều kiện
+  // Lọc câu hỏi đủ điều kiện - Ưu tiên câu Core Knowledge DỄ (difficulty 1-3)
   const candidates = allQuestions.filter(q => {
     const matchSubject = q.subject === subjectId;
     const matchTopic = q.topicId ? eligibleTopicIds.has(q.topicId) : false;
-    const matchDifficulty = q.difficulty >= 3 && q.difficulty <= 5;
+    const matchDifficulty = q.difficulty >= 1 && q.difficulty <= 3;
     const matchType = q.type === 'mcq' || q.type === 'multiple_choice' || q.type === 'wordform';
     return matchSubject && matchTopic && matchDifficulty && matchType;
   });
 
   if (candidates.length === 0) {
-    // Fallback: câu MCQ/wordform của môn phái, bỏ điều kiện topicId
-    const fallback = allQuestions.filter(q =>
-      q.subject === subjectId &&
-      (q.type === 'mcq' || q.type === 'multiple_choice' || q.type === 'wordform') &&
-      q.difficulty >= 2 && q.difficulty <= 6
-    );
-    if (fallback.length === 0) return null;
-    const unused = fallback.filter(q => !usedQuestionIds.includes(q.id));
-    const pool = unused.length > 0 ? unused : fallback;
+    // Fallback 1: Cho phép độ khó lên tới 4 nếu quá hiếm câu 1-3
+    const candidates4 = allQuestions.filter(q => {
+      const matchSubject = q.subject === subjectId;
+      const matchTopic = q.topicId ? eligibleTopicIds.has(q.topicId) : false;
+      const matchDifficulty = q.difficulty >= 1 && q.difficulty <= 4;
+      const matchType = q.type === 'mcq' || q.type === 'multiple_choice' || q.type === 'wordform';
+      return matchSubject && matchTopic && matchDifficulty && matchType;
+    });
+
+    if (candidates4.length === 0) {
+      // Fallback 2: Bỏ điều kiện topic, chọn câu MCQ/wordform dễ của môn phái
+      const fallback = allQuestions.filter(q =>
+        q.subject === subjectId &&
+        (q.type === 'mcq' || q.type === 'multiple_choice' || q.type === 'wordform') &&
+        q.difficulty <= 3
+      );
+      if (fallback.length === 0) return null;
+      const unused = fallback.filter(q => !usedQuestionIds.includes(q.id));
+      const pool = unused.length > 0 ? unused : fallback;
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+
+    const unused = candidates4.filter(q => !usedQuestionIds.includes(q.id));
+    const pool = unused.length > 0 ? unused : candidates4;
     return pool[Math.floor(Math.random() * pool.length)];
   }
 

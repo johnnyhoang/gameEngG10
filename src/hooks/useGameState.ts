@@ -1269,7 +1269,7 @@ export const useGameState = create<GameState>()(
           if (!question) return { isCorrect: false, expGained: 0, coinsGained: 0, comboMultiplier: 1, scoreRatio: 0 };
 
           // 1. Update rolling category stats
-          const category = question.category;
+          const category = question.topicId || question.category;
           const currentStat = state.categoryStats[category] || {
             category,
             totalAnswered: 0,

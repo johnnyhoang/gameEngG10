@@ -36,6 +36,7 @@ const initDB = async () => {
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS image_url TEXT;`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS is_confused BOOLEAN DEFAULT FALSE;`);
+    await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS topic_id VARCHAR(100);`);
     await pool.query(`ALTER TABLE ge10_player_profiles ADD COLUMN IF NOT EXISTS server_updated_at TIMESTAMP DEFAULT NOW();`);
 
     // Seed lessons
@@ -286,11 +287,12 @@ const persistCustomQuestion = async (userId: string, question: any) => {
   }
 
   await pool.query(
-    `INSERT INTO ge10_custom_questions (id, user_id, type, category, prompt, options, correct_answer, explanation, difficulty, source, subject, image_url, metadata, lesson_id, is_confused)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+    `INSERT INTO ge10_custom_questions (id, user_id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, image_url, metadata, lesson_id, is_confused)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
      ON CONFLICT (id) DO UPDATE SET
        type = EXCLUDED.type,
        category = EXCLUDED.category,
+       topic_id = EXCLUDED.topic_id,
        prompt = EXCLUDED.prompt,
        options = EXCLUDED.options,
        correct_answer = EXCLUDED.correct_answer,
@@ -307,6 +309,7 @@ const persistCustomQuestion = async (userId: string, question: any) => {
       userId,
       question.type || 'mcq',
       question.category,
+      question.topicId || null,
       question.prompt,
       question.options || null,
       Array.isArray(question.correctAnswer) ? question.correctAnswer : [question.correctAnswer],
@@ -742,6 +745,7 @@ app.get('/api/questions/custom', authMiddleware, async (req: any, res) => {
       id: row.id,
       type: row.type,
       category: row.category,
+      topicId: row.topic_id,
       prompt: row.prompt,
       options: row.options,
       correctAnswer: row.correct_answer,

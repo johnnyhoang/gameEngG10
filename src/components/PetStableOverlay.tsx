@@ -55,6 +55,13 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
         return;
       }
 
+      // Check if any other modal is open
+      const hasOtherModal = document.querySelectorAll('.fixed.inset-0').length > 0;
+      if (hasOtherModal) {
+        // Postpone trigger but DON'T reset lastActiveTime, so it will trigger as soon as modals are closed
+        return;
+      }
+
       const now = Date.now();
       const idleTime = now - lastActiveTime.current;
       

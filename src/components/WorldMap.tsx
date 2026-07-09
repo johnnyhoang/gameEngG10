@@ -1,8 +1,11 @@
+import { useMemo } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { INITIAL_LESSONS } from '../data/lessons';
 import {
   Sword, Mountain, Palmtree, Store, PawPrint, BrainCircuit, ArrowRight
 } from 'lucide-react';
+import { CORE_KNOWLEDGE_TOPICS, inferTopicId } from '../data/coreKnowledge';
+import { getHamForPage } from '../utils/gatekeeper';
 
 interface WorldMapProps {
   onOpenArena: () => void;
@@ -34,21 +37,57 @@ export function WorldMap({
     return day === 0 || day === 6;
   };
 
+  const pageExplorationStates = useGameState(state => state.pageExplorationStates || {});
   const subjectLessons = INITIAL_LESSONS.filter(l => l.subject === currentSubject);
   const completedLessons = subjectLessons.filter(l => lessonsProgress[l.id]).length;
 
-  const weakCategories = Object.entries(categoryStats)
-    .map(([cat, stat]) => ({
-      cat,
-      accuracy: stat.totalAnswered > 0 ? stat.totalCorrect / stat.totalAnswered : 1
-    }))
-    .filter(x => x.accuracy < 0.5 && categoryStats[x.cat].totalAnswered >= 2)
-    .sort((a, b) => a.accuracy - b.accuracy)
-    .slice(0, 2);
+  const weakData = useMemo(() => {
+    const subjectPageStates = Object.values(pageExplorationStates).filter(state => 
+      state.pageId.startsWith(`hang-${currentSubject}-`)
+    );
 
-  const weakLesson = weakCategories.length > 0
-    ? subjectLessons.find(l => l.category === weakCategories[0].cat)
-    : null;
+    const sortedPages = [...subjectPageStates].sort((a, b) => {
+      const timeA = a.lastExploredAt ? new Date(a.lastExploredAt).getTime() : 0;
+      const timeB = b.lastExploredAt ? new Date(b.lastExploredAt).getTime() : 0;
+      return timeA - timeB;
+    });
+
+    const preferredHam = sortedPages.length > 0 ? getHamForPage(sortedPages[0].pageId) : null;
+    const subjectTopics = CORE_KNOWLEDGE_TOPICS.filter(t => t.subjectId === currentSubject);
+    
+    const topicAccuracies = subjectTopics.map(t => {
+      const stat = categoryStats[t.id] || categoryStats[t.label];
+      return {
+        topic: t,
+        accuracy: stat && stat.totalAnswered > 0 ? stat.totalCorrect / stat.totalAnswered : 1,
+        totalAnswered: stat ? stat.totalAnswered : 0
+      };
+    });
+
+    const highRelevance = topicAccuracies.filter(item => item.topic.examRelevance === 'high');
+
+    const sortedRecs = [...highRelevance].sort((a, b) => {
+      const inHamA = preferredHam && a.topic.hamNguyenTo === preferredHam ? 1 : 0;
+      const inHamB = preferredHam && b.topic.hamNguyenTo === preferredHam ? 1 : 0;
+      if (inHamA !== inHamB) return inHamB - inHamA;
+      
+      return a.accuracy - b.accuracy;
+    });
+
+    const weakTopicItem = sortedRecs.find(item => item.accuracy < 0.8);
+    if (!weakTopicItem) return null;
+
+    const matchingLesson = subjectLessons.find(l => inferTopicId(l.category, l.subject) === weakTopicItem.topic.id);
+    if (!matchingLesson) return null;
+
+    return {
+      lesson: matchingLesson,
+      accuracy: weakTopicItem.accuracy
+    };
+  }, [pageExplorationStates, categoryStats, currentSubject, subjectLessons]);
+
+  const weakLesson = weakData?.lesson ?? null;
+  const weakAccuracy = weakData?.accuracy ?? 0;
 
   const questBannerClass = isUnicorn
     ? 'glass-panel rounded-2xl border border-violet-200/35 bg-gradient-to-r from-fuchsia-50/90 via-white/90 to-cyan-50/90 p-5 flex flex-col md:flex-row justify-between items-center gap-4 shadow-[0_10px_28px_rgba(192,132,252,0.12)]'
@@ -172,7 +211,7 @@ export function WorldMap({
           </div>
           <p className="text-xs text-slate-300 flex-1 leading-relaxed">
             Con đang yếu ở chuyên đề <span className="text-amber-300 font-bold">{weakLesson.title}</span> (chỉ{' '}
-            {Math.round((weakCategories[0].accuracy) * 100)}% chính xác). Ôn lại ngay, đừng để lỗ hổng phình ra.
+            {Math.round(weakAccuracy * 100)}% chính xác). Ôn lại ngay, đừng để lỗ hổng phình ra.
           </p>
           <div className="flex gap-2 shrink-0">
             {onStudyLesson && (

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { Activity, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 import type { HistoryLog, PetStage } from '../types/game';
+import { FogCard } from './FogCard';
 
 const PET_STAGE_ORDER: PetStage[] = ['egg', 'baby', 'adult', 'legend'];
 
@@ -447,7 +448,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
   };
 
   return (
-    <div className={isFull ? 'max-w-3xl mx-auto space-y-6' : 'contents'}>
+    <div className={isFull ? 'max-w-6xl mx-auto space-y-6' : 'contents'}>
       {isFull && (
         <div className="flex items-center justify-between gap-3">
           <h2 className={`font-orbitron text-lg font-black uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
@@ -463,9 +464,12 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
           )}
         </div>
       )}
-    <div className={`glass-panel rounded-2xl border p-5 flex flex-col ${isFull ? 'max-w-md mx-auto' : 'h-full'} ${
-      isUnicorn ? 'border-violet-200/35 bg-gradient-to-b from-white/90 via-fuchsia-50/80 to-cyan-50/70' : 'border-synth-cyan/15'
-    }`}>
+
+      <div className={isFull ? "grid grid-cols-1 lg:grid-cols-2 gap-6 items-start" : "contents"}>
+        {/* CẢNH 1: CHUỒNG CHĂM SÓC (Stable) */}
+        <div className={`glass-panel rounded-2xl border p-5 flex flex-col ${isFull ? 'w-full' : 'h-full'} ${
+          isUnicorn ? 'border-violet-200/35 bg-gradient-to-b from-white/90 via-fuchsia-50/80 to-cyan-50/70' : 'border-synth-cyan/15'
+        }`}>
       {/* CSS Styles for floating/wiggling animations */}
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes float {
@@ -582,104 +586,114 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
       </div>
     </div>
 
-      {/* Album Kỷ Niệm (CORE_SPECS §2.5): xem lại hành trình tiến hóa, giai đoạn chưa đạt tới bị khóa. */}
-      {isFull && (() => {
-        const viewedStage = PET_STAGE_ORDER[albumIndex];
-        const isUnlocked = albumIndex < unlockedStageCount;
-        return (
-          <div className={`glass-panel rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'border-violet-200/35' : 'border-synth-cyan/15'}`}>
-            <div className="flex items-center justify-between gap-3">
-              <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
-                📔 Album Kỷ Niệm
-              </h3>
-              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                {albumIndex + 1}/{PET_STAGE_ORDER.length}
-              </span>
-            </div>
+        {/* CẢNH 2: TÀNG THƯ KỶ NIỆM (Album) */}
+        {isFull && (() => {
+          const viewedStage = PET_STAGE_ORDER[albumIndex];
+          const isUnlocked = albumIndex < unlockedStageCount;
+          return (
+            <div className={`glass-panel rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'border-violet-200/35' : 'border-synth-cyan/15'} w-full`}>
+              <div className="flex items-center justify-between gap-3">
+                <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
+                  📔 Album Kỷ Niệm
+                </h3>
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  {albumIndex + 1}/{PET_STAGE_ORDER.length}
+                </span>
+              </div>
 
-            <div className="grid grid-cols-4 gap-2">
-              {PET_STAGE_ORDER.map((stage, idx) => {
-                const unlocked = idx < unlockedStageCount;
-                const active = idx === albumIndex;
-                return (
-                  <button
-                    key={stage}
-                    onClick={() => setAlbumIndex(idx)}
-                    className={`rounded-xl border p-2 flex flex-col items-center gap-1 transition-all cursor-pointer ${
-                      active
-                        ? 'border-synth-cyan/50 bg-synth-cyan/10'
-                        : 'border-white/10 bg-white/5 hover:border-white/20'
-                    }`}
-                  >
-                    {unlocked ? (
-                      <span className="text-xl">🐷</span>
+              <div className="grid grid-cols-4 gap-2">
+                {PET_STAGE_ORDER.map((stage, idx) => {
+                  const unlocked = idx < unlockedStageCount;
+                  const active = idx === albumIndex;
+                  return (
+                    <button
+                      key={stage}
+                      onClick={() => setAlbumIndex(idx)}
+                      className={`rounded-xl border p-2 flex flex-col items-center gap-1 transition-all cursor-pointer ${
+                        active
+                          ? 'border-synth-cyan/50 bg-synth-cyan/10'
+                          : 'border-white/10 bg-white/5 hover:border-white/20'
+                      }`}
+                    >
+                      {unlocked ? (
+                        <span className="text-xl">🐷</span>
+                      ) : (
+                        <Lock className="w-4 h-4 text-slate-500" />
+                      )}
+                      <span className={`text-[8px] uppercase font-bold text-center leading-tight ${unlocked ? 'text-slate-300' : 'text-slate-600'}`}>
+                        {unlocked ? PET_STAGE_LABELS[stage].replace(/[^\p{L}\p{N} ]/gu, '').trim() : 'Chưa mở'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="relative">
+                <FogCard
+                  pageId={`pet-album-${viewedStage}`}
+                  requiredCompletions={1}
+                  decayDays={14}
+                  onOpenLevel3={() => {}}
+                >
+                  <div className="rounded-2xl border border-white/10 bg-black/35 p-6 flex flex-col items-center gap-4 text-center min-h-[300px] justify-center">
+                    {isUnlocked ? (
+                      <div className="space-y-4 w-full">
+                        {/* Polaroid Frame */}
+                        <div className="bg-white p-3 pb-5 rounded shadow-xl text-black max-w-xs mx-auto transform rotate-[-1deg] hover:rotate-0 transition-transform duration-300">
+                          <div className="bg-slate-900 rounded-lg p-4 flex items-center justify-center min-h-[140px] border border-slate-800">
+                            {renderPetAvatarForStage(viewedStage, 'happy', false, false)}
+                          </div>
+                          {/* Handwritten Photo Caption */}
+                          <div className="mt-3 text-xs font-serif font-bold tracking-tight text-slate-800 border-t border-slate-100 pt-2 min-h-[32px] flex items-center justify-center">
+                            ✍️ {STAGE_MEMORIES[viewedStage]?.photoConcept}
+                          </div>
+                        </div>
+
+                        {/* Memory Story */}
+                        <div className="space-y-1.5 pt-2">
+                          <div className="font-orbitron font-black uppercase tracking-wider text-xs text-synth-cyan">
+                            Giai đoạn: {PET_STAGE_LABELS[viewedStage]}
+                          </div>
+                          <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed font-serif italic bg-white/5 p-3 rounded-xl border border-white/5">
+                            "{STAGE_MEMORIES[viewedStage]?.story}"
+                          </p>
+                        </div>
+                      </div>
                     ) : (
-                      <Lock className="w-4 h-4 text-slate-500" />
+                      <div className="py-12 flex flex-col items-center justify-center">
+                        <Lock className="w-8 h-8 text-slate-600 mb-2 animate-pulse" />
+                        <div className="font-orbitron font-black uppercase tracking-wider text-sm text-slate-500">
+                          Kỷ niệm chưa mở khóa
+                        </div>
+                        <p className="text-xs text-slate-500 max-w-xs mt-1">
+                          Hãy kiên trì chăm sóc và cho Heo {pet.name} ăn để nâng cấp lên giai đoạn tiếp theo và giải mã bức ảnh này!
+                        </p>
+                      </div>
                     )}
-                    <span className={`text-[8px] uppercase font-bold text-center leading-tight ${unlocked ? 'text-slate-300' : 'text-slate-600'}`}>
-                      {unlocked ? PET_STAGE_LABELS[stage].replace(/[^\p{L}\p{N} ]/gu, '').trim() : 'Chưa mở'}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-
-            <div className="rounded-2xl border border-white/10 bg-black/35 p-6 flex flex-col items-center gap-4 text-center min-h-[300px] justify-center">
-              {isUnlocked ? (
-                <div className="space-y-4 w-full">
-                  {/* Polaroid Frame */}
-                  <div className="bg-white p-3 pb-5 rounded shadow-xl text-black max-w-xs mx-auto transform rotate-[-1deg] hover:rotate-0 transition-transform duration-300">
-                    <div className="bg-slate-900 rounded-lg p-4 flex items-center justify-center min-h-[140px] border border-slate-800">
-                      {renderPetAvatarForStage(viewedStage, 'happy', false, false)}
-                    </div>
-                    {/* Handwritten Photo Caption */}
-                    <div className="mt-3 text-xs font-serif font-bold tracking-tight text-slate-800 border-t border-slate-100 pt-2 min-h-[32px] flex items-center justify-center">
-                      ✍️ {STAGE_MEMORIES[viewedStage]?.photoConcept}
-                    </div>
                   </div>
+                </FogCard>
+              </div>
 
-                  {/* Memory Story */}
-                  <div className="space-y-1.5 pt-2">
-                    <div className="font-orbitron font-black uppercase tracking-wider text-xs text-synth-cyan">
-                      Giai đoạn: {PET_STAGE_LABELS[viewedStage]}
-                    </div>
-                    <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed font-serif italic bg-white/5 p-3 rounded-xl border border-white/5">
-                      "{STAGE_MEMORIES[viewedStage]?.story}"
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="py-12 flex flex-col items-center justify-center">
-                  <Lock className="w-8 h-8 text-slate-600 mb-2 animate-pulse" />
-                  <div className="font-orbitron font-black uppercase tracking-wider text-sm text-slate-500">
-                    Kỷ niệm chưa mở khóa
-                  </div>
-                  <p className="text-xs text-slate-500 max-w-xs mt-1">
-                    Hãy kiên trì chăm sóc và cho Heo {pet.name} ăn để nâng cấp lên giai đoạn tiếp theo và giải mã bức ảnh này!
-                  </p>
-                </div>
-              )}
+              <div className="flex items-center justify-between gap-3">
+                <button
+                  onClick={() => setAlbumIndex(prev => Math.max(0, prev - 1))}
+                  disabled={albumIndex === 0}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-[10px] font-bold uppercase tracking-wider hover:bg-white/10 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft className="w-4 h-4" /> Prev
+                </button>
+                <button
+                  onClick={() => setAlbumIndex(prev => Math.min(PET_STAGE_ORDER.length - 1, prev + 1))}
+                  disabled={albumIndex === PET_STAGE_ORDER.length - 1}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-[10px] font-bold uppercase tracking-wider hover:bg-white/10 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  Next <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
             </div>
-
-            <div className="flex items-center justify-between gap-3">
-              <button
-                onClick={() => setAlbumIndex(prev => Math.max(0, prev - 1))}
-                disabled={albumIndex === 0}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-[10px] font-bold uppercase tracking-wider hover:bg-white/10 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft className="w-4 h-4" /> Prev
-              </button>
-              <button
-                onClick={() => setAlbumIndex(prev => Math.min(PET_STAGE_ORDER.length - 1, prev + 1))}
-                disabled={albumIndex === PET_STAGE_ORDER.length - 1}
-                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-white text-[10px] font-bold uppercase tracking-wider hover:bg-white/10 transition-colors cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-              >
-                Next <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        );
-      })()}
+          );
+        })()}
+      </div>
     </div>
   );
 };
