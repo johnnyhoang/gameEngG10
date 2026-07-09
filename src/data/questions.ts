@@ -1,6 +1,7 @@
 import type { Question } from '../types/game';
+import { inferTopicId } from './coreKnowledge';
 
-export const INITIAL_QUESTIONS: Question[] = [
+const RAW_INITIAL_QUESTIONS: Question[] = [
   // 1. Word Form (HCMC High-Yield Focus)
   {
     id: 'wf-1',
@@ -1723,4 +1724,10 @@ Yêu cầu: Phân tích vẻ đẹp của tình cảm bà cháu và nỗi nhớ 
     metadata: { examPart: 'Phần III - Đề 2', literatureTrack: 'literary-essay', literatureTask: 'creative-essay', textGenre: 'mixed', answerMode: 'multi-part', solutionStyle: 'rubric', subparts: ['mở bài', 'giải thích ý kiến người bạn đồng hành', 'phân tích cảm xúc nhận thức từ tác phẩm', 'quá trình tự hoàn thiện bản thân nhờ tác phẩm', 'kết bài'], solutionSteps: ['Dẫn dắt và giải thích nhận định: Sách văn học đồng hành, nuôi dưỡng tâm hồn người đọc trên hành trình lớn khôn.', 'Lựa chọn và giới thiệu tác phẩm tâm đắc (Ví dụ truyện ngắn Chiếc lược ngà hoặc Lặng lẽ Sa Pa).', 'Chia sẻ cảm nhận cá nhân: Cách tác phẩm chạm đến trái tim, lay động tư tưởng riêng.', 'Phân tích bài học nhân sinh: Rút ra bài học đạo đức, lối sống, khát vọng từ "người bạn" ấy.', 'Liên hệ sự thay đổi tích cực trong suy nghĩ và hành động của bản thân hiện tại.', 'Kết luận khẳng định sức mạnh tinh thần của văn học.'], tags: ['trial-exam', 'hcmc-districts'] }
   } as any
 ];
+
+export const INITIAL_QUESTIONS: Question[] = RAW_INITIAL_QUESTIONS.map(q => ({
+  ...q,
+  topicId: q.topicId || inferTopicId(q.category, q.subject)
+}));
+
 

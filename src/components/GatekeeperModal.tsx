@@ -2,6 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { ShieldAlert, X, Brain, AlertCircle, ArrowRight } from 'lucide-react';
 import type { Question } from '../types/game';
+import {
+  pickGatekeeperQuestion,
+  getRecentlyUsedGatekeeperIds,
+  recordGatekeeperUsage,
+} from '../utils/gatekeeper';
 
 interface GatekeeperModalProps {}
 
@@ -15,7 +20,7 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
   const [isError, setIsError] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
 
-  const { questions, currentSubject, pageExplorationStates, updatePendingKeyQuestion } = useGameState();
+  const { questions, currentSubject, pageExplorationStates, updatePendingKeyQuestion, player } = useGameState();
 
   useEffect(() => {
     const handleOpen = (e: Event) => {
@@ -24,7 +29,7 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
       setPageId(pageId);
       setOnUnlockCallback(() => onUnlock);
       
-      // Load question
+      // Load question — ưu tiên câu bị ghim (pendingKeyQuestionId)
       const currentState = pageExplorationStates[pageId];
       let q: Question | undefined;
       
@@ -33,9 +38,12 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
       }
       
       if (!q) {
-        // Pick a random question for the current subject (preferably core knowledge: grammar, formula, wordform)
-        const subjectQuestions = questions.filter(q => q.subject === currentSubject && (q.type === 'multiple_choice' || q.type === 'short-answer' || q.type === 'wordform'));
-        q = subjectQuestions[Math.floor(Math.random() * subjectQuestions.length)];
+        // Dùng Core Knowledge-aware picker (CORE_SPECS §9.D)
+        const studentId = player?.id ?? 'guest';
+        const recentlyUsed = getRecentlyUsedGatekeeperIds(studentId, pageId);
+        const picked = pickGatekeeperQuestion(pageId, currentSubject, questions, recentlyUsed);
+        q = picked ?? undefined;
+        if (picked) recordGatekeeperUsage(studentId, pageId, picked.id);
       }
 
       setQuestion(q || null);
@@ -47,7 +55,8 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
 
     window.addEventListener('FOG_CARD_CLICKED', handleOpen);
     return () => window.removeEventListener('FOG_CARD_CLICKED', handleOpen);
-  }, [questions, currentSubject, pageExplorationStates]);
+  }, [questions, currentSubject, pageExplorationStates, player]);
+
 
   const handleClose = () => {
     setIsOpen(false);

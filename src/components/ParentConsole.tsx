@@ -118,6 +118,7 @@ export const ParentConsole: React.FC = () => {
   const [editPrompt, setEditPrompt] = useState('');
   const [editExplanation, setEditExplanation] = useState('');
   const [editCategory, setEditCategory] = useState('');
+  const [editTopicId, setEditTopicId] = useState('');
   const [editDifficulty, setEditDifficulty] = useState(5);
   const [editOptions, setEditOptions] = useState('');
   const [editCorrectAnswer, setEditCorrectAnswer] = useState('');
@@ -178,6 +179,7 @@ export const ParentConsole: React.FC = () => {
     setEditPrompt(editingQuestion.prompt);
     setEditExplanation(editingQuestion.explanation);
     setEditCategory(editingQuestion.category);
+    setEditTopicId(editingQuestion.topicId || '');
     setEditDifficulty(editingQuestion.difficulty);
     setEditOptions(Array.isArray(editingQuestion.options) ? editingQuestion.options.join('\n') : '');
     setEditCorrectAnswer(Array.isArray(editingQuestion.correctAnswer) ? editingQuestion.correctAnswer.join('\n') : editingQuestion.correctAnswer);
@@ -272,6 +274,7 @@ export const ParentConsole: React.FC = () => {
       prompt: editPrompt.trim(),
       explanation: editExplanation.trim(),
       category: editCategory.trim(),
+      topicId: editTopicId.trim() || undefined,
       difficulty: Math.max(1, Math.min(10, Number(editDifficulty) || 5)),
       options: nextOptions.length > 0 ? nextOptions : undefined,
       correctAnswer: nextCorrectAnswer.length > 1 ? nextCorrectAnswer : nextCorrectAnswer[0] || '',
