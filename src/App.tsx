@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useGameState } from './hooks/useGameState';
 import { TopHUD } from './components/TopHUD';
 import { PetSanctuary } from './components/PetSanctuary';
+import { PetStableOverlay } from './components/PetStableOverlay';
 import { ActivityLog } from './components/ActivityLog';
 import { WorldMap } from './components/WorldMap';
 import { Arena } from './components/Arena';
@@ -238,13 +239,6 @@ function App() {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:py-8 flex flex-col lg:flex-row gap-6 items-stretch pb-20 lg:pb-8">
         
-        {/* Left Companion Panel (Hidden in play area, hidden on mobile, hidden when full Pet module đã mở) */}
-        {!isDungeonScreen && !isHangMatterScreen && screen !== 'pet' && currentUser?.role !== 'admin' && (
-          <aside className="hidden lg:block w-72 shrink-0 h-fit lg:sticky lg:top-24">
-            <PetSanctuary />
-          </aside>
-        )}
-
         {/* Dynamic Center Stage */}
         <section className="flex-1 min-w-0">
           {screen === 'map' && (
@@ -524,6 +518,9 @@ function App() {
           </button>
         </nav>
       )}
+
+      {/* Pet Stable Overlay handling smart reminders and floating button */}
+      <PetStableOverlay isDungeonScreen={isDungeonScreen || isHangMatterScreen || screen === 'pet'} />
 
       {/* Footer */}
       <footer className="py-6 border-t border-synth-gray/30 text-center space-y-2">

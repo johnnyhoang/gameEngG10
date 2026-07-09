@@ -30,9 +30,10 @@ interface PetSanctuaryProps {
   /** 'sidebar' = widget đồng hành thu gọn (mặc định); 'full' = module Sân Thú Nuôi đầy đủ, gồm Album Kỷ Niệm. */
   variant?: 'sidebar' | 'full';
   onBack?: () => void;
+  onInteract?: () => void;
 }
 
-export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar', onBack }) => {
+export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar', onBack, onInteract }) => {
   const isFull = variant === 'full';
   const pet = useGameState(state => state.pet);
   const feedPet = useGameState(state => state.feedPet);
@@ -57,6 +58,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
     }
     setInteracting(true);
     setSpeech('Chao ôi... ngon quá! Ngon múp míp luôn á! Cảm ơn thiếu hiệp! 🍖🐷 (-50 NP, -30 XP)');
+    onInteract?.();
     setTimeout(() => {
       setInteracting(false);
     }, 2000);
@@ -117,6 +119,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
         "Ủn ỉn... hình như ta sắp chui ra rồi đấy! 🐽"
       ];
       setSpeech(eggQuotes[Math.floor(Math.random() * eggQuotes.length)]);
+      onInteract?.();
       setTimeout(() => setInteracting(false), 2000);
       return;
     }
@@ -134,6 +137,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
     ];
 
     setSpeech(tickleQuotes[Math.floor(Math.random() * tickleQuotes.length)]);
+    onInteract?.();
 
     setTimeout(() => {
       setTickled(false);

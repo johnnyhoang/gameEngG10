@@ -102,7 +102,7 @@ Vận hành nền kinh tế vi mô trong học viện. Tiêu hao **Ngân lượn
     *   *Xem lại hành trình:* Tích hợp tính năng album kỷ niệm cho phép thiếu hiệp lật xem lại hành trình của Heo Maikawaii qua các nút bấm Next/Prev. Album chứa các hình ảnh từ thuở sơ khai qua từng giai đoạn phát triển, các câu chuyện kỷ niệm đáng nhớ và những bức hình chụp chung kỷ niệm giữa thiếu hiệp và thú cưng.
     *   *Ẩn giấu tương lai:* Thiếu hiệp không thể xem trước hình ảnh ở các giai đoạn tương lai chưa đạt tới. Chỉ khi kiên trì chăm sóc, nâng cấp và phát triển Heo Maikawaii thành công, album mới mở khóa thêm nhiều hình ảnh và nội dung mới.
     *   *Hoàn thiện giao diện:* Phần giao diện (UI) của Album Kỷ Niệm sẽ được ClaudeCode tiến hành review, audit kỹ lưỡng và phát triển tiếp tục để tối ưu hóa trải nghiệm trực quan.
-*   **Cơ Chế "Thú Về Chuồng" (Pet Stable & Overlay)** — *(TODO: chưa triển khai)*:
+*   **Cơ Chế "Thú Về Chuồng" (Pet Stable & Overlay)**:
     *   **Nguyên tắc cốt lõi:** Heo Maikawaii KHÔNG chiếm không gian layout thường trực (hiện tại là cột trái cố định trên desktop, `aside w-72`). Bình thường heo ở trong **Chuồng Heo** — một nút/avatar nhỏ núp gọn ở một góc màn hình (ví dụ góc dưới-phải, kiểu "chat bubble" các web hiện đại). Toàn bộ không gian trung tâm được trả lại cho nội dung học tập.
     *   **Các thời điểm heo xuất hiện** (dưới dạng **overlay đè lên layout hiện tại**, nền phía sau làm mờ nhẹ để tập trung vào heo):
         1.  *Chào khi đăng nhập:* Ngay sau khi thiếu hiệp bấm "Đã Lĩnh Ngộ" đóng trang Cẩm Nang ngẫu nhiên hiện ra lúc đăng nhập (Login Trigger §2.7), heo xuất hiện chào hỏi một lần. Sau đó heo về chuồng, chỉ ra tiếp khi được gọi hoặc khi có lý do dưới đây.
@@ -343,7 +343,7 @@ Khi học sinh làm câu nghị luận xã hội/nghị luận văn học (hoặ
     *   *Điều hướng nhanh:* Nút vào Bách Hóa Phường và Hang Luyện Công dùng icon gọn (ẩn chữ ở màn hình hẹp, chỉ hiện icon + tooltip).
     *   *Nút Thân Phận:* Mang theo 1 chấm màu nhỏ theo màu môn phái đang hoạt động (xem §1.3 Global Switch) — đây là nơi duy nhất để đổi môn phái, HUD không có dropdown môn phái riêng.
     *   *Nút Thoái Ẩn:* Tên gọi kiếm hiệp cho hành động Đăng xuất (logout), giữ nhất quán văn phong giang hồ toàn ứng dụng.
-*   **Bố cục "Chuồng Heo" thay thế cột thú cố định** — *(TODO: chưa triển khai, xem §2.5)*: Cột trái `aside w-72` chiếm chỗ Heo Maikawaii thường trực trên desktop bị loại bỏ. Thay vào đó:
+*   **Bố cục "Chuồng Heo" thay thế cột thú cố định**: Cột trái `aside w-72` chiếm chỗ Heo Maikawaii thường trực trên desktop bị loại bỏ. Thay vào đó:
     *   *Chuồng Heo:* một nút/avatar nhỏ neo cố định ở góc màn hình (không chiếm luồng layout chính, `position: fixed`), luôn hiện diện làm điểm triệu hồi thủ công.
     *   *Overlay Heo:* khi xuất hiện (chào đăng nhập, idle, nhắc ngủ, đói), heo hiển thị dạng lớp phủ (modal/overlay) đè lên toàn bộ layout hiện tại, nền sau mờ nhẹ — không chiếm không gian cố định, không đẩy lệch bố cục các trang khác.
     *   *Re-layout diện rộng:* Sơn Trang/Bản Đồ (`GameMap`), Bách Hóa Phường, Hang Luyện Công, Lầu Thư Giãn được thiết kế lại bố cục lưới/card để tận dụng phần không gian trước đây dành cho cột thú — nhiều cột hơn, card lớn hơn, hiển thị nhiều thông tin hơn trên cùng một màn hình.
