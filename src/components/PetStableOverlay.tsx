@@ -16,8 +16,9 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
   
   // Track idle time
   const lastActiveTime = useRef(Date.now());
-  const lastSleepReminder = useRef(0);
-  const lastHungerReminder = useRef(0);
+  // Shared cooldown across ALL auto-triggers (idle/sleep/hunger) so dismissing the
+  // overlay for one reason doesn't let a different reason pop it right back up.
+  const lastAutoTrigger = useRef(0);
   
   // Login trigger state
   const hasGreeted = useRef(false);
@@ -64,32 +65,34 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
       }
 
       const now = Date.now();
+
+      // Shared cooldown: no more than one automatic trigger (of any kind) per 10 mins.
+      if (now - lastAutoTrigger.current < 600000) {
+        return;
+      }
+
       const idleTime = now - lastActiveTime.current;
-      
+
       // 10 mins idle = 10 * 60 * 1000 = 600000
       if (idleTime > 600000) {
         setTriggerReason('idle');
         setIsOpen(true);
+        lastAutoTrigger.current = now;
       } else {
         // Sleep check
         const hour = new Date().getHours();
         if (hour >= 22 || hour < 5) {
-          // It's sleep time
-          if (now - lastSleepReminder.current > 600000) { // every 10 mins
-            setTriggerReason('sleep');
-            setIsOpen(true);
-            lastSleepReminder.current = now;
-          }
-        }
-
-        // Hunger check
-        const lastFedTime = new Date(pet.lastFed).getTime();
-        const twelveHours = 12 * 60 * 60 * 1000;
-        if (now - lastFedTime > twelveHours) {
-          if (now - lastHungerReminder.current > 600000) { // remind every 10 mins, not every check
+          setTriggerReason('sleep');
+          setIsOpen(true);
+          lastAutoTrigger.current = now;
+        } else {
+          // Hunger check
+          const lastFedTime = new Date(pet.lastFed).getTime();
+          const twelveHours = 12 * 60 * 60 * 1000;
+          if (now - lastFedTime > twelveHours) {
             setTriggerReason('hunger');
             setIsOpen(true);
-            lastHungerReminder.current = now;
+            lastAutoTrigger.current = now;
           }
         }
       }
@@ -114,8 +117,10 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
     // Only way to close is by interacting. We wait 2s to show the speech bubble reaction.
     setTimeout(() => {
       setIsOpen(false);
-      lastActiveTime.current = Date.now(); // reset idle timer
-    }, 2000); 
+      const now = Date.now();
+      lastActiveTime.current = now; // reset idle timer
+      lastAutoTrigger.current = now; // snooze all auto-triggers, whatever the reason was
+    }, 2000);
   };
 
   if (!currentUser || currentUser.role === 'admin') return null;
