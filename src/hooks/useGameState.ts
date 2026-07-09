@@ -148,7 +148,8 @@ const HELP_HANDBOOK_PAGES: HandbookPage[] = [
     id: 'help-adult', category: 'Trợ Giúp Nhanh', title: 'Heo Maikawaii', content: '', audience: 'student',
     bullets: [
       '• Heo Maikawaii lớn lên theo tiến trình tu luyện của con.',
-      '• Cho Heo Maikawaii ăn tốn 50 NP và 30 XP, có thể khiến con tụt Level tạm thời.',
+      '• Cho Heo Maikawaii ăn chỉ tốn 10 NP và 5 XP mỗi lần — cho ăn thoải mái nhé!',
+      '• Hết NP thì Heo tự về chuồng ngủ, cày thêm NP ở Hang Luyện Công rồi cho ăn tiếp.',
       '• Muốn Heo Maikawaii khôn lớn, con phải học đều chứ không được bỏ ải.'
     ]
   },
@@ -1693,9 +1694,9 @@ export const useGameState = create<GameState>()(
           const state = get();
           if (state.pet.mood === 'happy' && state.pet.energy >= 100) return false;
 
-          // Luật "Lực Bất Tòng Tâm" (CORE_SPECS §3.B): cho Pet ăn tốn 50 NP và 30 XP của Thiếu Hiệp.
-          const coinsCost = 50;
-          const xpCost = 30;
+          // Luật "Lực Bất Tòng Tâm" (CORE_SPECS §3.B): cho Pet ăn tốn 10 NP và 5 XP của Thiếu Hiệp.
+          const coinsCost = 10;
+          const xpCost = 5;
           if (state.player.coins < coinsCost) return false;
 
           // Vì tiêu hao trực tiếp XP, Thiếu hiệp chấp nhận tụt Level tạm thời nếu dồn quá nhiều tài nguyên chăm Pet.

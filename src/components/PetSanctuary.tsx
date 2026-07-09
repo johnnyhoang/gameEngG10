@@ -2,9 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { Activity, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 import type { HistoryLog, PetStage } from '../types/game';
-import { PET_STAGE_LABELS } from '../types/game';
-import { toast } from '../utils/toast';
+
 const PET_STAGE_ORDER: PetStage[] = ['egg', 'baby', 'adult', 'legend'];
+
+const PET_STAGE_LABELS: Record<PetStage, string> = {
+  egg: 'Mầm Nấm Sương Mai',
+  baby: 'Heo Con Múp Míp',
+  adult: 'Kiếm Khách Maikawaii',
+  legend: 'Thần Heo Cưỡi Mây'
+};
 
 const STAGE_MEMORIES: Record<PetStage, { story: string; photoConcept: string }> = {
   egg: {
@@ -52,11 +58,19 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
   const handleFeed = () => {
     const success = feedPet();
     if (!success) {
-      toast.error('Không đủ 50 NP để cho Pet ăn. Kiếm thêm Ngân Lượng ở Hang Luyện Công nhé!');
+      // Hết NP/XP — thọt lét để đóng overlay
+      setTickled(true);
+      setInteracting(true);
+      setSpeech('Ủn ỉn... hết Ngân Lượng rồi nên Heo tự về chuồng ngủ thôi! Cày thêm NP rồi cho Heo ăn lại nhé! 😴🐷');
+      onInteract?.();
+      setTimeout(() => {
+        setTickled(false);
+        setInteracting(false);
+      }, 2000);
       return;
     }
     setInteracting(true);
-    setSpeech('Chao ôi... ngon quá! Ngon múp míp luôn á! Cảm ơn thiếu hiệp! 🍖🐷 (-50 NP, -30 XP)');
+    setSpeech('Chao ôi... ngon quá! Ngon múp míp luôn á! Cảm ơn thiếu hiệp! 🍖🐷 (-10 NP, -5 XP)');
     onInteract?.();
     setTimeout(() => {
       setInteracting(false);

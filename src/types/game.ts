@@ -75,6 +75,8 @@ export interface Question {
   id: string;
   type: QuestionType;
   category: string; // e.g. "tenses", "passive-voice", "relative-clauses", "vocabulary", "wordform", "reading", "pronunciation", "stress"
+  /** ID chuyên đề Core Knowledge (§9 CORE_SPECS) — dùng cho Gatekeeper, Coverage Dashboard, AI Sư Phụ */
+  topicId?: string;
   prompt: string;
   options?: string[]; // for MCQs
   correctAnswer: string | string[]; // case-insensitive exact string or array of alternate valid strings
@@ -88,6 +90,25 @@ export interface Question {
   skipReason?: 'quá khó' | 'quá dài' | 'quá khùng';
   skipSeverity?: number;
 }
+
+// ==================== CORE KNOWLEDGE TAXONOMY ====================
+export type HamNguyenTo = 'hoa' | 'bang' | 'thach';
+export type ExamRelevance = 'high' | 'medium' | 'low';
+
+/** Mỗi chuyên đề/nhóm kiến thức cốt lõi trong ngân hàng câu hỏi — xem CORE_SPECS §9 */
+export interface CoreKnowledgeTopic {
+  id: string;                       // kebab-case unique ID, e.g. "eng-tenses", "math-quadratic"
+  subjectId: SubjectId;
+  group: 'chuyen_sau' | 'co_ban';
+  label: string;                    // tên hiển thị tiếng Việt
+  labelEN: string;                  // tên kỹ thuật tiếng Anh
+  hamNguyenTo: HamNguyenTo;         // Hầm nguyên tố gán cho topic này (🔥Hỏa/❄️Băng/🪨Thạch)
+  examRelevance: ExamRelevance;     // mức độ xuất hiện trong đề tuyển sinh / HK
+  minQuestions: number;             // số câu tối thiểu cần có trong DB để mở khu vực
+  questionTypes: QuestionType[];    // dạng câu hỏi được phép
+  description: string;              // mô tả cho Viện Chủ khi import
+}
+
 
 export interface QuestionMeta {
   examPart?: string;
