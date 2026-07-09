@@ -7,6 +7,25 @@ import { toast } from '../utils/toast';
 
 const PET_STAGE_ORDER: PetStage[] = ['egg', 'baby', 'dragon', 'legend'];
 
+const STAGE_MEMORIES: Record<PetStage, { story: string; photoConcept: string }> = {
+  egg: {
+    story: "Mầm Nấm sương mai ngậm mưa bông rơi rụng trên thảm lá khô. Đây là ngày đầu tiên thiếu hiệp đặt chân đến Sân Thú, truyền chân khí ấm áp đánh thức Heo Maikawaii khỏi giấc ngủ ngàn năm.",
+    photoConcept: "Ảnh chụp ngày đầu nhập môn: Thiếu hiệp chạm tay vào mầm nấm 🍄"
+  },
+  baby: {
+    story: "Cây nấm múp míp nứt vỡ ra chú heo hồng hào, nhỏ xíu xiu. Kỷ niệm những miếng bánh khô chia đôi bên bếp lửa học viện, những câu thoại ngây ngô và tiếng cười khúc khích khi được thiếu hiệp thọc lét nhột tai.",
+    photoConcept: "Ảnh chụp chung đầu tiên: Thiếu hiệp ôm heo con múp míp ngủ gục bên lò sưởi 🔥"
+  },
+  dragon: {
+    story: "Heo con oai phong khoác băng trán đỏ, đeo kiếm gỗ sau lưng bôn tẩu giang hồ cùng thiếu hiệp. Tấm hình chụp chung tại Đấu Trường đầy kiêu hãnh: Heo luôn giương kiếm đỡ bụi cỏ gai, đồng hành qua hàng trăm đề thi thử thách.",
+    photoConcept: "Ảnh chụp nơi Đấu Trường: Thiếu hiệp làm bài, Heo giương kiếm gỗ bảo vệ ⚔️"
+  },
+  legend: {
+    story: "Cảnh giới đỉnh phong! Thần Heo đắc đạo, cưỡi mây vàng Cân Đẩu Vân, đầu đội vòng kim cô lấp lánh hào quang. Khoảnh khắc cả hai cùng nhau ngắm giang hồ rộng lớn, chuẩn bị cho kỳ thi tuyển sinh lớp 10 vĩ đại.",
+    photoConcept: "Ảnh chụp đỉnh vinh quang: Thiếu hiệp cùng Thần Heo ngắm mây ngàn từ đỉnh Tuyết Sơn 👑"
+  }
+};
+
 interface PetSanctuaryProps {
   /** 'sidebar' = widget đồng hành thu gọn (mặc định); 'full' = module Sân Thú Nuôi đầy đủ, gồm Album Kỷ Niệm. */
   variant?: 'sidebar' | 'full';
@@ -136,27 +155,29 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
   // Get evolutionary stage display names
   const getStageTitle = (stage: string) => PET_STAGE_LABELS[stage as PetStage] || 'Heo Maikawaii';
 
-  // SVG graphic for different Heo Maikawaii stages
-  const renderPetAvatar = () => {
-    const isHappy = pet.mood === 'happy' || interacting;
-    const isSad = pet.mood === 'sad';
+  const renderPetAvatarForStage = (
+    stage: PetStage,
+    mood: string = 'happy',
+    isInteracting = false,
+    isTickled = false,
+    onClick?: () => void
+  ) => {
+    const isHappy = mood === 'happy' || isInteracting;
+    const isSad = mood === 'sad';
 
-    const glowClass = pet.stage === 'legend' 
+    const glowClass = stage === 'legend' 
       ? 'shadow-[0_0_30px_#f59e0b]' 
-      : pet.stage === 'dragon' 
+      : stage === 'dragon' 
         ? 'shadow-[0_0_20px_#ef4444]' 
         : 'shadow-[0_0_10px_rgba(255,0,127,0.2)]';
 
-    if (pet.stage === 'egg') {
+    if (stage === 'egg') {
       return (
         <div 
-          onClick={handleTickle}
-          className={`relative w-40 h-44 mx-auto flex flex-col justify-center items-center cursor-pointer transition-transform duration-200 rounded-3xl ${glowClass} ${
-            interacting ? 'scale-105' : 'hover:scale-[1.02]'
-          }`}
-          title="Bấm để truyền chân khí cho mầm nấm!"
+          onClick={onClick}
+          className={`relative w-40 h-40 mx-auto flex flex-col justify-center items-center rounded-3xl ${glowClass} cursor-pointer`}
         >
-          <svg width="180" height="180" viewBox="0 0 200 200" className="w-full h-full">
+          <svg width="150" height="150" viewBox="0 0 200 200" className="w-full h-full">
             {/* Cotton Cloud */}
             <g className="animate-float" style={{ animationDuration: '4s' }}>
               <path d="M 60,40 C 50,40 45,30 55,25 C 50,15 65,10 75,17 C 85,5 115,5 125,17 C 135,10 150,15 145,25 C 155,30 150,40 140,40 Z" fill="#fdf2f8" stroke="#ec4899" strokeWidth="1.5" opacity="0.9" />
@@ -192,16 +213,15 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
       );
     }
 
-    if (pet.stage === 'baby') {
+    if (stage === 'baby') {
       return (
         <div 
-          onClick={handleTickle}
-          className={`relative w-44 h-44 mx-auto flex items-center justify-center cursor-pointer rounded-full transition-all duration-200 ${glowClass} ${
-            interacting ? 'scale-105' : 'hover:scale-[1.02]'
-          } ${tickled ? 'animate-wiggle' : 'animate-float'}`}
-          title="Bấm để thọt lét Heo Maikawaii!"
+          onClick={onClick}
+          className={`relative w-40 h-40 mx-auto flex items-center justify-center rounded-full transition-all duration-200 ${glowClass} cursor-pointer ${
+            isInteracting ? 'scale-105' : 'hover:scale-[1.02]'
+          } ${isTickled ? 'animate-wiggle' : 'animate-float'}`}
         >
-          <svg width="180" height="180" viewBox="0 0 200 200" className="w-full h-full">
+          <svg width="150" height="150" viewBox="0 0 200 200" className="w-full h-full">
             {/* Cracked mushroom shell at bottom */}
             <path d="M 65,150 L 70,140 L 80,145 L 90,135 L 100,145 L 110,138 L 120,146 L 130,138 L 135,150 Z" fill="#ec4899" stroke="#db2777" strokeWidth="2" opacity="0.7" />
             
@@ -259,16 +279,15 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
       );
     }
 
-    if (pet.stage === 'dragon') {
+    if (stage === 'dragon') {
       return (
         <div 
-          onClick={handleTickle}
-          className={`relative w-44 h-44 mx-auto flex items-center justify-center cursor-pointer rounded-full transition-all duration-200 ${glowClass} ${
-            interacting ? 'scale-105' : 'hover:scale-[1.02]'
-          } ${tickled ? 'animate-wiggle' : 'animate-float'}`}
-          title="Bấm để thọt lét Heo Hiệp Sĩ!"
+          onClick={onClick}
+          className={`relative w-40 h-40 mx-auto flex items-center justify-center rounded-full transition-all duration-200 ${glowClass} cursor-pointer ${
+            isInteracting ? 'scale-105' : 'hover:scale-[1.02]'
+          } ${isTickled ? 'animate-wiggle' : 'animate-float'}`}
         >
-          <svg width="180" height="180" viewBox="0 0 200 200" className="w-full h-full">
+          <svg width="150" height="150" viewBox="0 0 200 200" className="w-full h-full">
             {/* Wooden Sword on back */}
             <g transform="rotate(25, 140, 90)">
               {/* Blade */}
@@ -336,18 +355,17 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
     // Default: Legend stage (Thần Heo Maikawaii)
     return (
       <div 
-        onClick={handleTickle}
-        className={`relative w-48 h-48 mx-auto flex items-center justify-center cursor-pointer rounded-full transition-all duration-200 ${glowClass} ${
-          interacting ? 'scale-105' : 'hover:scale-[1.02]'
-        } ${tickled ? 'animate-wiggle' : 'animate-float'}`}
-        title="Bấm để thọt lét Thần Heo Maikawaii!"
+        onClick={onClick}
+        className={`relative w-40 h-40 mx-auto flex items-center justify-center rounded-full transition-all duration-200 ${glowClass} cursor-pointer ${
+          isInteracting ? 'scale-105' : 'hover:scale-[1.02]'
+        } ${isTickled ? 'animate-wiggle' : 'animate-float'}`}
       >
-        <svg width="200" height="200" viewBox="0 0 200 200" className="w-full h-full">
+        <svg width="150" height="150" viewBox="0 0 200 200" className="w-full h-full">
           {/* Glowing Aura under pig */}
-          <ellipse cx="100" cy="155" rx="55" ry="12" fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="4 4" className="animate-spin" style={{ animationDuration: '10s' }} />
+          <ellipse cx="100" cy="155" rx="55" ry="12" fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="4 4" />
 
           {/* Floating Cân Đẩu Vân cloud */}
-          <path d="M 60,150 C 50,150 45,140 55,135 C 50,125 65,120 75,127 C 85,115 115,115 125,127 C 135,120 150,125 145,135 C 155,140 150,150 140,150 Z" fill="#fef08a" stroke="#d97706" strokeWidth="2" className="opacity-95" />
+          <path d="M 60,150 C 50,150 45,140 55,135 C 50,125 65,120 75,127 C 85,115 115,115 125,127 C 135,120 150,125 145,135 C 155,140 150,150 140,150 Z" fill="#fef08a" stroke="#d97706" strokeWidth="2" opacity="0.95" />
 
           {/* Golden Crown / Vòng Kim Cô floating above head */}
           <g className="animate-pulse" style={{ animationDuration: '1.5s' }}>
@@ -398,6 +416,8 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
       </div>
     );
   };
+
+  const renderPetAvatar = () => renderPetAvatarForStage(pet.stage, pet.mood, interacting, tickled, handleTickle);
 
   const getMoodEmoji = (mood: string) => {
     if (interacting) return '🥰 Cực thích';
@@ -587,27 +607,40 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
               })}
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-black/20 p-6 flex flex-col items-center gap-3 text-center min-h-[160px] justify-center">
+            <div className="rounded-2xl border border-white/10 bg-black/35 p-6 flex flex-col items-center gap-4 text-center min-h-[300px] justify-center">
               {isUnlocked ? (
-                <>
-                  <span className="text-5xl">🐷</span>
-                  <div className="font-orbitron font-black uppercase tracking-wider text-sm text-white">
-                    {PET_STAGE_LABELS[viewedStage]}
+                <div className="space-y-4 w-full">
+                  {/* Polaroid Frame */}
+                  <div className="bg-white p-3 pb-5 rounded shadow-xl text-black max-w-xs mx-auto transform rotate-[-1deg] hover:rotate-0 transition-transform duration-300">
+                    <div className="bg-slate-900 rounded-lg p-4 flex items-center justify-center min-h-[140px] border border-slate-800">
+                      {renderPetAvatarForStage(viewedStage, 'happy', false, false)}
+                    </div>
+                    {/* Handwritten Photo Caption */}
+                    <div className="mt-3 text-xs font-serif font-bold tracking-tight text-slate-800 border-t border-slate-100 pt-2 min-h-[32px] flex items-center justify-center">
+                      ✍️ {STAGE_MEMORIES[viewedStage]?.photoConcept}
+                    </div>
                   </div>
-                  <p className="text-xs text-slate-400 max-w-xs">
-                    Kỷ niệm giai đoạn này của {pet.name} — tiếp tục chăm sóc để mở khóa thêm hình ảnh và câu chuyện mới.
-                  </p>
-                </>
+
+                  {/* Memory Story */}
+                  <div className="space-y-1.5 pt-2">
+                    <div className="font-orbitron font-black uppercase tracking-wider text-xs text-synth-cyan">
+                      Giai đoạn: {PET_STAGE_LABELS[viewedStage]}
+                    </div>
+                    <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed font-serif italic bg-white/5 p-3 rounded-xl border border-white/5">
+                      "{STAGE_MEMORIES[viewedStage]?.story}"
+                    </p>
+                  </div>
+                </div>
               ) : (
-                <>
-                  <Lock className="w-8 h-8 text-slate-500" />
+                <div className="py-12 flex flex-col items-center justify-center">
+                  <Lock className="w-8 h-8 text-slate-600 mb-2 animate-pulse" />
                   <div className="font-orbitron font-black uppercase tracking-wider text-sm text-slate-500">
-                    Giai đoạn chưa đạt tới
+                    Kỷ niệm chưa mở khóa
                   </div>
-                  <p className="text-xs text-slate-500 max-w-xs">
-                    Kiên trì chăm sóc và nâng cấp Heo Maikawaii để mở khóa trang album này.
+                  <p className="text-xs text-slate-500 max-w-xs mt-1">
+                    Hãy kiên trì chăm sóc và cho Heo {pet.name} ăn để nâng cấp lên giai đoạn tiếp theo và giải mã bức ảnh này!
                   </p>
-                </>
+                </div>
               )}
             </div>
 
