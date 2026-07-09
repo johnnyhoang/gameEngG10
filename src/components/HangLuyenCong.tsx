@@ -21,7 +21,18 @@ import {
    HANG_SOURCES
 } from '../data/hangLuyenCong';
 import { SUBJECTS_CONFIG } from '../types/game';
-import type { SubjectId } from '../types/game';
+import type { SubjectId, Lesson } from '../types/game';
+
+const getElementalDungeon = (lesson: Lesson): 'fire' | 'ice' | 'stone' => {
+  const t = (lesson.topic || '').toLowerCase();
+  const c = (lesson.category || '').toLowerCase();
+  const str = `${t} ${c}`;
+  
+  if (str.includes('vocabulary') || str.includes('pronunciation') || str.includes('rút gọn') || str.includes('từ vựng') || str.includes('phát âm')) return 'fire';
+  if (str.includes('reading') || str.includes('hình học không gian') || str.includes('đồ thị') || str.includes('bất đẳng thức') || str.includes('đọc hiểu')) return 'ice';
+  if (str.includes('grammar') || str.includes('hệ phương trình') || str.includes('vi-ét') || str.includes('ngữ pháp')) return 'stone';
+  return 'stone';
+};
 
 interface HangLuyenCongProps {
    onStartPractice: () => void;
@@ -602,47 +613,66 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {subjectLessons.map(lesson => {
-                const isCompleted = lessonsProgress[lesson.id] || false;
-                return (
-                  <div key={lesson.id} className={`rounded-2xl border p-4 flex flex-col justify-between gap-4 transition-all duration-200 ${
-                    isCompleted ? 'border-synth-cyan/20 bg-synth-cyan/5' : 'border-white/10 bg-white/5'
-                  }`}>
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between gap-2">
-                        <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-slate-300 uppercase tracking-wider">
-                          {lesson.topic}
-                        </span>
-                        {isCompleted ? (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-synth-cyan uppercase font-orbitron tracking-wider">
-                            Đã Lĩnh Ngộ 🌟
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-                            Chưa Lĩnh Ngộ ⏳
-                          </span>
-                        )}
-                      </div>
-                      <h3 className="font-orbitron font-black uppercase text-sm text-white tracking-wide leading-snug">
-                        {lesson.title}
-                      </h3>
-                      <p className="text-xs text-slate-400 line-clamp-2">
-                        {lesson.theory.replace(/[#*`>]/g, '').trim()}
-                      </p>
-                    </div>
+            <div className="space-y-6">
+              {[
+                { id: 'fire', label: '🔥 Hỏa Hầm', desc: 'Phản xạ nhanh, ghi nhớ ngắn hạn', bg: 'bg-orange-500/10 border-orange-500/30' },
+                { id: 'ice', label: '❄️ Băng Hầm', desc: 'Suy luận logic sâu, điềm tĩnh', bg: 'bg-cyan-500/10 border-cyan-500/30' },
+                { id: 'stone', label: '🪨 Thạch Hầm', desc: 'Kiến thức nền tảng, quy tắc cốt lõi', bg: 'bg-stone-500/10 border-stone-500/30' }
+              ].map(dungeon => {
+                const dungeonLessons = subjectLessons.filter(l => getElementalDungeon(l) === dungeon.id);
+                if (dungeonLessons.length === 0) return null;
 
-                    <button
-                      onClick={() => onStudyLesson(lesson.id)}
-                      className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider transition-all duration-300 cursor-pointer ${
-                        isCompleted 
-                          ? 'border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10'
-                          : 'bg-gradient-to-r from-synth-cyan to-synth-purple text-black shadow-[0_0_12px_rgba(0,240,255,0.2)] hover:scale-[1.01]'
-                      }`}
-                    >
-                      {isCompleted ? 'Học lại bài 🎓' : 'Học bài ngay 📖'}
-                      <ArrowRight className="w-4 h-4" />
-                    </button>
+                return (
+                  <div key={dungeon.id} className={`rounded-2xl border p-4 ${dungeon.bg}`}>
+                    <div className="mb-4">
+                      <h3 className="font-orbitron font-black text-sm text-white uppercase tracking-wider">{dungeon.label}</h3>
+                      <p className="text-[10px] text-slate-300 uppercase tracking-wider">{dungeon.desc}</p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {dungeonLessons.map(lesson => {
+                        const isCompleted = lessonsProgress[lesson.id] || false;
+                        return (
+                          <div key={lesson.id} className={`rounded-2xl border p-4 flex flex-col justify-between gap-4 transition-all duration-200 ${
+                            isCompleted ? 'border-synth-cyan/20 bg-black/40' : 'border-white/10 bg-black/40'
+                          }`}>
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-slate-300 uppercase tracking-wider">
+                                  {lesson.topic}
+                                </span>
+                                {isCompleted ? (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-synth-cyan uppercase font-orbitron tracking-wider">
+                                    Đã Lĩnh Ngộ 🌟
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                                    Chưa Lĩnh Ngộ ⏳
+                                  </span>
+                                )}
+                              </div>
+                              <h3 className="font-orbitron font-black uppercase text-sm text-white tracking-wide leading-snug">
+                                {lesson.title}
+                              </h3>
+                              <p className="text-xs text-slate-400 line-clamp-2">
+                                {lesson.theory.replace(/[#*`>]/g, '').trim()}
+                              </p>
+                            </div>
+
+                            <button
+                              onClick={() => onStudyLesson(lesson.id)}
+                              className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+                                isCompleted 
+                                  ? 'border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10'
+                                  : 'bg-gradient-to-r from-synth-cyan to-synth-purple text-black shadow-[0_0_12px_rgba(0,240,255,0.2)] hover:scale-[1.01]'
+                              }`}
+                            >
+                              {isCompleted ? 'Học lại bài 🎓' : 'Học bài ngay 📖'}
+                              <ArrowRight className="w-4 h-4" />
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 );
               })}

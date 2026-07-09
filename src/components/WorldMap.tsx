@@ -111,7 +111,7 @@ export function WorldMap({
           <div className="flex items-center gap-2 justify-center md:justify-start">
             <span className={`w-2.5 h-2.5 rounded-full animate-ping ${isUnicorn ? 'bg-fuchsia-400' : 'bg-synth-magenta'}`} />
             <h2 className={`font-orbitron text-lg font-black uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-              Nhiệm Vụ Chiến Dịch Ngày
+              Bảng Cáo Thị (Daily Quest)
             </h2>
           </div>
           <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
@@ -168,7 +168,7 @@ export function WorldMap({
             <div className="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/25 flex items-center justify-center">
               <BrainCircuit className="w-5 h-5 text-amber-400" />
             </div>
-            <span className="font-orbitron font-bold text-xs uppercase text-amber-300 tracking-wider">Chỉ ải AI</span>
+            <span className="font-orbitron font-bold text-xs uppercase text-amber-300 tracking-wider">Tàng Kinh Các Phân Đà (AI Sư Phụ)</span>
           </div>
           <p className="text-xs text-slate-300 flex-1 leading-relaxed">
             Con đang yếu ở chuyên đề <span className="text-amber-300 font-bold">{weakLesson.title}</span> (chỉ{' '}

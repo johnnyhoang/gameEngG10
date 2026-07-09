@@ -1,8 +1,26 @@
-export type QuestionType = 'mcq' | 'wordform' | 'rewrite' | 'cloze' | 'reading' | 'short-answer' | 'proof' | 'multi-part';
+export type QuestionType = 'multiple_choice' | 'text_input' | 'matching' | 'wordform' | 'rewrite' | 'cloze' | 'reading' | 'short-answer' | 'proof' | 'multi-part';
 export type ChallengeType = 'daily' | 'weekly' | 'achievement' | 'one-time';
 export type RewardStatus = 'pending' | 'approved' | 'claimed';
 export type PetStage = 'egg' | 'baby' | 'dragon' | 'legend';
 export type PetMood = 'happy' | 'neutral' | 'sad' | 'sleeping';
+
+export type PageLevel = 1 | 2 | 3;
+
+export interface MapPage {
+  id: string;
+  level: PageLevel;
+  parentId: string | null;
+  rootPageId: string;
+  name: string;
+  icon?: string;
+}
+
+export interface PageExplorationState {
+  studentId: string;
+  pageId: string;
+  lastExploredAt: string;
+  explorationCount: number;
+}
 
 /** Nhãn hiển thị cho từng giai đoạn tiến hóa của Heo Maikawaii. Giá trị nội bộ `PetStage` giữ tên cũ ('dragon')
  *  vì đổi tên enum sẽ chạm rất nhiều nơi, nhưng KHÔNG được để lộ chữ "rồng"/"dragon" ra UI — luôn hiển thị qua map này. */
