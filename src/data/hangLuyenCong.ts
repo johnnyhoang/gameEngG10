@@ -232,25 +232,49 @@ export const HANG_TOOLS: HangTool[] = [
   }
 ];
 
-export const HANG_SOURCES: HangSource[] = [
-  {
-    label: 'MOET - Chương trình giáo dục phổ thông',
-    url: 'https://moet.gov.vn/tin-tuc-cot-phai/chuong-trinh-giao-duc-pho-thong',
-    note: 'Nguồn khung chương trình và định hướng năng lực.'
-  },
-  {
-    label: 'MOET - Chương trình tổng thể GDPT 2018',
-    url: 'https://moet.gov.vn/tintuc/Pages/CT-GDPT-Tong-The.aspx?ItemID=8421',
-    note: 'Nền tảng để chọn các mảng kiến thức cốt lõi.'
-  },
-  {
-    label: 'MOET - Tiếng Anh mới: học sinh phải tự học nhiều hơn',
-    url: 'https://moet.gov.vn/giaoducquocdan/giao-duc-trung-hoc/Pages/tin-tuc.aspx?ItemID=5853',
-    note: 'Nguồn nhấn mạnh kỹ năng ngôn ngữ và tính thực hành.'
-  },
-  {
-    label: 'MOET - Điều chỉnh nội dung dạy học lớp 9',
-    url: 'https://moet.gov.vn/tintuc/Pages/CT-GDPT-Tong-The.aspx?ItemID=7032',
-    note: 'Gợi ý định hướng chuẩn đầu vào lớp 10.'
-  }
-];
+export const HANG_SOURCES: Record<HangSubjectId, HangSource[]> = {
+  english: [
+    {
+      label: 'MOET - Tiếng Anh mới: học sinh phải tự học nhiều hơn',
+      url: 'https://moet.gov.vn/giaoducquocdan/giao-duc-trung-hoc/Pages/tin-tuc.aspx?ItemID=5853',
+      note: 'Nguồn nhấn mạnh kỹ năng ngôn ngữ và tính thực hành.'
+    },
+    {
+      label: 'MOET - Chương trình giáo dục phổ thông môn Tiếng Anh',
+      url: 'https://moet.gov.vn/tin-tuc-cot-phai/chuong-trinh-giao-duc-pho-thong',
+      note: 'Khung năng lực và yêu cầu đầu ra Tiếng Anh lớp 9.'
+    }
+  ],
+  math: [
+    {
+      label: 'MOET - Điều chỉnh nội dung dạy học lớp 9',
+      url: 'https://moet.gov.vn/tintuc/Pages/CT-GDPT-Tong-The.aspx?ItemID=7032',
+      note: 'Gợi ý định hướng chuẩn đầu vào lớp 10 môn Toán.'
+    },
+    {
+      label: 'Vẽ đồ thị & Hình học Desmos',
+      url: 'https://www.desmos.com/geometry',
+      note: 'Công cụ vẽ hình học trực quan để kiểm chứng lý thuyết.'
+    }
+  ],
+  literature: [
+    {
+      label: 'MOET - Chương trình tổng thể GDPT 2018',
+      url: 'https://moet.gov.vn/tintuc/Pages/CT-GDPT-Tong-The.aspx?ItemID=8421',
+      note: 'Nền tảng để chọn các mảng kiến thức Ngữ Văn cốt lõi.'
+    }
+  ],
+  science: [
+    {
+      label: 'MOET - Chương trình môn Khoa Học Tự Nhiên lớp 9',
+      url: 'https://moet.gov.vn/tin-tuc-cot-phai/chuong-trinh-giao-duc-pho-thong',
+      note: 'Khung định hướng dạy học Lý, Hóa, Sinh tích hợp.'
+    }
+  ],
+  history_geography: [],
+  civics: [],
+  technology: [],
+  informatics: [],
+  arts: []
+};
+

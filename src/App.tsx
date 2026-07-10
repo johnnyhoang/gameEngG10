@@ -15,21 +15,42 @@ import { GatekeeperModal } from './components/GatekeeperModal';
 import { ProfileSelectionScreen } from './components/ProfileSelectionScreen';
 import { GlobalSectModal } from './components/GlobalSectModal';
 
+// Helper decorator to encapsulate Suspense for each lazy component individually, avoiding app-wide unmount loops
+const withSuspense = <P extends object>(
+  LazyComponent: React.ComponentType<P>,
+  fallback: React.ReactNode = (
+    <div className="flex-1 flex items-center justify-center min-h-[200px] py-10">
+      <div className="text-center space-y-3">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-synth-cyan mx-auto"></div>
+        <p className="font-orbitron text-[10px] text-synth-cyan tracking-widest uppercase animate-pulse">Đang nạp...</p>
+      </div>
+    </div>
+  )
+) => {
+  return (props: P) => (
+    <Suspense fallback={fallback}>
+      <LazyComponent {...props} />
+    </Suspense>
+  );
+};
+
 // Lazy-loaded heavy components — code-split để giảm tải ban đầu
-const PetSanctuary = lazy(() => import('./components/PetSanctuary').then(m => ({ default: m.PetSanctuary })));
-const ActivityLog = lazy(() => import('./components/ActivityLog').then(m => ({ default: m.ActivityLog })));
-const Arena = lazy(() => import('./components/Arena').then(m => ({ default: m.Arena })));
-const ItemShop = lazy(() => import('./components/ItemShop').then(m => ({ default: m.ItemShop })));
-const ProfilePage = lazy(() => import('./components/ProfilePage').then(m => ({ default: m.ProfilePage })));
-const GiangHoCamNang = lazy(() => import('./components/GiangHoCamNang').then(m => ({ default: m.GiangHoCamNang })));
-const HangLuyenCong = lazy(() => import('./components/HangLuyenCong').then(m => ({ default: m.HangLuyenCong })));
-const HangMatThatPage = lazy(() => import('./components/HangMatThatPage').then(m => ({ default: m.HangMatThatPage })));
-const DesktopCentralNav = lazy(() => import('./components/DesktopCentralNav').then(m => ({ default: m.DesktopCentralNav })));
-const LessonStudyView = lazy(() => import('./components/LessonStudyView').then(m => ({ default: m.LessonStudyView })));
-const RelaxationZone = lazy(() => import('./components/RelaxationZone').then(m => ({ default: m.RelaxationZone })));
-const Biki3DStudio = lazy(() => import('./components/Biki3DStudio').then(m => ({ default: m.Biki3DStudio })));
-const BikiDoThiHamSo = lazy(() => import('./components/BikiDoThiHamSo').then(m => ({ default: m.BikiDoThiHamSo })));
-const BikiHinhHocPhang = lazy(() => import('./components/BikiHinhHocPhang').then(m => ({ default: m.BikiHinhHocPhang })));
+const PetSanctuary = withSuspense(lazy(() => import('./components/PetSanctuary').then(m => ({ default: m.PetSanctuary }))));
+const ActivityLog = withSuspense(lazy(() => import('./components/ActivityLog').then(m => ({ default: m.ActivityLog }))), (
+  <div className="text-center py-5 font-orbitron text-xs text-slate-500">Đang tải nhật ký...</div>
+));
+const Arena = withSuspense(lazy(() => import('./components/Arena').then(m => ({ default: m.Arena }))));
+const ItemShop = withSuspense(lazy(() => import('./components/ItemShop').then(m => ({ default: m.ItemShop }))));
+const ProfilePage = withSuspense(lazy(() => import('./components/ProfilePage').then(m => ({ default: m.ProfilePage }))));
+const GiangHoCamNang = withSuspense(lazy(() => import('./components/GiangHoCamNang').then(m => ({ default: m.GiangHoCamNang }))), null);
+const HangLuyenCong = withSuspense(lazy(() => import('./components/HangLuyenCong').then(m => ({ default: m.HangLuyenCong }))));
+const HangMatThatPage = withSuspense(lazy(() => import('./components/HangMatThatPage').then(m => ({ default: m.HangMatThatPage }))));
+const DesktopCentralNav = withSuspense(lazy(() => import('./components/DesktopCentralNav').then(m => ({ default: m.DesktopCentralNav }))), null);
+const LessonStudyView = withSuspense(lazy(() => import('./components/LessonStudyView').then(m => ({ default: m.LessonStudyView }))));
+const RelaxationZone = withSuspense(lazy(() => import('./components/RelaxationZone').then(m => ({ default: m.RelaxationZone }))));
+const Biki3DStudio = withSuspense(lazy(() => import('./components/Biki3DStudio').then(m => ({ default: m.Biki3DStudio }))));
+const BikiDoThiHamSo = withSuspense(lazy(() => import('./components/BikiDoThiHamSo').then(m => ({ default: m.BikiDoThiHamSo }))));
+const BikiHinhHocPhang = withSuspense(lazy(() => import('./components/BikiHinhHocPhang').then(m => ({ default: m.BikiHinhHocPhang }))));
 
 const APP_VERSION = 'fd44bc2';
 const APP_PUSH_TIME = 'Tue, 7 Jul 2026 12:05 ICT';
@@ -270,14 +291,6 @@ function App() {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:py-8 flex flex-col lg:flex-row gap-6 items-stretch pb-20 lg:pb-8">
         
-        <Suspense fallback={
-          <div className="flex-1 flex items-center justify-center min-h-[300px]">
-            <div className="text-center space-y-3">
-              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-synth-cyan mx-auto"></div>
-              <p className="font-orbitron text-xs text-synth-cyan tracking-widest uppercase animate-pulse">Đang nạp...</p>
-            </div>
-          </div>
-        }>
         {/* Dynamic Center Stage */}
         <section className="flex-1 min-w-0">
           
@@ -437,7 +450,6 @@ function App() {
             <ActivityLog />
           </aside>
         )}
-        </Suspense>
       </main>
 
       {/* Reward/Notification Modal */}

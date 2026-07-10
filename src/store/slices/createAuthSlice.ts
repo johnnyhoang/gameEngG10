@@ -57,10 +57,25 @@ export const createAuthSlice: StateCreator<
         const data = await res.json();
         const resolvedTheme = (get().uiThemesByUser[profileId]?.[0] || DEFAULT_UI_THEME) as any;
         const mergedQuestions = [...INITIAL_QUESTIONS];
+        const idMap = new Map<string, number>();
+        mergedQuestions.forEach((q, idx) => {
+          if (q.id) idMap.set(q.id, idx);
+        });
+        const promptSet = new Set<string>();
+        mergedQuestions.forEach(q => {
+          if (q.prompt) promptSet.add(q.prompt);
+        });
+
         (data.customQuestions || []).forEach((q: any) => {
-          const idx = mergedQuestions.findIndex(eq => eq.id === q.id);
-          if (idx !== -1) mergedQuestions[idx] = q;
-          else if (!mergedQuestions.some(eq => eq.prompt === q.prompt)) mergedQuestions.push(q);
+          if (!q) return;
+          const idx = q.id ? idMap.get(q.id) : undefined;
+          if (idx !== undefined && idx !== -1) {
+            mergedQuestions[idx] = q;
+          } else if (q.prompt && !promptSet.has(q.prompt)) {
+            mergedQuestions.push(q);
+            promptSet.add(q.prompt);
+            if (q.id) idMap.set(q.id, mergedQuestions.length - 1);
+          }
         });
         set({
           currentUser: data.currentUser,
@@ -189,12 +204,24 @@ export const createAuthSlice: StateCreator<
 
         set(_state => {
           const mergedQuestions = [...INITIAL_QUESTIONS];
+          const idMap = new Map<string, number>();
+          mergedQuestions.forEach((q, idx) => {
+            if (q.id) idMap.set(q.id, idx);
+          });
+          const promptSet = new Set<string>();
+          mergedQuestions.forEach(q => {
+            if (q.prompt) promptSet.add(q.prompt);
+          });
+
           dbCustomQs.forEach((q: any) => {
-            const idx = mergedQuestions.findIndex(eq => eq.id === q.id);
-            if (idx !== -1) {
+            if (!q) return;
+            const idx = q.id ? idMap.get(q.id) : undefined;
+            if (idx !== undefined && idx !== -1) {
               mergedQuestions[idx] = q;
-            } else if (!mergedQuestions.some(eq => eq.prompt === q.prompt)) {
+            } else if (q.prompt && !promptSet.has(q.prompt)) {
               mergedQuestions.push(q);
+              promptSet.add(q.prompt);
+              if (q.id) idMap.set(q.id, mergedQuestions.length - 1);
             }
           });
 
