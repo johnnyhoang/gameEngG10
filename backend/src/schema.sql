@@ -1,8 +1,20 @@
+-- Family Links Table (Multi-Profile)
+CREATE TABLE IF NOT EXISTS ge10_family_links (
+    id VARCHAR(255) PRIMARY KEY,
+    parent_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
+    student_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
+    status VARCHAR(50) DEFAULT 'pending', -- 'pending_student', 'pending_parent', 'active'
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(parent_id, student_id)
+);
+
 -- Users Table (linked with Supabase Auth)
 CREATE TABLE IF NOT EXISTS ge10_users (
-    id VARCHAR(255) PRIMARY KEY, -- Google/Supabase User ID
+    id VARCHAR(255) PRIMARY KEY, -- Profile ID (generated uuid)
+    account_id VARCHAR(255) NOT NULL, -- Google/Supabase User ID
     name VARCHAR(255) NOT NULL,
-    email VARCHAR(255) UNIQUE NOT NULL,
+    email VARCHAR(255) NOT NULL,
     avatar_url TEXT,
     role VARCHAR(50) DEFAULT 'student',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -10,6 +22,11 @@ CREATE TABLE IF NOT EXISTS ge10_users (
 
 -- Safe migration check for existing tables
 ALTER TABLE ge10_users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'student';
+ALTER TABLE ge10_users ADD COLUMN IF NOT EXISTS account_id VARCHAR(255);
+UPDATE ge10_users SET account_id = id WHERE account_id IS NULL;
+ALTER TABLE ge10_users ALTER COLUMN account_id SET NOT NULL;
+ALTER TABLE ge10_users DROP CONSTRAINT IF EXISTS ge10_users_email_key;
+ALTER TABLE ge10_users DROP COLUMN IF EXISTS family_id;
 
 -- Player Profiles Table
 CREATE TABLE IF NOT EXISTS ge10_player_profiles (
@@ -148,3 +165,51 @@ CREATE TABLE IF NOT EXISTS ge10_user_lessons_progress (
 
 -- Add lesson_id to custom questions table
 ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS lesson_id VARCHAR(255) REFERENCES ge10_lessons(id) ON DELETE SET NULL;
+
+-- Exploration Progress Table (Fog of War tracking)
+CREATE TABLE IF NOT EXISTS ge10_exploration_progress (
+    user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
+    area_id VARCHAR(255) NOT NULL,
+    clear_count INTEGER DEFAULT 0,
+    PRIMARY KEY (user_id, area_id)
+);
+
+-- Ledger NP Transaction (Stored Procedure) to avoid negative coins and race conditions
+CREATE OR REPLACE FUNCTION ge10_process_np_transaction(p_user_id VARCHAR, p_amount INTEGER)
+RETURNS BOOLEAN AS $$
+DECLARE
+    current_coins INTEGER;
+BEGIN
+    -- Lock the row for update to prevent race conditions
+    SELECT coins INTO current_coins 
+    FROM ge10_player_profiles 
+    WHERE user_id = p_user_id 
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+        RETURN FALSE;
+    END IF;
+
+    IF current_coins + p_amount < 0 THEN
+        RETURN FALSE; -- Insufficient funds
+    END IF;
+
+    UPDATE ge10_player_profiles
+    SET coins = coins + p_amount, server_updated_at = NOW()
+    WHERE user_id = p_user_id;
+
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TABLE IF NOT EXISTS ge10_gatekeeper_history (
+  id SERIAL PRIMARY KEY,
+  student_id UUID REFERENCES ge10_player_profiles(id) ON DELETE CASCADE,
+  page_id VARCHAR(50) NOT NULL,
+  question_id VARCHAR(50) NOT NULL,
+  used_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_gatekeeper_history_student ON ge10_gatekeeper_history(student_id);
+CREATE INDEX IF NOT EXISTS idx_gatekeeper_history_page ON ge10_gatekeeper_history(student_id, page_id);
+

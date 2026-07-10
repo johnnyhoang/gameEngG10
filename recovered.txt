@@ -1,0 +1,318 @@
+Created At: 2026-07-10T05:10:27Z
+Completed At: 2026-07-10T05:10:27Z
+The following changes were made by the multi_replace_file_content tool to: D:\Hoa Hoang\Apps\gameEngG10\src\hooks\useGameState.ts. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -297,6 +297,8 @@
+ 
+ interface GameState {
+   // State
++  sessionAccountId: string | null;
++  availableProfiles: UserProfile[];
+   currentUser: UserProfile | null;
+   player: PlayerProfile;
+   questions: Question[];
+@@ -348,8 +348,11 @@
+   // Initializers
+   initEventSubscriptions: () => () => void;
+ 
+-  // Auth Actions
+-  login: (user: UserProfile) => void;
++  // Auth & Profile Actions
++  setSessionAccountId: (id: string | null) => void;
++  fetchProfiles: () => Promise<void>;
++  selectProfile: (profileId: string) => Promise<void>;
++  createProfile: (role: 'student' | 'parent', name: string) => Promise<void>;
+   logout: () => void;
+   selectRole: (role: 'student' | 'parent') => Promise<void>;
+   fetchAdminStudents: () => Promise<void>;
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+Created At: 2026-07-10T05:10:57Z
+Completed At: 2026-07-10T05:11:08Z
+The following changes were made by the multi_replace_file_content tool to: D:\Hoa Hoang\Apps\gameEngG10\src\hooks\useGameState.ts. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -873,73 +873,67 @@
+           };
+         },
+ 
+-        // Auth Actions
+-        login: async (user) => {
+-          if (user.id.startsWith('mock-')) {
+-            set(state => {
+-              const resolvedTheme = state.uiThemesByUser[user.id] || DEFAULT_UI_THEME;
+-              const newPlayer = state.profiles[user.id] || {
+-                id: user.id,
+-                name: user.name,
+-                role: 'student',
+-                level: 1,
+-                xp: 0,
+-                coins: 200,
+-                walletVND: 0,
+-                streak: 0,
+-                energy: PLAYER_ENERGY_MAX,
+-                hearts: 3,
+-                lastActive: new Date().toISOString(),
+-                badges: []
+-              };
+-
+-              const newPet = state.petStates[user.id] || {
+-                name: 'Heo Maikawaii',
+-                stage: 'egg',
+-                level: 1,
+-                exp: 0,
+-                energy: 100,
+-                mood: 'neutral',
+-                lastFed: new Date().toISOString()
+-              };
+-
+-              const newStats = state.categoryStatsAll[user.id] || {};
+-
+-              return {
+-                currentUser: user,
+-                player: newPlayer,
+-                pet: newPet,
+-                categoryStats: newStats,
+-                gameSettings: state.gameSettings || DEFAULT_GAME_SETTINGS,
+-                uiTheme: resolvedTheme
+-              };
+-            });
+-            logActivity('energy_refill', 'Đã vào sân', `Chào mừng ${user.name}. Sân học đã mở.`);
+-            return;
+-          }
+-
+-          // Real Supabase login
+-          try {
+-            const session = (await supabase.auth.getSession()).data.session;
+-            const token = session?.access_token;
+-            if (!token) return;
+-
+-            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+-
+-            // Sync user details to backend pg first
+-            await fetch(`${backendUrl}/api/auth/sync-user`, {
+-              method: 'POST',
+-              headers: {
+-                'Content-Type': 'application/json',
+-                'Authorization': `Bearer ${token}`
+-              }
+-            });
+-
+-            // Retrieve profile
+-            const res = await fetch(`${backendUrl}/api/profile`, {
+-              headers: {
+-                'Authorization': `Bearer ${token}`
+-              }
++        // Auth & Profile Actions
++        setSessionAccountId: (id) => set({ sessionAccountId: id }),
++
++        fetchProfiles: async () => {
++          const accountId = get().sessionAccountId;
++          if (!accountId) return;
++          try {
++            const session = (await supabase.auth.getSession()).data.session;
++            const token = session?.access_token;
++            if (!token) return;
++
++            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
++            const res = await fetch(`${backendUrl}/api/profiles`, {
++              headers: { 'Authorization': `Bearer ${token}` }
++            });
++
++            if (res.ok) {
++              const data = await res.json();
++              set({ availableProfiles: data.profiles || [] });
++            }
++          } catch (e) {
++            console.error('Failed to fetch profiles', e);
++          }
++        },
++
++        createProfile: async (role, name) => {
++          const accountId = get().sessionAccountId;
++          if (!accountId) return;
++          try {
++            const session = (await supabase.auth.getSession()).data.session;
++            const token = session?.access_token;
++            if (!token) return;
++
++            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
++            const res = await fetch(`${backendUrl}/api/profiles`, {
++              method: 'POST',
++              headers: { 
++                'Content-Type': 'application/json',
++                'Authorization': `Bearer ${token}` 
++              },
++              body: JSON.stringify({ role, name })
++            });
++
++            if (res.ok) {
++              await get().fetchProfiles();
++            }
++          } catch (e) {
++            console.error('Failed to create profile', e);
++          }
++        },
++
++        selectProfile: async (profileId) => {
++          try {
++            const session = (await supabase.auth.getSession()).data.session;
++            const token = session?.access_token;
++            if (!token) return;
++
++            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
++            
++            const res = await fetch(`${backendUrl}/api/profile/${profileId}`, {
++              headers: { 'Authorization': `Bearer ${token}` }
+             });
+ 
+             if (res.ok) {
+@@ -946,5 +946,5 @@
+               const dbCustomQs = data.customQuestions || [];
+-              const resolvedTheme = (get().uiThemesByUser[data.currentUser?.id || user.id] || DEFAULT_UI_THEME) as UiThemeId;
++              const resolvedTheme = (get().uiThemesByUser[profileId] || DEFAULT_UI_THEME) as UiThemeId;
+ 
+               set(_state => {
+                 const mergedQuestions = [...INITIAL_QUESTIONS];
+@@ -956,31 +956,9 @@
+                   }
+                 });
+ 
+-                const resolvedRole = data.currentUser?.role || undefined;
+-                return {
+-                  currentUser: data.currentUser ? { ...data.currentUser, role: resolvedRole } : { ...user, role: resolvedRole },
++                return {
++                  currentUser: data.currentUser,
+                   uiTheme: resolvedTheme,
+-                  player: data.player || {
+-                    id: user.id,
+-                    name: user.name,
+-                    role: resolvedRole as any,
+-                    level: 1,
+-                    xp: 0,
+-                    coins: 200,
+-                    walletVND: 0,
+-                    streak: 0,
+-                    energy: PLAYER_ENERGY_MAX,
+-                    hearts: 3,
+-                    lastActive: new Date().toISOString(),
+-                    badges: []
+-                  },
+-                  pet: data.pet || {
+-                    name: 'Heo Maikawaii',
+-                    stage: 'egg',
+-                    level: 1,
+-                    exp: 0,
+-                    energy: 100,
+-                    mood: 'neutral',
+                     lastFed: new Date().toISOString()
+                   },
+                   categoryStats: data.categoryStats || {},
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+
+We did our best to apply changes despite some inaccuracies. Double check if the edit applied is what you intended.
+Created At: 2026-07-10T05:11:41Z
+Completed At: 2026-07-10T05:11:41Z
+The following changes were made by the multi_replace_file_content tool to: D:\Hoa Hoang\Apps\gameEngG10\src\App.tsx. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -26,7 +26,7 @@
+ import { BikiDoThiHamSo } from './components/BikiDoThiHamSo';
+ import { BikiHinhHocPhang } from './components/BikiHinhHocPhang';
+ import { GatekeeperModal } from './components/GatekeeperModal';
+-import { RoleSelectionScreen } from './components/RoleSelectionScreen';
++import { ProfileSelectionScreen } from './components/ProfileSelectionScreen';
+ import { GlobalSectModal } from './components/GlobalSectModal';
+ import type { UserProfile } from './types/game';
+ 
+@@ -165,22 +165,13 @@
+ 
+     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: AuthChangeEvent, session: Session | null) => {
+       if (session && session.user) {
+-        const user: UserProfile = {
+-          id: session.user.id,
+-          name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
+-          email: session.user.email || '',
+-          avatar: session.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
+-        };
+-
+-        const current = useGameState.getState().currentUser;
+-        if (!current || current.id !== user.id) {
+-          await useGameState.getState().login(user);
+-        }
+-      } else {
+-        const current = useGameState.getState().currentUser;
+-        if (current && !current.id.startsWith('mock-')) {
+-          useGameState.getState().logout();
+-        }
++        const state = useGameState.getState();
++        if (state.sessionAccountId !== session.user.id) {
++          state.setSessionAccountId(session.user.id);
++          await state.fetchProfiles();
++        }
++      } else {
++        useGameState.getState().logout();
+       }
+ 
+       if (mounted) {
+@@ -213,12 +213,14 @@
+     );
+   }
+ 
+-  if (!currentUser) {
++  const { sessionAccountId } = useGameState();
++
++  if (!sessionAccountId) {
+     return <GoogleLoginScreen />;
+   }
+ 
+-  if (currentUser && !currentUser.role) {
+-    return <RoleSelectionScreen />;
++  if (!currentUser) {
++    return <ProfileSelectionScreen />;
+   }
+ 
+   const triggerMysteryBox = () => {
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+Created At: 2026-07-10T05:12:20Z
+Completed At: 2026-07-10T05:12:20Z
+The following changes were made by the multi_replace_file_content tool to: D:\Hoa Hoang\Apps\gameEngG10\src\hooks\useGameState.ts. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -628,6 +628,8 @@
+ 
+       return {
+         // Initial States
++        sessionAccountId: null,
++        availableProfiles: [],
+         currentUser: null,
+         player: INITIAL_PLAYER,
+         questions: INITIAL_QUESTIONS,
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+Created At: 2026-07-10T05:29:53Z
+Tool is running as a background task with task id: 4739afb4-6c0d-4221-bb95-8c328fd24693/task-1406
+Task Description: python -c "
+import json
+log = open(r'C:\Users\hoa.hoang\.gemini\antigravity\brain\4739afb4-6c0d-4221-bb95-8c328fd24693\.system_generated\logs\transcript_full.jsonl', encoding='utf-8')
+for line in log:
+    content = json.loads(line).get('content', '')
+    if 'sessionAccountId' in content and 'multi_replace_file_content' in content:
+        print(content)
+" > recovered.txt
+Task logs are available at: file:///C:/Users/hoa.hoang/.gemini/antigravity/brain/4739afb4-6c0d-4221-bb95-8c328fd24693/.system_generated/tasks/task-1406.log
+Created At: 2026-07-10T05:30:10Z
+Tool is running as a background task with task id: 4739afb4-6c0d-4221-bb95-8c328fd24693/task-1413
+Task Description: python -c "
+import json
+log = open(r'C:\Users\hoa.hoang\.gemini\antigravity\brain\4739afb4-6c0d-4221-bb95-8c328fd24693\.system_generated\logs\transcript_full.jsonl', encoding='utf-8')
+with open('recovered.txt', 'w', encoding='utf-8') as out:
+    for line in log:
+        content = json.loads(line).get('content', '')
+        if 'sessionAccountId' in content and 'multi_replace_file_content' in content:
+            out.write(content + '\n')
+"
+Task logs are available at: file:///C:/Users/hoa.hoang/.gemini/antigravity/brain/4739afb4-6c0d-4221-bb95-8c328fd24693/.system_generated/tasks/task-1413.log

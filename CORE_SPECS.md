@@ -12,7 +12,7 @@ Tài liệu đặc tả này định hình ý tưởng cốt lõi, kiến trúc 
 *   **Viện Chủ:** Đóng vai trò là nhà tài trợ, kiểm soát và khích lệ bằng cách liên kết kết quả học tập trong thế giới ảo với các phần thưởng thực tế ngoài đời thực.
 
 ### 1.2 Mô hình Phân Quyền Vai Trò & Đa Hồ Sơ (Multi-Profile)
-Chi tiết về định nghĩa các Role (Học sinh, Phụ huynh, Phụ tá Viện Chủ), cơ chế Đa Hồ Sơ (Multi-Profile trên 1 Account Google) và kết nối thành Nhóm Gia Đình, vui lòng xem tại **[SUB_SPEC_FAMILY_ROLE.md](./SUB_SPEC_FAMILY_ROLE.md)**.
+Chi tiết về định nghĩa các Role (Học sinh, Phụ huynh Chính/Phụ, Phó Viện, Viện Trưởng), cơ chế Đa Hồ Sơ (Multi-Profile trên 1 Account Google) và kết nối thành Nhóm Gia Đình, vui lòng xem tại **[SUB_SPEC_FAMILY_ROLE.md](./SUB_SPEC_FAMILY_ROLE.md)**.
 Nguyên tắc cốt lõi: Một tài khoản Google có thể tạo nhiều hồ sơ biệt lập (Học Sinh hoặc Phụ Huynh). Tại một thời điểm chỉ đăng nhập vào một hồ sơ duy nhất. Khi chuyển đổi hồ sơ/vai trò, giao diện sẽ thay đổi hoàn toàn và danh tính tự động ẩn khỏi bảng xếp hạng nhóm không liên quan để tránh gian lận. Toàn bộ tiến trình cũ vẫn được bảo lưu độc lập.
 
 ---
@@ -295,7 +295,7 @@ interface PageExplorationState {
 Chi tiết về mọi tình huống nhận thưởng (XP/NP) và bị trừ (NP) được đặc tả tại: **[SUB_SPEC_XP_NP.md](./SUB_SPEC_XP_NP.md)**.
 Những thay đổi cốt lõi cần lưu ý:
 1. **Luật Bất Cảm (XP):** Điểm Kinh Nghiệm (XP) chỉ có thể **Tăng**, không bao giờ bị giảm. Nuôi Pet hay sai bài không làm tụt cấp.
-2. **Luật Ngân Lượng (NP):** Mọi khoản phí, phạt (mua đồ, nuôi Pet, trả lời sai cổng sương mù, skip câu hỏi) đều trừ vào NP. **NP được phép âm vô hạn** — không có hành động nào bị chặn vì thiếu NP; số dư âm là khoản nợ điểm để thiếu hiệp cày lại.
+2. **Luật Ngân Lượng (NP):** Mọi khoản phí, phạt (mua đồ, nuôi Pet, trả lời sai cổng sương mù, skip câu hỏi) đều trừ vào NP. **NP được phép âm vô hạn nhưng CHỈ do các khoản trừ bắt buộc từ hệ thống** (skip câu hỏi, trả lời sai cổng sương mù, pet đói bị trừ theo ngày...). Các hành động **do chủ ý của thiếu hiệp** (mua sắm Bách Hóa, cho pet ăn, mua Phong Vị, đổi Phần Thưởng Thực Tế...) vẫn yêu cầu **đủ NP** mới thực hiện được — không cho tiêu âm. Số dư âm là khoản nợ điểm để thiếu hiệp cày lại.
 3. **Luật Chuỗi Tinh Tấn (Streak):** Mất chuỗi **KHÔNG bị trừ NP**. Thay vào đó, chuỗi càng dài thưởng càng leo thang: giữ chuỗi sang ngày thứ 2 được cộng điểm, ngày thứ 3 cộng thêm, ngày thứ 4 trở đi cộng thêm nữa (bảng số cụ thể tại SUB_SPEC_XP_NP §2.1). Mất chuỗi chỉ đơn giản reset thưởng về mốc ngày 1. Hộ Tâm Phù vẫn dùng để bảo toàn chuỗi khi lỡ 1 ngày.
 
 #### Cơ Chế "Môn Chủ Hỏi Tội" (Bỏ Qua Thử Thách)
@@ -321,11 +321,15 @@ Những thay đổi cốt lõi cần lưu ý:
 *   **Tổng hợp:** Cộng dồn thành **Phút Tu Luyện** theo ngày và theo tuần, bổ theo từng thiếu hiệp / môn phái / tầng.
 *   **Nơi sử dụng:** Thân Phận (học sinh tự xem), báo cáo Phụ huynh, dashboard Thiên Cơ Các, và là chỉ số xương sống của hệ thống Leaderboard (§7.5). Đây là thước đo "north star" của sản phẩm: *tổng phút tu luyện thu hoạch mỗi ngày/tuần*.
 
-### 3.4 Kỳ Ngộ Giang Hồ (Random Encounter) — *(TODO: đang phân tích ý tưởng, chưa triển khai)*
-Định hướng đã chốt sơ bộ:
-*   Là một dạng **Page Cấp 3 đặc biệt** (§2.8.4): xuất hiện **ngẫu nhiên** và **không bao giờ bị sương mù** che.
-*   Điểm xuất hiện: trong **Daily** (Bảng Cáo Thị / WorldMap); trong **Đấu Trường** dưới dạng *chơi nhanh*; trong **Hang Luyện Công** dưới dạng *học nhanh*.
-*   Cơ chế thưởng/phạt, tần suất xuất hiện, nội dung cụ thể: **chưa chốt** — cần một đợt phân tích riêng trước khi triển khai (đã ghi backlog).
+### 3.4 Kỳ Ngộ Giang Hồ (Random Encounter) — *(đã duyệt thiết kế 2026-07-10)*
+1.  **Bản chất:** Page Cấp 3 đặc biệt (§2.8.4) do **Heo Maikawaii dẫn ra** (đúng luật linh vật duy nhất §2.5), xuất hiện ngẫu nhiên dưới dạng node phát sáng, **không bao giờ bị sương mù** che.
+2.  **Ba biến thể theo vị trí xuất hiện:**
+    *   *Daily (Bảng Cáo Thị / WorldMap):* thẻ **"Kỳ Ngộ Hôm Nay"** — 1 câu đố vui + thưởng.
+    *   *Đấu Trường:* **"Tốc Chiến Kỳ Ngộ"** — 3 câu MCQ trong 60 giây (chơi nhanh).
+    *   *Hang Luyện Công:* **"Cơ Duyên Học Nhanh"** — 1 trang lý thuyết cực ngắn + 1 câu hỏi liền sau.
+3.  **Tần suất & chống lạm dụng:** xác suất ~**8%** mỗi lần bước vào một Page Cấp 1; tối đa **2 Kỳ Ngộ/ngày**; node tự biến mất sau **10 phút** nếu không nhận.
+4.  **Thưởng (chỉ thưởng, không phạt):** +15~30 NP *hoặc* +20 Chân Khí. Trả lời **sai không bị phạt** — Kỳ Ngộ là khoảnh khắc may mắn, không phải kỷ luật.
+5.  **Dữ liệu:** `KyNgoEvent { id, date, locationPageId, kind, claimed }` + bộ đếm số Kỳ Ngộ đã nhận trong ngày.
 
 ---
 
@@ -396,14 +400,17 @@ Hệ thống được thiết kế dạng mô-đun rời (decoupled) để dễ 
 
 ### 7.1 Bảng quy đổi thuật ngữ vai trò (Roles Terminology)
 
-| Vai trò nguyên bản | Thuật ngữ Kiếm hiệp | Ý nghĩa hiển thị trên hệ thống |
-| :--- | :--- | :--- |
-| **Super Admin / Parent** | **Viện Chủ** 👑 | Người quản lý cao nhất của học viện (phê duyệt phần thưởng, giám sát tổng quan). |
-| **Teacher / Content Creator** | **Đạo Sư** 📖 | Thầy cô truyền dạy võ học và kiến thức của các môn phái. |
-| **Grader / Examiner** | **Khảo Quan** 📝 | Người phụ trách chấm điểm bài luận và đánh giá học lực. |
-| **AI Teacher (Gemini)** | **Linh Sư** 🤖 | Vị thầy thông tuệ ảo đồng hành hướng dẫn thiếu hiệp mọi lúc mọi nơi. |
-| **Student / Player** | **Thiếu Hiệp** 🌱 | Cách gọi chung cho người học tham gia tu luyện. |
-| **Discipline Voice (hệ thống)** | **Môn Chủ** ⚖️ | Giọng nói kỷ luật, nghiêm khắc của học viện — chỉ xuất hiện khi Thiếu Hiệp có hành vi né tránh thử thách (vd Bỏ qua câu hỏi, xem §3.D). Không phải tài khoản/vai trò thật, chỉ là nhân vật tường thuật trong UI. |
+| Vai trò nguyên bản | Thuật ngữ Kiếm hiệp | Code value | Ý nghĩa hiển thị trên hệ thống |
+| :--- | :--- | :--- | :--- |
+| **Super Admin / Institute Head** | **Viện Trưởng** 👑 | `truong_vien` | Chủ nhân tối cao của học viện — toàn quyền tuyệt đối, bổ nhiệm Phó Viện, xóa tài khoản, xem audit log. |
+| **Moderator / Deputy Admin** | **Phó Viện** 🛡️ | `pho_vien` | Được Viện Trưởng ủy quyền — quản lý ngân hàng câu hỏi, xem toàn bộ học sinh, promote trong phạm vi cho phép. |
+| **Primary Parent** | **Viện Chủ** 👨‍👩‍👧 | `parent` | Phụ huynh chính của Nhóm Gia Đình — tạo phần thưởng, giao nhiệm vụ, cấu hình energy, quản lý con. |
+| **Secondary Parent** | **Phụ Huynh Phụ** 👤 | `secondary_parent` | Được Viện Chủ mời — quyền do Viện Chủ cấu hình bật/tắt từng mục. |
+| **Teacher / Content Creator** | **Đạo Sư** 📖 | `teacher` *(future)* | Thầy cô truyền dạy võ học và kiến thức của các môn phái. |
+| **Grader / Examiner** | **Khảo Quan** 📝 | `grader` *(future)* | Người phụ trách chấm điểm bài luận và đánh giá học lực. |
+| **AI Teacher (Gemini)** | **Linh Sư** 🤖 | `aiCompanion` | Vị thầy thông tuệ ảo đồng hành hướng dẫn thiếu hiệp mọi lúc mọi nơi. |
+| **Student / Player** | **Thiếu Hiệp** 🌱 | `student` | Cách gọi chung cho người học tham gia tu luyện. |
+| **Discipline Voice (hệ thống)** | **Môn Chủ** ⚖️ | `disciplineVoice` | Giọng nói kỷ luật, nghiêm khắc của học viện — chỉ xuất hiện khi Thiếu Hiệp có hành vi né tránh thử thách. Không phải tài khoản/vai trò thật, chỉ là nhân vật tường thuật trong UI. |
 
 ### 7.2 Hệ thống Cấp bậc tu học của Thiếu hiệp (Student Ranks & Level Mapping)
 
@@ -490,9 +497,10 @@ Nguyên tắc chung: (1) mỗi vai trò chỉ thấy leaderboard trong **phạm 
 | Vai trò | Nơi xem | Phạm vi & Chiều xếp hạng |
 | :--- | :--- | :--- |
 | 🌱 **Thiếu Hiệp** | Trang Thân Phận | Hạng của bản thân trong Nhóm Gia Đình / Lớp — theo Phút Tu Luyện, Điểm kiếm trong kỳ, Chuỗi ngày, Đẳng cấp môn phái. Chỉ thấy tên/avatar các bạn cùng nhóm; không lộ dữ liệu nhóm khác. |
-| 👨‍👩‍👧 **Phụ huynh** | ParentConsole | Xếp hạng các con trong nhóm mình — theo Phút Tu Luyện, Điểm kiếm/kỳ, tỉ lệ đúng, số chuyên đề đạt Tinh Thông, số lần Skip (tín hiệu con cần hỗ trợ). |
-| 🛡️ **Phó Viện (Moderator)** | Bảng Quản Trị | Như phụ huynh nhưng trên toàn bộ phạm vi được giao (nhiều nhóm/lớp) + bảng so sánh giữa các nhóm. |
-| 👑 **Viện Trưởng (Admin)** | Thiên Cơ Các | Toàn viện, mọi chiều: top Phút Tu Luyện, top Điểm, top tiến bộ (delta mastery), heatmap chuyên đề yếu toàn viện, thống kê Skip và lý do lỗi đề. |
+| 👨‍👩‍👧 **Phụ huynh Chính** | ParentConsole | Xếp hạng các con trong nhóm mình — theo Phút Tu Luyện, Điểm kiếm/kỳ, tỉ lệ đúng, số chuyên đề đạt Tinh Thông, số lần Skip. |
+| 👤 **Phụ huynh Phụ** | ParentConsole | Như Phụ huynh Chính (nếu có quyền xem báo cáo) — chỉ nhóm gia đình mình. |
+| 🛡️ **Phó Viện** | Bảng Quản Trị (Thiên Cơ Các) | Như phụ huynh nhưng trên toàn bộ phạm vi viện + bảng so sánh giữa các nhóm gia đình. |
+| 👑 **Viện Trưởng** | Thiên Cơ Các (Toàn Viện) | Toàn viện, mọi chiều: top Phút Tu Luyện, top Điểm, top tiến bộ (delta mastery), heatmap chuyên đề yếu toàn viện, thống kê Skip và lý do lỗi đề. |
 
 *   **An toàn trẻ em:** học sinh được ẩn danh hóa (biệt danh) trên mọi bảng vượt ra ngoài nhóm gia đình của mình; tài khoản chuyển vai trò tự động ẩn khỏi bảng (§1.2).
 *   *(Ghi chú: chi tiết quyền của Chủ Viện/Phó Viện sẽ đồng bộ lại khi SUB_SPEC_FAMILY_ROLE bản mới được nạp về — xem §1.2.)*
@@ -504,11 +512,14 @@ Nguyên tắc chung: (1) mỗi vai trò chỉ thấy leaderboard trong **phạm 
 > [!IMPORTANT]
 > **Quy Tắc Biên Soạn:** Mỗi khi có ý tưởng hoặc tính năng mới được cập nhật vào Core Specs, các khái niệm, tên gọi và thuật ngữ mới bắt buộc phải được định nghĩa và cập nhật vào bộ tự điển này để đảm bảo tính đồng bộ từ thiết kế đến triển khai mã nguồn.
 
-| Tên tiếng Việt (UI) | Tên tiếng Anh (UI) | Tên kỹ thuật (Code) | Mô tả |
+| Tên tiếng Việt (UI) | Tên tiếng Anh (UI) | Code value (DB/TS) | Mô tả |
 | :--- | :--- | :--- | :--- |
-| **Viện Chủ** 👑 | Parent / Admin | `admin` / `parent` / `ParentConsole` | Người quản lý cao nhất của học viện (phê duyệt phần thưởng, giám sát tổng quan). |
-| **Đạo Sư** 📖 | Teacher / Creator | `teacher` / `instructor` | Thầy cô phụ trách soạn thảo học liệu, bài học của các môn phái. |
-| **Khảo Quan** 📝 | Examiner / Grader | `grader` / `examiner` | Người phụ trách chấm điểm bài luận và đánh giá học lực của thiếu hiệp. |
+| **Viện Trưởng** 👑 | Institute Head / Super Admin | `truong_vien` | Chủ nhân tối cao — toàn quyền, bổ nhiệm Phó Viện, xóa tài khoản, xem audit log. Thay thế code cũ `'admin'`. |
+| **Phó Viện** 🛡️ | Deputy Admin / Moderator | `pho_vien` | Quản trị được ủy quyền — CRUD câu hỏi, xem toàn học sinh, promote student↔parent, cấu hình energy. |
+| **Viện Chủ** 👨‍👩‍👧 | Primary Parent | `parent` | Phụ huynh chính của Nhóm Gia Đình — tạo rewards, nhiệm vụ, quản lý con, cấu hình energy cho con. |
+| **Phụ Huynh Phụ** 👤 | Secondary Parent | `secondary_parent` | Được Viện Chủ mời — quyền bật/tắt theo cấu hình Viện Chủ. |
+| **Đạo Sư** 📖 | Teacher / Creator | `teacher` *(future)* | Thầy cô phụ trách soạn thảo học liệu, bài học của các môn phái. |
+| **Khảo Quan** 📝 | Examiner / Grader | `grader` *(future)* | Người phụ trách chấm điểm bài luận và đánh giá học lực của thiếu hiệp. |
 | **Linh Sư** 🤖 | AI Companion | `aiCompanion` / `ai_teacher` / `Gemini` | Người đồng hành ảo thông tuệ hướng dẫn thiếu hiệp mọi lúc mọi nơi. |
 | **Thiếu Hiệp** 🌱 | Student / Player | `student` / `player` / `user` | Người học tham gia tu luyện kiến thức trong học viện. |
 | **Môn Chủ** ⚖️ | Discipline Voice | `disciplineVoice` / `systemVoice` | Nhân vật ảo của hệ thống đóng vai trò kỷ luật, nghiêm khắc vấn tội khi thiếu hiệp né tránh thử thách. |

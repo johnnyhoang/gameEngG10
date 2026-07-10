@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Sparkles, Lock } from 'lucide-react';
+import { useSect } from '../contexts/SectContext';
 import { useGameState } from '../hooks/useGameState';
-import { FogCard } from './FogCard';
+import { FogCard, getFogStatus } from './FogCard';
 import { Level3Overlay } from './Level3Overlay';
 
 // Game components
@@ -49,17 +50,42 @@ const CANH_THAC_HO: GameCard[] = [
   { id: 'dragdiagram', icon: '🧱', title: 'Ghép Sơ Đồ', desc: 'Lắp ghép nhãn dán vào sơ đồ kiến thức', reward: '+30 NP, +35 XP', color: 'synth-cyan', pageId: 'relax-dragdiagram' },
 ];
 
-function renderGame(id: GameId) {
-  switch (id) {
-    case 'flashcards': return <FlashcardGame />;
-    case 'match': return <MatchPairsGame />;
-    case 'mindmap': return <MindmapGame />;
-    case 'story': return <StoryGame />;
-    case 'adventure': return <AdventureGame />;
-    case 'stepbuilder': return <StepBuilderGame />;
-    case 'reading': return <ReadingGame />;
-    case 'explain': return <ExplainGame />;
-    case 'dragdiagram': return <DiagramGame />;
+function renderGame(
+  game: GameCard,
+  explorationStates: any,
+  currentUser: any,
+  currentSubject: string,
+  completeLevel3Page: (pageId: string) => void
+) {
+  const isEasy = game.id === 'flashcards' || game.id === 'match';
+  const req = isEasy ? 2 : 3;
+  const status = getFogStatus(game.pageId, explorationStates, req, 7);
+  const lockedStatus = status === 'shadowed';
+
+  const props = {
+    currentStudentId: currentUser?.id || 'mock-student',
+    activeSectId: currentSubject,
+    difficulty: (isEasy ? 'easy' : 'hard') as 'easy' | 'hard',
+    lockedStatus,
+    onGameStart: () => {
+      console.log(`Bắt đầu chơi game: ${game.title}`);
+    },
+    onGameComplete: (results: any) => {
+      console.log(`Hoàn thành game: ${game.title}`, results);
+      completeLevel3Page(game.pageId);
+    }
+  };
+
+  switch (game.id) {
+    case 'flashcards': return <FlashcardGame {...props} />;
+    case 'match': return <MatchPairsGame {...props} />;
+    case 'stepbuilder': return <StepBuilderGame {...props} />;
+    case 'mindmap': return <MindmapGame {...props} />;
+    case 'story': return <StoryGame {...props} />;
+    case 'adventure': return <AdventureGame {...props} />;
+    case 'reading': return <ReadingGame {...props} />;
+    case 'explain': return <ExplainGame {...props} />;
+    case 'dragdiagram': return <DiagramGame {...props} />;
   }
 }
 
@@ -88,7 +114,7 @@ const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onO
         <div key={game.id} className="relative">
           <FogCard
             pageId={game.pageId}
-            requiredCompletions={3}
+            requiredCompletions={game.id === 'flashcards' || game.id === 'match' ? 2 : 3}
             decayDays={7}
             onOpenLevel3={() => onOpenGame(game)}
           >
@@ -124,6 +150,11 @@ const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onO
 export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   const uiTheme = useGameState(state => state.uiTheme);
   const isUnicorn = uiTheme === 'unicorn-dream';
+
+  const currentUser = useGameState(state => state.currentUser);
+  const { activeSectId } = useSect();
+  const pageExplorationStates = useGameState(state => state.pageExplorationStates || {});
+  const completeLevel3Page = useGameState(state => state.completeLevel3Page);
 
   const [activeGame, setActiveGame] = useState<GameCard | null>(null);
 
@@ -206,7 +237,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
           onClose={() => setActiveGame(null)}
           title={`${activeGame.icon} ${activeGame.title.toUpperCase()}`}
         >
-          {renderGame(activeGame.id)}
+          {renderGame(activeGame, pageExplorationStates, currentUser, activeSectId, completeLevel3Page)}
         </Level3Overlay>
       )}
     </div>

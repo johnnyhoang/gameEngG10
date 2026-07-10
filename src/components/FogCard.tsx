@@ -14,21 +14,21 @@ interface FogCardProps {
 
 export function getFogStatus(
   pageId: string,
-  explorationStates: Record<string, any>,
+  explorationProgress: Record<string, import('../types/game').ExplorationProgress>,
   requiredCompletions: number = 1,
   decayDays: number = 7
 ): FogStatus {
-  const state = explorationStates[pageId];
-  if (!state) return 'shadowed';
+  const progress = explorationProgress[pageId];
+  if (!progress) return 'shadowed';
 
-  const { explorationCount, lastCompletedAt } = state;
+  const { clearCount, lastClearedAt } = progress;
 
-  if (explorationCount >= requiredCompletions) {
+  if (clearCount >= requiredCompletions) {
     return 'permanent';
   }
 
-  if (explorationCount > 0 && lastCompletedAt) {
-    const lastDate = new Date(lastCompletedAt);
+  if (clearCount > 0 && lastClearedAt) {
+    const lastDate = new Date(lastClearedAt);
     const now = new Date();
     const diffTime = Math.abs(now.getTime() - lastDate.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
@@ -50,8 +50,8 @@ export const FogCard: React.FC<FogCardProps> = ({
   onOpenLevel3,
   children
 }) => {
-  const { pageExplorationStates } = useGameState();
-  const status = getFogStatus(pageId, pageExplorationStates, requiredCompletions, decayDays);
+  const { explorationProgress } = useGameState();
+  const status = getFogStatus(pageId, explorationProgress, requiredCompletions, decayDays);
   
   const [isHovered, setIsHovered] = useState(false);
 
@@ -114,7 +114,7 @@ export const FogCard: React.FC<FogCardProps> = ({
         <div className="absolute bottom-2 left-2 right-2 z-20">
           <div className="bg-black/80 rounded-full p-1 border border-white/10 flex items-center justify-center gap-1 backdrop-blur-sm">
             {Array.from({ length: requiredCompletions }).map((_, i) => {
-              const isDone = i < (pageExplorationStates[pageId]?.explorationCount || 0);
+              const isDone = i < (explorationProgress[pageId]?.clearCount || 0);
               return (
                 <div 
                   key={i} 

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { ShieldAlert, X, Brain, AlertCircle, ArrowRight } from 'lucide-react';
+import type { SubjectId } from '../types/game';
+import { useSect } from '../contexts/SectContext';
 import type { Question } from '../types/game';
 import {
   pickGatekeeperQuestion,
@@ -9,6 +11,8 @@ import {
 } from '../utils/gatekeeper';
 import { BikiHinhHocPhang } from './BikiHinhHocPhang';
 import { Biki3DStudio } from './Biki3DStudio';
+
+import { toast } from '../utils/toast';
 
 interface GatekeeperModalProps {}
 
@@ -23,7 +27,8 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const [geometryMode, setGeometryMode] = useState<'2d' | '3d' | null>(null);
 
-  const { questions, currentSubject, pageExplorationStates, updatePendingKeyQuestion, player } = useGameState();
+  const { questions, pageExplorationStates, updatePendingKeyQuestion, player, awardCoinsAndXp } = useGameState();
+  const { activeSectId } = useSect();
 
   const isGeometry2D = React.useMemo(() => {
     if (!question) return false;
@@ -40,7 +45,7 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
   }, [question]);
 
   useEffect(() => {
-    const handleOpen = (e: Event) => {
+    const handleOpen = async (e: Event) => {
       const customEvent = e as CustomEvent;
       const { pageId, onUnlock } = customEvent.detail;
       setPageId(pageId);
@@ -57,10 +62,10 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
       if (!q) {
         // Dùng Core Knowledge-aware picker (CORE_SPECS §9.D)
         const studentId = player?.id ?? 'guest';
-        const recentlyUsed = getRecentlyUsedGatekeeperIds(studentId, pageId);
-        const picked = pickGatekeeperQuestion(pageId, currentSubject, questions, recentlyUsed);
+        const recentlyUsed = await getRecentlyUsedGatekeeperIds(studentId, pageId);
+        const picked = pickGatekeeperQuestion(pageId, activeSectId as SubjectId, questions, recentlyUsed);
         q = picked ?? undefined;
-        if (picked) recordGatekeeperUsage(studentId, pageId, picked.id);
+        if (picked) await recordGatekeeperUsage(studentId, pageId, picked.id);
       }
 
       setQuestion(q || null);
@@ -73,7 +78,7 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
 
     window.addEventListener('FOG_CARD_CLICKED', handleOpen);
     return () => window.removeEventListener('FOG_CARD_CLICKED', handleOpen);
-  }, [questions, currentSubject, pageExplorationStates, player]);
+  }, [questions, activeSectId, pageExplorationStates, player]);
 
 
   const handleClose = () => {
@@ -94,10 +99,28 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
 
     if (isCorrect) {
       if (pageId) updatePendingKeyQuestion(pageId, null);
+      awardCoinsAndXp(10, 0, 'Giải mã cổng sương mù đúng', `Trả lời đúng câu hỏi Gatekeeper tại ${pageId}`);
+      toast.success('Trả lời chính xác! +10 NP 🎉');
       setShowWelcome(true);
     } else {
       setIsError(true);
-      if (pageId) updatePendingKeyQuestion(pageId, question.id);
+      awardCoinsAndXp(-5, 0, 'Giải mã cổng sương mù sai', `Trả lời sai câu hỏi Gatekeeper tại ${pageId}`);
+      toast.error('Nhầm rồi thiếu hiệp! Bị phạt -5 NP. Đang đổi câu hỏi mới... 🐷');
+      
+      // Tự động load câu hỏi mới sau 2 giây để người dùng kịp quan sát
+      setTimeout(async () => {
+        const studentId = player?.id ?? 'guest';
+        const recentlyUsed = pageId ? await getRecentlyUsedGatekeeperIds(studentId, pageId) : [];
+        const picked = pageId ? pickGatekeeperQuestion(pageId, activeSectId as SubjectId, questions, recentlyUsed) : null;
+        if (picked) {
+          setQuestion(picked);
+          if (pageId) await recordGatekeeperUsage(studentId, pageId, picked.id);
+        } else {
+          setQuestion(null);
+        }
+        setSelectedAnswer('');
+        setIsError(false);
+      }, 2000);
     }
   };
 
@@ -143,15 +166,15 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
 
         <div className="p-6">
           <div className="flex items-center gap-3 mb-6 pb-6 border-b border-white/10">
-            <div className="p-3 rounded-xl bg-purple-500/10 text-synth-purple">
-              <Brain className="w-6 h-6" />
+            <div className="p-2.5 rounded-xl bg-purple-500/10 text-3xl">
+              🐷
             </div>
             <div>
-              <h2 className="font-orbitron font-bold text-lg text-white tracking-wide">
-                NGƯỜI GÁC CỔNG
+              <h2 className="font-orbitron font-bold text-base text-white tracking-wide uppercase">
+                Heo Maikawaii Gác Cổng
               </h2>
-              <p className="text-xs text-slate-400">
-                Hãy giải đáp câu hỏi để xua tan sương mù
+              <p className="text-[10px] text-slate-400">
+                Hãy giúp Heo giải đáp thử thách trắc nghiệm này để xua tan sương mù nhé!
               </p>
             </div>
           </div>

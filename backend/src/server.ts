@@ -330,52 +330,59 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
-// Auth / Profile Sync-User endpoint: Inserts or updates user metadata on login
-app.post('/api/auth/sync-user', authMiddleware, async (req: any, res) => {
-  const userId = req.user.sub;
-  const email = req.user.email;
-  // Get name and avatar from Supabase metadata if exists, otherwise defaults
-  const userMetadata = req.user.user_metadata || {};
-  const name = userMetadata.name || userMetadata.full_name || email.split('@')[0];
-  const avatarUrl = userMetadata.avatar_url || userMetadata.picture || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
-
+// GET /api/profiles: List all profiles for the Google Account
+app.get('/api/profiles', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
   try {
-    // Check if the user already exists to preserve their role
-    const existingUser = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [userId]);
-    let role = 'student';
-    if (existingUser.rowCount && existingUser.rowCount > 0) {
-      role = existingUser.rows[0].role;
-    } else {
-      role = email === 'hoang.hoa@gmail.com' ? 'admin' : 'student';
-    }
-
-    await pool.query(
-      `INSERT INTO ge10_users (id, name, email, avatar_url, role)
-       VALUES ($1, $2, $3, $4, $5)
-       ON CONFLICT (id) DO UPDATE SET
-         name = EXCLUDED.name,
-         avatar_url = EXCLUDED.avatar_url`,
-      [userId, name, email, avatarUrl, role]
-    );
-
-    res.json({ success: true, user: { id: userId, name, email, avatar: avatarUrl, role } });
-  } catch (error) {
-    console.error('Error syncing user metadata:', error);
-    res.status(500).json({ error: 'Failed to sync user.' });
+    const profilesRes = await pool.query('SELECT * FROM ge10_users WHERE account_id = $1', [accountId]);
+    res.json({ profiles: profilesRes.rows });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to fetch profiles' });
   }
 });
 
-// GET /api/profile: Retrieves the complete profile bundle from Supabase Postgres
-app.get('/api/profile', authMiddleware, async (req: any, res) => {
-  const userId = req.user.sub;
+// POST /api/profiles: Create a new profile for the Google Account
+app.post('/api/profiles', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const email = req.user.email;
+  const { role, name, avatarUrl } = req.body;
+  
+  if (!role || !name) return res.status(400).json({ error: 'Missing role or name' });
+  
+  try {
+    const profileId = 'prof-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+    const finalAvatar = avatarUrl || req.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+    
+    await pool.query(
+      `INSERT INTO ge10_users (id, account_id, name, email, avatar_url, role)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [profileId, accountId, name, email, finalAvatar, role]
+    );
+    
+    await pool.query(`INSERT INTO ge10_player_profiles (user_id) VALUES ($1)`, [profileId]);
+    await pool.query(`INSERT INTO ge10_pet_states (user_id) VALUES ($1)`, [profileId]);
+    
+    res.json({ success: true, profile: { id: profileId, account_id: accountId, name, email, avatar_url: finalAvatar, role } });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to create profile' });
+  }
+});
+
+// GET /api/profile/:id: Retrieves the complete profile bundle from Supabase Postgres
+app.get('/api/profile/:id', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const profileId = req.params.id;
 
   try {
-    // 1. Fetch user metadata
-    const userRes = await pool.query('SELECT * FROM ge10_users WHERE id = $1', [userId]);
+    // 1. Verify ownership
+    const userRes = await pool.query('SELECT * FROM ge10_users WHERE id = $1 AND account_id = $2', [profileId, accountId]);
     if (userRes.rowCount === 0) {
-      return res.status(404).json({ error: 'User profile not found. Call sync-user first.' });
+      return res.status(403).json({ error: 'Access denied or profile not found.' });
     }
     const userRow = userRes.rows[0];
+    const userId = profileId;
 
     // 2. Fetch player profile stats
     const playerRes = await pool.query('SELECT * FROM ge10_player_profiles WHERE user_id = $1', [userId]);
@@ -426,6 +433,17 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
     progressRes.rows.forEach((row: any) => {
       lessonsProgress[row.lesson_id] = row.completed;
     });
+
+    // 12. Fetch exploration progress
+    const explorationRes = await pool.query('SELECT * FROM ge10_exploration_progress WHERE user_id = $1', [userId]);
+    const explorationProgress: Record<string, { clearCount: number, lastClearedAt: string }> = {};
+    explorationRes.rows.forEach((row: any) => {
+      explorationProgress[row.page_id] = {
+        clearCount: row.clear_count,
+        lastClearedAt: row.last_cleared_at
+      };
+    });
+
     const bossBountiesVnd = await loadBossBounties();
     const challengeEnergyCosts = await loadChallengeEnergyCosts();
     const maxEnergy = await loadMaxEnergy();
@@ -540,7 +558,8 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
         theory: row.theory,
         category: row.category
       })),
-      lessonsProgress
+      lessonsProgress,
+      explorationProgress
     });
   } catch (error) {
     console.error('Error fetching profile stats:', error);
@@ -549,8 +568,13 @@ app.get('/api/profile', authMiddleware, async (req: any, res) => {
 });
 
 // POST /api/profile/sync: Receives Zustand state and synchronizes it to Supabase PostgreSQL
-app.post('/api/profile/sync', authMiddleware, async (req: any, res) => {
-  const userId = req.user.sub;
+app.post('/api/profile/:id/sync', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const userId = req.params.id;
+  
+  // Verify ownership
+  const check = await pool.query('SELECT id FROM ge10_users WHERE id = $1 AND account_id = $2', [userId, accountId]);
+  if (check.rowCount === 0) return res.status(403).json({ error: 'Unauthorized' });
   const { player, pet, categoryStats, logs, rewards, challenges, dailyMission, lessonsProgress } = req.body;
 
   const client = await pool.connect();
@@ -812,6 +836,171 @@ app.delete('/api/questions/custom/:questionId', authMiddleware, async (req: any,
   } catch (error: any) {
     console.error('Error deleting custom question:', error.message);
     res.status(500).json({ error: 'Failed to delete question.' });
+  }
+});
+
+// GET /api/profile/:id/challenges: Retrieves challenges for a specific user profile
+app.get('/api/profile/:id/challenges', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const userId = req.params.id;
+  
+  // Verify ownership
+  const check = await pool.query('SELECT id FROM ge10_users WHERE id = $1 AND account_id = $2', [userId, accountId]);
+  if (check.rowCount === 0) return res.status(403).json({ error: 'Unauthorized' });
+
+  try {
+    const result = await pool.query('SELECT challenges_json FROM ge10_user_challenges WHERE user_id = $1', [userId]);
+    res.json({ challenges: result.rows[0]?.challenges_json || [] });
+  } catch (error) {
+    console.error('Error fetching challenges:', error);
+    res.status(500).json({ error: 'Failed to fetch challenges.' });
+  }
+});
+
+// ==================== FAMILY SYSTEM ENDPOINTS ====================
+
+// GET /api/family/:profileId
+// Fetch the family status, members, and pending invitations for a specific profile
+app.get('/api/family/:profileId', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const profileId = req.params.profileId;
+  
+  try {
+    // 1. Verify ownership
+    const check = await pool.query('SELECT id, role FROM ge10_users WHERE id = $1 AND account_id = $2', [profileId, accountId]);
+    if (check.rowCount === 0) return res.status(403).json({ error: 'Unauthorized' });
+    const myRole = check.rows[0].role;
+
+    // 2. Fetch data based on role
+    if (myRole === 'student') {
+      // Find my parent
+      const linkRes = await pool.query(`
+        SELECT l.id, l.status, u.id as parent_id, u.name as parent_name, u.email as parent_email 
+        FROM ge10_family_links l 
+        JOIN ge10_users u ON l.parent_id = u.id 
+        WHERE l.student_id = $1
+      `, [profileId]);
+      
+      return res.json({ role: 'student', links: linkRes.rows });
+    } else {
+      // Find my students
+      const linkRes = await pool.query(`
+        SELECT l.id, l.status, u.id as student_id, u.name as student_name, u.email as student_email 
+        FROM ge10_family_links l 
+        JOIN ge10_users u ON l.student_id = u.id 
+        WHERE l.parent_id = $1
+      `, [profileId]);
+      
+      return res.json({ role: 'parent', links: linkRes.rows });
+    }
+  } catch (error) {
+    console.error('Error fetching family:', error);
+    res.status(500).json({ error: 'Failed to fetch family' });
+  }
+});
+
+// POST /api/family/invite
+app.post('/api/family/invite', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const { senderProfileId, targetId } = req.body; // targetId can be student ID or parent ID
+
+  try {
+    const check = await pool.query('SELECT id, role FROM ge10_users WHERE id = $1 AND account_id = $2', [senderProfileId, accountId]);
+    if (check.rowCount === 0) return res.status(403).json({ error: 'Unauthorized' });
+    const myRole = check.rows[0].role;
+
+    // Check if target exists
+    const targetCheck = await pool.query('SELECT id, role FROM ge10_users WHERE id = $1 OR email = $1', [targetId]);
+    if (targetCheck.rowCount === 0) return res.status(404).json({ error: 'User not found' });
+    const target = targetCheck.rows[0];
+
+    let parentId, studentId, initialStatus;
+
+    if (myRole === 'student') {
+      if (target.role === 'student') return res.status(400).json({ error: 'Cannot invite another student' });
+      // Check if student already has a parent
+      const existCheck = await pool.query('SELECT id FROM ge10_family_links WHERE student_id = $1', [senderProfileId]);
+      if (existCheck.rowCount && existCheck.rowCount > 0) return res.status(400).json({ error: 'You already have a parent or pending invite' });
+      
+      studentId = senderProfileId;
+      parentId = target.id;
+      initialStatus = 'pending_parent'; // needs parent approval
+    } else {
+      if (target.role !== 'student') return res.status(400).json({ error: 'Can only invite a student' });
+      const existCheck = await pool.query('SELECT id FROM ge10_family_links WHERE student_id = $1', [target.id]);
+      if (existCheck.rowCount && existCheck.rowCount > 0) return res.status(400).json({ error: 'Student already has a parent or pending invite' });
+      
+      parentId = senderProfileId;
+      studentId = target.id;
+      initialStatus = 'pending_student'; // needs student approval
+    }
+
+    const linkId = crypto.randomUUID();
+    await pool.query(
+      'INSERT INTO ge10_family_links (id, parent_id, student_id, status) VALUES ($1, $2, $3, $4)',
+      [linkId, parentId, studentId, initialStatus]
+    );
+
+    res.json({ success: true, message: 'Invite sent' });
+  } catch (error) {
+    console.error('Error inviting:', error);
+    res.status(500).json({ error: 'Failed to invite' });
+  }
+});
+
+// POST /api/family/respond
+app.post('/api/family/respond', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const { profileId, linkId, accept } = req.body;
+
+  try {
+    const check = await pool.query('SELECT id, role FROM ge10_users WHERE id = $1 AND account_id = $2', [profileId, accountId]);
+    if (check.rowCount === 0) return res.status(403).json({ error: 'Unauthorized' });
+    const myRole = check.rows[0].role;
+
+    const linkCheck = await pool.query('SELECT * FROM ge10_family_links WHERE id = $1', [linkId]);
+    if (linkCheck.rowCount === 0) return res.status(404).json({ error: 'Link not found' });
+    const link = linkCheck.rows[0];
+
+    // Authorize response
+    if (myRole === 'student' && link.student_id !== profileId) return res.status(403).json({ error: 'Unauthorized' });
+    if (myRole !== 'student' && link.parent_id !== profileId) return res.status(403).json({ error: 'Unauthorized' });
+
+    if (!accept) {
+      await pool.query('DELETE FROM ge10_family_links WHERE id = $1', [linkId]);
+      return res.json({ success: true, message: 'Invite rejected' });
+    }
+
+    await pool.query("UPDATE ge10_family_links SET status = 'active', updated_at = NOW() WHERE id = $1", [linkId]);
+    res.json({ success: true, message: 'Invite accepted' });
+  } catch (error) {
+    console.error('Error responding:', error);
+    res.status(500).json({ error: 'Failed to respond' });
+  }
+});
+
+// POST /api/family/leave
+app.post('/api/family/leave', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const { profileId, linkId } = req.body;
+
+  try {
+    const check = await pool.query('SELECT id, role FROM ge10_users WHERE id = $1 AND account_id = $2', [profileId, accountId]);
+    if (check.rowCount === 0) return res.status(403).json({ error: 'Unauthorized' });
+
+    const linkCheck = await pool.query('SELECT * FROM ge10_family_links WHERE id = $1', [linkId]);
+    if (linkCheck.rowCount === 0) return res.status(404).json({ error: 'Link not found' });
+    const link = linkCheck.rows[0];
+
+    if (link.student_id !== profileId && link.parent_id !== profileId) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    await pool.query('DELETE FROM ge10_family_links WHERE id = $1', [linkId]);
+    res.json({ success: true, message: 'Left family' });
+  } catch (error) {
+    console.error('Error leaving:', error);
+    res.status(500).json({ error: 'Failed to leave family' });
   }
 });
 
@@ -1702,6 +1891,48 @@ app.get('/api/admin/student-profile', authMiddleware, async (req: any, res) => {
   } catch (error: any) {
     console.error('Error fetching student profile:', error.message);
     res.status(500).json({ error: 'Failed to retrieve student profile.' });
+  }
+});
+
+// GET /api/gatekeeper-history
+app.get('/api/gatekeeper-history', authMiddleware, async (req, res) => {
+  const { studentId, pageId } = req.query;
+  if (!studentId) return res.status(400).json({ error: 'Missing studentId' });
+  try {
+    let query = 'SELECT * FROM ge10_gatekeeper_history WHERE student_id = $1';
+    let params: any[] = [studentId];
+    if (pageId) {
+      query += ' AND page_id = $2';
+      params.push(pageId);
+    }
+    const result = await pool.query(query, params);
+    res.json(result.rows.map(r => ({
+      studentId: r.student_id,
+      pageId: r.page_id,
+      questionId: r.question_id,
+      usedAt: r.used_at
+    })));
+  } catch (error) {
+    console.error('Error fetching gatekeeper history:', error);
+    res.status(500).json({ error: 'Failed to fetch gatekeeper history' });
+  }
+});
+
+// POST /api/gatekeeper-history
+app.post('/api/gatekeeper-history', authMiddleware, async (req, res) => {
+  const { studentId, pageId, questionId } = req.body;
+  if (!studentId || !pageId || !questionId) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+  try {
+    const result = await pool.query(
+      'INSERT INTO ge10_gatekeeper_history (student_id, page_id, question_id) VALUES ($1, $2, $3) RETURNING *',
+      [studentId, pageId, questionId]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Error recording gatekeeper history:', error);
+    res.status(500).json({ error: 'Failed to record gatekeeper history' });
   }
 });
 

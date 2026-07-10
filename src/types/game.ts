@@ -26,6 +26,20 @@ export interface PageExplorationState {
   pendingKeyQuestionId: string | null; // ID câu hỏi gatekeeper nếu giải sai
 }
 
+export interface ExplorationProgress {
+  clearCount: number;
+  lastClearedAt: string;
+}
+
+export interface CoinLedger {
+  id: string;
+  userId: string;
+  amount: number;
+  reason: string;
+  details?: string;
+  createdAt: string;
+}
+
 /** Nhãn hiển thị cho từng giai đoạn tiến hóa của Heo Maikawaii. */
 export const PET_STAGE_LABELS: Record<PetStage, string> = {
   egg: 'Đám Mây & Nấm Sơ Sinh 🍄',
@@ -42,6 +56,18 @@ export interface GameSettings {
   maxEnergy?: number;
   baseXP?: number;
   baseCoins?: number;
+  updatedAt: number;
+}
+
+export interface FamilyLink {
+  id: string;
+  status: 'pending_student' | 'pending_parent' | 'active';
+  parent_id?: string;
+  parent_name?: string;
+  parent_email?: string;
+  student_id?: string;
+  student_name?: string;
+  student_email?: string;
 }
 
 export interface UserProfile {
@@ -50,6 +76,7 @@ export interface UserProfile {
   email: string;
   avatar: string;
   role?: string;
+  familyId?: string;
 }
 
 export interface PlayerProfile {
@@ -84,6 +111,8 @@ export interface Question {
   difficulty: number; // 1 to 10 scale
   source: string; // e.g. "HCMC 2024 Exam", "Specialized 2025 Mock"
   subject?: SubjectId;
+  /** Tầng Thế Giới của câu hỏi (CORE_SPECS §1.4). Bỏ trống = Tầng 9 (toàn bộ nội dung hiện hành). */
+  gradeTier?: number;
   imageUrl?: string;
   metadata?: QuestionMeta;
   isConfused?: boolean;
@@ -158,7 +187,7 @@ export interface ParentReward {
 export interface HistoryLog {
   id: string;
   timestamp: number;
-  activityType: 'exercise' | 'challenge' | 'boss' | 'shop' | 'streak_penalty' | 'parent_approve' | 'pet_interact' | 'energy_refill' | 'box_open';
+  activityType: 'exercise' | 'challenge' | 'boss' | 'shop' | 'streak_penalty' | 'parent_approve' | 'pet_interact' | 'energy_refill' | 'box_open' | 'reward_claimed';
   title: string;
   detail: string;
   coinsChanged: number;
@@ -190,6 +219,8 @@ export interface HandbookPage {
   bullets?: string[];
   /** Đối tượng xem trang: 'admin' chỉ hiện khi duyệt Cẩm Nang với vai trò Viện Chủ. Bỏ trống = ai cũng xem được. */
   audience?: 'student' | 'admin';
+  /** Tầng Thế Giới của trang cẩm nang (CORE_SPECS §1.4). Bỏ trống = dùng chung mọi tầng. */
+  gradeTier?: number;
 }
 
 export interface DailyMission {
@@ -208,11 +239,50 @@ export interface DailyMission {
   completed: boolean;
 }
 
+export interface ParentQuest {
+  id: string;
+  title: string;
+  description: string;
+  rewardNP: number;
+  rewardVND: number;
+  status: 'pending' | 'completed' | 'claimed';
+  timestamp: number;
+}
+
 export interface GameEvent {
   id: string;
   timestamp: number;
   type: 'QUESTION_ANSWERED' | 'EXAM_COMPLETED' | 'DAILY_CHECK_IN' | 'REWARD_CLAIMED' | 'STREAK_RESET' | 'MISSION_COMPLETED' | 'CHALLENGE_COMPLETED' | 'PET_GROWTH' | 'ENERGY_CHANGE' | 'BOOST_ACTIVATED';
   payload: any;
+}
+
+// ==================== GRADE TIER (Tầng Thế Giới — CORE_SPECS §1.4) ====================
+/** Mỗi lớp học là một Tầng Thế Giới giang hồ cô lập 100% (Tầng → Môn Phái → Nội dung). */
+export type GradeTier = 6 | 7 | 8 | 9 | 10 | 11 | 12;
+
+export const DEFAULT_GRADE_TIER: GradeTier = 9;
+
+export interface GradeTierConfig {
+  tier: GradeTier;
+  name: string;
+  icon: string;
+  /** 'active' = tầng đang vận hành; 'coming_soon' = chưa khai mở (khóa trong UI chuyển tầng). */
+  status: 'active' | 'coming_soon';
+  description: string;
+}
+
+export const GRADE_TIERS: GradeTierConfig[] = [
+  { tier: 6, name: 'Tầng Lớp 6', icon: '🏯', status: 'coming_soon', description: 'Nhập môn giang hồ — sắp khai mở.' },
+  { tier: 7, name: 'Tầng Lớp 7', icon: '⛩️', status: 'coming_soon', description: 'Rèn gân cốt — sắp khai mở.' },
+  { tier: 8, name: 'Tầng Lớp 8', icon: '🏔️', status: 'coming_soon', description: 'Luyện nội công — sắp khai mở.' },
+  { tier: 9, name: 'Tầng Lớp 9', icon: '🗼', status: 'active', description: '9 môn phái: 3 Yêu Cầu Cao (bám tuyển sinh 10) + 6 Yêu Cầu Cơ Bản.' },
+  { tier: 10, name: 'Tầng Lớp 10', icon: '🌋', status: 'coming_soon', description: 'Thượng tầng THPT — sắp khai mở.' },
+  { tier: 11, name: 'Tầng Lớp 11', icon: '🌌', status: 'coming_soon', description: 'Thượng tầng THPT — sắp khai mở.' },
+  { tier: 12, name: 'Tầng Lớp 12', icon: '☄️', status: 'coming_soon', description: 'Đỉnh tầng — hướng tới kỳ thi THPT Quốc Gia.' }
+];
+
+export function getGradeTierConfig(tier: GradeTier): GradeTierConfig {
+  return GRADE_TIERS.find(t => t.tier === tier) ?? GRADE_TIERS[3];
 }
 
 // ==================== SUBJECT DEFINITIONS ====================

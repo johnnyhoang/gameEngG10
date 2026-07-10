@@ -53,5 +53,5 @@ Bảng định nghĩa **duy nhất** cho quan hệ XP → Level → Danh hiệu 
 | Pet đói quá lâu | -10 NP/ngày | Trừ mỗi ngày nếu Pet rơi vào trạng thái "Cực đói" |
 | Mua Hộ Tâm Phù | Tùy giá Shop | *(Hồi Nguyên Đan đã bị xóa cùng hệ thống Tim)* |
 
-*Lưu ý: **NP được phép ÂM VÔ HẠN.** Không có hành động nào bị chặn vì thiếu NP (skip câu hỏi luôn khả dụng kể cả khi NP = 0 hoặc âm). Số dư âm đơn giản là khoản nợ điểm mà Thiếu Hiệp cần cày lại — tránh deadlock khi học sinh yếu kẹt trước câu khó.*
+*Lưu ý: **NP được phép ÂM VÔ HẠN, nhưng chỉ bởi các khoản trừ BẮT BUỘC của hệ thống** (Skip câu hỏi, giải sai cổng Sương mù, Pet đói bị trừ theo ngày). Skip luôn khả dụng kể cả khi NP = 0 hoặc âm — tránh deadlock khi học sinh yếu kẹt trước câu khó. Ngược lại, các hành động **chủ ý** (mua vật phẩm Shop, cho Pet ăn, mua Phong Vị, đổi Phần Thưởng Thực Tế) yêu cầu đủ NP mới thực hiện được — không cho tiêu âm.*
 *Lưu ý 2: Mất chuỗi học KHÔNG còn bị trừ NP (bãi bỏ mức phạt -50 NP cũ). Chuỗi chỉ reset và mất phần thưởng leo thang — xem §2.1 và CORE_SPECS §3.1.*

@@ -3,7 +3,8 @@ import { CheckCircle2, Palette, Sparkles, X, Clock, Award, Shield } from 'lucide
 import { UI_THEMES, type UiThemeConfig } from '../theme/uiThemes';
 import type { UiThemeId, UserProfile } from '../types/game';
 import { useGameState, THEME_UNLOCK_COST } from '../hooks/useGameState';
-import { SUBJECTS_CONFIG } from '../types/game';
+import { useSect } from '../contexts/SectContext';
+import { SUBJECTS_CONFIG, GRADE_TIERS } from '../types/game';
 import type { SubjectId } from '../types/game';
 import { toast } from '../utils/toast';
 import { GiangHoCamNang } from './GiangHoCamNang';
@@ -98,10 +99,11 @@ export const ProfileThemeModal: React.FC<ProfileThemeModalProps> = ({
   const categoryStats = useGameState(state => state.categoryStats);
   const lessons = useGameState(state => state.lessons);
   const lessonsProgress = useGameState(state => state.lessonsProgress);
-  const currentSubject = useGameState(state => state.currentSubject);
-  const setSubject = useGameState(state => state.setSubject);
+  const { activeSectId, setActiveSectId } = useSect();
   const player = useGameState(state => state.player);
   const buyTheme = useGameState(state => state.buyTheme);
+  const activeGradeTier = useGameState(state => state.activeGradeTier);
+  const setGradeTier = useGameState(state => state.setGradeTier);
 
   const [activeTab, setActiveTab] = useState<'identity' | 'themes'>('identity');
   const [isCamNangOpen, setIsCamNangOpen] = useState(false);
@@ -279,6 +281,47 @@ export const ProfileThemeModal: React.FC<ProfileThemeModalProps> = ({
                 </div>
               </div>
 
+              {/* Tầng Thế Giới (Grade Tier — CORE_SPECS §1.4). Đây là NƠI DUY NHẤT được đổi tầng. */}
+              <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs font-black uppercase tracking-wider font-orbitron text-slate-300">
+                    🗼 Tầng Thế Giới Giang Hồ
+                  </h4>
+                  <span className="text-[10px] text-slate-400">
+                    Đang đứng: <span className="font-bold text-synth-cyan">{GRADE_TIERS.find(t => t.tier === activeGradeTier)?.name}</span>
+                  </span>
+                </div>
+                <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                  {GRADE_TIERS.map(tierCfg => {
+                    const isActive = tierCfg.tier === activeGradeTier;
+                    const isLocked = tierCfg.status !== 'active';
+                    return (
+                      <button
+                        key={tierCfg.tier}
+                        onClick={() => !isLocked && setGradeTier(tierCfg.tier)}
+                        disabled={isLocked}
+                        title={isLocked ? `${tierCfg.name} — Sắp khai mở` : tierCfg.description}
+                        className={`flex flex-col items-center gap-1 rounded-xl border px-2 py-2.5 text-center transition-all ${
+                          isActive
+                            ? 'border-synth-cyan bg-synth-cyan/15 shadow-[0_0_10px_rgba(0,240,255,0.35)] cursor-default'
+                            : isLocked
+                              ? 'border-white/5 bg-white/[0.02] opacity-45 cursor-not-allowed'
+                              : 'border-white/10 bg-white/5 hover:border-synth-cyan/50 cursor-pointer'
+                        }`}
+                      >
+                        <span className="text-lg leading-none">{isLocked ? '🔒' : tierCfg.icon}</span>
+                        <span className={`text-[10px] font-bold font-orbitron ${isActive ? 'text-synth-cyan' : 'text-slate-400'}`}>
+                          Lớp {tierCfg.tier}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <p className="mt-2 text-[10px] text-slate-500">
+                  Mỗi tầng là một thế giới cô lập 100% (bản đồ, đấu trường, hang luyện công, cẩm nang...). Các tầng 🔒 sẽ khai mở sau.
+                </p>
+              </div>
+
               {/* Cẩm Nang Bí Lục Banner */}
               <div className="flex flex-col sm:flex-row justify-between items-center bg-gradient-to-r from-amber-950/60 to-stone-900/60 p-4 rounded-2xl border border-amber-800/25 gap-4">
                 <div className="flex items-center gap-3">
@@ -327,7 +370,7 @@ export const ProfileThemeModal: React.FC<ProfileThemeModalProps> = ({
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {Object.values(SUBJECTS_CONFIG).map(sub => {
                   const stats = getSubjectMastery(sub.id);
-                  const isActive = currentSubject === sub.id;
+                  const isActive = activeSectId === sub.id;
                   const timeTrained = Math.round(stats.correctCount * 1.5);
                   const hours = Math.floor(timeTrained / 60);
                   const minutes = timeTrained % 60;
@@ -337,7 +380,7 @@ export const ProfileThemeModal: React.FC<ProfileThemeModalProps> = ({
                     <button
                       key={sub.id}
                       onClick={() => {
-                        setSubject(sub.id);
+                        setActiveSectId(sub.id);
                         toast.success(`Đã nhập môn phái ${sub.name}! ⚔️`);
                       }}
                       className={`relative overflow-hidden rounded-3xl border p-4 text-left transition-all duration-300 cursor-pointer hover:-translate-y-1 flex flex-col justify-between h-[210px] ${

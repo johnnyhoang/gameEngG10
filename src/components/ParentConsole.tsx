@@ -56,6 +56,7 @@ export const ParentConsole: React.FC = () => {
   const approveReward = useGameState(state => state.approveReward);
   const rejectReward = useGameState(state => state.rejectReward);
   const addParentReward = useGameState(state => state.addParentReward);
+  const parentPIN = useGameState(state => state.parentPIN);
 
   // Admin and member management states
   const currentUser = useGameState(state => state.currentUser);
@@ -76,6 +77,26 @@ export const ParentConsole: React.FC = () => {
   const updateQuestion = useGameState(state => state.updateQuestion);
   const handbookPages = useGameState(state => state.handbookPages || []);
   const addHandbookPage = useGameState(state => state.addHandbookPage);
+
+  const parentQuests = useGameState(state => state.parentQuests || []);
+  const addParentQuest = useGameState(state => state.addParentQuest);
+  const completeParentQuest = useGameState(state => state.completeParentQuest);
+  const deleteParentQuest = useGameState(state => state.deleteParentQuest);
+
+  // Family Management
+  const familyLinks = useGameState(state => state.familyLinks || []);
+  const fetchFamily = useGameState(state => state.fetchFamily);
+  const sendInvite = useGameState(state => state.sendInvite);
+  const leaveFamily = useGameState(state => state.leaveFamily);
+
+  const [inviteId, setInviteId] = useState('');
+  const [isInviting, setIsInviting] = useState(false);
+
+  // Quest Creator Local States
+  const [questTitle, setQuestTitle] = useState('');
+  const [questDesc, setQuestDesc] = useState('');
+  const [questNP, setQuestNP] = useState(50);
+  const [questVND, setQuestVND] = useState(5000);
 
   // Cẩm Nang Bí Lục local states
   const [hbCategory, setHbCategory] = useState('Dặn Dò của Viện Chủ');
@@ -145,12 +166,22 @@ export const ParentConsole: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'chinh_dien' | 'thien_co_cac' | 'van_quyen_cac' | 'ngan_cac' | 'than_phan'>('chinh_dien');
   const [viewingStudentId, setViewingStudentId] = useState<string | null>(null);
 
+  useEffect(() => {
+    if (isUnlocked && activeTab === 'chinh_dien') {
+      fetchAdminStudents();
+      fetchFamily();
+    }
+  }, [isUnlocked, activeTab, fetchAdminStudents, fetchFamily]);
+
   // Load students list on mount for admin users
   React.useEffect(() => {
     if (currentUser?.role === 'admin') {
       fetchAdminStudents();
     }
-  }, []);
+    if (currentUser?.role === 'parent' || currentUser?.role === 'admin') {
+      fetchFamily();
+    }
+  }, [currentUser?.role, fetchAdminStudents, fetchFamily]);
 
   useEffect(() => {
     if (!selectedStudentProfile?.player) return;
@@ -296,6 +327,18 @@ export const ParentConsole: React.FC = () => {
     addParentReward(rewardTitle, rewardCost, rewardCash);
     setRewardTitle('');
     toast.success('Thêm quà tặng mới thành công.');
+  };
+
+  const handleCreateQuest = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!questTitle.trim() || !questDesc.trim()) {
+      toast.error('Vui lòng điền tiêu đề và mô tả nhiệm vụ!');
+      return;
+    }
+    addParentQuest(questTitle, questDesc, questNP, questVND);
+    setQuestTitle('');
+    setQuestDesc('');
+    toast.success('Giao nhiệm vụ phụ huynh giao thành công! 🎯');
   };
 
 
@@ -928,6 +971,134 @@ export const ParentConsole: React.FC = () => {
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+            </div>
+            {/* Nhiệm vụ phụ huynh giao (Parent Quests Creator) */}
+            <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5">
+              <div className="flex items-center gap-2">
+                <Award className="w-4 h-4 text-synth-cyan" />
+                <h3 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">
+                  🎯 Bảng Giao Nhiệm Vụ — Tạo thử thách ngoài đời thực cho con
+                </h3>
+              </div>
+
+              {/* Form to add new parent quest */}
+              <form onSubmit={handleCreateQuest} className="bg-synth-gray/10 p-4 rounded-xl border border-white/5 space-y-4">
+                <h4 className="text-xs font-bold text-white uppercase tracking-wider">
+                  Giao thêm nhiệm vụ mới 📜
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <label className="space-y-2 text-xs">
+                    <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Tên nhiệm vụ</span>
+                    <input
+                      type="text"
+                      placeholder="VD: Rửa bát đĩa buổi tối"
+                      value={questTitle}
+                      onChange={(e) => setQuestTitle(e.target.value)}
+                      className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
+                    />
+                  </label>
+                  <label className="space-y-2 text-xs">
+                    <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Mô tả chi tiết</span>
+                    <input
+                      type="text"
+                      placeholder="VD: Con dọn dẹp sạch sẽ bếp và rửa bát đĩa sau khi cả nhà ăn xong."
+                      value={questDesc}
+                      onChange={(e) => setQuestDesc(e.target.value)}
+                      className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
+                    />
+                  </label>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <label className="space-y-2 text-xs">
+                    <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Thưởng Ngân lượng (NP)</span>
+                    <input
+                      type="number"
+                      min={0}
+                      value={questNP}
+                      onChange={(e) => setQuestNP(Number(e.target.value) || 0)}
+                      className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
+                    />
+                  </label>
+                  <label className="space-y-2 text-xs">
+                    <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Thưởng Tiền túi (VNĐ)</span>
+                    <input
+                      type="number"
+                      min={0}
+                      step={1000}
+                      value={questVND}
+                      onChange={(e) => setQuestVND(Number(e.target.value) || 0)}
+                      className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
+                    />
+                  </label>
+                </div>
+                <button
+                  type="submit"
+                  className="w-full py-2.5 rounded-xl bg-synth-cyan text-black font-orbitron font-bold text-xs uppercase tracking-wider transition hover:opacity-90 cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" /> Giao nhiệm vụ cho con
+                </button>
+              </form>
+
+              {/* List of parent quests */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-bold text-synth-text-muted uppercase tracking-wider">
+                  Nhiệm vụ đang giao ({parentQuests.length})
+                </h4>
+                <div className="space-y-2">
+                  {parentQuests.length > 0 ? (
+                    parentQuests.map((quest: any) => (
+                      <div key={quest.id} className="p-4 rounded-xl border border-white/5 bg-synth-gray/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-bold text-white">{quest.title}</span>
+                            <span className={`text-[9px] font-bold px-2 py-0.5 rounded uppercase font-orbitron ${
+                              quest.status === 'claimed' 
+                                ? 'bg-synth-green/10 border border-synth-green/20 text-synth-green' 
+                                : quest.status === 'completed'
+                                  ? 'bg-synth-cyan/10 border border-synth-cyan/20 text-synth-cyan'
+                                  : 'bg-white/5 border border-white/10 text-slate-400'
+                            }`}>
+                              {quest.status === 'claimed' ? 'Đã lĩnh thưởng' : quest.status === 'completed' ? 'Đã hoàn thành (Chờ nhận)' : 'Đang thực hiện'}
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-400 mt-1">{quest.description}</p>
+                          <div className="flex gap-4 mt-2 text-[10px] font-bold font-orbitron text-slate-300">
+                            <span>🎁 Thưởng: +{quest.rewardNP} NP</span>
+                            <span>💵 VND: +{quest.rewardVND.toLocaleString()}đ</span>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          {quest.status === 'pending' && (
+                            <button
+                              onClick={() => {
+                                completeParentQuest(quest.id);
+                                toast.success('Đã xác nhận hoàn thành nhiệm vụ! Con có thể nhận thưởng.');
+                              }}
+                              className="px-3 py-1.5 rounded-lg bg-synth-green text-black font-orbitron font-bold text-[10px] uppercase cursor-pointer hover:synth-glow-green"
+                            >
+                              Xác nhận xong
+                            </button>
+                          )}
+                          <button
+                            onClick={() => {
+                              deleteParentQuest(quest.id);
+                              toast.success('Đã xoá nhiệm vụ giao.');
+                            }}
+                            className="p-1.5 rounded-lg border border-synth-magenta text-synth-magenta cursor-pointer hover:bg-synth-magenta/10"
+                            title="Xoá nhiệm vụ"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-6 text-xs text-synth-text-muted border border-dashed border-white/10 rounded-xl">
+                      Chưa có nhiệm vụ phụ huynh giao nào được tạo.
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -2154,6 +2325,68 @@ export const ParentConsole: React.FC = () => {
                 🏛️ Chính Điện — Quản lý thiếu hiệp & Cấp quyền
               </h3>
 
+              {/* Family Connection Information */}
+              <div className="rounded-2xl border border-synth-cyan/20 bg-synth-cyan/5 p-4 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">Mã Liên Kết Gia Đình</h4>
+                  <p className="text-xs text-slate-300">Sử dụng mã PIN này để Học sinh kết nối tài khoản vào gia đình.</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="px-6 py-3 bg-black/40 border border-synth-cyan/30 rounded-xl font-orbitron font-bold text-2xl text-white tracking-[0.25em]">
+                    {parentPIN}
+                  </div>
+                </div>
+              </div>
+
+              {/* Mời Thiếu Hiệp (Family System Phase 1.1) */}
+              <div className="rounded-2xl border border-synth-magenta/20 bg-synth-magenta/5 p-4 space-y-4">
+                <div className="space-y-1">
+                  <h4 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider">Mời Học Sinh</h4>
+                  <p className="text-xs text-slate-300">Nhập ID của học sinh để gửi lời mời liên kết gia đình. Bạn cũng có thể xem danh sách lời mời đang chờ bên dưới.</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="text"
+                    value={inviteId}
+                    onChange={e => setInviteId(e.target.value)}
+                    placeholder="Nhập ID học sinh (ví dụ: b1a3...)"
+                    className="flex-1 p-2.5 rounded-lg border border-white/10 bg-black/40 text-white outline-none focus:border-synth-magenta font-mono text-sm"
+                  />
+                  <button
+                    onClick={async () => {
+                      if (!inviteId.trim()) return;
+                      setIsInviting(true);
+                      const success = await sendInvite(inviteId.trim());
+                      if (success) {
+                        toast.success('Đã gửi lời mời thành công');
+                        setInviteId('');
+                      } else {
+                        toast.error('Gửi lời mời thất bại. ID không tồn tại hoặc đã kết nối.');
+                      }
+                      setIsInviting(false);
+                    }}
+                    disabled={isInviting || !inviteId.trim()}
+                    className="px-4 py-2.5 bg-synth-magenta text-white font-bold rounded-lg hover:bg-synth-magenta/80 disabled:opacity-50 transition-colors uppercase text-xs"
+                  >
+                    {isInviting ? 'Đang gửi...' : 'Gửi lời mời'}
+                  </button>
+                </div>
+
+                {familyLinks.filter(l => l.status === 'pending_student' && l.parent_id === currentUser?.id).length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
+                    <h5 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase">Lời mời đang chờ</h5>
+                    <div className="space-y-2">
+                      {familyLinks.filter(l => l.status === 'pending_student' && l.parent_id === currentUser?.id).map(link => (
+                        <div key={link.id} className="flex items-center justify-between p-2 rounded bg-white/5 border border-white/10">
+                          <span className="text-xs text-slate-300">ID Nhận: <span className="font-mono text-synth-cyan">{link.student_id}</span></span>
+                          <span className="text-[10px] text-synth-orange uppercase px-2 py-1 bg-synth-orange/10 rounded">Đang chờ</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Thiết lập PIN bảo mật (CORE_SPECS §2.6) */}
               <details className="rounded-2xl border border-white/10 bg-white/5 p-4">
                 <summary className="cursor-pointer font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">
@@ -2220,7 +2453,7 @@ export const ParentConsole: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {adminStudents.map((usr: any) => (
+                    {currentUser?.role === 'admin' && adminStudents.map((usr: any) => (
                       <tr key={usr.id} className="hover:bg-white/5 transition-colors">
                         <td className="py-3 px-4 flex items-center gap-3">
                           <img 
@@ -2271,6 +2504,45 @@ export const ParentConsole: React.FC = () => {
                                 {usr.role === 'admin' ? 'Hạ cấp Student' : 'Cấp quyền Admin'}
                               </button>
                             )}
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+
+                    {currentUser?.role === 'parent' && familyLinks.filter(l => l.status === 'active' && l.parent_id === currentUser?.id).map((link: any) => (
+                      <tr key={link.id} className="hover:bg-white/5 transition-colors">
+                        <td className="py-3 px-4 flex items-center gap-3">
+                          <span className="font-bold text-white">{link.student_name || 'Học sinh chưa có tên'}</span>
+                          <span className="text-[10px] text-synth-text-muted font-mono">{link.student_id}</span>
+                        </td>
+                        <td className="py-3 px-4 text-synth-text-muted hidden md:table-cell">{link.student_email || '—'}</td>
+                        <td className="py-3 px-4">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-black uppercase font-orbitron bg-synth-cyan/20 text-synth-cyan border border-synth-cyan/30">
+                            Học Sinh
+                          </span>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          <div className="flex flex-wrap items-center justify-center gap-2">
+                            <button
+                              onClick={() => {
+                                setViewingStudentId(link.student_id);
+                                fetchStudentProfile(link.student_id);
+                                setActiveTab('than_phan');
+                              }}
+                              className="px-2.5 py-1 rounded bg-synth-blue/30 border border-synth-cyan/30 text-synth-cyan hover:bg-synth-cyan/20 font-semibold cursor-pointer transition-colors"
+                            >
+                              Xem Hoạt Động
+                            </button>
+                            <button
+                              onClick={async () => {
+                                if (window.confirm('Ba có chắc muốn giải phóng học sinh này khỏi gia đình?')) {
+                                  await leaveFamily(link.id);
+                                }
+                              }}
+                              className="px-2.5 py-1 rounded font-semibold cursor-pointer transition-colors bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30"
+                            >
+                              Giải Phóng
+                            </button>
                           </div>
                         </td>
                       </tr>

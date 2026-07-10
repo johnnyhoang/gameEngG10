@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useGameState } from '../hooks/useGameState';
+import { useSect } from '../contexts/SectContext';
 import type { Question } from '../types/game';
 import { INITIAL_LESSONS } from '../data/lessons';
 import { ENGLISH_ANSWER_MODE_LABELS, ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../data/englishExamBlueprint';
@@ -30,7 +31,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const player = useGameState(state => state.player);
   const activeCombo = useGameState(state => state.activeCombo);
   const answerQuestion = useGameState(state => state.answerQuestion);
-  const currentSubject = useGameState(state => state.currentSubject);
+  const { activeSectId } = useSect();
   const buyHint = useGameState(state => state.buyHint);
   const flagQuestionConfused = useGameState(state => state.flagQuestionConfused);
   const failedQuestionIds = useGameState(state => state.failedQuestionIds || []);
@@ -85,7 +86,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     // Filter questions by active subject, but keep a safe fallback so the game never stalls on an empty pool.
     const subjectQuestions = questions.filter(q => {
       const qSubject = (q as any).subject || 'english';
-      return qSubject === currentSubject;
+      return qSubject === activeSectId;
     });
     const fallbackQuestions = subjectQuestions.length > 0 ? subjectQuestions : questions;
 
@@ -120,14 +121,14 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       const weightMode = mode === 'survival' ? 'mixed' : mode;
       for (let i = 0; i < count; i++) {
         const q = getQuestionByWeight(weightMode);
-        if (q && ((q as any).subject || 'english') === currentSubject && !pool.some(existing => existing.id === q.id)) {
+        if (q && ((q as any).subject || 'english') === activeSectId && !pool.some(existing => existing.id === q.id)) {
           pool.push(q);
         }
       }
       // If pool is empty, fill with default questions
       if (pool.length === 0) {
         pool = fallbackQuestions.filter(q => {
-          if (currentSubject === 'math') {
+          if (activeSectId === 'math') {
             if (mode === 'grammar') return q.category === 'parabol-line' || q.category === 'viet-relation' || q.category === 'linear-function';
             if (mode === 'reading') return q.category === 'real-geometry' || q.category === 'plane-geometry' || q.category === 'volume-displacement' || q.category === 'tangent-geometry';
             if (mode === 'vocabulary') return q.category === 'real-equations' || q.category === 'real-finance' || q.category === 'growth-modeling' || q.category === 'percentage-discount' || q.category === 'shopping-discount';
@@ -157,7 +158,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     } else {
       setTimeLeft(0);
     }
-  }, [mode, bossId, lessonId, currentSubject, questions, getQuestionByWeight]);
+  }, [mode, bossId, lessonId, activeSectId, questions, getQuestionByWeight]);
 
   // Handle countdown timer
   useEffect(() => {
@@ -220,7 +221,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       const wrongOpts = activeQuestion.options.filter(opt => opt !== correctOpt);
       const randomWrongs = wrongOpts.sort(() => Math.random() - 0.5).slice(0, 2);
       setRevealedHint(`Gợi ý: Hai lựa chọn này lệch nhịp: "${randomWrongs.join(' và ')}"`);
-    } else if (currentSubject === 'english' && englishTask) {
+    } else if (activeSectId === 'english' && englishTask) {
       const skillLabel = englishSkill ? ENGLISH_SKILL_LABELS[englishSkill] || englishSkill : '';
       const taskLabel = ENGLISH_TASK_LABELS[englishTask] || englishTask;
       if (englishTask === 'guided-cloze') {
@@ -240,10 +241,10 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       } else {
         setRevealedHint(`Gợi ý${skillLabel ? ` (${skillLabel})` : ''}: Tập trung vào dạng ${taskLabel.toLowerCase()} và quy tắc ngữ pháp liên quan.`);
       }
-    } else if (currentSubject === 'literature' && literatureTask === 'social-essay') {
+    } else if (activeSectId === 'literature' && literatureTask === 'social-essay') {
       const steps = activeQuestion.metadata?.solutionSteps || [];
       setRevealedHint(`Gợi ý: Bám bố cục nghị luận, dựng dàn ý rõ ràng${steps[0] ? `, bắt đầu từ "${steps[0]}"` : ''}.`);
-    } else if (currentSubject === 'literature' && literatureTask) {
+    } else if (activeSectId === 'literature' && literatureTask) {
       const genreLabel = textGenre ? LITERATURE_TEXT_GENRE_LABELS[textGenre] || textGenre : '';
       const taskLabel = LITERATURE_TASK_LABELS[literatureTask] || literatureTask;
       setRevealedHint(`Gợi ý${genreLabel ? ` (${genreLabel})` : ''}: Tập trung vào ý ${taskLabel.toLowerCase()} và nêu đúng chi tiết trọng tâm.`);
@@ -293,7 +294,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       return { isCorrect: computedIsCorrect, scoreRatio: computedScoreRatio };
     };
 
-    const isLiteratureRubric = currentSubject === 'literature' && activeQuestion.category === 'literature-writing';
+    const isLiteratureRubric = activeSectId === 'literature' && activeQuestion.category === 'literature-writing';
 
     if (activeQuestion.type === 'mcq') {
       const correctAnsStr = Array.isArray(activeQuestion.correctAnswer)
@@ -571,7 +572,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           <p className="text-sm text-synth-text-muted leading-relaxed">
             Chuẩn xác, không có câu nào cần sửa ở môn{' '}
             <span className="text-synth-orange font-bold font-orbitron uppercase">
-              {currentSubject === 'english' ? 'Tiếng Anh' : currentSubject === 'math' ? 'Toán Học' : 'Ngữ Văn'}
+              {activeSectId === 'english' ? 'Tiếng Anh' : activeSectId === 'math' ? 'Toán Học' : 'Ngữ Văn'}
             </span>. Hãy tiếp tục duy trì phong độ xuất sắc này nhé!
           </p>
 
@@ -588,7 +589,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   }
 
   // Check if we should render split screen for literature passages
-  const isLitSplit = currentSubject === 'literature' && activeQuestion.prompt.includes('\n\n');
+  const isLitSplit = activeSectId === 'literature' && activeQuestion.prompt.includes('\n\n');
   const passageText = isLitSplit 
     ? activeQuestion.prompt.split('\n\n').slice(0, -1).join('\n\n')
     : '';
@@ -658,12 +659,12 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
               {ENGLISH_SKILL_LABELS[activeQuestion.metadata.englishSkill] || activeQuestion.metadata.englishSkill}
             </span>
           )}
-          {activeQuestion.metadata?.literatureTask && currentSubject === 'literature' && (
+          {activeQuestion.metadata?.literatureTask && activeSectId === 'literature' && (
             <span className="text-[10px] px-2 py-1 rounded-full bg-synth-orange/15 border border-synth-orange/30 text-synth-orange font-orbitron font-bold uppercase tracking-wider">
               {LITERATURE_TASK_LABELS[activeQuestion.metadata.literatureTask] || activeQuestion.metadata.literatureTask}
             </span>
           )}
-          {activeQuestion.metadata?.textGenre && currentSubject === 'literature' && (
+          {activeQuestion.metadata?.textGenre && activeSectId === 'literature' && (
             <span className="text-[10px] px-2 py-1 rounded-full bg-white/5 border border-white/10 text-white font-orbitron font-bold uppercase tracking-wider">
               {LITERATURE_TEXT_GENRE_LABELS[activeQuestion.metadata.textGenre] || activeQuestion.metadata.textGenre}
             </span>
@@ -687,7 +688,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           </button>
 
           {/* Bảng Nháp button */}
-          {(currentSubject === 'math' || currentSubject === 'literature') && (
+          {(activeSectId === 'math' || activeSectId === 'literature') && (
             <button
               onClick={() => setShowScratchpad(true)}
               className="px-2.5 py-1 rounded bg-synth-magenta/20 border border-synth-magenta/40 hover:bg-synth-magenta/40 text-[10px] text-synth-magenta font-bold cursor-pointer transition-colors font-orbitron"
@@ -789,7 +790,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                     );
                   })}
                 </div>
-              ) : currentSubject === 'literature' && activeQuestion.category === 'literature-writing' ? (
+              ) : activeSectId === 'literature' && activeQuestion.category === 'literature-writing' ? (
                 <div className="space-y-2">
                   <textarea
                     value={typedAnswer}
@@ -901,7 +902,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                   );
                 })}
               </div>
-            ) : currentSubject === 'literature' && activeQuestion.category === 'literature-writing' ? (
+            ) : activeSectId === 'literature' && activeQuestion.category === 'literature-writing' ? (
               <div className="space-y-2">
                 <textarea
                   value={typedAnswer}
@@ -953,11 +954,11 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           </div>
           <div className="space-y-2">
             <h5 className="font-bold uppercase tracking-wider mb-1">
-              {currentSubject === 'literature' && activeQuestion.category === 'literature-writing'
+              {activeSectId === 'literature' && activeQuestion.category === 'literature-writing'
                 ? isLastCorrect ? 'Bài viết qua ải rubric' : 'Bài viết còn hở rubric'
                 : isLastCorrect ? 'Chuẩn xác, khá đấy.' : 'Lệch nhịp rồi. Sửa tay đi.'}
             </h5>
-            {currentSubject === 'literature' && activeQuestion.category === 'literature-writing' ? (
+            {activeSectId === 'literature' && activeQuestion.category === 'literature-writing' ? (
               <p className="text-theme-text-highlight mb-2 font-medium">
                 Điểm ước tính: <span className="font-bold underline text-theme-text-success">{lastRubricScore ?? 0}/10</span>
               </p>
@@ -973,7 +974,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                 ⚠️ {aiWarningMessage}
               </div>
             )}
-            {currentSubject === 'literature' && activeQuestion.category === 'literature-writing' && lastRubricMissing.length > 0 && (
+            {activeSectId === 'literature' && activeQuestion.category === 'literature-writing' && lastRubricMissing.length > 0 && (
               <div className="text-theme-text-highlight/90 space-y-1">
                 <p className="font-bold uppercase tracking-wider text-[10px]">Ý còn thiếu / cần mạnh hơn</p>
                 <ul className="list-disc pl-4 space-y-0.5 text-theme-text-highlight/80">
@@ -1002,7 +1003,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
             <p className="text-synth-text-muted">
               {activeQuestion.explanation}
             </p>
-            {currentSubject === 'literature' && activeQuestion.category === 'literature-writing' && activeQuestion.metadata?.solutionSteps?.length ? (
+            {activeSectId === 'literature' && activeQuestion.category === 'literature-writing' && activeQuestion.metadata?.solutionSteps?.length ? (
               <div className="text-theme-text-highlight/90 space-y-1">
                 <p className="font-bold uppercase tracking-wider text-[10px]">Rubric gợi ý</p>
                 <ol className="list-decimal pl-4 space-y-0.5 text-theme-text-highlight/80">

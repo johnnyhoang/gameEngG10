@@ -72,7 +72,7 @@ export const GiangHoCamNang: React.FC<GiangHoCamNangProps> = ({
           <div className="flex items-center gap-2">
             <Feather className="w-4 h-4 text-handbook-title animate-pulse" />
             <span className="text-[10px] font-black uppercase tracking-widest text-handbook-ink-soft font-mono">
-              🏯 CẨM NANG BÍ LỤC • GIANG HỒ KỶ YẾU 📖
+              {activePage ? '🐷 HEO MAIKAWAII DẶN DÒ • BÍ LỤC 📖' : '🏯 CẨM NANG BÍ LỤC • GIANG HỒ KỶ YẾU 📖'}
             </span>
           </div>
           {!activePage && (

@@ -1,11 +1,14 @@
 import { useMemo } from 'react';
 import { useGameState } from '../hooks/useGameState';
+import { toast } from '../utils/toast';
 import { INITIAL_LESSONS } from '../data/lessons';
 import {
   Sword, Mountain, Palmtree, Store, PawPrint, BrainCircuit, ArrowRight
 } from 'lucide-react';
 import { CORE_KNOWLEDGE_TOPICS, inferTopicId } from '../data/coreKnowledge';
 import { getHamForPage } from '../utils/gatekeeper';
+import { useSect } from '../contexts/SectContext';
+import { SUBJECTS_CONFIG } from '../types/game';
 
 interface WorldMapProps {
   onOpenArena: () => void;
@@ -26,11 +29,18 @@ export function WorldMap({
   onOpenMysteryBox, onSpinWheel, onStudyLesson, onStartLessonPractice
 }: WorldMapProps) {
   const dailyMission = useGameState(state => state.dailyMission);
-  const currentSubject = useGameState(state => state.currentSubject);
+  const { activeSectId, setActiveSectId } = useSect();
   const uiTheme = useGameState(state => state.uiTheme);
   const categoryStats = useGameState(state => state.categoryStats);
   const lessonsProgress = useGameState(state => state.lessonsProgress);
   const isUnicorn = uiTheme === 'unicorn-dream';
+
+  const parentQuests = useGameState(state => state.parentQuests || []);
+  const claimParentQuest = useGameState(state => state.claimParentQuest);
+  
+  const familyLinks = useGameState(state => state.familyLinks || []);
+  const respondInvite = useGameState(state => state.respondInvite);
+  const leaveFamily = useGameState(state => state.leaveFamily);
 
   const isWeekend = () => {
     const day = new Date().getDay();
@@ -38,12 +48,12 @@ export function WorldMap({
   };
 
   const pageExplorationStates = useGameState(state => state.pageExplorationStates || {});
-  const subjectLessons = INITIAL_LESSONS.filter(l => l.subject === currentSubject);
+  const subjectLessons = INITIAL_LESSONS.filter(l => l.subject === activeSectId);
   const completedLessons = subjectLessons.filter(l => lessonsProgress[l.id]).length;
 
   const weakData = useMemo(() => {
     const subjectPageStates = Object.values(pageExplorationStates).filter(state => 
-      state.pageId.startsWith(`hang-${currentSubject}-`)
+      state.pageId.startsWith(`hang-${activeSectId}-`)
     );
 
     const sortedPages = [...subjectPageStates].sort((a, b) => {
@@ -53,7 +63,7 @@ export function WorldMap({
     });
 
     const preferredHam = sortedPages.length > 0 ? getHamForPage(sortedPages[0].pageId) : null;
-    const subjectTopics = CORE_KNOWLEDGE_TOPICS.filter(t => t.subjectId === currentSubject);
+    const subjectTopics = CORE_KNOWLEDGE_TOPICS.filter(t => t.subjectId === activeSectId);
     
     const topicAccuracies = subjectTopics.map(t => {
       const stat = categoryStats[t.id] || categoryStats[t.label];
@@ -84,7 +94,7 @@ export function WorldMap({
       lesson: matchingLesson,
       accuracy: weakTopicItem.accuracy
     };
-  }, [pageExplorationStates, categoryStats, currentSubject, subjectLessons]);
+  }, [pageExplorationStates, categoryStats, activeSectId, subjectLessons]);
 
   const weakLesson = weakData?.lesson ?? null;
   const weakAccuracy = weakData?.accuracy ?? 0;
@@ -234,11 +244,160 @@ export function WorldMap({
         </div>
       )}
 
+      {/* Lời mời kết nối gia đình */}
+      {familyLinks.filter(l => l.status === 'pending_student').length > 0 && (
+        <div className="glass-panel rounded-2xl border border-synth-magenta/50 bg-gradient-to-r from-synth-magenta/20 to-transparent p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">👨‍👩‍👧</span>
+            <h3 className="font-orbitron font-bold text-xs uppercase tracking-wider text-synth-magenta">
+              Lời Mời Kết Nối Gia Đình
+            </h3>
+          </div>
+          <div className="space-y-2">
+            {familyLinks.filter(l => l.status === 'pending_student').map((link: any) => (
+              <div key={link.id} className="flex flex-col md:flex-row md:items-center justify-between p-3 rounded-xl border border-white/10 bg-black/40 gap-3">
+                <div className="space-y-1 text-sm">
+                  <p className="text-white">Phụ huynh <strong className="text-synth-cyan">{link.parent_name || 'Chưa có tên'}</strong> muốn kết nối với bạn.</p>
+                  <p className="text-xs text-slate-400">ID: {link.parent_id}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={async () => {
+                      const success = await respondInvite(link.id, true);
+                      if (success) toast.success('Đã đồng ý kết nối!');
+                    }}
+                    className="px-4 py-2 bg-synth-cyan text-black font-bold text-xs uppercase rounded cursor-pointer hover:bg-synth-cyan/80"
+                  >
+                    Đồng Ý
+                  </button>
+                  <button
+                    onClick={async () => {
+                      const success = await respondInvite(link.id, false);
+                      if (success) toast.success('Đã từ chối kết nối');
+                    }}
+                    className="px-4 py-2 bg-white/10 border border-white/20 text-white font-bold text-xs uppercase rounded cursor-pointer hover:bg-white/20"
+                  >
+                    Từ Chối
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Nhiệm Vụ Phụ Huynh Giao (Parent Quests) */}
+      {parentQuests.filter((q: any) => q.status !== 'claimed').length > 0 && (
+        <div className="glass-panel rounded-2xl border border-synth-magenta/30 bg-black/40 p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xl">📜</span>
+            <h3 className="font-orbitron font-black text-xs uppercase tracking-wider text-synth-magenta">
+              Nhiệm Vụ Phụ Huynh Giao
+            </h3>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {parentQuests.filter((q: any) => q.status !== 'claimed').map((quest: any) => (
+              <div
+                key={quest.id}
+                className="p-3.5 rounded-xl border border-white/5 bg-white/5 flex justify-between items-center gap-4 transition-all hover:bg-white/10"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-xs text-white leading-snug">{quest.title}</span>
+                    <span className={`text-[8px] font-bold px-1.5 py-0.5 rounded font-orbitron uppercase ${
+                      quest.status === 'completed'
+                        ? 'bg-synth-green/10 border border-synth-green/20 text-synth-green'
+                        : 'bg-white/5 border border-white/10 text-slate-400'
+                    }`}>
+                      {quest.status === 'completed' ? 'Xong (Chờ nhận)' : 'Đang làm'}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-slate-400 leading-relaxed">{quest.description}</p>
+                  <div className="flex gap-3 text-[9px] font-bold font-orbitron text-synth-cyan">
+                    <span>🎁 +{quest.rewardNP} NP</span>
+                    <span>💵 +{quest.rewardVND.toLocaleString()}đ</span>
+                  </div>
+                </div>
+
+                {quest.status === 'completed' && (
+                  <button
+                    onClick={() => {
+                      claimParentQuest(quest.id);
+                      toast.success(`Nhận thưởng thành công: +${quest.rewardNP} NP và +${quest.rewardVND.toLocaleString()}đ! 🥳`);
+                    }}
+                    className="px-3 py-1.5 rounded-lg bg-synth-magenta text-white font-orbitron font-bold text-[9px] uppercase tracking-wider cursor-pointer hover:synth-glow-magenta shadow-md"
+                  >
+                    Nhận Quà 🎁
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* 5 Module Gate — CORE_SPECS §2.1 */}
+      {/* Trạng thái gia đình hiện tại (Học sinh đã có Phụ huynh) */}
+      {familyLinks.filter(l => l.status === 'active').length > 0 && (
+        <div className="glass-panel rounded-2xl border border-synth-cyan/30 bg-synth-cyan/5 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">👨‍👩‍👧</span>
+            <div className="space-y-0.5">
+              <p className="font-orbitron font-bold text-xs uppercase text-synth-cyan tracking-wider">Gia Đình Liên Kết</p>
+              {familyLinks.filter(l => l.status === 'active').map((link: any) => (
+                <p key={link.id} className="text-xs text-slate-300">
+                  {link.parent_id ? `Phụ huynh: ${link.parent_name || link.parent_id}` : `Học sinh: ${link.student_name || link.student_id}`}
+                </p>
+              ))}
+            </div>
+          </div>
+          <div className="flex gap-2">
+            {familyLinks.filter(l => l.status === 'active').map((link: any) => (
+              <button
+                key={link.id}
+                onClick={async () => {
+                  if (window.confirm('Bạn có chắc muốn rời khỏi gia đình này không?')) {
+                    const success = await leaveFamily(link.id);
+                    if (success) toast.success('Đã rời gia đình');
+                  }
+                }}
+                className="px-3 py-1.5 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-xs uppercase cursor-pointer transition-colors"
+              >
+                Rời Phụ Huynh
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div>
-        <h3 className={`font-orbitron font-bold text-base uppercase tracking-wider mb-4 ${isUnicorn ? 'text-violet-700' : 'text-white'}`}>
-          Bản Đồ Học Viện
-        </h3>
+
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+          <h3 className={`font-orbitron font-bold text-base uppercase tracking-wider ${isUnicorn ? 'text-violet-700' : 'text-white'}`}>
+            Bản Đồ Học Viện
+          </h3>
+          {/* Quick Sect Switcher on Hub */}
+          <div className="flex flex-wrap gap-2">
+            {Object.values(SUBJECTS_CONFIG).map(s => {
+              const active = s.id === activeSectId;
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => setActiveSectId(s.id)}
+                  style={{ borderColor: active ? s.color : 'rgba(255,255,255,0.05)' }}
+                  className={`px-3 py-1.5 rounded-lg border font-orbitron font-bold text-[9px] uppercase tracking-wider cursor-pointer transition-all duration-300 ${
+                    active 
+                      ? 'bg-white/10 text-white shadow-[0_0_8px_rgba(255,255,255,0.05)]' 
+                      : 'bg-black/20 text-slate-400 hover:text-white hover:border-white/10'
+                  }`}
+                >
+                  {s.icon} {s.name}
+                </button>
+              );
+            })}
+          </div>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
           {gates.map(gate => (
             <button

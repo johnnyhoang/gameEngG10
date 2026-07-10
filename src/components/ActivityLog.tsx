@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
+import { useSect } from '../contexts/SectContext';
 import { Target, Clock, Gift, ShieldAlert, Award, FileText, CheckCircle2 } from 'lucide-react';
+
 
 export const ActivityLog: React.FC = () => {
   const dailyMission = useGameState(state => state.dailyMission);
   const logs = useGameState(state => state.logs);
-  const currentSubject = useGameState(state => state.currentSubject);
+  const { activeSectId } = useSect();
   const uiTheme = useGameState(state => state.uiTheme);
   const isUnicorn = uiTheme === 'unicorn-dream';
   const [visibleCount, setVisibleCount] = useState(15);
@@ -16,13 +18,13 @@ export const ActivityLog: React.FC = () => {
   // Cô lập nhật ký hoạt động theo Môn phái đang hoạt động (CORE_SPECS §1.3 Sect Isolation Principle).
   // Log cũ chưa có field subject (trước bản cập nhật) vẫn được giữ hiển thị để không mất dấu vết lịch sử.
   const sectLogs = useMemo(
-    () => logs.filter(log => !log.subject || log.subject === currentSubject),
-    [logs, currentSubject]
+    () => logs.filter(log => !log.subject || log.subject === activeSectId),
+    [logs, activeSectId]
   );
 
   useEffect(() => {
     setVisibleCount(15);
-  }, [sectLogs.length, currentSubject]);
+  }, [sectLogs.length, activeSectId]);
 
   const visibleLogs = useMemo(() => sectLogs.slice(0, visibleCount), [sectLogs, visibleCount]);
 

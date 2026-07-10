@@ -11,11 +11,8 @@ export const MonChuHoiToiDialog: React.FC<MonChuHoiToiDialogProps> = ({ onConfir
   const [reason, setReason] = useState<'quá khó' | 'quá dài' | 'quá khùng' | null>(null);
   const [severity, setSeverity] = useState<number>(3);
   
-  const dailySkips = useGameState(state => state.player.dailySkips);
-  const todayStr = new Date().toISOString().split('T')[0];
-  const skipsToday = dailySkips?.date === todayStr ? dailySkips.count : 0;
-  
-  const isBlocked = skipsToday >= 3;
+  const coins = useGameState(state => state.player.coins);
+  const isBlocked = coins < 10;
 
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
@@ -28,20 +25,20 @@ export const MonChuHoiToiDialog: React.FC<MonChuHoiToiDialogProps> = ({ onConfir
             Môn Chủ Vấn Tội
           </h2>
           <p className="text-xs text-red-400 font-semibold uppercase tracking-widest mt-1">
-            Lượt bỏ qua hôm nay: {skipsToday}/3
+            Chi phí bỏ qua: 10 NP (Ví của con: {coins} NP)
           </p>
         </div>
 
         {isBlocked ? (
           <div className="text-center space-y-4">
             <p className="text-slate-300 font-serif italic text-sm border-l-4 border-red-500 pl-4 py-2 bg-red-500/10 rounded-r text-left">
-              "To gan! Hôm nay ngươi đã trốn tránh thử thách quá nhiều lần rồi. Con đường tu luyện võ học không có chỗ cho kẻ hèn nhát. Lần này ta từ chối yêu cầu, ngươi phải tự mình đối mặt và trả lời câu hỏi này!"
+              "To gan! Ngươi không tích lũy đủ Ngân Lượng (cần ít nhất 10 NP) để xin từ bỏ thử thách này. Con đường tu học không có lối tắt cho kẻ trắng tay. Hãy nỗ lực tự đối mặt và trả lời câu hỏi!"
             </p>
             <button
               onClick={onCancel}
               className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-orbitron font-bold uppercase tracking-wider shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-colors cursor-pointer"
             >
-              Quay lại trả lời
+              Quay lại tự giải quyết
             </button>
           </div>
         ) : (

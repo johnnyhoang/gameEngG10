@@ -2,7 +2,9 @@ import { useMemo, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { INITIAL_LESSONS } from '../data/lessons';
 import { HANG_TRACKS } from '../data/hangLuyenCong';
+import { useSect } from '../contexts/SectContext';
 import { SUBJECTS_CONFIG } from '../types/game';
+import type { SubjectId } from '../types/game';
 import {
   Compass, Sword, ShieldAlert, Star, Zap, BookOpen,
   ChevronDown, ChevronUp, ChevronLeft, Skull, Swords, BookMarked, Heart, Volume2
@@ -23,7 +25,7 @@ interface ArenaProps {
 export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractice }: ArenaProps) {
   const player = useGameState(state => state.player);
   const consumeEnergy = useGameState(state => state.useEnergy);
-  const currentSubject = useGameState(state => state.currentSubject);
+  const { activeSectId } = useSect();
   const bossBountiesVnd = useGameState(state => state.gameSettings.bossBountiesVnd);
   const challengeEnergyCosts = useGameState(state => state.gameSettings.challengeEnergyCosts);
   const uiTheme = useGameState(state => state.uiTheme);
@@ -34,12 +36,12 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
 
   const [topicOpen, setTopicOpen] = useState(false);
 
-  const subjectMeta = SUBJECTS_CONFIG[currentSubject];
-  const isChuyenSau = subjectMeta.group === 'chuyen_sau';
+  const activeSubjectConfig = SUBJECTS_CONFIG[activeSectId as SubjectId];
+  const isChuyenSau = activeSubjectConfig.group === 'chuyen_sau';
 
   const subjectQuestionCount = useMemo(
-    () => questions.filter(q => (q.subject || 'english') === currentSubject).length,
-    [questions, currentSubject]
+    () => questions.filter(q => (q.subject || 'english') === activeSectId).length,
+    [questions, activeSectId]
   );
 
   const handleLaunchZone = (
@@ -48,7 +50,7 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
     bossId?: string
   ) => {
     if (subjectQuestionCount === 0) {
-      toast.error(`Viện Chủ chưa nạp đề cho môn ${subjectMeta.name}, thử chọn môn khác hoặc quay lại sau.`);
+      toast.error(`Viện Chủ chưa nạp đề cho môn ${activeSubjectConfig.name}, thử chọn môn khác hoặc quay lại sau.`);
       return;
     }
     if (player.energy < energyCost) {
@@ -59,23 +61,23 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
     onStartPlay(mode, bossId);
   };
 
-  const subjectLessons = INITIAL_LESSONS.filter(l => l.subject === currentSubject);
+  const subjectLessons = INITIAL_LESSONS.filter(l => l.subject === activeSectId);
 
-  const bosses = currentSubject === 'math' ? [
+  const bosses = activeSectId === 'math' ? [
     { id: 'b-2024', name: 'Đại Ca Toán HCMC 2024', tag: '2024', energy: 100 },
     { id: 'b-2025', name: 'Cự Long Toán HCMC 2025', tag: '2025', energy: 100 },
     { id: 'b-2026', name: 'Cổ Long Toán HCMC 2026 (Mock)', tag: '2026', energy: 100 }
-  ] : currentSubject === 'literature' ? [
+  ] : activeSectId === 'literature' ? [
     { id: 'b-2024', name: 'Đại Ca Văn HCMC 2024', tag: '2024', energy: 100 },
     { id: 'b-2025', name: 'Cự Long Văn HCMC 2025', tag: '2025', energy: 100 },
     { id: 'b-2026', name: 'Cổ Long Văn HCMC 2026 (Mock)', tag: '2026', energy: 100 }
-  ] : currentSubject === 'english' ? [
+  ] : activeSectId === 'english' ? [
     { id: 'b-2024', name: 'Đại Ca HCMC 2024', tag: '2024', energy: 100 },
     { id: 'b-2025', name: 'Cự Long HCMC 2025', tag: '2025', energy: 100 },
     { id: 'b-2026', name: 'Cổ Long HCMC 2026 (Mock)', tag: '2026', energy: 100 }
   ] : [
-    { id: 'b-hk1', name: `Khảo Hạch ${subjectMeta.name} - Học Kỳ 1`, tag: 'HK1', energy: 100 },
-    { id: 'b-hk2', name: `Khảo Hạch ${subjectMeta.name} - Học Kỳ 2`, tag: 'HK2', energy: 100 }
+    { id: 'b-hk1', name: `Khảo Hạch ${activeSubjectConfig.name} - Học Kỳ 1`, tag: 'HK1', energy: 100 },
+    { id: 'b-hk2', name: `Khảo Hạch ${activeSubjectConfig.name} - Học Kỳ 2`, tag: 'HK2', energy: 100 }
   ];
 
   const completedLessons = subjectLessons.filter(l => lessonsProgress[l.id]).length;
@@ -85,7 +87,7 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
 
   // Build free practice cards list based on subject
   const rankedCards = useMemo(() => {
-    if (currentSubject === 'english') {
+    if (activeSectId === 'english') {
       return [
         {
           id: 'grammar',
@@ -124,7 +126,7 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
           reward: 'Ưu tiên pronunciation + stress'
         }
       ];
-    } else if (currentSubject === 'math') {
+    } else if (activeSectId === 'math') {
       return [
         {
           id: 'math-quad',
@@ -163,7 +165,7 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
           reward: HANG_TRACKS.math[3].focus.join(' · ')
         }
       ];
-    } else if (currentSubject === 'literature') {
+    } else if (activeSectId === 'literature') {
       return [
         {
           id: 'lit-read',
@@ -207,16 +209,16 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
       return [
         {
           id: 'basic-mixed',
-          title: `Mixed Practice - ${subjectMeta.name}`,
+          title: `Mixed Practice - ${activeSubjectConfig.name}`,
           subtitle: 'Luyện tập ngẫu nhiên',
-          description: `Rèn luyện toàn bộ trọng tâm môn ${subjectMeta.name}.`,
+          description: `Rèn luyện toàn bộ trọng tâm môn ${activeSubjectConfig.name}.`,
           icon: <BookOpen className="w-8 h-8 text-synth-cyan" />,
           mode: 'mixed' as const,
           reward: 'Học tập ngẫu nhiên'
         }
       ];
     }
-  }, [currentSubject, subjectMeta]);
+  }, [activeSectId, activeSubjectConfig]);
 
   return (
     <div className="space-y-6">
@@ -224,7 +226,7 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
       <div className="flex items-center justify-between gap-3">
         <h2 className={`font-orbitron text-lg font-black uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
           <Sword className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-magenta'}`} />
-          🏛️ Đấu Trường - {subjectMeta.name}
+          🏛️ Đấu Trường - {activeSubjectConfig.name}
         </h2>
         <button
           onClick={onBack}
@@ -236,7 +238,7 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
 
       {subjectQuestionCount === 0 && (
         <div className="glass-panel rounded-2xl border border-dashed border-white/15 bg-white/5 p-4 text-xs text-slate-300">
-          Viện Chủ chưa nạp đề cho môn {subjectMeta.name}. Các ải bên dưới sẽ tạm chưa mở được — thử đổi môn phái ở Thân Phận hoặc quay lại sau.
+          Viện Chủ chưa nạp đề cho môn {activeSubjectConfig.name}. Các ải bên dưới sẽ tạm chưa mở được — thử đổi môn phái ở Thân Phận hoặc quay lại sau.
         </div>
       )}
 

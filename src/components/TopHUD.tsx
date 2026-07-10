@@ -1,6 +1,7 @@
 import React from 'react';
 import { Zap, Heart, Coins, Flame, Shield, Award, LogOut, UserCircle2 } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
+import { useSect } from '../contexts/SectContext';
 import { SUBJECTS_CONFIG, getStudentRankForLevel } from '../types/game';
 import type { SubjectId } from '../types/game';
 
@@ -21,10 +22,11 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   const currentUser = useGameState(state => state.currentUser);
   const logout = useGameState(state => state.logout);
   const showHelp = useGameState(state => state.showHelp);
-  const currentSubject = useGameState(state => state.currentSubject);
+  const { activeSectId } = useSect();
+  const setSectModalOpen = useGameState(state => state.setSectModalOpen);
   const uiTheme = useGameState(state => state.uiTheme);
 
-  const activeSubjectConfig = SUBJECTS_CONFIG[currentSubject as SubjectId];
+  const activeSubjectConfig = SUBJECTS_CONFIG[activeSectId as SubjectId];
   const isAdmin = currentUser?.role === 'admin';
   const isUnicorn = uiTheme === 'unicorn-dream';
 
@@ -124,9 +126,9 @@ export const TopHUD: React.FC<TopHUDProps> = ({
 
             <div className="w-px h-8 bg-white/10 shrink-0" />
 
-            <div className={statItemClass} onClick={() => showHelp('nanite')} title="Ngân Lượng (NP) — Nhấp để xem hướng dẫn">
-              <Coins className="w-4 h-4 text-synth-orange fill-synth-orange shrink-0" />
-              <span className="text-xs font-semibold font-orbitron text-white whitespace-nowrap">{player.coins}</span>
+            <div className={statItemClass} onClick={() => showHelp('nanite')} title={player.coins < 0 ? 'Ngân Lượng đang ÂM — trả nợ bằng cách luyện tập thêm!' : 'Ngân Lượng (NP) — Nhấp để xem hướng dẫn'}>
+              <Coins className={`w-4 h-4 shrink-0 ${player.coins < 0 ? 'text-red-400 fill-red-400' : 'text-synth-orange fill-synth-orange'}`} />
+              <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${player.coins < 0 ? 'text-red-400' : 'text-white'}`}>{player.coins}</span>
             </div>
 
             <div className="w-px h-8 bg-white/10 shrink-0" />
@@ -196,10 +198,25 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             </button>
           )}
 
+          {!isAdmin && currentUser && (
+            <button
+              onClick={() => setSectModalOpen(true)}
+              title={`Môn phái hiện tại: ${activeSubjectConfig?.name}. Bấm để đổi.`}
+              className={`relative flex items-center gap-1.5 px-3 h-10 rounded-lg border font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 ${
+                isUnicorn 
+                  ? 'border-violet-200/40 bg-violet-50 text-violet-800 hover:bg-violet-100' 
+                  : 'border-synth-cyan/30 bg-synth-cyan/10 text-synth-cyan hover:bg-synth-cyan/20'
+              }`}
+            >
+              <span className="text-sm">{activeSubjectConfig?.icon}</span>
+              <span className="hidden md:inline">{activeSubjectConfig?.name}</span>
+            </button>
+          )}
+
           {currentUser && (
             <button
               onClick={onOpenProfile}
-              title={isAdmin ? 'Thân Phận' : `Thân Phận — Môn phái: ${activeSubjectConfig?.name} (bấm để đổi)`}
+              title={isAdmin ? 'Thân Phận' : `Thân Phận — Môn phái: ${activeSubjectConfig?.name}`}
               className={`relative flex items-center gap-1.5 px-3 h-10 rounded-lg border font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 ${
                 isUnicorn ? 'border-violet-200/40 bg-white/70 text-violet-700 hover:bg-white/90' : 'border-white/10 bg-white/5 text-white hover:bg-white/10'
               }`}
@@ -208,8 +225,10 @@ export const TopHUD: React.FC<TopHUDProps> = ({
               <span className="hidden sm:inline">Thân Phận</span>
               {!isAdmin && (
                 <span
-                  className="w-2.5 h-2.5 rounded-full border border-black/20 shrink-0"
+                  onClick={(e) => { e.stopPropagation(); setSectModalOpen(true); }}
+                  className="w-2.5 h-2.5 rounded-full border border-black/20 shrink-0 cursor-pointer hover:scale-125 transition-transform"
                   style={{ backgroundColor: activeSubjectConfig?.color, boxShadow: `0 0 6px ${activeSubjectConfig?.color}` }}
+                  title="Bấm để đổi Môn Phái"
                 />
               )}
             </button>

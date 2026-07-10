@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useGameState } from './hooks/useGameState';
+import { toast } from './utils/toast';
 import { TopHUD } from './components/TopHUD';
+
+import { supabase } from './utils/supabaseClient';
+import type { Session, AuthChangeEvent } from '@supabase/supabase-js';
+import { useSect } from './contexts/SectContext';
 import { PetSanctuary } from './components/PetSanctuary';
 import { PetStableOverlay } from './components/PetStableOverlay';
 import { ActivityLog } from './components/ActivityLog';
@@ -21,8 +26,8 @@ import { Biki3DStudio } from './components/Biki3DStudio';
 import { BikiDoThiHamSo } from './components/BikiDoThiHamSo';
 import { BikiHinhHocPhang } from './components/BikiHinhHocPhang';
 import { GatekeeperModal } from './components/GatekeeperModal';
-import { supabase } from './utils/supabaseClient';
-import type { UserProfile } from './types/game';
+import { ProfileSelectionScreen } from './components/ProfileSelectionScreen';
+import { GlobalSectModal } from './components/GlobalSectModal';
 
 const APP_VERSION = 'fd44bc2';
 const APP_PUSH_TIME = 'Tue, 7 Jul 2026 12:05 ICT';
@@ -37,6 +42,9 @@ function App() {
   const closeHelp = useGameState(state => state.closeHelp);
   const uiTheme = useGameState(state => state.uiTheme);
   const setUiTheme = useGameState(state => state.setUiTheme);
+  const awardCoinsAndXp = useGameState(state => state.awardCoinsAndXp);
+  
+  const { activeSectId } = useSect();
 
   // Screen routing state
   const [screen, setScreen] = useState<'map' | 'arena' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang' | 'hang-3d' | 'hang-plane' | 'hang-graph' | 'lesson-study' | 'relax'>('map');
@@ -52,30 +60,18 @@ function App() {
   // Cẩm Nang Bí Lục states
   const [handbookPageToShow, setHandbookPageToShow] = useState<any | null>(null);
   const [isHandbookOpen, setIsHandbookOpen] = useState(false);
-  const [isLogoutHandbookOpen, setIsLogoutHandbookOpen] = useState(false);
   const logout = useGameState(state => state.logout);
-  const handbookPages = useGameState(state => state.handbookPages);
 
   const handleLogoutIntercept = () => {
-    if (currentUser?.role === 'admin') {
-      logout();
-      return;
-    }
-    if (handbookPages && handbookPages.length > 0) {
-      const randomIndex = Math.floor(Math.random() * handbookPages.length);
-      setHandbookPageToShow(handbookPages[randomIndex]);
-      setIsLogoutHandbookOpen(true);
-    } else {
-      logout();
-    }
+    logout();
   };
 
-  // Auto-switch screen for admin users on login & show handbook on student login
+  // Auto-switch screen for admin/parent users on login & show handbook on student login
   useEffect(() => {
     if (currentUser) {
-      if (currentUser.role === 'admin') {
+      if (currentUser.role === 'admin' || currentUser.role === 'parent') {
         setScreen('parent');
-      } else {
+      } else if (currentUser.role === 'student') {
         setScreen('map');
         // Trigger random handbook page on student login
         const pages = useGameState.getState().handbookPages || [];
@@ -88,8 +84,54 @@ function App() {
     }
   }, [currentUser]);
 
+  // Route protection
+  useEffect(() => {
+    if (!currentUser) return;
+    const role = currentUser.role;
+    if (role === 'admin' || role === 'parent') {
+      if (screen !== 'parent') {
+        setScreen('parent');
+      }
+    } else if (role === 'student') {
+      if (screen === 'parent') {
+        setScreen('map');
+      }
+    }
+  }, [screen, currentUser]);
+
   // Modal alert animations
-  const [modalData, setModalData] = useState<{ isOpen: boolean; title: string; message: string; type: string } | null>(null);
+  const [modalData, setModalData] = useState<{
+    isOpen: boolean;
+    title?: string;
+    message: string;
+    type: string;
+    buttonText?: string;
+    onConfirm?: () => void;
+  } | null>(null);
+
+  const navigateWithWarning = (targetScreen: typeof screen | 'profile') => {
+    if (screen === 'play') {
+      setModalData({
+        isOpen: true,
+        type: 'warning',
+        message: 'Nếu con không hoàn tất, vài hôm nữa khu vực này sẽ bị sương mù che phủ lại đấy!',
+        buttonText: 'Vẫn thoát',
+        onConfirm: () => {
+          if (targetScreen === 'profile') {
+            setIsProfileOpen(true);
+          } else {
+            setScreen(targetScreen);
+          }
+        }
+      });
+    } else {
+      if (targetScreen === 'profile') {
+        setIsProfileOpen(true);
+      } else {
+        setScreen(targetScreen);
+      }
+    }
+  };
 
   // Initialize event subscriptions & daily checks on mount
   useEffect(() => {
@@ -121,24 +163,15 @@ function App() {
   useEffect(() => {
     let mounted = true;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: AuthChangeEvent, session: Session | null) => {
       if (session && session.user) {
-        const user: UserProfile = {
-          id: session.user.id,
-          name: session.user.user_metadata?.full_name || session.user.email?.split('@')[0] || 'User',
-          email: session.user.email || '',
-          avatar: session.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'
-        };
-
-        const current = useGameState.getState().currentUser;
-        if (!current || current.id !== user.id) {
-          await useGameState.getState().login(user);
+        const state = useGameState.getState();
+        if (state.sessionAccountId !== session.user.id) {
+          state.setSessionAccountId(session.user.id);
+          await state.fetchProfiles();
         }
       } else {
-        const current = useGameState.getState().currentUser;
-        if (current && !current.id.startsWith('mock-')) {
-          useGameState.getState().logout();
-        }
+        useGameState.getState().logout();
       }
 
       if (mounted) {
@@ -172,8 +205,14 @@ function App() {
     );
   }
 
-  if (!currentUser) {
+  const { sessionAccountId } = useGameState();
+
+  if (!sessionAccountId) {
     return <GoogleLoginScreen />;
+  }
+
+  if (!currentUser) {
+    return <ProfileSelectionScreen />;
   }
 
   const triggerMysteryBox = () => {
@@ -227,13 +266,14 @@ function App() {
 
   return (
     <div className="app-shell min-h-screen flex flex-col text-slate-100" data-theme={uiTheme}>
+
       {/* Top Header HUD */}
       <TopHUD 
-        onOpenParent={() => setScreen('parent')}
-        onOpenShop={() => setScreen('shop')}
-        onOpenHang={() => setScreen('hang')}
-        onOpenProfile={() => setIsProfileOpen(true)}
-        onBackToMap={() => setScreen('map')}
+        onOpenParent={() => navigateWithWarning('parent')}
+        onOpenShop={() => navigateWithWarning('shop')}
+        onOpenHang={() => navigateWithWarning('hang')}
+        onOpenProfile={() => navigateWithWarning('profile')}
+        onBackToMap={() => navigateWithWarning('map')}
         onLogout={handleLogoutIntercept}
         currentScreen={topHudScreen}
       />
@@ -295,11 +335,11 @@ function App() {
           {screen === 'hang' && (
             <HangLuyenCong
               onStartPractice={() => {
+                closeHelp();
                 // Find first uncompleted lesson of selected subject, or default to first
-                const currentSub = useGameState.getState().currentSubject;
                 const lessonsList = useGameState.getState().lessons;
                 const progress = useGameState.getState().lessonsProgress;
-                const subLessons = lessonsList.filter(l => l.subject === currentSub);
+                const subLessons = lessonsList.filter(l => l.subject === activeSectId);
                 const uncompleted = subLessons.find(l => !progress[l.id]);
                 const targetLesson = uncompleted || subLessons[0];
                 if (targetLesson) {
@@ -399,25 +439,34 @@ function App() {
       {/* Reward/Notification Modal */}
       {modalData?.isOpen && (
         <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="glass-panel rounded-3xl border border-synth-magenta/40 p-6 max-w-sm w-full text-center space-y-4 animate-float shadow-[0_0_20px_rgba(255,0,127,0.4)]">
-            <div className="w-16 h-16 mx-auto rounded-full bg-synth-magenta/10 border border-synth-magenta/30 flex items-center justify-center text-4xl">
-              {modalData.type === 'mystery' ? '🎁' : '🎡'}
+          <div className="glass-panel rounded-3xl border border-synth-magenta/40 p-6 max-w-sm w-full text-center space-y-4 shadow-[0_0_20px_rgba(255,0,127,0.4)] animate-in zoom-in duration-200">
+            <div className="w-14 h-14 mx-auto rounded-full bg-synth-magenta/10 border border-synth-magenta/30 flex items-center justify-center text-3xl">
+              {modalData.type === 'mystery' ? '🎁' : modalData.type === 'wheel' ? '🎡' : modalData.type === 'warning' ? '⚠️' : '🔔'}
             </div>
 
-            <h3 className="font-orbitron font-black text-lg text-white tracking-wider">
-              {modalData.title}
-            </h3>
-
-            <p className="text-sm text-slate-200 leading-relaxed font-semibold">
+            <p className="text-xs text-slate-200 leading-relaxed font-semibold">
               {modalData.message}
             </p>
 
-            <button
-              onClick={() => setModalData(null)}
-              className="w-full py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 shadow-[0_0_10px_rgba(0,240,255,0.3)]"
-            >
-              Nhận Quà 
-            </button>
+            <div className="flex gap-3 pt-2">
+              {modalData.type === 'warning' && (
+                <button
+                  onClick={() => setModalData(null)}
+                  className="flex-1 py-2.5 rounded-xl font-orbitron font-bold text-[10px] uppercase tracking-wider bg-slate-800 border border-slate-700 text-slate-300 cursor-pointer transition-all hover:bg-slate-700"
+                >
+                  Ở lại
+                </button>
+              )}
+              <button
+                onClick={() => {
+                  if (modalData.onConfirm) modalData.onConfirm();
+                  setModalData(null);
+                }}
+                className="flex-1 py-2.5 rounded-xl font-orbitron font-bold text-[10px] uppercase tracking-wider bg-gradient-to-r from-synth-purple to-synth-cyan text-black cursor-pointer transition-all hover:opacity-90"
+              >
+                {modalData.buttonText || 'Nhận Quà'}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -452,23 +501,8 @@ function App() {
           onClose={() => {
             setIsHandbookOpen(false);
             setHandbookPageToShow(null);
-          }}
-        />
-      )}
-
-      {isLogoutHandbookOpen && handbookPageToShow && (
-        <GiangHoCamNang
-          isOpen={isLogoutHandbookOpen}
-          activePage={handbookPageToShow}
-          isLogoutMode={true}
-          onClose={() => {
-            setIsLogoutHandbookOpen(false);
-            setHandbookPageToShow(null);
-          }}
-          onLogoutConfirm={() => {
-            setIsLogoutHandbookOpen(false);
-            setHandbookPageToShow(null);
-            logout();
+            awardCoinsAndXp(5, 0, 'Đọc cẩm nang', 'Lĩnh ngộ trang cẩm nang bí lục đăng nhập');
+            toast.success('Đã lĩnh ngộ cẩm nang! +5 NP 🎉');
           }}
         />
       )}
@@ -532,6 +566,7 @@ function App() {
       <PetStableOverlay isDungeonScreen={isDungeonScreen || isHangMatterScreen || screen === 'pet'} />
 
       <GatekeeperModal />
+      <GlobalSectModal />
 
       {/* Footer */}
       <footer className="py-6 border-t border-synth-gray/30 text-center space-y-2">
@@ -542,6 +577,7 @@ function App() {
           Version {APP_VERSION} · Push {APP_PUSH_TIME}
         </div>
       </footer>
+
     </div>
   );
 }

@@ -22,6 +22,7 @@ import {
 } from '../data/hangLuyenCong';
 import { SUBJECTS_CONFIG } from '../types/game';
 import type { SubjectId } from '../types/game';
+import { useSect } from '../contexts/SectContext';
 import type { Lesson } from '../data/lessons';
 import { FogCard } from './FogCard';
 import { Level3Overlay } from './Level3Overlay';
@@ -344,7 +345,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   onOpenProfile,
   onStartLessonPractice
 }) => {
-  const currentSubject = useGameState(state => state.currentSubject);
+  const { activeSectId } = useSect();
   const questions = useGameState(state => state.questions);
   const lessons = useGameState(state => state.lessons);
   const lessonsProgress = useGameState(state => state.lessonsProgress);
@@ -362,7 +363,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
     localStorage.setItem('gameengg10-hang-notes', noteText);
   }, [noteText]);
 
-  const selectedSubject: HangSubjectId = currentSubject;
+  const selectedSubject: HangSubjectId = activeSectId as HangSubjectId;
 
   const subjectQuestions = useMemo(() => {
     return questions.filter(q => (q.subject || 'english') === selectedSubject);

@@ -133,28 +133,28 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
 
 ### 9.D — Gatekeeper Integration (§2.8.7 Sương Mù Chiến Tranh)
 
-- [ ] **🗝️ Gatekeeper Question Picker — Logic chọn câu hỏi kiểm soát cổng**
+- [x] **Gatekeeper Question Picker — Logic chọn câu hỏi kiểm soát cổng**
   - Implement hàm `pickGatekeeperQuestion(pageId, subjectId)`:
     1. Xác định `hamNguyenTo` của Page Cấp 2 đó.
     2. Lọc câu hỏi theo `topicId` thuộc hầm đó + `difficulty` từ 3–5 + `type` là `mcq` hoặc `wordform`.
     3. Random 1 câu chưa được dùng làm Gatekeeper gần nhất (tránh lặp).
   - *Phạm vi:* `src/utils/gatekeeper.ts` (file mới) + tích hợp vào Page Cấp 2 component
 
-- [ ] **💾 Lưu lịch sử Gatekeeper per-student vào DB**
+- [x] **Lưu lịch sử Gatekeeper per-student vào DB**
   - Mỗi câu Gatekeeper đã dùng cho student X ở page Y cần được lưu để tránh lặp lại cùng câu trong vòng 30 ngày.
   - Thêm bảng/collection `gatekeeper_history` trong DB: `{ studentId, pageId, questionId, usedAt }`.
   - *Phạm vi:* Backend (Supabase) + `src/utils/gatekeeper.ts`
 
 ### 9.E — Đẳng Cấp Môn Phái — Tích Hợp Core Knowledge vào Tỉ Lệ Hoàn Thành (§7.4)
 
-- [ ] **📏 Cập nhật công thức tính Tỉ Lệ Hoàn Thành dựa trên Core Knowledge**
+- [x] **Cập nhật công thức tính Tỉ Lệ Hoàn Thành dựa trên Core Knowledge**
   - Hiện tại: (số bài học đã xong / tổng bài học) × 50% + (số câu đúng / tổng câu) × 50%.
   - Cải tiến: Thành phần "tổng câu" được tính trên **tổng `minQuestions` của tất cả chuyên đề** của môn phái đó (§9.4), thay vì chỉ đếm câu hiện có trong DB. Điều này đảm bảo tỉ lệ có ý nghĩa chuẩn khi DB còn thiếu.
   - *Phạm vi:* `src/utils/` + Profile Page hiển thị Đẳng Cấp
 
 ### 9.F — AI Sư Phụ Gợi Ý dựa trên Core Knowledge Gap
 
-- [ ] **🧠 AI Sư Phụ phân tích điểm yếu theo chuyên đề Core Knowledge**
+- [x] **AI Sư Phụ phân tích điểm yếu theo chuyên đề Core Knowledge**
   - Hệ thống tính accuracy theo từng `topicId` (không chỉ theo `category` như hiện tại).
   - AI Sư Phụ (WorldMap banner — §2.8, Bảng Cáo Thị) gợi ý ôn lại các chuyên đề có `examRelevance = 'high'` + accuracy thấp nhất.
   - Ưu tiên chuyên đề thuộc `hamNguyenTo` của khu vực có `lastExploredAt` lâu nhất (§2.8.5).
