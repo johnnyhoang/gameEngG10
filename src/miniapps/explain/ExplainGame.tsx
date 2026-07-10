@@ -1,10 +1,9 @@
 import React, { useEffect } from 'react';
 import { useGameState } from '../../hooks/useGameState';
-import { FlashcardApp } from '../../miniapps/flashcard';
+import { ExplainApp } from './ExplainApp';
 import type { MiniGameProps } from '../../types/minigame';
 
-export const FlashcardGame: React.FC<MiniGameProps> = ({ activeSectId, onGameStart, onGameComplete }) => {
-  const questions = useGameState(state => state.questions);
+export const ExplainGame: React.FC<MiniGameProps> = ({ activeSectId, onGameStart, onGameComplete }) => {
   const awardCoinsAndXp = useGameState(state => state.awardCoinsAndXp);
   const uiTheme = useGameState(state => state.uiTheme);
 
@@ -13,12 +12,12 @@ export const FlashcardGame: React.FC<MiniGameProps> = ({ activeSectId, onGameSta
   }, [onGameStart]);
 
   return (
-    <FlashcardApp
-      questions={questions}
+    <ExplainApp
       activeSectId={activeSectId}
       uiTheme={uiTheme}
       onReward={awardCoinsAndXp}
       onGameComplete={onGameComplete}
+      onGameStart={onGameStart}
     />
   );
 };

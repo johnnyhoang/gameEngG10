@@ -6,15 +6,15 @@ import { FogCard, getFogStatus } from './FogCard';
 import { Level3Overlay } from './Level3Overlay';
 
 // Game components
-import { FlashcardGame } from './games/FlashcardGame';
-import { MatchPairsGame } from './games/MatchPairsGame';
-import { MindmapGame } from './games/MindmapGame';
-import { StoryGame } from './games/StoryGame';
-import { AdventureGame } from './games/AdventureGame';
-import { StepBuilderGame } from './games/StepBuilderGame';
-import { ReadingGame } from './games/ReadingGame';
-import { ExplainGame } from './games/ExplainGame';
-import { DiagramGame } from './games/DiagramGame';
+import { FlashcardGame } from '../miniapps/flashcard';
+import { MatchPairsGame } from '../miniapps/match-pairs';
+import { MindmapGame } from '../miniapps/mindmap';
+import { StoryGame } from '../miniapps/story';
+import { AdventureGame } from '../miniapps/adventure';
+import { StepBuilderGame } from '../miniapps/step-builder';
+import { ReadingGame } from '../miniapps/reading';
+import { ExplainGame } from '../miniapps/explain';
+import { DiagramGame } from '../miniapps/diagram';
 
 interface RelaxationZoneProps {
   onBack: () => void;

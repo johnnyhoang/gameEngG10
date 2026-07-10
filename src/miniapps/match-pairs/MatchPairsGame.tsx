@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import { useGameState } from '../../hooks/useGameState';
-import { MindmapApp } from '../../miniapps/mindmap';
+import { MatchPairsApp } from './MatchPairsApp';
 import type { MiniGameProps } from '../../types/minigame';
 
-export const MindmapGame: React.FC<MiniGameProps> = ({ activeSectId, onGameStart, onGameComplete }) => {
+export const MatchPairsGame: React.FC<MiniGameProps> = ({ activeSectId, onGameStart, onGameComplete }) => {
   const awardCoinsAndXp = useGameState(state => state.awardCoinsAndXp);
   const uiTheme = useGameState(state => state.uiTheme);
 
@@ -12,12 +12,11 @@ export const MindmapGame: React.FC<MiniGameProps> = ({ activeSectId, onGameStart
   }, [onGameStart]);
 
   return (
-    <MindmapApp
+    <MatchPairsApp
       activeSectId={activeSectId}
       uiTheme={uiTheme}
       onReward={awardCoinsAndXp}
       onGameComplete={onGameComplete}
-      onGameStart={onGameStart}
     />
   );
 };

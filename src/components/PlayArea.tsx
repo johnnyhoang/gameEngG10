@@ -3,20 +3,25 @@ import { useGameState } from '../hooks/useGameState';
 import { useSect } from '../contexts/SectContext';
 import type { Question } from '../types/game';
 import { INITIAL_LESSONS } from '../data/lessons';
-import { ENGLISH_ANSWER_MODE_LABELS, ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../data/englishExamBlueprint';
-import { MATH_ANSWER_MODE_LABELS, MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
-import { LITERATURE_ANSWER_MODE_LABELS, LITERATURE_TASK_LABELS, LITERATURE_TEXT_GENRE_LABELS } from '../data/literatureExamBlueprint';
+import { ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../data/englishExamBlueprint';
+import { MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
+import { LITERATURE_TASK_LABELS, LITERATURE_TEXT_GENRE_LABELS } from '../data/literatureExamBlueprint';
 import { Scratchpad } from './Scratchpad';
 import { BikiHinhHocPhang } from './BikiHinhHocPhang';
 import { Biki3DStudio } from './Biki3DStudio';
-import { 
-  Award, Flame, Check, X, ArrowRight, Volume2, VolumeX 
-} from 'lucide-react';
-
+import { ArrowRight, Award } from 'lucide-react';
 import { MonChuHoiToiDialog } from './MonChuHoiToiDialog';
 import { sound } from '../utils/sound';
 import { toast } from '../utils/toast';
 import { supabase } from '../utils/supabaseClient';
+
+// Subcomponents
+import { PlayAreaHeader } from './PlayArea/PlayAreaHeader';
+import { QuestionMCQ } from './PlayArea/QuestionMCQ';
+import { QuestionEssay } from './PlayArea/QuestionEssay';
+import { QuestionTextInput } from './PlayArea/QuestionTextInput';
+import { ExplanationBox } from './PlayArea/ExplanationBox';
+import { RunFinishedScreen } from './PlayArea/RunFinishedScreen';
 
 interface PlayAreaProps {
   mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'lesson' | 'survival';
@@ -48,11 +53,12 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const [rewardsEarned, setRewardsEarned] = useState({ coins: 0, xp: 0 });
   const [sessionAnswered, setSessionAnswered] = useState(0);
   const [sessionCorrect, setSessionCorrect] = useState(0);
-  // Bộ đếm lỗi NỘI BỘ của lượt chơi (CORE_SPECS §2.1 Sinh tồn): sai đủ 3 câu là kết thúc.
-  // Thay thế hoàn toàn hệ thống Tim sinh mệnh toàn cục đã bị xóa bỏ.
+  
+  // Bộ đếm lỗi NỘI BỘ của lượt chơi
   const [runMistakes, setRunMistakes] = useState(0);
   const [runFinished, setRunFinished] = useState(false);
   const runEndHandledRef = useRef(false);
+  
   const [lastRubricScore, setLastRubricScore] = useState<number | null>(null);
   const [lastRubricMissing, setLastRubricMissing] = useState<string[]>([]);
   const [isAiGrading, setIsAiGrading] = useState(false);
@@ -86,7 +92,6 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
 
   // Initialize questions for this run
   useEffect(() => {
-    // Filter questions by active subject, but keep a safe fallback so the game never stalls on an empty pool.
     const subjectQuestions = questions.filter(q => {
       const qSubject = (q as any).subject || 'english';
       return qSubject === activeSectId;
@@ -94,33 +99,27 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     const fallbackQuestions = subjectQuestions.length > 0 ? subjectQuestions : questions;
 
     let pool: Question[] = [];
-    const count = mode === 'boss' ? 30 : mode === 'survival' ? 15 : 10; // Bosses are 30, Survival is 15, others are 10
+    const count = mode === 'boss' ? 30 : mode === 'survival' ? 15 : 10;
     
     if (mode === 'boss') {
-      // Find actual/mock papers based on bossId
       const year = bossId === 'b-2024' ? '2024' : bossId === 'b-2025' ? '2025' : '2026';
       pool = fallbackQuestions.filter(q => q.source.includes(year));
-      // Fallback if not enough questions
       if (pool.length < count) {
         pool = [...pool, ...fallbackQuestions.filter(q => !pool.includes(q))].slice(0, count);
       }
     } else if (mode === 'revenge') {
-      // Find actual previously failed questions for the current subject
       pool = subjectQuestions.filter(q => failedQuestionIds.includes(q.id));
     } else if (mode === 'lesson') {
       const lesson = INITIAL_LESSONS.find(l => l.id === lessonId);
       if (lesson) {
         pool = fallbackQuestions.filter(q => (q as any).lessonId === lessonId || q.category === lesson.category);
-        // Chọn tối đa 3 câu hỏi cho phiên luyện tập ngắn củng cố lý thuyết
         pool = pool.slice(0, 3);
       }
       if (pool.length < 3) {
-        // Fallback to random subject questions if not enough questions are linked
         const extra = fallbackQuestions.filter(q => !pool.includes(q));
         pool = [...pool, ...extra].slice(0, 3);
       }
     } else {
-      // Adaptive learning weight selector
       const weightMode = mode === 'survival' ? 'mixed' : mode;
       for (let i = 0; i < count; i++) {
         const q = getQuestionByWeight(weightMode);
@@ -128,7 +127,6 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           pool.push(q);
         }
       }
-      // If pool is empty, fill with default questions
       if (pool.length === 0) {
         pool = fallbackQuestions.filter(q => {
           if (activeSectId === 'math') {
@@ -146,7 +144,6 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       }
     }
 
-    // Shuffle questions pool slightly
     setCurrentQuestions(pool.sort(() => Math.random() - 0.5));
     setCurrentIndex(0);
     setRewardsEarned({ coins: 0, xp: 0 });
@@ -155,9 +152,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     setRunFinished(false);
     runEndHandledRef.current = false;
 
-    // Initialize timer for speed challenges / Bosses
     if (mode === 'boss') {
-      setTimeLeft(20 * 60); // 20 minutes
+      setTimeLeft(20 * 60);
     } else {
       setTimeLeft(0);
     }
@@ -182,8 +178,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     };
   }, [timeLeft, runFinished]);
 
-  // Xử lý kết cục trận đấu một lần duy nhất khi trận kết thúc:
-  // sai đủ 3 câu trong lượt Sinh Tồn/Boss là thất bại, hoặc Boss thắng trận.
+  // Handle game end scenarios
   useEffect(() => {
     if (!runFinished || runEndHandledRef.current) return;
     runEndHandledRef.current = true;
@@ -217,7 +212,6 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     const textGenre = activeQuestion.metadata?.textGenre;
 
     if (activeQuestion.type === 'mcq' && activeQuestion.options) {
-      // 50/50: remove two wrong options
       const correctOpt = Array.isArray(activeQuestion.correctAnswer)
         ? activeQuestion.correctAnswer[0]
         : activeQuestion.correctAnswer;
@@ -319,9 +313,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       try {
         const session = (await supabase.auth.getSession()).data.session;
         const token = session?.access_token;
-        if (!token) {
-          throw new Error('No auth token available');
-        }
+        if (!token) throw new Error('No auth token available');
 
         const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
         const answers = Array.isArray(activeQuestion.correctAnswer)
@@ -438,7 +430,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     const outcome = answerQuestion(
       activeQuestion.id,
       isCorrect,
-      10, // time spent (mocked)
+      10,
       mappedMode,
       scoreRatio
     );
@@ -457,12 +449,10 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     setSessionAnswered(prev => prev + 1);
     if (isCorrect) setSessionCorrect(prev => prev + 1);
 
-    // Sinh tồn/Boss: sai đủ 3 câu trong lượt là kết thúc (bộ đếm nội bộ, không còn Tim).
     if (scoreRatio < 0.35 && (mode === 'boss' || mode === 'survival')) {
       const nextMistakes = runMistakes + 1;
       setRunMistakes(nextMistakes);
       if (nextMistakes >= 3) {
-        // Wait a moment for explanation then trigger Game Over
         setTimeout(() => setRunFinished(true), 1500);
       }
     }
@@ -475,7 +465,6 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
 
   const handleConfirmSkip = async (reason: 'quá khó' | 'quá dài' | 'quá khùng', severity: number) => {
     if (!activeQuestion) return;
-    
     setIsSkipDialogOpen(false);
     
     const success = await flagQuestionConfused(activeQuestion, reason, severity);
@@ -521,13 +510,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       setCurrentIndex(prev => prev + 1);
     } else {
       setRunFinished(true);
-      // Double rewards if daily mission completed
-      logRunSuccess();
     }
-  };
-
-  const logRunSuccess = () => {
-    // Custom trigger at end of dungeon
   };
 
   const formatTime = (seconds: number) => {
@@ -554,78 +537,32 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                   ? 'Đấu trường sinh tồn'
                   : 'Phụ bản bài học';
 
+  // --- Early returns ---
   if (runFinished) {
-    // Luật "Tẩu Hỏa Nhập Ma": sai đủ 3 câu trong lượt Sinh Tồn hoặc Boss đều tính là thất bại.
-    const isDefeat = runMistakes >= 3 && (mode === 'boss' || mode === 'survival');
-    const displayedCoins = isDefeat ? Math.floor(rewardsEarned.coins / 2) : rewardsEarned.coins;
-    const displayedXp = isDefeat ? Math.floor(rewardsEarned.xp / 2) : rewardsEarned.xp;
     return (
-      <div className="glass-panel rounded-2xl border border-synth-magenta/30 p-8 max-w-xl mx-auto text-center space-y-6">
-        <Award className="w-16 h-16 mx-auto text-synth-orange animate-bounce" />
-
-        <h2 className="font-orbitron font-black text-2xl text-white uppercase tracking-wider">
-          {isDefeat ? `TẨU HỎA NHẬP MA - ${mode === 'boss' ? 'BOSS' : 'SINH TỒN'} THẤT BẠI` : 'CHINH PHỤC THÀNH CÔNG'}
-        </h2>
-
-        <p className="text-xs text-synth-text-muted">
-          {isDefeat
-            ? 'Sai đủ 3 câu rồi. Chỉ giữ được 50% chiến lợi phẩm thu được trong trận. Lần sau ra tay chắc hơn.'
-            : mode === 'lesson'
-              ? 'Củng cố xong. Muốn kiểm tra lại thì quay về bản đồ.'
-              : mode === 'vocabulary'
-                ? 'Khá đấy. Vocabulary Castle đã gục. Lượt sau từ vựng và word form sẽ được ưu tiên hơn.'
-                : mode === 'pronunciation'
-                  ? 'Khá lắm. Pronunciation Peak đã qua. Giữ nhịp phát âm và trọng âm cho chắc tay.'
-                  : `Qua ải ${mode.toUpperCase()}. Nhận chiến lợi phẩm rồi tính tiếp.`}
-        </p>
-
-        {/* Reward card */}
-        {
-          <div className="bg-synth-gray/40 rounded-xl p-5 border border-synth-cyan/20 grid grid-cols-2 gap-4">
-            <div className="text-center font-orbitron">
-              <span className="text-[10px] text-synth-text-muted uppercase">Nanite Vàng</span>
-              <p className="text-2xl font-black text-synth-orange">+{displayedCoins} NP</p>
-            </div>
-            <div className="text-center font-orbitron">
-              <span className="text-[10px] text-synth-text-muted uppercase">Điểm Kinh Nghiệm</span>
-              <p className="text-2xl font-black text-synth-cyan">+{displayedXp} XP</p>
-            </div>
-          </div>
-        }
-
-        {/* Payout note */}
-        {mode === 'boss' && !isDefeat && (
-          <div className="bg-synth-magenta/10 border border-synth-magenta/30 rounded-lg p-3 text-xs text-synth-magenta">
-            🔥 Đánh bại Boss: +150 XP và bonus hoàn thành Ngân Lượng đã tự động cộng thêm!
-          </div>
-        )}
-
-        <button
-          onClick={handleEscape}
-          className="px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-border-cyan cursor-pointer transition-all duration-300 shadow-[0_0_15px_rgba(0,240,255,0.4)]"
-        >
-          {mode === 'lesson' ? 'Hoàn Thành Học Bài 🎓' : 'Trở Lại Bản Đồ 🗺️'}
-        </button>
-      </div>
+      <RunFinishedScreen
+        mode={mode}
+        rewardsEarned={rewardsEarned}
+        runMistakes={runMistakes}
+        onEscape={handleEscape}
+      />
     );
   }
+
   if (currentQuestions.length === 0) {
     if (mode === 'revenge') {
       return (
         <div className="glass-panel rounded-2xl border border-synth-cyan/30 p-8 max-w-xl mx-auto text-center space-y-6">
           <Award className="w-16 h-16 mx-auto text-synth-cyan animate-pulse" />
-          
           <h2 className="font-orbitron font-black text-2xl text-white uppercase tracking-wider">
             HẦM NGỤC YÊN BÌNH 🛡️
           </h2>
-          
           <p className="text-sm text-synth-text-muted leading-relaxed">
             Chuẩn xác, không có câu nào cần sửa ở môn{' '}
             <span className="text-synth-orange font-bold font-orbitron uppercase">
               {activeSectId === 'english' ? 'Tiếng Anh' : activeSectId === 'math' ? 'Toán Học' : 'Ngữ Văn'}
             </span>. Hãy tiếp tục duy trì phong độ xuất sắc này nhé!
           </p>
-
           <button
             onClick={handleEscape}
             className="px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-border-cyan cursor-pointer transition-all duration-300 shadow-[0_0_15px_rgba(0,240,255,0.4)]"
@@ -638,7 +575,6 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     return <div className="text-center py-10 font-orbitron text-theme-text-info">Đang rút câu vào ải...</div>;
   }
 
-  // Check if we should render split screen for literature passages
   const isLitSplit = activeSectId === 'literature' && activeQuestion.prompt.includes('\n\n');
   const passageText = isLitSplit 
     ? activeQuestion.prompt.split('\n\n').slice(0, -1).join('\n\n')
@@ -673,96 +609,55 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     (activeQuestion.prompt || '').toLowerCase().includes('hình chóp')
   );
 
+  // Render input form matching question type
+  const renderAnswerForm = () => {
+    if (activeQuestion.type === 'mcq' && activeQuestion.options) {
+      return (
+        <QuestionMCQ
+          activeQuestion={activeQuestion}
+          selectedAnswer={selectedAnswer}
+          checked={checked}
+          onSelectAnswer={setSelectedAnswer}
+        />
+      );
+    }
+    if (activeSectId === 'literature' && activeQuestion.category === 'literature-writing') {
+      return (
+        <QuestionEssay
+          typedAnswer={typedAnswer}
+          checked={checked}
+          onTypeAnswer={setTypedAnswer}
+        />
+      );
+    }
+    return (
+      <QuestionTextInput
+        typedAnswer={typedAnswer}
+        checked={checked}
+        onTypeAnswer={setTypedAnswer}
+      />
+    );
+  };
+
   return (
     <div className="relative glass-panel rounded-2xl border border-synth-cyan/15 p-6 max-w-2xl mx-auto space-y-6">
       {/* Scratchpad overlay */}
       {showScratchpad && <Scratchpad onClose={() => setShowScratchpad(false)} />}
 
-      {/* Top Play Header */}
-      <div className="flex justify-between items-center border-b border-synth-gray pb-4">
-        <div className="flex flex-col">
-          <span className="text-[10px] font-bold text-synth-cyan font-orbitron uppercase tracking-wider">
-            {modeLabel}
-          </span>
-          {activeQuestion.metadata?.examPart && (
-            <span className="text-[10px] px-2 py-1 rounded-full bg-synth-magenta/15 border border-synth-magenta/30 text-synth-magenta font-orbitron font-bold uppercase tracking-wider">
-              {activeQuestion.metadata.examPart}
-            </span>
-          )}
-          {activeQuestion.metadata?.answerMode && (
-            <span className="text-[10px] px-2 py-1 rounded-full bg-synth-cyan/15 border border-synth-cyan/30 text-synth-cyan font-orbitron font-bold uppercase tracking-wider">
-              {(activeQuestion.subject === 'literature' ? LITERATURE_ANSWER_MODE_LABELS : activeQuestion.subject === 'english' ? ENGLISH_ANSWER_MODE_LABELS : MATH_ANSWER_MODE_LABELS)[activeQuestion.metadata.answerMode] || activeQuestion.metadata.answerMode}
-            </span>
-          )}
-          {activeQuestion.subject === 'english' && activeQuestion.metadata?.englishPart && (
-            <span className="text-[10px] px-2 py-1 rounded-full bg-synth-magenta/15 border border-synth-magenta/30 text-synth-magenta font-orbitron font-bold uppercase tracking-wider">
-              {activeQuestion.metadata.englishPart}
-            </span>
-          )}
-          {activeQuestion.subject === 'english' && activeQuestion.metadata?.englishTask && (
-            <span className="text-[10px] px-2 py-1 rounded-full bg-white/5 border border-white/10 text-white font-orbitron font-bold uppercase tracking-wider">
-              {ENGLISH_TASK_LABELS[activeQuestion.metadata.englishTask] || activeQuestion.metadata.englishTask}
-            </span>
-          )}
-          {activeQuestion.subject === 'english' && activeQuestion.metadata?.englishSkill && (
-            <span className="text-[10px] px-2 py-1 rounded-full bg-synth-cyan/15 border border-synth-cyan/30 text-synth-cyan font-orbitron font-bold uppercase tracking-wider">
-              {ENGLISH_SKILL_LABELS[activeQuestion.metadata.englishSkill] || activeQuestion.metadata.englishSkill}
-            </span>
-          )}
-          {activeQuestion.metadata?.literatureTask && activeSectId === 'literature' && (
-            <span className="text-[10px] px-2 py-1 rounded-full bg-synth-orange/15 border border-synth-orange/30 text-synth-orange font-orbitron font-bold uppercase tracking-wider">
-              {LITERATURE_TASK_LABELS[activeQuestion.metadata.literatureTask] || activeQuestion.metadata.literatureTask}
-            </span>
-          )}
-          {activeQuestion.metadata?.textGenre && activeSectId === 'literature' && (
-            <span className="text-[10px] px-2 py-1 rounded-full bg-white/5 border border-white/10 text-white font-orbitron font-bold uppercase tracking-wider">
-              {LITERATURE_TEXT_GENRE_LABELS[activeQuestion.metadata.textGenre] || activeQuestion.metadata.textGenre}
-            </span>
-          )}
-          <span className="text-sm font-semibold text-white">
-            Câu {currentIndex + 1}/{currentQuestions.length}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          {/* Mute/Unmute sound button */}
-          <button
-            onClick={toggleMute}
-            className="px-2.5 py-1 rounded bg-synth-gray/50 border border-white/10 hover:bg-synth-gray text-white cursor-pointer transition-colors flex items-center justify-center"
-            title={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
-          >
-            {isMuted ? <VolumeX className="w-3.5 h-3.5 text-synth-magenta mr-1" /> : <Volume2 className="w-3.5 h-3.5 text-synth-cyan mr-1" />}
-            <span className="font-orbitron font-bold text-[9px] tracking-wide uppercase">
-              {isMuted ? 'MUTE' : 'SOUND'}
-            </span>
-          </button>
-
-          {/* Bảng Nháp button */}
-          {(activeSectId === 'math' || activeSectId === 'literature') && (
-            <button
-              onClick={() => setShowScratchpad(true)}
-              className="px-2.5 py-1 rounded bg-synth-magenta/20 border border-synth-magenta/40 hover:bg-synth-magenta/40 text-[10px] text-synth-magenta font-bold cursor-pointer transition-colors font-orbitron"
-              title="Mở bảng nháp để tính toán"
-            >
-              SỔ NHÁP ✏️
-            </button>
-          )}
-
-          {/* Combo Multiplier */}
-          {activeCombo > 0 && (
-            <div className="flex items-center gap-1 px-3 py-1 rounded bg-synth-magenta/15 border border-synth-magenta text-synth-magenta font-orbitron font-bold text-xs animate-pulse">
-              <Flame className="w-4 h-4 fill-synth-magenta" /> COMBO {activeCombo}
-            </div>
-          )}
-        </div>
-
-        {/* Timer */}
-        {timeLeft > 0 && (
-          <div className="px-3 py-1 rounded bg-synth-gray border border-white/10 text-xs font-orbitron text-white">
-            Thời hạn: {formatTime(timeLeft)}
-          </div>
-        )}
-      </div>
+      {/* Play Header */}
+      <PlayAreaHeader
+        modeLabel={modeLabel}
+        activeQuestion={activeQuestion}
+        currentIndex={currentIndex}
+        totalQuestions={currentQuestions.length}
+        isMuted={isMuted}
+        activeCombo={activeCombo}
+        timeLeft={timeLeft}
+        activeSectId={activeSectId}
+        onToggleMute={toggleMute}
+        onShowScratchpad={() => setShowScratchpad(true)}
+        formatTime={formatTime}
+      />
 
       {/* Progress Bar */}
       <div className="w-full h-1.5 bg-synth-gray rounded-full overflow-hidden">
@@ -806,70 +701,13 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
               </p>
             </div>
 
-            {/* Answer Forms */}
-            <div className="space-y-3">
-              {activeQuestion.type === 'mcq' && activeQuestion.options ? (
-                <div className="grid grid-cols-1 gap-2.5">
-                  {activeQuestion.options.map((option, idx) => {
-                    const cleanOpt = option.trim();
-                    const isSelected = selectedAnswer === cleanOpt;
-                    const correctAnsStr = Array.isArray(activeQuestion.correctAnswer)
-                      ? activeQuestion.correctAnswer[0]
-                      : activeQuestion.correctAnswer;
-                    const isCorrectOpt = cleanOpt.toLowerCase() === correctAnsStr.toLowerCase();
-
-                    let borderClass = 'border-white/10 hover:border-synth-cyan/40 bg-synth-gray/10';
-                    if (isSelected) borderClass = 'border-synth-cyan bg-synth-cyan/15 text-theme-text-highlight font-semibold';
-                    if (checked) {
-                      if (isCorrectOpt) borderClass = 'border-theme-text-success bg-theme-bg-success text-theme-text-success font-bold';
-                      else if (isSelected) borderClass = 'border-theme-text-error bg-theme-bg-error text-theme-text-error font-bold';
-                    }
-
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => !checked && setSelectedAnswer(cleanOpt)}
-                        disabled={checked}
-                        className={`w-full text-left p-3 rounded-xl border text-xs font-medium transition-all duration-300 cursor-pointer ${borderClass}`}
-                      >
-                        <span className="font-orbitron font-bold text-synth-text-muted mr-2">
-                          {String.fromCharCode(65 + idx)}.
-                        </span>
-                        {option}
-                      </button>
-                    );
-                  })}
-                </div>
-              ) : activeSectId === 'literature' && activeQuestion.category === 'literature-writing' ? (
-                <div className="space-y-2">
-                  <textarea
-                    value={typedAnswer}
-                    onChange={(e) => !checked && setTypedAnswer(e.target.value)}
-                    placeholder="Gõ bài làm vào đây, rồi trình bày cho gọn tay..."
-                    disabled={checked}
-                    rows={8}
-                    className="w-full p-3.5 rounded-xl border border-white/10 focus:border-synth-cyan bg-synth-gray/20 text-white text-xs outline-none transition-all duration-300 font-serif"
-                  />
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    value={typedAnswer}
-                    onChange={(e) => !checked && setTypedAnswer(e.target.value)}
-                    placeholder="Nhập đáp án gọn và đúng vào đây..."
-                    disabled={checked}
-                    className="w-full p-3.5 rounded-xl border border-white/10 focus:border-synth-cyan bg-synth-gray/20 text-white text-xs outline-none transition-all duration-300"
-                  />
-                </div>
-              )}
-            </div>
+            {/* Render MCQ / Essay / TextInput */}
+            {renderAnswerForm()}
           </div>
         </div>
       ) : (
         /* Regular single column layout */
         <>
-          {/* The Question Prompt */}
           <div className="space-y-4">
             <div className="flex justify-between items-center text-[10px] text-synth-text-muted font-bold">
               <span>Nguồn: {activeQuestion.source}</span>
@@ -918,160 +756,35 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
             </div>
           )}
 
-          {/* Answer Forms */}
-          <div className="space-y-3">
-            {activeQuestion.type === 'mcq' && activeQuestion.options ? (
-              <div className="grid grid-cols-1 gap-2.5">
-                {activeQuestion.options.map((option, idx) => {
-                  const cleanOpt = option.trim();
-                  const isSelected = selectedAnswer === cleanOpt;
-                  const correctAnsStr = Array.isArray(activeQuestion.correctAnswer)
-                    ? activeQuestion.correctAnswer[0]
-                    : activeQuestion.correctAnswer;
-                  const isCorrectOpt = cleanOpt.toLowerCase() === correctAnsStr.toLowerCase();
-
-                  let borderClass = 'border-white/10 hover:border-synth-cyan/40 bg-synth-gray/10';
-                  if (isSelected) borderClass = 'border-synth-cyan bg-synth-cyan/15 text-theme-text-highlight font-semibold';
-                  if (checked) {
-                    if (isCorrectOpt) borderClass = 'border-theme-text-success bg-theme-bg-success text-theme-text-success font-bold';
-                    else if (isSelected) borderClass = 'border-theme-text-error bg-theme-bg-error text-theme-text-error font-bold';
-                  }
-
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => !checked && setSelectedAnswer(cleanOpt)}
-                      disabled={checked}
-                      className={`w-full text-left p-3.5 rounded-xl border text-sm font-medium transition-all duration-300 cursor-pointer ${borderClass}`}
-                    >
-                      <span className="font-orbitron font-bold text-synth-text-muted mr-3">
-                        {String.fromCharCode(65 + idx)}.
-                      </span>
-                      {option}
-                    </button>
-                  );
-                })}
-              </div>
-            ) : activeSectId === 'literature' && activeQuestion.category === 'literature-writing' ? (
-              <div className="space-y-2">
-                <textarea
-                  value={typedAnswer}
-                  onChange={(e) => !checked && setTypedAnswer(e.target.value)}
-                  placeholder="Gõ bài làm vào đây, rồi trình bày cho gọn tay..."
-                  disabled={checked}
-                  rows={10}
-                  className="w-full p-4 rounded-xl border border-white/10 focus:border-synth-cyan bg-synth-gray/20 text-white text-sm outline-none transition-all duration-300 font-serif"
-                />
-                <span className="text-[10px] text-synth-text-muted">
-                  *Lưu ý: Bài làm nghị luận xã hội/văn học cần lập luận chặt chẽ, đầy đủ bố cục.
-                </span>
-              </div>
-            ) : (
-              <div className="space-y-2">
-                <input
-                  type="text"
-                  value={typedAnswer}
-                  onChange={(e) => !checked && setTypedAnswer(e.target.value)}
-                  placeholder="Nhập đáp án gọn và đúng vào đây..."
-                  disabled={checked}
-                  className="w-full p-4 rounded-xl border border-white/10 focus:border-synth-cyan bg-synth-gray/20 text-white text-sm outline-none transition-all duration-300"
-                />
-                <span className="text-[10px] text-synth-text-muted">
-                  *Lưu ý: Viết đúng chính tả, viết hoa chữ cái đầu nếu cần thiết.
-                </span>
-              </div>
-            )}
-          </div>
+          {/* Render MCQ / Essay / TextInput */}
+          {renderAnswerForm()}
         </>
       )}
 
       {/* Hint Alert */}
       {revealedHint && (
-        <div className="p-3 bg-theme-bg-success border border-theme-border-success rounded-xl text-xs text-theme-text-info font-semibold">
+        <div className="p-3 bg-theme-bg-success border border-theme-border-success rounded-xl text-xs text-theme-text-info font-semibold font-orbitron">
           {revealedHint}
         </div>
       )}
 
       {/* Explanation Box (Visible after check) */}
       {checked && (
-        <div className={`p-4 rounded-xl border flex gap-3 text-xs leading-relaxed ${
-          isLastCorrect 
-            ? 'border-theme-border-success bg-theme-bg-success text-theme-text-success font-semibold' 
-            : 'border-theme-border-error bg-theme-bg-error text-theme-text-error font-semibold'
-        }`}>
-          <div className="mt-0.5">
-            {isLastCorrect ? <Check className="w-5 h-5" /> : <X className="w-5 h-5" />}
-          </div>
-          <div className="space-y-2">
-            <h5 className="font-bold uppercase tracking-wider mb-1">
-              {activeSectId === 'literature' && activeQuestion.category === 'literature-writing'
-                ? isLastCorrect ? 'Bài viết qua ải rubric' : 'Bài viết còn hở rubric'
-                : isLastCorrect ? 'Chuẩn xác, khá đấy.' : 'Lệch nhịp rồi. Sửa tay đi.'}
-            </h5>
-            {activeSectId === 'literature' && activeQuestion.category === 'literature-writing' ? (
-              <p className="text-theme-text-highlight mb-2 font-medium">
-                Điểm ước tính: <span className="font-bold underline text-theme-text-success">{lastRubricScore ?? 0}/10</span>
-              </p>
-            ) : (
-              <p className="text-theme-text-highlight mb-2 font-medium">
-                Đáp án chuẩn: <span className="font-bold underline text-theme-text-success">
-                  {Array.isArray(activeQuestion.correctAnswer) ? activeQuestion.correctAnswer.join(' | ') : activeQuestion.correctAnswer}
-                </span>
-              </p>
-            )}
-            {aiWarningMessage && (
-              <div className="p-2.5 bg-theme-bg-error/30 border border-theme-border-error/50 rounded-lg text-theme-text-warning font-bold text-[11px] mb-2">
-                ⚠️ {aiWarningMessage}
-              </div>
-            )}
-            {activeSectId === 'literature' && activeQuestion.category === 'literature-writing' && lastRubricMissing.length > 0 && (
-              <div className="text-theme-text-highlight/90 space-y-1">
-                <p className="font-bold uppercase tracking-wider text-[10px]">Ý còn thiếu / cần mạnh hơn</p>
-                <ul className="list-disc pl-4 space-y-0.5 text-theme-text-highlight/80">
-                  {lastRubricMissing.slice(0, 5).map(item => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {aiFeedback && (
-              <div className="text-theme-text-highlight/95 space-y-1 mt-2">
-                <p className="font-bold uppercase tracking-wider text-[10px] text-theme-text-info">Linh Sư luận giải</p>
-                <p className="text-theme-text-highlight/90 italic leading-relaxed bg-synth-gray/25 p-2 rounded-lg">{aiFeedback}</p>
-              </div>
-            )}
-            {aiSuggestions && aiSuggestions.length > 0 && (
-              <div className="text-theme-text-highlight/95 space-y-1 mt-2">
-                <p className="font-bold uppercase tracking-wider text-[10px] text-theme-text-info">Bí kíp sửa bài</p>
-                <ul className="list-disc pl-4 space-y-0.5 text-theme-text-highlight/80">
-                  {aiSuggestions.map((item, idx) => (
-                    <li key={idx}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            <p className="text-synth-text-muted">
-              {activeQuestion.explanation}
-            </p>
-            {activeSectId === 'literature' && activeQuestion.category === 'literature-writing' && activeQuestion.metadata?.solutionSteps?.length ? (
-              <div className="text-theme-text-highlight/90 space-y-1">
-                <p className="font-bold uppercase tracking-wider text-[10px]">Rubric gợi ý</p>
-                <ol className="list-decimal pl-4 space-y-0.5 text-theme-text-highlight/80">
-                  {activeQuestion.metadata.solutionSteps.map(step => (
-                    <li key={step}>{step}</li>
-                  ))}
-                </ol>
-                <p className="text-synth-text-muted text-[10px] italic">Chỉ chấm, không viết hộ đáp án hoàn chỉnh.</p>
-              </div>
-            ) : null}
-          </div>
-        </div>
+        <ExplanationBox
+          activeSectId={activeSectId}
+          activeQuestion={activeQuestion}
+          isLastCorrect={isLastCorrect}
+          lastRubricScore={lastRubricScore}
+          lastRubricMissing={lastRubricMissing}
+          aiWarningMessage={aiWarningMessage}
+          aiFeedback={aiFeedback}
+          aiSuggestions={aiSuggestions}
+        />
       )}
 
       {/* Bottom Controls */}
       <div className="flex flex-wrap items-center justify-between gap-2.5 border-t border-synth-gray/50 pt-4">
         <div className="flex flex-wrap items-center gap-2">
-          {/* Check/Next button */}
           {!checked ? (
             <button
               onClick={handleCheckAnswer}
@@ -1096,7 +809,6 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
             </button>
           )}
 
-          {/* Hint button */}
           {!checked && (
             <button
               onClick={handleUseHint}
@@ -1109,7 +821,6 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Escape button */}
           <button
             onClick={handleEscape}
             className="px-4 py-2.5 rounded-xl border border-synth-gray hover:bg-synth-gray/20 text-synth-text-muted font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 text-center"
@@ -1117,7 +828,6 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
             Rút khỏi ải
           </button>
 
-          {/* Skip confused button */}
           {!checked && (() => {
             const todayStr = new Date().toISOString().split('T')[0];
             const skipsCount = player.dailySkips?.date === todayStr ? (player.dailySkips.count || 0) : 0;
@@ -1146,5 +856,3 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     </div>
   );
 };
-
-

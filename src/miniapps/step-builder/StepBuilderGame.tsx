@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useGameState } from '../../hooks/useGameState';
-import { StepBuilderApp } from '../../miniapps/step-builder';
+import { StepBuilderApp } from './StepBuilderApp';
 import type { MiniGameProps } from '../../types/minigame';
 
 export const StepBuilderGame: React.FC<MiniGameProps> = ({ activeSectId, onGameStart, onGameComplete }) => {
