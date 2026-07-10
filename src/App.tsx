@@ -305,7 +305,6 @@ function App() {
           {screen === 'arena' && (
             <Arena
               onStartPlay={handleStartPlay}
-              onBack={() => setScreen('map')}
               onStudyLesson={handleStudyLessonFromMap}
               onStartLessonPractice={handleStartLessonPracticeFromMap}
             />
@@ -353,11 +352,9 @@ function App() {
                 setLessonBackTarget('hang');
                 setScreen('lesson-study');
               }}
-              onBackToMap={() => setScreen('map')}
               onOpenMatThat3D={() => setScreen('hang-3d')}
               onOpenMatThatPlane={() => setScreen('hang-plane')}
               onOpenMatThatGraph={() => setScreen('hang-graph')}
-              onOpenProfile={() => setIsProfileOpen(true)}
               onStartLessonPractice={handleStartLessonPracticeFromMap}
             />
           )}
@@ -417,7 +414,7 @@ function App() {
           )}
 
           {screen === 'pet' && (
-            <PetSanctuary variant="full" onBack={() => setScreen('map')} />
+            <PetSanctuary variant="full" />
           )}
 
           {screen === 'logs' && (

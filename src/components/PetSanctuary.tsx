@@ -35,11 +35,10 @@ const STAGE_MEMORIES: Record<PetStage, { story: string; photoConcept: string }> 
 interface PetSanctuaryProps {
   /** 'sidebar' = widget đồng hành thu gọn (mặc định); 'full' = module Sân Thú Nuôi đầy đủ, gồm Album Kỷ Niệm. */
   variant?: 'sidebar' | 'full';
-  onBack?: () => void;
   onInteract?: () => void;
 }
 
-export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar', onBack, onInteract }) => {
+export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar', onInteract }) => {
   const isFull = variant === 'full';
   const pet = useGameState(state => state.pet);
   const feedPet = useGameState(state => state.feedPet);

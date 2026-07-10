@@ -7,7 +7,7 @@ import { SUBJECTS_CONFIG } from '../types/game';
 import type { SubjectId } from '../types/game';
 import {
   Compass, Sword, ShieldAlert, Star, Zap, BookOpen,
-  ChevronDown, ChevronUp, ChevronLeft, Skull, Swords, BookMarked, Heart, Volume2
+  ChevronDown, ChevronUp, Skull, Swords, BookMarked, Heart, Volume2
 } from 'lucide-react';
 import { toast } from '../utils/toast';
 import { FogCard } from './FogCard';
@@ -17,12 +17,11 @@ interface ArenaProps {
     mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'survival',
     bossId?: string
   ) => void;
-  onBack: () => void;
   onStudyLesson?: (lessonId: string) => void;
   onStartLessonPractice?: (lessonId: string) => void;
 }
 
-export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractice }: ArenaProps) {
+export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: ArenaProps) {
   const player = useGameState(state => state.player);
   const consumeEnergy = useGameState(state => state.useEnergy);
   const { activeSectId } = useSect();

@@ -13,9 +13,7 @@ import {
    NotebookTabs,
    Sparkles,
    ArrowRight,
-   CheckCircle2,
-   ChevronLeft,
-   UserCircle2
+   CheckCircle2
 } from 'lucide-react';
 import {
    HANG_SOURCES
@@ -42,11 +40,9 @@ const getElementalDungeon = (lesson: Lesson): 'fire' | 'ice' | 'stone' => {
 interface HangLuyenCongProps {
    onStartPractice: () => void;
    onStudyLesson: (lessonId: string) => void;
-   onBackToMap: () => void;
    onOpenMatThat3D: () => void;
    onOpenMatThatPlane: () => void;
    onOpenMatThatGraph: () => void;
-   onOpenProfile?: () => void;
    onStartLessonPractice?: (lessonId: string) => void;
 }
 
@@ -338,11 +334,9 @@ const SUBJECT_TRACKS: Record<HangSubjectId, {
 export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   onStartPractice,
   onStudyLesson,
-  onBackToMap,
   onOpenMatThat3D,
   onOpenMatThatPlane,
   onOpenMatThatGraph,
-  onOpenProfile,
   onStartLessonPractice
 }) => {
   const { activeSectId } = useSect();
