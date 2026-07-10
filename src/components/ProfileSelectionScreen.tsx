@@ -1,3 +1,4 @@
+import { isAdmin, isSuperAdmin } from '../utils/roleHelpers';
 import React, { useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { LogOut, Plus, GraduationCap, Users } from 'lucide-react';
@@ -64,7 +65,7 @@ export const ProfileSelectionScreen: React.FC = () => {
                   className="group relative flex flex-col items-center gap-4 p-6 rounded-2xl border border-white/10 bg-white/5 hover:border-synth-cyan/50 hover:bg-synth-cyan/5 transition-all duration-300 cursor-pointer"
                 >
                   <div className="absolute top-3 right-3 text-[10px] uppercase font-bold tracking-wider px-2 py-1 rounded bg-black/50 border border-white/10">
-                    {profile.role === 'admin' ? <span className="text-synth-magenta">Quản trị</span> : 
+                    {isAdmin(profile.role) ? <span className="text-synth-magenta">{isSuperAdmin(profile.role) ? 'Viện Trưởng' : 'Phó Viện'}</span> : 
                      profile.role === 'parent' ? <span className="text-synth-orange">Phụ huynh</span> : 
                      <span className="text-synth-cyan">Học sinh</span>}
                   </div>

@@ -1,15 +1,38 @@
+// Shim tương thích: store đã tách thành slices tại src/store/ — file này chỉ re-export
+// để các import cũ (`from '../hooks/useGameState'`) tiếp tục hoạt động.
+// QUAN TRỌNG: mọi hằng số/dữ liệu ở đây phải trỏ về nguồn THẬT, không được stub rỗng
+// (stub rỗng từng làm mất toàn bộ ngân hàng câu hỏi/bài học/cẩm nang trong store mới).
 export * from '../store';
 export * from '../store/types';
 
-// Export constants that were previously in this file so that other parts of the app don't break.
-export const PLAYER_ENERGY_MAX = 100;
-export const DEFAULT_PIN = '1234';
-export const DEFAULT_GRADE_TIER = 'bronze';
-export const DEFAULT_UI_THEME = 'cyber';
+import type { PlayerProfile, PetState, Challenge, ParentReward, GameSettings, UiThemeId } from '../types/game';
 
-export const INITIAL_PLAYER: import('../types/game').PlayerProfile = {
-  id: 'mock-student',
-  name: 'Student',
+// Dữ liệu thật từ các data module
+export { INITIAL_QUESTIONS } from '../data/questions';
+export { INITIAL_LESSONS } from '../data/lessons';
+export { ALL_HANDBOOK_PAGES, INITIAL_HANDBOOK_PAGES } from '../data/handbookPages';
+export { UI_THEMES, DEFAULT_UI_THEME } from '../theme/uiThemes';
+// Tầng Thế Giới (CORE_SPECS §1.4) — nguồn duy nhất là types/game (mặc định Tầng 9)
+export { DEFAULT_GRADE_TIER, GRADE_TIERS, getGradeTierConfig } from '../types/game';
+
+export const DEFAULT_PIN = '1234';
+export const PLAYER_ENERGY_MAX = 1000;
+export const THEME_UNLOCK_COST = 200;
+export const FREE_UI_THEME: UiThemeId = 'current';
+
+export const DEFAULT_GAME_SETTINGS: GameSettings = {
+  bossBountiesVnd: [10000, 15000, 20000],
+  // Hao tổn Chân khí (SUB_SPEC_ENERGY): ải thường tiêu 30 Chân khí mỗi lượt.
+  challengeEnergyCosts: [30, 30, 30, 30],
+  maxEnergy: 1000,
+  baseXP: 15,
+  baseCoins: 5,
+  updatedAt: Date.now()
+};
+
+export const INITIAL_PLAYER: PlayerProfile = {
+  id: 'student-1',
+  name: 'Con yêu',
   role: 'student',
   level: 1,
   xp: 0,
@@ -19,10 +42,11 @@ export const INITIAL_PLAYER: import('../types/game').PlayerProfile = {
   energy: PLAYER_ENERGY_MAX,
   hearts: 3,
   lastActive: new Date().toISOString(),
-  badges: []
+  badges: [],
+  unlockedThemes: ['current']
 };
 
-export const INITIAL_PET: import('../types/game').PetState = {
+export const INITIAL_PET: PetState = {
   name: 'Heo Maikawaii',
   stage: 'egg',
   level: 1,
@@ -32,19 +56,19 @@ export const INITIAL_PET: import('../types/game').PetState = {
   lastFed: new Date().toISOString()
 };
 
-export const INITIAL_QUESTIONS: import('../types/game').Question[] = [];
-export const INITIAL_LESSONS: any[] = [];
-export const INITIAL_CHALLENGES: import('../types/game').Challenge[] = [];
-export const DEFAULT_REWARDS: import('../types/game').ParentReward[] = [];
-export const DEFAULT_GAME_SETTINGS: import('../types/game').GameSettings = {
-  bossBountiesVnd: [10000, 20000, 50000],
-  challengeEnergyCosts: [10, 15, 20, 25],
-  maxEnergy: PLAYER_ENERGY_MAX,
-  baseXP: 10,
-  baseCoins: 5,
-  updatedAt: Date.now()
-};
-export const ALL_HANDBOOK_PAGES: import('../types/game').HandbookPage[] = [];
-export const THEME_UNLOCK_COST = 200;
-export const FREE_UI_THEME: import('../types/game').UiThemeId = 'current';
-export const UI_THEMES: any[] = [];
+export const DEFAULT_REWARDS: ParentReward[] = [
+  { id: 'r-1', title: '15 phút chơi game', costCoins: 150, cashValueVND: 0, status: 'pending', timestamp: Date.now() },
+  { id: 'r-2', title: 'Ly trà sữa đặc biệt', costCoins: 400, cashValueVND: 0, status: 'pending', timestamp: Date.now() },
+  { id: 'r-3', title: 'Thưởng 20.000đ tiền mặt', costCoins: 500, cashValueVND: 20000, status: 'pending', timestamp: Date.now() },
+  { id: 'r-4', title: 'Thưởng 50.000đ tiền mặt', costCoins: 1000, cashValueVND: 50000, status: 'pending', timestamp: Date.now() },
+  { id: 'r-5', title: 'Thưởng 100.000đ tiền mặt', costCoins: 1800, cashValueVND: 100000, status: 'pending', timestamp: Date.now() }
+];
+
+export const INITIAL_CHALLENGES: Challenge[] = [
+  { id: 'ch-1', type: 'daily', title: 'Luyện 20 câu hỏi', description: 'Hoàn thành làm 20 câu hỏi bất kỳ', targetCount: 20, currentCount: 0, rewardCoins: 100, rewardXP: 100, completed: false },
+  { id: 'ch-2', type: 'daily', title: 'Chiến binh Grammar', description: 'Trả lời đúng 10 câu hỏi ngữ pháp', targetCount: 10, currentCount: 0, rewardCoins: 80, rewardXP: 80, completed: false, category: 'grammar' },
+  { id: 'ch-3', type: 'daily', title: 'Không tỳ vết', description: 'Đạt chuỗi đúng 10 câu liên tiếp', targetCount: 10, currentCount: 0, rewardCoins: 120, rewardXP: 150, completed: false },
+  { id: 'ch-4', type: 'weekly', title: 'Học tập bền bỉ', description: 'Hoàn thành 100 câu hỏi trong tuần', targetCount: 100, currentCount: 0, rewardCoins: 500, rewardXP: 500, completed: false },
+  { id: 'ch-5', type: 'achievement', title: 'Khởi đầu vinh quang', description: 'Tổng cộng trả lời đúng 100 câu', targetCount: 100, currentCount: 0, rewardCoins: 300, rewardXP: 300, completed: false },
+  { id: 'ch-6', type: 'achievement', title: 'Huyền thoại học đường', description: 'Tổng cộng trả lời đúng 1000 câu', targetCount: 1000, currentCount: 0, rewardCoins: 2000, rewardXP: 2000, completed: false }
+];

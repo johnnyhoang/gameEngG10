@@ -1,3 +1,4 @@
+import { isSuperAdmin } from '../utils/roleHelpers';
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, X, Sparkles, Feather } from 'lucide-react';
 import type { HandbookPage } from '../types/game';
@@ -28,7 +29,7 @@ export const GiangHoCamNang: React.FC<GiangHoCamNangProps> = ({
 
   const allHandbookPages = useGameState(state => state.handbookPages);
   const currentUser = useGameState(state => state.currentUser);
-  const isAdminViewer = currentUser?.role === 'admin';
+  const isAdminViewer = isSuperAdmin(currentUser?.role);
 
   // Trang dành riêng cho Viện Chủ chỉ hiện khi đang xem với vai trò Viện Chủ.
   const handbookPages = allHandbookPages.filter(p => p.audience !== 'admin' || isAdminViewer);

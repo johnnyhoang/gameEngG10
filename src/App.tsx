@@ -1,3 +1,4 @@
+import { isParentRole, isAdmin } from './utils/roleHelpers';
 import { useState, useEffect } from 'react';
 import { useGameState } from './hooks/useGameState';
 import { toast } from './utils/toast';
@@ -69,7 +70,7 @@ function App() {
   // Auto-switch screen for admin/parent users on login & show handbook on student login
   useEffect(() => {
     if (currentUser) {
-      if (currentUser.role === 'admin' || currentUser.role === 'parent') {
+      if (isParentRole(currentUser.role) || isAdmin(currentUser.role)) {
         setScreen('parent');
       } else if (currentUser.role === 'student') {
         setScreen('map');
@@ -88,7 +89,7 @@ function App() {
   useEffect(() => {
     if (!currentUser) return;
     const role = currentUser.role;
-    if (role === 'admin' || role === 'parent') {
+    if (isParentRole(role) || isAdmin(role)) {
       if (screen !== 'parent') {
         setScreen('parent');
       }

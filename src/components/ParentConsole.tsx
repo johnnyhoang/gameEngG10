@@ -1,3 +1,4 @@
+import { isAdmin, isSuperAdmin, isParentRole } from '../utils/roleHelpers';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import type { Question, QuestionMeta, PetStage } from '../types/game';
@@ -105,7 +106,7 @@ export const ParentConsole: React.FC = () => {
 
   // PIN Lock States
   const [pin, setPin] = useState('');
-  const [isUnlocked, setIsUnlocked] = useState(currentUser?.role === 'admin');
+  const [isUnlocked, setIsUnlocked] = useState(isAdmin(currentUser?.role));
   const [pinError, setPinError] = useState(false);
 
   // Đổi PIN bảo mật (Chính Điện — CORE_SPECS §2.6)
@@ -175,10 +176,10 @@ export const ParentConsole: React.FC = () => {
 
   // Load students list on mount for admin users
   React.useEffect(() => {
-    if (currentUser?.role === 'admin') {
+    if (isAdmin(currentUser?.role)) {
       fetchAdminStudents();
     }
-    if (currentUser?.role === 'parent' || currentUser?.role === 'admin') {
+    if (isParentRole(currentUser?.role) || isAdmin(currentUser?.role)) {
       fetchFamily();
     }
   }, [currentUser?.role, fetchAdminStudents, fetchFamily]);
@@ -2148,7 +2149,7 @@ export const ParentConsole: React.FC = () => {
         });
 
         // Tài khoản Viện Chủ (admin) tự động ẩn khỏi thống kê & bảng xếp hạng thiếu hiệp để tránh gian lận (CORE_SPECS §1.2)
-        const nonAdminStudents = adminStudents.filter((s: any) => s.role !== 'admin');
+        const nonAdminStudents = adminStudents.filter((s: any) => !isAdmin(s.role));
         const totalStudents = nonAdminStudents.length;
         const totalXP = nonAdminStudents.reduce((acc, s) => acc + (s.player?.xp || 0), 0);
         const totalCoins = nonAdminStudents.reduce((acc, s) => acc + (s.player?.coins || 0), 0);
@@ -2291,9 +2292,9 @@ export const ParentConsole: React.FC = () => {
                             </td>
                             <td className="py-2.5 px-3">
                               <span className={`px-1.5 py-0.5 rounded font-bold uppercase text-[9px] ${
-                                stud.role === 'admin' ? 'bg-synth-magenta/20 text-synth-magenta' : 'bg-synth-cyan/20 text-synth-cyan'
+                                isSuperAdmin(stud.role) ? 'bg-synth-magenta/20 text-synth-magenta' : stud.role === 'pho_vien' ? 'bg-synth-yellow/20 text-synth-yellow' : 'bg-synth-cyan/20 text-synth-cyan'
                               }`}>
-                                {stud.role === 'admin' ? 'Viện Chủ' : 'Thiếu Hiệp'}
+                                {isSuperAdmin(stud.role) ? 'Viện Trưởng 👑' : stud.role === 'pho_vien' ? 'Phó Viện 🛡️' : 'Thiếu Hiệp'}
                               </span>
                             </td>
                             <td className="py-2.5 px-3 font-orbitron font-black text-synth-magenta">LV.{lv}</td>
@@ -2453,7 +2454,7 @@ export const ParentConsole: React.FC = () => {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/5">
-                    {currentUser?.role === 'admin' && adminStudents.map((usr: any) => (
+                    {isAdmin(currentUser?.role) && adminStudents.map((usr: any) => (
                       <tr key={usr.id} className="hover:bg-white/5 transition-colors">
                         <td className="py-3 px-4 flex items-center gap-3">
                           <img 
@@ -2466,11 +2467,11 @@ export const ParentConsole: React.FC = () => {
                         <td className="py-3 px-4 text-synth-text-muted hidden md:table-cell">{usr.email}</td>
                         <td className="py-3 px-4">
                           <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase font-orbitron ${
-                            usr.role === 'admin' 
+                            isAdmin(usr.role) 
                               ? 'bg-synth-magenta/20 text-synth-magenta border border-synth-magenta/30' 
                               : 'bg-synth-cyan/20 text-synth-cyan border border-synth-cyan/30'
                           }`}>
-                            {usr.role === 'admin' ? 'Quản trị' : 'Tài khoản con'}
+                            {isSuperAdmin(usr.role) ? 'Viện Trưởng 👑' : usr.role === 'pho_vien' ? 'Phó Viện 🛡️' : 'Tài khoản con'}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-center">
@@ -2486,22 +2487,23 @@ export const ParentConsole: React.FC = () => {
                               Xem Hoạt Động
                             </button>
 
-                            {usr.id !== currentUser?.id && (
+                            {usr.id !== currentUser?.id && isSuperAdmin(currentUser?.role) && (
                               <button
                                 onClick={async () => {
-                                  const targetRole = usr.role === 'admin' ? 'student' : 'admin';
-                                  const actionText = targetRole === 'admin' ? 'nâng cấp tài khoản này làm Quản trị viên' : 'chuyển tài khoản này thành Tài khoản con';
+                                  const isPromotingToPhoVien = usr.role === 'student' || isParentRole(usr.role);
+                                  const targetRole = isPromotingToPhoVien ? 'pho_vien' : 'student';
+                                  const actionText = isPromotingToPhoVien ? 'nâng cấp tài khoản này làm Phó Viện' : 'chuyển tài khoản này thành Tài khoản con';
                                   if (window.confirm(`Ba có chắc muốn ${actionText}?`)) {
                                     await promoteUser(usr.id, targetRole);
                                   }
                                 }}
                                 className={`px-2.5 py-1 rounded font-semibold cursor-pointer transition-colors ${
-                                  usr.role === 'admin'
+                                  isAdmin(usr.role)
                                     ? 'bg-red-500/20 border border-red-500/40 text-red-400 hover:bg-red-500/30'
                                     : 'bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta hover:bg-synth-magenta/30'
                                 }`}
                               >
-                                {usr.role === 'admin' ? 'Hạ cấp Student' : 'Cấp quyền Admin'}
+                                {isAdmin(usr.role) ? 'Hạ cấp Student' : 'Bổ nhiệm Phó Viện'}
                               </button>
                             )}
                           </div>

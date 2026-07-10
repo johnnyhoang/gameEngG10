@@ -4,7 +4,8 @@ import type { StoreState } from '../types';
 import type { HandbookPage, GradeTier, SubjectId, UiThemeId } from '../../types/game';
 import { eventBus } from '../../utils/EventBus';
 import { toast } from '../../utils/toast';
-import { DEFAULT_GRADE_TIER } from '../../hooks/useGameState';
+import { DEFAULT_GRADE_TIER, getGradeTierConfig } from '../../types/game';
+import { ALL_HANDBOOK_PAGES } from '../../data/handbookPages';
 
 export const createUISlice: StateCreator<
   StoreState,
@@ -19,23 +20,25 @@ export const createUISlice: StateCreator<
 > = (set, get) => ({
   isSectModalOpen: false,
   currentSubject: 'english',
-  activeGradeTier: DEFAULT_GRADE_TIER as any,
-  uiTheme: 'cyber',
+  activeGradeTier: DEFAULT_GRADE_TIER,
+  uiTheme: 'current',
   uiThemesByUser: {},
   helpPageId: null,
-  handbookPages: [], // Filled by default array during monolithic merge, or can be passed here
+  handbookPages: ALL_HANDBOOK_PAGES,
 
   setSectModalOpen: (open) => set({ isSectModalOpen: open }),
 
   setSubject: (subject) => set({ currentSubject: subject }),
 
-  setGradeTier: (tier) => {
-    if (tier.toString() === 'coming_soon') {
-      toast.error('Tầng này chưa mở. Vui lòng quay lại sau!');
+  setGradeTier: (tier: GradeTier) => {
+    const config = getGradeTierConfig(tier);
+    if (config.status !== 'active') {
+      toast.error(`${config.name} chưa khai mở!`);
       return;
     }
-    set({ activeGradeTier: tier as GradeTier });
-    toast.success(`Đã chuyển sang Tầng ${tier}`);
+    if (get().activeGradeTier === tier) return;
+    set({ activeGradeTier: tier });
+    toast.success(`Đã bước vào ${config.name}`);
   },
 
   setUiTheme: (themeId) => {

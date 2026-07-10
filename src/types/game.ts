@@ -82,7 +82,7 @@ export interface UserProfile {
 export interface PlayerProfile {
   id: string;
   name: string;
-  role: 'student' | 'admin' | 'parent';
+  role: 'student' | 'parent' | 'secondary_parent' | 'pho_vien' | 'truong_vien';
   level: number;
   xp: number;
   coins: number;

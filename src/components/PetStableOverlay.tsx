@@ -1,3 +1,4 @@
+import { isAdmin } from '../utils/roleHelpers';
 import React, { useState, useEffect, useRef } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { PetSanctuary } from './PetSanctuary';
@@ -27,7 +28,7 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
 
   // Global triggers
   useEffect(() => {
-    if (!currentUser || currentUser.role === 'admin') return;
+    if (!currentUser || isAdmin(currentUser.role)) return;
 
     const handleActivity = () => {
       lastActiveTime.current = Date.now();
@@ -111,7 +112,7 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
     }, 2000);
   };
 
-  if (!currentUser || currentUser.role === 'admin') return null;
+  if (!currentUser || isAdmin(currentUser.role)) return null;
 
   return (
     <>

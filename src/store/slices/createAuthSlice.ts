@@ -237,7 +237,7 @@ export const createAuthSlice: StateCreator<
       set((state: any) => {
         const updatedUser = {
           ...user,
-          role: user.email === 'hoang.hoa@gmail.com' ? 'admin' : 'student'
+          role: user.email === 'hoang.hoa@gmail.com' ? 'truong_vien' : 'student'
         };
         const resolvedTheme = state.uiThemesByUser[user.id] || DEFAULT_UI_THEME;
         const newPlayer = state.profiles[user.id] || {

@@ -422,7 +422,7 @@ app.get('/api/profile/:id', authMiddleware, async (req: any, res) => {
       `SELECT * FROM ge10_custom_questions 
        WHERE user_id = $1 
           OR user_id IS NULL 
-          OR user_id IN (SELECT id FROM ge10_users WHERE role = 'admin')`,
+          OR user_id IN (SELECT id FROM ge10_users WHERE role IN ('truong_vien', 'pho_vien'))`,
       [userId]
     );
     // 10. Fetch lessons
@@ -762,7 +762,7 @@ app.get('/api/questions/custom', authMiddleware, async (req: any, res) => {
       `SELECT * FROM ge10_custom_questions 
        WHERE user_id = $1 
           OR user_id IS NULL 
-          OR user_id IN (SELECT id FROM ge10_users WHERE role = 'admin')`,
+          OR user_id IN (SELECT id FROM ge10_users WHERE role IN ('truong_vien', 'pho_vien'))`,
       [userId]
     );
     res.json(qRes.rows.map((row: any) => ({
@@ -1416,7 +1416,7 @@ app.get('/api/admin/users', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
     const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
-    if (adminCheck.rowCount === 0 || adminCheck.rows[0].role !== 'admin') {
+    if (adminCheck.rowCount === 0 || (adminCheck.rows[0].role !== 'truong_vien' && adminCheck.rows[0].role !== 'pho_vien')) {
       return res.status(403).json({ error: 'Forbidden: Admin access only.' });
     }
 
@@ -1433,13 +1433,18 @@ app.post('/api/admin/promote', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
     const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
-    if (adminCheck.rowCount === 0 || adminCheck.rows[0].role !== 'admin') {
+    const adminRole = adminCheck.rows[0].role;
+    if (adminRole !== 'truong_vien' && adminRole !== 'pho_vien') {
       return res.status(403).json({ error: 'Forbidden: Admin access only.' });
     }
 
     const { targetUserId, newRole } = req.body;
     if (!targetUserId || !newRole) {
       return res.status(400).json({ error: 'Missing targetUserId or newRole.' });
+    }
+
+    if (adminRole === 'pho_vien' && newRole !== 'student' && newRole !== 'parent') {
+      return res.status(403).json({ error: 'Forbidden: Pho Vien can only promote to student or parent.' });
     }
 
     await pool.query('UPDATE ge10_users SET role = $1 WHERE id = $2', [newRole, targetUserId]);
@@ -1455,7 +1460,7 @@ app.post('/api/admin/approve-reward', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
     const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
-    if (adminCheck.rowCount === 0 || adminCheck.rows[0].role !== 'admin') {
+    if (adminCheck.rowCount === 0 || (adminCheck.rows[0].role !== 'truong_vien' && adminCheck.rows[0].role !== 'pho_vien')) {
       return res.status(403).json({ error: 'Forbidden: Admin access only.' });
     }
 
@@ -1530,7 +1535,7 @@ app.post('/api/admin/reject-reward', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
     const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
-    if (adminCheck.rowCount === 0 || adminCheck.rows[0].role !== 'admin') {
+    if (adminCheck.rowCount === 0 || (adminCheck.rows[0].role !== 'truong_vien' && adminCheck.rows[0].role !== 'pho_vien')) {
       return res.status(403).json({ error: 'Forbidden: Admin access only.' });
     }
 
@@ -1605,7 +1610,7 @@ app.post('/api/admin/deduct-wallet', authMiddleware, async (req: any, res: any) 
   const adminId = req.user.sub;
   try {
     const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
-    if (adminCheck.rowCount === 0 || adminCheck.rows[0].role !== 'admin') {
+    if (adminCheck.rowCount === 0 || (adminCheck.rows[0].role !== 'truong_vien' && adminCheck.rows[0].role !== 'pho_vien')) {
       return res.status(403).json({ error: 'Forbidden: Admin access only.' });
     }
 
@@ -1659,7 +1664,7 @@ app.post('/api/admin/refill-energy', authMiddleware, async (req: any, res: any) 
   const adminId = req.user.sub;
   try {
     const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
-    if (adminCheck.rowCount === 0 || adminCheck.rows[0].role !== 'admin') {
+    if (adminCheck.rowCount === 0 || (adminCheck.rows[0].role !== 'truong_vien' && adminCheck.rows[0].role !== 'pho_vien')) {
       return res.status(403).json({ error: 'Forbidden: Admin access only.' });
     }
 
@@ -1719,7 +1724,7 @@ app.put('/api/admin/game-settings', authMiddleware, async (req: any, res: any) =
   const adminId = req.user.sub;
   try {
     const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
-    if (adminCheck.rowCount === 0 || adminCheck.rows[0].role !== 'admin') {
+    if (adminCheck.rowCount === 0 || (adminCheck.rows[0].role !== 'truong_vien' && adminCheck.rows[0].role !== 'pho_vien')) {
       return res.status(403).json({ error: 'Forbidden: Admin access only.' });
     }
 
@@ -1789,7 +1794,7 @@ app.get('/api/admin/student-profile', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
     const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
-    if (adminCheck.rowCount === 0 || adminCheck.rows[0].role !== 'admin') {
+    if (adminCheck.rowCount === 0 || (adminCheck.rows[0].role !== 'truong_vien' && adminCheck.rows[0].role !== 'pho_vien')) {
       return res.status(403).json({ error: 'Forbidden: Admin access only.' });
     }
 

@@ -1,3 +1,4 @@
+import { isAdmin } from '../utils/roleHelpers';
 import React from 'react';
 import { Zap, Heart, Coins, Flame, Shield, Award, LogOut, UserCircle2 } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
@@ -27,7 +28,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   const uiTheme = useGameState(state => state.uiTheme);
 
   const activeSubjectConfig = SUBJECTS_CONFIG[activeSectId as SubjectId];
-  const isAdmin = currentUser?.role === 'admin';
+  const isAdminUser = isAdmin(currentUser?.role);
   const isUnicorn = uiTheme === 'unicorn-dream';
 
   // Calculate percentage of XP to next level
@@ -74,7 +75,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
               <span className="text-[11px] font-black text-white font-orbitron tracking-wide max-w-[90px] truncate">
                 {currentUser ? currentUser.name : 'Con yêu'}
               </span>
-              {isAdmin ? (
+              {isAdminUser ? (
                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-synth-magenta/30 text-synth-magenta border border-synth-magenta/20 uppercase font-orbitron shrink-0">
                   Viện Chủ 👑
                 </span>
@@ -88,7 +89,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                 </span>
               )}
             </div>
-            {!isAdmin && (
+            {!isAdminUser && (
               <div className="w-24 sm:w-28 h-1.5 bg-synth-gray rounded-full overflow-hidden border border-synth-cyan/10">
                 <div
                   className="h-full bg-gradient-to-r from-synth-cyan to-synth-purple"
@@ -99,7 +100,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             )}
           </div>
 
-          {!isAdmin && (
+          {!isAdminUser && (
             <>
               <div className="w-px h-8 bg-white/10 shrink-0" />
               <div className={statItemClass} onClick={() => showHelp('energy')} title="Chân Khí — Nhấp để xem hướng dẫn">
@@ -111,7 +112,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
         </div>
 
         {/* Cụm 2: Dải tài nguyên — Tim, Ngân Lượng, Chuỗi, Ví Thưởng gộp chung 1 box, cùng hàng cùng cao */}
-        {!isAdmin && (
+        {!isAdminUser && (
           <div className={`${groupBoxClass} order-2 md:order-none w-full sm:w-auto justify-between sm:justify-start overflow-x-auto`}>
             <div className={statItemClass} onClick={() => showHelp('hearts')} title="Tim sinh mệnh — Nhấp để xem hướng dẫn">
               <div className="flex gap-0.5 items-center shrink-0">
@@ -154,7 +155,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
 
         {/* Cụm 3: Điều hướng nhanh + Thân Phận (mang luôn badge môn phái, là nơi duy nhất đổi môn — CORE_SPECS §7.4) + Thoái Ẩn */}
         <div className="flex items-center gap-2 order-3 md:order-none ml-auto">
-          {!isAdmin && (
+          {!isAdminUser && (
             <>
               <button
                 onClick={onOpenShop}
@@ -184,7 +185,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             </>
           )}
 
-          {isAdmin && (
+          {isAdminUser && (
             <button
               onClick={onOpenParent}
               className={navBtnClass(
@@ -198,7 +199,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             </button>
           )}
 
-          {!isAdmin && currentUser && (
+          {!isAdminUser && currentUser && (
             <button
               onClick={() => setSectModalOpen(true)}
               title={`Môn phái hiện tại: ${activeSubjectConfig?.name}. Bấm để đổi.`}
@@ -216,14 +217,14 @@ export const TopHUD: React.FC<TopHUDProps> = ({
           {currentUser && (
             <button
               onClick={onOpenProfile}
-              title={isAdmin ? 'Thân Phận' : `Thân Phận — Môn phái: ${activeSubjectConfig?.name}`}
+              title={isAdminUser ? 'Thân Phận' : `Thân Phận — Môn phái: ${activeSubjectConfig?.name}`}
               className={`relative flex items-center gap-1.5 px-3 h-10 rounded-lg border font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 ${
                 isUnicorn ? 'border-violet-200/40 bg-white/70 text-violet-700 hover:bg-white/90' : 'border-white/10 bg-white/5 text-white hover:bg-white/10'
               }`}
             >
               <UserCircle2 className="w-4 h-4" />
               <span className="hidden sm:inline">Thân Phận</span>
-              {!isAdmin && (
+              {!isAdminUser && (
                 <span
                   onClick={(e) => { e.stopPropagation(); setSectModalOpen(true); }}
                   className="w-2.5 h-2.5 rounded-full border border-black/20 shrink-0 cursor-pointer hover:scale-125 transition-transform"
