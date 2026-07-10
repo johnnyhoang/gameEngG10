@@ -454,14 +454,6 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
           <h2 className={`font-orbitron text-lg font-black uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
             🐷 Sân Thú Nuôi
           </h2>
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-white font-orbitron font-bold text-[10px] uppercase tracking-wider hover:bg-white/10 transition-colors cursor-pointer"
-            >
-              <ChevronLeft className="w-4 h-4" /> Trở lại bản đồ
-            </button>
-          )}
         </div>
       )}
 

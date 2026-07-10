@@ -229,17 +229,11 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
           <Sword className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-magenta'}`} />
           🏛️ Đấu Trường - {activeSubjectConfig.name}
         </h2>
-        <button
-          onClick={onBack}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 bg-white/5 text-white font-orbitron font-bold text-[10px] uppercase tracking-wider hover:bg-white/10 transition-colors cursor-pointer"
-        >
-          <ChevronLeft className="w-4 h-4" /> Trở lại bản đồ
-        </button>
       </div>
 
       {subjectQuestionCount === 0 && (
         <div className="glass-panel rounded-2xl border border-dashed border-white/15 bg-white/5 p-4 text-xs text-slate-300">
-          Viện Chủ chưa nạp đề cho môn {activeSubjectConfig.name}. Các ải bên dưới sẽ tạm chưa mở được — thử đổi môn phái ở Thân Phận hoặc quay lại sau.
+          Viện Chủ chưa nạp đề cho môn {activeSubjectConfig.name}. Các ải bên dưới sẽ tạm chưa mở được — quay lại sau khi có đề.
         </div>
       )}
 

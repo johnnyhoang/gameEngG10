@@ -403,7 +403,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
     {
       step: '01',
       title: 'Môn phái đang tu luyện',
-      body: `Đang mở track ${meta.label}: ${track.tag}. Đổi môn phái tại Thân Phận.`
+      body: `Đang mở track ${meta.label}: ${track.tag}.`
     },
     {
       step: '02',
@@ -428,7 +428,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
             </div>
             <div className="space-y-2">
               <h1 className="font-orbitron font-black text-2xl md:text-5xl uppercase tracking-wider text-white leading-tight">
-                Ôn toàn bộ kiến thức vào lớp 10
+                Rèn luyện kiến thức lớp 9
               </h1>
               <p className="text-sm md:text-base text-slate-200 leading-relaxed max-w-3xl">
                 Phòng luyện riêng cho môn phái {meta.label} đang tu luyện: bản đồ kiến thức, thẻ nhớ, bài luyện nhanh và sổ tay lỗi sai để con ôn tập theo đúng dạng đề.
@@ -440,13 +440,6 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                 className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-synth-cyan to-synth-purple text-black font-orbitron font-bold text-xs uppercase tracking-wider shadow-[0_0_18px_rgba(0,240,255,0.35)] hover:scale-[1.01] transition-transform cursor-pointer"
               >
                 Vào học ngay <ArrowRight className="w-4 h-4" />
-              </button>
-              <button
-                onClick={onBackToMap}
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-white/10 bg-white/5 text-white font-orbitron font-bold text-xs uppercase tracking-wider hover:bg-white/10 transition-colors cursor-pointer"
-              >
-                <ChevronLeft className="w-4 h-4" />
-                Trở lại bản đồ
               </button>
             </div>
           </div>
@@ -463,15 +456,6 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                 </h2>
               </div>
             </div>
-            {onOpenProfile && (
-              <button
-                onClick={onOpenProfile}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-white/15 bg-black/20 text-white text-[10px] font-orbitron font-bold uppercase tracking-wider hover:bg-black/30 transition-colors cursor-pointer"
-              >
-                <UserCircle2 className="w-4 h-4" />
-                Đổi môn phái tại Thân Phận
-              </button>
-            )}
           </div>
 
           <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-3">
