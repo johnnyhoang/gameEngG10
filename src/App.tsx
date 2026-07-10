@@ -268,11 +268,10 @@ function App() {
     <div className="app-shell min-h-screen flex flex-col text-slate-100" data-theme={uiTheme}>
 
       {/* Top Header HUD */}
-      <TopHUD 
+      <TopHUD
         onOpenParent={() => navigateWithWarning('parent')}
         onOpenShop={() => navigateWithWarning('shop')}
         onOpenHang={() => navigateWithWarning('hang')}
-        onOpenProfile={() => navigateWithWarning('profile')}
         onBackToMap={() => navigateWithWarning('map')}
         onLogout={handleLogoutIntercept}
         currentScreen={topHudScreen}

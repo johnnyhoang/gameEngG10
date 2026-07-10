@@ -1,6 +1,6 @@
 import { isAdmin } from '../utils/roleHelpers';
 import React from 'react';
-import { Zap, Coins, Flame, Shield, LogOut, UserCircle2 } from 'lucide-react';
+import { Zap, Coins, Flame, Shield, LogOut } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
 import { useSect } from '../contexts/SectContext';
 import { SUBJECTS_CONFIG, getStudentRankForLevel } from '../types/game';
@@ -11,13 +11,12 @@ interface TopHUDProps {
   onOpenShop: () => void;
   onOpenParent: () => void;
   onOpenHang: () => void;
-  onOpenProfile: () => void;
   onBackToMap: () => void;
   onLogout?: () => void;
 }
 
 export const TopHUD: React.FC<TopHUDProps> = ({
-  currentScreen, onOpenShop, onOpenParent, onOpenHang, onOpenProfile, onBackToMap, onLogout
+  currentScreen, onOpenShop, onOpenParent, onOpenHang, onBackToMap, onLogout
 }) => {
   const player = useGameState(state => state.player);
   const currentUser = useGameState(state => state.currentUser);
