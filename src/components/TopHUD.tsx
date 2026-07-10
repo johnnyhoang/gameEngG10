@@ -194,26 +194,6 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             </button>
           )}
 
-          {currentUser && (
-            <button
-              onClick={onOpenProfile}
-              title={isAdminUser ? 'Thân Phận' : `Thân Phận — Môn phái: ${activeSubjectConfig?.name}`}
-              className={`relative flex items-center gap-1.5 px-3 h-10 rounded-lg border font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 ${
-                isUnicorn ? 'border-violet-200/40 bg-white/70 text-violet-700 hover:bg-white/90' : 'border-white/10 bg-white/5 text-white hover:bg-white/10'
-              }`}
-            >
-              <UserCircle2 className="w-4 h-4" />
-              <span className="hidden sm:inline">Thân Phận</span>
-              {!isAdminUser && (
-                <span
-                  onClick={(e) => { e.stopPropagation(); setSectModalOpen(true); }}
-                  className="w-2.5 h-2.5 rounded-full border border-black/20 shrink-0 cursor-pointer hover:scale-125 transition-transform"
-                  style={{ backgroundColor: activeSubjectConfig?.color, boxShadow: `0 0 6px ${activeSubjectConfig?.color}` }}
-                  title="Bấm để đổi Môn Phái"
-                />
-              )}
-            </button>
-          )}
 
           {currentUser && (
             <button

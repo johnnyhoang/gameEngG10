@@ -30,6 +30,13 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
   useEffect(() => {
     if (!currentUser || isAdmin(currentUser.role)) return;
 
+    // Initialize login time on first mount
+    const loginTimeKey = 'ge10_login_time';
+    const existingLoginTime = localStorage.getItem(loginTimeKey);
+    if (!existingLoginTime) {
+      localStorage.setItem(loginTimeKey, Date.now().toString());
+    }
+
     const handleActivity = () => {
       lastActiveTime.current = Date.now();
     };
@@ -42,7 +49,7 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
     const interval = setInterval(() => {
       if (isOpen || isDungeonScreen) {
         // Postpone triggers if overlay is already open or student is in dungeon
-        lastActiveTime.current = Date.now(); 
+        lastActiveTime.current = Date.now();
         return;
       }
 
@@ -59,6 +66,13 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
       // (yêu cầu Viện Chủ 2026-07-10 — chống làm phiền). Cooldown persist qua localStorage.
       const THIRTY_MINUTES = 30 * 60 * 1000;
       if (now - lastAutoTrigger.current < THIRTY_MINUTES) {
+        return;
+      }
+
+      // Pet first appears 30 minutes after login (not immediately)
+      const loginTime = Number(localStorage.getItem('ge10_login_time') || now);
+      const timeSinceLogin = now - loginTime;
+      if (timeSinceLogin < THIRTY_MINUTES) {
         return;
       }
 

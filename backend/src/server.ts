@@ -333,13 +333,17 @@ app.get('/api/health', (req, res) => {
 
 // GET /api/profiles: List all profiles for the Google Account
 app.get('/api/profiles', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
   try {
+    const accountId = req.user?.sub;
+    if (!accountId) {
+      console.error('No accountId in req.user');
+      return res.status(401).json({ error: 'Unauthorized: missing accountId' });
+    }
     const profilesRes = await pool.query('SELECT * FROM ge10_users WHERE account_id = $1', [accountId]);
     res.json({ profiles: profilesRes.rows });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'Failed to fetch profiles' });
+  } catch (err: any) {
+    console.error('Error fetching profiles:', err?.message || err);
+    res.status(500).json({ error: 'Failed to fetch profiles', details: err?.message });
   }
 });
 
@@ -886,12 +890,18 @@ app.get('/api/profile/:id/challenges', authMiddleware, async (req: any, res) => 
 
 // POST /api/economy/transaction: Record a coin transaction for a profile
 app.post('/api/economy/transaction', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
-  const { profileId, amount, reason, details } = req.body;
-  if (!profileId || amount === undefined) {
-    return res.status(400).json({ error: 'Missing profileId or amount.' });
-  }
   try {
+    const accountId = req.user?.sub;
+    if (!accountId) {
+      console.error('No accountId in req.user');
+      return res.status(401).json({ error: 'Unauthorized: missing accountId' });
+    }
+
+    const { profileId, amount, reason, details } = req.body;
+    if (!profileId || amount === undefined) {
+      return res.status(400).json({ error: 'Missing profileId or amount.' });
+    }
+
     // Verify profile ownership
     const check = await pool.query('SELECT id FROM ge10_users WHERE id = $1 AND account_id = $2', [profileId, accountId]);
     if (check.rowCount === 0) return res.status(403).json({ error: 'Unauthorized' });
@@ -904,8 +914,8 @@ app.post('/api/economy/transaction', authMiddleware, async (req: any, res) => {
     const newCoins = result.rows[0]?.coins ?? 0;
     res.json({ success: true, coins: newCoins, reason, details });
   } catch (error: any) {
-    console.error('Error processing economy transaction:', error.message);
-    res.status(500).json({ error: 'Failed to process transaction.' });
+    console.error('Error processing economy transaction:', error?.message || error);
+    res.status(500).json({ error: 'Failed to process transaction.', details: error?.message });
   }
 });
 
