@@ -1,3 +1,4 @@
+import { hashPIN, verifyPIN } from './utils/security.js';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -153,6 +154,33 @@ const checkStudentManagementPermission = async (actorId: string, studentUserId: 
   }
 
   return false;
+};
+
+
+// Helper to log audit events for admin and parent actions
+const logAuditEvent = async (actorId: string, action: string, targetId: string | null, payload: any = {}) => {
+  try {
+    const actorRes = await pool.query('SELECT name, role FROM ge10_users WHERE id = $1', [actorId]);
+    if (actorRes.rowCount === 0) return;
+    const { name, role } = actorRes.rows[0];
+
+    let targetName = null;
+    if (targetId) {
+      const targetRes = await pool.query('SELECT name FROM ge10_users WHERE id = $1', [targetId]);
+      if (targetRes.rowCount !== null && targetRes.rowCount > 0) {
+        targetName = targetRes.rows[0].name;
+      }
+    }
+
+    const logId = `audit-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    await pool.query(
+      `INSERT INTO ge10_audit_logs (id, actor_id, actor_name, actor_role, action, target_id, target_name, payload)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [logId, actorId, name, role, action, targetId, targetName, JSON.stringify(payload)]
+    );
+  } catch (error) {
+    console.error('Error logging audit event:', error);
+  }
 };
 
 // Friendly Vietnamese message shown to users once GEMINI_API_KEY, GEMINI_API_KEY2 and GEMINI_API_KEY3 have all failed
@@ -1077,66 +1105,6 @@ app.post('/api/family/invite', authMiddleware, async (req: any, res) => {
 
     const linkId = crypto.randomUUID();
     await pool.query(
-      "INSERT INTO ge10_family_links (id, parent_id, student_id, status, link_type) VALUES ($1, $2, $3, $4, 'primary')",
-      [linkId, parentId, studentId, initialStatus]
-    );
-
-    res.json({ success: true, message: 'Invite sent' });
-  } catch (error) {
-    console.error('Error inviting:', error);
-    res.status(500).json({ error: 'Failed to invite' });
-  }
-});
-
-// POST /api/family/invite-secondary
-// Primary parent invites a secondary parent to help manage a student
-app.post('/api/family/invite-secondary', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
-  const { senderProfileId, targetEmail, studentId } = req.body;
-
-  if (!senderProfileId || !targetEmail || !studentId) {
-    return res.status(400).json({ error: 'Missing required parameters.' });
-  }
-
-  try {
-    // 1. Verify sender is the primary active parent of this student
-    const check = await pool.query(
-      "SELECT id FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'primary' AND status = 'active'",
-      [senderProfileId, studentId]
-    );
-    const senderCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1 AND account_id = $2', [senderProfileId, accountId]);
-    
-    if (check.rowCount === 0 || senderCheck.rowCount === 0 || senderCheck.rows[0].role !== 'parent') {
-      return res.status(403).json({ error: 'Forbidden: Only the primary parent can invite secondary parents.' });
-    }
-
-    // 2. Find target parent user
-    const targetCheck = await pool.query("SELECT id, role FROM ge10_users WHERE email = $1", [targetEmail]);
-    if (targetCheck.rowCount === 0) {
-      return res.status(404).json({ error: 'User not found. Ask them to create a Parent profile first.' });
-    }
-    const target = targetCheck.rows[0];
-
-    if (target.role !== 'parent' && target.role !== 'secondary_parent') {
-      return res.status(400).json({ error: 'Can only invite another parent profile.' });
-    }
-
-    if (target.id === senderProfileId) {
-      return res.status(400).json({ error: 'Cannot invite yourself.' });
-    }
-
-    // 3. Check if link already exists
-    const existCheck = await pool.query(
-      'SELECT id FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2',
-      [target.id, studentId]
-    );
-    if (existCheck.rowCount && existCheck.rowCount > 0) {
-      return res.status(400).json({ error: 'Link or invitation already exists for this parent and student.' });
-    }
-
-    // 4. Create secondary parent link
-    const linkId = crypto.randomUUID();
-    await pool.query(
       "INSERT INTO ge10_family_links (id, parent_id, student_id, status, link_type, secondary_permissions) VALUES ($1, $2, $3, 'pending_parent', 'secondary', $4)",
       [
         linkId, 
@@ -1145,7 +1113,7 @@ app.post('/api/family/invite-secondary', authMiddleware, async (req: any, res) =
         JSON.stringify({ can_approve_rewards: false, can_create_missions: false, read_only: true })
       ]
     );
-
+    await logAuditEvent(senderProfileId, 'invite_secondary_parent', target.id, { studentId });
     res.json({ success: true, message: 'Secondary parent invite sent.' });
   } catch (error) {
     console.error('Error inviting secondary parent:', error);
@@ -1196,7 +1164,7 @@ app.patch('/api/family/secondary-permissions', authMiddleware, async (req: any, 
       'UPDATE ge10_family_links SET secondary_permissions = $1, updated_at = NOW() WHERE id = $2',
       [JSON.stringify(newPerms), linkId]
     );
-
+    await logAuditEvent(senderProfileId, 'update_secondary_permissions', link.parent_id, { studentId: link.student_id, permissions: newPerms });
     res.json({ success: true, permissions: newPerms });
   } catch (error) {
     console.error('Error updating secondary parent permissions:', error);
@@ -1233,7 +1201,7 @@ app.post('/api/family/respond', authMiddleware, async (req: any, res) => {
     if (link.link_type === 'secondary') {
       await pool.query("UPDATE ge10_users SET role = 'secondary_parent' WHERE id = $1 AND role = 'parent'", [link.parent_id]);
     }
-    
+    await logAuditEvent(profileId, 'respond_family_invite', null, { linkId, accept, linkType: link.link_type });
     res.json({ success: true, message: 'Invite accepted' });
   } catch (error) {
     console.error('Error responding:', error);
@@ -1263,10 +1231,102 @@ app.post('/api/family/leave', authMiddleware, async (req: any, res) => {
     // primary parent can kick student or secondary parent.
     // If primary parent leaves, we delete all links? Yes, or just delete the student link.
     await pool.query('DELETE FROM ge10_family_links WHERE id = $1', [linkId]);
+    await logAuditEvent(profileId, 'leave_family', null, { linkId, linkType: link.link_type, studentId: link.student_id, parentId: link.parent_id });
     res.json({ success: true, message: 'Left family' });
   } catch (error) {
     console.error('Error leaving:', error);
     res.status(500).json({ error: 'Failed to leave family' });
+  }
+});
+
+// ==================== SECURITY & AUDIT SYSTEM ENDPOINTS ====================
+
+// POST /api/security/pin: Sets or updates a personal profile PIN code
+app.post('/api/security/pin', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const { profileId, pin } = req.body;
+
+  if (!profileId || !pin) {
+    return res.status(400).json({ error: 'Missing profileId or pin.' });
+  }
+
+  // Validate pin format (4-6 digits)
+  if (!/^\d{4,6}$/.test(pin)) {
+    return res.status(400).json({ error: 'PIN must be between 4 to 6 numeric digits.' });
+  }
+
+  try {
+    // Verify ownership
+    const check = await pool.query('SELECT role FROM ge10_users WHERE id = $1 AND account_id = $2', [profileId, accountId]);
+    if (check.rowCount === 0) return res.status(403).json({ error: 'Unauthorized.' });
+    
+    const hashed = hashPIN(pin);
+    await pool.query(
+      `INSERT INTO ge10_users_security (user_id, pin_hash, updated_at) 
+       VALUES ($1, $2, NOW()) 
+       ON CONFLICT (user_id) DO UPDATE SET pin_hash = $2, updated_at = NOW()`,
+      [profileId, hashed]
+    );
+
+    await logAuditEvent(profileId, 'update_pin', null, { message: 'Thay đổi mã PIN bảo mật cá nhân' });
+
+    res.json({ success: true, message: 'PIN updated successfully.' });
+  } catch (error) {
+    console.error('Error updating PIN:', error);
+    res.status(500).json({ error: 'Failed to update PIN.' });
+  }
+});
+
+// POST /api/security/verify-pin: Verifies a personal profile PIN code
+app.post('/api/security/verify-pin', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const { profileId, pin } = req.body;
+
+  if (!profileId || !pin) {
+    return res.status(400).json({ error: 'Missing profileId or pin.' });
+  }
+
+  try {
+    // Verify ownership
+    const check = await pool.query('SELECT role FROM ge10_users WHERE id = $1 AND account_id = $2', [profileId, accountId]);
+    if (check.rowCount === 0) return res.status(403).json({ error: 'Unauthorized.' });
+
+    const pinRes = await pool.query('SELECT pin_hash FROM ge10_users_security WHERE user_id = $1', [profileId]);
+    let storedHash = '';
+    
+    if (pinRes.rowCount === 0) {
+      // Fallback default '1234'
+      storedHash = hashPIN('1234');
+    } else {
+      storedHash = pinRes.rows[0].pin_hash;
+    }
+
+    const matches = verifyPIN(pin, storedHash);
+    if (!matches) {
+      return res.status(400).json({ error: 'Mã PIN bảo mật không chính xác!' });
+    }
+
+    res.json({ success: true, message: 'PIN verified successfully.' });
+  } catch (error) {
+    console.error('Error verifying PIN:', error);
+    res.status(500).json({ error: 'Failed to verify PIN.' });
+  }
+});
+
+// GET /api/admin/audit-logs: Fetches all admin/parent audit logs (only for truong_vien)
+app.get('/api/admin/audit-logs', authMiddleware, async (req: any, res) => {
+  const adminId = req.user.sub;
+  try {
+    const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
+    if (adminCheck.rowCount === 0 || adminCheck.rows[0].role !== 'truong_vien') {
+      return res.status(403).json({ error: 'Forbidden: Super Admin access only.' });
+    }
+
+    const logsRes = await pool.query('SELECT * FROM ge10_audit_logs ORDER BY created_at DESC LIMIT 200');
+    res.json(logsRes.rows);
+  } catch (error) {
+    console.error('Error fetching audit logs:', error);
+    res.status(500).json({ error: 'Failed to fetch audit logs.' });
   }
 });
 

@@ -15,7 +15,7 @@ export const createAdminSlice: StateCreator<
   [],
   [],
   Pick<StoreState, 
-    'parentPIN' | 'adminStudents' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'parentQuests' | 'verifyPIN' | 'changePIN' | 'markRewardDelivered' | 'cancelRedemption' | 'addParentReward' | 'deleteParentReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'updateGameSettings' | 'addParentQuest' | 'completeParentQuest' | 'deleteParentQuest' | 'claimParentQuest'
+    'parentPIN' | 'adminStudents' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'parentQuests' | 'verifyPIN' | 'changePIN' | 'markRewardDelivered' | 'cancelRedemption' | 'addParentReward' | 'deleteParentReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'updateGameSettings' | 'addParentQuest' | 'completeParentQuest' | 'deleteParentQuest' | 'claimParentQuest' | 'auditLogs' | 'fetchAuditLogs'
   >
 > = (set, get) => ({
   parentPIN: DEFAULT_PIN,
@@ -30,13 +30,73 @@ export const createAdminSlice: StateCreator<
 
   parentQuests: [],
 
-  verifyPIN: (pin) => {
-          return get().parentPIN === pin;
-        },
+  auditLogs: [],
 
-  changePIN: (newPIN) => {
-          set({ parentPIN: newPIN });
-        },
+  verifyPIN: async (pin) => {
+    const state = get();
+    const pId = state.currentUser?.id;
+    if (!pId) return false;
+    const session = (await supabase.auth.getSession()).data.session;
+    const token = session?.access_token;
+    if (!token) return false;
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+    try {
+      const res = await fetch(`${backendUrl}/api/security/verify-pin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ profileId: pId, pin })
+      });
+      return res.ok;
+    } catch (e) {
+      console.error('Error verifying PIN:', e);
+      return false;
+    }
+  },
+
+  changePIN: async (newPIN) => {
+    const state = get();
+    const pId = state.currentUser?.id;
+    if (!pId) return false;
+    const session = (await supabase.auth.getSession()).data.session;
+    const token = session?.access_token;
+    if (!token) return false;
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+    try {
+      const res = await fetch(`${backendUrl}/api/security/pin`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ profileId: pId, pin: newPIN })
+      });
+      if (res.ok) {
+        set({ parentPIN: newPIN });
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error('Error changing PIN:', e);
+      return false;
+    }
+  },
+
+  fetchAuditLogs: async () => {
+    const state = get();
+    if (state.currentUser?.role !== 'truong_vien') return;
+    const session = (await supabase.auth.getSession()).data.session;
+    const token = session?.access_token;
+    if (!token) return;
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+    try {
+      const res = await fetch(`${backendUrl}/api/admin/audit-logs`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        set({ auditLogs: data || [] });
+      }
+    } catch (e) {
+      console.error('Error fetching audit logs:', e);
+    }
+  },
 
   markRewardDelivered: (redemptionId) => {
           // Xác nhận đã trao quà thật ngoài đời (CORE_SPECS §3.2) — app không quản lý tiền,

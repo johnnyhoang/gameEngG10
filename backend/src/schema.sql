@@ -240,3 +240,23 @@ CREATE TABLE IF NOT EXISTS ge10_gatekeeper_history (
 CREATE INDEX IF NOT EXISTS idx_gatekeeper_history_student ON ge10_gatekeeper_history(student_id);
 CREATE INDEX IF NOT EXISTS idx_gatekeeper_history_page ON ge10_gatekeeper_history(student_id, page_id);
 
+-- Admin & Parent Audit Logs (Sprint 3)
+CREATE TABLE IF NOT EXISTS ge10_audit_logs (
+    id VARCHAR(255) PRIMARY KEY,
+    actor_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE SET NULL,
+    actor_name VARCHAR(255) NOT NULL,
+    actor_role VARCHAR(50) NOT NULL,
+    action VARCHAR(100) NOT NULL,
+    target_id VARCHAR(255),
+    target_name VARCHAR(255),
+    payload JSONB DEFAULT '{}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Individual Profile Security PINs (Sprint 3)
+CREATE TABLE IF NOT EXISTS ge10_users_security (
+    user_id VARCHAR(255) PRIMARY KEY REFERENCES ge10_users(id) ON DELETE CASCADE,
+    pin_hash VARCHAR(255) NOT NULL,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
