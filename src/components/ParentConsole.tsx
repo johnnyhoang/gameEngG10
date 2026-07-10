@@ -191,19 +191,21 @@ export const ParentConsole: React.FC = () => {
   }, [selectedStudentProfile?.player?.energy, gameSettings.maxEnergy]);
 
   useEffect(() => {
-    const [b2024, b2025, b2026] = gameSettings.bossBountiesVnd;
+    const bossBounties = gameSettings?.bossBountiesVnd ?? [10000, 15000, 20000];
+    const [b2024, b2025, b2026] = bossBounties;
     setBossBounty2024(b2024);
     setBossBounty2025(b2025);
     setBossBounty2026(b2026);
-    const [c1, c2, c3, c4] = gameSettings.challengeEnergyCosts;
+    const challengeCosts = gameSettings?.challengeEnergyCosts ?? [30, 30, 30, 30];
+    const [c1, c2, c3, c4] = challengeCosts;
     setChallengeCost1(c1);
     setChallengeCost2(c2);
     setChallengeCost3(c3);
     setChallengeCost4(c4);
-    setMaxEnergyVal(gameSettings.maxEnergy ?? 1000);
-    setBaseXPVal(gameSettings.baseXP ?? 15);
-    setBaseCoinsVal(gameSettings.baseCoins ?? 5);
-  }, [gameSettings.bossBountiesVnd, gameSettings.challengeEnergyCosts, gameSettings.maxEnergy, gameSettings.baseXP, gameSettings.baseCoins]);
+    setMaxEnergyVal(gameSettings?.maxEnergy ?? 1000);
+    setBaseXPVal(gameSettings?.baseXP ?? 15);
+    setBaseCoinsVal(gameSettings?.baseCoins ?? 5);
+  }, [gameSettings?.bossBountiesVnd, gameSettings?.challengeEnergyCosts, gameSettings?.maxEnergy, gameSettings?.baseXP, gameSettings?.baseCoins]);
 
   useEffect(() => {
     if (!editingQuestion) return;

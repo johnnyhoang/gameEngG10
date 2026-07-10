@@ -26,8 +26,8 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
   const player = useGameState(state => state.player);
   const consumeEnergy = useGameState(state => state.useEnergy);
   const { activeSectId } = useSect();
-  const bossBountiesVnd = useGameState(state => state.gameSettings.bossBountiesVnd);
-  const challengeEnergyCosts = useGameState(state => state.gameSettings.challengeEnergyCosts);
+  const bossBountiesVnd = useGameState(state => state.gameSettings?.bossBountiesVnd ?? [10000, 15000, 20000]);
+  const challengeEnergyCosts = useGameState(state => state.gameSettings?.challengeEnergyCosts ?? [30, 30, 30, 30]);
   const uiTheme = useGameState(state => state.uiTheme);
   const categoryStats = useGameState(state => state.categoryStats);
   const lessonsProgress = useGameState(state => state.lessonsProgress);

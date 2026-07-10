@@ -856,6 +856,32 @@ app.get('/api/profile/:id/challenges', authMiddleware, async (req: any, res) => 
     res.status(500).json({ error: 'Failed to fetch challenges.' });
   }
 });
+// ==================== ECONOMY ENDPOINTS ====================
+
+// POST /api/economy/transaction: Record a coin transaction for a profile
+app.post('/api/economy/transaction', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const { profileId, amount, reason, details } = req.body;
+  if (!profileId || amount === undefined) {
+    return res.status(400).json({ error: 'Missing profileId or amount.' });
+  }
+  try {
+    // Verify profile ownership
+    const check = await pool.query('SELECT id FROM ge10_users WHERE id = $1 AND account_id = $2', [profileId, accountId]);
+    if (check.rowCount === 0) return res.status(403).json({ error: 'Unauthorized' });
+
+    // Update coins in player profile
+    const result = await pool.query(
+      `UPDATE ge10_player_profiles SET coins = GREATEST(0, coins + $1) WHERE user_id = $2 RETURNING coins`,
+      [amount, profileId]
+    );
+    const newCoins = result.rows[0]?.coins ?? 0;
+    res.json({ success: true, coins: newCoins, reason, details });
+  } catch (error: any) {
+    console.error('Error processing economy transaction:', error.message);
+    res.status(500).json({ error: 'Failed to process transaction.' });
+  }
+});
 
 // ==================== FAMILY SYSTEM ENDPOINTS ====================
 
