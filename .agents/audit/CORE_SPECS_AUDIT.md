@@ -26,6 +26,19 @@ Nguyên tắc: KHÔNG xóa tính năng. Ưu tiên nâng cấp/refactor/enable tr
     - *Admin:* không phát sinh thay đổi cho ParentConsole (view mood/lastFed hiện tại giữ nguyên).
     - *UI/logic architecture:* cần bộ state mới (idle timer, hàng đợi trigger theo độ ưu tiên, khóa trigger khi đang trong trận), component `PetOverlay` tách khỏi `PetSanctuary` hiện tại (tái sử dụng chứ không xóa), và re-layout GameMap/ItemShop/HangLuyenCong/RelaxationZone để lấp khoảng trống sau khi bỏ `aside`.
     - Đã tạo 7 task riêng (Task #21-27) để triển khai đợt sau, CHƯA code — đúng theo GLOBAL RULE "phân tích trước, viết todo, hỏi khi conflict với core specs" (mục này không conflict, chỉ mở rộng §2.5/§5 nên cập nhật thẳng, không cần hỏi lại).
+- [x] Task #21-26 sau đó đã được code và merge (`PetStableOverlay.tsx`) — xem đợt "Bug pet đói lặp liên tục" bên dưới cho các fix runtime phát sinh sau khi triển khai.
+
+---
+
+## Đợt cập nhật: Gộp Cẩm Nang vào Heo (Gatekeeper) + bỏ trigger ngủ + dọn tàn dư "Dragon"
+
+Bối cảnh: sau khi Task #21-26 lên production, phát sinh 2 việc — (1) bug heo đói/idle/ngủ bật lặp gần như liên tục do mỗi trigger có cooldown riêng không liên thông (đã fix runtime bằng `lastAutoTrigger` dùng chung, xem commit `c97f975`), và (2) user yêu cầu phân tích tiếp 3 ý tưởng đơn giản hóa. Đã phân tích đủ 5 góc theo GLOBAL RULE, user xác nhận đồng ý cả 2 điểm mở trước khi cập nhật spec:
+
+- [x] **Dọn tàn dư "Dragon" trong tài liệu.** Code đã dùng đúng key `'adult'` (`types/game.ts`) từ trước, chỉ còn CORE_SPECS.md §2.5 dòng chú thích `(Dragon)` và 2 dòng TODO trong file audit này gọi nhầm "stage Dragon" — đã sửa thành `(Adult)`/"stage Adult". Icon 🐉 ở Boss Battle (Arena.tsx) và rank "Đại Hiệp" (§7.2) KHÔNG đổi — không liên quan tới pet, là biểu tượng riêng của 2 tính năng khác.
+- [x] **Gộp Cẩm Nang Bí Lục (§2.7) vào Heo làm "Người Gác Cổng" (§2.5).** User chọn "đồng bộ" (bỏ luôn nút "Đã Lĩnh Ngộ" riêng, áp dụng đúng 1 luật dismiss duy nhất cho mọi trigger kể cả gác cổng) và "gộp cả 2" (cả Login Trigger lẫn Logout Trigger đều chuyển qua Heo, không chỉ Login). Cập nhật CORE_SPECS §2.5 (2 trigger mới "Gác Cổng lúc đăng nhập"/"Gác Cổng lúc đăng xuất" thay cho "Chào khi đăng nhập" đơn lẻ) và §2.7 (bỏ mô tả modal-sách-độc-lập-với-nút-Đã-Lĩnh-Ngộ, chuyển thành "Heo mang trang cẩm nang ra trong overlay"). Thân Phận (chế độ lật xem toàn bộ sách) giữ nguyên không đổi. Admin (Ngân Các nạp trang cẩm nang) không đổi luồng, chỉ cập nhật câu mô tả.
+- [x] **Bỏ trigger "nhắc ngủ" (sau 22h).** Xóa khỏi CORE_SPECS §2.5 (mục 4 cũ) và §5 "Bố cục Chuồng Heo" để giảm độ phức tạp — còn lại 5 trigger: gác cổng đăng nhập, gác cổng đăng xuất, triệu hồi thủ công, idle, đói.
+- [x] Thêm mục "Chống dồn dập (anti-spam)" vào §2.5 để chính thức hóa cơ chế cooldown chung `lastAutoTrigger` đã fix runtime trước đó (trước giờ chỉ có trong code, spec chưa ghi).
+- Đã tạo các task riêng để triển khai code cho đợt này (xóa nhánh sleep trong `PetStableOverlay.tsx`, chuyển login/logout handbook-gate từ `GiangHoCamNang` modal độc lập trong App.tsx sang overlay Heo, xóa/deprecate 2 state `isHandbookOpen`/`isLogoutHandbookOpen` khi không còn dùng nữa) — CHƯA code, chờ lệnh tiếp theo.
 
 ---
 
@@ -71,7 +84,7 @@ Nguyên tắc: KHÔNG xóa tính năng. Ưu tiên nâng cấp/refactor/enable tr
 ## §2.4 + §2.5 Bách Hóa Phường & Sân Nuôi Thú
 
 - [x] **🎭 Phong Vị KHÔNG nằm trong ItemShop, hiện miễn phí ở ProfileThemeModal.** Đã thêm `player.unlockedThemes`, action `buyTheme()` (200 NP/theme, 'current' luôn miễn phí), gate trong `setUiTheme()`. ItemShop.tsx có mục "🎭 Phong Vị" riêng để mở khóa/mặc theme; ProfileThemeModal.tsx hiển thị khóa 🔒 + giá trên thẻ theme chưa mở, bấm vào để mua trực tiếp tại chỗ.
-- [ ] **(TODO-tương lai, ưu tiên thấp) Bandana ở stage Dragon nhưng thiếu biến thể "nón lá"** (spec liệt kê khăn trán HOẶC nón lá) — có thể bổ sung thêm biến thể ngoại hình ngẫu nhiên/chọn được sau.
+- [ ] **(TODO-tương lai, ưu tiên thấp) Bandana ở stage Adult nhưng thiếu biến thể "nón lá"** (spec liệt kê khăn trán HOẶC nón lá) — có thể bổ sung thêm biến thể ngoại hình ngẫu nhiên/chọn được sau.
 - [x] **`changePIN` action đã code xong trong store nhưng không được gọi ở đâu (dead code).** Đã thêm form "🔐 Đổi PIN bảo mật Viện Chủ" trong Chính Điện (ParentConsole.tsx), yêu cầu xác thực PIN cũ + PIN mới 4-6 số + xác nhận trùng khớp trước khi gọi `changePIN`.
 - [x] **Cho pet ăn không trừ NP/XP** — đã sửa ở mục §3 phía trên (cùng 1 vấn đề, `feedPet`).
 
@@ -125,4 +138,4 @@ Nguyên tắc: KHÔNG xóa tính năng. Ưu tiên nâng cấp/refactor/enable tr
 3. **§3 Kỳ Ngộ Giang Hồ**: hệ thống random event 5% khi login/hoàn thành bài — chưa tồn tại, cần action + modal mới.
 4. **§2.6 Vạn Quyển Các**: UI nạp đề bằng AI (backend đã có sẵn logic, chỉ thiếu UI) + nút "Thêm câu hỏi mới" thủ công (hiện chỉ có Sửa/Xóa).
 5. **§5 Color token consolidation**: gom màu neon 3 môn phái hardcode ở >10 file về 1 nguồn — thuần kỹ thuật, không phải bug, nên làm riêng 1 đợt review.
-6. Các mục nhỏ khác: tỷ giá VND cấu hình toàn viện ở Ngân Các, danh mục quà tặng dùng chung thay vì per-student, biến thể "nón lá" cho pet stage Dragon, tách tab riêng cho "Dạy học cho AI".
+6. Các mục nhỏ khác: tỷ giá VND cấu hình toàn viện ở Ngân Các, danh mục quà tặng dùng chung thay vì per-student, biến thể "nón lá" cho pet stage Adult, tách tab riêng cho "Dạy học cho AI".
