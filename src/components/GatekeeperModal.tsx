@@ -89,7 +89,7 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
     if (!question) return;
 
     let isCorrect = false;
-    if (question.type === 'multiple_choice') {
+    if (question.type === 'multiple_choice' || question.type === 'mcq') {
       isCorrect = selectedAnswer === question.correctAnswer;
     } else {
       const correctAnswers = Array.isArray(question.correctAnswer) ? question.correctAnswer : [question.correctAnswer];
@@ -213,7 +213,7 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
                 </div>
               )}
 
-              {question.type === 'multiple_choice' && question.options ? (
+              {(question.type === 'multiple_choice' || question.type === 'mcq') && question.options ? (
                 <div className="space-y-3">
                   {question.options.map((opt, idx) => (
                     <button
