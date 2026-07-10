@@ -15,7 +15,7 @@ export const createAdminSlice: StateCreator<
   [],
   [],
   Pick<StoreState, 
-    'parentPIN' | 'adminStudents' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'parentQuests' | 'verifyPIN' | 'changePIN' | 'markRewardDelivered' | 'cancelRedemption' | 'addParentReward' | 'deleteParentReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'updateGameSettings' | 'addParentQuest' | 'completeParentQuest' | 'deleteParentQuest' | 'claimParentQuest' | 'auditLogs' | 'fetchAuditLogs'
+    'parentPIN' | 'adminStudents' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'parentQuests' | 'verifyPIN' | 'changePIN' | 'markRewardDelivered' | 'cancelRedemption' | 'addParentReward' | 'deleteParentReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'updateGameSettings' | 'addParentQuest' | 'completeParentQuest' | 'deleteParentQuest' | 'claimParentQuest' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
   >
 > = (set, get) => ({
   parentPIN: DEFAULT_PIN,
@@ -95,6 +95,50 @@ export const createAdminSlice: StateCreator<
       }
     } catch (e) {
       console.error('Error fetching audit logs:', e);
+    }
+  },
+
+  skipReviews: [],
+
+  fetchSkipReviews: async (studentId) => {
+    const session = (await supabase.auth.getSession()).data.session;
+    const token = session?.access_token;
+    if (!token) return;
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+    try {
+      const res = await fetch(`${backendUrl}/api/family/skip-reviews/${studentId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        set({ skipReviews: data || [] });
+      }
+    } catch (e) {
+      console.error('Error fetching skip reviews:', e);
+    }
+  },
+
+  resolveSkipReview: async (reviewId) => {
+    const session = (await supabase.auth.getSession()).data.session;
+    const token = session?.access_token;
+    if (!token) return false;
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+    try {
+      const res = await fetch(`${backendUrl}/api/family/skip-reviews/resolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ reviewId })
+      });
+      if (res.ok) {
+        set((state: any) => ({
+          skipReviews: state.skipReviews.filter((r: any) => r.id !== reviewId)
+        }));
+        return true;
+      }
+      return false;
+    } catch (e) {
+      console.error('Error resolving skip review:', e);
+      return false;
     }
   },
 
@@ -248,56 +292,81 @@ export const createAdminSlice: StateCreator<
         },
 
   flagQuestionConfused: async (question, reason?: 'quá khó' | 'quá dài' | 'quá khùng', severity?: number) => {
-          const nextQuestion = { ...question, isConfused: true, skipReason: reason, skipSeverity: severity } as Question;
+    const state = get();
+    const todayStr = new Date().toISOString().split('T')[0];
+    
+    // Check local coins cap
+    if (state.player.coins < -100) {
+      toast.error('Số dư Ngân Lượng (NP) của con đã âm quá giới hạn (-100 NP). Con không thể tiếp tục Bỏ qua câu hỏi, hãy cố gắng giải đáp nhé!');
+      return false;
+    }
 
-          try {
-            const session = (await supabase.auth.getSession()).data.session;
-            const token = session?.access_token;
-            if (!token) return false;
+    // Check local skip limit (3/day)
+    let skips = state.player.dailySkips || { date: todayStr, count: 0 };
+    if (skips.date !== todayStr) {
+      skips = { date: todayStr, count: 0 };
+    }
+    if (skips.count >= 3) {
+      toast.error('Con đã dùng hết 3 lượt Bỏ qua câu hỏi hôm nay. Hãy nỗ lực tự giải thử thách nhé!');
+      return false;
+    }
 
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-            const res = await fetch(`${backendUrl}/api/questions/confused`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify(question)
-            });
-            if (!res.ok) {
-              const errData = await res.json();
-              toast.error(errData.error || 'Không thể đánh dấu câu hỏi.');
-              return false;
-            }
-          } catch (error) {
-            console.error('Error flagging question:', error);
-            toast.error('Lỗi kết nối khi đánh dấu câu hỏi.');
-            return false;
-          }
+    try {
+      const session = (await supabase.auth.getSession()).data.session;
+      const token = session?.access_token;
+      if (!token) return false;
 
-          set((state: any) => {
-            const todayStr = new Date().toISOString().split('T')[0];
-            let newSkips = state.player.dailySkips || { date: todayStr, count: 0 };
-            if (newSkips.date !== todayStr) {
-              newSkips = { date: todayStr, count: 1 };
-            } else {
-              newSkips = { date: todayStr, count: newSkips.count + 1 };
-            }
-
-            return {
-              questions: state.questions.map(q => q.id === question.id ? nextQuestion : q),
-              player: {
-                ...state.player,
-                dailySkips: newSkips,
-                // Môn Chủ Hỏi Tội (CORE_SPECS §3.1): skip không giới hạn nhưng trừ 10 NP.
-                // Khoản trừ BẮT BUỘC của hệ thống — được phép đẩy NP xuống ÂM (không kẹp Math.max 0).
-                coins: state.player.coins - 10
-              }
-            };
-          });
-          logActivity(get, set, 'exercise', 'Bỏ qua câu này', `Đã gác lại câu hỏi mã số ${question.id} (Lý do: ${reason || 'Không rõ'}). Môn Chủ trừ 10 NP.`, -10, 0);
-          return true;
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+      
+      // Gọi API transaction để trừ tiền và lưu review skip ở backend
+      const res = await fetch(`${backendUrl}/api/economy/transaction`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         },
+        body: JSON.stringify({
+          profileId: state.currentUser?.id,
+          amount: -10,
+          reason: 'Bỏ qua câu hỏi (Skip)',
+          details: {
+            questionId: question.id,
+            questionPrompt: question.prompt,
+            reason: reason || 'Quá khó'
+          }
+        })
+      });
+
+      if (!res.ok) {
+        const errData = await res.json();
+        toast.error(errData.error || 'Môn Chủ không cho phép bỏ qua câu hỏi.');
+        return false;
+      }
+
+      const data = await res.json();
+      const updatedCoins = data.coins;
+
+      // Đánh dấu câu hỏi bị ghim local
+      const nextQuestion = { ...question, isConfused: true, skipReason: reason, skipSeverity: severity } as Question;
+      const nextSkips = { date: todayStr, count: skips.count + 1 };
+
+      set((state: any) => ({
+        questions: state.questions.map(q => q.id === question.id ? nextQuestion : q),
+        player: {
+          ...state.player,
+          dailySkips: nextSkips,
+          coins: updatedCoins
+        }
+      }));
+
+      logActivity(get, set, 'exercise', 'Bỏ qua câu này', `Đã gác lại câu hỏi mã số ${question.id} (Lý do: ${reason || 'Không rõ'}). Môn Chủ trừ 10 NP.`, -10, 0);
+      return true;
+    } catch (error) {
+      console.error('Error flagging question:', error);
+      toast.error('Lỗi kết nối khi gác lại câu hỏi.');
+      return false;
+    }
+  },
 
   fetchAdminStudents: async () => {
           try {

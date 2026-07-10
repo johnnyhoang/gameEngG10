@@ -368,6 +368,53 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       } finally {
         setIsAiGrading(false);
       }
+    } else if (activeSectId === 'math' && (activeQuestion.type === 'short-answer' || activeQuestion.type === 'text_input')) {
+      setIsAiGrading(true);
+      setAiFeedback('');
+      setAiSuggestions([]);
+      setAiWarningMessage('');
+
+      try {
+        const session = (await supabase.auth.getSession()).data.session;
+        const token = session?.access_token;
+        if (!token) throw new Error('No auth token available');
+
+        const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+        const correctAnsStr = Array.isArray(activeQuestion.correctAnswer)
+          ? activeQuestion.correctAnswer[0]
+          : activeQuestion.correctAnswer;
+
+        const res = await fetch(`${backendUrl}/api/ai/grade-math`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            questionPrompt: activeQuestion.prompt,
+            correctAnswer: correctAnsStr,
+            studentAnswer: typedAnswer
+          })
+        });
+
+        if (!res.ok) throw new Error(`API error: ${res.status}`);
+
+        const data = await res.json();
+        isCorrect = data.isCorrect;
+        scoreRatio = isCorrect ? 1 : 0;
+        setAiFeedback(data.explanation || '');
+      } catch (err: any) {
+        console.error('Lỗi khi gọi AI chấm Toán tự luận, dùng backup:', err);
+        setAiWarningMessage('Linh Sư chấm Toán tự luận dự phòng (So khớp chuỗi).');
+        const answers = Array.isArray(activeQuestion.correctAnswer)
+          ? activeQuestion.correctAnswer
+          : [activeQuestion.correctAnswer];
+        const normalizedTyped = cleanAnswer(typedAnswer);
+        isCorrect = answers.some(ans => normalizedTyped === cleanAnswer(ans));
+        scoreRatio = isCorrect ? 1 : 0;
+      } finally {
+        setIsAiGrading(false);
+      }
     } else {
       const answers = Array.isArray(activeQuestion.correctAnswer)
         ? activeQuestion.correctAnswer
@@ -1071,14 +1118,22 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           </button>
 
           {/* Skip confused button */}
-          {!checked && (
-            <button
-              onClick={handleSkipConfused}
-              className="px-4 py-2.5 rounded-xl border border-red-500/40 hover:bg-red-500/10 text-red-400 font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 text-center flex items-center justify-center gap-1.5"
-            >
-              Bỏ qua câu này 🧠
-            </button>
-          )}
+          {!checked && (() => {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const skipsCount = player.dailySkips?.date === todayStr ? (player.dailySkips.count || 0) : 0;
+            const remainingSkips = Math.max(0, 3 - skipsCount);
+            const isBlocked = remainingSkips <= 0 || player.coins < -100;
+            return (
+              <button
+                onClick={handleSkipConfused}
+                disabled={isBlocked}
+                className="px-4 py-2.5 rounded-xl border border-red-500/40 hover:bg-red-500/10 text-red-400 font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 text-center flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                title={player.coins < -100 ? "Bị khóa vì số dư NP âm quá nhiều" : `Lượt bỏ qua hôm nay: ${remainingSkips}/3`}
+              >
+                Bỏ qua (Còn {remainingSkips}/3) 🧠
+              </button>
+            );
+          })()}
         </div>
       </div>
 

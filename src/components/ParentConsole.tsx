@@ -85,6 +85,9 @@ export const ParentConsole: React.FC = () => {
   const deleteParentQuest = useGameState(state => state.deleteParentQuest);
   const auditLogs = useGameState(state => state.auditLogs || []);
   const fetchAuditLogs = useGameState(state => state.fetchAuditLogs);
+  const skipReviews = useGameState(state => state.skipReviews || []);
+  const fetchSkipReviews = useGameState(state => state.fetchSkipReviews);
+  const resolveSkipReview = useGameState(state => state.resolveSkipReview);
 
   // Family Management
   const familyLinks = useGameState(state => state.familyLinks || []);
@@ -213,6 +216,12 @@ export const ParentConsole: React.FC = () => {
       fetchAuditLogs();
     }
   }, [activeTab, currentUser?.role, fetchAuditLogs]);
+
+  useEffect(() => {
+    if (viewingStudentId && isParentRole(currentUser?.role)) {
+      fetchSkipReviews(viewingStudentId);
+    }
+  }, [viewingStudentId, currentUser?.role, fetchSkipReviews]);
 
   useEffect(() => {
     const bossBonuses = gameSettings?.bossCompletionBonusNP ?? [100, 150, 200];
@@ -3172,6 +3181,62 @@ export const ParentConsole: React.FC = () => {
                       </div>
                     </div>
                   </div>
+
+                  {/* Hàng đợi Phản hồi Skip (Closed-loop Review) */}
+                  {isParentRole(currentUser?.role) && (
+                    <div className="glass-panel rounded-xl border border-white/5 p-4 flex flex-col">
+                      <div className="flex justify-between items-center mb-4">
+                        <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider flex items-center gap-1.5">
+                          ⚠️ Hàng đợi phản hồi Bỏ qua (Skip Reviews Queue)
+                        </h4>
+                        <button
+                          onClick={() => {
+                            if (viewingStudentId) {
+                              fetchSkipReviews(viewingStudentId);
+                            }
+                          }}
+                          className="px-2 py-0.5 rounded border border-synth-orange/30 text-synth-orange text-[9px] font-orbitron font-bold hover:bg-synth-orange/10 cursor-pointer transition-colors"
+                        >
+                          Tải Lại
+                        </button>
+                      </div>
+                      
+                      <div className="overflow-y-auto max-h-60 space-y-2.5 text-xs pr-1">
+                        {!skipReviews || skipReviews.length === 0 ? (
+                          <div className="h-full flex items-center justify-center text-synth-text-muted text-center py-8 italic">
+                            Chưa có phản hồi bỏ qua câu hỏi nào chờ xem duyệt.
+                          </div>
+                        ) : (
+                          skipReviews.map((review: any) => (
+                            <div key={review.id} className="p-3 rounded-lg bg-white/5 border border-white/5 space-y-2">
+                              <div className="flex justify-between items-start gap-2">
+                                <span className="font-bold text-white max-w-xs break-words block">
+                                  {review.question_prompt}
+                                </span>
+                                <span className="px-1.5 py-0.5 rounded text-[8px] font-bold font-orbitron uppercase bg-red-500/20 text-red-400 border border-red-500/30 whitespace-nowrap">
+                                  {review.reason}
+                                </span>
+                              </div>
+                              <div className="flex justify-between items-center text-[10px] text-synth-text-muted">
+                                <span>{new Date(review.created_at).toLocaleString('vi-VN')}</span>
+                                <button
+                                  onClick={async () => {
+                                    const ok = await resolveSkipReview(review.id);
+                                    if (ok) {
+                                      toast.success('Đã xác nhận phản hồi bỏ qua.');
+                                    }
+                                  }}
+                                  className="px-2 py-1 rounded bg-synth-green text-black font-black uppercase text-[8px] font-orbitron cursor-pointer transition-all"
+                                >
+                                  Đã Xem ✓
+                                </button>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Activity log ledger */}
                   <div className="glass-panel rounded-xl border border-white/5 p-4">

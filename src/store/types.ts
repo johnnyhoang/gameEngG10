@@ -84,6 +84,9 @@ export interface StoreState {
   changePIN: (newPIN: string) => Promise<boolean>;
   auditLogs: any[];
   fetchAuditLogs: () => Promise<void>;
+  skipReviews: any[];
+  fetchSkipReviews: (studentId: string) => Promise<void>;
+  resolveSkipReview: (reviewId: string) => Promise<boolean>;
   /** Phụ huynh xác nhận đã trao quà ngoài đời cho lượt đổi này (thay "duyệt" cũ). */
   markRewardDelivered: (redemptionId: string) => void;
   /** Hủy lượt đổi: hoàn NP + trả lại remainingQuantity cho catalog item (thay "từ chối" cũ). */

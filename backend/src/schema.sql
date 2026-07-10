@@ -41,6 +41,9 @@ CREATE TABLE IF NOT EXISTS ge10_player_profiles (
     hearts INTEGER DEFAULT 3,
     last_active VARCHAR(100) DEFAULT '',
     badges TEXT[] DEFAULT '{}'::TEXT[],
+    daily_np_earned INTEGER DEFAULT 0,
+    last_np_earned_date VARCHAR(10) DEFAULT '',
+    daily_skips JSONB DEFAULT '{"date": "", "count": 0}'::jsonb,
     server_updated_at TIMESTAMP DEFAULT NOW()
 );
 
@@ -258,5 +261,17 @@ CREATE TABLE IF NOT EXISTS ge10_users_security (
     user_id VARCHAR(255) PRIMARY KEY REFERENCES ge10_users(id) ON DELETE CASCADE,
     pin_hash VARCHAR(255) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Student Skip Reviews Queue (Sprint 4)
+CREATE TABLE IF NOT EXISTS ge10_skip_reviews (
+    id VARCHAR(255) PRIMARY KEY,
+    student_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
+    student_name VARCHAR(255) NOT NULL,
+    question_id VARCHAR(255),
+    question_prompt TEXT NOT NULL,
+    reason VARCHAR(50) NOT NULL,
+    status VARCHAR(20) DEFAULT 'pending',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

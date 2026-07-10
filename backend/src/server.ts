@@ -1239,6 +1239,65 @@ app.post('/api/family/leave', authMiddleware, async (req: any, res) => {
   }
 });
 
+// ==================== DISCIPLINE & SKIP REVIEWS ENDPOINTS ====================
+
+// GET /api/family/skip-reviews/:studentId: Fetches pending skip reviews for a student
+app.get('/api/family/skip-reviews/:studentId', authMiddleware, async (req: any, res) => {
+  const parentId = req.user.sub;
+  const { studentId } = req.params;
+
+  try {
+    // Verify parent's management permission for this student
+    const hasPermission = await checkStudentManagementPermission(parentId, studentId, 'view_profile');
+    if (!hasPermission) {
+      return res.status(403).json({ error: 'Forbidden: You do not have permission to view this student.' });
+    }
+
+    const result = await pool.query(
+      "SELECT * FROM ge10_skip_reviews WHERE student_id = $1 AND status = 'pending' ORDER BY created_at DESC",
+      [studentId]
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching skip reviews:', error);
+    res.status(500).json({ error: 'Failed to fetch skip reviews.' });
+  }
+});
+
+// POST /api/family/skip-reviews/resolve: Marks a skip review as resolved (closed loop)
+app.post('/api/family/skip-reviews/resolve', authMiddleware, async (req: any, res) => {
+  const parentId = req.user.sub;
+  const { reviewId } = req.body;
+
+  if (!reviewId) {
+    return res.status(400).json({ error: 'Missing reviewId.' });
+  }
+
+  try {
+    // Fetch review to verify studentId
+    const reviewRes = await pool.query('SELECT student_id FROM ge10_skip_reviews WHERE id = $1', [reviewId]);
+    if (reviewRes.rowCount === 0) {
+      return res.status(404).json({ error: 'Skip review not found.' });
+    }
+    const studentId = reviewRes.rows[0].student_id;
+
+    // Verify parent's management permission
+    const hasPermission = await checkStudentManagementPermission(parentId, studentId, 'approve_reward');
+    if (!hasPermission) {
+      return res.status(403).json({ error: 'Forbidden.' });
+    }
+
+    await pool.query(
+      "UPDATE ge10_skip_reviews SET status = 'resolved' WHERE id = $1",
+      [reviewId]
+    );
+    res.json({ success: true, message: 'Skip review resolved successfully.' });
+  } catch (error) {
+    console.error('Error resolving skip review:', error);
+    res.status(500).json({ error: 'Failed to resolve skip review.' });
+  }
+});
+
 // ==================== SECURITY & AUDIT SYSTEM ENDPOINTS ====================
 
 // POST /api/security/pin: Sets or updates a personal profile PIN code
@@ -1734,6 +1793,48 @@ Lưu ý: các phần tử trong matchedKeywords và missingKeywords phải lấy
       return res.status(503).json({ error: error.message });
     }
     res.status(500).json({ error: 'Failed to process literature essay grading: ' + error.message });
+  }
+});
+
+// POST /api/ai/grade-math: Uses Gemini API to evaluate and grade a student's math short answer
+app.post('/api/ai/grade-math', authMiddleware, async (req: any, res) => {
+  const { questionPrompt, correctAnswer, studentAnswer } = req.body;
+
+  if (!questionPrompt || !correctAnswer || studentAnswer === undefined) {
+    return res.status(400).json({ error: 'Missing questionPrompt, correctAnswer, or studentAnswer.' });
+  }
+
+  const prompt = `Bạn là một trợ lý ảo chấm bài Toán tự luận tuyển sinh 10 chuyên nghiệp.
+Hãy so sánh câu trả lời của học sinh (studentAnswer) với đáp án chuẩn (correctAnswer) cho câu hỏi sau:
+Đề bài: "${questionPrompt}"
+Đáp án chuẩn: "${correctAnswer}"
+Câu trả lời của học sinh: "${studentAnswer}"
+
+Yêu cầu:
+1. Đánh giá xem câu trả lời của học sinh có tương đương về mặt toán học với đáp án chuẩn hay không (ví dụ: x = 0.5 và x = 1/2 là tương đương, x = -1 và x = 1-2 là tương đương, cách viết tập nghiệm {1, 2} và x = 1 hoặc x = 2 là tương đương).
+2. Bỏ qua các sai khác về khoảng trắng, cách viết hoa/thường, hoặc các ký tự trang trí không ảnh hưởng đến giá trị toán học.
+3. Trả về định dạng JSON duy nhất như sau:
+{
+  "isCorrect": true/false,
+  "explanation": "Lời giải thích ngắn gọn bằng tiếng Việt vì sao đúng/sai hoặc cách biến đổi tương đương."
+}
+Không thêm bất kỳ văn bản nào khác ngoài JSON này.`;
+
+  try {
+    const responseText = await callGeminiAPI(prompt, { responseMimeType: 'application/json', temperature: 0.1 });
+    const result = JSON.parse(responseText.trim());
+    res.json(result);
+  } catch (error: any) {
+    console.error('Lỗi gọi Gemini AI Grade Math:', error.message);
+    if (error instanceof GeminiExhaustedError) {
+      return res.status(503).json({ error: 'Gemini API keys exhausted. Please try again later.' });
+    }
+    // Fallback to exact match check
+    const isExact = studentAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
+    res.json({
+      isCorrect: isExact,
+      explanation: 'Hệ thống AI bận, đã chấm điểm tự động qua so khớp chuỗi chính xác.'
+    });
   }
 });
 
