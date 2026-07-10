@@ -48,6 +48,9 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const [rewardsEarned, setRewardsEarned] = useState({ coins: 0, xp: 0 });
   const [sessionAnswered, setSessionAnswered] = useState(0);
   const [sessionCorrect, setSessionCorrect] = useState(0);
+  // Bộ đếm lỗi NỘI BỘ của lượt chơi (CORE_SPECS §2.1 Sinh tồn): sai đủ 3 câu là kết thúc.
+  // Thay thế hoàn toàn hệ thống Tim sinh mệnh toàn cục đã bị xóa bỏ.
+  const [runMistakes, setRunMistakes] = useState(0);
   const [runFinished, setRunFinished] = useState(false);
   const runEndHandledRef = useRef(false);
   const [lastRubricScore, setLastRubricScore] = useState<number | null>(null);
@@ -179,13 +182,13 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     };
   }, [timeLeft, runFinished]);
 
-  // Xử lý kết cục trận đấu một lần duy nhất khi trận kết thúc (CORE_SPECS §3.A):
-  // Tẩu Hỏa Nhập Ma (hết Tim giữa trận Sinh Tồn/Boss) hoặc Boss thắng trận.
+  // Xử lý kết cục trận đấu một lần duy nhất khi trận kết thúc:
+  // sai đủ 3 câu trong lượt Sinh Tồn/Boss là thất bại, hoặc Boss thắng trận.
   useEffect(() => {
     if (!runFinished || runEndHandledRef.current) return;
     runEndHandledRef.current = true;
 
-    const isDefeat = player.hearts <= 0 && (mode === 'boss' || mode === 'survival');
+    const isDefeat = runMistakes >= 3 && (mode === 'boss' || mode === 'survival');
     if (isDefeat) {
       applyDefeatPenalty(rewardsEarned.coins, rewardsEarned.xp);
     } else if (mode === 'boss') {
@@ -407,14 +410,14 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     setSessionAnswered(prev => prev + 1);
     if (isCorrect) setSessionCorrect(prev => prev + 1);
 
-    // If hearts hit 0 in Survival/Boss, terminate
-    if (scoreRatio < 0.35 && (mode === 'boss' || mode === 'survival') && player.hearts <= 1) {
-      // Wait a moment for explanation then trigger Game Over
-      setTimeout(() => {
-        if (player.hearts <= 1) {
-          setRunFinished(true);
-        }
-      }, 1500);
+    // Sinh tồn/Boss: sai đủ 3 câu trong lượt là kết thúc (bộ đếm nội bộ, không còn Tim).
+    if (scoreRatio < 0.35 && (mode === 'boss' || mode === 'survival')) {
+      const nextMistakes = runMistakes + 1;
+      setRunMistakes(nextMistakes);
+      if (nextMistakes >= 3) {
+        // Wait a moment for explanation then trigger Game Over
+        setTimeout(() => setRunFinished(true), 1500);
+      }
     }
   };
 
@@ -505,8 +508,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                   : 'Phụ bản bài học';
 
   if (runFinished) {
-    // Luật "Tẩu Hỏa Nhập Ma" (CORE_SPECS §3.A): hết Tim giữa trận Sinh Tồn hoặc Boss đều tính là thất bại.
-    const isDefeat = player.hearts <= 0 && (mode === 'boss' || mode === 'survival');
+    // Luật "Tẩu Hỏa Nhập Ma": sai đủ 3 câu trong lượt Sinh Tồn hoặc Boss đều tính là thất bại.
+    const isDefeat = runMistakes >= 3 && (mode === 'boss' || mode === 'survival');
     const displayedCoins = isDefeat ? Math.floor(rewardsEarned.coins / 2) : rewardsEarned.coins;
     const displayedXp = isDefeat ? Math.floor(rewardsEarned.xp / 2) : rewardsEarned.xp;
     return (
@@ -519,7 +522,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
 
         <p className="text-xs text-synth-text-muted">
           {isDefeat
-            ? 'Hết tim rồi. Chỉ giữ được 50% chiến lợi phẩm thu được trong trận. Lần sau ra tay chắc hơn.'
+            ? 'Sai đủ 3 câu rồi. Chỉ giữ được 50% chiến lợi phẩm thu được trong trận. Lần sau ra tay chắc hơn.'
             : mode === 'lesson'
               ? 'Củng cố xong. Muốn kiểm tra lại thì quay về bản đồ.'
               : mode === 'vocabulary'

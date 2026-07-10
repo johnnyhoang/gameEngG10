@@ -1,6 +1,6 @@
 import { isAdmin } from '../utils/roleHelpers';
 import React from 'react';
-import { Zap, Heart, Coins, Flame, Shield, Award, LogOut, UserCircle2 } from 'lucide-react';
+import { Zap, Coins, Flame, Shield, Award, LogOut, UserCircle2 } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
 import { useSect } from '../contexts/SectContext';
 import { SUBJECTS_CONFIG, getStudentRankForLevel } from '../types/game';
@@ -111,22 +111,9 @@ export const TopHUD: React.FC<TopHUDProps> = ({
           )}
         </div>
 
-        {/* Cụm 2: Dải tài nguyên — Tim, Ngân Lượng, Chuỗi, Ví Thưởng gộp chung 1 box, cùng hàng cùng cao */}
+        {/* Cụm 2: Dải tài nguyên — Ngân Lượng + Chuỗi (Tim sinh mệnh đã bị xóa khỏi hệ thống — CORE_SPECS §2.1) */}
         {!isAdminUser && (
           <div className={`${groupBoxClass} order-2 md:order-none w-full sm:w-auto justify-between sm:justify-start overflow-x-auto`}>
-            <div className={statItemClass} onClick={() => showHelp('hearts')} title="Tim sinh mệnh — Nhấp để xem hướng dẫn">
-              <div className="flex gap-0.5 items-center shrink-0">
-                {[...Array(3)].map((_, i) => (
-                  <Heart
-                    key={i}
-                    className={`w-3.5 h-3.5 ${i < player.hearts ? 'text-synth-magenta fill-synth-magenta' : 'text-synth-gray fill-transparent'}`}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="w-px h-8 bg-white/10 shrink-0" />
-
             <div className={statItemClass} onClick={() => showHelp('nanite')} title={player.coins < 0 ? 'Ngân Lượng đang ÂM — trả nợ bằng cách luyện tập thêm!' : 'Ngân Lượng (NP) — Nhấp để xem hướng dẫn'}>
               <Coins className={`w-4 h-4 shrink-0 ${player.coins < 0 ? 'text-red-400 fill-red-400' : 'text-synth-orange fill-synth-orange'}`} />
               <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${player.coins < 0 ? 'text-red-400' : 'text-white'}`}>{player.coins}</span>

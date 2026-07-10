@@ -9,7 +9,6 @@ export const ItemShop: React.FC = () => {
   const player = useGameState(state => state.player);
   const rewards = useGameState(state => state.rewards);
   const buyStreakShield = useGameState(state => state.buyStreakShield);
-  const buyHeart = useGameState(state => state.buyHeart);
   const buyHint = useGameState(state => state.buyHint);
   const buyTheme = useGameState(state => state.buyTheme);
   const setUiTheme = useGameState(state => state.setUiTheme);
@@ -33,15 +32,6 @@ export const ItemShop: React.FC = () => {
       toast.error('Thiếu Ngân lượng hoặc Hộ Tâm Phù đã sẵn sàng rồi.');
     } else {
       toast.success('✅ Lĩnh Hộ Tâm Phù thành công! Chuỗi tu luyện được bảo vệ.');
-    }
-  };
-
-  const handleBuyHeart = () => {
-    const success = buyHeart();
-    if (!success) {
-      toast.error('Thiếu Ngân lượng hoặc đã chạm trần 3 tim sinh lực rồi.');
-    } else {
-      toast.success('❤️ Hồi Nguyên Đan phát huy! Tim sinh lực đã hồi phục.');
     }
   };
 
@@ -152,47 +142,7 @@ export const ItemShop: React.FC = () => {
             </FogCard>
           </div>
 
-          {/* ❤️ Hồi Nguyên Đan */}
-          <div className="relative">
-            <FogCard
-              pageId="shop-item-heart"
-              requiredCompletions={2}
-              decayDays={7}
-              onOpenLevel3={handleBuyHeart}
-            >
-              <div className={`glass-panel rounded-2xl p-5 flex justify-between items-center h-full ${
-                isUnicorn ? 'border-violet-200/35 bg-gradient-to-tr from-white/85 via-rose-50/70 to-fuchsia-50/70' : 'border-synth-magenta/20 bg-gradient-to-tr from-synth-magenta/5 to-transparent'
-              }`}>
-                <div className="flex gap-4 items-center">
-                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl border shrink-0 ${
-                    isUnicorn ? 'bg-rose-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-magenta/30'
-                  }`}>
-                    ❤️
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>Hồi Nguyên Đan</h4>
-                    <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>
-                      Phục hồi 1 tim sinh lực đã mất trong chế độ Boss hoặc Sinh tồn.
-                    </p>
-                    <span className={`text-[9px] font-bold font-orbitron ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-magenta'}`}>
-                      Tim hiện tại: {player.hearts}/3
-                    </span>
-                  </div>
-                </div>
-                <button
-                  onClick={(e) => { e.stopPropagation(); handleBuyHeart(); }}
-                  disabled={player.hearts >= 3}
-                  className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shrink-0 ${
-                    isUnicorn
-                      ? 'bg-gradient-to-r from-rose-300 to-fuchsia-300 text-violet-900 shadow-md hover:brightness-105'
-                      : 'bg-synth-magenta text-black hover:shadow-[0_0_10px_rgba(255,0,127,0.4)]'
-                  }`}
-                >
-                  100 NP
-                </button>
-              </div>
-            </FogCard>
-          </div>
+          {/* ❤️ Hồi Nguyên Đan đã bị xóa cùng toàn bộ hệ thống Tim sinh mệnh (CORE_SPECS §2.1) */}
 
           {/* 📜 Khai Ngộ Quyển */}
           <div className="relative md:col-span-2">
