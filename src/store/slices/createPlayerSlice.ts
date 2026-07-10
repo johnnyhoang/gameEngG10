@@ -120,17 +120,8 @@ export const createPlayerSlice: StateCreator<
             }
           } else {
             newCombo = 0; // Combo resets
-            
-            // Deduct heart for Survival/Boss mode
-            if ((gameMode === 'survival' || gameMode === 'boss') && performanceScore < 0.35) {
-              set(prev => ({
-                player: {
-                  ...prev.player,
-                  hearts: Math.max(0, prev.player.hearts - 1)
-                }
-              }));
-              logActivity(get, set, 'exercise', 'Mất 1 mạng!', `Trả lời sai câu hỏi ở chế độ ${gameMode}`, 0, 0, 0);
-            }
+            // Sinh tồn/Boss: bộ đếm 3 lần sai là state NỘI BỘ của lượt chơi trong PlayArea —
+            // hệ thống Tim sinh mệnh toàn cục đã bị xóa bỏ (CORE_SPECS §2.1).
           }
 
           const maxCombo = Math.max(state.maxCombo, newCombo);
@@ -243,23 +234,6 @@ export const createPlayerSlice: StateCreator<
           });
 
           logActivity(get, set, 'shop', 'Lĩnh Hộ Tâm Phù', 'Đã nhận 1 Hộ Tâm Phù bảo vệ Chuỗi Tu Luyện', -cost, 0);
-          return true;
-        },
-
-  buyHeart: () => {
-          const state = get();
-          const cost = 100;
-          if (state.player.coins < cost || state.player.hearts >= 3) return false;
-
-          set({
-            player: {
-              ...state.player,
-              coins: state.player.coins - cost,
-              hearts: Math.min(3, state.player.hearts + 1)
-            }
-          });
-
-          logActivity(get, set, 'shop', 'Nhận Hồi Nguyên Đan', 'Đã hồi phục 1 Tim sinh lực', -cost, 0);
           return true;
         },
 
@@ -753,7 +727,6 @@ export const createPlayerSlice: StateCreator<
               streak: newStreak,
               coins: state.player.coins + streakBonus,
               energy: state.gameSettings.maxEnergy ?? 1000, // Refill energy daily
-              hearts: 3, // Refill hearts daily
               lastActive: new Date().toISOString(),
               dailySkips: { date: todayStr, count: 0 }
             },

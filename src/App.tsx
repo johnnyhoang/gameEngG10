@@ -62,6 +62,7 @@ function App() {
   const [handbookPageToShow, setHandbookPageToShow] = useState<any | null>(null);
   const [isHandbookOpen, setIsHandbookOpen] = useState(false);
   const logout = useGameState(state => state.logout);
+  const sessionAccountId = useGameState(state => state.sessionAccountId);
 
   const handleLogoutIntercept = () => {
     logout();
@@ -205,8 +206,6 @@ function App() {
       </div>
     );
   }
-
-  const { sessionAccountId } = useGameState();
 
   if (!sessionAccountId) {
     return <GoogleLoginScreen />;

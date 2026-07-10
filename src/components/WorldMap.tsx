@@ -135,7 +135,7 @@ export function WorldMap({
       id: 'shop',
       icon: <Store className="w-7 h-7" />,
       title: 'Bách Hóa Phường',
-      blurb: 'Đổi Ngân Lượng lấy Khai Ngộ Quyển, Hồi Nguyên Đan, Phong Vị và Phúc Lợi Gia Môn.',
+      blurb: 'Đổi Ngân Lượng lấy Khai Ngộ Quyển, Hộ Tâm Phù, Phong Vị và Phúc Lợi Gia Môn.',
       cta: 'Ghé Bách Hóa Phường',
       onOpen: onOpenShop,
       accent: 'from-synth-orange/15 via-amber-400/10 to-transparent border-synth-orange/30 text-synth-orange'

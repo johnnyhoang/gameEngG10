@@ -89,7 +89,8 @@ export interface PlayerProfile {
   walletVND: number;
   streak: number;
   energy: number; // 0 - 1000
-  hearts: number; // 0 - 3 (or max hearts)
+  /** @deprecated Hệ thống Tim sinh mệnh đã bị xóa (CORE_SPECS §2.1) — field giữ lại optional để không vỡ localStorage cũ. */
+  hearts?: number;
   lastActive: string; // ISO String date
   badges: string[];
   /** Phong Vị (theme giao diện) đã mở khóa bằng NP tại Bách Hóa Phường (CORE_SPECS §2.4). 'current' luôn miễn phí mặc định. */

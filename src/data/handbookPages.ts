@@ -98,12 +98,12 @@ const HELP_HANDBOOK_PAGES: HandbookPage[] = [
     ]
   },
   {
-    id: 'help-hearts', category: 'Trợ Giúp Nhanh', title: 'Tim sinh mệnh', content: '', audience: 'student',
+    id: 'help-hearts', category: 'Trợ Giúp Nhanh', title: 'Luật 3 Lần Sai (Sinh Tồn/Boss)', content: '', audience: 'student',
     bullets: [
-      '• Boss và Sinh Tồn cho tối đa 3 tim.',
-      '• Sai câu là mất tim, nên đừng ham lao bừa.',
-      '• Hết tim thì thua trận, chỉ giữ được 50% chiến lợi phẩm.',
-      '• Tim không trừ vì sai thường, chỉ trừ trong chế độ sinh tử.'
+      '• Boss và Sinh Tồn cho phép sai tối đa 2 câu — sai câu thứ 3 là kết thúc lượt.',
+      '• Bộ đếm lỗi chỉ tính trong lượt đang chơi, hết lượt là xóa sạch.',
+      '• Thua trận chỉ giữ được 50% chiến lợi phẩm thu được trong trận.',
+      '• Sai ở chế độ luyện tập thường không bị tính lỗi sinh tử.'
     ]
   },
   {

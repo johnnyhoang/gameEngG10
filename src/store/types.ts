@@ -52,7 +52,6 @@ export interface StoreState {
   useEnergy: (amount: number) => boolean;
   addEnergy: (amount: number) => void;
   buyStreakShield: () => boolean;
-  buyHeart: () => boolean;
   buyHint: () => boolean;
   buyTheme: (themeId: UiThemeId) => boolean;
   claimParentReward: (rewardId: string) => boolean;
