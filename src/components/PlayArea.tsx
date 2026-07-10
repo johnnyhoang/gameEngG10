@@ -549,7 +549,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         {/* Payout note */}
         {mode === 'boss' && !isDefeat && (
           <div className="bg-synth-magenta/10 border border-synth-magenta/30 rounded-lg p-3 text-xs text-synth-magenta">
-            🔥 Đánh bại Boss: +150 XP và tiền mặt (10.000đ-20.000đ) đã tự động cộng thêm vào Ví Thưởng!
+            🔥 Đánh bại Boss: +150 XP và bonus hoàn thành Ngân Lượng đã tự động cộng thêm!
           </div>
         )}
 

@@ -17,7 +17,8 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 3000;
 const PLAYER_ENERGY_MAX = 1000;
-const DEFAULT_BOSS_BOUNTIES_VND: [number, number, number] = [10000, 15000, 20000];
+// Bonus Điểm (NP) khi hạ Boss — thay hoàn toàn thưởng VND cũ (CORE_SPECS §2.1). Boss không thưởng tiền.
+const DEFAULT_BOSS_COMPLETION_BONUS_NP: [number, number, number] = [100, 150, 200];
 const DEFAULT_CHALLENGE_ENERGY_COSTS: [number, number, number, number] = [10, 10, 15, 10];
 
 app.use(cors({ origin: '*' }));
@@ -166,22 +167,22 @@ const callGeminiAPI = async (prompt: string, generationConfig: Record<string, an
   throw new GeminiExhaustedError();
 };
 
-const loadBossBounties = async (): Promise<[number, number, number]> => {
+const loadBossCompletionBonusNP = async (): Promise<[number, number, number]> => {
   const res = await pool.query(
-    "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'boss_bounties_vnd'"
+    "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'boss_completion_bonus_np'"
   );
   const raw = res.rows[0]?.setting_json;
   const values = [
-    Number(raw?.['2024']),
-    Number(raw?.['2025']),
-    Number(raw?.['2026'])
+    Number(raw?.['easy']),
+    Number(raw?.['medium']),
+    Number(raw?.['hard'])
   ];
 
   if (values.every(v => Number.isFinite(v) && v >= 0)) {
     return [values[0], values[1], values[2]];
   }
 
-  return DEFAULT_BOSS_BOUNTIES_VND;
+  return DEFAULT_BOSS_COMPLETION_BONUS_NP;
 };
 
 const loadChallengeEnergyCosts = async (): Promise<[number, number, number, number]> => {
@@ -257,12 +258,12 @@ const saveBaseCoins = async (baseCoins: number) => {
   );
 };
 
-const saveBossBounties = async (bossBountiesVnd: [number, number, number]) => {
+const saveBossCompletionBonusNP = async (bossCompletionBonusNP: [number, number, number]) => {
   await pool.query(
     `INSERT INTO ge10_game_settings (setting_key, setting_json)
-     VALUES ('boss_bounties_vnd', $1::jsonb)
+     VALUES ('boss_completion_bonus_np', $1::jsonb)
      ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
-    [JSON.stringify({ 2024: bossBountiesVnd[0], 2025: bossBountiesVnd[1], 2026: bossBountiesVnd[2] })]
+    [JSON.stringify({ easy: bossCompletionBonusNP[0], medium: bossCompletionBonusNP[1], hard: bossCompletionBonusNP[2] })]
   );
 };
 
@@ -392,27 +393,29 @@ app.get('/api/profile/:id', authMiddleware, async (req: any, res) => {
     const statsRes = await pool.query('SELECT * FROM ge10_category_stats WHERE user_id = $1', [userId]);
     // 5. Fetch logs (last 200)
     const logsRes = await pool.query('SELECT * FROM ge10_history_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 200', [userId]);
-    // 6. Fetch rewards
+    // 6. Fetch reward catalog (Phần Thưởng Thực Tế — CORE_SPECS §3.2)
     let rewardsRes = await pool.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
     if (rewardsRes.rowCount === 0) {
       const defaultRewards = [
-        { id: `default-rew-1-${userId}`, title: '1 giờ chơi iPad/Game', cost_coins: 100, cash_value_vnd: 10000 },
-        { id: `default-rew-2-${userId}`, title: 'Ly trà sữa đặc biệt', cost_coins: 150, cash_value_vnd: 15000 },
-        { id: `default-rew-3-${userId}`, title: 'Một cuốn truyện tranh tự chọn', cost_coins: 150, cash_value_vnd: 15000 },
-        { id: `default-rew-4-${userId}`, title: 'Bữa gà rán KFC/Jollibee', cost_coins: 200, cash_value_vnd: 20000 },
-        { id: `default-rew-5-${userId}`, title: 'Vé xem phim cuối tuần', cost_coins: 200, cash_value_vnd: 20000 }
+        { id: `default-rew-1-${userId}`, title: '15 phút chơi game', cost_coins: 150, quantity: 10 },
+        { id: `default-rew-2-${userId}`, title: 'Ly trà sữa đặc biệt', cost_coins: 400, quantity: 4 },
+        { id: `default-rew-3-${userId}`, title: 'Bao lì xì 20.000đ', cost_coins: 500, quantity: 5 },
+        { id: `default-rew-4-${userId}`, title: 'Bao lì xì 50.000đ', cost_coins: 1000, quantity: 3 },
+        { id: `default-rew-5-${userId}`, title: 'Bao lì xì 100.000đ', cost_coins: 1800, quantity: 1 }
       ];
 
       for (const dr of defaultRewards) {
         await pool.query(
-          `INSERT INTO ge10_parent_rewards (id, user_id, title, cost_coins, cash_value_vnd, status, timestamp)
+          `INSERT INTO ge10_parent_rewards (id, user_id, title, cost_coins, quantity, remaining_quantity, timestamp)
            VALUES ($1, $2, $3, $4, $5, $6, $7)
            ON CONFLICT (id) DO NOTHING`,
-          [dr.id, userId, dr.title, dr.cost_coins, dr.cash_value_vnd, 'pending', Date.now()]
+          [dr.id, userId, dr.title, dr.cost_coins, dr.quantity, dr.quantity, Date.now()]
         );
       }
       rewardsRes = await pool.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
     }
+    // 6b. Fetch lượt đổi quà (RewardRedemption)
+    const redemptionsRes = await pool.query('SELECT * FROM ge10_reward_redemptions WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
     // 7. Fetch challenges
     const challengesRes = await pool.query('SELECT * FROM ge10_user_challenges WHERE user_id = $1', [userId]);
     // 8. Fetch daily mission
@@ -444,7 +447,7 @@ app.get('/api/profile/:id', authMiddleware, async (req: any, res) => {
       };
     });
 
-    const bossBountiesVnd = await loadBossBounties();
+    const bossCompletionBonusNP = await loadBossCompletionBonusNP();
     const challengeEnergyCosts = await loadChallengeEnergyCosts();
     const maxEnergy = await loadMaxEnergy();
     const baseXP = await loadBaseXP();
@@ -473,14 +476,25 @@ app.get('/api/profile/:id', authMiddleware, async (req: any, res) => {
       walletChanged: row.wallet_changed
     }));
 
-    // Format rewards list
+    // Format reward catalog list
     const rewards = rewardsRes.rows.map((row: any) => ({
       id: row.id,
       title: row.title,
       costCoins: row.cost_coins,
-      cashValueVND: row.cash_value_vnd,
-      status: row.status,
+      quantity: row.quantity,
+      remainingQuantity: row.remaining_quantity,
       timestamp: Number(row.timestamp)
+    }));
+
+    // Format reward redemptions list
+    const rewardRedemptions = redemptionsRes.rows.map((row: any) => ({
+      id: row.id,
+      rewardId: row.reward_id,
+      rewardTitle: row.reward_title,
+      costCoins: row.cost_coins,
+      status: row.status,
+      timestamp: Number(row.timestamp),
+      deliveredAt: row.delivered_at ? Number(row.delivered_at) : undefined
     }));
 
     // Map challenges JSONB
@@ -521,7 +535,6 @@ app.get('/api/profile/:id', authMiddleware, async (req: any, res) => {
         level: playerRes.rows[0].level,
         xp: playerRes.rows[0].xp,
         coins: playerRes.rows[0].coins,
-        walletVND: playerRes.rows[0].wallet_vnd,
         streak: playerRes.rows[0].streak,
         energy: playerRes.rows[0].energy,
         hearts: playerRes.rows[0].hearts,
@@ -540,10 +553,11 @@ app.get('/api/profile/:id', authMiddleware, async (req: any, res) => {
       categoryStats,
       logs,
       rewards,
+      rewardRedemptions,
       challenges,
       dailyMission,
       gameSettings: {
-        bossBountiesVnd,
+        bossCompletionBonusNP,
         challengeEnergyCosts,
         maxEnergy,
         baseXP,
@@ -575,19 +589,18 @@ app.post('/api/profile/:id/sync', authMiddleware, async (req: any, res) => {
   // Verify ownership
   const check = await pool.query('SELECT id FROM ge10_users WHERE id = $1 AND account_id = $2', [userId, accountId]);
   if (check.rowCount === 0) return res.status(403).json({ error: 'Unauthorized' });
-  const { player, pet, categoryStats, logs, rewards, challenges, dailyMission, lessonsProgress } = req.body;
+  const { player, pet, categoryStats, logs, rewards, rewardRedemptions, challenges, dailyMission, lessonsProgress } = req.body;
 
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
 
     let mergedEnergy = player ? player.energy : 1000;
-    let mergedWallet = player ? player.walletVND : 0;
 
     // 1. Sync player profile
     if (player) {
       const currentProfileRes = await client.query(
-        'SELECT energy, wallet_vnd, server_updated_at FROM ge10_player_profiles WHERE user_id = $1',
+        'SELECT energy, server_updated_at FROM ge10_player_profiles WHERE user_id = $1',
         [userId]
       );
       if (currentProfileRes.rows.length > 0) {
@@ -598,18 +611,16 @@ app.post('/api/profile/:id/sync', authMiddleware, async (req: any, res) => {
         if (dbServerUpdatedAt > clientLastSyncTime) {
           // Keep server values since they are newer (e.g. from parent console)
           mergedEnergy = dbProfile.energy;
-          mergedWallet = dbProfile.wallet_vnd;
         }
       }
 
       await client.query(
-        `INSERT INTO ge10_player_profiles (user_id, level, xp, coins, wallet_vnd, streak, energy, hearts, last_active, badges)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        `INSERT INTO ge10_player_profiles (user_id, level, xp, coins, streak, energy, hearts, last_active, badges)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
          ON CONFLICT (user_id) DO UPDATE SET
            level = EXCLUDED.level,
            xp = EXCLUDED.xp,
            coins = EXCLUDED.coins,
-           wallet_vnd = EXCLUDED.wallet_vnd,
            streak = EXCLUDED.streak,
            energy = EXCLUDED.energy,
            hearts = EXCLUDED.hearts,
@@ -620,7 +631,6 @@ app.post('/api/profile/:id/sync', authMiddleware, async (req: any, res) => {
           player.level,
           player.xp,
           player.coins,
-          mergedWallet,
           player.streak,
           mergedEnergy,
           player.hearts,
@@ -685,15 +695,32 @@ app.post('/api/profile/:id/sync', authMiddleware, async (req: any, res) => {
       }
     }
 
-    // 5. Sync parent rewards list
+    // 5. Sync reward catalog (Phần Thưởng Thực Tế — CORE_SPECS §3.2)
     if (rewards && Array.isArray(rewards)) {
       for (const r of rewards) {
         await client.query(
-          `INSERT INTO ge10_parent_rewards (id, user_id, title, cost_coins, cash_value_vnd, status, timestamp)
+          `INSERT INTO ge10_parent_rewards (id, user_id, title, cost_coins, quantity, remaining_quantity, timestamp)
            VALUES ($1, $2, $3, $4, $5, $6, $7)
            ON CONFLICT (id) DO UPDATE SET
-             status = EXCLUDED.status`,
-          [r.id, userId, r.title, r.costCoins, r.cashValueVND, r.status, r.timestamp]
+             title = EXCLUDED.title,
+             cost_coins = EXCLUDED.cost_coins,
+             quantity = EXCLUDED.quantity,
+             remaining_quantity = EXCLUDED.remaining_quantity`,
+          [r.id, userId, r.title, r.costCoins, r.quantity, r.remainingQuantity, r.timestamp]
+        );
+      }
+    }
+
+    // 5b. Sync reward redemptions (lượt đổi quà)
+    if (rewardRedemptions && Array.isArray(rewardRedemptions)) {
+      for (const rr of rewardRedemptions) {
+        await client.query(
+          `INSERT INTO ge10_reward_redemptions (id, user_id, reward_id, reward_title, cost_coins, status, timestamp, delivered_at)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+           ON CONFLICT (id) DO UPDATE SET
+             status = EXCLUDED.status,
+             delivered_at = EXCLUDED.delivered_at`,
+          [rr.id, userId, rr.rewardId, rr.rewardTitle, rr.costCoins, rr.status, rr.timestamp, rr.deliveredAt || null]
         );
       }
     }
@@ -737,12 +764,11 @@ app.post('/api/profile/:id/sync', authMiddleware, async (req: any, res) => {
     }
 
     await client.query('COMMIT');
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       timestamp: new Date().toISOString(),
       player: player ? {
-        energy: mergedEnergy,
-        walletVND: mergedWallet
+        energy: mergedEnergy
       } : null
     });
   } catch (error) {
@@ -1481,8 +1507,9 @@ app.post('/api/admin/promote', authMiddleware, async (req: any, res) => {
   }
 });
 
-// POST /api/admin/approve-reward: Approves a student's pending reward, adding cash to their wallet
-app.post('/api/admin/approve-reward', authMiddleware, async (req: any, res) => {
+// POST /api/admin/deliver-reward: Confirms a student's pending redemption has been handed over in real life
+// (CORE_SPECS §3.2 — app không quản lý tiền, hành động này KHÔNG chạy bất kỳ giao dịch tiền nào).
+app.post('/api/admin/deliver-reward', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
     const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
@@ -1490,128 +1517,41 @@ app.post('/api/admin/approve-reward', authMiddleware, async (req: any, res) => {
       return res.status(403).json({ error: 'Forbidden: Admin access only.' });
     }
 
-    const { studentUserId, rewardId } = req.body;
-    if (!studentUserId || !rewardId) {
-      return res.status(400).json({ error: 'Missing studentUserId or rewardId.' });
+    const { studentUserId, redemptionId } = req.body;
+    if (!studentUserId || !redemptionId) {
+      return res.status(400).json({ error: 'Missing studentUserId or redemptionId.' });
     }
 
-    // Check if the reward exists and is pending
-    const rewardRes = await pool.query(
-      'SELECT title, cash_value_vnd FROM ge10_parent_rewards WHERE id = $1 AND user_id = $2 AND status = \'pending\'',
-      [rewardId, studentUserId]
+    const redemptionRes = await pool.query(
+      'SELECT reward_title FROM ge10_reward_redemptions WHERE id = $1 AND user_id = $2 AND status = \'pending\'',
+      [redemptionId, studentUserId]
     );
-
-    if (rewardRes.rowCount === 0) {
-      return res.status(404).json({ error: 'Pending reward not found.' });
+    if (redemptionRes.rowCount === 0) {
+      return res.status(404).json({ error: 'Pending redemption not found.' });
     }
+    const { reward_title } = redemptionRes.rows[0];
 
-    const { title, cash_value_vnd } = rewardRes.rows[0];
-
-    // Begin Transaction to ensure atomic update
     const client = await pool.connect();
     try {
       await client.query('BEGIN');
 
-      // Update reward status
+      const deliveredAt = Date.now();
       await client.query(
-        'UPDATE ge10_parent_rewards SET status = \'approved\' WHERE id = $1 AND user_id = $2',
-        [rewardId, studentUserId]
+        "UPDATE ge10_reward_redemptions SET status = 'delivered', delivered_at = $1 WHERE id = $2 AND user_id = $3",
+        [deliveredAt, redemptionId, studentUserId]
       );
 
-      // Increase wallet balance
-      await client.query(
-        'UPDATE ge10_player_profiles SET wallet_vnd = wallet_vnd + $1, server_updated_at = NOW() WHERE user_id = $2',
-        [cash_value_vnd, studentUserId]
-      );
-
-      // Log activity
       const logId = `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       await client.query(
-        `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, coins_changed, xp_changed, wallet_changed)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
+        `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, coins_changed, xp_changed)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
         [
           logId,
           studentUserId,
           Date.now(),
-          'energy_refill',
-          `Ví thưởng +${cash_value_vnd.toLocaleString()}đ`,
-          `Ba mẹ đã duyệt đổi phần quà: ${title}`,
-          0,
-          0,
-          cash_value_vnd
-        ]
-      );
-
-      await client.query('COMMIT');
-      res.json({ success: true });
-    } catch (txErr) {
-      await client.query('ROLLBACK');
-      throw txErr;
-    } finally {
-      client.release();
-    }
-  } catch (error: any) {
-    console.error('Error approving reward:', error.message);
-    res.status(500).json({ error: 'Failed to approve reward.' });
-  }
-});
-
-// POST /api/admin/reject-reward: Rejects a student's pending reward, refunding their coins
-app.post('/api/admin/reject-reward', authMiddleware, async (req: any, res) => {
-  const adminId = req.user.sub;
-  try {
-    const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
-    if (adminCheck.rowCount === 0 || (adminCheck.rows[0].role !== 'truong_vien' && adminCheck.rows[0].role !== 'pho_vien')) {
-      return res.status(403).json({ error: 'Forbidden: Admin access only.' });
-    }
-
-    const { studentUserId, rewardId } = req.body;
-    if (!studentUserId || !rewardId) {
-      return res.status(400).json({ error: 'Missing studentUserId or rewardId.' });
-    }
-
-    // Check if the reward exists and is pending
-    const rewardRes = await pool.query(
-      'SELECT title, cost_coins FROM ge10_parent_rewards WHERE id = $1 AND user_id = $2 AND status = \'pending\'',
-      [rewardId, studentUserId]
-    );
-
-    if (rewardRes.rowCount === 0) {
-      return res.status(404).json({ error: 'Pending reward not found.' });
-    }
-
-    const { title, cost_coins } = rewardRes.rows[0];
-
-    // Begin Transaction
-    const client = await pool.connect();
-    try {
-      await client.query('BEGIN');
-
-      // Update reward status
-      await client.query(
-        'UPDATE ge10_parent_rewards SET status = \'rejected\' WHERE id = $1 AND user_id = $2',
-        [rewardId, studentUserId]
-      );
-
-      // Refund coins
-      await client.query(
-        'UPDATE ge10_player_profiles SET coins = coins + $1 WHERE user_id = $2',
-        [cost_coins, studentUserId]
-      );
-
-      // Log activity
-      const logId = `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-      await client.query(
-        `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, coins_changed, xp_changed, wallet_changed)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-        [
-          logId,
-          studentUserId,
-          Date.now(),
-          'energy_refill',
-          `Hoàn trả +${cost_coins} NP`,
-          `Ba mẹ từ chối phần quà: ${title}. Hoàn lại xu.`,
-          cost_coins,
+          'parent_approve',
+          'Đã Trao Phần Thưởng',
+          `Viện Chủ xác nhận đã trao "${reward_title}" ngoài đời.`,
           0,
           0
         ]
@@ -1626,13 +1566,13 @@ app.post('/api/admin/reject-reward', authMiddleware, async (req: any, res) => {
       client.release();
     }
   } catch (error: any) {
-    console.error('Error rejecting reward:', error.message);
-    res.status(500).json({ error: 'Failed to reject reward.' });
+    console.error('Error delivering reward:', error.message);
+    res.status(500).json({ error: 'Failed to deliver reward.' });
   }
 });
 
-// POST /api/admin/deduct-wallet: Deducts cash from a student's virtual wallet when parent pays out real cash
-app.post('/api/admin/deduct-wallet', authMiddleware, async (req: any, res: any) => {
+// POST /api/admin/cancel-redemption: Cancels a student's pending redemption, refunding NP and restocking quantity
+app.post('/api/admin/cancel-redemption', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
     const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
@@ -1640,48 +1580,66 @@ app.post('/api/admin/deduct-wallet', authMiddleware, async (req: any, res: any) 
       return res.status(403).json({ error: 'Forbidden: Admin access only.' });
     }
 
-    const { studentUserId, amount } = req.body;
-    if (!studentUserId || !amount || amount <= 0) {
-      return res.status(400).json({ error: 'Invalid parameters: studentUserId or amount.' });
+    const { studentUserId, redemptionId } = req.body;
+    if (!studentUserId || !redemptionId) {
+      return res.status(400).json({ error: 'Missing studentUserId or redemptionId.' });
     }
 
-    const currentRes = await pool.query('SELECT wallet_vnd FROM ge10_player_profiles WHERE user_id = $1', [studentUserId]);
-    if (currentRes.rowCount === 0) {
-      return res.status(404).json({ error: 'Student profile not found.' });
-    }
-
-    const currentWallet = currentRes.rows[0].wallet_vnd;
-    if (currentWallet < amount) {
-      return res.status(400).json({ error: `Số tiền khấu trừ (${amount.toLocaleString()}đ) vượt quá số dư hiện có (${currentWallet.toLocaleString()}đ)!` });
-    }
-
-    await pool.query(
-      'UPDATE ge10_player_profiles SET wallet_vnd = wallet_vnd - $1, server_updated_at = NOW() WHERE user_id = $2',
-      [amount, studentUserId]
+    const redemptionRes = await pool.query(
+      'SELECT reward_id, reward_title, cost_coins FROM ge10_reward_redemptions WHERE id = $1 AND user_id = $2 AND status = \'pending\'',
+      [redemptionId, studentUserId]
     );
+    if (redemptionRes.rowCount === 0) {
+      return res.status(404).json({ error: 'Pending redemption not found.' });
+    }
+    const { reward_id, reward_title, cost_coins } = redemptionRes.rows[0];
 
-    // Log the pocket money payout log
-    const logId = `log-deduct-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    await pool.query(
-      `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, coins_changed, xp_changed, wallet_changed)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-      [
-        logId,
-        studentUserId,
-        Date.now(),
-        'reward',
-        'Rút tiền mặt / Khấu trừ Ví',
-        `Ba Mẹ đã thanh toán ${amount.toLocaleString()}đ tiền mặt và khấu trừ vào Ví Thưởng.`,
-        0,
-        0,
-        -amount
-      ]
-    );
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
 
-    res.json({ success: true, newBalance: currentWallet - amount });
+      await client.query('DELETE FROM ge10_reward_redemptions WHERE id = $1 AND user_id = $2', [redemptionId, studentUserId]);
+
+      // Hoàn NP — được phép âm/dương tùy tình huống, không kẹp đáy (CORE_SPECS §3.1).
+      await client.query(
+        'UPDATE ge10_player_profiles SET coins = coins + $1 WHERE user_id = $2',
+        [cost_coins, studentUserId]
+      );
+
+      if (reward_id) {
+        await client.query(
+          'UPDATE ge10_parent_rewards SET remaining_quantity = remaining_quantity + 1 WHERE id = $1',
+          [reward_id]
+        );
+      }
+
+      const logId = `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      await client.query(
+        `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, coins_changed, xp_changed)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+        [
+          logId,
+          studentUserId,
+          Date.now(),
+          'parent_approve',
+          'Viện Chủ hoàn trả Ngân Lượng',
+          `Hủy lượt đổi "${reward_title}". Đã hoàn lại ${cost_coins} NP`,
+          cost_coins,
+          0
+        ]
+      );
+
+      await client.query('COMMIT');
+      res.json({ success: true });
+    } catch (txErr) {
+      await client.query('ROLLBACK');
+      throw txErr;
+    } finally {
+      client.release();
+    }
   } catch (error: any) {
-    console.error('Error deducting wallet:', error.message);
-    res.status(500).json({ error: 'Failed to deduct wallet.' });
+    console.error('Error cancelling redemption:', error.message);
+    res.status(500).json({ error: 'Failed to cancel redemption.' });
   }
 });
 
@@ -1754,19 +1712,19 @@ app.put('/api/admin/game-settings', authMiddleware, async (req: any, res: any) =
       return res.status(403).json({ error: 'Forbidden: Admin access only.' });
     }
 
-    const { bossBountiesVnd, challengeEnergyCosts, maxEnergy, baseXP, baseCoins } = req.body || {};
+    const { bossCompletionBonusNP, challengeEnergyCosts, maxEnergy, baseXP, baseCoins } = req.body || {};
     const response: any = { success: true };
 
-    if (bossBountiesVnd !== undefined) {
-      if (!Array.isArray(bossBountiesVnd) || bossBountiesVnd.length !== 3) {
-        return res.status(400).json({ error: 'Invalid parameters: bossBountiesVnd must contain 3 values.' });
+    if (bossCompletionBonusNP !== undefined) {
+      if (!Array.isArray(bossCompletionBonusNP) || bossCompletionBonusNP.length !== 3) {
+        return res.status(400).json({ error: 'Invalid parameters: bossCompletionBonusNP must contain 3 values.' });
       }
-      const normalizedBounties = bossBountiesVnd.map((value: any) => Math.max(0, Math.round(Number(value)))) as [number, number, number];
-      if (normalizedBounties.some(v => !Number.isFinite(v))) {
-        return res.status(400).json({ error: 'Invalid boss bounty values.' });
+      const normalizedBonus = bossCompletionBonusNP.map((value: any) => Math.max(0, Math.round(Number(value)))) as [number, number, number];
+      if (normalizedBonus.some(v => !Number.isFinite(v))) {
+        return res.status(400).json({ error: 'Invalid boss completion bonus values.' });
       }
-      await saveBossBounties(normalizedBounties);
-      response.bossBountiesVnd = normalizedBounties;
+      await saveBossCompletionBonusNP(normalizedBonus);
+      response.bossCompletionBonusNP = normalizedBonus;
     }
 
     if (challengeEnergyCosts !== undefined) {

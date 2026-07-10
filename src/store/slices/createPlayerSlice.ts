@@ -5,6 +5,7 @@ import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS, INITIAL_CHALLENGES,
 import { INITIAL_QUESTIONS } from '../../data/questions';
 import { INITIAL_LESSONS } from '../../data/lessons';
 import { DEFAULT_UI_THEME } from '../../theme/uiThemes';
+import type { RewardRedemption } from '../../types/game';
 import { supabase } from '../../utils/supabaseClient';
 import { logActivity, checkLevelUp } from '../helpers';
 import { eventBus } from '../../utils/EventBus';
@@ -15,7 +16,7 @@ export const createPlayerSlice: StateCreator<
   [],
   [],
   Pick<StoreState, 
-    'player' | 'pet' | 'questions' | 'lessons' | 'lessonsProgress' | 'explorationProgress' | 'pageExplorationStates' | 'categoryStats' | 'rewards' | 'challenges' | 'dailyMission' | 'logs' | 'activeCombo' | 'maxCombo' | 'lastSyncTime' | 'profiles' | 'petStates' | 'categoryStatsAll' | 'answerQuestion' | 'useEnergy' | 'addEnergy' | 'buyStreakShield' | 'buyHeart' | 'buyHint' | 'buyTheme' | 'claimParentReward' | 'feedPet' | 'spinWheel' | 'openMysteryBox' | 'masterLesson' | 'applyDefeatPenalty' | 'completeBossVictory' | 'completeLevel3Page' | 'updatePendingKeyQuestion' | 'awardCoinsAndXp' | 'clearExploration' | 'resetProgress' | 'checkDailyReset' | 'getAdaptiveQuestion' | 'getQuestionByWeight'
+    'player' | 'pet' | 'questions' | 'lessons' | 'lessonsProgress' | 'explorationProgress' | 'pageExplorationStates' | 'categoryStats' | 'rewards' | 'rewardRedemptions' | 'challenges' | 'dailyMission' | 'logs' | 'activeCombo' | 'maxCombo' | 'lastSyncTime' | 'profiles' | 'petStates' | 'categoryStatsAll' | 'answerQuestion' | 'useEnergy' | 'addEnergy' | 'buyStreakShield' | 'buyHint' | 'buyTheme' | 'redeemReward' | 'feedPet' | 'spinWheel' | 'openMysteryBox' | 'masterLesson' | 'applyDefeatPenalty' | 'completeBossVictory' | 'completeLevel3Page' | 'updatePendingKeyQuestion' | 'awardCoinsAndXp' | 'clearExploration' | 'resetProgress' | 'checkDailyReset' | 'getAdaptiveQuestion' | 'getQuestionByWeight'
   >
 > = (set, get) => ({
   player: INITIAL_PLAYER,
@@ -35,6 +36,8 @@ export const createPlayerSlice: StateCreator<
   categoryStats: {},
 
   rewards: DEFAULT_REWARDS,
+
+  rewardRedemptions: [],
 
   challenges: INITIAL_CHALLENGES,
 
@@ -275,20 +278,31 @@ export const createPlayerSlice: StateCreator<
           return true;
         },
 
-  claimParentReward: (rewardId) => {
+  redeemReward: (rewardId) => {
+          // Đổi Phần Thưởng Thực Tế (CORE_SPECS §3.2): hành động CHỦ Ý — bắt buộc đủ NP, không cho âm.
           const state = get();
           const reward = state.rewards.find(r => r.id === rewardId);
-          if (!reward || reward.status !== 'pending' || state.player.coins < reward.costCoins) return false;
+          if (!reward || reward.remainingQuantity <= 0 || state.player.coins < reward.costCoins) return false;
+
+          const redemption: RewardRedemption = {
+            id: `rr-${Date.now()}`,
+            rewardId: reward.id,
+            rewardTitle: reward.title,
+            costCoins: reward.costCoins,
+            status: 'pending',
+            timestamp: Date.now()
+          };
 
           set(prev => ({
             player: {
               ...prev.player,
               coins: prev.player.coins - reward.costCoins
             },
-            rewards: prev.rewards.map(r => r.id === rewardId ? { ...r, status: 'approved' } : r)
+            rewards: prev.rewards.map(r => r.id === rewardId ? { ...r, remainingQuantity: r.remainingQuantity - 1 } : r),
+            rewardRedemptions: [redemption, ...prev.rewardRedemptions]
           }));
 
-          logActivity(get, set, 'shop', 'Yêu cầu Phúc Lợi Gia Môn', `Đã quy đổi "${reward.title}" gửi Viện Chủ phê duyệt`, -reward.costCoins, 0);
+          logActivity(get, set, 'shop', 'Đổi Phần Thưởng Thực Tế', `Đã đổi "${reward.title}" — chờ Viện Chủ trao quà ngoài đời`, -reward.costCoins, 0);
           return true;
         },
 
@@ -340,13 +354,13 @@ export const createPlayerSlice: StateCreator<
 
   spinWheel: () => {
           const state = get();
-          // Simulating lucky rewards
+          // App không quản lý tiền (CORE_SPECS §3.2) — mọi phần thưởng quy hết về NP/Chân Khí.
           const rewardsOptions = [
             { type: 'coins', amount: 50, message: 'Nhận thêm +50 NP!' },
             { type: 'coins', amount: 100, message: 'Nhận thêm +100 NP!' },
             { type: 'energy', amount: 30, message: 'Hồi phục +30 Năng lượng!' },
-            { type: 'wallet', amount: 5000, message: 'May mắn nhận 5.000đ từ Ví thưởng!' },
-            { type: 'wallet', amount: 10000, message: 'Siêu cấp may mắn nhận 10.000đ từ Ví thưởng!' },
+            { type: 'coins', amount: 200, message: 'May mắn nhận +200 NP!' },
+            { type: 'coins', amount: 300, message: 'Siêu cấp may mắn nhận +300 NP!' },
             { type: 'nothing', amount: 0, message: 'Trượt tay lần này, gỡ ở lần sau.' }
           ];
 
@@ -359,9 +373,6 @@ export const createPlayerSlice: StateCreator<
           } else if (spin.type === 'energy') {
             get().addEnergy(spin.amount);
             logActivity(get, set, 'box_open', 'Vòng Quay May Mắn', spin.message, 0, 0);
-          } else if (spin.type === 'wallet') {
-            set({ player: { ...state.player, walletVND: state.player.walletVND + spin.amount } });
-            logActivity(get, set, 'box_open', 'Vòng Quay May Mắn', spin.message, 0, 0, spin.amount);
           }
 
           return { rewardType: spin.type, amount: spin.amount, message: spin.message };
@@ -370,8 +381,8 @@ export const createPlayerSlice: StateCreator<
   openMysteryBox: () => {
           const state = get();
           const boxRewards = [
-            { type: 'wallet', amount: 5000, message: 'Nhận ngay 5.000đ vào Ví thưởng!' },
-            { type: 'wallet', amount: 10000, message: 'Nhận ngay 10.000đ vào Ví thưởng!' },
+            { type: 'coins', amount: 100, message: 'Nhận ngay +100 NP!' },
+            { type: 'coins', amount: 200, message: 'Nhận ngay +200 NP!' },
             { type: 'coins', amount: 150, message: 'Nhận gói +150 NP!' },
             { type: 'shield', amount: 1, message: 'Nhận được 1 Khiên bảo vệ Streak!' },
             { type: 'empty', amount: 0, message: 'Rương trống rỗng, chúc con may mắn lần sau!' }
@@ -380,10 +391,7 @@ export const createPlayerSlice: StateCreator<
           const index = Math.floor(Math.random() * boxRewards.length);
           const reward = boxRewards[index];
 
-          if (reward.type === 'wallet') {
-            set({ player: { ...state.player, walletVND: state.player.walletVND + reward.amount } });
-            logActivity(get, set, 'box_open', 'Mở Hòm Bí Mật', reward.message, 0, 0, reward.amount);
-          } else if (reward.type === 'coins') {
+          if (reward.type === 'coins') {
             set({ player: { ...state.player, coins: state.player.coins + reward.amount } });
             logActivity(get, set, 'box_open', 'Mở Hòm Bí Mật', reward.message, reward.amount, 0);
           } else if (reward.type === 'shield') {
@@ -433,15 +441,14 @@ export const createPlayerSlice: StateCreator<
             }
           });
 
-          logActivity(get, set, 
+          logActivity(get, set,
             'exercise',
             hitTreasureChest ? 'Lĩnh ngộ bài học! Mở Rương Báu Ải 🎁' : 'Lĩnh ngộ bài học!',
             hitTreasureChest
               ? `Đã qua ải chuyên đề: ${lesson.title}. Độ chính xác ≥90% mở thêm Rương Báu Ải!`
               : `Đã qua ải chuyên đề: ${lesson.title}.`,
             coinsGained,
-            expGained,
-            0
+            expGained
           );
         },
 
@@ -464,13 +471,12 @@ export const createPlayerSlice: StateCreator<
           });
 
           if (coinsClawback > 0 || xpClawback > 0) {
-            logActivity(get, set, 
+            logActivity(get, set,
               'exercise',
               'Tẩu Hỏa Nhập Ma!',
-              'Hết Tim giữa trận, chỉ giữ được 50% chiến lợi phẩm thu được. Pet buồn thiu vì thấy con thất bại.',
+              'Sai đủ 3 câu giữa trận, chỉ giữ được 50% chiến lợi phẩm thu được. Pet buồn thiu vì thấy con thất bại.',
               -coinsClawback,
-              -xpClawback,
-              0
+              -xpClawback
             );
           }
         },
@@ -478,8 +484,10 @@ export const createPlayerSlice: StateCreator<
   completeBossVictory: () => {
           const state = get();
           const bonusXP = 150;
-          const vndBonusOptions = [10000, 15000, 20000];
-          const vndBonus = vndBonusOptions[Math.floor(Math.random() * vndBonusOptions.length)];
+          // Bonus Điểm khi hạ Boss — quảng bá trên Boss Card, do Chủ Viện/Phó Viện cấu hình (CORE_SPECS §2.1).
+          // Thay hoàn toàn thưởng tiền mặt cũ; Boss không bao giờ thưởng tiền.
+          const npBonusOptions = state.gameSettings.bossCompletionBonusNP ?? [100, 150, 200];
+          const npBonus = npBonusOptions[Math.floor(Math.random() * npBonusOptions.length)];
 
           const updatedXP = state.player.xp + bonusXP;
           const levelCheck = checkLevelUp(get, set, updatedXP, state.player.level);
@@ -490,17 +498,15 @@ export const createPlayerSlice: StateCreator<
               xp: levelCheck.xp,
               level: levelCheck.level,
               badges: levelCheck.badges,
-              coins: state.player.coins + (levelCheck.badgesChanged ? 100 : 0),
-              walletVND: state.player.walletVND + vndBonus
+              coins: state.player.coins + npBonus + (levelCheck.badgesChanged ? 100 : 0)
             }
           });
-          logActivity(get, set, 
+          logActivity(get, set,
             'boss',
             'Hạ Gục Boss! 🔥',
-            `Đánh bại Boss xuất sắc! Nhận thêm +${bonusXP} XP và ${vndBonus.toLocaleString()}đ thưởng nóng vào Ví Thưởng.`,
-            0,
-            bonusXP,
-            vndBonus
+            `Đánh bại Boss xuất sắc! Nhận thêm +${bonusXP} XP và bonus hoàn thành +${npBonus} NP.`,
+            npBonus,
+            bonusXP
           );
         },
 
@@ -717,7 +723,6 @@ export const createPlayerSlice: StateCreator<
               { description: 'Đạt đúng trên 10 câu Grammar Cave', type: 'category', target: 10, current: 0, completed: false },
               { description: 'Đạt đúng trên 10 câu Vocabulary Castle', type: 'category', target: 10, current: 0, completed: false }
             ],
-            rewardVND: 20000,
             rewardXP: 250,
             completed: false
           };

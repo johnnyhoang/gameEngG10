@@ -9,8 +9,7 @@ export const logActivity = (
   title: string,
   detail: string,
   coins = 0,
-  xp = 0,
-  wallet = 0
+  xp = 0
 ) => {
   const newLog: HistoryLog = {
     id: `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
@@ -20,7 +19,6 @@ export const logActivity = (
     detail,
     coinsChanged: coins,
     xpChanged: xp,
-    walletChanged: wallet,
     subject: get().currentSubject
   };
   set((state: any) => ({
@@ -45,7 +43,7 @@ export const checkLevelUp = (
     while (xp >= level * 200) {
       xp -= level * 200;
       level += 1;
-      logActivity(get, set, 'exercise', 'Thăng cấp!', `Bạn vừa chạm Level ${level}.`, 50, 0, 0);
+      logActivity(get, set, 'exercise', 'Thăng cấp!', `Bạn vừa chạm Level ${level}.`, 50, 0);
       eventBus.publish('PET_GROWTH', { levelUp: true });
     }
   };
@@ -66,8 +64,7 @@ export const checkLevelUp = (
         'Thăng cấp danh hiệu!',
         `Chúc mừng Thiếu hiệp đã thăng cấp danh hiệu lên ${newRank.icon} ${newRank.name}! Nhận thêm +100 Coin và +${rankUpBonusXp} XP.`,
         100,
-        rankUpBonusXp,
-        0
+        rankUpBonusXp
       );
     }
   }

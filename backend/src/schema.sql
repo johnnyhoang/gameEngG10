@@ -34,7 +34,6 @@ CREATE TABLE IF NOT EXISTS ge10_player_profiles (
     level INTEGER DEFAULT 1,
     xp INTEGER DEFAULT 0,
     coins INTEGER DEFAULT 200,
-    wallet_vnd INTEGER DEFAULT 0,
     streak INTEGER DEFAULT 0,
     energy INTEGER DEFAULT 1000,
     hearts INTEGER DEFAULT 3,
@@ -42,6 +41,9 @@ CREATE TABLE IF NOT EXISTS ge10_player_profiles (
     badges TEXT[] DEFAULT '{}'::TEXT[],
     server_updated_at TIMESTAMP DEFAULT NOW()
 );
+
+-- App không quản lý tiền nữa (CORE_SPECS §3.2) — Ví VND bị bãi bỏ hoàn toàn.
+ALTER TABLE ge10_player_profiles DROP COLUMN IF EXISTS wallet_vnd;
 
 -- Pet States Table
 CREATE TABLE IF NOT EXISTS ge10_pet_states (
@@ -79,16 +81,37 @@ CREATE TABLE IF NOT EXISTS ge10_history_logs (
     wallet_changed INTEGER DEFAULT 0
 );
 
--- Parent Payout Rewards Table
+-- Phần Thưởng Thực Tế (Reward Catalog) — CORE_SPECS §3.2. Do phụ huynh tự tạo, định giá NP,
+-- có số lượng giới hạn. Đây CHỈ là catalog item — một lượt đổi cụ thể nằm ở ge10_reward_redemptions.
 CREATE TABLE IF NOT EXISTS ge10_parent_rewards (
     id VARCHAR(255) PRIMARY KEY,
     user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
     cost_coins INTEGER NOT NULL,
-    cash_value_vnd INTEGER NOT NULL,
-    status VARCHAR(50) DEFAULT 'pending',
+    quantity INTEGER NOT NULL DEFAULT 1,
+    remaining_quantity INTEGER NOT NULL DEFAULT 1,
     timestamp BIGINT NOT NULL
 );
+
+-- App không quản lý tiền nữa (CORE_SPECS §3.2) — bỏ tỷ giá cash_value_vnd + status (chuyển sang bảng redemptions).
+ALTER TABLE ge10_parent_rewards DROP COLUMN IF EXISTS cash_value_vnd;
+ALTER TABLE ge10_parent_rewards DROP COLUMN IF EXISTS status;
+ALTER TABLE ge10_parent_rewards ADD COLUMN IF NOT EXISTS quantity INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE ge10_parent_rewards ADD COLUMN IF NOT EXISTS remaining_quantity INTEGER NOT NULL DEFAULT 1;
+
+-- Một lượt đổi quà cụ thể — trừ NP ngay, chờ phụ huynh xác nhận "Đã Trao" ngoài đời (CORE_SPECS §3.2).
+CREATE TABLE IF NOT EXISTS ge10_reward_redemptions (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
+    reward_id VARCHAR(255) REFERENCES ge10_parent_rewards(id) ON DELETE SET NULL,
+    reward_title VARCHAR(255) NOT NULL,
+    cost_coins INTEGER NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending',
+    timestamp BIGINT NOT NULL,
+    delivered_at BIGINT
+);
+
+CREATE INDEX IF NOT EXISTS idx_reward_redemptions_user ON ge10_reward_redemptions(user_id);
 
 -- Active Challenges Table (JSONB format for flexibility)
 CREATE TABLE IF NOT EXISTS ge10_user_challenges (
@@ -108,12 +131,14 @@ CREATE TABLE IF NOT EXISTS ge10_game_settings (
     setting_json JSONB NOT NULL
 );
 
+-- Bonus Điểm (NP) khi hạ Boss — thay hoàn toàn thưởng VND cũ (CORE_SPECS §2.1). Boss không thưởng tiền.
 INSERT INTO ge10_game_settings (setting_key, setting_json)
 VALUES (
-    'boss_bounties_vnd',
-    '{"2024": 10000, "2025": 15000, "2026": 20000}'::jsonb
+    'boss_completion_bonus_np',
+    '{"easy": 100, "medium": 150, "hard": 200}'::jsonb
 )
 ON CONFLICT (setting_key) DO NOTHING;
+DELETE FROM ge10_game_settings WHERE setting_key = 'boss_bounties_vnd';
 
 INSERT INTO ge10_game_settings (setting_key, setting_json)
 VALUES (

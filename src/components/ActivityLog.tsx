@@ -105,7 +105,7 @@ export const ActivityLog: React.FC = () => {
             }`}>
               <span className={isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}>Phần thưởng hoàn thành:</span>
               <span className={`font-orbitron font-bold ${isUnicorn ? 'text-violet-700' : 'text-synth-magenta'}`}>
-                +{dailyMission.rewardVND.toLocaleString()}đ (Ví)
+                +{dailyMission.rewardXP} XP
               </span>
             </div>
           </div>
@@ -155,7 +155,7 @@ export const ActivityLog: React.FC = () => {
                   </p>
                   
                   {/* Reward indicator */}
-                  {(log.coinsChanged !== 0 || log.xpChanged !== 0 || log.walletChanged !== 0) && (
+                  {(log.coinsChanged !== 0 || log.xpChanged !== 0) && (
                     <div className="flex gap-2 mt-1.5 text-[9px] font-orbitron font-bold">
                       {log.coinsChanged > 0 && (
                         <span className="text-synth-orange">+{log.coinsChanged} NP</span>
@@ -165,12 +165,6 @@ export const ActivityLog: React.FC = () => {
                       )}
                       {log.xpChanged > 0 && (
                         <span className="text-synth-cyan">+{log.xpChanged} XP</span>
-                      )}
-                      {log.walletChanged > 0 && (
-                        <span className="text-synth-magenta">+{log.walletChanged.toLocaleString()}đ</span>
-                      )}
-                      {log.walletChanged < 0 && (
-                        <span className="text-red-400">-{Math.abs(log.walletChanged).toLocaleString()}đ</span>
                       )}
                     </div>
                   )}

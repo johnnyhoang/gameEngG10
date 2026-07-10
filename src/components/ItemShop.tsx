@@ -8,11 +8,12 @@ import { FogCard } from './FogCard';
 export const ItemShop: React.FC = () => {
   const player = useGameState(state => state.player);
   const rewards = useGameState(state => state.rewards);
+  const rewardRedemptions = useGameState(state => state.rewardRedemptions);
   const buyStreakShield = useGameState(state => state.buyStreakShield);
   const buyHint = useGameState(state => state.buyHint);
   const buyTheme = useGameState(state => state.buyTheme);
   const setUiTheme = useGameState(state => state.setUiTheme);
-  const claimParentReward = useGameState(state => state.claimParentReward);
+  const redeemReward = useGameState(state => state.redeemReward);
   const uiTheme = useGameState(state => state.uiTheme);
   const isUnicorn = uiTheme === 'unicorn-dream';
   const unlockedThemes = player.unlockedThemes || ['current'];
@@ -44,25 +45,23 @@ export const ItemShop: React.FC = () => {
     }
   };
 
-  const handleClaimReward = (id: string) => {
-    const success = claimParentReward(id);
+  const handleRedeem = (id: string, title: string) => {
+    const success = redeemReward(id);
     if (!success) {
-      toast.error('Ngân lượng chưa đủ để đổi Phúc Lợi này!');
+      toast.error('Ngân lượng chưa đủ hoặc phần thưởng đã hết số lượng!');
     } else {
-      toast.success('🎁 Gửi yêu cầu Phúc Lợi Gia Môn thành công. Chờ Viện Chủ phê duyệt.');
+      toast.success(`🎁 Đã đổi "${title}"! Chờ Viện Chủ trao quà ngoài đời nhé.`);
     }
   };
 
   const hasStreakShield = player.badges?.includes('Streak Shield') || false;
 
-  const getStatusBadge = (status: string) => {
+  const getRedemptionStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold bg-synth-orange/20 text-synth-orange border border-synth-orange/30 uppercase">Chờ Duyệt</span>;
-      case 'approved':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold bg-synth-cyan/20 text-synth-cyan border border-synth-cyan/30 uppercase animate-pulse">Viện Chủ Đã Duyệt ✓</span>;
-      case 'claimed':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold bg-synth-green/20 text-synth-green border border-synth-green/30 uppercase">Đã Nhận Phúc Lợi</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold bg-synth-orange/20 text-synth-orange border border-synth-orange/30 uppercase animate-pulse">Chờ Viện Chủ Trao</span>;
+      case 'delivered':
+        return <span className="px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold bg-synth-green/20 text-synth-green border border-synth-green/30 uppercase">Đã Trao ✓</span>;
       default:
         return null;
     }
@@ -287,8 +286,9 @@ export const ItemShop: React.FC = () => {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {rewards.map(reward => {
-              const isRedeemed = reward.status !== 'pending';
+              const isOutOfStock = reward.remainingQuantity <= 0;
               const isAffordable = player.coins >= reward.costCoins;
+              const canRedeem = !isOutOfStock && isAffordable;
 
               return (
                 <div key={reward.id} className="relative">
@@ -296,12 +296,12 @@ export const ItemShop: React.FC = () => {
                     pageId={`shop-reward-${reward.id}`}
                     requiredCompletions={1}
                     decayDays={5}
-                    onOpenLevel3={() => !isRedeemed && isAffordable && handleClaimReward(reward.id)}
+                    onOpenLevel3={() => canRedeem && handleRedeem(reward.id, reward.title)}
                   >
                     <div
                       className={`glass-panel rounded-2xl p-4 flex justify-between items-center transition-all duration-200 h-full ${
                         isUnicorn ? 'border-violet-200/25 bg-white/75 hover:bg-white/90' : 'border border-white/5 bg-synth-gray/20 hover:bg-synth-gray/30'
-                      }`}
+                      } ${isOutOfStock ? 'opacity-50' : ''}`}
                     >
                       <div className="flex gap-3 items-center min-w-0">
                         <div className="w-10 h-10 rounded-lg bg-synth-blue/60 border border-white/5 flex items-center justify-center shrink-0 text-xl">
@@ -313,37 +313,59 @@ export const ItemShop: React.FC = () => {
                             <span className={`text-[10px] font-bold font-orbitron ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-orange'}`}>
                               {reward.costCoins} NP
                             </span>
-                            {reward.cashValueVND > 0 && (
-                              <span className="text-[10px] text-synth-green font-bold font-orbitron border border-synth-green/30 px-1 rounded bg-synth-green/5">
-                                {reward.cashValueVND.toLocaleString()}đ mặt
-                              </span>
-                            )}
+                            <span className={`text-[10px] font-bold font-orbitron px-1 rounded border ${
+                              isOutOfStock
+                                ? 'text-red-400 border-red-400/30 bg-red-400/5'
+                                : 'text-synth-cyan border-synth-cyan/30 bg-synth-cyan/5'
+                            }`}>
+                              Còn {reward.remainingQuantity}/{reward.quantity}
+                            </span>
                           </div>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2 ml-2 shrink-0">
-                        {isRedeemed ? (
-                          getStatusBadge(reward.status)
-                        ) : (
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleClaimReward(reward.id); }}
-                            disabled={!isAffordable}
-                            className={`px-3.5 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed ${
-                              isUnicorn
-                                ? 'bg-gradient-to-r from-fuchsia-300 to-violet-300 text-violet-900 hover:brightness-105'
-                                : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.3)]'
-                            }`}
-                          >
-                            Đổi Phúc Lợi
-                          </button>
-                        )}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleRedeem(reward.id, reward.title); }}
+                          disabled={!canRedeem}
+                          className={`px-3.5 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed ${
+                            isUnicorn
+                              ? 'bg-gradient-to-r from-fuchsia-300 to-violet-300 text-violet-900 hover:brightness-105'
+                              : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.3)]'
+                          }`}
+                        >
+                          {isOutOfStock ? 'Hết Hàng' : 'Đổi Phúc Lợi'}
+                        </button>
                       </div>
                     </div>
                   </FogCard>
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {rewardRedemptions.length > 0 && (
+          <div className="pt-2 space-y-2">
+            <h4 className={`text-xs font-orbitron font-bold uppercase tracking-wider ${isUnicorn ? 'text-violet-700' : 'text-synth-text-muted'}`}>
+              Nhật ký đổi quà
+            </h4>
+            <div className="space-y-2 max-h-56 overflow-y-auto">
+              {rewardRedemptions.map(redemption => (
+                <div
+                  key={redemption.id}
+                  className={`rounded-xl p-3 flex justify-between items-center ${
+                    isUnicorn ? 'bg-white/60 border border-violet-200/25' : 'bg-white/5 border border-white/5'
+                  }`}
+                >
+                  <div>
+                    <span className={`text-xs font-semibold block ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{redemption.rewardTitle}</span>
+                    <span className="text-[10px] text-synth-text-muted">{new Date(redemption.timestamp).toLocaleString('vi-VN')}</span>
+                  </div>
+                  {getRedemptionStatusBadge(redemption.status)}
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </div>

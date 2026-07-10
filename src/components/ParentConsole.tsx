@@ -54,9 +54,10 @@ const getTopicLabel = (question: Question) => {
 export const ParentConsole: React.FC = () => {
   const verifyPIN = useGameState(state => state.verifyPIN);
   const changePIN = useGameState(state => state.changePIN);
-  const approveReward = useGameState(state => state.approveReward);
-  const rejectReward = useGameState(state => state.rejectReward);
+  const markRewardDelivered = useGameState(state => state.markRewardDelivered);
+  const cancelRedemption = useGameState(state => state.cancelRedemption);
   const addParentReward = useGameState(state => state.addParentReward);
+  const deleteParentReward = useGameState(state => state.deleteParentReward);
   const parentPIN = useGameState(state => state.parentPIN);
 
   // Admin and member management states
@@ -66,10 +67,9 @@ export const ParentConsole: React.FC = () => {
   const fetchAdminStudents = useGameState(state => state.fetchAdminStudents);
   const promoteUser = useGameState(state => state.promoteUser);
   const fetchStudentProfile = useGameState(state => state.fetchStudentProfile);
-  const adminApproveReward = useGameState(state => state.adminApproveReward);
-  const adminRejectReward = useGameState(state => state.adminRejectReward);
+  const adminMarkRewardDelivered = useGameState(state => state.adminMarkRewardDelivered);
+  const adminCancelRedemption = useGameState(state => state.adminCancelRedemption);
   const showHelp = useGameState(state => state.showHelp);
-  const adminDeductWallet = useGameState(state => state.adminDeductWallet);
   const adminSetEnergy = useGameState(state => state.adminSetEnergy);
   const updateGameSettings = useGameState(state => state.updateGameSettings);
   const gameSettings = useGameState(state => state.gameSettings);
@@ -97,7 +97,6 @@ export const ParentConsole: React.FC = () => {
   const [questTitle, setQuestTitle] = useState('');
   const [questDesc, setQuestDesc] = useState('');
   const [questNP, setQuestNP] = useState(50);
-  const [questVND, setQuestVND] = useState(5000);
 
   // Cẩm Nang Bí Lục local states
   const [hbCategory, setHbCategory] = useState('Dặn Dò của Viện Chủ');
@@ -120,11 +119,11 @@ export const ParentConsole: React.FC = () => {
   // Create Reward States
   const [rewardTitle, setRewardTitle] = useState('');
   const [rewardCost, setRewardCost] = useState(200);
-  const [rewardCash, setRewardCash] = useState(20000);
+  const [rewardQuantity, setRewardQuantity] = useState(5);
   const [studentEnergyPercent, setStudentEnergyPercent] = useState(100);
-  const [bossBounty2024, setBossBounty2024] = useState(10000);
-  const [bossBounty2025, setBossBounty2025] = useState(15000);
-  const [bossBounty2026, setBossBounty2026] = useState(20000);
+  const [bossBonusEasy, setBossBonusEasy] = useState(100);
+  const [bossBonusMedium, setBossBonusMedium] = useState(150);
+  const [bossBonusHard, setBossBonusHard] = useState(200);
   const [challengeCost1, setChallengeCost1] = useState(30);
   const [challengeCost2, setChallengeCost2] = useState(30);
   const [challengeCost3, setChallengeCost3] = useState(30);
@@ -191,11 +190,11 @@ export const ParentConsole: React.FC = () => {
   }, [selectedStudentProfile?.player?.energy, gameSettings.maxEnergy]);
 
   useEffect(() => {
-    const bossBounties = gameSettings?.bossBountiesVnd ?? [10000, 15000, 20000];
-    const [b2024, b2025, b2026] = bossBounties;
-    setBossBounty2024(b2024);
-    setBossBounty2025(b2025);
-    setBossBounty2026(b2026);
+    const bossBonuses = gameSettings?.bossCompletionBonusNP ?? [100, 150, 200];
+    const [bEasy, bMedium, bHard] = bossBonuses;
+    setBossBonusEasy(bEasy);
+    setBossBonusMedium(bMedium);
+    setBossBonusHard(bHard);
     const challengeCosts = gameSettings?.challengeEnergyCosts ?? [30, 30, 30, 30];
     const [c1, c2, c3, c4] = challengeCosts;
     setChallengeCost1(c1);
@@ -205,7 +204,7 @@ export const ParentConsole: React.FC = () => {
     setMaxEnergyVal(gameSettings?.maxEnergy ?? 1000);
     setBaseXPVal(gameSettings?.baseXP ?? 15);
     setBaseCoinsVal(gameSettings?.baseCoins ?? 5);
-  }, [gameSettings?.bossBountiesVnd, gameSettings?.challengeEnergyCosts, gameSettings?.maxEnergy, gameSettings?.baseXP, gameSettings?.baseCoins]);
+  }, [gameSettings?.bossCompletionBonusNP, gameSettings?.challengeEnergyCosts, gameSettings?.maxEnergy, gameSettings?.baseXP, gameSettings?.baseCoins]);
 
   useEffect(() => {
     if (!editingQuestion) return;
@@ -327,7 +326,7 @@ export const ParentConsole: React.FC = () => {
   const handleCreateReward = (e: React.FormEvent) => {
     e.preventDefault();
     if (!rewardTitle.trim()) return;
-    addParentReward(rewardTitle, rewardCost, rewardCash);
+    addParentReward(rewardTitle, rewardCost, rewardQuantity);
     setRewardTitle('');
     toast.success('Thêm quà tặng mới thành công.');
   };
@@ -338,7 +337,7 @@ export const ParentConsole: React.FC = () => {
       toast.error('Vui lòng điền tiêu đề và mô tả nhiệm vụ!');
       return;
     }
-    addParentQuest(questTitle, questDesc, questNP, questVND);
+    addParentQuest(questTitle, questDesc, questNP);
     setQuestTitle('');
     setQuestDesc('');
     toast.success('Giao nhiệm vụ phụ huynh giao thành công! 🎯');
@@ -347,7 +346,8 @@ export const ParentConsole: React.FC = () => {
 
 
   // Active Data bindings: if viewing a student, use their loaded data. Otherwise fall back to parent.
-  const activeRewards = selectedStudentProfile?.rewards || [];
+  const activeRewardCatalog = selectedStudentProfile?.rewards || [];
+  const activeRedemptions = selectedStudentProfile?.rewardRedemptions || [];
 
   const questionTypeCounts = useMemo(() => {
     return questions.reduce((acc: Record<string, number>, q) => {
@@ -632,39 +632,42 @@ export const ParentConsole: React.FC = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <label className="space-y-2 text-xs">
-                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Boss 2024 Bounty (VNĐ)</span>
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Bonus Boss — Đề Dễ (NP)</span>
                 <input
                   type="number"
                   min={0}
-                  step={1000}
-                  value={bossBounty2024}
-                  onChange={(e) => setBossBounty2024(Number(e.target.value) || 0)}
+                  step={10}
+                  value={bossBonusEasy}
+                  onChange={(e) => setBossBonusEasy(Number(e.target.value) || 0)}
                   className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
                 />
               </label>
               <label className="space-y-2 text-xs">
-                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Boss 2025 Bounty (VNĐ)</span>
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Bonus Boss — Đề Trung Bình (NP)</span>
                 <input
                   type="number"
                   min={0}
-                  step={1000}
-                  value={bossBounty2025}
-                  onChange={(e) => setBossBounty2025(Number(e.target.value) || 0)}
+                  step={10}
+                  value={bossBonusMedium}
+                  onChange={(e) => setBossBonusMedium(Number(e.target.value) || 0)}
                   className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
                 />
               </label>
               <label className="space-y-2 text-xs">
-                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Boss 2026 Bounty (VNĐ)</span>
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Bonus Boss — Đề Khó (NP)</span>
                 <input
                   type="number"
                   min={0}
-                  step={1000}
-                  value={bossBounty2026}
-                  onChange={(e) => setBossBounty2026(Number(e.target.value) || 0)}
+                  step={10}
+                  value={bossBonusHard}
+                  onChange={(e) => setBossBonusHard(Number(e.target.value) || 0)}
                   className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
                 />
               </label>
             </div>
+            <p className="text-[10px] text-synth-text-muted -mt-2">
+              Bonus hoàn thành khi hạ Boss — quảng bá ngay trên Boss Card. Boss không thưởng tiền mặt (CORE_SPECS §2.1).
+            </p>
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {[
@@ -730,7 +733,7 @@ export const ParentConsole: React.FC = () => {
               <button
                 onClick={async () => {
                   await updateGameSettings({
-                    bossBountiesVnd: [bossBounty2024, bossBounty2025, bossBounty2026],
+                    bossCompletionBonusNP: [bossBonusEasy, bossBonusMedium, bossBonusHard],
                     challengeEnergyCosts: [challengeCost1, challengeCost2, challengeCost3, challengeCost4],
                     maxEnergy: maxEnergyVal,
                     baseXP: baseXPVal,
@@ -782,15 +785,19 @@ export const ParentConsole: React.FC = () => {
                       />
                     </div>
                     <div className="flex flex-col gap-1">
-                      <label className="text-[10px] text-synth-text-muted uppercase">Giá trị VNĐ (Mặt)</label>
+                      <label className="text-[10px] text-synth-text-muted uppercase">Số lượng</label>
                       <input
                         type="number"
-                        value={rewardCash}
-                        onChange={(e) => setRewardCash(Number(e.target.value))}
+                        min={1}
+                        value={rewardQuantity}
+                        onChange={(e) => setRewardQuantity(Number(e.target.value))}
                         className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange"
                       />
                     </div>
                   </div>
+                  <p className="text-[10px] text-synth-text-muted -mt-1">
+                    App không quản lý tiền — quà thật trao ngoài đời, xác nhận qua nút "Đã Trao" bên dưới.
+                  </p>
 
                   <button
                     type="submit"
@@ -799,65 +806,85 @@ export const ParentConsole: React.FC = () => {
                     Tạo Phúc Lợi Gia Môn
                   </button>
                 </form>
+
+                {activeRewardCatalog.length > 0 && (
+                  <div className="mt-4 pt-4 border-t border-white/5 space-y-2">
+                    <h5 className="text-[10px] text-synth-text-muted uppercase font-bold tracking-wider">Danh mục hiện có</h5>
+                    <div className="space-y-1.5 max-h-40 overflow-y-auto">
+                      {activeRewardCatalog.map((reward: any) => (
+                        <div key={reward.id} className="flex justify-between items-center text-xs bg-white/5 rounded-lg px-3 py-2">
+                          <span className="text-white truncate">{reward.title}</span>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-synth-orange font-bold font-orbitron">{reward.costCoins} NP · Còn {reward.remainingQuantity}/{reward.quantity}</span>
+                            <button
+                              onClick={() => deleteParentReward(reward.id)}
+                              className="text-synth-magenta hover:opacity-70 cursor-pointer"
+                              title="Xóa khỏi danh mục"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {/* Approvals ledger */}
+              {/* Redemption ledger — lượt đổi đang chờ trao / đã trao */}
               <div className="glass-panel rounded-2xl border border-white/5 p-5 md:col-span-2 space-y-4">
                 <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
-                   <Award className="w-4 h-4" /> Danh sách Phúc Lợi Gia Môn — Chờ Viện Chủ phê duyệt
+                   <Award className="w-4 h-4" /> Nhật ký đổi quà — Chờ Viện Chủ trao
                 </h4>
 
                 <div className="space-y-2 overflow-y-auto max-h-[300px]">
-                  {activeRewards.length > 0 ? (
-                    activeRewards.map((reward: any) => (
+                  {activeRedemptions.length > 0 ? (
+                    activeRedemptions.map((redemption: any) => (
                       <div
-                        key={reward.id}
+                        key={redemption.id}
                         className="bg-synth-gray/20 rounded-xl p-4 border border-white/5 flex justify-between items-center"
                       >
                         <div>
-                          <h5 className="text-sm font-bold text-white">{reward.title}</h5>
+                          <h5 className="text-sm font-bold text-white">{redemption.rewardTitle}</h5>
                           <div className="flex items-center gap-3 text-xs mt-1">
-                            <span className="text-synth-orange font-bold font-orbitron">{reward.costCoins} NP</span>
-                            {reward.cashValueVND > 0 && (
-                              <span className="text-synth-green font-bold font-orbitron">{reward.cashValueVND.toLocaleString()}đ mặt</span>
-                            )}
-                            <span className="text-synth-text-muted">{new Date(reward.timestamp).toLocaleDateString()}</span>
+                            <span className="text-synth-orange font-bold font-orbitron">{redemption.costCoins} NP</span>
+                            <span className="text-synth-text-muted">{new Date(redemption.timestamp).toLocaleDateString()}</span>
                           </div>
                         </div>
 
                         <div className="flex gap-2">
-                          {reward.status === 'approved' ? (
+                          {redemption.status === 'pending' ? (
                             <>
                               <button
                                 onClick={() => {
                                   if (viewingStudentId) {
-                                    adminApproveReward(viewingStudentId, reward.id);
+                                    adminMarkRewardDelivered(viewingStudentId, redemption.id);
                                   } else {
-                                    approveReward(reward.id);
+                                    markRewardDelivered(redemption.id);
                                   }
                                 }}
                                 className="p-2 rounded-lg bg-synth-green text-black cursor-pointer hover:synth-glow-green transition-all"
-                                title="Xác nhận đã chi quà thật cho con"
+                                title="Xác nhận đã trao quà thật cho con"
                               >
                                 <Check className="w-4 h-4" />
                               </button>
                               <button
                                 onClick={() => {
                                   if (viewingStudentId) {
-                                    adminRejectReward(viewingStudentId, reward.id);
+                                    adminCancelRedemption(viewingStudentId, redemption.id);
                                   } else {
-                                    rejectReward(reward.id);
+                                    cancelRedemption(redemption.id);
                                   }
                                 }}
                                 className="p-2 rounded-lg border border-synth-magenta text-synth-magenta cursor-pointer hover:bg-synth-magenta/10 transition-all"
-                                title="Hủy bỏ yêu cầu, hoàn lại coins cho con"
+                                title="Hủy lượt đổi, hoàn lại NP cho con"
                               >
                                 <X className="w-4 h-4" />
                               </button>
                             </>
                           ) : (
                             <span className="text-xs text-synth-text-muted italic px-3 py-1 bg-synth-gray/50 rounded-lg">
-                              {reward.status === 'claimed' ? 'Đã trao quà' : 'Chưa quy đổi'}
+                              Đã trao ✓
                             </span>
                           )}
                         </div>
@@ -865,7 +892,7 @@ export const ParentConsole: React.FC = () => {
                     ))
                   ) : (
                     <div className="text-center py-8 text-xs text-synth-text-muted">
-                      Chưa có phần thưởng nào đang chờ duyệt.
+                      Chưa có lượt đổi quà nào.
                     </div>
                   )}
                 </div>
@@ -1013,7 +1040,7 @@ export const ParentConsole: React.FC = () => {
                     />
                   </label>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4">
                   <label className="space-y-2 text-xs">
                     <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Thưởng Ngân lượng (NP)</span>
                     <input
@@ -1021,17 +1048,6 @@ export const ParentConsole: React.FC = () => {
                       min={0}
                       value={questNP}
                       onChange={(e) => setQuestNP(Number(e.target.value) || 0)}
-                      className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
-                    />
-                  </label>
-                  <label className="space-y-2 text-xs">
-                    <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Thưởng Tiền túi (VNĐ)</span>
-                    <input
-                      type="number"
-                      min={0}
-                      step={1000}
-                      value={questVND}
-                      onChange={(e) => setQuestVND(Number(e.target.value) || 0)}
                       className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
                     />
                   </label>
@@ -1069,7 +1085,6 @@ export const ParentConsole: React.FC = () => {
                           <p className="text-xs text-slate-400 mt-1">{quest.description}</p>
                           <div className="flex gap-4 mt-2 text-[10px] font-bold font-orbitron text-slate-300">
                             <span>🎁 Thưởng: +{quest.rewardNP} NP</span>
-                            <span>💵 VND: +{quest.rewardVND.toLocaleString()}đ</span>
                           </div>
                         </div>
                         <div className="flex gap-2">
@@ -2608,7 +2623,7 @@ export const ParentConsole: React.FC = () => {
               ) : (
                 <div className="space-y-6">
                   {/* Student Stats Summary Cards */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="glass-panel rounded-xl border border-white/5 p-4 flex flex-col justify-between">
                       <span className="text-[10px] uppercase text-synth-cyan font-bold font-orbitron">Cấp độ & EXP</span>
                       <span className="text-2xl font-black text-white font-orbitron mt-1">
@@ -2621,47 +2636,10 @@ export const ParentConsole: React.FC = () => {
 
                     <div className="glass-panel rounded-xl border border-white/5 p-4 flex flex-col justify-between">
                       <span className="text-[10px] uppercase text-synth-orange font-bold font-orbitron">Tiền xu vàng NP</span>
-                      <span className="text-2xl font-black text-synth-orange font-orbitron mt-1">
+                      <span className={`text-2xl font-black font-orbitron mt-1 ${(selectedStudentProfile.player?.coins || 0) < 0 ? 'text-red-400' : 'text-synth-orange'}`}>
                         {selectedStudentProfile.player?.coins || 0} xu
                       </span>
                       <span className="text-[10px] text-synth-text-muted mt-1">Dùng để đổi quà tiêu vặt</span>
-                    </div>
-
-                    <div className="glass-panel rounded-xl border border-white/5 p-4 flex flex-col justify-between">
-                      <div className="flex justify-between items-start">
-                        <span className="text-[10px] uppercase text-synth-magenta font-bold font-orbitron">Ví tích lũy</span>
-                        <button
-                          onClick={async () => {
-                            const currentVal = selectedStudentProfile.player?.walletVND || 0;
-                            if (currentVal <= 0) {
-                              toast.error('Ví tích lũy của bé đang bằng 0đ, không thể rút tiền!');
-                              return;
-                            }
-                            const rawAmount = window.prompt(`Nhập số tiền mặt ba đã đưa cho bé ở ngoài để khấu trừ vào Ví (Số dư hiện tại: ${currentVal.toLocaleString()}đ):`);
-                            if (rawAmount === null) return; // Cancelled
-                            const amount = parseInt(rawAmount.replace(/\D/g, ''), 10);
-                            if (isNaN(amount) || amount <= 0) {
-                              toast.error('Số tiền nhập vào không hợp lệ!');
-                              return;
-                            }
-                            if (amount > currentVal) {
-                              toast.error(`Số tiền khấu trừ không được vượt quá số dư hiện có (${currentVal.toLocaleString()}đ)!`);
-                              return;
-                            }
-                            if (window.confirm(`Xác nhận khấu trừ ${amount.toLocaleString()}đ khỏi ví thưởng của bé?`)) {
-                              await adminDeductWallet(selectedStudentProfile.studentUser.id, amount);
-                            }
-                          }}
-                          className="text-[9px] px-1.5 py-0.5 rounded bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta font-bold hover:bg-synth-magenta/35 cursor-pointer transition-colors"
-                          title="Trừ tiền trong ví khi đã đưa tiền mặt cho con ở ngoài"
-                        >
-                          Rút Tiền 💸
-                        </button>
-                      </div>
-                      <span className="text-2xl font-black text-synth-magenta font-orbitron mt-1">
-                        {(selectedStudentProfile.player?.walletVND || 0).toLocaleString()}đ
-                      </span>
-                      <span className="text-[10px] text-synth-text-muted mt-1">Tiền thưởng đã duyệt trao</span>
                     </div>
 
                     <div className="glass-panel rounded-xl border border-white/5 p-4 flex flex-col justify-between">
@@ -2767,53 +2745,47 @@ export const ParentConsole: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Pending/Approved Rewards Ledger */}
+                    {/* Redemption Ledger */}
                     <div className="glass-panel rounded-xl border border-white/5 p-4 flex flex-col">
                       <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider mb-4">
                         Nhật ký đổi quà tiêu vặt
                       </h4>
                       <div className="flex-1 overflow-y-auto max-h-60 space-y-2.5 text-xs pr-1">
-                        {selectedStudentProfile.rewards.length === 0 ? (
+                        {(selectedStudentProfile.rewardRedemptions || []).length === 0 ? (
                           <div className="h-full flex items-center justify-center text-synth-text-muted text-center py-12">
                             Con chưa đổi phần quà nào.
                           </div>
                         ) : (
-                          selectedStudentProfile.rewards.map((rew: any) => (
-                            <div key={rew.id} className="p-2.5 rounded-lg bg-white/5 border border-white/5 flex justify-between items-center">
+                          selectedStudentProfile.rewardRedemptions.map((rr: any) => (
+                            <div key={rr.id} className="p-2.5 rounded-lg bg-white/5 border border-white/5 flex justify-between items-center">
                               <div>
-                                <span className="font-bold text-white block">{rew.title}</span>
+                                <span className="font-bold text-white block">{rr.rewardTitle}</span>
                                 <span className="text-[10px] text-synth-text-muted">
-                                  {new Date(rew.timestamp).toLocaleString('vi-VN')}
+                                  {new Date(rr.timestamp).toLocaleString('vi-VN')}
                                 </span>
                               </div>
                               <div className="text-right flex flex-col items-end gap-1">
-                                <span className="font-bold block text-synth-magenta">{rew.cashValueVND.toLocaleString()}đ</span>
-                                {rew.status === 'approved' ? (
+                                <span className="font-bold block text-synth-orange">{rr.costCoins} NP</span>
+                                {rr.status === 'pending' ? (
                                   <div className="flex gap-1 mt-1">
                                     <button
-                                      onClick={() => adminApproveReward(viewingStudentId!, rew.id)}
+                                      onClick={() => adminMarkRewardDelivered(viewingStudentId!, rr.id)}
                                       className="p-1 rounded bg-synth-green text-black cursor-pointer hover:synth-glow-green transition-all"
-                                      title="Xác nhận đã chi quà thật cho con (Cộng vào ví thưởng)"
+                                      title="Xác nhận đã trao quà thật cho con"
                                     >
                                       <Check className="w-3.5 h-3.5" />
                                     </button>
                                     <button
-                                      onClick={() => adminRejectReward(viewingStudentId!, rew.id)}
+                                      onClick={() => adminCancelRedemption(viewingStudentId!, rr.id)}
                                       className="p-1 rounded border border-synth-magenta text-synth-magenta cursor-pointer hover:bg-synth-magenta/10 transition-all"
-                                      title="Từ chối yêu cầu, hoàn trả xu NP lại cho con"
+                                      title="Hủy lượt đổi, hoàn trả xu NP lại cho con"
                                     >
                                       <X className="w-3.5 h-3.5" />
                                     </button>
                                   </div>
                                 ) : (
-                                  <span className={`text-[9px] px-1.5 py-0.5 rounded font-black uppercase font-orbitron ${
-                                    rew.status === 'claimed'
-                                      ? 'bg-green-500/20 text-green-400'
-                                      : rew.status === 'rejected'
-                                        ? 'bg-red-500/20 text-red-400'
-                                        : 'bg-yellow-500/20 text-yellow-400'
-                                  }`}>
-                                    {rew.status === 'claimed' ? 'Đã nhận' : rew.status === 'rejected' ? 'Từ chối' : 'Chưa quy đổi'}
+                                  <span className="text-[9px] px-1.5 py-0.5 rounded font-black uppercase font-orbitron bg-green-500/20 text-green-400">
+                                    Đã trao ✓
                                   </span>
                                 )}
                               </div>

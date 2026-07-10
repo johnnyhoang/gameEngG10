@@ -117,9 +117,9 @@ const HELP_HANDBOOK_PAGES: HandbookPage[] = [
   {
     id: 'help-wallet', category: 'Trợ Giúp Nhanh', title: 'Phúc Lợi Gia Môn', content: '', audience: 'student',
     bullets: [
-      '• Đây là phần thưởng thật bằng tiền mặt từ Viện Chủ.',
-      '• Đổi Phúc Lợi xong thì yêu cầu sẽ chờ Viện Chủ phê duyệt.',
-      '• Viện Chủ phê duyệt xong, tiền vào ví và con có thể chi tiêu.'
+      '• Đây là phần thưởng thật do Viện Chủ tự tạo, có số lượng giới hạn — đổi sớm để không bị hết.',
+      '• Đổi xong sẽ trừ NP ngay và chờ Viện Chủ trao quà thật ngoài đời.',
+      '• Khi Viện Chủ bấm "Đã Trao" thì yêu cầu hoàn tất.'
     ]
   },
   {

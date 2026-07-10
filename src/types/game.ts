@@ -1,6 +1,7 @@
 export type QuestionType = 'mcq' | 'multiple_choice' | 'text_input' | 'matching' | 'wordform' | 'rewrite' | 'cloze' | 'reading' | 'short-answer' | 'proof' | 'multi-part';
 export type ChallengeType = 'daily' | 'weekly' | 'achievement' | 'one-time';
-export type RewardStatus = 'pending' | 'approved' | 'claimed';
+/** Trạng thái một lượt đổi quà (RewardRedemption) — CORE_SPECS §3.2. 'pending' = đã trừ NP, chờ phụ huynh trao; 'delivered' = phụ huynh đã bấm "Đã Trao". */
+export type RewardStatus = 'pending' | 'delivered';
 export type PetStage = 'egg' | 'baby' | 'adult' | 'legend';
 export type PetMood = 'happy' | 'neutral' | 'sad' | 'sleeping';
 
@@ -51,7 +52,8 @@ export const PET_STAGE_LABELS: Record<PetStage, string> = {
 export type UiThemeId = 'current' | 'cute-pink-pastel' | 'space-adventure' | 'fantasy-forest' | 'pixel-arcade' | 'unicorn-dream';
 
 export interface GameSettings {
-  bossBountiesVnd: [number, number, number];
+  /** Bonus Điểm (NP) khi hạ Boss — quảng bá ngay trên Boss Card, do Chủ Viện/Phó Viện đặt (CORE_SPECS §2.1). Thay thế hoàn toàn tiền thưởng VND cũ. */
+  bossCompletionBonusNP: [number, number, number];
   challengeEnergyCosts: [number, number, number, number];
   maxEnergy?: number;
   baseXP?: number;
@@ -86,7 +88,6 @@ export interface PlayerProfile {
   level: number;
   xp: number;
   coins: number;
-  walletVND: number;
   streak: number;
   energy: number; // 0 - 1000
   /** @deprecated Hệ thống Tim sinh mệnh đã bị xóa (CORE_SPECS §2.1) — field giữ lại optional để không vỡ localStorage cũ. */
@@ -176,13 +177,35 @@ export interface PetState {
   lastFed: string; // ISO String
 }
 
+/**
+ * Phần Thưởng Thực Tế (Reward Catalog) — CORE_SPECS §3.2.
+ * Do phụ huynh tự tạo, định giá bằng NP, có SỐ LƯỢNG GIỚI HẠN. App không quản lý tiền —
+ * đây chỉ là một catalog item, không phải một lượt đổi (xem RewardRedemption bên dưới).
+ */
 export interface ParentReward {
   id: string;
   title: string;
+  /** Giá NP cho một lượt đổi. */
   costCoins: number;
-  cashValueVND: number;
+  /** Tổng số lượng phụ huynh tạo ra ban đầu. */
+  quantity: number;
+  /** Số lượng còn lại có thể đổi — giảm mỗi khi thiếu hiệp đổi, hết thì ẩn/disable. */
+  remainingQuantity: number;
+  timestamp: number;
+}
+
+/** Một lượt đổi quà cụ thể — trừ NP ngay, chờ phụ huynh xác nhận "Đã Trao" ngoài đời (CORE_SPECS §3.2). */
+export interface RewardRedemption {
+  id: string;
+  rewardId: string;
+  /** Snapshot tên quà tại thời điểm đổi — vẫn hiển thị đúng dù sau này quà gốc bị sửa/xóa. */
+  rewardTitle: string;
+  /** Snapshot giá NP đã trả — dùng để hoàn tiền nếu hủy. */
+  costCoins: number;
   status: RewardStatus;
   timestamp: number;
+  /** Thời điểm phụ huynh bấm "Đã Trao". */
+  deliveredAt?: number;
 }
 
 export interface HistoryLog {
@@ -193,7 +216,6 @@ export interface HistoryLog {
   detail: string;
   coinsChanged: number;
   xpChanged: number;
-  walletChanged: number;
   /** Môn phái đang hoạt động tại thời điểm ghi log — dùng để cô lập nhật ký theo Sect Isolation Principle (CORE_SPECS §1.3) */
   subject?: SubjectId;
 }
@@ -235,7 +257,6 @@ export interface DailyMission {
     current: number;
     completed: boolean;
   }[];
-  rewardVND: number;
   rewardXP: number;
   completed: boolean;
 }
@@ -245,7 +266,6 @@ export interface ParentQuest {
   title: string;
   description: string;
   rewardNP: number;
-  rewardVND: number;
   status: 'pending' | 'completed' | 'claimed';
   timestamp: number;
 }

@@ -26,7 +26,8 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
   const player = useGameState(state => state.player);
   const consumeEnergy = useGameState(state => state.useEnergy);
   const { activeSectId } = useSect();
-  const bossBountiesVnd = useGameState(state => state.gameSettings?.bossBountiesVnd ?? [10000, 15000, 20000]);
+  // Bonus Điểm (NP) khi hạ Boss — quảng bá ngay trên Boss Card (CORE_SPECS §2.1). Boss không thưởng tiền.
+  const bossCompletionBonusNP = useGameState(state => state.gameSettings?.bossCompletionBonusNP ?? [100, 150, 200]);
   const challengeEnergyCosts = useGameState(state => state.gameSettings?.challengeEnergyCosts ?? [30, 30, 30, 30]);
   const uiTheme = useGameState(state => state.uiTheme);
   const categoryStats = useGameState(state => state.categoryStats);
@@ -395,9 +396,9 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
                   </div>
 
                   <div className="border-t border-synth-gray/50 pt-3 mt-3 flex justify-between items-center text-xs font-semibold">
-                    <span className={isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}>Vàng săn thưởng:</span>
+                    <span className={isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}>Bonus hoàn thành:</span>
                     <span className={`font-orbitron font-bold flex items-center gap-1 ${isUnicorn ? 'text-violet-700' : 'text-synth-green'}`}>
-                      +{(bossBountiesVnd[index] ?? [10000, 15000, 20000][index]).toLocaleString('vi-VN')}đ
+                      +{bossCompletionBonusNP[index] ?? [100, 150, 200][index]} NP
                     </span>
                   </div>
                 </div>

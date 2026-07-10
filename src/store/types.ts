@@ -1,5 +1,5 @@
 import type {
-  UserProfile, PlayerProfile, Question, CategoryStat, PetState, ParentReward, Challenge, DailyMission, HistoryLog,
+  UserProfile, PlayerProfile, Question, CategoryStat, PetState, ParentReward, RewardRedemption, Challenge, DailyMission, HistoryLog,
   HandbookPage, ParentQuest, GradeTier, SubjectId, UiThemeId, GameSettings, FamilyLink,
   PageExplorationState, ExplorationProgress
 } from '../types/game';
@@ -31,6 +31,7 @@ export interface StoreState {
   categoryStats: Record<string, CategoryStat>;
   topicStats: Record<string, CategoryStat>;
   rewards: ParentReward[];
+  rewardRedemptions: RewardRedemption[];
   challenges: Challenge[];
   dailyMission: DailyMission | null;
   logs: HistoryLog[];
@@ -54,7 +55,8 @@ export interface StoreState {
   buyStreakShield: () => boolean;
   buyHint: () => boolean;
   buyTheme: (themeId: UiThemeId) => boolean;
-  claimParentReward: (rewardId: string) => boolean;
+  /** Đổi một Phần Thưởng Thực Tế: trừ NP + giảm remainingQuantity + tạo RewardRedemption 'pending'. */
+  redeemReward: (rewardId: string) => boolean;
   feedPet: () => boolean;
   spinWheel: () => { rewardType: string; amount: number; message: string };
   openMysteryBox: () => { rewardType: string; amount: number; message: string };
@@ -80,9 +82,12 @@ export interface StoreState {
   
   verifyPIN: (pin: string) => boolean;
   changePIN: (newPIN: string) => void;
-  approveReward: (rewardId: string) => void;
-  rejectReward: (rewardId: string) => void;
-  addParentReward: (title: string, costCoins: number, cashValueVND: number) => void;
+  /** Phụ huynh xác nhận đã trao quà ngoài đời cho lượt đổi này (thay "duyệt" cũ). */
+  markRewardDelivered: (redemptionId: string) => void;
+  /** Hủy lượt đổi: hoàn NP + trả lại remainingQuantity cho catalog item (thay "từ chối" cũ). */
+  cancelRedemption: (redemptionId: string) => void;
+  addParentReward: (title: string, costCoins: number, quantity: number) => void;
+  deleteParentReward: (rewardId: string) => void;
   importQuestions: (questions: Question[]) => void;
   deleteQuestion: (questionId: string) => Promise<boolean>;
   updateQuestion: (questionId: string, payload: Partial<Question>) => Promise<boolean>;
@@ -90,18 +95,17 @@ export interface StoreState {
   fetchAdminStudents: () => Promise<void>;
   promoteUser: (targetUserId: string, newRole: string) => Promise<void>;
   fetchStudentProfile: (studentUserId: string) => Promise<void>;
-  adminApproveReward: (studentUserId: string, rewardId: string) => Promise<void>;
-  adminRejectReward: (studentUserId: string, rewardId: string) => Promise<void>;
-  adminDeductWallet: (studentUserId: string, amount: number) => Promise<void>;
+  adminMarkRewardDelivered: (studentUserId: string, redemptionId: string) => Promise<void>;
+  adminCancelRedemption: (studentUserId: string, redemptionId: string) => Promise<void>;
   adminSetEnergy: (studentUserId: string, energyPercent: number) => Promise<void>;
   updateGameSettings: (payload: {
-    bossBountiesVnd?: [number, number, number];
+    bossCompletionBonusNP?: [number, number, number];
     challengeEnergyCosts?: [number, number, number, number];
     maxEnergy?: number;
     baseXP?: number;
     baseCoins?: number;
   }) => Promise<void>;
-  addParentQuest: (title: string, description: string, rewardNP: number, rewardVND: number) => void;
+  addParentQuest: (title: string, description: string, rewardNP: number) => void;
   completeParentQuest: (questId: string) => void;
   deleteParentQuest: (questId: string) => void;
   claimParentQuest: (questId: string) => void;

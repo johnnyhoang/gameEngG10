@@ -121,7 +121,6 @@ export const createAuthSlice: StateCreator<
           level: 1,
           xp: 0,
           coins: 200,
-          walletVND: 0,
           streak: 0,
           energy: 100, // PLAYER_ENERGY_MAX
           hearts: 3,
@@ -150,7 +149,7 @@ export const createAuthSlice: StateCreator<
           uiTheme: resolvedTheme
         };
       });
-      logActivity(get, set, get, set, 'energy_refill', 'Đã vào sân', `Chào mừng ${user.name}. Sân học đã mở.`, 0, 0, 0);
+      logActivity(get, set, 'energy_refill', 'Đã vào sân', `Chào mừng ${user.name}. Sân học đã mở.`);
       return;
     }
 
@@ -204,7 +203,6 @@ export const createAuthSlice: StateCreator<
               level: 1,
               xp: 0,
               coins: 200,
-              walletVND: 0,
               streak: 0,
               energy: 100,
               hearts: 3,
@@ -223,6 +221,7 @@ export const createAuthSlice: StateCreator<
             categoryStats: data.categoryStats || {},
             logs: data.logs || [],
             rewards: data.rewards || [],
+            rewardRedemptions: data.rewardRedemptions || [],
             challenges: data.challenges || INITIAL_CHALLENGES,
             dailyMission: data.dailyMission || null,
             gameSettings: data.gameSettings || DEFAULT_GAME_SETTINGS,
@@ -232,7 +231,7 @@ export const createAuthSlice: StateCreator<
             explorationProgress: data.explorationProgress || {}
           };
         });
-        logActivity(get, set, get, set, 'energy_refill', 'Đồng bộ Đám mây', `Dữ liệu học tập đã được kéo về cho ${user.name}!`, 0, 0, 0);
+        logActivity(get, set, 'energy_refill', 'Đồng bộ Đám mây', `Dữ liệu học tập đã được kéo về cho ${user.name}!`);
       }
     } catch (e) {
       console.error('Lỗi khi tải thông tin từ backend Supabase:', e);
@@ -250,7 +249,6 @@ export const createAuthSlice: StateCreator<
           level: 1,
           xp: 0,
           coins: 200,
-          walletVND: 0,
           streak: 0,
           energy: 100,
           hearts: 3,

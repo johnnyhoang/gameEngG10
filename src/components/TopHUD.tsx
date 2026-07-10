@@ -1,6 +1,6 @@
 import { isAdmin } from '../utils/roleHelpers';
 import React from 'react';
-import { Zap, Coins, Flame, Shield, Award, LogOut, UserCircle2 } from 'lucide-react';
+import { Zap, Coins, Flame, Shield, LogOut, UserCircle2 } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
 import { useSect } from '../contexts/SectContext';
 import { SUBJECTS_CONFIG, getStudentRankForLevel } from '../types/game';
@@ -129,13 +129,6 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                   <Shield className="w-3.5 h-3.5 text-synth-cyan fill-synth-cyan/20 shrink-0" />
                 </span>
               )}
-            </div>
-
-            <div className="w-px h-8 bg-white/10 shrink-0" />
-
-            <div className={statItemClass} onClick={() => showHelp('wallet')} title="Ví Thưởng (VND) — Nhấp để xem hướng dẫn">
-              <Award className="w-4 h-4 text-synth-magenta shrink-0" />
-              <span className="text-xs font-semibold font-orbitron text-synth-magenta whitespace-nowrap">{player.walletVND.toLocaleString()}đ</span>
             </div>
           </div>
         )}

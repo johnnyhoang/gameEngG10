@@ -10,7 +10,8 @@ export const THEME_UNLOCK_COST = 200;
 export const FREE_UI_THEME: UiThemeId = 'current';
 
 export const DEFAULT_GAME_SETTINGS: GameSettings = {
-  bossBountiesVnd: [10000, 15000, 20000],
+  // Bonus Điểm (NP) khi hạ Boss — quảng bá trên Boss Card, thay hoàn toàn thưởng VND cũ (CORE_SPECS §2.1).
+  bossCompletionBonusNP: [100, 150, 200],
   // Hao tổn Chân khí (SUB_SPEC_ENERGY): ải thường tiêu 30 Chân khí mỗi lượt.
   challengeEnergyCosts: [30, 30, 30, 30],
   maxEnergy: 1000,
@@ -26,7 +27,6 @@ export const INITIAL_PLAYER: PlayerProfile = {
   level: 1,
   xp: 0,
   coins: 200,
-  walletVND: 0,
   streak: 0,
   energy: PLAYER_ENERGY_MAX,
   hearts: 3,
@@ -45,12 +45,13 @@ export const INITIAL_PET: PetState = {
   lastFed: new Date().toISOString()
 };
 
+// Phần Thưởng Thực Tế mặc định (CORE_SPECS §3.2) — mỗi món có số lượng giới hạn do phụ huynh nạp lại khi hết.
 export const DEFAULT_REWARDS: ParentReward[] = [
-  { id: 'r-1', title: '15 phút chơi game', costCoins: 150, cashValueVND: 0, status: 'pending', timestamp: Date.now() },
-  { id: 'r-2', title: 'Ly trà sữa đặc biệt', costCoins: 400, cashValueVND: 0, status: 'pending', timestamp: Date.now() },
-  { id: 'r-3', title: 'Thưởng 20.000đ tiền mặt', costCoins: 500, cashValueVND: 20000, status: 'pending', timestamp: Date.now() },
-  { id: 'r-4', title: 'Thưởng 50.000đ tiền mặt', costCoins: 1000, cashValueVND: 50000, status: 'pending', timestamp: Date.now() },
-  { id: 'r-5', title: 'Thưởng 100.000đ tiền mặt', costCoins: 1800, cashValueVND: 100000, status: 'pending', timestamp: Date.now() }
+  { id: 'r-1', title: '15 phút chơi game', costCoins: 150, quantity: 10, remainingQuantity: 10, timestamp: Date.now() },
+  { id: 'r-2', title: 'Ly trà sữa đặc biệt', costCoins: 400, quantity: 4, remainingQuantity: 4, timestamp: Date.now() },
+  { id: 'r-3', title: 'Bao lì xì 20.000đ', costCoins: 500, quantity: 5, remainingQuantity: 5, timestamp: Date.now() },
+  { id: 'r-4', title: 'Bao lì xì 50.000đ', costCoins: 1000, quantity: 3, remainingQuantity: 3, timestamp: Date.now() },
+  { id: 'r-5', title: 'Bao lì xì 100.000đ', costCoins: 1800, quantity: 1, remainingQuantity: 1, timestamp: Date.now() }
 ];
 
 export const INITIAL_CHALLENGES: Challenge[] = [

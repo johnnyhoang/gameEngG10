@@ -166,7 +166,7 @@ export function WorldMap({
           <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
             {dailyMission?.completed
               ? 'Khá đấy. Hôm nay đã dọn sạch nhiệm vụ. Mở Hòm Bí Mật đi.'
-              : 'Dọn xong chỉ tiêu hôm nay thì Hòm Bí Mật và Ví Thưởng sẽ mở.'}
+              : 'Dọn xong chỉ tiêu hôm nay thì Hòm Bí Mật sẽ mở.'}
           </p>
         </div>
 
@@ -316,7 +316,6 @@ export function WorldMap({
                   <p className="text-[10px] text-slate-400 leading-relaxed">{quest.description}</p>
                   <div className="flex gap-3 text-[9px] font-bold font-orbitron text-synth-cyan">
                     <span>🎁 +{quest.rewardNP} NP</span>
-                    <span>💵 +{quest.rewardVND.toLocaleString()}đ</span>
                   </div>
                 </div>
 
@@ -324,7 +323,7 @@ export function WorldMap({
                   <button
                     onClick={() => {
                       claimParentQuest(quest.id);
-                      toast.success(`Nhận thưởng thành công: +${quest.rewardNP} NP và +${quest.rewardVND.toLocaleString()}đ! 🥳`);
+                      toast.success(`Nhận thưởng thành công: +${quest.rewardNP} NP! 🥳`);
                     }}
                     className="px-3 py-1.5 rounded-lg bg-synth-magenta text-white font-orbitron font-bold text-[9px] uppercase tracking-wider cursor-pointer hover:synth-glow-magenta shadow-md"
                   >

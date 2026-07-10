@@ -15,7 +15,7 @@ export const createAdminSlice: StateCreator<
   [],
   [],
   Pick<StoreState, 
-    'parentPIN' | 'adminStudents' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'parentQuests' | 'verifyPIN' | 'changePIN' | 'approveReward' | 'rejectReward' | 'addParentReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminApproveReward' | 'adminRejectReward' | 'adminDeductWallet' | 'adminSetEnergy' | 'updateGameSettings' | 'addParentQuest' | 'completeParentQuest' | 'deleteParentQuest' | 'claimParentQuest'
+    'parentPIN' | 'adminStudents' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'parentQuests' | 'verifyPIN' | 'changePIN' | 'markRewardDelivered' | 'cancelRedemption' | 'addParentReward' | 'deleteParentReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'updateGameSettings' | 'addParentQuest' | 'completeParentQuest' | 'deleteParentQuest' | 'claimParentQuest'
   >
 > = (set, get) => ({
   parentPIN: DEFAULT_PIN,
@@ -38,47 +38,60 @@ export const createAdminSlice: StateCreator<
           set({ parentPIN: newPIN });
         },
 
-  approveReward: (rewardId) => {
+  markRewardDelivered: (redemptionId) => {
+          // Xác nhận đã trao quà thật ngoài đời (CORE_SPECS §3.2) — app không quản lý tiền,
+          // hành động này chỉ đóng yêu cầu, không có bất kỳ giao dịch tiền nào chạy trong hệ thống.
           const state = get();
-          const reward = state.rewards.find(r => r.id === rewardId);
-          if (!reward) return;
+          const redemption = state.rewardRedemptions.find(r => r.id === redemptionId);
+          if (!redemption || redemption.status !== 'pending') return;
 
           set(prev => ({
-            rewards: prev.rewards.map(r => r.id === rewardId ? { ...r, status: 'claimed' } : r)
+            rewardRedemptions: prev.rewardRedemptions.map(r =>
+              r.id === redemptionId ? { ...r, status: 'delivered', deliveredAt: Date.now() } : r
+            )
           }));
 
-          logActivity(get, set, 'parent_approve', 'Viện Chủ duyệt Phúc Lợi', `Đã phê duyệt hoàn thành Phúc Lợi Gia Môn: "${reward.title}"`, 0, 0, -reward.cashValueVND);
+          logActivity(get, set, 'parent_approve', 'Đã Trao Phần Thưởng', `Viện Chủ xác nhận đã trao "${redemption.rewardTitle}" ngoài đời.`, 0, 0);
         },
 
-  rejectReward: (rewardId) => {
+  cancelRedemption: (redemptionId) => {
+          // Hủy lượt đổi: hoàn NP cho thiếu hiệp + trả lại remainingQuantity cho catalog item.
           const state = get();
-          const reward = state.rewards.find(r => r.id === rewardId);
-          if (!reward) return;
+          const redemption = state.rewardRedemptions.find(r => r.id === redemptionId);
+          if (!redemption || redemption.status !== 'pending') return;
 
           set(prev => ({
             player: {
               ...prev.player,
-              coins: prev.player.coins + reward.costCoins
+              coins: prev.player.coins + redemption.costCoins
             },
-            rewards: prev.rewards.map(r => r.id === rewardId ? { ...r, status: 'pending' } : r) // Revert status
+            rewards: prev.rewards.map(r => r.id === redemption.rewardId ? { ...r, remainingQuantity: r.remainingQuantity + 1 } : r),
+            rewardRedemptions: prev.rewardRedemptions.filter(r => r.id !== redemptionId)
           }));
 
-          logActivity(get, set, 'parent_approve', 'Viện Chủ hoàn trả Ngân Lượng', `Từ chối Phúc Lợi: "${reward.title}". Đã hoàn lại ${reward.costCoins} NP`, reward.costCoins, 0);
+          logActivity(get, set, 'parent_approve', 'Viện Chủ hoàn trả Ngân Lượng', `Hủy lượt đổi "${redemption.rewardTitle}". Đã hoàn lại ${redemption.costCoins} NP`, redemption.costCoins, 0);
         },
 
-  addParentReward: (title, costCoins, cashValueVND) => {
+  addParentReward: (title, costCoins, quantity) => {
+          const safeQuantity = Math.max(1, Math.round(quantity));
           const newReward: ParentReward = {
             id: `r-${Date.now()}`,
             title,
             costCoins,
-            cashValueVND,
-            status: 'pending',
+            quantity: safeQuantity,
+            remainingQuantity: safeQuantity,
             timestamp: Date.now()
           };
           set((state: any) => ({
             rewards: [...state.rewards, newReward]
           }));
-          logActivity(get, set, 'parent_approve', 'Viện Chủ thêm Phúc Lợi mới', `Phúc Lợi mới: "${title}" trị giá ${costCoins} NP`, 0, 0);
+          logActivity(get, set, 'parent_approve', 'Viện Chủ thêm Phúc Lợi mới', `Phúc Lợi mới: "${title}" trị giá ${costCoins} NP, số lượng ${safeQuantity}`, 0, 0);
+        },
+
+  deleteParentReward: (rewardId) => {
+          set((state: any) => ({
+            rewards: state.rewards.filter(r => r.id !== rewardId)
+          }));
         },
 
   importQuestions: (importedQuestions) => {
@@ -288,80 +301,51 @@ export const createAdminSlice: StateCreator<
           }
         },
 
-  adminApproveReward: async (studentUserId: string, rewardId: string) => {
+  adminMarkRewardDelivered: async (studentUserId: string, redemptionId: string) => {
           try {
             const session = (await supabase.auth.getSession()).data.session;
             const token = session?.access_token;
             if (!token) return;
 
             const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-            const res = await fetch(`${backendUrl}/api/admin/approve-reward`, {
+            const res = await fetch(`${backendUrl}/api/admin/deliver-reward`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + token
               },
-              body: JSON.stringify({ studentUserId, rewardId })
+              body: JSON.stringify({ studentUserId, redemptionId })
             });
             if (res.ok) {
               // Reload profile
               await get().fetchStudentProfile(studentUserId);
             }
           } catch (e) {
-            console.error('Error approving student reward:', e);
+            console.error('Error marking reward delivered:', e);
           }
         },
 
-  adminRejectReward: async (studentUserId: string, rewardId: string) => {
+  adminCancelRedemption: async (studentUserId: string, redemptionId: string) => {
           try {
             const session = (await supabase.auth.getSession()).data.session;
             const token = session?.access_token;
             if (!token) return;
 
             const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-            const res = await fetch(`${backendUrl}/api/admin/reject-reward`, {
+            const res = await fetch(`${backendUrl}/api/admin/cancel-redemption`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': 'Bearer ' + token
               },
-              body: JSON.stringify({ studentUserId, rewardId })
+              body: JSON.stringify({ studentUserId, redemptionId })
             });
             if (res.ok) {
               // Reload profile
               await get().fetchStudentProfile(studentUserId);
             }
           } catch (e) {
-            console.error('Error rejecting student reward:', e);
-          }
-        },
-
-  adminDeductWallet: async (studentUserId: string, amount: number) => {
-          try {
-            const session = (await supabase.auth.getSession()).data.session;
-            const token = session?.access_token;
-            if (!token) return;
-
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-            const res = await fetch(`${backendUrl}/api/admin/deduct-wallet`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
-              },
-              body: JSON.stringify({ studentUserId, amount })
-            });
-            if (!res.ok) {
-              const errData = await res.json();
-              toast.error(errData.error || 'Lỗi khi khấu trừ ví.');
-              return;
-            }
-            // Reload profile
-            await get().fetchStudentProfile(studentUserId);
-            toast.success(`Khấu trừ ví thành công: ${amount.toLocaleString()}đ.`);
-          } catch (e) {
-            console.error('Error deducting student wallet:', e);
-            toast.error('Lỗi kết nối khi khấu trừ ví.');
+            console.error('Error cancelling redemption:', e);
           }
         },
 
@@ -427,7 +411,7 @@ export const createAdminSlice: StateCreator<
           }
         },
 
-  addParentQuest: (title, description, rewardNP, rewardVND) => {
+  addParentQuest: (title, description, rewardNP) => {
           set((state: any) => ({
             parentQuests: [
               ...state.parentQuests,
@@ -436,7 +420,6 @@ export const createAdminSlice: StateCreator<
                 title,
                 description,
                 rewardNP,
-                rewardVND,
                 status: 'pending',
                 timestamp: Date.now()
               }
@@ -460,27 +443,24 @@ export const createAdminSlice: StateCreator<
 
   claimParentQuest: (questId) => {
           let np = 0;
-          let vnd = 0;
           let qTitle = '';
           set((state: any) => {
             const quest = state.parentQuests.find(q => q.id === questId);
             if (!quest || quest.status !== 'completed') return {};
             np = quest.rewardNP;
-            vnd = quest.rewardVND;
             qTitle = quest.title;
             return {
-              parentQuests: state.parentQuests.map(q => 
+              parentQuests: state.parentQuests.map(q =>
                 q.id === questId ? { ...q, status: 'claimed' } : q
               ),
               player: {
                 ...state.player,
-                coins: state.player.coins + np,
-                walletVND: state.player.walletVND + vnd
+                coins: state.player.coins + np
               }
             };
           });
-          if (np > 0 || vnd > 0) {
-            logActivity(get, set, 'reward_claimed', 'Nhận thưởng nhiệm vụ', `Đã nhận thưởng: ${qTitle}`, np, 0, vnd);
+          if (np > 0) {
+            logActivity(get, set, 'reward_claimed', 'Nhận thưởng nhiệm vụ', `Đã nhận thưởng: ${qTitle}`, np, 0);
           }
         },
 
