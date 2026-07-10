@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { useSect } from '../contexts/SectContext';
 import type { Question } from '../types/game';
@@ -7,8 +7,8 @@ import { ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../data/englishExamBl
 import { MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
 import { LITERATURE_TASK_LABELS, LITERATURE_TEXT_GENRE_LABELS } from '../data/literatureExamBlueprint';
 import { Scratchpad } from './Scratchpad';
-import { BikiHinhHocPhang } from './BikiHinhHocPhang';
-import { Biki3DStudio } from './Biki3DStudio';
+const BikiHinhHocPhang = lazy(() => import('./BikiHinhHocPhang').then(m => ({ default: m.BikiHinhHocPhang })));
+const Biki3DStudio = lazy(() => import('./Biki3DStudio').then(m => ({ default: m.Biki3DStudio })));
 import { ArrowRight, Award } from 'lucide-react';
 import { MonChuHoiToiDialog } from './MonChuHoiToiDialog';
 import { sound } from '../utils/sound';
@@ -746,11 +746,13 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
               
               {showBikiBoard && (
                 <div className="p-3 border-t border-synth-cyan/15 bg-black/25 space-y-4">
-                  {is3D ? (
-                    <Biki3DStudio problemText={activeQuestion.prompt} />
-                  ) : (
-                    <BikiHinhHocPhang problemText={activeQuestion.prompt} />
-                  )}
+                  <Suspense fallback={<div className="flex items-center justify-center h-32"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-synth-cyan"></div></div>}>
+                    {is3D ? (
+                      <Biki3DStudio problemText={activeQuestion.prompt} />
+                    ) : (
+                      <BikiHinhHocPhang problemText={activeQuestion.prompt} />
+                    )}
+                  </Suspense>
                 </div>
               )}
             </div>

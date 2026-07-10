@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { ShieldAlert, X, Brain, AlertCircle, ArrowRight } from 'lucide-react';
 import type { SubjectId } from '../types/game';
@@ -9,8 +9,8 @@ import {
   getRecentlyUsedGatekeeperIds,
   recordGatekeeperUsage,
 } from '../utils/gatekeeper';
-import { BikiHinhHocPhang } from './BikiHinhHocPhang';
-import { Biki3DStudio } from './Biki3DStudio';
+const BikiHinhHocPhang = lazy(() => import('./BikiHinhHocPhang').then(m => ({ default: m.BikiHinhHocPhang })));
+const Biki3DStudio = lazy(() => import('./Biki3DStudio').then(m => ({ default: m.Biki3DStudio })));
 
 import { toast } from '../utils/toast';
 
@@ -276,7 +276,9 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
               </button>
             </div>
             <div className="flex-1 overflow-auto bg-[#07111f] rounded-2xl border border-white/10 p-4">
-              <BikiHinhHocPhang problemText={question?.prompt} />
+              <Suspense fallback={<div className="flex items-center justify-center h-40"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-synth-cyan"></div></div>}>
+                <BikiHinhHocPhang problemText={question?.prompt} />
+              </Suspense>
             </div>
           </div>
         </div>
@@ -292,7 +294,9 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
               </button>
             </div>
             <div className="flex-1 overflow-auto bg-[#07111f] rounded-2xl border border-white/10 p-4">
-              <Biki3DStudio problemText={question?.prompt || ''} />
+              <Suspense fallback={<div className="flex items-center justify-center h-40"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-synth-purple"></div></div>}>
+                <Biki3DStudio problemText={question?.prompt || ''} />
+              </Suspense>
             </div>
           </div>
         </div>

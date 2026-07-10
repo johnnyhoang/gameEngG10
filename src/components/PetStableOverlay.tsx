@@ -1,7 +1,7 @@
 import { isAdmin } from '../utils/roleHelpers';
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useGameState } from '../hooks/useGameState';
-import { PetSanctuary } from './PetSanctuary';
+const PetSanctuary = lazy(() => import('./PetSanctuary').then(m => ({ default: m.PetSanctuary })));
 
 interface PetStableOverlayProps {
   isDungeonScreen: boolean;
@@ -164,7 +164,9 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
               </div>
             )}
             
-            <PetSanctuary variant="sidebar" onInteract={handleInteract} />
+            <Suspense fallback={<div className="flex items-center justify-center h-32"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-synth-cyan"></div></div>}>
+              <PetSanctuary variant="sidebar" onInteract={handleInteract} />
+            </Suspense>
             
             <div className="text-center mt-4 text-[11px] font-semibold text-slate-300 drop-shadow">
               *Hãy tương tác (Thọt lét hoặc Cho ăn) để cất heo về chuồng

@@ -1,34 +1,35 @@
 import { isParentRole, isAdmin } from './utils/roleHelpers';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { useGameState } from './hooks/useGameState';
 import { toast } from './utils/toast';
 import { TopHUD } from './components/TopHUD';
-
 import { supabase } from './utils/supabaseClient';
 import type { Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { useSect } from './contexts/SectContext';
-import { PetSanctuary } from './components/PetSanctuary';
 import { PetStableOverlay } from './components/PetStableOverlay';
-import { ActivityLog } from './components/ActivityLog';
 import { WorldMap } from './components/WorldMap';
-import { Arena } from './components/Arena';
 import { PlayArea } from './components/PlayArea';
-import { ItemShop } from './components/ItemShop';
 import { ParentConsole } from './components/ParentConsole';
 import { GoogleLoginScreen } from './components/GoogleLoginScreen';
-import { ProfilePage } from './components/ProfilePage';
-import { GiangHoCamNang } from './components/GiangHoCamNang';
-import { HangLuyenCong } from './components/HangLuyenCong';
-import { HangMatThatPage } from './components/HangMatThatPage';
-import { DesktopCentralNav } from './components/DesktopCentralNav';
-import { LessonStudyView } from './components/LessonStudyView';
-import { RelaxationZone } from './components/RelaxationZone';
-import { Biki3DStudio } from './components/Biki3DStudio';
-import { BikiDoThiHamSo } from './components/BikiDoThiHamSo';
-import { BikiHinhHocPhang } from './components/BikiHinhHocPhang';
 import { GatekeeperModal } from './components/GatekeeperModal';
 import { ProfileSelectionScreen } from './components/ProfileSelectionScreen';
 import { GlobalSectModal } from './components/GlobalSectModal';
+
+// Lazy-loaded heavy components — code-split để giảm tải ban đầu
+const PetSanctuary = lazy(() => import('./components/PetSanctuary').then(m => ({ default: m.PetSanctuary })));
+const ActivityLog = lazy(() => import('./components/ActivityLog').then(m => ({ default: m.ActivityLog })));
+const Arena = lazy(() => import('./components/Arena').then(m => ({ default: m.Arena })));
+const ItemShop = lazy(() => import('./components/ItemShop').then(m => ({ default: m.ItemShop })));
+const ProfilePage = lazy(() => import('./components/ProfilePage').then(m => ({ default: m.ProfilePage })));
+const GiangHoCamNang = lazy(() => import('./components/GiangHoCamNang').then(m => ({ default: m.GiangHoCamNang })));
+const HangLuyenCong = lazy(() => import('./components/HangLuyenCong').then(m => ({ default: m.HangLuyenCong })));
+const HangMatThatPage = lazy(() => import('./components/HangMatThatPage').then(m => ({ default: m.HangMatThatPage })));
+const DesktopCentralNav = lazy(() => import('./components/DesktopCentralNav').then(m => ({ default: m.DesktopCentralNav })));
+const LessonStudyView = lazy(() => import('./components/LessonStudyView').then(m => ({ default: m.LessonStudyView })));
+const RelaxationZone = lazy(() => import('./components/RelaxationZone').then(m => ({ default: m.RelaxationZone })));
+const Biki3DStudio = lazy(() => import('./components/Biki3DStudio').then(m => ({ default: m.Biki3DStudio })));
+const BikiDoThiHamSo = lazy(() => import('./components/BikiDoThiHamSo').then(m => ({ default: m.BikiDoThiHamSo })));
+const BikiHinhHocPhang = lazy(() => import('./components/BikiHinhHocPhang').then(m => ({ default: m.BikiHinhHocPhang })));
 
 const APP_VERSION = 'fd44bc2';
 const APP_PUSH_TIME = 'Tue, 7 Jul 2026 12:05 ICT';
@@ -269,11 +270,19 @@ function App() {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:py-8 flex flex-col lg:flex-row gap-6 items-stretch pb-20 lg:pb-8">
         
+        <Suspense fallback={
+          <div className="flex-1 flex items-center justify-center min-h-[300px]">
+            <div className="text-center space-y-3">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-synth-cyan mx-auto"></div>
+              <p className="font-orbitron text-xs text-synth-cyan tracking-widest uppercase animate-pulse">Đang nạp...</p>
+            </div>
+          </div>
+        }>
         {/* Dynamic Center Stage */}
         <section className="flex-1 min-w-0">
           
           {/* Desktop Central Navigation Hub */}
-          {['arena', 'hang', 'shop', 'relax', 'pet', 'profile'].includes(screen) && !isDungeonScreen && !isHangMatterScreen && currentUser?.role !== 'admin' && (
+          {['arena', 'hang', 'shop', 'relax', 'pet', 'profile'].includes(screen) && !isDungeonScreen && !isHangMatterScreen && !isAdmin(currentUser?.role) && (
             <DesktopCentralNav currentScreen={screen} onNavigate={(s) => setScreen(s)} />
           )}
 
@@ -423,11 +432,12 @@ function App() {
         </section>
 
         {/* Right Info Ledger (Hidden in play area, hidden on mobile) */}
-        {!isDungeonScreen && !isHangMatterScreen && currentUser?.role !== 'admin' && (
+        {!isDungeonScreen && !isHangMatterScreen && !isAdmin(currentUser?.role) && (
           <aside className="hidden lg:block w-80 shrink-0 h-fit lg:sticky lg:top-24">
             <ActivityLog />
           </aside>
         )}
+        </Suspense>
       </main>
 
       {/* Reward/Notification Modal */}
