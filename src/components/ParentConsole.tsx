@@ -52,7 +52,6 @@ export const ParentConsole: React.FC = () => {
   // Family Management
   const familyLinks = useGameState(state => state.familyLinks || []);
   const secondaryParents = useGameState(state => state.secondaryParents || []);
-  const fetchFamily = useGameState(state => state.fetchFamily);
   const sendInvite = useGameState(state => state.sendInvite);
   const respondInvite = useGameState(state => state.respondInvite);
   const inviteSecondary = useGameState(state => state.inviteSecondary);
