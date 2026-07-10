@@ -450,6 +450,25 @@ body[data-theme='unicorn-dream'] {
   }
 }
 
+/* Đám mây mờ sương trôi cho lớp phủ FogCard (SUB_SPEC_UI_RULES.md §2) */
+@keyframes fog-drift {
+  0%, 100% {
+    transform: translate3d(-6%, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(6%, -4%, 0) scale(1.12);
+  }
+}
+
+@keyframes fog-drift-reverse {
+  0%, 100% {
+    transform: translate3d(5%, 3%, 0) scale(1.08);
+  }
+  50% {
+    transform: translate3d(-7%, -2%, 0) scale(1);
+  }
+}
+
 /* Global Styles */
 html,
 body {

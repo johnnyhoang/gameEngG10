@@ -13,7 +13,7 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
   const uiTheme = useGameState(state => state.uiTheme);
   
   const [isOpen, setIsOpen] = useState(false);
-  const [triggerReason, setTriggerReason] = useState<'login' | 'manual' | 'idle' | 'sleep' | 'hunger'>('manual');
+  const [triggerReason, setTriggerReason] = useState<'login' | 'manual' | 'idle' | 'hunger'>('manual');
   
   // Track idle time
   const lastActiveTime = useRef(Date.now());
@@ -55,8 +55,10 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
 
       const now = Date.now();
 
-      // Shared cooldown: no more than one automatic trigger (of any kind) per 10 mins.
-      if (now - lastAutoTrigger.current < 600000) {
+      // Cooldown chung: heo chỉ được TỰ xuất hiện tối đa 1 lần mỗi 30 PHÚT, bất kể lý do gì
+      // (yêu cầu Viện Chủ 2026-07-10 — chống làm phiền). Cooldown persist qua localStorage.
+      const THIRTY_MINUTES = 30 * 60 * 1000;
+      if (now - lastAutoTrigger.current < THIRTY_MINUTES) {
         return;
       }
 
@@ -68,21 +70,13 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
         setIsOpen(true);
         setLastAutoTrigger(now);
       } else {
-        // Sleep check
-        const hour = new Date().getHours();
-        if (hour >= 22 || hour < 5) {
-          setTriggerReason('sleep');
+        // Hunger check (trigger ngủ 22h-5h đã bị xóa theo CORE_SPECS §2.5)
+        const lastFedTime = new Date(pet.lastFed).getTime();
+        const twelveHours = 12 * 60 * 60 * 1000;
+        if (now - lastFedTime > twelveHours) {
+          setTriggerReason('hunger');
           setIsOpen(true);
           setLastAutoTrigger(now);
-        } else {
-          // Hunger check
-          const lastFedTime = new Date(pet.lastFed).getTime();
-          const twelveHours = 12 * 60 * 60 * 1000;
-          if (now - lastFedTime > twelveHours) {
-            setTriggerReason('hunger');
-            setIsOpen(true);
-            setLastAutoTrigger(now);
-          }
         }
       }
     }, 10000); // Check every 10 seconds
@@ -148,11 +142,6 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
             {triggerReason === 'idle' && (
               <div className="text-center mb-4 font-orbitron font-bold text-synth-magenta animate-bounce drop-shadow-md">
                 Dậy học tiếp thôi, sao ngồi im thế! 📚
-              </div>
-            )}
-            {triggerReason === 'sleep' && (
-              <div className="text-center mb-4 font-orbitron font-bold text-synth-cyan animate-pulse drop-shadow-md">
-                Khuya quá rồi, ngủ đi thiếu hiệp ơi! 😴
               </div>
             )}
             {triggerReason === 'hunger' && (

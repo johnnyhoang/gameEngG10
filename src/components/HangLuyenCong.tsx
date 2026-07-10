@@ -635,10 +635,11 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                         const isCompleted = lessonsProgress[lesson.id] || false;
                         return (
                           <div key={lesson.id} className="relative h-full w-full">
-                            <FogCard 
-                              pageId={lesson.id} 
-                              requiredCompletions={2} 
+                            <FogCard
+                              pageId={lesson.id}
+                              requiredCompletions={2}
                               decayDays={7}
+                              label="Bài học chưa trải nghiệm"
                               onOpenLevel3={() => setOverlayLessonId(lesson.id)}
                             >
                               <div className={`rounded-2xl border p-4 flex flex-col justify-between gap-4 transition-all duration-200 h-full ${

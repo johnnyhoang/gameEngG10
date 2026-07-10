@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
 
 export type FogStatus = 'shadowed' | 'temporary' | 'permanent';
@@ -10,6 +10,8 @@ interface FogCardProps {
   decayDays?: number;
   onOpenLevel3: () => void;
   children: React.ReactNode;
+  /** Nhãn hiển thị trên lớp mờ sương — tùy ngữ cảnh trang (xem SUB_SPEC_UI_RULES.md §2) */
+  label?: string;
 }
 
 export function getFogStatus(
@@ -48,7 +50,8 @@ export const FogCard: React.FC<FogCardProps> = ({
   requiredCompletions = 1,
   decayDays = 7,
   onOpenLevel3,
-  children
+  children,
+  label = 'Khu vực chưa khám phá'
 }) => {
   const { explorationProgress } = useGameState();
   const status = getFogStatus(pageId, explorationProgress, requiredCompletions, decayDays);
@@ -85,19 +88,16 @@ export const FogCard: React.FC<FogCardProps> = ({
         {children}
       </div>
 
-      {/* Lớp phủ sương mù và biểu tượng khóa */}
+      {/* Lớp phủ mờ sương — mây trắng/hồng theo theme, không dùng nền đen hay icon ổ khóa (SUB_SPEC_UI_RULES.md §2) */}
       {status === 'shadowed' && (
-        <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center transition-all duration-300 ${
-          isHovered ? 'bg-black/40' : 'bg-black/70'
-        } rounded-2xl`}>
-          <div className="bg-black/60 p-3 rounded-full backdrop-blur-sm border border-white/10 mb-2">
-            <Lock className={`w-6 h-6 ${isHovered ? 'text-synth-cyan' : 'text-slate-400'} transition-colors`} />
-          </div>
-          <span className="text-[10px] uppercase font-orbitron font-bold tracking-wider text-slate-300">
-            Khu vực mờ sương
-          </span>
-          <span className="text-[9px] text-slate-500 mt-1 max-w-[80%] text-center">
-            Cần giải mã để tiến vào
+        <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center overflow-hidden rounded-2xl transition-opacity duration-300 ${
+          isHovered ? 'opacity-80' : 'opacity-100'
+        }`}>
+          <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-synth-cyan/15 to-white/60" />
+          <div className="absolute -inset-8 rounded-full bg-white/60 blur-2xl animate-[fog-drift_9s_ease-in-out_infinite]" />
+          <div className="absolute -inset-10 rounded-full bg-synth-cyan/25 blur-2xl animate-[fog-drift-reverse_12s_ease-in-out_infinite]" />
+          <span className="relative z-10 text-[10px] uppercase font-orbitron font-bold tracking-wider text-slate-600 bg-white/70 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/70 shadow-sm text-center max-w-[85%]">
+            {label}
           </span>
         </div>
       )}

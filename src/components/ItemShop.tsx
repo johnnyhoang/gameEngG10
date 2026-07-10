@@ -208,6 +208,7 @@ export const ItemShop: React.FC = () => {
                   pageId={`shop-theme-${theme.id}`}
                   requiredCompletions={1}
                   decayDays={10}
+                  label="Trang phục chưa trải nghiệm"
                   onOpenLevel3={() => isUnlocked ? setUiTheme(theme.id) : handleBuyTheme(theme.id)}
                 >
                   <div

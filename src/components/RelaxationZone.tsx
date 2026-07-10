@@ -116,6 +116,7 @@ const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onO
             pageId={game.pageId}
             requiredCompletions={game.id === 'flashcards' || game.id === 'match' ? 2 : 3}
             decayDays={7}
+            label="Trò chơi chưa trải nghiệm"
             onOpenLevel3={() => onOpenGame(game)}
           >
             <div

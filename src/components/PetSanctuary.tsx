@@ -661,12 +661,11 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
                       </div>
                     ) : (
                       <div className="py-12 flex flex-col items-center justify-center">
-                        <Lock className="w-8 h-8 text-slate-600 mb-2 animate-pulse" />
                         <div className="font-orbitron font-black uppercase tracking-wider text-sm text-slate-500">
-                          Kỷ niệm chưa mở khóa
+                          Kỷ niệm chưa trải nghiệm
                         </div>
                         <p className="text-xs text-slate-500 max-w-xs mt-1">
-                          Hãy kiên trì chăm sóc và cho Heo {pet.name} ăn để nâng cấp lên giai đoạn tiếp theo và giải mã bức ảnh này!
+                          Hãy kiên trì chăm sóc và cho Heo {pet.name} ăn để nâng cấp lên giai đoạn tiếp theo và mở ra bức ảnh này!
                         </p>
                       </div>
                     )}

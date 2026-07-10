@@ -260,6 +260,7 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
                 pageId={`arena-free-${card.id}`}
                 requiredCompletions={3}
                 decayDays={7}
+                label="Thử thách chưa trải nghiệm"
                 onOpenLevel3={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 30)}
               >
                 <div
@@ -293,6 +294,7 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
               pageId="arena-free-random"
               requiredCompletions={3}
               decayDays={7}
+              label="Thử thách chưa trải nghiệm"
               onOpenLevel3={() => handleLaunchZone('mixed', challengeEnergyCosts[1] ?? 30)}
             >
               <div
@@ -319,6 +321,7 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
               pageId="arena-free-revenge"
               requiredCompletions={3}
               decayDays={7}
+              label="Thử thách chưa trải nghiệm"
               onOpenLevel3={() => handleLaunchZone('revenge', challengeEnergyCosts[2] ?? 30)}
             >
               <div
@@ -346,7 +349,7 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
       <div className={`rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'bg-violet-50/40 border-violet-200/40' : 'bg-synth-purple/5 border-synth-purple/10'}`}>
         <div className="space-y-0.5">
           <h3 className={`font-orbitron font-black text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-            🐲 Lôi Đài Thần Thú (Boss Battle)
+            🐗 Lôi Đài Thần Thú (Boss Battle)
           </h3>
           <p className="text-[10px] text-slate-400">Khảo hạch toàn diện bằng các đề thi thật tuyển sinh/học kỳ các năm trước</p>
         </div>
@@ -358,6 +361,7 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
                 pageId={`arena-boss-${boss.id}`}
                 requiredCompletions={1}
                 decayDays={7}
+                label="Thử thách chưa trải nghiệm"
                 onOpenLevel3={() => handleLaunchZone('boss', boss.energy, boss.id)}
               >
                 <div
@@ -418,6 +422,7 @@ export function Arena({ onStartPlay, onBack, onStudyLesson, onStartLessonPractic
               pageId="arena-survival"
               requiredCompletions={1}
               decayDays={7}
+              label="Thử thách chưa trải nghiệm"
               onOpenLevel3={() => handleLaunchZone('survival', challengeEnergyCosts[0] ?? 30)}
             >
               <div
