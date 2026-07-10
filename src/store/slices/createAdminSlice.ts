@@ -1,7 +1,10 @@
 // @ts-nocheck
 import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
-import { INITIAL_PLAYER, INITIAL_PET, INITIAL_QUESTIONS, INITIAL_LESSONS, DEFAULT_GAME_SETTINGS, INITIAL_CHALLENGES, DEFAULT_REWARDS, DEFAULT_UI_THEME, DEFAULT_PIN } from '../../hooks/useGameState';
+import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS, INITIAL_CHALLENGES, DEFAULT_REWARDS, DEFAULT_PIN } from '../initialState';
+import { INITIAL_QUESTIONS } from '../../data/questions';
+import { INITIAL_LESSONS } from '../../data/lessons';
+import { DEFAULT_UI_THEME } from '../../theme/uiThemes';
 import { supabase } from '../../utils/supabaseClient';
 import { logActivity, checkLevelUp } from '../helpers';
 import { eventBus } from '../../utils/EventBus';

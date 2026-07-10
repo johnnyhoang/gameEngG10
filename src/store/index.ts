@@ -7,7 +7,7 @@ import { createFamilySlice } from './slices/createFamilySlice';
 import { createUISlice } from './slices/createUISlice';
 import { createPlayerSlice } from './slices/createPlayerSlice';
 import { createAdminSlice } from './slices/createAdminSlice';
-import { ALL_HANDBOOK_PAGES } from '../hooks/useGameState';
+import { ALL_HANDBOOK_PAGES } from '../data/handbookPages';
 
 export const useGameState = create<StoreState>()(
   persist(
