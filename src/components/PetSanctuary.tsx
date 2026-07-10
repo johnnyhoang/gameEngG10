@@ -71,7 +71,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
       return;
     }
     setInteracting(true);
-    setSpeech('Chao ôi... ngon quá! Ngon múp míp luôn á! Cảm ơn thiếu hiệp! 🍖🐷 (-10 NP, -5 XP)');
+    setSpeech('Chao ôi... ngon quá! Ngon múp míp luôn á! Cảm ơn thiếu hiệp! 🍖🐷 (-10 NP)');
     onInteract?.();
     setTimeout(() => {
       setInteracting(false);
@@ -581,7 +581,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
               : 'bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-border-cyan shadow-[0_0_12px_rgba(0,240,255,0.2)]'
           }`}
         >
-          {interacting ? 'Đang Cho Ăn Heo... 🍖' : `Cho ${pet.name} Ăn 🍖 (-50 NP, -30 XP)`}
+          {interacting ? 'Đang Cho Ăn Heo... 🍖' : `Cho ${pet.name} Ăn 🍖 (-10 NP)`}
         </button>
       </div>
     </div>

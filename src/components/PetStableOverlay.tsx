@@ -16,26 +16,14 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
   
   // Track idle time
   const lastActiveTime = useRef(Date.now());
-  // Shared cooldown across ALL auto-triggers (idle/sleep/hunger) so dismissing the
-  // overlay for one reason doesn't let a different reason pop it right back up.
-  const lastAutoTrigger = useRef(0);
   
-  // Login trigger state
-  const hasGreeted = useRef(false);
+  // Shared cooldown across ALL auto-triggers (including across page reloads)
+  const lastAutoTrigger = useRef<number>(Number(localStorage.getItem('ge10_last_pet_interaction') || 0));
 
-  useEffect(() => {
-    if (!currentUser || currentUser.role === 'admin') return;
-
-    if (!hasGreeted.current && !isDungeonScreen) {
-      // Show greeting overlay after 5s to avoid overlapping with handbook on login
-      const timer = setTimeout(() => {
-        setTriggerReason('login');
-        setIsOpen(true);
-        hasGreeted.current = true;
-      }, 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [currentUser, isDungeonScreen]);
+  const setLastAutoTrigger = (time: number) => {
+    lastAutoTrigger.current = time;
+    localStorage.setItem('ge10_last_pet_interaction', time.toString());
+  };
 
   // Global triggers
   useEffect(() => {
@@ -77,14 +65,14 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
       if (idleTime > 600000) {
         setTriggerReason('idle');
         setIsOpen(true);
-        lastAutoTrigger.current = now;
+        setLastAutoTrigger(now);
       } else {
         // Sleep check
         const hour = new Date().getHours();
         if (hour >= 22 || hour < 5) {
           setTriggerReason('sleep');
           setIsOpen(true);
-          lastAutoTrigger.current = now;
+          setLastAutoTrigger(now);
         } else {
           // Hunger check
           const lastFedTime = new Date(pet.lastFed).getTime();
@@ -92,7 +80,7 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
           if (now - lastFedTime > twelveHours) {
             setTriggerReason('hunger');
             setIsOpen(true);
-            lastAutoTrigger.current = now;
+            setLastAutoTrigger(now);
           }
         }
       }
@@ -119,7 +107,7 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
       setIsOpen(false);
       const now = Date.now();
       lastActiveTime.current = now; // reset idle timer
-      lastAutoTrigger.current = now; // snooze all auto-triggers, whatever the reason was
+      setLastAutoTrigger(now); // snooze all auto-triggers, whatever the reason was
     }, 2000);
   };
 
