@@ -7,6 +7,7 @@ import { MATH_EXAM_BLUEPRINT, MATH_TOPIC_LABELS } from '../../data/mathExamBluep
 import { LITERATURE_EXAM_BLUEPRINT, LITERATURE_TASK_LABELS } from '../../data/literatureExamBlueprint';
 import { toast } from '../../utils/toast';
 import { supabase } from '../../utils/supabaseClient';
+import { CORE_KNOWLEDGE_TOPICS } from '../../data/coreKnowledge';
 
 interface QuestionBankManagerProps {
   questions: Question[];
@@ -523,7 +524,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                       </label>
                       <div className="grid grid-cols-2 gap-2">
                         <label className="space-y-1 block">
-                          <span>Chuyên đề</span>
+                          <span>Kỹ năng (Category)</span>
                           <input
                             type="text"
                             value={editCategory}
@@ -532,6 +533,42 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                           />
                         </label>
                         <label className="space-y-1 block">
+                          <span>Topic Lõi (Core Knowledge)</span>
+                          <select
+                            value={editTopicId}
+                            onChange={(e) => setEditTopicId(e.target.value)}
+                            className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white"
+                          >
+                            <option value="">-- Chưa chọn topic --</option>
+                            {CORE_KNOWLEDGE_TOPICS.filter(t => t.subjectId === editSubject).map(t => (
+                              <option key={t.id} value={t.id}>
+                                {t.label} ({t.hamNguyenTo === 'hoa' ? '🔥 Hỏa' : t.hamNguyenTo === 'bang' ? '❄️ Băng' : '🪨 Thạch'})
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      </div>
+
+                      {/* Hiển thị đặc tính của Topic được chọn */}
+                      {(() => {
+                        const topic = CORE_KNOWLEDGE_TOPICS.find(t => t.id === editTopicId);
+                        if (!topic) return null;
+                        const hamLabel = topic.hamNguyenTo === 'hoa' ? '🔥 Hỏa Hầm (Phản xạ)' : topic.hamNguyenTo === 'bang' ? '❄️ Băng Hầm (Logic)' : '🪨 Thạch Hầm (Nền tảng)';
+                        const relevanceLabel = topic.examRelevance === 'high' ? '🔴 Quan Trọng Cao' : topic.examRelevance === 'medium' ? '🟡 Trung Bình' : '🟢 Thấp';
+                        return (
+                          <div className="flex gap-2 py-1.5 px-2 bg-white/5 rounded-lg text-[9px] items-center flex-wrap">
+                            <span className="text-slate-400">Đặc tính:</span>
+                            <span className="font-bold text-white">{hamLabel}</span>
+                            <span className="text-slate-400">|</span>
+                            <span className="font-bold text-white">{relevanceLabel}</span>
+                            <span className="text-slate-400">|</span>
+                            <span className="text-slate-400">Min: {topic.minQuestions} câu</span>
+                          </div>
+                        );
+                      })()}
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <label className="space-y-1 block">
                           <span>Độ khó (1-10)</span>
                           <input
                             type="number"
@@ -539,6 +576,15 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                             max={10}
                             value={editDifficulty}
                             onChange={(e) => setEditDifficulty(Number(e.target.value))}
+                            className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white"
+                          />
+                        </label>
+                        <label className="space-y-1 block">
+                          <span>Nguồn (Source)</span>
+                          <input
+                            type="text"
+                            value={editSource}
+                            onChange={(e) => setEditSource(e.target.value)}
                             className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white"
                           />
                         </label>
