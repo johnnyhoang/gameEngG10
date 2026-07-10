@@ -138,4 +138,48 @@ Bối cảnh: sau khi Task #21-26 lên production, phát sinh 2 việc — (1) b
 3. **§3 Kỳ Ngộ Giang Hồ**: hệ thống random event 5% khi login/hoàn thành bài — chưa tồn tại, cần action + modal mới.
 4. **§2.6 Vạn Quyển Các**: UI nạp đề bằng AI (backend đã có sẵn logic, chỉ thiếu UI) + nút "Thêm câu hỏi mới" thủ công (hiện chỉ có Sửa/Xóa).
 5. **§5 Color token consolidation**: gom màu neon 3 môn phái hardcode ở >10 file về 1 nguồn — thuần kỹ thuật, không phải bug, nên làm riêng 1 đợt review.
-6. Các mục nhỏ khác: tỷ giá VND cấu hình toàn viện ở Ngân Các, danh mục quà tặng dùng chung thay vì per-student, biến thể "nón lá" cho pet stage Adult, tách tab riêng cho "Dạy học cho AI".
+6. Các mục nhỏ khác: ~~tỷ giá VND cấu hình toàn viện ở Ngân Các~~ *(đã hủy — Ví VND bị bãi bỏ toàn bộ, xem đợt 2026-07-10 bên dưới)*, danh mục quà tặng dùng chung thay vì per-student *(nay chính thức thành spec §3.2 Reward Catalog)*, biến thể "nón lá" cho pet stage Adult, tách tab riêng cho "Dạy học cho AI".
+
+---
+
+## Đợt cập nhật 2026-07-10: PM Review + Pivot "Đa Tầng Giáo Dục Phổ Thông" + Đại tu Kinh Tế
+
+Bối cảnh: ClaudeCode thực hiện một đợt **PM review toàn bộ CORE_SPECS** (đánh giá logic game, tính gắn kết, tính thực dụng) → Viện Chủ ra 26 quyết định lớn. Toàn bộ đã merge vào CORE_SPECS + sub-specs. Song song, một phiên Gemini đã sửa CORE_SPECS (§1.2 trỏ SUB_SPEC_FAMILY_ROLE, Modal chuyển môn phái toàn cục, Sàn Game Hub, Bảng Cáo Thị, Môn Chủ Hỏi Tội bản mới không giới hạn skip, §2.7 revert về bản cũ) — các thay đổi đó được giữ nguyên và build tiếp lên trên.
+
+### Nhóm 1 — Pivot chiến lược
+- [x] **§1.1 Mission:** app không còn target riêng kỳ thi lớp 10 — mở rộng cho **toàn bộ giáo dục phổ thông** (focus cấp 2-3), hiện chỉ phát triển Tầng Lớp 9; riêng Toán/Văn/Anh lớp 9 kho kiến thức vẫn bám ôn tuyển sinh 10.
+- [x] **§1.4 MỚI — Nguyên lý Tầng Thế Giới:** mỗi lớp = 1 tầng giang hồ; cô lập 100% mọi trang theo tầng (Tầng → Môn Phái → Nội dung); đổi tầng DUY NHẤT tại Thân Phận; Tầng 9 giữ 9 môn (3 cao + 6 cơ bản); tầng 10/11/12 chưa làm.
+- [x] **§1.2:** ghi chú hệ Chủ Viện (admin) / Phó Viện (moderator) + nhiều phụ huynh đang được spec bên Gemini — chờ nạp SUB_SPEC_FAMILY_ROLE bản mới.
+- [x] **§9:** taxonomy đóng dấu phạm vi Tầng Lớp 9, thêm định hướng field `gradeTier`.
+
+### Nhóm 2 — Đại tu Kinh Tế (xóa tiền thật khỏi hệ thống)
+- [x] **Bãi bỏ Ví VND + tỷ giá 100NP=10.000đ** (lạm phát, không người chi trả). §3.1 cũ → **§3.2 Phần Thưởng Thực Tế (Reward Catalog)**: phụ huynh tự tạo phần thưởng định giá NP (trà sữa 500NP, lì xì 10k/20k/50k...), **có số lượng giới hạn** (van ngân sách — ai đổi sớm lấy trước), chỉ con trong nhóm thấy; app KHÔNG quản lý tiền, trao thưởng ngoài đời qua nút **"Đã Trao"**.
+- [x] **Boss không thưởng tiền:** điểm/câu + bonus hoàn thành lớn quảng bá trên Boss Card, mức do Chủ Viện/Phó Viện đặt. Boss = 5 câu rút từ ~20 câu trích của đề thật (~1/5 đề), 20 phút.
+- [x] **Xóa hệ thống Tim sinh mệnh toàn app:** Survival = 3 lần sai/lượt (bộ đếm), Hồi Nguyên Đan xóa khỏi shop + tự điển, TopHUD bỏ Tim + Ví Thưởng.
+- [x] **NP âm vô hạn** — không hành động nào bị chặn vì thiếu NP (giải deadlock skip); SUB_SPEC_XP_NP cập nhật.
+- [x] **Streak:** bỏ phạt -50 NP; thưởng leo thang ngày 2 (+10) / ngày 3 (+20) / ngày 4+ (+30/ngày); mất chuỗi chỉ reset. (Luật Chuỗi Tinh Tấn, CORE §3.1 + SUB_SPEC_XP_NP §2.1)
+- [x] **Xóa vĩnh viễn mâu thuẫn "cho heo ăn trừ XP"** ở §2.5 (2 chỗ) — feed chỉ tốn NP, khớp Luật Bất Cảm và khớp code (`feedPet` vốn chỉ trừ 20 NP).
+
+### Nhóm 3 — Hợp nhất hệ cấp bậc & thước đo
+- [x] **Luật Một Bảng (§7.2):** bảng XP→Level→Danh hiệu duy nhất, thêm cột XP tích lũy theo công thức code hiện hành (Level n→n+1 = n×200 XP); bảng "Cấp 1-5... Chưởng Môn" trong SUB_SPEC_XP_NP bị bãi bỏ.
+- [x] **Luật Bất Thoái (§7.4.4):** đẳng cấp môn phái one-way, lưu `maxAchievedRank`, không tụt khi bank câu hỏi phình to.
+- [x] **§3.3 MỚI — Phút Tu Luyện (North Star):** bài làm/bài đọc có `estimatedMinutes` quy định, game trả `timeSpent`, cộng dồn ngày/tuần theo học sinh/môn/tầng.
+- [x] **§7.5 MỚI — Leaderboards theo vai trò:** Thiếu Hiệp (trong Thân Phận, phạm vi nhóm), Phụ huynh (các con), Phó Viện (phạm vi giao), Viện Trưởng (toàn viện) + quy tắc ẩn danh trẻ em; chờ đồng bộ thêm khi SUB_SPEC_FAMILY_ROLE mới về.
+
+### Nhóm 4 — Heo, Gatekeeper, Chân Khí
+- [x] **Heo = linh vật dẫn dắt duy nhất** (§2.5): mọi việc đồng hành đều do heo, không thêm nhân vật khác.
+- [x] **§2.7 viết lại (lần 2):** gộp login/logout Cẩm Nang vào overlay Heo (bản Gemini revert về cũ đã được thay); +5 NP chuyển sang "cất heo về chuồng lần đầu/ngày tại Login Gate" *(đề xuất)*.
+- [x] **Logout = "Rời Học Viện"** (thay "Thoái Ẩn") + Logout Gate là lời chào 1 chạm, không nhét nội dung dài (đồng ý theo phản biện PM).
+- [x] **Gatekeeper question:** MCQ bắt buộc, độ khó chuẩn hóa **2/5**, kiến thức công thức/định nghĩa/định luật của đúng tầng + môn phái — sửa cả §2.8.7 lẫn §9.5 (hết mâu thuẫn "cực dễ" vs "3-5").
+- [x] **Fog of War:** giữ nguyên chính kiến spec (trả lời sai vẫn trừ NP nhỏ) — Viện Chủ bác đề xuất "lần đầu miễn phí".
+- [x] **SUB_SPEC_ENERGY.md MỚI (đề xuất v1):** maxEnergy do phụ huynh chỉnh (điều phối thời gian chơi), tiêu hao khi sinh điểm (ải -30, Boss -100, minigame -10, đọc/chăm heo miễn phí), về 0 thì nghỉ + heo thông báo (trigger `energy-depleted` — thêm vào danh sách trigger §2.5), reset đầy sau 2/3/5h do phụ huynh chọn (khuyến nghị Phương án A - reset trọn gói). **Các con số cần Viện Chủ duyệt.**
+- [x] **§3.4 MỚI — Kỳ Ngộ Giang Hồ (TODO phân tích):** Page Cấp 3 đặc biệt, random, không sương mù; xuất hiện ở Daily / Đấu Trường (chơi nhanh) / Hang (học nhanh).
+- [x] **AI Grading:** giữ nguyên + ghi chú roadmap function "Nhờ người chấm hộ" (Khảo Quan) — §4.2.5.
+
+### Dọn cấu trúc tài liệu
+- [x] Trả lại heading `##### 4. 🏮 Bách Hóa Phường` (bị mất khi chèn Bảng Cáo Thị).
+- [x] Hết trùng số: mục Minimalism đổi thành §2.9 (giữ §2.8 cho Map Hierarchy); §3.1 thứ hai → §3.2.
+- [ ] *(Nợ tồn)* Đánh số §2.2–§2.4 vẫn khuyết (module con của §2.1 dùng số 1-5); nhiều tham chiếu chéo kiểu "§2.5"/"§3.D" là quy ước ngầm — sẽ renumber trọn vẹn trong một đợt riêng để tránh diff nhiễu.
+
+### Backlog refactor
+Toàn bộ item triển khai code (kèm priority / độ khó / model đề xuất) đã được tạo trong task list phiên làm việc — xem các task mới #33+ (Tier isolation, xóa Tim, Reward Catalog, Boss points, Energy v2, Streak leo thang, NP âm, Rank thống nhất, Mastery one-way, Gatekeeper 2/5, Phút Tu Luyện, Leaderboards, Kỳ Ngộ analysis, terminology sweep). Task #18 cũ (giới hạn 3 skip/ngày) đã lỗi thời theo spec Môn Chủ mới (không giới hạn, trừ NP).
