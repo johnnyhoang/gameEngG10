@@ -66,33 +66,37 @@ export const ParentConsole: React.FC = () => {
   const [viewingStudentId, setViewingStudentId] = useState<string | null>(null);
 
   // Load students list on mount for admin users
+  // NOTE: fetchAdminStudents/fetchFamily intentionally NOT in deps — Zustand actions get new references
+  // on every set() call, which would cause an infinite loop. We only re-run when role changes.
   useEffect(() => {
+    const { fetchAdminStudents: fetchAdm, fetchFamily: fetchFam } = useGameState.getState();
     if (isAdmin(currentUser?.role)) {
-      fetchAdminStudents();
+      fetchAdm();
     }
     if (isParentRole(currentUser?.role) || isAdmin(currentUser?.role)) {
-      fetchFamily();
+      fetchFam();
     }
-  }, [currentUser?.role, fetchAdminStudents, fetchFamily]);
+  }, [currentUser?.role]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (isUnlocked && activeTab === 'chinh_dien') {
-      fetchAdminStudents();
-      fetchFamily();
+      const { fetchAdminStudents: fetchAdm, fetchFamily: fetchFam } = useGameState.getState();
+      fetchAdm();
+      fetchFam();
     }
-  }, [isUnlocked, activeTab, fetchAdminStudents, fetchFamily]);
+  }, [isUnlocked, activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (activeTab === 'thien_co_cac' && currentUser?.role === 'truong_vien') {
-      fetchAuditLogs();
+      useGameState.getState().fetchAuditLogs();
     }
-  }, [activeTab, currentUser?.role, fetchAuditLogs]);
+  }, [activeTab, currentUser?.role]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (viewingStudentId && isParentRole(currentUser?.role)) {
-      fetchSkipReviews(viewingStudentId);
+      useGameState.getState().fetchSkipReviews(viewingStudentId);
     }
-  }, [viewingStudentId, currentUser?.role, fetchSkipReviews]);
+  }, [viewingStudentId, currentUser?.role]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleUnlock = async (e: React.FormEvent) => {
     e.preventDefault();
