@@ -1,14 +1,3 @@
--- Family Links Table (Multi-Profile)
-CREATE TABLE IF NOT EXISTS ge10_family_links (
-    id VARCHAR(255) PRIMARY KEY,
-    parent_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
-    student_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
-    status VARCHAR(50) DEFAULT 'pending', -- 'pending_student', 'pending_parent', 'active'
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(parent_id, student_id)
-);
-
 -- Users Table (linked with Supabase Auth)
 CREATE TABLE IF NOT EXISTS ge10_users (
     id VARCHAR(255) PRIMARY KEY, -- Profile ID (generated uuid)
@@ -27,6 +16,19 @@ UPDATE ge10_users SET account_id = id WHERE account_id IS NULL;
 ALTER TABLE ge10_users ALTER COLUMN account_id SET NOT NULL;
 ALTER TABLE ge10_users DROP CONSTRAINT IF EXISTS ge10_users_email_key;
 ALTER TABLE ge10_users DROP COLUMN IF EXISTS family_id;
+
+-- Family Links Table (Multi-Profile & Secondary Parents)
+CREATE TABLE IF NOT EXISTS ge10_family_links (
+    id VARCHAR(255) PRIMARY KEY,
+    parent_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
+    student_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
+    status VARCHAR(50) DEFAULT 'pending', -- 'pending_student', 'pending_parent', 'active'
+    link_type VARCHAR(20) DEFAULT 'primary', -- 'primary', 'secondary'
+    secondary_permissions JSONB DEFAULT '{"can_approve_rewards": false, "can_create_missions": false, "read_only": true}'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(parent_id, student_id)
+);
 
 -- Player Profiles Table
 CREATE TABLE IF NOT EXISTS ge10_player_profiles (

@@ -3,7 +3,7 @@ import { useGameState } from '../hooks/useGameState';
 
 interface DesktopCentralNavProps {
   currentScreen: string;
-  onNavigate: (screen: 'map' | 'arena' | 'hang' | 'shop' | 'relax' | 'pet') => void;
+  onNavigate: (screen: 'map' | 'arena' | 'hang' | 'shop' | 'relax' | 'pet' | 'profile') => void;
 }
 
 export const DesktopCentralNav: React.FC<DesktopCentralNavProps> = ({ currentScreen, onNavigate }) => {
@@ -16,7 +16,8 @@ export const DesktopCentralNav: React.FC<DesktopCentralNavProps> = ({ currentScr
     { id: 'hang', icon: '📚', label: 'Hang Luyện' },
     { id: 'relax', icon: '🦄', label: 'Sơn Trang' },
     { id: 'shop', icon: '🏮', label: 'Bách Hóa' },
-    { id: 'pet', icon: '🐷', label: 'Sân Thú' }
+    { id: 'pet', icon: '🐷', label: 'Sân Thú' },
+    { id: 'profile', icon: '👑', label: 'Thân Phận' }
   ];
 
   return (

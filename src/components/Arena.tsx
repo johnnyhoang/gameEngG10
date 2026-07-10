@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useGameState } from '../hooks/useGameState';
+import { useGameState, DEFAULT_GAME_SETTINGS } from '../hooks/useGameState';
 import { INITIAL_LESSONS } from '../data/lessons';
 import { HANG_TRACKS } from '../data/hangLuyenCong';
 import { useSect } from '../contexts/SectContext';
@@ -26,8 +26,8 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
   const consumeEnergy = useGameState(state => state.useEnergy);
   const { activeSectId } = useSect();
   // Bonus Điểm (NP) khi hạ Boss — quảng bá ngay trên Boss Card (CORE_SPECS §2.1). Boss không thưởng tiền.
-  const bossCompletionBonusNP = useGameState(state => state.gameSettings?.bossCompletionBonusNP ?? [100, 150, 200]);
-  const challengeEnergyCosts = useGameState(state => state.gameSettings?.challengeEnergyCosts ?? [30, 30, 30, 30]);
+  const bossCompletionBonusNP = useGameState(state => state.gameSettings?.bossCompletionBonusNP ?? DEFAULT_GAME_SETTINGS.bossCompletionBonusNP);
+  const challengeEnergyCosts = useGameState(state => state.gameSettings?.challengeEnergyCosts ?? DEFAULT_GAME_SETTINGS.challengeEnergyCosts);
   const uiTheme = useGameState(state => state.uiTheme);
   const categoryStats = useGameState(state => state.categoryStats);
   const lessonsProgress = useGameState(state => state.lessonsProgress);

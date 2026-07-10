@@ -112,8 +112,11 @@ export interface StoreState {
 
   // === FAMILY SLICE ===
   familyLinks: FamilyLink[];
+  secondaryParents: any[];
   fetchFamily: () => Promise<void>;
   sendInvite: (targetId: string) => Promise<boolean>;
+  inviteSecondary: (targetEmail: string, studentId: string) => Promise<boolean>;
+  updateSecondaryPermissions: (linkId: string, permissions: { can_approve_rewards?: boolean, can_create_missions?: boolean, read_only?: boolean }) => Promise<boolean>;
   respondInvite: (linkId: string, accept: boolean) => Promise<boolean>;
   leaveFamily: (linkId: string) => Promise<boolean>;
 

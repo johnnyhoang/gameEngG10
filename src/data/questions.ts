@@ -1,5 +1,13 @@
 import type { Question } from '../types/game';
 import { inferTopicId } from './coreKnowledge';
+import {
+  SCIENCE_GATEKEEPER_QUESTIONS,
+  HISTORY_GEOGRAPHY_GATEKEEPER_QUESTIONS,
+  CIVICS_GATEKEEPER_QUESTIONS,
+  TECHNOLOGY_GATEKEEPER_QUESTIONS,
+  INFORMATICS_GATEKEEPER_QUESTIONS,
+  ARTS_GATEKEEPER_QUESTIONS,
+} from './gatekeeperQuestions';
 
 const RAW_INITIAL_QUESTIONS: Question[] = [
   // 1. Word Form (HCMC High-Yield Focus)
@@ -1725,9 +1733,16 @@ Yêu cầu: Phân tích vẻ đẹp của tình cảm bà cháu và nỗi nhớ 
   } as any
 ];
 
-export const INITIAL_QUESTIONS: Question[] = RAW_INITIAL_QUESTIONS.map(q => ({
+export const INITIAL_QUESTIONS: Question[] = (RAW_INITIAL_QUESTIONS.map(q => ({
   ...q,
   topicId: q.topicId || inferTopicId(q.category, q.subject)
-}));
+})) as Question[]).concat(
+  SCIENCE_GATEKEEPER_QUESTIONS,
+  HISTORY_GEOGRAPHY_GATEKEEPER_QUESTIONS,
+  CIVICS_GATEKEEPER_QUESTIONS,
+  TECHNOLOGY_GATEKEEPER_QUESTIONS,
+  INFORMATICS_GATEKEEPER_QUESTIONS,
+  ARTS_GATEKEEPER_QUESTIONS,
+);
 
 

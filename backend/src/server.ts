@@ -106,6 +106,55 @@ const authMiddleware = async (req: any, res: any, next: any) => {
   }
 };
 
+// Helper function to check parent or admin permissions over a student
+const checkStudentManagementPermission = async (actorId: string, studentUserId: string, action: 'approve_reward' | 'refill_energy' | 'view_profile') => {
+  const actorCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [actorId]);
+  if (actorCheck.rowCount === 0) return false;
+  const role = actorCheck.rows[0].role;
+
+  if (role === 'truong_vien' || role === 'pho_vien') {
+    return true; // Admins have global access
+  }
+
+  if (role === 'parent') {
+    // Check if they are the primary parent of this student
+    const linkCheck = await pool.query(
+      "SELECT id FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'primary' AND status = 'active'",
+      [actorId, studentUserId]
+    );
+    return linkCheck.rowCount && linkCheck.rowCount > 0;
+  }
+
+  if (role === 'secondary_parent') {
+    if (action === 'refill_energy') {
+      return false; // Secondary parents cannot manage energy
+    }
+
+    if (action === 'approve_reward') {
+      // Check if they are linked to the student and have approve reward permission
+      const linkCheck = await pool.query(
+        "SELECT secondary_permissions FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'secondary' AND status = 'active'",
+        [actorId, studentUserId]
+      );
+      if (linkCheck.rowCount && linkCheck.rowCount > 0) {
+        const perms = linkCheck.rows[0].secondary_permissions || {};
+        return perms.can_approve_rewards === true;
+      }
+    }
+
+    if (action === 'view_profile') {
+      // Secondary parents can always view profile if linked
+      const linkCheck = await pool.query(
+        "SELECT id FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'secondary' AND status = 'active'",
+        [actorId, studentUserId]
+      );
+      return linkCheck.rowCount && linkCheck.rowCount > 0;
+    }
+  }
+
+  return false;
+};
+
 // Friendly Vietnamese message shown to users once GEMINI_API_KEY, GEMINI_API_KEY2 and GEMINI_API_KEY3 have all failed
 const AI_EXHAUSTED_MESSAGE = 'Các sư phụ đã hết công lực AI rồi, phải nhờ đại sư phụ nạp thêm tiền để hồi phục công lực thì mới chấm bài bằng AI được!';
 
@@ -935,25 +984,54 @@ app.get('/api/family/:profileId', authMiddleware, async (req: any, res) => {
 
     // 2. Fetch data based on role
     if (myRole === 'student') {
-      // Find my parent
+      // Find my parents (can have primary parent and secondary parents)
       const linkRes = await pool.query(`
-        SELECT l.id, l.status, u.id as parent_id, u.name as parent_name, u.email as parent_email 
+        SELECT l.id, l.status, l.link_type, l.secondary_permissions, u.id as parent_id, u.name as parent_name, u.email as parent_email 
         FROM ge10_family_links l 
         JOIN ge10_users u ON l.parent_id = u.id 
         WHERE l.student_id = $1
       `, [profileId]);
       
       return res.json({ role: 'student', links: linkRes.rows });
-    } else {
-      // Find my students
-      const linkRes = await pool.query(`
-        SELECT l.id, l.status, u.id as student_id, u.name as student_name, u.email as student_email 
+    } else if (myRole === 'parent') {
+      // Find my students (primary links)
+      const studentLinks = await pool.query(`
+        SELECT l.id, l.status, l.link_type, l.secondary_permissions, u.id as student_id, u.name as student_name, u.email as student_email 
         FROM ge10_family_links l 
         JOIN ge10_users u ON l.student_id = u.id 
-        WHERE l.parent_id = $1
+        WHERE l.parent_id = $1 AND l.link_type = 'primary'
+      `, [profileId]);
+
+      // Find secondary parents sharing my students
+      const secondaryParents = await pool.query(`
+        SELECT l.id, l.status, l.link_type, l.secondary_permissions, u.id as parent_id, u.name as parent_name, u.email as parent_email, l.student_id
+        FROM ge10_family_links l 
+        JOIN ge10_users u ON l.parent_id = u.id 
+        WHERE l.student_id IN (
+          SELECT student_id FROM ge10_family_links WHERE parent_id = $1 AND link_type = 'primary'
+        ) AND l.link_type = 'secondary'
       `, [profileId]);
       
-      return res.json({ role: 'parent', links: linkRes.rows });
+      return res.json({ 
+        role: 'parent', 
+        links: studentLinks.rows,
+        secondaryParents: secondaryParents.rows
+      });
+    } else if (myRole === 'secondary_parent') {
+      // Find my students (secondary links)
+      const studentLinks = await pool.query(`
+        SELECT l.id, l.status, l.link_type, l.secondary_permissions, u.id as student_id, u.name as student_name, u.email as student_email 
+        FROM ge10_family_links l 
+        JOIN ge10_users u ON l.student_id = u.id 
+        WHERE l.parent_id = $1 AND l.link_type = 'secondary'
+      `, [profileId]);
+
+      return res.json({
+        role: 'secondary_parent',
+        links: studentLinks.rows
+      });
+    } else {
+      return res.json({ role: myRole, links: [] });
     }
   } catch (error) {
     console.error('Error fetching family:', error);
@@ -981,16 +1059,16 @@ app.post('/api/family/invite', authMiddleware, async (req: any, res) => {
     if (myRole === 'student') {
       if (target.role === 'student') return res.status(400).json({ error: 'Cannot invite another student' });
       // Check if student already has a parent
-      const existCheck = await pool.query('SELECT id FROM ge10_family_links WHERE student_id = $1', [senderProfileId]);
-      if (existCheck.rowCount && existCheck.rowCount > 0) return res.status(400).json({ error: 'You already have a parent or pending invite' });
+      const existCheck = await pool.query("SELECT id FROM ge10_family_links WHERE student_id = $1 AND link_type = 'primary'", [senderProfileId]);
+      if (existCheck.rowCount && existCheck.rowCount > 0) return res.status(400).json({ error: 'You already have a primary parent or pending primary invite' });
       
       studentId = senderProfileId;
       parentId = target.id;
       initialStatus = 'pending_parent'; // needs parent approval
     } else {
       if (target.role !== 'student') return res.status(400).json({ error: 'Can only invite a student' });
-      const existCheck = await pool.query('SELECT id FROM ge10_family_links WHERE student_id = $1', [target.id]);
-      if (existCheck.rowCount && existCheck.rowCount > 0) return res.status(400).json({ error: 'Student already has a parent or pending invite' });
+      const existCheck = await pool.query("SELECT id FROM ge10_family_links WHERE student_id = $1 AND link_type = 'primary'", [target.id]);
+      if (existCheck.rowCount && existCheck.rowCount > 0) return res.status(400).json({ error: 'Student already has a primary parent or pending primary invite' });
       
       parentId = senderProfileId;
       studentId = target.id;
@@ -999,7 +1077,7 @@ app.post('/api/family/invite', authMiddleware, async (req: any, res) => {
 
     const linkId = crypto.randomUUID();
     await pool.query(
-      'INSERT INTO ge10_family_links (id, parent_id, student_id, status) VALUES ($1, $2, $3, $4)',
+      "INSERT INTO ge10_family_links (id, parent_id, student_id, status, link_type) VALUES ($1, $2, $3, $4, 'primary')",
       [linkId, parentId, studentId, initialStatus]
     );
 
@@ -1007,6 +1085,122 @@ app.post('/api/family/invite', authMiddleware, async (req: any, res) => {
   } catch (error) {
     console.error('Error inviting:', error);
     res.status(500).json({ error: 'Failed to invite' });
+  }
+});
+
+// POST /api/family/invite-secondary
+// Primary parent invites a secondary parent to help manage a student
+app.post('/api/family/invite-secondary', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const { senderProfileId, targetEmail, studentId } = req.body;
+
+  if (!senderProfileId || !targetEmail || !studentId) {
+    return res.status(400).json({ error: 'Missing required parameters.' });
+  }
+
+  try {
+    // 1. Verify sender is the primary active parent of this student
+    const check = await pool.query(
+      "SELECT id FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'primary' AND status = 'active'",
+      [senderProfileId, studentId]
+    );
+    const senderCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1 AND account_id = $2', [senderProfileId, accountId]);
+    
+    if (check.rowCount === 0 || senderCheck.rowCount === 0 || senderCheck.rows[0].role !== 'parent') {
+      return res.status(403).json({ error: 'Forbidden: Only the primary parent can invite secondary parents.' });
+    }
+
+    // 2. Find target parent user
+    const targetCheck = await pool.query("SELECT id, role FROM ge10_users WHERE email = $1", [targetEmail]);
+    if (targetCheck.rowCount === 0) {
+      return res.status(404).json({ error: 'User not found. Ask them to create a Parent profile first.' });
+    }
+    const target = targetCheck.rows[0];
+
+    if (target.role !== 'parent' && target.role !== 'secondary_parent') {
+      return res.status(400).json({ error: 'Can only invite another parent profile.' });
+    }
+
+    if (target.id === senderProfileId) {
+      return res.status(400).json({ error: 'Cannot invite yourself.' });
+    }
+
+    // 3. Check if link already exists
+    const existCheck = await pool.query(
+      'SELECT id FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2',
+      [target.id, studentId]
+    );
+    if (existCheck.rowCount && existCheck.rowCount > 0) {
+      return res.status(400).json({ error: 'Link or invitation already exists for this parent and student.' });
+    }
+
+    // 4. Create secondary parent link
+    const linkId = crypto.randomUUID();
+    await pool.query(
+      "INSERT INTO ge10_family_links (id, parent_id, student_id, status, link_type, secondary_permissions) VALUES ($1, $2, $3, 'pending_parent', 'secondary', $4)",
+      [
+        linkId, 
+        target.id, 
+        studentId, 
+        JSON.stringify({ can_approve_rewards: false, can_create_missions: false, read_only: true })
+      ]
+    );
+
+    res.json({ success: true, message: 'Secondary parent invite sent.' });
+  } catch (error) {
+    console.error('Error inviting secondary parent:', error);
+    res.status(500).json({ error: 'Failed to send invite.' });
+  }
+});
+
+// PATCH /api/family/secondary-permissions
+// Primary parent updates permissions for a secondary parent link
+app.patch('/api/family/secondary-permissions', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const { senderProfileId, linkId, permissions } = req.body;
+
+  if (!senderProfileId || !linkId || !permissions) {
+    return res.status(400).json({ error: 'Missing required parameters.' });
+  }
+
+  try {
+    // 1. Fetch link details
+    const linkRes = await pool.query('SELECT * FROM ge10_family_links WHERE id = $1', [linkId]);
+    if (linkRes.rowCount === 0) return res.status(404).json({ error: 'Link not found.' });
+    const link = linkRes.rows[0];
+
+    if (link.link_type !== 'secondary') {
+      return res.status(400).json({ error: 'Can only update permissions for secondary parents.' });
+    }
+
+    // 2. Verify sender is the primary active parent of that student
+    const primaryCheck = await pool.query(
+      "SELECT id FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'primary' AND status = 'active'",
+      [senderProfileId, link.student_id]
+    );
+    const senderCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1 AND account_id = $2', [senderProfileId, accountId]);
+
+    if (primaryCheck.rowCount === 0 || senderCheck.rowCount === 0 || senderCheck.rows[0].role !== 'parent') {
+      return res.status(403).json({ error: 'Forbidden: Only the primary parent can configure permissions.' });
+    }
+
+    // 3. Update permissions
+    const currentPerms = link.secondary_permissions || {};
+    const newPerms = {
+      can_approve_rewards: typeof permissions.can_approve_rewards === 'boolean' ? permissions.can_approve_rewards : currentPerms.can_approve_rewards,
+      can_create_missions: typeof permissions.can_create_missions === 'boolean' ? permissions.can_create_missions : currentPerms.can_create_missions,
+      read_only: typeof permissions.read_only === 'boolean' ? permissions.read_only : currentPerms.read_only
+    };
+
+    await pool.query(
+      'UPDATE ge10_family_links SET secondary_permissions = $1, updated_at = NOW() WHERE id = $2',
+      [JSON.stringify(newPerms), linkId]
+    );
+
+    res.json({ success: true, permissions: newPerms });
+  } catch (error) {
+    console.error('Error updating secondary parent permissions:', error);
+    res.status(500).json({ error: 'Failed to update permissions.' });
   }
 });
 
@@ -1034,6 +1228,12 @@ app.post('/api/family/respond', authMiddleware, async (req: any, res) => {
     }
 
     await pool.query("UPDATE ge10_family_links SET status = 'active', updated_at = NOW() WHERE id = $1", [linkId]);
+    
+    // If it's a secondary parent link, update their role to secondary_parent
+    if (link.link_type === 'secondary') {
+      await pool.query("UPDATE ge10_users SET role = 'secondary_parent' WHERE id = $1 AND role = 'parent'", [link.parent_id]);
+    }
+    
     res.json({ success: true, message: 'Invite accepted' });
   } catch (error) {
     console.error('Error responding:', error);
@@ -1058,6 +1258,10 @@ app.post('/api/family/leave', authMiddleware, async (req: any, res) => {
       return res.status(403).json({ error: 'Unauthorized' });
     }
 
+    // Only allow primary parent or the student to leave/kick
+    // Wait: A secondary parent can also leave, but cannot kick.
+    // primary parent can kick student or secondary parent.
+    // If primary parent leaves, we delete all links? Yes, or just delete the student link.
     await pool.query('DELETE FROM ge10_family_links WHERE id = $1', [linkId]);
     res.json({ success: true, message: 'Left family' });
   } catch (error) {
@@ -1522,12 +1726,15 @@ app.post('/api/admin/promote', authMiddleware, async (req: any, res) => {
 app.post('/api/admin/deliver-reward', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
-    const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
-    if (adminCheck.rowCount === 0 || (adminCheck.rows[0].role !== 'truong_vien' && adminCheck.rows[0].role !== 'pho_vien')) {
-      return res.status(403).json({ error: 'Forbidden: Admin access only.' });
+    const { studentUserId, redemptionId } = req.body;
+    if (!studentUserId || !redemptionId) {
+      return res.status(400).json({ error: 'Missing studentUserId or redemptionId.' });
     }
 
-    const { studentUserId, redemptionId } = req.body;
+    const hasPermission = await checkStudentManagementPermission(adminId, studentUserId, 'approve_reward');
+    if (!hasPermission) {
+      return res.status(403).json({ error: 'Forbidden: You do not have permission to manage this student.' });
+    }
     if (!studentUserId || !redemptionId) {
       return res.status(400).json({ error: 'Missing studentUserId or redemptionId.' });
     }
@@ -1585,12 +1792,15 @@ app.post('/api/admin/deliver-reward', authMiddleware, async (req: any, res) => {
 app.post('/api/admin/cancel-redemption', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
-    const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
-    if (adminCheck.rowCount === 0 || (adminCheck.rows[0].role !== 'truong_vien' && adminCheck.rows[0].role !== 'pho_vien')) {
-      return res.status(403).json({ error: 'Forbidden: Admin access only.' });
+    const { studentUserId, redemptionId } = req.body;
+    if (!studentUserId || !redemptionId) {
+      return res.status(400).json({ error: 'Missing studentUserId or redemptionId.' });
     }
 
-    const { studentUserId, redemptionId } = req.body;
+    const hasPermission = await checkStudentManagementPermission(adminId, studentUserId, 'approve_reward');
+    if (!hasPermission) {
+      return res.status(403).json({ error: 'Forbidden: You do not have permission to manage this student.' });
+    }
     if (!studentUserId || !redemptionId) {
       return res.status(400).json({ error: 'Missing studentUserId or redemptionId.' });
     }
@@ -1657,12 +1867,15 @@ app.post('/api/admin/cancel-redemption', authMiddleware, async (req: any, res) =
 app.post('/api/admin/refill-energy', authMiddleware, async (req: any, res: any) => {
   const adminId = req.user.sub;
   try {
-    const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
-    if (adminCheck.rowCount === 0 || (adminCheck.rows[0].role !== 'truong_vien' && adminCheck.rows[0].role !== 'pho_vien')) {
-      return res.status(403).json({ error: 'Forbidden: Admin access only.' });
+    const { studentUserId } = req.body;
+    if (!studentUserId) {
+      return res.status(400).json({ error: 'Invalid parameters: studentUserId.' });
     }
 
-    const { studentUserId } = req.body;
+    const hasPermission = await checkStudentManagementPermission(adminId, studentUserId, 'refill_energy');
+    if (!hasPermission) {
+      return res.status(403).json({ error: 'Forbidden: You do not have permission to configure energy for this student.' });
+    }
     if (!studentUserId) {
       return res.status(400).json({ error: 'Invalid parameters: studentUserId.' });
     }
@@ -1787,12 +2000,15 @@ app.put('/api/admin/game-settings', authMiddleware, async (req: any, res: any) =
 app.get('/api/admin/student-profile', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
-    const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
-    if (adminCheck.rowCount === 0 || (adminCheck.rows[0].role !== 'truong_vien' && adminCheck.rows[0].role !== 'pho_vien')) {
-      return res.status(403).json({ error: 'Forbidden: Admin access only.' });
+    const { studentUserId } = req.query;
+    if (!studentUserId) {
+      return res.status(400).json({ error: 'Missing studentUserId query parameter.' });
     }
 
-    const { studentUserId } = req.query;
+    const hasPermission = await checkStudentManagementPermission(adminId, studentUserId as string, 'view_profile');
+    if (!hasPermission) {
+      return res.status(403).json({ error: 'Forbidden: You do not have permission to view this student profile.' });
+    }
     if (!studentUserId) {
       return res.status(400).json({ error: 'Missing studentUserId query parameter.' });
     }

@@ -12,6 +12,23 @@ import { supabase } from './supabaseClient';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
+/**
+ * Câu hỏi gác cổng tạm thời — dùng khi một môn phái chưa có đủ câu hỏi trong
+ * kho để làm Gatekeeper, thay vì để học viên bị kẹt với "Không tìm thấy câu
+ * hỏi gác cổng". Xóa fallback này khi mọi môn đã có đủ đề Gatekeeper thật.
+ */
+const FALLBACK_GATEKEEPER_QUESTION: Question = {
+  id: 'gatekeeper-fallback-placeholder',
+  type: 'multiple_choice',
+  category: 'placeholder',
+  prompt: '(Câu hỏi tạm thời — môn này chưa có đủ đề gác cổng) 1 + 1 = ?',
+  options: ['1', '2', '3', '4'],
+  correctAnswer: '2',
+  explanation: 'Đây là câu hỏi tạm thời vì môn này chưa có đủ câu hỏi gác cổng phù hợp.',
+  difficulty: 1,
+  source: 'Gatekeeper fallback tạm thời'
+};
+
 /** Bảng ánh xạ pageId (Page Cấp 2 trong Hang Luyện Công) → Hầm nguyên tố */
 export const PAGE_TO_HAM_MAP: Record<string, HamNguyenTo> = {
   // === Hang Luyện Công — Tiếng Anh ===
@@ -76,11 +93,12 @@ export function pickGatekeeperQuestion(
   const eligibleTopicIds = new Set(eligibleTopics.map(t => t.id));
 
   // Lọc câu hỏi đủ điều kiện - Ưu tiên câu Core Knowledge DỄ (difficulty 1-3)
+  // §9.5: Gatekeeper chỉ dùng MCQ — không dùng Wordform hay tự luận.
   const candidates = allQuestions.filter(q => {
     const matchSubject = q.subject === subjectId;
     const matchTopic = q.topicId ? eligibleTopicIds.has(q.topicId) : false;
     const matchDifficulty = q.difficulty >= 1 && q.difficulty <= 3;
-    const matchType = q.type === 'mcq' || q.type === 'multiple_choice' || q.type === 'wordform';
+    const matchType = q.type === 'mcq' || q.type === 'multiple_choice';
     return matchSubject && matchTopic && matchDifficulty && matchType;
   });
 
@@ -90,18 +108,18 @@ export function pickGatekeeperQuestion(
       const matchSubject = q.subject === subjectId;
       const matchTopic = q.topicId ? eligibleTopicIds.has(q.topicId) : false;
       const matchDifficulty = q.difficulty >= 1 && q.difficulty <= 4;
-      const matchType = q.type === 'mcq' || q.type === 'multiple_choice' || q.type === 'wordform';
+      const matchType = q.type === 'mcq' || q.type === 'multiple_choice';
       return matchSubject && matchTopic && matchDifficulty && matchType;
     });
 
     if (candidates4.length === 0) {
-      // Fallback 2: Bỏ điều kiện topic, chọn câu MCQ/wordform dễ của môn phái
+      // Fallback 2: Bỏ điều kiện topic, chọn câu MCQ dễ của môn phái
       const fallback = allQuestions.filter(q =>
         q.subject === subjectId &&
-        (q.type === 'mcq' || q.type === 'multiple_choice' || q.type === 'wordform') &&
+        (q.type === 'mcq' || q.type === 'multiple_choice') &&
         q.difficulty <= 3
       );
-      if (fallback.length === 0) return null;
+      if (fallback.length === 0) return FALLBACK_GATEKEEPER_QUESTION;
       const unused = fallback.filter(q => !usedQuestionIds.includes(q.id));
       const pool = unused.length > 0 ? unused : fallback;
       return pool[Math.floor(Math.random() * pool.length)];

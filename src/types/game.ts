@@ -70,6 +70,12 @@ export interface FamilyLink {
   student_id?: string;
   student_name?: string;
   student_email?: string;
+  link_type?: 'primary' | 'secondary';
+  secondary_permissions?: {
+    can_approve_rewards?: boolean;
+    can_create_missions?: boolean;
+    read_only?: boolean;
+  };
 }
 
 export interface UserProfile {

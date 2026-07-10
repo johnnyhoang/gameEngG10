@@ -16,7 +16,7 @@ import { PlayArea } from './components/PlayArea';
 import { ItemShop } from './components/ItemShop';
 import { ParentConsole } from './components/ParentConsole';
 import { GoogleLoginScreen } from './components/GoogleLoginScreen';
-import { ProfileThemeModal } from './components/ProfileThemeModal';
+import { ProfilePage } from './components/ProfilePage';
 import { GiangHoCamNang } from './components/GiangHoCamNang';
 import { HangLuyenCong } from './components/HangLuyenCong';
 import { HangMatThatPage } from './components/HangMatThatPage';
@@ -48,14 +48,13 @@ function App() {
   const { activeSectId } = useSect();
 
   // Screen routing state
-  const [screen, setScreen] = useState<'map' | 'arena' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang' | 'hang-3d' | 'hang-plane' | 'hang-graph' | 'lesson-study' | 'relax'>('map');
+  const [screen, setScreen] = useState<'map' | 'arena' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang' | 'hang-3d' | 'hang-plane' | 'hang-graph' | 'lesson-study' | 'relax' | 'profile'>('map');
   const [playMode, setPlayMode] = useState<'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'lesson' | 'survival'>('mixed');
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const masterLesson = useGameState(state => state.masterLesson);
   const [bossId, setBossId] = useState<string | undefined>(undefined);
   // Track where to return after a lesson study (map or hang)
   const [lessonBackTarget, setLessonBackTarget] = useState<'map' | 'hang'>('hang');
-  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [authLoading, setAuthLoading] = useState(true);
 
   // Cẩm Nang Bí Lục states
@@ -111,27 +110,17 @@ function App() {
     onConfirm?: () => void;
   } | null>(null);
 
-  const navigateWithWarning = (targetScreen: typeof screen | 'profile') => {
+  const navigateWithWarning = (targetScreen: typeof screen) => {
     if (screen === 'play') {
       setModalData({
         isOpen: true,
         type: 'warning',
         message: 'Nếu con không hoàn tất, vài hôm nữa khu vực này sẽ bị sương mù che phủ lại đấy!',
         buttonText: 'Vẫn thoát',
-        onConfirm: () => {
-          if (targetScreen === 'profile') {
-            setIsProfileOpen(true);
-          } else {
-            setScreen(targetScreen);
-          }
-        }
+        onConfirm: () => setScreen(targetScreen)
       });
     } else {
-      if (targetScreen === 'profile') {
-        setIsProfileOpen(true);
-      } else {
-        setScreen(targetScreen);
-      }
+      setScreen(targetScreen);
     }
   };
 
@@ -200,7 +189,7 @@ function App() {
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-synth-cyan mx-auto"></div>
           <p className="font-orbitron text-xs text-synth-cyan font-bold tracking-widest uppercase animate-pulse">
-            Đang kết nối đấu trường...
+            Đang tiến vào Thế Giới Học Tập...
           </p>
         </div>
       </div>
@@ -284,7 +273,7 @@ function App() {
         <section className="flex-1 min-w-0">
           
           {/* Desktop Central Navigation Hub */}
-          {['arena', 'hang', 'shop', 'relax', 'pet'].includes(screen) && !isDungeonScreen && !isHangMatterScreen && currentUser?.role !== 'admin' && (
+          {['arena', 'hang', 'shop', 'relax', 'pet', 'profile'].includes(screen) && !isDungeonScreen && !isHangMatterScreen && currentUser?.role !== 'admin' && (
             <DesktopCentralNav currentScreen={screen} onNavigate={(s) => setScreen(s)} />
           )}
 
@@ -417,6 +406,15 @@ function App() {
             <PetSanctuary variant="full" />
           )}
 
+          {screen === 'profile' && currentUser && (
+            <ProfilePage
+              currentUser={currentUser}
+              currentTheme={uiTheme}
+              onSelectTheme={setUiTheme}
+              onOpenLogs={() => setScreen('logs')}
+            />
+          )}
+
           {screen === 'logs' && (
             <div className="lg:hidden">
               <ActivityLog />
@@ -473,20 +471,6 @@ function App() {
           isOpen={true}
           initialPageId={helpPageId}
           onClose={closeHelp}
-        />
-      )}
-
-      {isProfileOpen && currentUser && (
-        <ProfileThemeModal
-          isOpen={isProfileOpen}
-          currentUser={currentUser}
-          currentTheme={uiTheme}
-          onClose={() => setIsProfileOpen(false)}
-          onSelectTheme={setUiTheme}
-          onGoToScreen={(screenName) => {
-            setScreen(screenName);
-            setIsProfileOpen(false);
-          }}
         />
       )}
 
@@ -554,6 +538,16 @@ function App() {
           >
             <span className="text-lg">🐷</span>
             <span>Pet</span>
+          </button>
+
+          <button
+            onClick={() => setScreen('profile')}
+            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
+              screen === 'profile' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
+            }`}
+          >
+            <span className="text-lg">👑</span>
+            <span>Thân Phận</span>
           </button>
         </nav>
       )}
