@@ -12,6 +12,7 @@ import { QuestManager } from './ParentConsole/QuestManager';
 import { SettingsManager } from './ParentConsole/SettingsManager';
 import { StudentProfileView } from './ParentConsole/StudentProfileView';
 import { QuestionBankManager } from './ParentConsole/QuestionBankManager';
+import { LectureBankManager } from './ParentConsole/LectureBankManager';
 
 export const ParentConsole: React.FC = () => {
   const markRewardDelivered = useGameState(state => state.markRewardDelivered);
@@ -63,7 +64,7 @@ export const ParentConsole: React.FC = () => {
   const setUiTheme = useGameState(state => state.setUiTheme);
 
   // Local state for layout
-  const [activeTab, setActiveTab] = useState<'chinh_dien' | 'thien_co_cac' | 'van_quyen_cac' | 'ngan_cac' | 'than_phan'>('chinh_dien');
+  const [activeTab, setActiveTab] = useState<'chinh_dien' | 'thien_co_cac' | 'van_quyen_cac' | 'tang_kinh_cac' | 'ngan_cac' | 'than_phan'>('chinh_dien');
   const [viewingStudentId, setViewingStudentId] = useState<string | null>(null);
 
   // Load students list on mount for admin users
@@ -141,12 +142,13 @@ export const ParentConsole: React.FC = () => {
 
         {/* Tab Controls */}
         <div className="hidden md:flex gap-2 flex-wrap">
-          {(['chinh_dien', 'than_phan', 'thien_co_cac', 'van_quyen_cac', 'ngan_cac'] as const).map(tab => {
+          {(['chinh_dien', 'than_phan', 'thien_co_cac', 'van_quyen_cac', 'tang_kinh_cac', 'ngan_cac'] as const).map(tab => {
             const tabNames: Record<string, string> = {
               chinh_dien: '🏛️ Chính Điện',
               than_phan: '👑 Thân Phận',
               thien_co_cac: '📖 Thiên Cơ Các',
               van_quyen_cac: '📚 Vạn Quyển Các',
+              tang_kinh_cac: '📖 Tàng Kinh Các',
               ngan_cac: '💰 Ngân Các'
             };
             return (
@@ -315,6 +317,10 @@ export const ParentConsole: React.FC = () => {
           />
         )}
 
+        {activeTab === 'tang_kinh_cac' && (
+          <LectureBankManager />
+        )}
+
         {activeTab === 'ngan_cac' && (
           <div className="space-y-8">
             <RewardManager
@@ -343,7 +349,7 @@ export const ParentConsole: React.FC = () => {
       </div>
 
       {/* Mobile Admin Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-3 py-2.5 pb-3 grid grid-cols-5 gap-1 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)] text-center">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-3 py-2.5 pb-3 grid grid-cols-6 gap-1 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)] text-center">
         <button
           onClick={() => {
             setActiveTab('chinh_dien');
@@ -385,6 +391,16 @@ export const ParentConsole: React.FC = () => {
         >
           <span className="text-base">📚</span>
           <span>Vạn Quyển</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('tang_kinh_cac')}
+          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
+            activeTab === 'tang_kinh_cac' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
+          }`}
+        >
+          <span className="text-base">📖</span>
+          <span>Tàng Kinh</span>
         </button>
 
         <button

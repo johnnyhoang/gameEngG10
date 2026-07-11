@@ -665,4 +665,124 @@ router.get('/admin/student-profile', authMiddleware, async (req: any, res) => {
   }
 });
 
+// GET /api/admin/lessons
+router.get('/admin/lessons', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  try {
+    const check = await pool.query(
+      "SELECT id FROM ge10_users WHERE account_id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien')",
+      [accountId]
+    );
+    if (check.rowCount === 0) {
+      return res.status(403).json({ error: 'Forbidden: Bạn không có quyền truy cập.' });
+    }
+    const lessonsRes = await pool.query('SELECT * FROM ge10_lessons ORDER BY created_at DESC');
+    res.json(lessonsRes.rows);
+  } catch (error: any) {
+    console.error('Error fetching lessons:', error);
+    res.status(500).json({ error: 'Không thể tải danh sách bài giảng.' });
+  }
+});
+
+// POST /api/admin/lessons
+router.post('/admin/lessons', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const { subject, category, topic, title, theory } = req.body;
+
+  if (!subject || !category || !topic || !title || theory === undefined) {
+    return res.status(400).json({ error: 'Missing required parameters.' });
+  }
+
+  try {
+    const check = await pool.query(
+      "SELECT id, role FROM ge10_users WHERE account_id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien') LIMIT 1",
+      [accountId]
+    );
+    if (check.rowCount === 0) {
+      return res.status(403).json({ error: 'Forbidden: Bạn không có quyền thêm bài giảng.' });
+    }
+    const actorProfileId = check.rows[0].id;
+
+    const lessonId = `les-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    await pool.query(
+      `INSERT INTO ge10_lessons (id, subject, category, topic, title, theory)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [lessonId, subject, category, topic, title, theory]
+    );
+
+    await logAuditEvent(actorProfileId, 'create_lesson', lessonId, { subject, category, title });
+    res.json({ success: true, lesson: { id: lessonId, subject, category, topic, title, theory } });
+  } catch (error: any) {
+    console.error('Error creating lesson:', error);
+    res.status(500).json({ error: 'Không thể tạo bài giảng.', details: error.message });
+  }
+});
+
+// PUT /api/admin/lessons/:lessonId
+router.put('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const { lessonId } = req.params;
+  const { subject, category, topic, title, theory } = req.body;
+
+  if (!subject || !category || !topic || !title || theory === undefined) {
+    return res.status(400).json({ error: 'Missing required parameters.' });
+  }
+
+  try {
+    const check = await pool.query(
+      "SELECT id, role FROM ge10_users WHERE account_id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien') LIMIT 1",
+      [accountId]
+    );
+    if (check.rowCount === 0) {
+      return res.status(403).json({ error: 'Forbidden: Bạn không có quyền sửa bài giảng.' });
+    }
+    const actorProfileId = check.rows[0].id;
+
+    const updateRes = await pool.query(
+      `UPDATE ge10_lessons 
+       SET subject = $1, category = $2, topic = $3, title = $4, theory = $5
+       WHERE id = $6`,
+      [subject, category, topic, title, theory, lessonId]
+    );
+
+    if (updateRes.rowCount === 0) {
+      return res.status(404).json({ error: 'Bài giảng không tồn tại.' });
+    }
+
+    await logAuditEvent(actorProfileId, 'update_lesson', lessonId, { subject, category, title });
+    res.json({ success: true, message: 'Đã cập nhật bài giảng thành công!' });
+  } catch (error: any) {
+    console.error('Error updating lesson:', error);
+    res.status(500).json({ error: 'Không thể cập nhật bài giảng.', details: error.message });
+  }
+});
+
+// DELETE /api/admin/lessons/:lessonId
+router.delete('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const { lessonId } = req.params;
+
+  try {
+    const check = await pool.query(
+      "SELECT id, role FROM ge10_users WHERE account_id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien') LIMIT 1",
+      [accountId]
+    );
+    if (check.rowCount === 0) {
+      return res.status(403).json({ error: 'Forbidden: Bạn không có quyền xóa bài giảng.' });
+    }
+    const actorProfileId = check.rows[0].id;
+
+    const deleteRes = await pool.query('DELETE FROM ge10_lessons WHERE id = $1', [lessonId]);
+    if (deleteRes.rowCount === 0) {
+      return res.status(404).json({ error: 'Bài giảng không tồn tại.' });
+    }
+
+    await logAuditEvent(actorProfileId, 'delete_lesson', lessonId, {});
+    res.json({ success: true, message: 'Đã xóa bài giảng thành công!' });
+  } catch (error: any) {
+    console.error('Error deleting lesson:', error);
+    res.status(500).json({ error: 'Không thể xóa bài giảng.', details: error.message });
+  }
+});
+
 export default router;
