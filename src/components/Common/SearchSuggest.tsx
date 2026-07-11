@@ -27,6 +27,7 @@ export const SearchSuggest: React.FC<SearchSuggestProps> = ({
   const searchUsers = useGameState(state => state.searchUsers);
   const containerRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<any | null>(null);
+  const isUserTypingRef = useRef(false);
 
   // Sync state if value prop changes
   useEffect(() => {
@@ -55,7 +56,7 @@ export const SearchSuggest: React.FC<SearchSuggestProps> = ({
     }
 
     // Only search if user typed, not when value is synced
-    if (query === value) {
+    if (!isUserTypingRef.current) {
       return;
     }
 
@@ -112,6 +113,7 @@ export const SearchSuggest: React.FC<SearchSuggestProps> = ({
           value={query}
           onChange={e => {
             const val = e.target.value;
+            isUserTypingRef.current = true;
             setQuery(val);
             if (onChange) onChange(val);
             setIsOpen(true);
