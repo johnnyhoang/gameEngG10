@@ -236,7 +236,19 @@ function App() {
   }
 
   if (!currentUser) {
-    return <ProfileSelectionScreen />;
+    return (
+      <div className="min-h-screen synth-grid-bg bg-synth-bg flex items-center justify-center relative overflow-hidden">
+        <div className="text-center space-y-2 pointer-events-none select-none">
+          <h1 className="font-orbitron text-5xl font-black bg-gradient-to-r from-synth-cyan to-synth-magenta bg-clip-text text-transparent tracking-widest uppercase animate-pulse">
+            MIKAWAII
+          </h1>
+          <p className="font-orbitron text-[10px] text-synth-cyan tracking-widest uppercase opacity-40">
+            SYSTEM CORE :: ONLINE
+          </p>
+        </div>
+        <ProfileSelectionScreen />
+      </div>
+    );
   }
 
   const triggerMysteryBox = () => {

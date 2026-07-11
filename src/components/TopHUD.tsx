@@ -77,8 +77,9 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             <img
               src={currentUser.avatar}
               alt={currentUser.name}
-              className="w-8 h-8 rounded-full border border-synth-cyan/40 shrink-0"
-              title={`${currentUser.name} (${currentUser.email})`}
+              className="w-8 h-8 rounded-full border border-synth-cyan/40 shrink-0 cursor-pointer hover:border-synth-magenta transition-colors"
+              title={`${currentUser.name} (${currentUser.email}) - Nhấp để Đổi Thân Phận`}
+              onClick={() => useGameState.setState({ currentUser: null })}
             />
           )}
           <div className="flex flex-col min-w-0 gap-0.5">

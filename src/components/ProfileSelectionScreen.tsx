@@ -99,70 +99,61 @@ export const ProfileSelectionScreen: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen synth-grid-bg bg-synth-bg flex flex-col font-mono text-white">
-      {/* Header */}
-      <header className="border-b border-synth-magenta/30 bg-synth-magenta/10 p-4">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
-          <h1 className="font-orbitron font-black text-lg tracking-widest text-synth-cyan">
-            GAME_ENG_G10 <span className="text-synth-magenta">::</span> SYSTEM
-          </h1>
-          <button
-            onClick={handleLogout}
-            className="flex items-center gap-2 text-xs uppercase tracking-widest text-slate-400 hover:text-synth-magenta transition-colors cursor-pointer"
-          >
-            <LogOut className="w-4 h-4" />
-            Đăng xuất
-          </button>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 font-mono text-white animate-fade-in">
+      <div className="glass-panel rounded-3xl border border-white/10 p-8 max-w-4xl w-full text-center space-y-8 shadow-[0_0_50px_rgba(0,240,255,0.1)] relative">
+        {/* Đăng xuất */}
+        <button
+          onClick={handleLogout}
+          className="absolute top-4 right-4 flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-slate-400 hover:text-synth-magenta transition-colors cursor-pointer"
+          title="Đăng xuất tài khoản Google"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          Đăng xuất
+        </button>
+
+        <div className="space-y-2">
+          <h2 className="font-orbitron text-2xl font-black uppercase tracking-wider text-synth-cyan">
+            Chọn Thân Phận Đăng Nhập
+          </h2>
+          <p className="text-xs text-slate-400">
+            Chọn vai trò bên dưới để tham gia học viện. Hồ sơ chưa có sẽ tự động khởi tạo.
+          </p>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center p-6">
-        <div className="glass-panel rounded-3xl border border-white/5 p-8 max-w-4xl w-full text-center space-y-8 shadow-[0_0_30px_rgba(0,0,0,0.5)]">
-          <div className="space-y-2">
-            <h2 className="font-orbitron text-3xl font-black uppercase tracking-wider text-white">
-              Chọn Thân Phận
-            </h2>
-            <p className="text-xs text-synth-text-muted">
-              Chọn vai trò bên dưới để tham gia học viện. Hồ sơ chưa có sẽ tự động khởi tạo.
-            </p>
-          </div>
-
-          <div className={`grid gap-6 ${roleCards.length === 2 ? 'grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'}`}>
-            {roleCards.map((card) => (
-              <button
-                key={card.key}
-                disabled={quickStarting !== null}
-                onClick={() => handleSelectRole(card.key as any)}
-                className={`group flex flex-col items-center justify-between gap-4 p-6 rounded-2xl border bg-white/3 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${card.colorClass}`}
-              >
-                {/* Icon & Label */}
-                <div className="flex flex-col items-center gap-2">
-                  <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center group-hover:scale-105 transition-transform">
-                    {card.icon}
-                  </div>
-                  <div className="font-orbitron font-bold text-base mt-1">
-                    {card.label}
-                  </div>
+        <div className={`grid gap-6 ${roleCards.length === 2 ? 'grid-cols-1 sm:grid-cols-2 max-w-2xl mx-auto' : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'}`}>
+          {roleCards.map((card) => (
+            <button
+              key={card.key}
+              disabled={quickStarting !== null}
+              onClick={() => handleSelectRole(card.key as any)}
+              className={`group flex flex-col items-center justify-between gap-4 p-6 rounded-2xl border bg-white/3 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${card.colorClass}`}
+            >
+              {/* Icon & Label */}
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-14 h-14 rounded-2xl bg-white/5 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  {card.icon}
                 </div>
-
-                {/* Info */}
-                <div className="w-full space-y-1.5 mt-2">
-                  <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
-                    Trạng thái
-                  </div>
-                  <div className="font-sans text-xs font-semibold text-white bg-black/40 py-1.5 px-3 rounded-lg truncate border border-white/5">
-                    {card.isLoading ? 'Đang khởi tạo...' : card.name}
-                  </div>
-                  <p className="text-[9px] text-slate-400 leading-normal font-sans pt-1">
-                    {card.desc}
-                  </p>
+                <div className="font-orbitron font-bold text-base mt-1">
+                  {card.label}
                 </div>
-              </button>
-            ))}
-          </div>
+              </div>
+
+              {/* Info */}
+              <div className="w-full space-y-1.5 mt-2">
+                <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
+                  Trạng thái
+                </div>
+                <div className="font-sans text-xs font-semibold text-white bg-black/40 py-1.5 px-3 rounded-lg truncate border border-white/5">
+                  {card.isLoading ? 'Đang khởi tạo...' : card.name}
+                </div>
+                <p className="text-[9px] text-slate-400 leading-normal font-sans pt-1">
+                  {card.desc}
+                </p>
+              </div>
+            </button>
+          ))}
         </div>
-      </main>
+      </div>
     </div>
   );
 };
