@@ -2187,23 +2187,24 @@ app.get('/api/admin/student-profile', authMiddleware, async (req: any, res) => {
     let rewardsRes = await pool.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [studentUserId]);
     if (rewardsRes.rowCount === 0) {
       const defaultRewards = [
-        { id: `default-rew-1-${studentUserId}`, title: '1 giờ chơi iPad/Game', cost_coins: 100, cash_value_vnd: 10000 },
-        { id: `default-rew-2-${studentUserId}`, title: 'Ly trà sữa đặc biệt', cost_coins: 150, cash_value_vnd: 15000 },
-        { id: `default-rew-3-${studentUserId}`, title: 'Một cuốn truyện tranh tự chọn', cost_coins: 150, cash_value_vnd: 15000 },
-        { id: `default-rew-4-${studentUserId}`, title: 'Bữa gà rán KFC/Jollibee', cost_coins: 200, cash_value_vnd: 20000 },
-        { id: `default-rew-5-${studentUserId}`, title: 'Vé xem phim cuối tuần', cost_coins: 200, cash_value_vnd: 20000 }
+        { id: `default-rew-1-${studentUserId}`, title: '15 phút chơi game', cost_coins: 150, quantity: 10 },
+        { id: `default-rew-2-${studentUserId}`, title: 'Ly trà sữa đặc biệt', cost_coins: 400, quantity: 4 },
+        { id: `default-rew-3-${studentUserId}`, title: 'Bao lì xì 20.000đ', cost_coins: 500, quantity: 5 },
+        { id: `default-rew-4-${studentUserId}`, title: 'Bao lì xì 50.000đ', cost_coins: 1000, quantity: 3 },
+        { id: `default-rew-5-${studentUserId}`, title: 'Bao lì xì 100.000đ', cost_coins: 1800, quantity: 1 }
       ];
 
       for (const dr of defaultRewards) {
         await pool.query(
-          `INSERT INTO ge10_parent_rewards (id, user_id, title, cost_coins, cash_value_vnd, status, timestamp)
+          `INSERT INTO ge10_parent_rewards (id, user_id, title, cost_coins, quantity, remaining_quantity, timestamp)
            VALUES ($1, $2, $3, $4, $5, $6, $7)
            ON CONFLICT (id) DO NOTHING`,
-          [dr.id, studentUserId, dr.title, dr.cost_coins, dr.cash_value_vnd, 'pending', Date.now()]
+          [dr.id, studentUserId, dr.title, dr.cost_coins, dr.quantity, dr.quantity, Date.now()]
         );
       }
       rewardsRes = await pool.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [studentUserId]);
     }
+    const redemptionsRes = await pool.query('SELECT * FROM ge10_reward_redemptions WHERE user_id = $1 ORDER BY timestamp DESC', [studentUserId]);
 
     const categoryStats: any = {};
     statsRes.rows.forEach((row: any) => {
@@ -2230,9 +2231,19 @@ app.get('/api/admin/student-profile', authMiddleware, async (req: any, res) => {
       id: row.id,
       title: row.title,
       costCoins: row.cost_coins,
-      cashValueVND: row.cash_value_vnd,
-      status: row.status,
+      quantity: row.quantity,
+      remainingQuantity: row.remaining_quantity,
       timestamp: Number(row.timestamp)
+    }));
+
+    const rewardRedemptions = redemptionsRes.rows.map((row: any) => ({
+      id: row.id,
+      rewardId: row.reward_id,
+      rewardTitle: row.reward_title,
+      costCoins: row.cost_coins,
+      status: row.status,
+      timestamp: Number(row.timestamp),
+      deliveredAt: row.delivered_at ? Number(row.delivered_at) : undefined
     }));
 
     res.json({
@@ -2244,7 +2255,6 @@ app.get('/api/admin/student-profile', authMiddleware, async (req: any, res) => {
         level: playerRes.rows[0].level,
         xp: playerRes.rows[0].xp,
         coins: playerRes.rows[0].coins,
-        walletVND: playerRes.rows[0].wallet_vnd,
         streak: playerRes.rows[0].streak,
         energy: playerRes.rows[0].energy,
         hearts: playerRes.rows[0].hearts,
@@ -2262,7 +2272,8 @@ app.get('/api/admin/student-profile', authMiddleware, async (req: any, res) => {
       } : null,
       categoryStats,
       logs,
-      rewards
+      rewards,
+      rewardRedemptions
     });
   } catch (error: any) {
     console.error('Error fetching student profile:', error.message);

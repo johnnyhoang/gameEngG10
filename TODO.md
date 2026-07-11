@@ -114,7 +114,7 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
 
 ### 9.C — Vạn Quyển Các — Cải Tiến Import & Tag Câu Hỏi
 
-- [ ] **🏷️ Giao diện Tag Chuyên Đề khi Import/Edit câu hỏi**
+- [x] **🏷️ Giao diện Tag Chuyên Đề khi Import/Edit câu hỏi**
   - Trong form thêm/sửa câu hỏi tại Vạn Quyển Các: thêm dropdown chọn `topicId` từ danh sách `CORE_KNOWLEDGE_TOPICS` lọc theo môn phái đang chọn.
   - Hiển thị badge Hầm nguyên tố (🔥/❄️/🪨) auto-fill theo `topicId` được chọn.
   - Hiển thị `examRelevance` gợi ý để Viện Chủ biết độ ưu tiên.
