@@ -345,7 +345,7 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
           <h3 className={`font-orbitron font-black text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
             🐗 Lôi Đài Thần Thú (Boss Battle)
           </h3>
-          <p className="text-[10px] text-slate-400">Khảo hạch toàn diện bằng các đề thi thật tuyển sinh/học kỳ các năm trước</p>
+          <p className="text-[10px] text-slate-400">Khảo hạch 5 câu trích từ đề thi thật tuyển sinh/học kỳ các năm trước, trong 20 phút</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -383,8 +383,8 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
                     </h4>
                     <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'} leading-relaxed`}>
                       {isChuyenSau
-                        ? `Đề thi chuẩn cấu trúc sở GD HCMC năm ${boss.tag}. Chỉ 1 mạng duy nhất!`
-                        : `Đề thi ${boss.tag === 'HK1' ? 'Học Kỳ 1' : 'Học Kỳ 2'} lớp 9. Chỉ 1 mạng duy nhất!`}
+                        ? `Đề thi chuẩn cấu trúc sở GD HCMC năm ${boss.tag}. 5 câu trích đề, sai 3 câu là thua!`
+                        : `Đề thi ${boss.tag === 'HK1' ? 'Học Kỳ 1' : 'Học Kỳ 2'} lớp 9. 5 câu trích đề, sai 3 câu là thua!`}
                     </p>
                   </div>
 

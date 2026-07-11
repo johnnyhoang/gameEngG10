@@ -62,7 +62,8 @@ export interface StoreState {
   openMysteryBox: () => { rewardType: string; amount: number; message: string };
   masterLesson: (lessonId: string, accuracyRatio?: number) => Promise<void>;
   applyDefeatPenalty: (coinsEarnedInRun: number, xpEarnedInRun: number) => void;
-  completeBossVictory: () => void;
+  /** bonusIndex khớp với chỉ số [dễ,trung bình,khó] trong gameSettings.bossCompletionBonusNP — để bonus thực nhận khớp đúng số đã quảng bá trên Boss Card. Bỏ trống thì chọn ngẫu nhiên (tương thích ngược). */
+  completeBossVictory: (bonusIndex?: number) => void;
   completeLevel3Page: (pageId: string) => void;
   updatePendingKeyQuestion: (pageId: string, questionId: string | null) => void;
   awardCoinsAndXp: (coins: number, xp: number, activityTitle: string, activityDetails: string) => Promise<void>;

@@ -30,7 +30,7 @@ export const ProfileSelectionScreen: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-synth-dark text-white flex flex-col font-mono">
+    <div className="min-h-screen bg-synth-bg text-white flex flex-col font-mono">
       {/* HUD Header */}
       <div className="border-b border-synth-magenta/30 bg-synth-magenta/10 p-4">
         <div className="max-w-4xl mx-auto flex items-center justify-between">

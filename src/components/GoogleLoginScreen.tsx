@@ -62,10 +62,6 @@ export const GoogleLoginScreen: React.FC = () => {
             <LogIn className="w-4 h-4" /> Đăng nhập bằng tài khoản Google
           </button>
         </div>
-
-        {/* ⚠️ DEV-ONLY BACKDOOR — TODO: xóa trước khi lên production thật */}
-
-
       </div>
     </div>
   );

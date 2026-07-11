@@ -481,13 +481,17 @@ export const createPlayerSlice: StateCreator<
           }
         },
 
-  completeBossVictory: () => {
+  completeBossVictory: (bonusIndex?: number) => {
           const state = get();
           const bonusXP = 150;
           // Bonus Điểm khi hạ Boss — quảng bá trên Boss Card, do Chủ Viện/Phó Viện cấu hình (CORE_SPECS §2.1).
           // Thay hoàn toàn thưởng tiền mặt cũ; Boss không bao giờ thưởng tiền.
           const npBonusOptions = state.gameSettings.bossCompletionBonusNP ?? [100, 150, 200];
-          const npBonus = npBonusOptions[Math.floor(Math.random() * npBonusOptions.length)];
+          // Dùng đúng bonusIndex của Boss vừa đánh để khớp số đã quảng bá trên Boss Card;
+          // không xác định được thì chọn ngẫu nhiên (tương thích ngược).
+          const npBonus = (bonusIndex !== undefined && npBonusOptions[bonusIndex] !== undefined)
+            ? npBonusOptions[bonusIndex]
+            : npBonusOptions[Math.floor(Math.random() * npBonusOptions.length)];
 
           const updatedXP = state.player.xp + bonusXP;
           const levelCheck = checkLevelUp(get, set, updatedXP, state.player.level);

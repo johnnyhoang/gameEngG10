@@ -99,14 +99,23 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     const fallbackQuestions = subjectQuestions.length > 0 ? subjectQuestions : questions;
 
     let pool: Question[] = [];
-    const count = mode === 'boss' ? 30 : mode === 'survival' ? 15 : 10;
-    
+    // Boss (CORE_SPECS §2.1): mỗi lượt chỉ rút 5 câu — ~1/5 đề trích từ đề thật (20 câu/đề).
+    const count = mode === 'boss' ? 5 : mode === 'survival' ? 15 : 10;
+
     if (mode === 'boss') {
-      const year = bossId === 'b-2024' ? '2024' : bossId === 'b-2025' ? '2025' : '2026';
-      pool = fallbackQuestions.filter(q => q.source.includes(year));
-      if (pool.length < count) {
-        pool = [...pool, ...fallbackQuestions.filter(q => !pool.includes(q))].slice(0, count);
-      }
+      const bossTag = bossId === 'b-2024' ? '2024'
+        : bossId === 'b-2025' ? '2025'
+        : bossId === 'b-2026' ? '2026'
+        : bossId === 'b-hk1' ? 'HK1'
+        : bossId === 'b-hk2' ? 'HK2'
+        : '2026';
+      const examPool = fallbackQuestions.filter(q => q.source.includes(bossTag));
+      const fullExamPool = examPool.length > 0 ? examPool : fallbackQuestions;
+      // Đề trích ra ~20 câu; nếu ngân hàng chưa gắn đủ 20 câu cho đề này thì dùng hết số đang có.
+      const examSample = fullExamPool.length > 20
+        ? [...fullExamPool].sort(() => Math.random() - 0.5).slice(0, 20)
+        : fullExamPool;
+      pool = [...examSample].sort(() => Math.random() - 0.5).slice(0, count);
     } else if (mode === 'revenge') {
       pool = subjectQuestions.filter(q => failedQuestionIds.includes(q.id));
     } else if (mode === 'lesson') {
@@ -187,7 +196,12 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     if (isDefeat) {
       applyDefeatPenalty(rewardsEarned.coins, rewardsEarned.xp);
     } else if (mode === 'boss') {
-      completeBossVictory();
+      // Khớp đúng thứ tự [dễ,trung bình,khó] hiển thị trên Boss Card ở Arena.tsx (bosses.map index).
+      const bossBonusIndex = bossId === 'b-2024' || bossId === 'b-hk1' ? 0
+        : bossId === 'b-2025' || bossId === 'b-hk2' ? 1
+        : bossId === 'b-2026' ? 2
+        : undefined;
+      completeBossVictory(bossBonusIndex);
     }
   }, [runFinished]);
 
