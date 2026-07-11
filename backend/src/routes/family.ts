@@ -111,7 +111,7 @@ router.post('/family/invite', authMiddleware, async (req: any, res) => {
       initialStatus = 'pending_student'; // needs student approval
     }
 
-    // Đây là link CHA-CON CHÍNH (primary) — mời Phụ huynh Phụ nằm ở endpoint riêng
+    // Đây là link CHA-CON CHÍNH (primary) — mời Chủ nhiệm Phụ nằm ở endpoint riêng
     // /api/family/invite-secondary. Trước đây INSERT bỏ qua parentId/studentId/initialStatus
     // vừa tính ở trên và hard-code 'pending_parent'/'secondary'/target.id — khiến link tạo ra
     // sai chiều (parent_id = student_id = id học sinh) và không khớp status mà 2 phía UI đang lọc.
@@ -151,11 +151,11 @@ router.post('/family/invite-secondary', authMiddleware, async (req: any, res) =>
     // 2. Check if secondary parent user exists by email
     const targetCheck = await pool.query('SELECT id, role FROM ge10_users WHERE email = $1', [targetEmail]);
     if (targetCheck.rowCount === 0) {
-      return res.status(404).json({ error: 'Không tìm thấy tài khoản Phụ huynh Phụ với email này. Hãy yêu cầu Phụ huynh Phụ đăng ký trước.' });
+      return res.status(404).json({ error: 'Không tìm thấy tài khoản Chủ nhiệm Phụ với email này. Hãy yêu cầu Chủ nhiệm Phụ đăng ký trước.' });
     }
     const targetParent = targetCheck.rows[0];
     if (targetParent.role !== 'parent' && targetParent.role !== 'secondary_parent') {
-      return res.status(400).json({ error: 'Tài khoản được mời phải có vai trò Phụ huynh.' });
+      return res.status(400).json({ error: 'Tài khoản được mời phải có vai trò Chủ nhiệm.' });
     }
 
     // 3. Check if link already exists
@@ -164,7 +164,7 @@ router.post('/family/invite-secondary', authMiddleware, async (req: any, res) =>
       [targetParent.id, studentId]
     );
     if (linkExist.rowCount && linkExist.rowCount > 0) {
-      return res.status(400).json({ error: `Lời mời phụ huynh phụ đã tồn tại với trạng thái: ${linkExist.rows[0].status}` });
+      return res.status(400).json({ error: `Lời mời chủ nhiệm phụ đã tồn tại với trạng thái: ${linkExist.rows[0].status}` });
     }
 
     // 4. Create secondary parent link

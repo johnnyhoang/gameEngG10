@@ -88,7 +88,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
               </span>
               {isAdminUser ? (
                 <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-synth-magenta/30 text-synth-magenta border border-synth-magenta/20 uppercase font-orbitron shrink-0">
-                  Viện Chủ 👑
+                  Hiệu Trưởng 👑
                 </span>
               ) : (
                 <span
@@ -192,7 +192,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
               )}
             >
               <span>👑</span>
-              <span className="hidden sm:inline">Bảng Viện Chủ</span>
+              <span className="hidden sm:inline">Bảng Hiệu Trưởng</span>
             </button>
           )}
 

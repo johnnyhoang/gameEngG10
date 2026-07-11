@@ -42,7 +42,7 @@ export interface SubjectMasteryInput {
 }
 
 // Công thức CORE_SPECS §7.4.2: 50% bài học hoàn thành + 50% tỉ lệ câu đúng (mẫu số = tổng
-// minQuestions của Core Knowledge topics thuộc môn, để Viện Chủ import thêm câu không ăn gian tỉ lệ).
+// minQuestions của Core Knowledge topics thuộc môn, để Hiệu Trưởng import thêm câu không ăn gian tỉ lệ).
 export function computeSubjectMasteryRatio({ subjectId, questions, categoryStats, lessons, lessonsProgress }: SubjectMasteryInput): number {
   const subjectCategories = Array.from(new Set(questions.filter(q => q.subject === subjectId).map(q => q.category)));
   const correctCount = subjectCategories.reduce((sum, cat) => sum + (categoryStats[cat]?.totalCorrect || 0), 0);

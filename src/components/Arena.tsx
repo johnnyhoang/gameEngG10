@@ -50,7 +50,7 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
     bossId?: string
   ) => {
     if (subjectQuestionCount === 0) {
-      toast.error(`Viện Chủ chưa nạp đề cho môn ${activeSubjectConfig.name}, thử chọn môn khác hoặc quay lại sau.`);
+      toast.error(`Hiệu Trưởng chưa nạp đề cho môn ${activeSubjectConfig.name}, thử chọn môn khác hoặc quay lại sau.`);
       return;
     }
     if (player.energy < energyCost) {
@@ -64,7 +64,7 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
   const subjectLessons = INITIAL_LESSONS.filter(l => l.subject === activeSectId);
 
   // Quyết Đấu Boss tốn -100 Chân Khí; nếu maxEnergy riêng của con < 100 thì tốn = maxEnergy,
-  // để con vẫn luôn đánh được 1 lượt Boss khi đầy bình dù phụ huynh siết trần thấp (SUB_SPEC_ENERGY §3).
+  // để con vẫn luôn đánh được 1 lượt Boss khi đầy bình dù chủ nhiệm siết trần thấp (SUB_SPEC_ENERGY §3).
   const bossEnergyCost = Math.min(100, player.maxEnergy ?? 100);
 
   const bosses = activeSectId === 'math' ? [
@@ -236,7 +236,7 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
 
       {subjectQuestionCount === 0 && (
         <div className="glass-panel rounded-2xl border border-dashed border-white/15 bg-white/5 p-4 text-xs text-slate-300">
-          Viện Chủ chưa nạp đề cho môn {activeSubjectConfig.name}. Các ải bên dưới sẽ tạm chưa mở được — quay lại sau khi có đề.
+          Hiệu Trưởng chưa nạp đề cho môn {activeSubjectConfig.name}. Các ải bên dưới sẽ tạm chưa mở được — quay lại sau khi có đề.
         </div>
       )}
 

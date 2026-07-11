@@ -1,25 +1,24 @@
 // @ts-nocheck
 import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
-import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS, INITIAL_CHALLENGES, DEFAULT_REWARDS, DEFAULT_PIN } from '../initialState';
+import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS, INITIAL_CHALLENGES, DEFAULT_REWARDS } from '../initialState';
 import { INITIAL_QUESTIONS } from '../../data/questions';
 import { INITIAL_LESSONS } from '../../data/lessons';
 import { DEFAULT_UI_THEME } from '../../theme/uiThemes';
-import { supabase } from '../../utils/supabaseClient';
 import { logActivity, checkLevelUp } from '../helpers';
 import { eventBus } from '../../utils/EventBus';
 import { toast } from '../../utils/toast';
+import { adminService } from '../../services/adminService';
+import { playerService } from '../../services/playerService';
 
 export const createAdminSlice: StateCreator<
   StoreState,
   [],
   [],
   Pick<StoreState, 
-    'parentPIN' | 'adminStudents' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'parentQuests' | 'changePIN' | 'markRewardDelivered' | 'cancelRedemption' | 'addParentReward' | 'deleteParentReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'adminSetEnergyConfig' | 'updateGameSettings' | 'addParentQuest' | 'completeParentQuest' | 'deleteParentQuest' | 'claimParentQuest' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
+    'adminStudents' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'parentQuests' | 'markRewardDelivered' | 'cancelRedemption' | 'addParentReward' | 'deleteParentReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'adminSetEnergyConfig' | 'updateGameSettings' | 'addParentQuest' | 'completeParentQuest' | 'deleteParentQuest' | 'claimParentQuest' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
   >
 > = (set, get) => ({
-  parentPIN: DEFAULT_PIN,
-
   adminStudents: [],
 
   selectedStudentProfile: null,
@@ -32,46 +31,12 @@ export const createAdminSlice: StateCreator<
 
   auditLogs: [],
 
-  changePIN: async (newPIN) => {
-    const state = get();
-    const pId = state.currentUser?.id;
-    if (!pId) return false;
-    const session = (await supabase.auth.getSession()).data.session;
-    const token = session?.access_token;
-    if (!token) return false;
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-    try {
-      const res = await fetch(`${backendUrl}/api/security/pin`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ profileId: pId, pin: newPIN })
-      });
-      if (res.ok) {
-        set({ parentPIN: newPIN });
-        return true;
-      }
-      return false;
-    } catch (e) {
-      console.error('Error changing PIN:', e);
-      return false;
-    }
-  },
-
   fetchAuditLogs: async () => {
     const state = get();
     if (state.currentUser?.role !== 'truong_vien') return;
-    const session = (await supabase.auth.getSession()).data.session;
-    const token = session?.access_token;
-    if (!token) return;
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
     try {
-      const res = await fetch(`${backendUrl}/api/admin/audit-logs`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        set({ auditLogs: data || [] });
-      }
+      const logs = await adminService.fetchAuditLogs();
+      set({ auditLogs: logs || [] });
     } catch (e) {
       console.error('Error fetching audit logs:', e);
     }
@@ -80,35 +45,18 @@ export const createAdminSlice: StateCreator<
   skipReviews: [],
 
   fetchSkipReviews: async (studentId) => {
-    const session = (await supabase.auth.getSession()).data.session;
-    const token = session?.access_token;
-    if (!token) return;
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
     try {
-      const res = await fetch(`${backendUrl}/api/family/skip-reviews/${studentId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (res.ok) {
-        const data = await res.json();
-        set({ skipReviews: data || [] });
-      }
+      const reviews = await adminService.fetchSkipReviews(studentId);
+      set({ skipReviews: reviews || [] });
     } catch (e) {
       console.error('Error fetching skip reviews:', e);
     }
   },
 
   resolveSkipReview: async (reviewId) => {
-    const session = (await supabase.auth.getSession()).data.session;
-    const token = session?.access_token;
-    if (!token) return false;
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
     try {
-      const res = await fetch(`${backendUrl}/api/family/skip-reviews/resolve`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ reviewId })
-      });
-      if (res.ok) {
+      const ok = await adminService.resolveSkipReview(reviewId);
+      if (ok) {
         set((state: any) => ({
           skipReviews: state.skipReviews.filter((r: any) => r.id !== reviewId)
         }));
@@ -134,7 +82,7 @@ export const createAdminSlice: StateCreator<
             )
           }));
 
-          logActivity(get, set, 'parent_approve', 'Đã Trao Phần Thưởng', `Viện Chủ xác nhận đã trao "${redemption.rewardTitle}" ngoài đời.`, 0, 0);
+          logActivity(get, set, 'parent_approve', 'Đã Trao Phần Thưởng', `Hiệu Trưởng xác nhận đã trao "${redemption.rewardTitle}" ngoài đời.`, 0, 0);
         },
 
   cancelRedemption: (redemptionId) => {
@@ -152,7 +100,7 @@ export const createAdminSlice: StateCreator<
             rewardRedemptions: prev.rewardRedemptions.filter(r => r.id !== redemptionId)
           }));
 
-          logActivity(get, set, 'parent_approve', 'Viện Chủ hoàn trả Ngân Lượng', `Hủy lượt đổi "${redemption.rewardTitle}". Đã hoàn lại ${redemption.costCoins} NP`, redemption.costCoins, 0);
+          logActivity(get, set, 'parent_approve', 'Hiệu Trưởng hoàn trả Ngân Lượng', `Hủy lượt đổi "${redemption.rewardTitle}". Đã hoàn lại ${redemption.costCoins} NP`, redemption.costCoins, 0);
         },
 
   addParentReward: (title, costCoins, quantity) => {
@@ -168,7 +116,7 @@ export const createAdminSlice: StateCreator<
           set((state: any) => ({
             rewards: [...state.rewards, newReward]
           }));
-          logActivity(get, set, 'parent_approve', 'Viện Chủ thêm Phúc Lợi mới', `Phúc Lợi mới: "${title}" trị giá ${costCoins} NP, số lượng ${safeQuantity}`, 0, 0);
+          logActivity(get, set, 'parent_approve', 'Hiệu Trưởng thêm Phúc Lợi mới', `Phúc Lợi mới: "${title}" trị giá ${costCoins} NP, số lượng ${safeQuantity}`, 0, 0);
         },
 
   deleteParentReward: (rewardId) => {
@@ -198,20 +146,9 @@ export const createAdminSlice: StateCreator<
           const isCustomQuestion = question.source?.startsWith('AI Ingested') || question.isConfused;
           if (isCustomQuestion && !questionId.startsWith('ai-')) {
             try {
-              const session = (await supabase.auth.getSession()).data.session;
-              const token = session?.access_token;
-              if (!token) return false;
-
-              const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-              const res = await fetch(`${backendUrl}/api/questions/custom/${questionId}`, {
-                method: 'DELETE',
-                headers: {
-                  'Authorization': `Bearer ${token}`
-                }
-              });
-              if (!res.ok) {
-                const errData = await res.json();
-                toast.error(errData.error || 'Không thể xóa câu hỏi.');
+              const ok = await adminService.deleteCustomQuestion(questionId);
+              if (!ok) {
+                toast.error('Không thể xóa câu hỏi.');
                 return false;
               }
             } catch (error) {
@@ -224,7 +161,7 @@ export const createAdminSlice: StateCreator<
           set((state: any) => ({
             questions: state.questions.filter(q => q.id !== questionId)
           }));
-          logActivity(get, set, 'parent_approve', 'Xóa câu hỏi', `Viện Chủ đã xóa câu hỏi mã số ${questionId}`, 0, 0);
+          logActivity(get, set, 'parent_approve', 'Xóa câu hỏi', `Hiệu Trưởng đã xóa câu hỏi mã số ${questionId}`, 0, 0);
           return true;
         },
 
@@ -238,22 +175,9 @@ export const createAdminSlice: StateCreator<
 
           if (isCustomQuestion) {
             try {
-              const session = (await supabase.auth.getSession()).data.session;
-              const token = session?.access_token;
-              if (!token) return false;
-
-              const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-              const res = await fetch(`${backendUrl}/api/questions/custom/${questionId}`, {
-                method: 'PUT',
-                headers: {
-                  'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify(nextQuestion)
-              });
-              if (!res.ok) {
-                const errData = await res.json();
-                toast.error(errData.error || 'Không thể cập nhật câu hỏi.');
+              const ok = await adminService.updateCustomQuestion(questionId, nextQuestion);
+              if (!ok) {
+                toast.error('Không thể cập nhật câu hỏi.');
                 return false;
               }
             } catch (error) {
@@ -266,7 +190,7 @@ export const createAdminSlice: StateCreator<
           set((state: any) => ({
             questions: state.questions.map(q => q.id === questionId ? nextQuestion : q)
           }));
-          logActivity(get, set, 'parent_approve', 'Cập nhật câu hỏi', `Viện Chủ đã cập nhật câu hỏi mã số ${questionId}`, 0, 0);
+          logActivity(get, set, 'parent_approve', 'Cập nhật câu hỏi', `Hiệu Trưởng đã cập nhật câu hỏi mã số ${questionId}`, 0, 0);
           return true;
         },
 
@@ -291,39 +215,19 @@ export const createAdminSlice: StateCreator<
     }
 
     try {
-      const session = (await supabase.auth.getSession()).data.session;
-      const token = session?.access_token;
-      if (!token) return false;
-
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+      if (!state.currentUser?.id) return false;
       
-      // Gọi API transaction để trừ tiền và lưu review skip ở backend
-      const res = await fetch(`${backendUrl}/api/economy/transaction`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          profileId: state.currentUser?.id,
-          amount: -10,
-          reason: 'Bỏ qua câu hỏi (Skip)',
-          details: {
-            questionId: question.id,
-            questionPrompt: question.prompt,
-            reason: reason || 'Quá khó'
-          }
-        })
-      });
-
-      if (!res.ok) {
-        const errData = await res.json();
-        toast.error(errData.error || 'Môn Chủ không cho phép bỏ qua câu hỏi.');
-        return false;
-      }
-
-      const data = await res.json();
-      const updatedCoins = data.coins;
+      // Gọi API transaction thông qua playerService
+      const updatedCoins = await playerService.awardCoins(
+        state.currentUser.id,
+        -10,
+        'Bỏ qua câu hỏi (Skip)',
+        {
+          questionId: question.id,
+          questionPrompt: question.prompt,
+          reason: reason || 'Quá khó'
+        }
+      );
 
       // Đánh dấu câu hỏi bị ghim local
       const nextQuestion = { ...question, isConfused: true, skipReason: reason, skipSeverity: severity } as Question;
@@ -349,18 +253,8 @@ export const createAdminSlice: StateCreator<
 
   fetchAdminStudents: async () => {
           try {
-            const session = (await supabase.auth.getSession()).data.session;
-            const token = session?.access_token;
-            if (!token) return;
-
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-            const res = await fetch(`${backendUrl}/api/admin/users`, {
-              headers: { 'Authorization': 'Bearer ' + token }
-            });
-            if (res.ok) {
-              const users = await res.json();
-              set({ adminStudents: users });
-            }
+            const users = await adminService.fetchAdminStudents();
+            set({ adminStudents: users });
           } catch (e) {
             console.error('Error fetching admin students list:', e);
           }
@@ -368,21 +262,8 @@ export const createAdminSlice: StateCreator<
 
   promoteUser: async (targetUserId: string, newRole: string) => {
           try {
-            const session = (await supabase.auth.getSession()).data.session;
-            const token = session?.access_token;
-            if (!token) return;
-
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-            const res = await fetch(`${backendUrl}/api/admin/promote`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
-              },
-              body: JSON.stringify({ targetUserId, newRole })
-            });
-            if (res.ok) {
-              // Refresh students list
+            const ok = await adminService.promoteUser(targetUserId, newRole);
+            if (ok) {
               await get().fetchAdminStudents();
             }
           } catch (e) {
@@ -392,18 +273,8 @@ export const createAdminSlice: StateCreator<
 
   fetchStudentProfile: async (studentUserId: string) => {
           try {
-            const session = (await supabase.auth.getSession()).data.session;
-            const token = session?.access_token;
-            if (!token) return;
-
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-            const res = await fetch(`${backendUrl}/api/admin/student-profile?studentUserId=${studentUserId}`, {
-              headers: { 'Authorization': 'Bearer ' + token }
-            });
-            if (res.ok) {
-              const profile = await res.json();
-              set({ selectedStudentProfile: profile });
-            }
+            const profile = await adminService.fetchStudentProfile(studentUserId);
+            set({ selectedStudentProfile: profile });
           } catch (e) {
             console.error('Error fetching student profile:', e);
           }
@@ -411,21 +282,8 @@ export const createAdminSlice: StateCreator<
 
   adminMarkRewardDelivered: async (studentUserId: string, redemptionId: string) => {
           try {
-            const session = (await supabase.auth.getSession()).data.session;
-            const token = session?.access_token;
-            if (!token) return;
-
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-            const res = await fetch(`${backendUrl}/api/admin/deliver-reward`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
-              },
-              body: JSON.stringify({ studentUserId, redemptionId })
-            });
-            if (res.ok) {
-              // Reload profile
+            const ok = await adminService.adminMarkRewardDelivered(studentUserId, redemptionId);
+            if (ok) {
               await get().fetchStudentProfile(studentUserId);
             }
           } catch (e) {
@@ -435,21 +293,8 @@ export const createAdminSlice: StateCreator<
 
   adminCancelRedemption: async (studentUserId: string, redemptionId: string) => {
           try {
-            const session = (await supabase.auth.getSession()).data.session;
-            const token = session?.access_token;
-            if (!token) return;
-
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-            const res = await fetch(`${backendUrl}/api/admin/cancel-redemption`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
-              },
-              body: JSON.stringify({ studentUserId, redemptionId })
-            });
-            if (res.ok) {
-              // Reload profile
+            const ok = await adminService.adminCancelRedemption(studentUserId, redemptionId);
+            if (ok) {
               await get().fetchStudentProfile(studentUserId);
             }
           } catch (e) {
@@ -459,23 +304,10 @@ export const createAdminSlice: StateCreator<
 
   adminSetEnergy: async (studentUserId: string, energyPercent: number) => {
           try {
-            const session = (await supabase.auth.getSession()).data.session;
-            const token = session?.access_token;
-            if (!token) return;
-
             const clampedPercent = Math.max(0, Math.min(100, Math.round(energyPercent)));
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-            const res = await fetch(`${backendUrl}/api/admin/refill-energy`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
-              },
-              body: JSON.stringify({ studentUserId, energyPercent: clampedPercent })
-            });
-            if (!res.ok) {
-              const errData = await res.json();
-              toast.error(errData.error || 'Lỗi khi cập nhật năng lượng.');
+            const ok = await adminService.adminSetEnergy(studentUserId, clampedPercent);
+            if (!ok) {
+              toast.error('Lỗi khi cập nhật năng lượng.');
               return;
             }
             await get().fetchStudentProfile(studentUserId);
@@ -488,23 +320,10 @@ export const createAdminSlice: StateCreator<
 
   adminSetEnergyConfig: async (studentUserId: string, maxEnergy: number, resetHours: 2 | 3 | 5) => {
           try {
-            const session = (await supabase.auth.getSession()).data.session;
-            const token = session?.access_token;
-            if (!token) return;
-
             const clampedMax = Math.max(50, Math.min(300, Math.round(maxEnergy)));
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-            const res = await fetch(`${backendUrl}/api/admin/set-energy-config`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
-              },
-              body: JSON.stringify({ studentUserId, maxEnergy: clampedMax, resetHours })
-            });
-            if (!res.ok) {
-              const errData = await res.json();
-              toast.error(errData.error || 'Lỗi khi cập nhật cấu hình Chân Khí.');
+            const ok = await adminService.adminSetEnergyConfig(studentUserId, clampedMax, resetHours);
+            if (!ok) {
+              toast.error('Lỗi khi cập nhật cấu hình Chân Khí.');
               return;
             }
             await get().fetchStudentProfile(studentUserId);
@@ -517,22 +336,9 @@ export const createAdminSlice: StateCreator<
 
   updateGameSettings: async (payload) => {
           try {
-            const session = (await supabase.auth.getSession()).data.session;
-            const token = session?.access_token;
-            if (!token) return;
-
-            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-            const res = await fetch(`${backendUrl}/api/admin/game-settings`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer ' + token
-              },
-              body: JSON.stringify(payload)
-            });
-            if (!res.ok) {
-              const errData = await res.json();
-              toast.error(errData.error || 'Lỗi khi cập nhật cấu hình.');
+            const ok = await adminService.updateGameSettings(payload);
+            if (!ok) {
+              toast.error('Lỗi khi cập nhật cấu hình.');
               return;
             }
             set((state: any) => ({
@@ -602,3 +408,4 @@ export const createAdminSlice: StateCreator<
         },
 
 });
+

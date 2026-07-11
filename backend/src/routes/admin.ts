@@ -12,16 +12,19 @@ import {
 
 const router = express.Router();
 
-// GET /api/admin/users: Lists all users in the system
+// GET /api/admin/users: Lists all ACTIVE users (dùng cho danh sách học sinh trong lớp)
 router.get('/admin/users', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
-    const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
-    if (adminCheck.rowCount === 0 || (adminCheck.rows[0].role !== 'truong_vien' && adminCheck.rows[0].role !== 'pho_vien')) {
+    const adminCheck = await pool.query(
+      'SELECT role FROM ge10_users WHERE account_id = $1 AND role IN (\'truong_vien\', \'pho_vien\') AND is_active = TRUE',
+      [adminId]
+    );
+    if (adminCheck.rowCount === 0) {
       return res.status(403).json({ error: 'Forbidden: Admin access only.' });
     }
 
-    const usersRes = await pool.query('SELECT id, name, email, avatar_url, role FROM ge10_users');
+    const usersRes = await pool.query('SELECT id, name, email, avatar_url, role FROM ge10_users WHERE is_active = TRUE');
     res.json(usersRes.rows);
   } catch (error: any) {
     console.error('Error fetching admin users:', error.message);
@@ -29,39 +32,118 @@ router.get('/admin/users', authMiddleware, async (req: any, res) => {
   }
 });
 
-// POST /api/admin/promote: Updates role for a specific user ID
-router.post('/admin/promote', authMiddleware, async (req: any, res) => {
+// GET /api/admin/users-all: Lists ALL profiles (kể cả inactive) gộp theo account_id — dùng cho RoleManager
+router.get('/admin/users-all', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
-    const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
-    const adminRole = adminCheck.rows[0].role;
-    if (adminRole !== 'truong_vien' && adminRole !== 'pho_vien') {
-      return res.status(403).json({ error: 'Forbidden: Admin access only.' });
+    const adminCheck = await pool.query(
+      'SELECT role FROM ge10_users WHERE account_id = $1 AND role = \'truong_vien\' AND is_active = TRUE',
+      [adminId]
+    );
+    if (adminCheck.rowCount === 0) {
+      return res.status(403).json({ error: 'Forbidden: Chỉ Hiệu Trưởng mới có thể xem toàn bộ danh sách profile.' });
     }
 
-    const { targetUserId, newRole } = req.body;
-    if (!targetUserId || !newRole) {
-      return res.status(400).json({ error: 'Missing targetUserId or newRole.' });
+    // Trả về tất cả profiles kể cả inactive — RoleManager sẽ group theo account_id
+    const usersRes = await pool.query(
+      'SELECT id, account_id, name, email, avatar_url, role, is_active, created_at FROM ge10_users ORDER BY account_id, created_at'
+    );
+    res.json({ users: usersRes.rows });
+  } catch (error: any) {
+    console.error('Error fetching all users:', error.message);
+    res.status(500).json({ error: 'Failed to fetch users list.' });
+  }
+});
+
+
+// POST /api/admin/update-user-role: Bật/Tắt (active/deactivate/create) bất kỳ role nào trong 4 role của tài khoản
+router.post('/api/admin/update-user-role', authMiddleware, async (req: any, res) => {
+  const adminId = req.user.sub;
+  try {
+    const adminCheck = await pool.query(
+      'SELECT role FROM ge10_users WHERE account_id = $1 AND role = \'truong_vien\' AND is_active = TRUE',
+      [adminId]
+    );
+    if (adminCheck.rowCount === 0) {
+      return res.status(403).json({ error: 'Forbidden: Chỉ Hiệu Trưởng mới có quyền quản lý vai trò.' });
     }
 
-    if (adminRole === 'pho_vien' && newRole !== 'student' && newRole !== 'parent') {
-      return res.status(403).json({ error: 'Forbidden: Pho Vien can only promote to student or parent.' });
+    const { targetAccountId, roleKey, active } = req.body;
+    if (!targetAccountId || !roleKey || active === undefined) {
+      return res.status(400).json({ error: 'Missing targetAccountId, roleKey, or active status.' });
     }
 
-    await pool.query('UPDATE ge10_users SET role = $1 WHERE id = $2', [newRole, targetUserId]);
+    // Lấy thông tin cơ bản từ một profile bất kỳ của tài khoản targetAccountId để lấy email, avatar_url, name
+    const infoRes = await pool.query(
+      'SELECT name, email, avatar_url FROM ge10_users WHERE account_id = $1 LIMIT 1',
+      [targetAccountId]
+    );
+    if (infoRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Target account not found.' });
+    }
+    const baseInfo = infoRes.rows[0];
+
+    // Tìm profile hiện tại của roleKey cho tài khoản đó
+    const profileCheck = await pool.query(
+      'SELECT id, is_active FROM ge10_users WHERE account_id = $1 AND role = $2',
+      [targetAccountId, roleKey]
+    );
+
+    if (active) {
+      if (profileCheck.rows.length > 0) {
+        // Đã có profile -> Kích hoạt lại
+        const existing = profileCheck.rows[0];
+        await pool.query('UPDATE ge10_users SET is_active = TRUE WHERE id = $1', [existing.id]);
+      } else {
+        // Chưa có profile -> Tạo profile mới
+        const newProfileId = `u-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Chuẩn hóa tên (Xóa hậu tố cũ nếu có và thêm hậu tố vai trò mới)
+        const cleanName = baseInfo.name.replace(/\s*\(Hiệu Trưởng\)|\s*\(Hiệu Phó\)|\s*\(Chủ Nhiệm\)|\s*\(Học Sinh\)/g, '');
+        let roleSuffix = '';
+        if (roleKey === 'truong_vien') roleSuffix = 'Hiệu Trưởng';
+        else if (roleKey === 'pho_vien') roleSuffix = 'Hiệu Phó';
+        else if (roleKey === 'parent') roleSuffix = 'Chủ Nhiệm';
+        else if (roleKey === 'student') roleSuffix = 'Học Sinh';
+        
+        const finalName = roleSuffix ? `${cleanName} (${roleSuffix})` : cleanName;
+
+        await pool.query(
+          `INSERT INTO ge10_users (id, account_id, name, email, avatar_url, role, is_active)
+           VALUES ($1, $2, $3, $4, $5, $6, TRUE)`,
+          [newProfileId, targetAccountId, finalName, baseInfo.email, baseInfo.avatar_url, roleKey]
+        );
+
+        // Khởi tạo các bảng phụ thuộc cho profile mới
+        await pool.query(`INSERT INTO ge10_player_profiles (user_id) VALUES ($1) ON CONFLICT DO NOTHING`, [newProfileId]);
+        await pool.query(`INSERT INTO ge10_pet_states (user_id) VALUES ($1) ON CONFLICT DO NOTHING`, [newProfileId]);
+      }
+    } else {
+      // Vô hiệu hóa
+      if (profileCheck.rows.length > 0) {
+        const existing = profileCheck.rows[0];
+        await pool.query('UPDATE ge10_users SET is_active = FALSE WHERE id = $1', [existing.id]);
+      }
+    }
+
     res.json({ success: true });
   } catch (error: any) {
-    console.error('Error promoting user:', error.message);
+    console.error('Error updating user role:', error.message);
     res.status(500).json({ error: 'Failed to update user role.' });
   }
 });
+
+
 
 // GET /api/admin/audit-logs: Fetches all admin/parent audit logs (only for truong_vien)
 router.get('/admin/audit-logs', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
-    const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
-    if (adminCheck.rowCount === 0 || adminCheck.rows[0].role !== 'truong_vien') {
+    const adminCheck = await pool.query(
+      'SELECT role FROM ge10_users WHERE account_id = $1 AND role = \'truong_vien\' AND is_active = TRUE',
+      [adminId]
+    );
+    if (adminCheck.rowCount === 0) {
       return res.status(403).json({ error: 'Forbidden: Super Admin access only.' });
     }
 
@@ -116,7 +198,7 @@ router.post('/admin/deliver-reward', authMiddleware, async (req: any, res) => {
           Date.now(),
           'parent_approve',
           'Đã Trao Phần Thưởng',
-          `Viện Chủ xác nhận đã trao "${reward_title}" ngoài đời.`,
+          `Hiệu Trưởng xác nhận đã trao "${reward_title}" ngoài đời.`,
           0,
           0
         ]
@@ -187,7 +269,7 @@ router.post('/admin/cancel-redemption', authMiddleware, async (req: any, res) =>
           studentUserId,
           Date.now(),
           'parent_approve',
-          'Viện Chủ hoàn trả Ngân Lượng',
+          'Hiệu Trưởng hoàn trả Ngân Lượng',
           `Hủy lượt đổi "${reward_title}". Đã hoàn lại ${cost_coins} NP`,
           cost_coins,
           0
@@ -268,7 +350,7 @@ router.post('/admin/refill-energy', authMiddleware, async (req: any, res: any) =
   }
 });
 
-// POST /api/admin/set-energy-config: Phụ huynh chỉnh Trần Chân Khí + giờ hồi RIÊNG cho 1 con (SUB_SPEC_ENERGY §2).
+// POST /api/admin/set-energy-config: Chủ nhiệm chỉnh Trần Chân Khí + giờ hồi RIÊNG cho 1 con (SUB_SPEC_ENERGY §2).
 router.post('/admin/set-energy-config', authMiddleware, async (req: any, res: any) => {
   const adminId = req.user.sub;
   try {
@@ -313,8 +395,11 @@ router.post('/admin/set-energy-config', authMiddleware, async (req: any, res: an
 router.put('/admin/game-settings', authMiddleware, async (req: any, res: any) => {
   const adminId = req.user.sub;
   try {
-    const adminCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [adminId]);
-    if (adminCheck.rowCount === 0 || (adminCheck.rows[0].role !== 'truong_vien' && adminCheck.rows[0].role !== 'pho_vien')) {
+    const adminCheck = await pool.query(
+      'SELECT role FROM ge10_users WHERE account_id = $1 AND role IN (\'truong_vien\', \'pho_vien\') AND is_active = TRUE',
+      [adminId]
+    );
+    if (adminCheck.rowCount === 0) {
       return res.status(403).json({ error: 'Forbidden: Admin access only.' });
     }
 

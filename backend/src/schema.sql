@@ -16,6 +16,9 @@ UPDATE ge10_users SET account_id = id WHERE account_id IS NULL;
 ALTER TABLE ge10_users ALTER COLUMN account_id SET NOT NULL;
 ALTER TABLE ge10_users DROP CONSTRAINT IF EXISTS ge10_users_email_key;
 ALTER TABLE ge10_users DROP COLUMN IF EXISTS family_id;
+-- Profile deactivation support (soft delete): is_active = false thay vì DELETE
+ALTER TABLE ge10_users ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE;
+
 
 -- Family Links Table (Multi-Profile & Secondary Parents)
 CREATE TABLE IF NOT EXISTS ge10_family_links (
@@ -51,7 +54,7 @@ CREATE TABLE IF NOT EXISTS ge10_player_profiles (
 ALTER TABLE ge10_player_profiles DROP COLUMN IF EXISTS wallet_vnd;
 
 -- Chân Khí v2 (SUB_SPEC_ENERGY.md) — maxEnergy/resetHours là cấu hình RIÊNG từng con,
--- không còn dùng ge10_game_settings global nữa (mỗi con một mức do phụ huynh chỉnh ở Ngân Các).
+-- không còn dùng ge10_game_settings global nữa (mỗi con một mức do chủ nhiệm chỉnh ở Ngân Các).
 ALTER TABLE ge10_player_profiles ALTER COLUMN energy SET DEFAULT 100;
 ALTER TABLE ge10_player_profiles ADD COLUMN IF NOT EXISTS max_energy INTEGER NOT NULL DEFAULT 100;
 ALTER TABLE ge10_player_profiles ADD COLUMN IF NOT EXISTS reset_hours INTEGER NOT NULL DEFAULT 3;
@@ -101,7 +104,7 @@ CREATE TABLE IF NOT EXISTS ge10_history_logs (
     wallet_changed INTEGER DEFAULT 0
 );
 
--- Phần Thưởng Thực Tế (Reward Catalog) — CORE_SPECS §3.2. Do phụ huynh tự tạo, định giá NP,
+-- Phần Thưởng Thực Tế (Reward Catalog) — CORE_SPECS §3.2. Do chủ nhiệm tự tạo, định giá NP,
 -- có số lượng giới hạn. Đây CHỈ là catalog item — một lượt đổi cụ thể nằm ở ge10_reward_redemptions.
 CREATE TABLE IF NOT EXISTS ge10_parent_rewards (
     id VARCHAR(255) PRIMARY KEY,
@@ -119,7 +122,7 @@ ALTER TABLE ge10_parent_rewards DROP COLUMN IF EXISTS status;
 ALTER TABLE ge10_parent_rewards ADD COLUMN IF NOT EXISTS quantity INTEGER NOT NULL DEFAULT 1;
 ALTER TABLE ge10_parent_rewards ADD COLUMN IF NOT EXISTS remaining_quantity INTEGER NOT NULL DEFAULT 1;
 
--- Một lượt đổi quà cụ thể — trừ NP ngay, chờ phụ huynh xác nhận "Đã Trao" ngoài đời (CORE_SPECS §3.2).
+-- Một lượt đổi quà cụ thể — trừ NP ngay, chờ chủ nhiệm xác nhận "Đã Trao" ngoài đời (CORE_SPECS §3.2).
 CREATE TABLE IF NOT EXISTS ge10_reward_redemptions (
     id VARCHAR(255) PRIMARY KEY,
     user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
@@ -287,6 +290,23 @@ CREATE TABLE IF NOT EXISTS ge10_skip_reviews (
     question_prompt TEXT NOT NULL,
     reason VARCHAR(50) NOT NULL,
     status VARCHAR(20) DEFAULT 'pending',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Game Sessions Table (Task 7.2)
+CREATE TABLE IF NOT EXISTS ge10_game_sessions (
+    id VARCHAR(255) PRIMARY KEY,
+    user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
+    session_type VARCHAR(50) NOT NULL,
+    subject VARCHAR(50) NOT NULL,
+    difficulty_tier VARCHAR(50),
+    questions_pool VARCHAR(255)[] NOT NULL,
+    start_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    end_time TIMESTAMP WITH TIME ZONE,
+    status VARCHAR(20) DEFAULT 'active',
+    answers_summary JSONB DEFAULT '[]'::jsonb,
+    xp_gained INTEGER DEFAULT 0,
+    coins_gained INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -1,47 +1,107 @@
 import { pool } from '../db.js';
 
-export const checkStudentManagementPermission = async (actorId: string, studentUserId: string, action: 'approve_reward' | 'refill_energy' | 'set_energy_config' | 'view_profile') => {
-  const actorCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [actorId]);
-  if (actorCheck.rowCount === 0) return false;
-  const role = actorCheck.rows[0].role;
+export type WuxiaAction =
+  | 'VIEW_AUDIT_LOGS'
+  | 'PROMOTE_TO_ADMIN'
+  | 'PROMOTE_TO_USER'
+  | 'MANAGE_CONTENT'
+  | 'REFILL_ENERGY'
+  | 'SET_ENERGY_CONFIG'
+  | 'APPROVE_REWARD'
+  | 'CREATE_MISSION'
+  | 'VIEW_STUDENT_PROFILE';
 
-  if (role === 'truong_vien' || role === 'pho_vien') {
-    return true; // Admins have global access
+export const hasPermission = (
+  role: string | undefined,
+  action: WuxiaAction,
+  secondaryPermissions?: {
+    can_approve_rewards?: boolean;
+    can_create_missions?: boolean;
+    read_only?: boolean;
   }
+): boolean => {
+  if (!role) return false;
+  if (role === 'truong_vien') return true;
 
-  if (role === 'parent') {
-    // Check if they are the primary parent of this student
-    const linkCheck = await pool.query(
-      "SELECT id FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'primary' AND status = 'active'",
-      [actorId, studentUserId]
-    );
-    return linkCheck.rowCount !== null && linkCheck.rowCount > 0;
+  switch (action) {
+    case 'VIEW_AUDIT_LOGS':
+    case 'PROMOTE_TO_ADMIN':
+      return role === 'truong_vien';
+
+    case 'PROMOTE_TO_USER':
+    case 'MANAGE_CONTENT':
+      return role === 'truong_vien' || role === 'pho_vien';
+
+    case 'REFILL_ENERGY':
+    case 'SET_ENERGY_CONFIG':
+      return role === 'truong_vien' || role === 'pho_vien' || role === 'parent';
+
+    case 'APPROVE_REWARD':
+      if (role === 'pho_vien' || role === 'parent') return true;
+      if (role === 'secondary_parent') {
+        return secondaryPermissions?.can_approve_rewards === true;
+      }
+      return false;
+
+    case 'CREATE_MISSION':
+      if (role === 'pho_vien' || role === 'parent') return true;
+      if (role === 'secondary_parent') {
+        return secondaryPermissions?.can_create_missions === true || secondaryPermissions?.read_only === false;
+      }
+      return false;
+
+    case 'VIEW_STUDENT_PROFILE':
+      return role === 'pho_vien' || role === 'parent' || role === 'secondary_parent';
+
+    default:
+      return false;
   }
+};
 
-  if (role === 'secondary_parent') {
-    if (action === 'refill_energy' || action === 'set_energy_config') {
-      return false; // Secondary parents cannot manage energy
+export const checkStudentManagementPermission = async (
+  actorAccountId: string,
+  studentUserId: string,
+  action: 'approve_reward' | 'refill_energy' | 'set_energy_config' | 'view_profile'
+) => {
+  // Tìm tất cả các profile ĐANG HOẠT ĐỘNG của tài khoản Google này
+  const actorCheck = await pool.query(
+    'SELECT id, role FROM ge10_users WHERE account_id = $1 AND is_active = TRUE',
+    [actorAccountId]
+  );
+  if (actorCheck.rows.length === 0) return false;
+
+  let wuxiaAction: WuxiaAction;
+  if (action === 'approve_reward') wuxiaAction = 'APPROVE_REWARD';
+  else if (action === 'refill_energy') wuxiaAction = 'REFILL_ENERGY';
+  else if (action === 'set_energy_config') wuxiaAction = 'SET_ENERGY_CONFIG';
+  else wuxiaAction = 'VIEW_STUDENT_PROFILE';
+
+  // Duyệt qua tất cả các profile active của user xem có profile nào có đủ quyền thực hiện hành động này không
+  for (const actorProfile of actorCheck.rows) {
+    const role = actorProfile.role;
+    const profileId = actorProfile.id;
+
+    if (role === 'truong_vien' || role === 'pho_vien') {
+      if (hasPermission(role, wuxiaAction)) return true;
     }
 
-    if (action === 'approve_reward') {
-      // Check if they are linked to the student and have approve reward permission
+    if (role === 'parent') {
+      const linkCheck = await pool.query(
+        "SELECT id FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'primary' AND status = 'active'",
+        [profileId, studentUserId]
+      );
+      if (linkCheck.rows.length > 0 && hasPermission(role, wuxiaAction)) return true;
+    }
+
+    if (role === 'secondary_parent') {
       const linkCheck = await pool.query(
         "SELECT secondary_permissions FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'secondary' AND status = 'active'",
-        [actorId, studentUserId]
+        [profileId, studentUserId]
       );
-      if (linkCheck.rowCount !== null && linkCheck.rowCount > 0) {
+      if (linkCheck.rows.length > 0) {
         const perms = linkCheck.rows[0].secondary_permissions || {};
-        return perms.can_approve_rewards === true;
+        if (hasPermission(role, wuxiaAction, perms)) return true;
       }
-    }
-
-    if (action === 'view_profile') {
-      // Secondary parents can always view profile if linked
-      const linkCheck = await pool.query(
-        "SELECT id FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'secondary' AND status = 'active'",
-        [actorId, studentUserId]
-      );
-      return linkCheck.rowCount !== null && linkCheck.rowCount > 0;
     }
   }
 
@@ -51,13 +111,13 @@ export const checkStudentManagementPermission = async (actorId: string, studentU
 export const logAuditEvent = async (actorId: string, action: string, targetId: string | null, payload: any = {}) => {
   try {
     const actorRes = await pool.query('SELECT name, role FROM ge10_users WHERE id = $1', [actorId]);
-    if (actorRes.rowCount === 0) return;
+    if (actorRes.rows.length === 0) return;
     const { name, role } = actorRes.rows[0];
 
     let targetName = null;
     if (targetId) {
       const targetRes = await pool.query('SELECT name FROM ge10_users WHERE id = $1', [targetId]);
-      if (targetRes.rowCount !== null && targetRes.rowCount > 0) {
+      if (targetRes.rows.length > 0) {
         targetName = targetRes.rows[0].name;
       }
     }

@@ -11,13 +11,14 @@ import { logActivity, checkLevelUp } from '../helpers';
 import { eventBus } from '../../utils/EventBus';
 import { toast } from '../../utils/toast';
 import { computeSubjectMasteryRatio, getMasteryRankByRatio } from '../../utils/masteryRank';
+import { playerService } from '../../services/playerService';
 
 export const createPlayerSlice: StateCreator<
   StoreState,
   [],
   [],
   Pick<StoreState, 
-    'player' | 'pet' | 'questions' | 'lessons' | 'lessonsProgress' | 'explorationProgress' | 'pageExplorationStates' | 'categoryStats' | 'rewards' | 'rewardRedemptions' | 'challenges' | 'dailyMission' | 'logs' | 'activeCombo' | 'maxCombo' | 'lastSyncTime' | 'profiles' | 'petStates' | 'categoryStatsAll' | 'answerQuestion' | 'useEnergy' | 'addEnergy' | 'tickEnergyRegen' | 'ratchetMasteryRank' | 'buyStreakShield' | 'buyHint' | 'buyTheme' | 'redeemReward' | 'feedPet' | 'spinWheel' | 'openMysteryBox' | 'masterLesson' | 'applyDefeatPenalty' | 'completeBossVictory' | 'completeLevel3Page' | 'updatePendingKeyQuestion' | 'awardCoinsAndXp' | 'clearExploration' | 'resetProgress' | 'checkDailyReset' | 'getAdaptiveQuestion' | 'getQuestionByWeight'
+    'player' | 'pet' | 'questions' | 'lessons' | 'lessonsProgress' | 'explorationProgress' | 'pageExplorationStates' | 'categoryStats' | 'rewards' | 'rewardRedemptions' | 'challenges' | 'dailyMission' | 'logs' | 'activeCombo' | 'maxCombo' | 'lastSyncTime' | 'profiles' | 'petStates' | 'categoryStatsAll' | 'answerQuestion' | 'useEnergy' | 'addEnergy' | 'tickEnergyRegen' | 'ratchetMasteryRank' | 'buyStreakShield' | 'buyHint' | 'buyTheme' | 'redeemReward' | 'feedPet' | 'spinWheel' | 'openMysteryBox' | 'masterLesson' | 'applyDefeatPenalty' | 'completeBossVictory' | 'completeLevel3Page' | 'updatePendingKeyQuestion' | 'awardCoinsAndXp' | 'clearExploration' | 'resetProgress' | 'checkDailyReset' | 'getAdaptiveQuestion' | 'getQuestionByWeight' | 'syncSessionResult' | 'syncWithServer' | 'pullServerState'
   >
 > = (set, get) => ({
   player: INITIAL_PLAYER,
@@ -267,7 +268,7 @@ export const createPlayerSlice: StateCreator<
 
   ratchetMasteryRank: (subjectId, ratio) => {
           // Luật Bất Thoái (CORE_SPECS §7.4.4): Đẳng Cấp Môn Phái đã đạt không bao giờ tự tụt,
-          // kể cả khi Viện Chủ import thêm câu hỏi/bài học làm mẫu số tăng và tỉ lệ % thô giảm.
+          // kể cả khi Hiệu Trưởng import thêm câu hỏi/bài học làm mẫu số tăng và tỉ lệ % thô giảm.
           const state = get();
           const newOrder = getMasteryRankByRatio(ratio).order;
           const currentMax = state.player.maxAchievedMasteryRank?.[subjectId] ?? 0;
@@ -362,7 +363,8 @@ export const createPlayerSlice: StateCreator<
             rewardRedemptions: [redemption, ...prev.rewardRedemptions]
           }));
 
-          logActivity(get, set, 'shop', 'Đổi Phần Thưởng Thực Tế', `Đã đổi "${reward.title}" — chờ Viện Chủ trao quà ngoài đời`, -reward.costCoins, 0);
+          logActivity(get, set, 'shop', 'Đổi Phần Thưởng Thực Tế', `Đã đổi "${reward.title}" — chờ Hiệu Trưởng trao quà ngoài đời`, -reward.costCoins, 0);
+          get().syncWithServer();
           return true;
         },
 
@@ -409,6 +411,7 @@ export const createPlayerSlice: StateCreator<
             -coinsCost,
             -xpCost
           );
+          get().syncWithServer();
           return true;
         },
 
@@ -521,6 +524,7 @@ export const createPlayerSlice: StateCreator<
             coinsGained,
             expGained
           );
+          get().syncWithServer();
         },
 
   applyDefeatPenalty: (coinsEarnedInRun, xpEarnedInRun) => {
@@ -555,7 +559,7 @@ export const createPlayerSlice: StateCreator<
   completeBossVictory: (bonusIndex?: number) => {
           const state = get();
           const bonusXP = 150;
-          // Bonus Điểm khi hạ Boss — quảng bá trên Boss Card, do Chủ Viện/Phó Viện cấu hình (CORE_SPECS §2.1).
+          // Bonus Điểm khi hạ Boss — quảng bá trên Boss Card, do Chủ Viện/Hiệu Phó cấu hình (CORE_SPECS §2.1).
           // Thay hoàn toàn thưởng tiền mặt cũ; Boss không bao giờ thưởng tiền.
           const npBonusOptions = state.gameSettings.bossCompletionBonusNP ?? [100, 150, 200];
           // Dùng đúng bonusIndex của Boss vừa đánh để khớp số đã quảng bá trên Boss Card;
@@ -655,25 +659,9 @@ export const createPlayerSlice: StateCreator<
           // Send transaction to Ledger backend if coins != 0
           if (coins !== 0 && state.currentUser?.id) {
             try {
-              const session = (await supabase.auth.getSession()).data.session;
-              if (session?.access_token) {
-                const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-                const res = await fetch(`${backendUrl}/api/economy/transaction`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-                  body: JSON.stringify({
-                    profileId: state.currentUser.id,
-                    amount: coins,
-                    reason: activityTitle,
-                    details: activityDetails
-                  })
-                });
-                if (res.ok) {
-                  const data = await res.json();
-                  // Sync exact coins from DB back
-                  set((s) => ({ player: { ...s.player, coins: data.coins } }));
-                }
-              }
+              const updatedCoins = await playerService.awardCoins(state.currentUser.id, coins, activityTitle, activityDetails);
+              // Sync exact coins from DB back
+              set((s) => ({ player: { ...s.player, coins: updatedCoins } }));
             } catch (e) {
               console.error('Failed to write to Ledger NP:', e);
             }
@@ -698,28 +686,14 @@ export const createPlayerSlice: StateCreator<
 
           if (state.currentUser?.id) {
             try {
-              const session = (await supabase.auth.getSession()).data.session;
-              if (session?.access_token) {
-                const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-                const res = await fetch(`${backendUrl}/api/exploration/clear`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${session.access_token}` },
-                  body: JSON.stringify({
-                    profileId: state.currentUser.id,
-                    pageId
-                  })
-                });
-                if (res.ok) {
-                  const data = await res.json();
-                  // Sync exact count from server
-                  set(s => ({
-                    explorationProgress: {
-                      ...s.explorationProgress,
-                      [pageId]: data.progress
-                    }
-                  }));
+              const progress = await playerService.clearExploration(state.currentUser.id, pageId);
+              // Sync exact count from server
+              set(s => ({
+                explorationProgress: {
+                  ...s.explorationProgress,
+                  [pageId]: progress
                 }
-              }
+              }));
             } catch (e) {
               console.error('Failed to sync exploration progress:', e);
             }
@@ -943,5 +917,63 @@ export const createPlayerSlice: StateCreator<
           // Fetch adaptive question from the selected category
           return get().getAdaptiveQuestion(selectedCategory);
         },
+
+  syncSessionResult: (data: any) => {
+          set((state: any) => ({
+            player: {
+              ...state.player,
+              coins: data.newCoins !== undefined ? data.newCoins : state.player.coins,
+              xp: data.newXp !== undefined ? data.newXp : state.player.xp,
+              level: data.newLevel !== undefined ? data.newLevel : state.player.level,
+              badges: data.badges !== undefined ? data.badges : state.player.badges
+            }
+          }));
+        },
+
+  syncWithServer: async () => {
+    const state = get();
+    if (!state.currentUser || state.currentUser.id.startsWith('mock-')) return;
+
+    try {
+      const payload = {
+        player: state.player,
+        pet: state.pet,
+        categoryStats: state.categoryStats,
+        logs: state.logs,
+        rewards: state.rewards,
+        rewardRedemptions: state.rewardRedemptions,
+        challenges: state.challenges,
+        dailyMission: state.dailyMission,
+        lessonsProgress: state.lessonsProgress,
+        lastSyncTime: state.lastSyncTime
+      };
+
+      const res = await playerService.syncProfile(state.player.id, payload);
+      if (res.conflict) {
+        get().pullServerState(res.serverData);
+        set({ lastSyncTime: new Date().toISOString() });
+        toast.info('Đồng bộ thành công dữ liệu mới nhất từ máy chủ!');
+      } else if (res.success) {
+        set({ lastSyncTime: res.timestamp });
+      }
+    } catch (e) {
+      console.error('syncWithServer error:', e);
+    }
+  },
+
+  pullServerState: (serverData: any) => {
+    set((state: any) => ({
+      player: serverData.player ? { ...state.player, ...serverData.player } : state.player,
+      pet: serverData.pet ? { ...state.pet, ...serverData.pet } : state.pet,
+      categoryStats: serverData.categoryStats || state.categoryStats,
+      logs: serverData.logs || state.logs,
+      rewards: serverData.rewards || state.rewards,
+      rewardRedemptions: serverData.rewardRedemptions || state.rewardRedemptions,
+      challenges: serverData.challenges || state.challenges,
+      dailyMission: serverData.dailyMission || state.dailyMission,
+      lessonsProgress: serverData.lessonsProgress || state.lessonsProgress,
+      explorationProgress: serverData.explorationProgress || state.explorationProgress
+    }));
+  },
 
 });

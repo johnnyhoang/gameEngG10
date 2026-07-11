@@ -1,7 +1,7 @@
 // @ts-nocheck
 import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
-import { supabase } from '../../utils/supabaseClient';
+import { familyService } from '../../services/familyService';
 
 export const createFamilySlice: StateCreator<
   StoreState,
@@ -18,21 +18,12 @@ export const createFamilySlice: StateCreator<
     const state = get();
     const pId = state.currentUser?.id;
     if (!pId || pId.startsWith('mock-')) return;
-    const session = (await supabase.auth.getSession()).data.session;
-    const token = session?.access_token;
-    if (!token) return;
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
     try {
-      const res = await fetch(`${backendUrl}/api/family/${pId}`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const data = await familyService.fetchFamily(pId);
+      set({ 
+        familyLinks: data.links || [],
+        secondaryParents: data.secondaryParents || []
       });
-      if (res.ok) {
-        const data = await res.json();
-        set({ 
-          familyLinks: data.links || [],
-          secondaryParents: data.secondaryParents || []
-        });
-      }
     } catch (e) {
       console.error('Lỗi lấy dữ liệu gia đình', e);
     }
@@ -42,106 +33,49 @@ export const createFamilySlice: StateCreator<
     const state = get();
     const pId = state.currentUser?.id;
     if (!pId) return false;
-    const session = (await supabase.auth.getSession()).data.session;
-    const token = session?.access_token;
-    if (!token) return false;
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-    try {
-      const res = await fetch(`${backendUrl}/api/family/invite`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ senderProfileId: pId, targetId })
-      });
-      if (res.ok) { await state.fetchFamily(); return true; }
-      const err = await res.json();
-      alert(err.error || 'Có lỗi xảy ra');
-      return false;
-    } catch (e) { return false; }
+    const success = await familyService.sendInvite(pId, targetId);
+    if (success) { await state.fetchFamily(); }
+    return success;
   },
 
   inviteSecondary: async (targetEmail: string, studentId: string) => {
     const state = get();
     const pId = state.currentUser?.id;
     if (!pId) return false;
-    const session = (await supabase.auth.getSession()).data.session;
-    const token = session?.access_token;
-    if (!token) return false;
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-    try {
-      const res = await fetch(`${backendUrl}/api/family/invite-secondary`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ senderProfileId: pId, targetEmail, studentId })
-      });
-      if (res.ok) { 
-        await state.fetchFamily(); 
-        return true; 
-      }
-      const err = await res.json();
-      alert(err.error || 'Có lỗi xảy ra');
-      return false;
-    } catch (e) { return false; }
+    const success = await familyService.inviteSecondary(pId, targetEmail, studentId);
+    if (success) { 
+      await state.fetchFamily(); 
+    }
+    return success;
   },
 
   updateSecondaryPermissions: async (linkId: string, permissions: any) => {
     const state = get();
     const pId = state.currentUser?.id;
     if (!pId) return false;
-    const session = (await supabase.auth.getSession()).data.session;
-    const token = session?.access_token;
-    if (!token) return false;
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-    try {
-      const res = await fetch(`${backendUrl}/api/family/secondary-permissions`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ senderProfileId: pId, linkId, permissions })
-      });
-      if (res.ok) { 
-        await state.fetchFamily(); 
-        return true; 
-      }
-      const err = await res.json();
-      alert(err.error || 'Có lỗi xảy ra');
-      return false;
-    } catch (e) { return false; }
+    const success = await familyService.updateSecondaryPermissions(pId, linkId, permissions);
+    if (success) { 
+      await state.fetchFamily(); 
+    }
+    return success;
   },
 
   respondInvite: async (linkId: string, accept: boolean) => {
     const state = get();
     const pId = state.currentUser?.id;
     if (!pId) return false;
-    const session = (await supabase.auth.getSession()).data.session;
-    const token = session?.access_token;
-    if (!token) return false;
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-    try {
-      const res = await fetch(`${backendUrl}/api/family/respond`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ profileId: pId, linkId, accept })
-      });
-      if (res.ok) { await state.fetchFamily(); return true; }
-      return false;
-    } catch (e) { return false; }
+    const success = await familyService.respondInvite(pId, linkId, accept);
+    if (success) { await state.fetchFamily(); }
+    return success;
   },
 
   leaveFamily: async (linkId: string) => {
     const state = get();
     const pId = state.currentUser?.id;
     if (!pId) return false;
-    const session = (await supabase.auth.getSession()).data.session;
-    const token = session?.access_token;
-    if (!token) return false;
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-    try {
-      const res = await fetch(`${backendUrl}/api/family/leave`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ profileId: pId, linkId })
-      });
-      if (res.ok) { await state.fetchFamily(); return true; }
-      return false;
-    } catch (e) { return false; }
+    const success = await familyService.leaveFamily(pId, linkId);
+    if (success) { await state.fetchFamily(); }
+    return success;
   }
 });
+

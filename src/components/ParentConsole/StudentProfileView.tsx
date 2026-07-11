@@ -9,6 +9,7 @@ interface StudentProfileViewProps {
   selectedStudentProfile: any;
   gameSettings: any;
   canApproveReward: boolean;
+  canManageEnergy: boolean;
   skipReviews: any[];
   adminMarkRewardDelivered: (studentId: string, redemptionId: string) => Promise<void>;
   adminCancelRedemption: (studentId: string, redemptionId: string) => Promise<void>;
@@ -22,6 +23,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
   currentUser,
   selectedStudentProfile,
   canApproveReward,
+  canManageEnergy,
   skipReviews,
   adminMarkRewardDelivered,
   adminCancelRedemption,
@@ -117,7 +119,8 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
               step={10}
               value={studentEnergyPercent}
               onChange={e => setStudentEnergyPercent(Number(e.target.value))}
-              className="flex-1 accent-synth-cyan"
+              disabled={!canManageEnergy}
+              className="flex-1 accent-synth-cyan cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
             />
             <span className="font-orbitron font-bold text-sm text-synth-cyan w-12 text-right">
               {studentEnergyPercent}%
@@ -130,7 +133,8 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
               await adminSetEnergy(selectedStudentProfile.studentUser.id, studentEnergyPercent);
               toast.success(`Đã nạp chân khí lên ${studentEnergyPercent}% thành công!`);
             }}
-            className="w-full py-2 bg-synth-cyan text-black font-bold rounded-lg hover:synth-glow-cyan transition-all text-xs uppercase"
+            disabled={!canManageEnergy}
+            className="w-full py-2 bg-synth-cyan text-black font-bold rounded-lg hover:synth-glow-cyan transition-all text-xs uppercase disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Nạp chân khí ⚡
           </button>
@@ -150,7 +154,8 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
                   step={10}
                   value={maxEnergyInput}
                   onChange={e => setMaxEnergyInput(Number(e.target.value) || 100)}
-                  className="w-full p-2 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
+                  disabled={!canManageEnergy}
+                  className="w-full p-2 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </label>
               <label className="space-y-1 text-xs">
@@ -158,7 +163,8 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
                 <select
                   value={resetHoursInput}
                   onChange={e => setResetHoursInput(Number(e.target.value) as 2 | 3 | 5)}
-                  className="w-full p-2 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs cursor-pointer"
+                  disabled={!canManageEnergy}
+                  className="w-full p-2 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <option value={2}>2 giờ</option>
                   <option value={3}>3 giờ</option>
@@ -171,10 +177,16 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
                 if (!selectedStudentProfile?.studentUser?.id) return;
                 await adminSetEnergyConfig(selectedStudentProfile.studentUser.id, maxEnergyInput, resetHoursInput);
               }}
-              className="w-full py-2 border border-synth-cyan/40 text-synth-cyan font-bold rounded-lg hover:bg-synth-cyan/10 transition-all text-xs uppercase"
+              disabled={!canManageEnergy}
+              className="w-full py-2 border border-synth-cyan/40 text-synth-cyan font-bold rounded-lg hover:bg-synth-cyan/10 transition-all text-xs uppercase disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Lưu cấu hình Chân Khí
             </button>
+            {!canManageEnergy && (
+              <p className="text-[9px] text-yellow-500/80 italic mt-2 leading-tight">
+                ⚠️ Tài khoản của bạn hiện là Chủ nhiệm phụ, chỉ Chủ nhiệm chính mới có quyền thay đổi Chân khí của học sinh này.
+              </p>
+            )}
           </div>
         </div>
 

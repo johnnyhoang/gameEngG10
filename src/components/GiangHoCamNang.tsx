@@ -31,7 +31,7 @@ export const GiangHoCamNang: React.FC<GiangHoCamNangProps> = ({
   const currentUser = useGameState(state => state.currentUser);
   const isAdminViewer = isSuperAdmin(currentUser?.role);
 
-  // Trang dành riêng cho Viện Chủ chỉ hiện khi đang xem với vai trò Viện Chủ.
+  // Trang dành riêng cho Hiệu Trưởng chỉ hiện khi đang xem với vai trò Hiệu Trưởng.
   const handbookPages = allHandbookPages.filter(p => p.audience !== 'admin' || isAdminViewer);
 
   const initialPage = initialPageId ? allHandbookPages.find(p => p.id === initialPageId) : undefined;

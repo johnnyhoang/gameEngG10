@@ -50,7 +50,7 @@ export const ItemShop: React.FC = () => {
     if (!success) {
       toast.error('Ngân lượng chưa đủ hoặc phần thưởng đã hết số lượng!');
     } else {
-      toast.success(`🎁 Đã đổi "${title}"! Chờ Viện Chủ trao quà ngoài đời nhé.`);
+      toast.success(`🎁 Đã đổi "${title}"! Chờ Hiệu Trưởng trao quà ngoài đời nhé.`);
     }
   };
 
@@ -59,7 +59,7 @@ export const ItemShop: React.FC = () => {
   const getRedemptionStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <span className="px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold bg-synth-orange/20 text-synth-orange border border-synth-orange/30 uppercase animate-pulse">Chờ Viện Chủ Trao</span>;
+        return <span className="px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold bg-synth-orange/20 text-synth-orange border border-synth-orange/30 uppercase animate-pulse">Chờ Hiệu Trưởng Trao</span>;
       case 'delivered':
         return <span className="px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold bg-synth-green/20 text-synth-green border border-synth-green/30 uppercase">Đã Trao ✓</span>;
       default:
@@ -268,10 +268,10 @@ export const ItemShop: React.FC = () => {
       <div className={`rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'bg-fuchsia-50/40 border-pink-200/40' : 'bg-synth-orange/5 border-synth-orange/10'}`}>
         <div className="space-y-0.5">
           <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-orange'}`}>
-            <Gift className="w-4 h-4" /> 🎁 Quầy Phúc Lợi Gia Môn
+            <Gift className="w-4 h-4" /> 🎁 Quầy Phúc Lợi Lớp Học
           </h3>
           <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}`}>
-            Đổi Ngân lượng lấy các phần thưởng thực tế do Viện Chủ thiết lập và phê duyệt.
+            Đổi Ngân lượng lấy các phần thưởng thực tế do Hiệu Trưởng thiết lập và phê duyệt.
           </p>
         </div>
 
@@ -280,8 +280,8 @@ export const ItemShop: React.FC = () => {
             isUnicorn ? 'border-violet-200/40 text-violet-600/60' : 'border-white/10 text-synth-text-muted'
           }`}>
             <Gift className="w-8 h-8 mx-auto mb-2 opacity-40" />
-            <p className="text-sm font-semibold">Chưa có Phúc Lợi nào được Viện Chủ thiết lập.</p>
-            <p className="text-xs mt-1 opacity-70">Viện Chủ vào Ngân Các → Phần thưởng để thêm mới.</p>
+            <p className="text-sm font-semibold">Chưa có Phúc Lợi nào được Hiệu Trưởng thiết lập.</p>
+            <p className="text-xs mt-1 opacity-70">Hiệu Trưởng vào Ngân Các → Phần thưởng để thêm mới.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

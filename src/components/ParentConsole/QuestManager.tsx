@@ -28,7 +28,7 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
       return;
     }
     addParentQuest(questTitle.trim(), questDesc.trim(), questNP);
-    toast.success('Giao nhiệm vụ phụ huynh giao thành công! 🎯');
+    toast.success('Giao nhiệm vụ chủ nhiệm giao thành công! 🎯');
     setQuestTitle('');
     setQuestDesc('');
     setQuestNP(50);
@@ -39,7 +39,7 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
       <div className="flex items-center gap-2">
         <SlidersHorizontal className="w-5 h-5 text-synth-cyan" />
         <h3 className="font-orbitron font-bold text-sm text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
-          🎯 Cáo Thị — Nhiệm vụ Phụ huynh giao cho con
+          🎯 Cáo Thị — Nhiệm vụ Chủ nhiệm giao cho con
         </h3>
       </div>
 
@@ -51,7 +51,7 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
           </h4>
           {!canCreateMission ? (
             <p className="text-xs text-red-400 italic">
-              Tài khoản Phụ Huynh Phụ của bạn chưa được cấp quyền giao nhiệm vụ.
+              Tài khoản Chủ Nhiệm Phụ của bạn chưa được cấp quyền giao nhiệm vụ.
             </p>
           ) : (
             <form onSubmit={handleCreateQuest} className="space-y-4">
@@ -123,7 +123,7 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    {quest.status === 'pending' && (
+                    {quest.status === 'pending' && canCreateMission && (
                       <button
                         onClick={() => {
                           completeParentQuest(quest.id);
@@ -134,22 +134,24 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
                         Xác nhận xong
                       </button>
                     )}
-                    <button
-                      onClick={() => {
-                        deleteParentQuest(quest.id);
-                        toast.success('Đã xoá nhiệm vụ giao.');
-                      }}
-                      className="p-1.5 rounded-lg border border-synth-magenta text-synth-magenta cursor-pointer hover:bg-synth-magenta/10"
-                      title="Xoá nhiệm vụ"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    {canCreateMission && (
+                      <button
+                        onClick={() => {
+                          deleteParentQuest(quest.id);
+                          toast.success('Đã xoá nhiệm vụ giao.');
+                        }}
+                        className="p-1.5 rounded-lg border border-synth-magenta text-synth-magenta cursor-pointer hover:bg-synth-magenta/10"
+                        title="Xoá nhiệm vụ"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
                   </div>
                 </div>
               ))
             ) : (
               <div className="text-center py-6 text-xs text-synth-text-muted border border-dashed border-white/10 rounded-xl">
-                Chưa có nhiệm vụ phụ huynh giao nào được tạo.
+                Chưa có nhiệm vụ chủ nhiệm giao nào được tạo.
               </div>
             )}
           </div>

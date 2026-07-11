@@ -10,7 +10,6 @@ interface FamilyManagerProps {
   respondInvite: (linkId: string, accept: boolean) => Promise<boolean>;
   inviteSecondary: (email: string, studentId: string) => Promise<boolean>;
   updateSecondaryPermissions: (linkId: string, permissions: any) => Promise<boolean>;
-  changePIN: (newPIN: string) => Promise<boolean>;
 }
 
 export const FamilyManager: React.FC<FamilyManagerProps> = ({
@@ -20,50 +19,13 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
   sendInvite,
   respondInvite,
   inviteSecondary,
-  updateSecondaryPermissions,
-  changePIN
+  updateSecondaryPermissions
 }) => {
   const [inviteId, setInviteId] = useState('');
   const [isInviting, setIsInviting] = useState(false);
   const [inviteSecondaryEmail, setInviteSecondaryEmail] = useState('');
   const [selectedSecondaryStudentId, setSelectedSecondaryStudentId] = useState('');
   const [isInvitingSecondary, setIsInvitingSecondary] = useState(false);
-
-  // Đổi PIN bảo mật (Chính Điện — CORE_SPECS §2.6)
-  const [changePinNew, setChangePinNew] = useState('');
-  const [changePinConfirm, setChangePinConfirm] = useState('');
-  const [changePinFeedback, setChangePinFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const [isChangingPin, setIsChangingPin] = useState(false);
-
-  const handleCreateOrChangePIN = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!changePinNew || changePinNew.length < 4) {
-      setChangePinFeedback({ type: 'error', text: 'Mã PIN mới phải có ít nhất 4 ký tự.' });
-      return;
-    }
-    if (changePinNew !== changePinConfirm) {
-      setChangePinFeedback({ type: 'error', text: 'Xác nhận mã PIN mới không khớp.' });
-      return;
-    }
-
-    setIsChangingPin(true);
-    setChangePinFeedback(null);
-    try {
-      const ok = await changePIN(changePinNew);
-      if (ok) {
-        setChangePinFeedback({ type: 'success', text: 'Đã thay đổi mã PIN bảo mật cá nhân thành công!' });
-        setChangePinNew('');
-        setChangePinConfirm('');
-        toast.success('Đã cập nhật mã PIN bảo mật cá nhân');
-      } else {
-        setChangePinFeedback({ type: 'error', text: 'Thay đổi mã PIN thất bại. Vui lòng kiểm tra lại.' });
-      }
-    } catch (err: any) {
-      setChangePinFeedback({ type: 'error', text: err.message || 'Lỗi khi cập nhật PIN.' });
-    } finally {
-      setIsChangingPin(false);
-    }
-  };
 
   return (
     <div className="space-y-4">
@@ -120,14 +82,14 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
         )}
       </div>
 
-      {/* Lời mời làm Phụ Huynh Phụ nhận được (Sprint 2) */}
+      {/* Lời mời làm Chủ Nhiệm Phụ nhận được (Sprint 2) */}
       {isParentRole(currentUser?.role) && familyLinks.filter(l => l.status === 'pending_parent' && l.parent_id === currentUser?.id && l.link_type === 'secondary').length > 0 && (
         <div className="rounded-2xl border border-synth-orange/20 bg-synth-orange/5 p-4 space-y-3 mt-4">
           <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider">
-             📩 Lời Mời Đồng Hành (Phụ Huynh Phụ)
+             📩 Lời Mời Đồng Hành (Chủ Nhiệm Phụ)
           </h4>
           <p className="text-xs text-slate-300">
-            Bạn được mời làm Phụ huynh Phụ cùng quản lý học sinh sau:
+            Bạn được mời làm Chủ nhiệm Phụ cùng quản lý học sinh sau:
           </p>
           <div className="space-y-2">
             {familyLinks.filter(l => l.status === 'pending_parent' && l.parent_id === currentUser?.id && l.link_type === 'secondary').map(link => (
@@ -141,7 +103,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                     onClick={async () => {
                       const ok = await respondInvite(link.id, true);
                       if (ok) {
-                        toast.success('Đã chấp nhận làm Phụ huynh Phụ!');
+                        toast.success('Đã chấp nhận làm Chủ nhiệm Phụ!');
                       }
                     }}
                     className="px-3 py-1.5 rounded bg-synth-green text-black font-bold text-xs uppercase cursor-pointer"
@@ -166,22 +128,22 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
         </div>
       )}
 
-      {/* Quản lý Phụ Huynh Phụ (Sprint 2) */}
+      {/* Quản lý Chủ Nhiệm Phụ (Sprint 2) */}
       {currentUser?.role === 'parent' && (
         <div className="rounded-2xl border border-synth-purple/20 bg-synth-purple/5 p-4 space-y-4 mt-4">
           <div className="space-y-1">
             <h4 className="font-orbitron font-bold text-xs text-synth-purple uppercase tracking-wider flex items-center gap-2">
-              👥 Quản lý Phụ Huynh Phụ (Secondary Parents)
+              👥 Quản lý Chủ Nhiệm Phụ (Secondary Parents)
             </h4>
             <p className="text-xs text-slate-300">
-              Mời phụ huynh khác cùng theo dõi báo cáo, duyệt quà hoặc giao nhiệm vụ cho con.
+              Mời chủ nhiệm khác cùng theo dõi báo cáo, duyệt quà hoặc giao nhiệm vụ cho con.
             </p>
           </div>
 
-          {/* Form mời Phụ huynh phụ */}
+          {/* Form mời Chủ nhiệm phụ */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
             <label className="space-y-1.5 text-xs">
-              <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Email Phụ Huynh cần mời</span>
+              <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Email Chủ Nhiệm cần mời</span>
               <input
                 type="email"
                 value={inviteSecondaryEmail}
@@ -214,7 +176,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                 setIsInvitingSecondary(true);
                 const ok = await inviteSecondary(inviteSecondaryEmail.trim(), selectedSecondaryStudentId);
                 if (ok) {
-                  toast.success('Đã gửi lời mời Phụ huynh Phụ thành công!');
+                  toast.success('Đã gửi lời mời Chủ nhiệm Phụ thành công!');
                   setInviteSecondaryEmail('');
                 }
                 setIsInvitingSecondary(false);
@@ -222,19 +184,19 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
               disabled={isInvitingSecondary || !inviteSecondaryEmail.trim() || !selectedSecondaryStudentId}
               className="px-4 py-2.5 bg-synth-purple text-white font-bold rounded-lg hover:bg-synth-purple/80 disabled:opacity-50 transition-colors uppercase text-xs cursor-pointer h-10 flex items-center justify-center"
             >
-              {isInvitingSecondary ? 'Đang gửi...' : 'Mời Phụ Huynh Phụ'}
+              {isInvitingSecondary ? 'Đang gửi...' : 'Mời Chủ Nhiệm Phụ'}
             </button>
           </div>
 
-          {/* Danh sách Phụ huynh phụ và phân quyền */}
+          {/* Danh sách Chủ nhiệm phụ và phân quyền */}
           {secondaryParents.length > 0 && (
             <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
-              <h5 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase">Danh sách Phụ Huynh Phụ liên kết</h5>
+              <h5 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase">Danh sách Chủ Nhiệm Phụ liên kết</h5>
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
                     <tr className="border-b border-white/10 text-synth-purple uppercase font-orbitron text-[9px] tracking-wider">
-                      <th className="py-2 px-3">Phụ Huynh</th>
+                      <th className="py-2 px-3">Chủ Nhiệm</th>
                       <th className="py-2 px-3">Học Sinh</th>
                       <th className="py-2 px-3">Trạng Thái</th>
                       <th className="py-2 px-3">Quyền Hạn</th>
@@ -302,54 +264,6 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
           )}
         </div>
       )}
-
-      {/* Đổi mã PIN bảo mật cá nhân (PIN Cá Nhân — CORE_SPECS §2.6) */}
-      <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-4">
-        <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
-          🔒 Thay đổi PIN bảo mật cá nhân
-        </h4>
-        <p className="text-xs text-slate-300">
-          Mã PIN cá nhân giúp bảo vệ các hành động nhạy cảm của bạn (như nạp chân khí, phê duyệt quà, chỉnh sửa câu hỏi) không bị học sinh tự ý thao tác.
-        </p>
-
-        <form onSubmit={handleCreateOrChangePIN} className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end max-w-2xl">
-          <label className="space-y-1 text-xs">
-            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Mã PIN mới</span>
-            <input
-              type="password"
-              maxLength={10}
-              value={changePinNew}
-              onChange={e => setChangePinNew(e.target.value.replace(/\D/g, ''))}
-              placeholder="Nhập PIN số mới"
-              className="w-full p-2.5 rounded-lg border border-white/10 bg-black/40 text-white outline-none focus:border-synth-magenta text-xs font-mono text-center tracking-[0.25em]"
-            />
-          </label>
-          <label className="space-y-1 text-xs">
-            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Xác nhận PIN mới</span>
-            <input
-              type="password"
-              maxLength={10}
-              value={changePinConfirm}
-              onChange={e => setChangePinConfirm(e.target.value.replace(/\D/g, ''))}
-              placeholder="Xác nhận PIN mới"
-              className="w-full p-2.5 rounded-lg border border-white/10 bg-black/40 text-white outline-none focus:border-synth-magenta text-xs font-mono text-center tracking-[0.25em]"
-            />
-          </label>
-          <button
-            type="submit"
-            disabled={isChangingPin || !changePinNew || !changePinConfirm}
-            className="px-4 py-2.5 bg-synth-magenta text-white font-bold rounded-lg hover:bg-synth-magenta/80 disabled:opacity-50 transition-colors uppercase text-xs cursor-pointer h-10 flex items-center justify-center"
-          >
-            {isChangingPin ? 'Đang lưu...' : 'Đổi mã PIN'}
-          </button>
-        </form>
-
-        {changePinFeedback && (
-          <p className={`text-xs font-bold ${changePinFeedback.type === 'success' ? 'text-synth-green' : 'text-red-400'}`}>
-            {changePinFeedback.type === 'success' ? '✓' : '✗'} {changePinFeedback.text}
-          </p>
-        )}
-      </div>
     </div>
   );
 };

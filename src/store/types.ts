@@ -77,22 +77,23 @@ export interface StoreState {
   checkDailyReset: () => void;
   getAdaptiveQuestion: (category: string) => Question | null;
   getQuestionByWeight: (mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed') => Question | null;
+  syncSessionResult: (data: { newCoins: number; newXp: number; newLevel: number; badges: string[] }) => void;
+  syncWithServer: () => Promise<void>;
+  pullServerState: (serverData: any) => void;
 
   // === ADMIN & PARENT SLICE ===
-  parentPIN: string;
   adminStudents: any[];
   selectedStudentProfile: any | null;
   failedQuestionIds: string[];
   recentlyPlayedQuestionIds: string[];
   parentQuests: ParentQuest[];
   
-  changePIN: (newPIN: string) => Promise<boolean>;
   auditLogs: any[];
   fetchAuditLogs: () => Promise<void>;
   skipReviews: any[];
   fetchSkipReviews: (studentId: string) => Promise<void>;
   resolveSkipReview: (reviewId: string) => Promise<boolean>;
-  /** Phụ huynh xác nhận đã trao quà ngoài đời cho lượt đổi này (thay "duyệt" cũ). */
+  /** Chủ nhiệm xác nhận đã trao quà ngoài đời cho lượt đổi này (thay "duyệt" cũ). */
   markRewardDelivered: (redemptionId: string) => void;
   /** Hủy lượt đổi: hoàn NP + trả lại remainingQuantity cho catalog item (thay "từ chối" cũ). */
   cancelRedemption: (redemptionId: string) => void;
@@ -108,7 +109,7 @@ export interface StoreState {
   adminMarkRewardDelivered: (studentUserId: string, redemptionId: string) => Promise<void>;
   adminCancelRedemption: (studentUserId: string, redemptionId: string) => Promise<void>;
   adminSetEnergy: (studentUserId: string, energyPercent: number) => Promise<void>;
-  /** Phụ huynh chỉnh Trần Chân Khí + giờ hồi RIÊNG cho con này (SUB_SPEC_ENERGY §2). maxEnergy 50-300, resetHours ∈ {2,3,5}. */
+  /** Chủ nhiệm chỉnh Trần Chân Khí + giờ hồi RIÊNG cho con này (SUB_SPEC_ENERGY §2). maxEnergy 50-300, resetHours ∈ {2,3,5}. */
   adminSetEnergyConfig: (studentUserId: string, maxEnergy: number, resetHours: 2 | 3 | 5) => Promise<void>;
   updateGameSettings: (payload: {
     bossCompletionBonusNP?: [number, number, number];

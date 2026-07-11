@@ -1,6 +1,6 @@
 export type QuestionType = 'mcq' | 'multiple_choice' | 'text_input' | 'matching' | 'wordform' | 'rewrite' | 'cloze' | 'reading' | 'short-answer' | 'proof' | 'multi-part';
 export type ChallengeType = 'daily' | 'weekly' | 'achievement' | 'one-time';
-/** Trạng thái một lượt đổi quà (RewardRedemption) — CORE_SPECS §3.2. 'pending' = đã trừ NP, chờ phụ huynh trao; 'delivered' = phụ huynh đã bấm "Đã Trao". */
+/** Trạng thái một lượt đổi quà (RewardRedemption) — CORE_SPECS §3.2. 'pending' = đã trừ NP, chờ chủ nhiệm trao; 'delivered' = chủ nhiệm đã bấm "Đã Trao". */
 export type RewardStatus = 'pending' | 'delivered';
 export type PetStage = 'egg' | 'baby' | 'adult' | 'legend';
 export type PetMood = 'happy' | 'neutral' | 'sad' | 'sleeping';
@@ -52,7 +52,7 @@ export const PET_STAGE_LABELS: Record<PetStage, string> = {
 export type UiThemeId = 'current' | 'cute-pink-pastel' | 'space-adventure' | 'fantasy-forest' | 'pixel-arcade' | 'unicorn-dream';
 
 export interface GameSettings {
-  /** Bonus Điểm (NP) khi hạ Boss — quảng bá ngay trên Boss Card, do Chủ Viện/Phó Viện đặt (CORE_SPECS §2.1). Thay thế hoàn toàn tiền thưởng VND cũ. */
+  /** Bonus Điểm (NP) khi hạ Boss — quảng bá ngay trên Boss Card, do Chủ Viện/Hiệu Phó đặt (CORE_SPECS §2.1). Thay thế hoàn toàn tiền thưởng VND cũ. */
   bossCompletionBonusNP: [number, number, number];
   challengeEnergyCosts: [number, number, number, number];
   baseXP?: number;
@@ -95,9 +95,9 @@ export interface PlayerProfile {
   coins: number;
   streak: number;
   energy: number; // 0 - maxEnergy
-  /** Trần Chân Khí riêng của con này — do phụ huynh cấu hình tại Ngân Các (SUB_SPEC_ENERGY §2). Mặc định 100, phạm vi 50-300. */
+  /** Trần Chân Khí riêng của con này — do chủ nhiệm cấu hình tại Ngân Các (SUB_SPEC_ENERGY §2). Mặc định 100, phạm vi 50-300. */
   maxEnergy: number;
-  /** Số giờ để hồi ĐẦY Chân Khí sau khi cạn về 0 — phụ huynh chọn 1 trong {2,3,5} (SUB_SPEC_ENERGY §2). */
+  /** Số giờ để hồi ĐẦY Chân Khí sau khi cạn về 0 — chủ nhiệm chọn 1 trong {2,3,5} (SUB_SPEC_ENERGY §2). */
   resetHours: 2 | 3 | 5;
   /** Mốc thời gian (ms) Chân Khí chạm 0 — null nếu chưa cạn/đã hồi. Dùng để tính giờ hồi đầy (SUB_SPEC_ENERGY §5, Phương án A). */
   energyDepletedAt: number | null;
@@ -109,7 +109,7 @@ export interface PlayerProfile {
   unlockedThemes?: UiThemeId[];
   /** Track daily skips for Môn Chủ Hỏi Tội */
   dailySkips?: { date: string, count: number };
-  /** Luật Bất Thoái (CORE_SPECS §7.4.4): Đẳng Cấp Môn Phái cao nhất từng đạt theo từng môn (lưu `order` trong SECT_MASTERY_RANKS) — không bao giờ tụt kể cả khi Viện Chủ import thêm câu hỏi/bài học làm tỉ lệ % thô giảm. */
+  /** Luật Bất Thoái (CORE_SPECS §7.4.4): Đẳng Cấp Môn Phái cao nhất từng đạt theo từng môn (lưu `order` trong SECT_MASTERY_RANKS) — không bao giờ tụt kể cả khi Hiệu Trưởng import thêm câu hỏi/bài học làm tỉ lệ % thô giảm. */
   maxAchievedMasteryRank?: Partial<Record<SubjectId, number>>;
 }
 
@@ -150,7 +150,7 @@ export interface CoreKnowledgeTopic {
   examRelevance: ExamRelevance;     // mức độ xuất hiện trong đề tuyển sinh / HK
   minQuestions: number;             // số câu tối thiểu cần có trong DB để mở khu vực
   questionTypes: QuestionType[];    // dạng câu hỏi được phép
-  description: string;              // mô tả cho Viện Chủ khi import
+  description: string;              // mô tả cho Hiệu Trưởng khi import
 }
 
 
@@ -192,7 +192,7 @@ export interface PetState {
 
 /**
  * Phần Thưởng Thực Tế (Reward Catalog) — CORE_SPECS §3.2.
- * Do phụ huynh tự tạo, định giá bằng NP, có SỐ LƯỢNG GIỚI HẠN. App không quản lý tiền —
+ * Do chủ nhiệm tự tạo, định giá bằng NP, có SỐ LƯỢNG GIỚI HẠN. App không quản lý tiền —
  * đây chỉ là một catalog item, không phải một lượt đổi (xem RewardRedemption bên dưới).
  */
 export interface ParentReward {
@@ -200,14 +200,14 @@ export interface ParentReward {
   title: string;
   /** Giá NP cho một lượt đổi. */
   costCoins: number;
-  /** Tổng số lượng phụ huynh tạo ra ban đầu. */
+  /** Tổng số lượng chủ nhiệm tạo ra ban đầu. */
   quantity: number;
   /** Số lượng còn lại có thể đổi — giảm mỗi khi thiếu hiệp đổi, hết thì ẩn/disable. */
   remainingQuantity: number;
   timestamp: number;
 }
 
-/** Một lượt đổi quà cụ thể — trừ NP ngay, chờ phụ huynh xác nhận "Đã Trao" ngoài đời (CORE_SPECS §3.2). */
+/** Một lượt đổi quà cụ thể — trừ NP ngay, chờ chủ nhiệm xác nhận "Đã Trao" ngoài đời (CORE_SPECS §3.2). */
 export interface RewardRedemption {
   id: string;
   rewardId: string;
@@ -217,7 +217,7 @@ export interface RewardRedemption {
   costCoins: number;
   status: RewardStatus;
   timestamp: number;
-  /** Thời điểm phụ huynh bấm "Đã Trao". */
+  /** Thời điểm chủ nhiệm bấm "Đã Trao". */
   deliveredAt?: number;
 }
 
@@ -253,7 +253,7 @@ export interface HandbookPage {
   content: string;
   /** Danh sách gạch đầu dòng — dùng cho các trang tra cứu nhanh (thay cho content dạng đoạn văn). */
   bullets?: string[];
-  /** Đối tượng xem trang: 'admin' chỉ hiện khi duyệt Cẩm Nang với vai trò Viện Chủ. Bỏ trống = ai cũng xem được. */
+  /** Đối tượng xem trang: 'admin' chỉ hiện khi duyệt Cẩm Nang với vai trò Hiệu Trưởng. Bỏ trống = ai cũng xem được. */
   audience?: 'student' | 'admin';
   /** Tầng Thế Giới của trang cẩm nang (CORE_SPECS §1.4). Bỏ trống = dùng chung mọi tầng. */
   gradeTier?: number;

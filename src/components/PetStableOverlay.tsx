@@ -64,7 +64,7 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
       const now = Date.now();
 
       // Cooldown chung: heo chỉ được TỰ xuất hiện tối đa 1 lần mỗi 30 PHÚT, bất kể lý do gì
-      // (yêu cầu Viện Chủ 2026-07-10 — chống làm phiền). Cooldown persist qua localStorage.
+      // (yêu cầu Hiệu Trưởng 2026-07-10 — chống làm phiền). Cooldown persist qua localStorage.
       const THIRTY_MINUTES = 30 * 60 * 1000;
       if (now - lastAutoTrigger.current < THIRTY_MINUTES) {
         return;

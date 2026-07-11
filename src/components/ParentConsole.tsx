@@ -12,7 +12,6 @@ import { StudentProfileView } from './ParentConsole/StudentProfileView';
 import { QuestionBankManager } from './ParentConsole/QuestionBankManager';
 
 export const ParentConsole: React.FC = () => {
-  const changePIN = useGameState(state => state.changePIN);
   const markRewardDelivered = useGameState(state => state.markRewardDelivered);
   const cancelRedemption = useGameState(state => state.cancelRedemption);
   const addParentReward = useGameState(state => state.addParentReward);
@@ -98,14 +97,18 @@ export const ParentConsole: React.FC = () => {
     setActiveTab('than_phan');
   };
 
-  // Phân quyền Phụ huynh phụ
+  // Phân quyền Chủ nhiệm phụ
   const currentStudentLink = familyLinks.find(l => l.student_id === viewingStudentId && l.status === 'active');
-  const canApproveReward = currentUser?.role === 'parent' || isAdmin(currentUser?.role) || (
-    currentUser?.role === 'secondary_parent' && currentStudentLink?.secondary_permissions?.can_approve_rewards
+  const isPrimaryLink = currentStudentLink?.link_type === 'primary';
+  const isSecondaryLink = currentStudentLink?.link_type === 'secondary';
+
+  const canApproveReward = isAdmin(currentUser?.role) || isPrimaryLink || (
+    isSecondaryLink && currentStudentLink?.secondary_permissions?.can_approve_rewards
   );
-  const canCreateMission = currentUser?.role === 'parent' || isAdmin(currentUser?.role) || (
-    currentUser?.role === 'secondary_parent' && currentStudentLink?.secondary_permissions?.can_create_missions
+  const canCreateMission = isAdmin(currentUser?.role) || isPrimaryLink || (
+    isSecondaryLink && currentStudentLink?.secondary_permissions?.can_create_missions
   );
+  const canManageEnergy = isAdmin(currentUser?.role) || isPrimaryLink;
 
   const activeRewardCatalog = selectedStudentProfile?.rewards || [];
   const activeRedemptions = selectedStudentProfile?.rewardRedemptions || [];
@@ -117,7 +120,7 @@ export const ParentConsole: React.FC = () => {
         <div className="flex items-center gap-3">
           <Unlock className="w-6 h-6 text-synth-magenta" />
           <h2 className="font-orbitron text-lg font-black text-white uppercase tracking-wider flex items-center gap-1.5">
-            Bảng Quản Trị Viện Chủ 👑
+            Bảng Quản Trị Hiệu Trưởng 👑
             <button
               onClick={() => showHelp('parent-console')}
               className="w-5 h-5 rounded-full bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta text-[10px] font-black flex items-center justify-center hover:bg-synth-magenta/40 cursor-pointer transition-colors"
@@ -200,7 +203,6 @@ export const ParentConsole: React.FC = () => {
               respondInvite={respondInvite}
               inviteSecondary={inviteSecondary}
               updateSecondaryPermissions={updateSecondaryPermissions}
-              changePIN={changePIN}
             />
 
             {/* List of students for parent/admin viewing */}
@@ -212,7 +214,18 @@ export const ParentConsole: React.FC = () => {
                 {familyLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).map((link: any) => (
                   <div key={link.student_id} className="p-4 rounded-xl bg-synth-gray/20 border border-white/5 flex flex-col justify-between gap-3">
                     <div>
-                      <span className="font-bold text-white text-sm block">{link.student_name || link.student_id}</span>
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <span className="font-bold text-white text-sm block">{link.student_name || link.student_id}</span>
+                        {link.link_type === 'primary' ? (
+                          <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded bg-synth-cyan/20 border border-synth-cyan/40 text-synth-cyan" title="Bạn là Chủ nhiệm chính của lớp này">
+                            Chủ nhiệm chính
+                          </span>
+                        ) : (
+                          <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta" title="Bạn là Chủ nhiệm phụ hỗ trợ lớp này">
+                            Chủ nhiệm phụ
+                          </span>
+                        )}
+                      </div>
                       <span className="text-[10px] text-synth-text-muted font-mono">{link.student_id}</span>
                     </div>
                     <button
@@ -239,6 +252,7 @@ export const ParentConsole: React.FC = () => {
             selectedStudentProfile={selectedStudentProfile}
             gameSettings={gameSettings}
             canApproveReward={!!canApproveReward}
+            canManageEnergy={!!canManageEnergy}
             skipReviews={skipReviews}
             adminMarkRewardDelivered={adminMarkRewardDelivered as any}
             adminCancelRedemption={adminCancelRedemption as any}

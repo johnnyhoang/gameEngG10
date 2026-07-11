@@ -255,7 +255,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
               📚 VẠN QUYỂN CÁC (KHO TRI THỨC & KHẢO HẠCH)
             </h2>
             <p className="text-xs text-synth-text-muted">
-              Kính xin Viện Chủ lựa chọn Môn phái cần thiết lập giáo án và khảo hạch để tiếp tục.
+              Kính xin Hiệu Trưởng lựa chọn Môn phái cần thiết lập giáo án và khảo hạch để tiếp tục.
             </p>
           </div>
 
@@ -626,7 +626,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                     <Sparkles className="w-3.5 h-3.5 text-synth-orange" /> Ingest Đề Thi Tự Động bằng AI
                   </h5>
                   <p className="text-[10px] text-synth-text-muted">
-                    Sao chép các câu hỏi thi tuyển sinh 10 (Text thô) vào khung dưới đây. AI của Viện Chủ sẽ tự động phân loại cấu trúc đề thi, tách đáp án, topic và nạp trực tiếp vào Vạn Quyển Các!
+                    Sao chép các câu hỏi thi tuyển sinh 10 (Text thô) vào khung dưới đây. AI của Hiệu Trưởng sẽ tự động phân loại cấu trúc đề thi, tách đáp án, topic và nạp trực tiếp vào Vạn Quyển Các!
                   </p>
 
                   <form onSubmit={handleAiIngest} className="space-y-3">

@@ -12,7 +12,7 @@ import {
 
 const router = express.Router();
 
-// GET /api/profiles: List all profiles for the Google Account
+// GET /api/profiles: List all active profiles for the Google Account
 router.get('/profiles', authMiddleware, async (req: any, res) => {
   try {
     const accountId = req.user?.sub;
@@ -20,7 +20,11 @@ router.get('/profiles', authMiddleware, async (req: any, res) => {
       console.error('No accountId in req.user');
       return res.status(401).json({ error: 'Unauthorized: missing accountId' });
     }
-    const profilesRes = await pool.query('SELECT * FROM ge10_users WHERE account_id = $1', [accountId]);
+    // Chỉ trả về profile đang hoạt động (is_active = true) — profile bị vô hiệu hóa sẽ không hiển thị ở màn hình chọn
+    const profilesRes = await pool.query(
+      'SELECT * FROM ge10_users WHERE account_id = $1 AND is_active = TRUE',
+      [accountId]
+    );
     res.json({ profiles: profilesRes.rows });
   } catch (err: any) {
     console.error('Error fetching profiles:', err?.message || err);
@@ -41,15 +45,15 @@ router.post('/profiles', authMiddleware, async (req: any, res) => {
     const finalAvatar = avatarUrl || req.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
     
     await pool.query(
-      `INSERT INTO ge10_users (id, account_id, name, email, avatar_url, role)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
+      `INSERT INTO ge10_users (id, account_id, name, email, avatar_url, role, is_active)
+       VALUES ($1, $2, $3, $4, $5, $6, TRUE)`,
       [profileId, accountId, name, email, finalAvatar, role]
     );
     
     await pool.query(`INSERT INTO ge10_player_profiles (user_id) VALUES ($1)`, [profileId]);
     await pool.query(`INSERT INTO ge10_pet_states (user_id) VALUES ($1)`, [profileId]);
     
-    res.json({ success: true, profile: { id: profileId, account_id: accountId, name, email, avatar_url: finalAvatar, role } });
+    res.json({ success: true, profile: { id: profileId, account_id: accountId, name, email, avatar_url: finalAvatar, role, is_active: true } });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Failed to create profile' });
@@ -62,10 +66,13 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
   const profileId = req.params.id;
 
   try {
-    // 1. Verify ownership
-    const userRes = await pool.query('SELECT * FROM ge10_users WHERE id = $1 AND account_id = $2', [profileId, accountId]);
+    // 1. Verify ownership AND profile is active
+    const userRes = await pool.query(
+      'SELECT * FROM ge10_users WHERE id = $1 AND account_id = $2 AND is_active = TRUE',
+      [profileId, accountId]
+    );
     if (userRes.rowCount === 0) {
-      return res.status(403).json({ error: 'Access denied or profile not found.' });
+      return res.status(403).json({ error: 'Access denied, profile not found, or profile is deactivated.' });
     }
     const userRow = userRes.rows[0];
     const userId = profileId;
@@ -269,7 +276,7 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
     // 1. Sync player profile
     if (player) {
       const currentProfileRes = await client.query(
-        'SELECT energy, energy_depleted_at, max_achieved_mastery_rank, server_updated_at FROM ge10_player_profiles WHERE user_id = $1',
+        'SELECT * FROM ge10_player_profiles WHERE user_id = $1',
         [userId]
       );
       // Luật Bất Thoái (CORE_SPECS §7.4.4): gộp theo giá trị CAO HƠN từng môn giữa client/DB, không
@@ -287,14 +294,108 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
         const dbServerUpdatedAt = new Date(dbProfile.server_updated_at).getTime();
         const clientLastSyncTime = req.body.lastSyncTime ? new Date(req.body.lastSyncTime).getTime() : 0;
 
-        if (dbServerUpdatedAt > clientLastSyncTime) {
-          // Keep server values since they are newer (e.g. từ "Ban Chân Khí" thủ công của phụ huynh ở ParentConsole)
-          mergedEnergy = dbProfile.energy;
-          mergedEnergyDepletedAt = dbProfile.energy_depleted_at ? Number(dbProfile.energy_depleted_at) : null;
+        if (dbServerUpdatedAt > clientLastSyncTime + 1000) {
+          // Load all latest server state to send back to client
+          const petRes = await client.query('SELECT * FROM ge10_pet_states WHERE user_id = $1', [userId]);
+          const statsRes = await client.query('SELECT * FROM ge10_category_stats WHERE user_id = $1', [userId]);
+          const logsRes = await client.query('SELECT * FROM ge10_history_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 200', [userId]);
+          const rewardsRes = await client.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
+          const redemptionsRes = await client.query('SELECT * FROM ge10_reward_redemptions WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
+          const challengesRes = await client.query('SELECT * FROM ge10_user_challenges WHERE user_id = $1', [userId]);
+          const missionRes = await client.query('SELECT * FROM ge10_daily_missions WHERE user_id = $1', [userId]);
+          const progressRes = await client.query('SELECT * FROM ge10_user_lessons_progress WHERE user_id = $1', [userId]);
+          const explorationRes = await client.query('SELECT * FROM ge10_exploration_progress WHERE user_id = $1', [userId]);
+
+          const lessonsProgress: Record<string, boolean> = {};
+          progressRes.rows.forEach((row: any) => {
+            lessonsProgress[row.lesson_id] = row.completed;
+          });
+
+          const explorationProgress: Record<string, any> = {};
+          explorationRes.rows.forEach((row: any) => {
+            explorationProgress[row.area_id] = {
+              clearCount: row.clear_count
+            };
+          });
+
+          const categoryStats: any = {};
+          statsRes.rows.forEach((row: any) => {
+            categoryStats[row.category] = {
+              category: row.category,
+              totalAnswered: row.total_answered,
+              totalCorrect: row.total_correct,
+              rollingAccuracy: row.rolling_accuracy
+            };
+          });
+
+          await client.query('ROLLBACK');
+          client.release();
+          return res.status(409).json({
+            error: 'OUTDATED_CLIENT',
+            message: 'Client state is outdated. Please pull the latest data first.',
+            serverData: {
+              player: {
+                id: dbProfile.user_id,
+                level: dbProfile.level,
+                xp: dbProfile.xp,
+                coins: dbProfile.coins,
+                streak: dbProfile.streak,
+                energy: dbProfile.energy,
+                maxEnergy: dbProfile.max_energy,
+                resetHours: dbProfile.reset_hours,
+                energyDepletedAt: dbProfile.energy_depleted_at ? Number(dbProfile.energy_depleted_at) : null,
+                hearts: dbProfile.hearts,
+                lastActive: dbProfile.last_active,
+                badges: dbProfile.badges,
+                maxAchievedMasteryRank: dbProfile.max_achieved_mastery_rank
+              },
+              pet: petRes.rows[0] ? {
+                name: petRes.rows[0].name,
+                stage: petRes.rows[0].stage,
+                level: petRes.rows[0].level,
+                exp: petRes.rows[0].exp,
+                energy: petRes.rows[0].energy,
+                mood: petRes.rows[0].mood,
+                lastFed: petRes.rows[0].last_fed
+              } : null,
+              categoryStats,
+              logs: logsRes.rows.map((row: any) => ({
+                id: row.id,
+                timestamp: Number(row.timestamp),
+                activityType: row.activity_type,
+                title: row.title,
+                detail: row.detail,
+                coinsChanged: row.coins_changed,
+                xpChanged: row.xp_changed,
+                walletChanged: row.wallet_changed
+              })),
+              rewards: rewardsRes.rows.map((row: any) => ({
+                id: row.id,
+                title: row.title,
+                costCoins: row.cost_coins,
+                quantity: row.quantity,
+                remainingQuantity: row.remaining_quantity,
+                timestamp: Number(row.timestamp)
+              })),
+              rewardRedemptions: redemptionsRes.rows.map((row: any) => ({
+                id: row.id,
+                rewardId: row.reward_id,
+                rewardTitle: row.reward_title,
+                costCoins: row.cost_coins,
+                status: row.status,
+                timestamp: Number(row.timestamp),
+                deliveredAt: row.delivered_at ? Number(row.delivered_at) : null
+              })),
+              challenges: challengesRes.rows[0]?.challenges_json || null,
+              dailyMission: missionRes.rows[0]?.mission_json || null,
+              lessonsProgress,
+              explorationProgress
+            }
+          });
         }
       }
 
-      // maxEnergy/resetHours KHÔNG nằm trong sync này — đó là cấu hình do phụ huynh chỉnh riêng
+      // maxEnergy/resetHours KHÔNG nằm trong sync này — đó là cấu hình do chủ nhiệm chỉnh riêng
       // qua /api/admin/set-energy-config, con tự sync không được phép ghi đè (SUB_SPEC_ENERGY §2).
       await client.query(
         `INSERT INTO ge10_player_profiles (user_id, level, xp, coins, streak, energy, energy_depleted_at, hearts, last_active, badges, max_achieved_mastery_rank, server_updated_at)

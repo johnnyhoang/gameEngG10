@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { toast } from '../utils/toast';
 import { INITIAL_LESSONS } from '../data/lessons';
@@ -34,6 +34,11 @@ export function WorldMap({
   const categoryStats = useGameState(state => state.categoryStats);
   const lessonsProgress = useGameState(state => state.lessonsProgress);
   const isUnicorn = uiTheme === 'unicorn-dream';
+  const syncWithServer = useGameState(state => state.syncWithServer);
+
+  useEffect(() => {
+    syncWithServer();
+  }, [syncWithServer]);
 
   const parentQuests = useGameState(state => state.parentQuests || []);
   const claimParentQuest = useGameState(state => state.claimParentQuest);
@@ -135,7 +140,7 @@ export function WorldMap({
       id: 'shop',
       icon: <Store className="w-7 h-7" />,
       title: 'Bách Hóa Phường',
-      blurb: 'Đổi Ngân Lượng lấy Khai Ngộ Quyển, Hộ Tâm Phù, Phong Vị và Phúc Lợi Gia Môn.',
+      blurb: 'Đổi Ngân Lượng lấy Khai Ngộ Quyển, Hộ Tâm Phù, Phong Vị và Phúc Lợi Lớp Học.',
       cta: 'Ghé Bách Hóa Phường',
       onOpen: onOpenShop,
       accent: 'from-synth-orange/15 via-amber-400/10 to-transparent border-synth-orange/30 text-synth-orange'
@@ -257,7 +262,7 @@ export function WorldMap({
             {familyLinks.filter(l => l.status === 'pending_student').map((link: any) => (
               <div key={link.id} className="flex flex-col md:flex-row md:items-center justify-between p-3 rounded-xl border border-white/10 bg-black/40 gap-3">
                 <div className="space-y-1 text-sm">
-                  <p className="text-white">Phụ huynh <strong className="text-synth-cyan">{link.parent_name || 'Chưa có tên'}</strong> muốn kết nối với bạn.</p>
+                  <p className="text-white">Chủ nhiệm <strong className="text-synth-cyan">{link.parent_name || 'Chưa có tên'}</strong> muốn kết nối với bạn.</p>
                   <p className="text-xs text-slate-400">ID: {link.parent_id}</p>
                 </div>
                 <div className="flex items-center gap-2">
@@ -286,13 +291,13 @@ export function WorldMap({
         </div>
       )}
 
-      {/* Nhiệm Vụ Phụ Huynh Giao (Parent Quests) */}
+      {/* Nhiệm Vụ Chủ Nhiệm Giao (Parent Quests) */}
       {parentQuests.filter((q: any) => q.status !== 'claimed').length > 0 && (
         <div className="glass-panel rounded-2xl border border-synth-magenta/30 bg-black/40 p-4 space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-xl">📜</span>
             <h3 className="font-orbitron font-black text-xs uppercase tracking-wider text-synth-magenta">
-              Nhiệm Vụ Phụ Huynh Giao
+              Nhiệm Vụ Chủ Nhiệm Giao
             </h3>
           </div>
 
@@ -337,7 +342,7 @@ export function WorldMap({
       )}
 
       {/* 5 Module Gate — CORE_SPECS §2.1 */}
-      {/* Trạng thái gia đình hiện tại (Học sinh đã có Phụ huynh) */}
+      {/* Trạng thái gia đình hiện tại (Học sinh đã có Chủ nhiệm) */}
       {familyLinks.filter(l => l.status === 'active').length > 0 && (
         <div className="glass-panel rounded-2xl border border-synth-cyan/30 bg-synth-cyan/5 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -346,7 +351,7 @@ export function WorldMap({
               <p className="font-orbitron font-bold text-xs uppercase text-synth-cyan tracking-wider">Gia Đình Liên Kết</p>
               {familyLinks.filter(l => l.status === 'active').map((link: any) => (
                 <p key={link.id} className="text-xs text-slate-300">
-                  {link.parent_id ? `Phụ huynh: ${link.parent_name || link.parent_id}` : `Học sinh: ${link.student_name || link.student_id}`}
+                  {link.parent_id ? `Chủ nhiệm: ${link.parent_name || link.parent_id}` : `Học sinh: ${link.student_name || link.student_id}`}
                 </p>
               ))}
             </div>
@@ -363,7 +368,7 @@ export function WorldMap({
                 }}
                 className="px-3 py-1.5 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-xs uppercase cursor-pointer transition-colors"
               >
-                Rời Phụ Huynh
+                Rời Chủ Nhiệm
               </button>
             ))}
           </div>

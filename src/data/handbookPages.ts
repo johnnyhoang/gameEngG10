@@ -115,11 +115,11 @@ const HELP_HANDBOOK_PAGES: HandbookPage[] = [
     ]
   },
   {
-    id: 'help-wallet', category: 'Trợ Giúp Nhanh', title: 'Phúc Lợi Gia Môn', content: '', audience: 'student',
+    id: 'help-wallet', category: 'Trợ Giúp Nhanh', title: 'Phúc Lợi Lớp Học', content: '', audience: 'student',
     bullets: [
-      '• Đây là phần thưởng thật do Viện Chủ tự tạo, có số lượng giới hạn — đổi sớm để không bị hết.',
-      '• Đổi xong sẽ trừ NP ngay và chờ Viện Chủ trao quà thật ngoài đời.',
-      '• Khi Viện Chủ bấm "Đã Trao" thì yêu cầu hoàn tất.'
+      '• Đây là phần thưởng thật do Hiệu Trưởng tự tạo, có số lượng giới hạn — đổi sớm để không bị hết.',
+      '• Đổi xong sẽ trừ NP ngay và chờ Hiệu Trưởng trao quà thật ngoài đời.',
+      '• Khi Hiệu Trưởng bấm "Đã Trao" thì yêu cầu hoàn tất.'
     ]
   },
   {

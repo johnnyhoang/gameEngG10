@@ -4,7 +4,6 @@
 // ReferenceError "Cannot access 'INITIAL_PLAYER' before initialization" khi load app).
 import type { PlayerProfile, PetState, Challenge, ParentReward, GameSettings, UiThemeId } from '../types/game';
 
-export const DEFAULT_PIN = '1234';
 // Chân Khí v2 (SUB_SPEC_ENERGY §2): maxEnergy giờ là cấu hình RIÊNG từng con (PlayerProfile.maxEnergy),
 // không còn nằm trong GameSettings global. Hằng số này chỉ còn là giá trị mặc định khi tạo hồ sơ mới.
 export const PLAYER_ENERGY_MAX = 100;
@@ -50,7 +49,7 @@ export const INITIAL_PET: PetState = {
   lastFed: new Date().toISOString()
 };
 
-// Phần Thưởng Thực Tế mặc định (CORE_SPECS §3.2) — mỗi món có số lượng giới hạn do phụ huynh nạp lại khi hết.
+// Phần Thưởng Thực Tế mặc định (CORE_SPECS §3.2) — mỗi món có số lượng giới hạn do chủ nhiệm nạp lại khi hết.
 export const DEFAULT_REWARDS: ParentReward[] = [
   { id: 'r-1', title: '15 phút chơi game', costCoins: 150, quantity: 10, remainingQuantity: 10, timestamp: Date.now() },
   { id: 'r-2', title: 'Ly trà sữa đặc biệt', costCoins: 400, quantity: 4, remainingQuantity: 4, timestamp: Date.now() },

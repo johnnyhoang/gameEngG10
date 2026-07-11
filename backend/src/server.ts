@@ -11,11 +11,12 @@ import { SEED_LESSONS } from './lessonsData.js';
 import profilesRouter from './routes/profiles.js';
 import questionsRouter from './routes/questions.js';
 import familyRouter from './routes/family.js';
-import securityRouter from './routes/security.js';
 import aiRouter from './routes/ai.js';
 import adminRouter from './routes/admin.js';
 import economyRouter from './routes/economy.js';
 import gatekeeperRouter from './routes/gatekeeper.js';
+import gameRouter from './routes/game.js';
+import { adaptLegacyProfiles } from './helpers/profileAdapter.js';
 
 dotenv.config();
 
@@ -66,6 +67,9 @@ const initDB = async () => {
     );
 
     console.log('Database initialized and lessons seeded successfully.');
+    
+    // Tự động thích ứng và phân tách các profile cũ chứa dữ liệu chéo
+    await adaptLegacyProfiles();
   } catch (error) {
     console.error('Error initializing database:', error);
   }
@@ -82,11 +86,11 @@ app.get('/api/health', (req, res) => {
 app.use('/api', profilesRouter);
 app.use('/api', questionsRouter);
 app.use('/api', familyRouter);
-app.use('/api', securityRouter);
 app.use('/api', aiRouter);
 app.use('/api', adminRouter);
 app.use('/api', economyRouter);
 app.use('/api', gatekeeperRouter);
+app.use('/api', gameRouter);
 
 app.listen(PORT, () => {
   console.log(`CyberEnglish API Server booting on port ${PORT}...`);

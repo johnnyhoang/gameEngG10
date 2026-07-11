@@ -14,6 +14,7 @@ import { MonChuHoiToiDialog } from './MonChuHoiToiDialog';
 import { sound } from '../utils/sound';
 import { toast } from '../utils/toast';
 import { supabase } from '../utils/supabaseClient';
+import { gameService } from '../services/gameService';
 
 // Subcomponents
 import { PlayAreaHeader } from './PlayArea/PlayAreaHeader';
@@ -42,8 +43,12 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const failedQuestionIds = useGameState(state => state.failedQuestionIds || []);
   const applyDefeatPenalty = useGameState(state => state.applyDefeatPenalty);
   const completeBossVictory = useGameState(state => state.completeBossVictory);
+  const syncSessionResult = useGameState(state => state.syncSessionResult);
+  const activeGradeTier = useGameState(state => state.activeGradeTier);
 
   // Game states
+  const [sessionId, setSessionId] = useState<string>('');
+  const [answersSubmitted, setAnswersSubmitted] = useState<any[]>([]);
   const [currentQuestions, setCurrentQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string>('');
@@ -92,81 +97,130 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
 
   // Initialize questions for this run
   useEffect(() => {
-    const subjectQuestions = questions.filter(q => {
-      const qSubject = (q as any).subject || 'english';
-      return qSubject === activeSectId;
-    });
-    const fallbackQuestions = subjectQuestions.length > 0 ? subjectQuestions : questions;
+    let active = true;
 
-    let pool: Question[] = [];
-    // Boss (CORE_SPECS §2.1): mỗi lượt chỉ rút 5 câu — ~1/5 đề trích từ đề thật (20 câu/đề).
-    const count = mode === 'boss' ? 5 : mode === 'survival' ? 15 : 10;
+    const initOnlineSession = async () => {
+      try {
+        const res = await gameService.startSession({
+          profileId: player.id,
+          sessionType: mode,
+          subject: activeSectId,
+          gradeTier: activeGradeTier,
+          bossId,
+          lessonId,
+          failedQuestionIds
+        });
 
-    if (mode === 'boss') {
-      const bossTag = bossId === 'b-2024' ? '2024'
-        : bossId === 'b-2025' ? '2025'
-        : bossId === 'b-2026' ? '2026'
-        : bossId === 'b-hk1' ? 'HK1'
-        : bossId === 'b-hk2' ? 'HK2'
-        : '2026';
-      const examPool = fallbackQuestions.filter(q => q.source.includes(bossTag));
-      const fullExamPool = examPool.length > 0 ? examPool : fallbackQuestions;
-      // Đề trích ra ~20 câu; nếu ngân hàng chưa gắn đủ 20 câu cho đề này thì dùng hết số đang có.
-      const examSample = fullExamPool.length > 20
-        ? [...fullExamPool].sort(() => Math.random() - 0.5).slice(0, 20)
-        : fullExamPool;
-      pool = [...examSample].sort(() => Math.random() - 0.5).slice(0, count);
-    } else if (mode === 'revenge') {
-      pool = subjectQuestions.filter(q => failedQuestionIds.includes(q.id));
-    } else if (mode === 'lesson') {
-      const lesson = INITIAL_LESSONS.find(l => l.id === lessonId);
-      if (lesson) {
-        pool = fallbackQuestions.filter(q => (q as any).lessonId === lessonId || q.category === lesson.category);
-        pool = pool.slice(0, 3);
-      }
-      if (pool.length < 3) {
-        const extra = fallbackQuestions.filter(q => !pool.includes(q));
-        pool = [...pool, ...extra].slice(0, 3);
-      }
-    } else {
-      const weightMode = mode === 'survival' ? 'mixed' : mode;
-      for (let i = 0; i < count; i++) {
-        const q = getQuestionByWeight(weightMode);
-        if (q && ((q as any).subject || 'english') === activeSectId && !pool.some(existing => existing.id === q.id)) {
-          pool.push(q);
+        if (active) {
+          setSessionId(res.sessionId);
+          setCurrentQuestions(res.questions);
+          setCurrentIndex(0);
+          setAnswersSubmitted([]);
+          setRewardsEarned({ coins: 0, xp: 0 });
+          setSessionAnswered(0);
+          setSessionCorrect(0);
+          setRunFinished(false);
+          runEndHandledRef.current = false;
+          setRunMistakes(0);
+
+          if (mode === 'boss') {
+            setTimeLeft(20 * 60);
+          } else {
+            setTimeLeft(0);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to start online game session, falling back to local pool:', err);
+        if (active) {
+          runLocalFallback();
         }
       }
-      if (pool.length === 0) {
-        pool = fallbackQuestions.filter(q => {
-          if (activeSectId === 'math') {
-            if (mode === 'grammar') return q.category === 'parabol-line' || q.category === 'viet-relation' || q.category === 'linear-function';
-            if (mode === 'reading') return q.category === 'real-geometry' || q.category === 'plane-geometry' || q.category === 'volume-displacement' || q.category === 'tangent-geometry';
-            if (mode === 'vocabulary') return q.category === 'real-equations' || q.category === 'real-finance' || q.category === 'growth-modeling' || q.category === 'percentage-discount' || q.category === 'shopping-discount';
-          } else {
-            if (mode === 'grammar') return q.category === 'grammar' || q.category === 'passive-voice' || q.category === 'relative-clauses' || q.category === 'rewrite';
-            if (mode === 'reading') return q.category === 'reading' || q.category === 'cloze';
-            if (mode === 'vocabulary') return q.category === 'vocabulary' || q.category === 'wordform';
-            if (mode === 'pronunciation') return q.category === 'pronunciation' || q.category === 'stress';
+    };
+
+    const runLocalFallback = () => {
+      const subjectQuestions = questions.filter(q => {
+        const qSubject = (q as any).subject || 'english';
+        return qSubject === activeSectId;
+      });
+      const fallbackQuestions = subjectQuestions.length > 0 ? subjectQuestions : questions;
+
+      let pool: Question[] = [];
+      const count = mode === 'boss' ? 5 : mode === 'survival' ? 15 : 10;
+
+      if (mode === 'boss') {
+        const bossTag = bossId === 'b-2024' ? '2024'
+          : bossId === 'b-2025' ? '2025'
+          : bossId === 'b-2026' ? '2026'
+          : bossId === 'b-hk1' ? 'HK1'
+          : bossId === 'b-hk2' ? 'HK2'
+          : '2026';
+        const examPool = fallbackQuestions.filter(q => q.source.includes(bossTag));
+        const fullExamPool = examPool.length > 0 ? examPool : fallbackQuestions;
+        const examSample = fullExamPool.length > 20
+          ? [...fullExamPool].sort(() => Math.random() - 0.5).slice(0, 20)
+          : fullExamPool;
+        pool = [...examSample].sort(() => Math.random() - 0.5).slice(0, count);
+      } else if (mode === 'revenge') {
+        pool = subjectQuestions.filter(q => failedQuestionIds.includes(q.id));
+      } else if (mode === 'lesson') {
+        const lesson = INITIAL_LESSONS.find(l => l.id === lessonId);
+        if (lesson) {
+          pool = fallbackQuestions.filter(q => (q as any).lessonId === lessonId || q.category === lesson.category);
+          pool = pool.slice(0, 3);
+        }
+        if (pool.length < 3) {
+          const extra = fallbackQuestions.filter(q => !pool.includes(q));
+          pool = [...pool, ...extra].slice(0, 3);
+        }
+      } else {
+        const weightMode = mode === 'survival' ? 'mixed' : mode;
+        for (let i = 0; i < count; i++) {
+          const q = getQuestionByWeight(weightMode);
+          if (q && ((q as any).subject || 'english') === activeSectId && !pool.some(existing => existing.id === q.id)) {
+            pool.push(q);
           }
-          return true;
-        }).slice(0, count);
+        }
+        if (pool.length === 0) {
+          pool = fallbackQuestions.filter(q => {
+            if (activeSectId === 'math') {
+              if (mode === 'grammar') return q.category === 'parabol-line' || q.category === 'viet-relation' || q.category === 'linear-function';
+              if (mode === 'reading') return q.category === 'real-geometry' || q.category === 'plane-geometry' || q.category === 'volume-displacement' || q.category === 'tangent-geometry';
+              if (mode === 'vocabulary') return q.category === 'real-equations' || q.category === 'real-finance' || q.category === 'growth-modeling' || q.category === 'percentage-discount' || q.category === 'shopping-discount';
+            } else {
+              if (mode === 'grammar') return q.category === 'grammar' || q.category === 'passive-voice' || q.category === 'relative-clauses' || q.category === 'rewrite';
+              if (mode === 'reading') return q.category === 'reading' || q.category === 'cloze';
+              if (mode === 'vocabulary') return q.category === 'vocabulary' || q.category === 'wordform';
+              if (mode === 'pronunciation') return q.category === 'pronunciation' || q.category === 'stress';
+            }
+            return true;
+          }).slice(0, count);
+        }
       }
-    }
 
-    setCurrentQuestions(pool.sort(() => Math.random() - 0.5));
-    setCurrentIndex(0);
-    setRewardsEarned({ coins: 0, xp: 0 });
-    setSessionAnswered(0);
-    setSessionCorrect(0);
-    setRunFinished(false);
-    runEndHandledRef.current = false;
+      setSessionId('');
+      setCurrentQuestions(pool.sort(() => Math.random() - 0.5));
+      setCurrentIndex(0);
+      setAnswersSubmitted([]);
+      setRewardsEarned({ coins: 0, xp: 0 });
+      setSessionAnswered(0);
+      setSessionCorrect(0);
+      setRunFinished(false);
+      runEndHandledRef.current = false;
+      setRunMistakes(0);
 
-    if (mode === 'boss') {
-      setTimeLeft(20 * 60);
-    } else {
-      setTimeLeft(0);
-    }
-  }, [mode, bossId, lessonId, activeSectId, questions, getQuestionByWeight]);
+      if (mode === 'boss') {
+        setTimeLeft(20 * 60);
+      } else {
+        setTimeLeft(0);
+      }
+    };
+
+    initOnlineSession();
+
+    return () => {
+      active = false;
+    };
+  }, [mode, bossId, lessonId, activeSectId, questions, getQuestionByWeight, failedQuestionIds, player.id, activeGradeTier]);
 
   // Handle countdown timer
   useEffect(() => {
@@ -193,17 +247,68 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     runEndHandledRef.current = true;
 
     const isDefeat = runMistakes >= 3 && (mode === 'boss' || mode === 'survival');
-    if (isDefeat) {
-      applyDefeatPenalty(rewardsEarned.coins, rewardsEarned.xp);
-    } else if (mode === 'boss') {
-      // Khớp đúng thứ tự [dễ,trung bình,khó] hiển thị trên Boss Card ở Arena.tsx (bosses.map index).
-      const bossBonusIndex = bossId === 'b-2024' || bossId === 'b-hk1' ? 0
-        : bossId === 'b-2025' || bossId === 'b-hk2' ? 1
-        : bossId === 'b-2026' ? 2
-        : undefined;
-      completeBossVictory(bossBonusIndex);
-    }
-  }, [runFinished]);
+    
+    const submitResults = async () => {
+      try {
+        if (!sessionId) {
+          // Fallback if session wasn't started online
+          if (isDefeat) {
+            applyDefeatPenalty(rewardsEarned.coins, rewardsEarned.xp);
+          } else if (mode === 'boss') {
+            const bossBonusIndex = bossId === 'b-2024' || bossId === 'b-hk1' ? 0
+              : bossId === 'b-2025' || bossId === 'b-hk2' ? 1
+              : bossId === 'b-2026' ? 2
+              : undefined;
+            completeBossVictory(bossBonusIndex);
+          }
+          return;
+        }
+
+        const bossBonusIndex = bossId === 'b-2024' || bossId === 'b-hk1' ? 0
+          : bossId === 'b-2025' || bossId === 'b-hk2' ? 1
+          : bossId === 'b-2026' ? 2
+          : undefined;
+
+        const res = await gameService.endSession({
+          sessionId,
+          profileId: player.id,
+          answers: answersSubmitted,
+          isDefeat,
+          bossBonusIndex
+        });
+
+        if (res.success) {
+          // Sync server rewards back to client store
+          syncSessionResult({
+            newCoins: res.newCoins,
+            newXp: res.newXp,
+            newLevel: res.newLevel,
+            badges: res.badges
+          });
+
+          // Hiển thị phần thưởng thực tế nhận được từ server trên UI
+          setRewardsEarned({
+            coins: res.coinsGained,
+            xp: res.xpGained
+          });
+        }
+      } catch (err) {
+        console.error('Failed to submit session result, run fallback:', err);
+        // Fallback local update if network failed
+        if (isDefeat) {
+          applyDefeatPenalty(rewardsEarned.coins, rewardsEarned.xp);
+        } else if (mode === 'boss') {
+          const bossBonusIndex = bossId === 'b-2024' || bossId === 'b-hk1' ? 0
+            : bossId === 'b-2025' || bossId === 'b-hk2' ? 1
+            : bossId === 'b-2026' ? 2
+            : undefined;
+          completeBossVictory(bossBonusIndex);
+        }
+      }
+    };
+
+    submitResults();
+  }, [runFinished, runMistakes, mode, bossId, sessionId, player.id, answersSubmitted, rewardsEarned, applyDefeatPenalty, completeBossVictory, syncSessionResult]);
 
   const activeQuestion = currentQuestions[currentIndex];
 
@@ -448,6 +553,16 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       mappedMode,
       scoreRatio
     );
+
+    setAnswersSubmitted(prev => [
+      ...prev,
+      {
+        questionId: activeQuestion.id,
+        typedAnswer: activeQuestion.type !== 'mcq' ? typedAnswer : undefined,
+        selectedAnswer: activeQuestion.type === 'mcq' ? selectedAnswer : undefined,
+        scoreRatio: scoreRatio
+      }
+    ]);
 
     setIsLastCorrect(isCorrect);
     setChecked(true);

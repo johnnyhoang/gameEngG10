@@ -60,7 +60,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
       {!viewingStudentId ? (
         <div className="glass-panel rounded-2xl border border-white/5 p-8 text-center space-y-3">
           <p className="text-xs text-synth-text-muted">
-            Chọn tài khoản thiếu hiệp tại tab <strong className="text-synth-magenta">🏛️ Chính Điện</strong> (bấm "Xem Hoạt Động") để duyệt yêu cầu đổi Phúc Lợi hoặc thiết lập Phúc Lợi Gia Môn dành riêng cho con.
+            Chọn tài khoản thiếu hiệp tại tab <strong className="text-synth-magenta">🏛️ Chính Điện</strong> (bấm "Xem Hoạt Động") để duyệt yêu cầu đổi Phúc Lợi hoặc thiết lập Phúc Lợi Lớp Học dành riêng cho con.
           </p>
         </div>
       ) : (
@@ -68,7 +68,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
           {/* Create Reward Form */}
           <div className="glass-panel rounded-2xl border border-synth-orange/20 p-5 h-fit">
             <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider mb-4 flex items-center gap-1.5">
-               <Plus className="w-4 h-4" /> Thêm Phúc Lợi Gia Môn mới
+               <Plus className="w-4 h-4" /> Thêm Phúc Lợi Lớp Học mới
             </h4>
 
             <form onSubmit={handleCreateReward} className="space-y-4">
@@ -78,8 +78,9 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                   type="text"
                   value={rewardTitle}
                   onChange={(e) => setRewardTitle(e.target.value)}
+                  disabled={!canApproveReward}
                   placeholder="Ví dụ: Ly trà sữa, 1h chơi iPad"
-                  className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange"
+                  className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
 
@@ -90,7 +91,8 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                     type="number"
                     value={rewardCost}
                     onChange={(e) => setRewardCost(Number(e.target.value))}
-                    className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange"
+                    disabled={!canApproveReward}
+                    className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
                 <div className="flex flex-col gap-1">
@@ -100,7 +102,8 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                     min={1}
                     value={rewardQuantity}
                     onChange={(e) => setRewardQuantity(Number(e.target.value))}
-                    className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange"
+                    disabled={!canApproveReward}
+                    className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange disabled:opacity-50 disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -110,10 +113,16 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
 
               <button
                 type="submit"
-                className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-orange text-black hover:synth-glow-orange cursor-pointer transition-all duration-300"
+                disabled={!canApproveReward}
+                className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-orange text-black hover:synth-glow-orange cursor-pointer transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Tạo Phúc Lợi Gia Môn
+                Tạo Phúc Lợi Lớp Học
               </button>
+              {!canApproveReward && (
+                <p className="text-[9px] text-yellow-500/80 italic mt-2 leading-tight">
+                  ⚠️ Bạn hiện là Chủ nhiệm phụ và chưa được cấp quyền quản lý Phúc Lợi của lớp này.
+                </p>
+              )}
             </form>
 
             {activeRewardCatalog.length > 0 && (
@@ -125,13 +134,15 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                       <span className="text-white truncate">{reward.title}</span>
                       <div className="flex items-center gap-2 shrink-0">
                         <span className="text-synth-orange font-bold font-orbitron">{reward.costCoins} NP · Còn {reward.remainingQuantity}/{reward.quantity}</span>
-                        <button
-                          onClick={() => deleteParentReward(reward.id)}
-                          className="text-synth-magenta hover:opacity-70 cursor-pointer"
-                          title="Xóa khỏi danh mục"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        {canApproveReward && (
+                          <button
+                            onClick={() => deleteParentReward(reward.id)}
+                            className="text-synth-magenta hover:opacity-70 cursor-pointer"
+                            title="Xóa khỏi danh mục"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -143,7 +154,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
           {/* Redemption ledger — lượt đổi đang chờ trao / đã trao */}
           <div className="glass-panel rounded-2xl border border-white/5 p-5 md:col-span-2 space-y-4">
             <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
-               <Award className="w-4 h-4" /> Nhật ký đổi quà — Chờ Viện Chủ trao
+               <Award className="w-4 h-4" /> Nhật ký đổi quà — Chờ Hiệu Trưởng trao
             </h4>
 
             <div className="space-y-2 overflow-y-auto max-h-[350px]">

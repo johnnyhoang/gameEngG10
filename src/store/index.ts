@@ -32,7 +32,6 @@ export const useGameState = create<StoreState>()(
         challenges: state.challenges,
         dailyMission: state.dailyMission,
         logs: state.logs,
-        parentPIN: state.parentPIN,
         maxCombo: state.maxCombo,
         profiles: state.profiles,
         petStates: state.petStates,
