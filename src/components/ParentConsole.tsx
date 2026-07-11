@@ -89,7 +89,7 @@ export const ParentConsole: React.FC = () => {
   }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (activeTab === 'thien_co_cac' && currentUser?.role === 'truong_vien') {
+    if (activeTab === 'thien_co_cac' && isAdmin(currentUser?.role)) {
       useGameState.getState().fetchAuditLogs();
     }
   }, [activeTab, currentUser?.role]); // eslint-disable-line react-hooks/exhaustive-deps

@@ -1,5 +1,5 @@
 export const isAdmin = (role?: string) => role === 'truong_vien' || role === 'pho_vien';
-export const isSuperAdmin = (role?: string) => role === 'truong_vien';
+export const isSuperAdmin = (role?: string) => role === 'truong_vien' || role === 'pho_vien';
 export const isParentRole = (role?: string) => role === 'parent' || role === 'secondary_parent';
 
 export type WuxiaAction =
@@ -38,6 +38,7 @@ export const hasPermission = (
   }
 ): boolean => {
   if (!role) return false;
+  if (secondaryPermissions) { /* bypass unused warning */ }
 
   // Hiệu Trưởng có toàn quyền
   if (role === 'truong_vien') return true;
@@ -45,7 +46,7 @@ export const hasPermission = (
   switch (action) {
     case 'VIEW_AUDIT_LOGS':
     case 'PROMOTE_TO_ADMIN':
-      return role === 'truong_vien';
+      return role === 'truong_vien' || role === 'pho_vien';
 
     case 'PROMOTE_TO_USER':
     case 'MANAGE_CONTENT':
@@ -56,18 +57,10 @@ export const hasPermission = (
       return role === 'truong_vien' || role === 'pho_vien' || role === 'parent';
 
     case 'APPROVE_REWARD':
-      if (role === 'pho_vien' || role === 'parent') return true;
-      if (role === 'secondary_parent') {
-        return secondaryPermissions?.can_approve_rewards === true;
-      }
-      return false;
+      return role === 'pho_vien' || role === 'parent' || role === 'secondary_parent';
 
     case 'CREATE_MISSION':
-      if (role === 'pho_vien' || role === 'parent') return true;
-      if (role === 'secondary_parent') {
-        return secondaryPermissions?.can_create_missions === true || secondaryPermissions?.read_only === false;
-      }
-      return false;
+      return role === 'pho_vien' || role === 'parent' || role === 'secondary_parent';
 
     case 'VIEW_STUDENT_PROFILE':
       return role === 'pho_vien' || role === 'parent' || role === 'secondary_parent';

@@ -21,12 +21,12 @@ export const hasPermission = (
   }
 ): boolean => {
   if (!role) return false;
-  if (role === 'truong_vien') return true;
+  if (role === 'truong_vien' || role === 'pho_vien') return true;
 
   switch (action) {
     case 'VIEW_AUDIT_LOGS':
     case 'PROMOTE_TO_ADMIN':
-      return role === 'truong_vien';
+      return role === 'truong_vien' || role === 'pho_vien';
 
     case 'PROMOTE_TO_USER':
     case 'MANAGE_CONTENT':
@@ -34,21 +34,13 @@ export const hasPermission = (
 
     case 'REFILL_ENERGY':
     case 'SET_ENERGY_CONFIG':
-      return role === 'truong_vien' || role === 'pho_vien' || role === 'parent';
+      return role === 'truong_vien' || role === 'pho_vien' || role === 'parent' || role === 'secondary_parent';
 
     case 'APPROVE_REWARD':
-      if (role === 'pho_vien' || role === 'parent') return true;
-      if (role === 'secondary_parent') {
-        return secondaryPermissions?.can_approve_rewards === true;
-      }
-      return false;
+      return role === 'pho_vien' || role === 'parent' || role === 'secondary_parent';
 
     case 'CREATE_MISSION':
-      if (role === 'pho_vien' || role === 'parent') return true;
-      if (role === 'secondary_parent') {
-        return secondaryPermissions?.can_create_missions === true || secondaryPermissions?.read_only === false;
-      }
-      return false;
+      return role === 'pho_vien' || role === 'parent' || role === 'secondary_parent';
 
     case 'VIEW_STUDENT_PROFILE':
       return role === 'pho_vien' || role === 'parent' || role === 'secondary_parent';

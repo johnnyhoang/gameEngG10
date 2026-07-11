@@ -231,7 +231,7 @@ const VicePrincipalApplicationsManager: React.FC<{ currentUser: any }> = ({ curr
   const [processingId, setProcessingId] = useState<string | null>(null);
 
   const fetchApps = useCallback(async () => {
-    if (currentUser?.role !== 'truong_vien') return;
+    if (!isAdmin(currentUser?.role)) return;
     setLoading(true);
     try {
       const token = await authService.getAccessToken();
@@ -277,7 +277,7 @@ const VicePrincipalApplicationsManager: React.FC<{ currentUser: any }> = ({ curr
     }
   };
 
-  if (currentUser?.role !== 'truong_vien') return null;
+  if (!isAdmin(currentUser?.role)) return null;
 
   return (
     <div className="glass-panel rounded-2xl border border-synth-magenta/30 p-5 space-y-4">
@@ -738,8 +738,8 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
         </div>
       </div>
 
-      {/* 4. Nhật Ký Quyết Nghị Hiệu Trưởng (Audit Logs) (Chỉ Hiệu Trưởng xem được) */}
-      {currentUser?.role === 'truong_vien' && (
+      {/* 4. Nhật Ký Quyết Nghị Hiệu Trưởng (Audit Logs) (Cả Hiệu Trưởng & Hiệu Phó xem được) */}
+      {isAdmin(currentUser?.role) && (
         <div className="bg-synth-gray/10 rounded-xl p-4 border border-white/5 space-y-4">
           <div className="flex justify-between items-center">
             <h4 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-1.5">

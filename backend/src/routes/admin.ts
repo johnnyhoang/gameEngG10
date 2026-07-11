@@ -37,11 +37,11 @@ router.get('/admin/users-all', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
     const adminCheck = await pool.query(
-      'SELECT role FROM ge10_users WHERE account_id = $1 AND role = \'truong_vien\' AND is_active = TRUE',
+      "SELECT role FROM ge10_users WHERE account_id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
       [adminId]
     );
     if (adminCheck.rowCount === 0) {
-      return res.status(403).json({ error: 'Forbidden: Chỉ Hiệu Trưởng mới có thể xem toàn bộ danh sách profile.' });
+      return res.status(403).json({ error: 'Forbidden: Chỉ Ban Giám Hiệu mới có thể xem toàn bộ danh sách profile.' });
     }
 
     // Trả về tất cả profiles kể cả inactive — RoleManager sẽ group theo account_id
@@ -61,11 +61,11 @@ router.post('/api/admin/update-user-role', authMiddleware, async (req: any, res)
   const adminId = req.user.sub;
   try {
     const adminCheck = await pool.query(
-      'SELECT role FROM ge10_users WHERE account_id = $1 AND role = \'truong_vien\' AND is_active = TRUE',
+      "SELECT role FROM ge10_users WHERE account_id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
       [adminId]
     );
     if (adminCheck.rowCount === 0) {
-      return res.status(403).json({ error: 'Forbidden: Chỉ Hiệu Trưởng mới có quyền quản lý vai trò.' });
+      return res.status(403).json({ error: 'Forbidden: Chỉ Ban Giám Hiệu mới có quyền quản lý vai trò.' });
     }
 
     const { targetAccountId, roleKey, active } = req.body;
@@ -138,11 +138,11 @@ router.get('/admin/vice-principal-applications', authMiddleware, async (req: any
   const adminId = req.user.sub;
   try {
     const adminCheck = await pool.query(
-      "SELECT role FROM ge10_users WHERE account_id = $1 AND role = 'truong_vien' AND is_active = TRUE",
+      "SELECT role FROM ge10_users WHERE account_id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
       [adminId]
     );
     if (adminCheck.rowCount === 0) {
-      return res.status(403).json({ error: 'Forbidden: Chỉ Hiệu Trưởng mới có quyền duyệt đơn ứng tuyển Hiệu Phó.' });
+      return res.status(403).json({ error: 'Forbidden: Chỉ Ban Giám Hiệu mới có quyền duyệt đơn ứng tuyển Hiệu Phó.' });
     }
 
     const appsRes = await pool.query(`
@@ -165,11 +165,11 @@ router.post('/api/admin/respond-vice-principal', authMiddleware, async (req: any
   const adminId = req.user.sub;
   try {
     const adminCheck = await pool.query(
-      "SELECT role FROM ge10_users WHERE account_id = $1 AND role = 'truong_vien' AND is_active = TRUE",
+      "SELECT role FROM ge10_users WHERE account_id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
       [adminId]
     );
     if (adminCheck.rowCount === 0) {
-      return res.status(403).json({ error: 'Forbidden: Chỉ Hiệu Trưởng mới có quyền duyệt đơn ứng tuyển.' });
+      return res.status(403).json({ error: 'Forbidden: Chỉ Ban Giám Hiệu mới có quyền duyệt đơn ứng tuyển.' });
     }
 
     const { applicationId, accept } = req.body;
@@ -247,11 +247,11 @@ router.get('/admin/audit-logs', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
     const adminCheck = await pool.query(
-      'SELECT role FROM ge10_users WHERE account_id = $1 AND role = \'truong_vien\' AND is_active = TRUE',
+      "SELECT role FROM ge10_users WHERE account_id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
       [adminId]
     );
     if (adminCheck.rowCount === 0) {
-      return res.status(403).json({ error: 'Forbidden: Super Admin access only.' });
+      return res.status(403).json({ error: 'Forbidden: Ban Giám Hiệu mới có quyền truy cập nhật ký.' });
     }
 
     const logsRes = await pool.query('SELECT * FROM ge10_audit_logs ORDER BY created_at DESC LIMIT 200');
