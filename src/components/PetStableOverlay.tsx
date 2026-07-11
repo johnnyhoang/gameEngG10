@@ -10,10 +10,11 @@ interface PetStableOverlayProps {
 export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScreen }) => {
   const currentUser = useGameState(state => state.currentUser);
   const pet = useGameState(state => state.pet);
+  const player = useGameState(state => state.player);
   const uiTheme = useGameState(state => state.uiTheme);
-  
+
   const [isOpen, setIsOpen] = useState(false);
-  const [triggerReason, setTriggerReason] = useState<'login' | 'manual' | 'idle' | 'hunger'>('manual');
+  const [triggerReason, setTriggerReason] = useState<'login' | 'manual' | 'idle' | 'hunger' | 'energy-depleted'>('manual');
   
   // Track idle time
   const lastActiveTime = useRef(Date.now());
@@ -69,6 +70,15 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
         return;
       }
 
+      // Báo hết Chân Khí (SUB_SPEC_ENERGY §4): ưu tiên cao nhất, KHÔNG chờ "30 phút sau đăng nhập"
+      // như idle/hunger — con cần biết ngay lý do bị khóa hoạt động sinh điểm và giờ hồi lại.
+      if (player.energy === 0 && player.energyDepletedAt) {
+        setTriggerReason('energy-depleted');
+        setIsOpen(true);
+        setLastAutoTrigger(now);
+        return;
+      }
+
       // Pet first appears 30 minutes after login (not immediately)
       const loginTime = Number(localStorage.getItem('ge10_login_time') || now);
       const timeSinceLogin = now - loginTime;
@@ -102,7 +112,7 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
       window.removeEventListener('scroll', handleActivity);
       clearInterval(interval);
     };
-  }, [currentUser, isOpen, isDungeonScreen, pet.lastFed]);
+  }, [currentUser, isOpen, isDungeonScreen, pet.lastFed, player.energy, player.energyDepletedAt]);
 
   const handleManualSummon = () => {
     if (isDungeonScreen) return;
@@ -163,7 +173,16 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
                 Heo đói rã ruột rồi, cho ăn đi! 🍖
               </div>
             )}
-            
+            {triggerReason === 'energy-depleted' && (
+              <div className="text-center mb-4 font-orbitron font-bold text-red-400 animate-wiggle drop-shadow-md">
+                Hết Chân Khí rồi, nghỉ ngơi thôi! Hẹn con quay lại lúc{' '}
+                {player.energyDepletedAt
+                  ? new Date(player.energyDepletedAt + (player.resetHours ?? 3) * 60 * 60 * 1000).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+                  : '—'}{' '}
+                nhé. Trong lúc chờ, con đọc Cẩm Nang hoặc chăm heo cũng được tính công đấy! 📖🐷
+              </div>
+            )}
+
             <Suspense fallback={<div className="flex items-center justify-center h-32"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-synth-cyan"></div></div>}>
               <PetSanctuary variant="sidebar" onInteract={handleInteract} />
             </Suspense>

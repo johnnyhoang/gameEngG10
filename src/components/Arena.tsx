@@ -63,21 +63,25 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
 
   const subjectLessons = INITIAL_LESSONS.filter(l => l.subject === activeSectId);
 
+  // Quyết Đấu Boss tốn -100 Chân Khí; nếu maxEnergy riêng của con < 100 thì tốn = maxEnergy,
+  // để con vẫn luôn đánh được 1 lượt Boss khi đầy bình dù phụ huynh siết trần thấp (SUB_SPEC_ENERGY §3).
+  const bossEnergyCost = Math.min(100, player.maxEnergy ?? 100);
+
   const bosses = activeSectId === 'math' ? [
-    { id: 'b-2024', name: 'Đại Ca Toán HCMC 2024', tag: '2024', energy: 100 },
-    { id: 'b-2025', name: 'Cự Long Toán HCMC 2025', tag: '2025', energy: 100 },
-    { id: 'b-2026', name: 'Cổ Long Toán HCMC 2026 (Mock)', tag: '2026', energy: 100 }
+    { id: 'b-2024', name: 'Đại Ca Toán HCMC 2024', tag: '2024', energy: bossEnergyCost },
+    { id: 'b-2025', name: 'Cự Long Toán HCMC 2025', tag: '2025', energy: bossEnergyCost },
+    { id: 'b-2026', name: 'Cổ Long Toán HCMC 2026 (Mock)', tag: '2026', energy: bossEnergyCost }
   ] : activeSectId === 'literature' ? [
-    { id: 'b-2024', name: 'Đại Ca Văn HCMC 2024', tag: '2024', energy: 100 },
-    { id: 'b-2025', name: 'Cự Long Văn HCMC 2025', tag: '2025', energy: 100 },
-    { id: 'b-2026', name: 'Cổ Long Văn HCMC 2026 (Mock)', tag: '2026', energy: 100 }
+    { id: 'b-2024', name: 'Đại Ca Văn HCMC 2024', tag: '2024', energy: bossEnergyCost },
+    { id: 'b-2025', name: 'Cự Long Văn HCMC 2025', tag: '2025', energy: bossEnergyCost },
+    { id: 'b-2026', name: 'Cổ Long Văn HCMC 2026 (Mock)', tag: '2026', energy: bossEnergyCost }
   ] : activeSectId === 'english' ? [
-    { id: 'b-2024', name: 'Đại Ca HCMC 2024', tag: '2024', energy: 100 },
-    { id: 'b-2025', name: 'Cự Long HCMC 2025', tag: '2025', energy: 100 },
-    { id: 'b-2026', name: 'Cổ Long HCMC 2026 (Mock)', tag: '2026', energy: 100 }
+    { id: 'b-2024', name: 'Đại Ca HCMC 2024', tag: '2024', energy: bossEnergyCost },
+    { id: 'b-2025', name: 'Cự Long HCMC 2025', tag: '2025', energy: bossEnergyCost },
+    { id: 'b-2026', name: 'Cổ Long HCMC 2026 (Mock)', tag: '2026', energy: bossEnergyCost }
   ] : [
-    { id: 'b-hk1', name: `Khảo Hạch ${activeSubjectConfig.name} - Học Kỳ 1`, tag: 'HK1', energy: 100 },
-    { id: 'b-hk2', name: `Khảo Hạch ${activeSubjectConfig.name} - Học Kỳ 2`, tag: 'HK2', energy: 100 }
+    { id: 'b-hk1', name: `Khảo Hạch ${activeSubjectConfig.name} - Học Kỳ 1`, tag: 'HK1', energy: bossEnergyCost },
+    { id: 'b-hk2', name: `Khảo Hạch ${activeSubjectConfig.name} - Học Kỳ 2`, tag: 'HK2', energy: bossEnergyCost }
   ];
 
   const completedLessons = subjectLessons.filter(l => lessonsProgress[l.id]).length;

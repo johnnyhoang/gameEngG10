@@ -34,7 +34,6 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
   const [challengeCost2, setChallengeCost2] = useState(gameSettings?.challengeEnergyCosts?.[1] ?? 30);
   const [challengeCost3, setChallengeCost3] = useState(gameSettings?.challengeEnergyCosts?.[2] ?? 30);
   const [challengeCost4, setChallengeCost4] = useState(gameSettings?.challengeEnergyCosts?.[3] ?? 30);
-  const [maxEnergyVal, setMaxEnergyVal] = useState(gameSettings?.maxEnergy ?? 1000);
   const [baseXPVal, setBaseXPVal] = useState(gameSettings?.baseXP ?? 15);
   const [baseCoinsVal, setBaseCoinsVal] = useState(gameSettings?.baseCoins ?? 5);
 
@@ -47,7 +46,6 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
     await updateGameSettings({
       bossCompletionBonusNP: [bossBonusEasy, bossBonusMedium, bossBonusHard],
       challengeEnergyCosts: [challengeCost1, challengeCost2, challengeCost3, challengeCost4],
-      maxEnergy: maxEnergyVal,
       baseXP: baseXPVal,
       baseCoins: baseCoinsVal
     });
@@ -150,18 +148,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
           ))}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <label className="space-y-2 text-xs">
-            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Năng lượng tối đa (Max Energy)</span>
-            <input
-              type="number"
-              min={100}
-              step={100}
-              value={maxEnergyVal}
-              onChange={(e) => setMaxEnergyVal(Number(e.target.value) || 1000)}
-              className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
-            />
-          </label>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <label className="space-y-2 text-xs">
             <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Điểm XP cơ bản / Câu đúng</span>
             <input
@@ -188,7 +175,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
 
         <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between bg-white/5 rounded-xl border border-white/5 p-4">
           <p className="text-[10px] text-synth-text-muted leading-relaxed">
-            Các cấu hình này sẽ tự động áp dụng trực tiếp cho tất cả thiếu hiệp trên ứng dụng (Đảo thử thách, Chân Khí và lượng điểm nhận được).
+            Các cấu hình này áp dụng chung cho tất cả thiếu hiệp (Đảo thử thách và lượng điểm nhận được). Riêng Trần Chân Khí + giờ hồi thì chỉnh RIÊNG cho từng con tại tab 🏛️ Thân Phận → xem hồ sơ con.
           </p>
           <button
             onClick={handleSaveSettings}

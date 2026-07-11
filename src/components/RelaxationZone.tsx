@@ -4,6 +4,10 @@ import { useSect } from '../contexts/SectContext';
 import { useGameState } from '../hooks/useGameState';
 import { FogCard, getFogStatus } from './FogCard';
 import { Level3Overlay } from './Level3Overlay';
+import { toast } from '../utils/toast';
+
+// Chân Khí tiêu hao mỗi ván mini-game Sơn Trang có sinh điểm (SUB_SPEC_ENERGY §3).
+const MINIGAME_ENERGY_COST = 10;
 
 // Game components
 import { FlashcardGame } from '../miniapps/flashcard';
@@ -30,12 +34,14 @@ interface GameCard {
   reward: string;
   color: string; // tailwind accent
   pageId: string;
+  /** Ván có sinh điểm (NP/XP) mới tốn Chân Khí — "Không điểm" thì miễn phí (SUB_SPEC_ENERGY §1+3). Mặc định true. */
+  costsEnergy?: boolean;
 }
 
 const CANH_HOA_VIEN: GameCard[] = [
   { id: 'flashcards', icon: '🎴', title: 'Xưởng Thẻ Nhớ', desc: 'Active Recall lật mặt — ghi nhớ nhanh câu hỏi bằng SRS', reward: '+2 NP, +5 XP / thẻ', color: 'synth-cyan', pageId: 'relax-flashcards' },
   { id: 'match', icon: '🔗', title: 'Ghép Cặp', desc: 'Nối từ vựng với nghĩa, công thức với tên gọi', reward: '+10 NP, +20 XP', color: 'synth-magenta', pageId: 'relax-match' },
-  { id: 'mindmap', icon: '🗺️', title: 'Sơ Đồ Ôn Tập', desc: 'Tóm tắt kiến thức theo sơ đồ tư duy trực quan', reward: 'Không điểm — luyện trí nhớ', color: 'synth-cyan', pageId: 'relax-mindmap' },
+  { id: 'mindmap', icon: '🗺️', title: 'Sơ Đồ Ôn Tập', desc: 'Tóm tắt kiến thức theo sơ đồ tư duy trực quan', reward: 'Không điểm — luyện trí nhớ', color: 'synth-cyan', pageId: 'relax-mindmap', costsEnergy: false },
 ];
 
 const CANH_NUI_RUNG: GameCard[] = [
@@ -98,9 +104,10 @@ interface CanhSectionProps {
   isUnicorn: boolean;
   bgClass: string;
   borderClass: string;
+  lowEnergy: boolean;
 }
 
-const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onOpenGame, isUnicorn, bgClass, borderClass }) => (
+const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onOpenGame, isUnicorn, bgClass, borderClass, lowEnergy }) => (
   <div className={`rounded-2xl border p-5 space-y-4 ${bgClass} ${borderClass}`}>
     <div className="space-y-0.5">
       <h2 className={`font-orbitron font-black text-base uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
@@ -110,7 +117,9 @@ const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onO
     </div>
 
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {games.map(game => (
+      {games.map(game => {
+        const isLocked = lowEnergy && game.costsEnergy !== false;
+        return (
         <div key={game.id} className="relative">
           <FogCard
             pageId={game.pageId}
@@ -120,7 +129,10 @@ const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onO
             onOpenLevel3={() => onOpenGame(game)}
           >
             <div
-              className="rounded-xl border border-white/10 bg-black/40 p-4 flex flex-col gap-3 cursor-pointer hover:border-white/20 transition-all duration-200 h-full group"
+              title={isLocked ? `Cần ${MINIGAME_ENERGY_COST} Chân Khí để chơi — hãy nghỉ chờ hồi hoặc đọc Cẩm Nang.` : undefined}
+              className={`rounded-xl border border-white/10 bg-black/40 p-4 flex flex-col gap-3 transition-all duration-200 h-full group ${
+                isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-white/20'
+              }`}
               onClick={(e) => { e.stopPropagation(); onOpenGame(game); }}
             >
               <div className="flex items-start gap-3">
@@ -138,12 +150,13 @@ const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onO
                 </span>
               </div>
               <div className="w-full py-2 rounded-lg bg-gradient-to-r from-synth-cyan/20 to-synth-purple/20 border border-synth-cyan/20 text-center text-[10px] font-bold font-orbitron uppercase text-synth-cyan group-hover:from-synth-cyan/30 group-hover:to-synth-purple/30 transition-all">
-                Vào Chơi →
+                {isLocked ? 'Hết Chân Khí' : 'Vào Chơi →'}
               </div>
             </div>
           </FogCard>
         </div>
-      ))}
+        );
+      })}
     </div>
   </div>
 );
@@ -156,10 +169,19 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   const { activeSectId } = useSect();
   const pageExplorationStates = useGameState(state => state.pageExplorationStates || {});
   const completeLevel3Page = useGameState(state => state.completeLevel3Page);
+  const player = useGameState(state => state.player);
+  const useEnergy = useGameState(state => state.useEnergy);
 
   const [activeGame, setActiveGame] = useState<GameCard | null>(null);
 
   const handleOpenGame = (game: GameCard) => {
+    if (game.costsEnergy !== false) {
+      if (player.energy < MINIGAME_ENERGY_COST) {
+        toast.error('Hết năng lượng rồi. Nghỉ một nhịp hoặc đọc Cẩm Nang trong lúc chờ hồi Chân Khí.');
+        return;
+      }
+      useEnergy(MINIGAME_ENERGY_COST);
+    }
     setActiveGame(game);
   };
 
@@ -203,6 +225,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
           desc="Khu ghi nhớ nhẹ nhàng — thẻ nhớ, ghép cặp, sơ đồ tư duy"
           games={CANH_HOA_VIEN}
           onOpenGame={handleOpenGame}
+          lowEnergy={player.energy < MINIGAME_ENERGY_COST}
           isUnicorn={isUnicorn}
           bgClass={isUnicorn ? 'bg-pink-50/40' : 'bg-pink-500/5'}
           borderClass={isUnicorn ? 'border-pink-200/40' : 'border-pink-500/15'}
@@ -214,6 +237,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
           desc="Khu thử thách tư duy — du khảo, sắp xếp, đọc hiểu"
           games={CANH_NUI_RUNG}
           onOpenGame={handleOpenGame}
+          lowEnergy={player.energy < MINIGAME_ENERGY_COST}
           isUnicorn={isUnicorn}
           bgClass={isUnicorn ? 'bg-green-50/40' : 'bg-emerald-500/5'}
           borderClass={isUnicorn ? 'border-green-200/40' : 'border-emerald-500/15'}
@@ -225,6 +249,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
           desc="Khu sáng tạo ngôn ngữ — tình huống RPG, giảng bài, ghép sơ đồ"
           games={CANH_THAC_HO}
           onOpenGame={handleOpenGame}
+          lowEnergy={player.energy < MINIGAME_ENERGY_COST}
           isUnicorn={isUnicorn}
           bgClass={isUnicorn ? 'bg-blue-50/40' : 'bg-blue-500/5'}
           borderClass={isUnicorn ? 'border-blue-200/40' : 'border-blue-500/15'}

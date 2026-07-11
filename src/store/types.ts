@@ -17,6 +17,7 @@ export interface StoreState {
   fetchProfiles: () => Promise<void>;
   selectProfile: (profileId: string) => Promise<void>;
   createProfile: (role: 'student' | 'parent', name: string) => Promise<void>;
+  quickStartProfile: (role: 'student' | 'parent') => Promise<void>;
   login: (user: UserProfile) => Promise<void>;
   logout: () => Promise<void>;
 
@@ -52,6 +53,8 @@ export interface StoreState {
   ) => { isCorrect: boolean; expGained: number; coinsGained: number; comboMultiplier: number; scoreRatio: number };
   useEnergy: (amount: number) => boolean;
   addEnergy: (amount: number) => void;
+  /** Tự hồi ĐẦY Chân Khí nếu đã cạn 0 đủ lâu (>= resetHours) — gọi định kỳ từ TopHUD + lúc khởi động app (SUB_SPEC_ENERGY §5, Phương án A). */
+  tickEnergyRegen: () => void;
   buyStreakShield: () => boolean;
   buyHint: () => boolean;
   buyTheme: (themeId: UiThemeId) => boolean;
@@ -81,7 +84,6 @@ export interface StoreState {
   recentlyPlayedQuestionIds: string[];
   parentQuests: ParentQuest[];
   
-  verifyPIN: (pin: string) => Promise<boolean>;
   changePIN: (newPIN: string) => Promise<boolean>;
   auditLogs: any[];
   fetchAuditLogs: () => Promise<void>;
@@ -104,10 +106,11 @@ export interface StoreState {
   adminMarkRewardDelivered: (studentUserId: string, redemptionId: string) => Promise<void>;
   adminCancelRedemption: (studentUserId: string, redemptionId: string) => Promise<void>;
   adminSetEnergy: (studentUserId: string, energyPercent: number) => Promise<void>;
+  /** Phụ huynh chỉnh Trần Chân Khí + giờ hồi RIÊNG cho con này (SUB_SPEC_ENERGY §2). maxEnergy 50-300, resetHours ∈ {2,3,5}. */
+  adminSetEnergyConfig: (studentUserId: string, maxEnergy: number, resetHours: 2 | 3 | 5) => Promise<void>;
   updateGameSettings: (payload: {
     bossCompletionBonusNP?: [number, number, number];
     challengeEnergyCosts?: [number, number, number, number];
-    maxEnergy?: number;
     baseXP?: number;
     baseCoins?: number;
   }) => Promise<void>;

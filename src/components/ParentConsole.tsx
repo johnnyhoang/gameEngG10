@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { isAdmin, isParentRole } from '../utils/roleHelpers';
 import { Unlock } from 'lucide-react';
-import { toast } from '../utils/toast';
 
 // Import child managers
 import { FamilyManager } from './ParentConsole/FamilyManager';
@@ -13,7 +12,6 @@ import { StudentProfileView } from './ParentConsole/StudentProfileView';
 import { QuestionBankManager } from './ParentConsole/QuestionBankManager';
 
 export const ParentConsole: React.FC = () => {
-  const verifyPIN = useGameState(state => state.verifyPIN);
   const changePIN = useGameState(state => state.changePIN);
   const markRewardDelivered = useGameState(state => state.markRewardDelivered);
   const cancelRedemption = useGameState(state => state.cancelRedemption);
@@ -31,6 +29,7 @@ export const ParentConsole: React.FC = () => {
   const adminCancelRedemption = useGameState(state => state.adminCancelRedemption);
   const showHelp = useGameState(state => state.showHelp);
   const adminSetEnergy = useGameState(state => state.adminSetEnergy);
+  const adminSetEnergyConfig = useGameState(state => state.adminSetEnergyConfig);
   const updateGameSettings = useGameState(state => state.updateGameSettings);
   const gameSettings = useGameState(state => state.gameSettings);
   const questions = useGameState(state => state.questions || []);
@@ -57,10 +56,7 @@ export const ParentConsole: React.FC = () => {
   const inviteSecondary = useGameState(state => state.inviteSecondary);
   const updateSecondaryPermissions = useGameState(state => state.updateSecondaryPermissions);
 
-  // Local state for layout and security lock
-  const [pin, setPin] = useState('');
-  const [isUnlocked, setIsUnlocked] = useState(isAdmin(currentUser?.role));
-  const [pinError, setPinError] = useState(false);
+  // Local state for layout
   const [activeTab, setActiveTab] = useState<'chinh_dien' | 'thien_co_cac' | 'van_quyen_cac' | 'ngan_cac' | 'than_phan'>('chinh_dien');
   const [viewingStudentId, setViewingStudentId] = useState<string | null>(null);
 
@@ -78,12 +74,12 @@ export const ParentConsole: React.FC = () => {
   }, [currentUser?.role]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (isUnlocked && activeTab === 'chinh_dien') {
+    if (activeTab === 'chinh_dien') {
       const { fetchAdminStudents: fetchAdm, fetchFamily: fetchFam } = useGameState.getState();
       fetchAdm();
       fetchFam();
     }
-  }, [isUnlocked, activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (activeTab === 'thien_co_cac' && currentUser?.role === 'truong_vien') {
@@ -96,21 +92,6 @@ export const ParentConsole: React.FC = () => {
       useGameState.getState().fetchSkipReviews(viewingStudentId);
     }
   }, [viewingStudentId, currentUser?.role]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const handleUnlock = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!pin) return;
-    const ok = await verifyPIN(pin);
-    if (ok) {
-      setIsUnlocked(true);
-      setPinError(false);
-      setPin('');
-      toast.success('Mở khóa bảng điều khiển Viện Chủ thành công!');
-    } else {
-      setPinError(true);
-      toast.error('Mã PIN không đúng!');
-    }
-  };
 
   const handleInspectStudent = async (studentId: string) => {
     setViewingStudentId(studentId);
@@ -129,44 +110,6 @@ export const ParentConsole: React.FC = () => {
 
   const activeRewardCatalog = selectedStudentProfile?.rewards || [];
   const activeRedemptions = selectedStudentProfile?.rewardRedemptions || [];
-
-  if (!isUnlocked) {
-    return (
-      <div className="glass-panel rounded-2xl border border-synth-magenta/30 p-6 max-w-md mx-auto space-y-6 bg-gradient-to-b from-synth-magenta/5 to-transparent mt-12">
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 mx-auto rounded-full bg-synth-magenta/10 border border-synth-magenta/30 flex items-center justify-center">
-            <Unlock className="w-6 h-6 text-synth-magenta" />
-          </div>
-          <h2 className="font-orbitron font-black text-xl text-white uppercase tracking-wider">
-            Viện Chủ Lockscreen
-          </h2>
-          <p className="text-xs text-synth-text-muted leading-relaxed">
-            Nhập mã PIN của Viện Chủ để duyệt phần thưởng, xem thống kê chi tiết hoặc thiết lập giáo án khảo hạch cho thiếu hiệp.
-          </p>
-        </div>
-
-        <form onSubmit={handleUnlock} className="space-y-4">
-          <input
-            type="password"
-            value={pin}
-            onChange={(e) => setPin(e.target.value)}
-            placeholder="Mã PIN bảo mật cá nhân"
-            maxLength={10}
-            className="w-full p-3 rounded-xl border border-white/10 focus:border-synth-magenta bg-synth-gray/20 text-center text-white text-lg font-black outline-none tracking-widest"
-          />
-          {pinError && (
-            <p className="text-xs text-red-500 font-semibold text-center">Mã PIN không đúng! Vui lòng thử lại.</p>
-          )}
-          <button
-            type="submit"
-            className="w-full py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-magenta text-black hover:synth-glow-magenta cursor-pointer transition-all duration-300"
-          >
-            Mở Khóa Bảng Điều Khiển
-          </button>
-        </form>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6 pb-20 md:pb-6">
@@ -263,34 +206,32 @@ export const ParentConsole: React.FC = () => {
             />
 
             {/* List of students for parent/admin viewing */}
-            {isUnlocked && (
-              <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-4">
-                <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
-                  👥 Danh sách Thiếu Hiệp liên kết
-                </h4>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {familyLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).map((link: any) => (
-                    <div key={link.student_id} className="p-4 rounded-xl bg-synth-gray/20 border border-white/5 flex flex-col justify-between gap-3">
-                      <div>
-                        <span className="font-bold text-white text-sm block">{link.student_name || link.student_id}</span>
-                        <span className="text-[10px] text-synth-text-muted font-mono">{link.student_id}</span>
-                      </div>
-                      <button
-                        onClick={() => handleInspectStudent(link.student_id)}
-                        className="px-3 py-2 bg-synth-cyan text-black font-bold font-orbitron text-[10px] uppercase rounded-lg hover:synth-glow-cyan transition-all cursor-pointer w-full text-center"
-                      >
-                        Xem Hoạt Động 👑
-                      </button>
+            <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-4">
+              <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
+                👥 Danh sách Thiếu Hiệp liên kết
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {familyLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).map((link: any) => (
+                  <div key={link.student_id} className="p-4 rounded-xl bg-synth-gray/20 border border-white/5 flex flex-col justify-between gap-3">
+                    <div>
+                      <span className="font-bold text-white text-sm block">{link.student_name || link.student_id}</span>
+                      <span className="text-[10px] text-synth-text-muted font-mono">{link.student_id}</span>
                     </div>
-                  ))}
-                  {familyLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).length === 0 && (
-                    <p className="text-xs text-synth-text-muted italic py-4 col-span-3 text-center">
-                      Chưa có tài khoản thiếu hiệp nào kết nối vào gia đình.
-                    </p>
-                  )}
-                </div>
+                    <button
+                      onClick={() => handleInspectStudent(link.student_id)}
+                      className="px-3 py-2 bg-synth-cyan text-black font-bold font-orbitron text-[10px] uppercase rounded-lg hover:synth-glow-cyan transition-all cursor-pointer w-full text-center"
+                    >
+                      Xem Hoạt Động 👑
+                    </button>
+                  </div>
+                ))}
+                {familyLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).length === 0 && (
+                  <p className="text-xs text-synth-text-muted italic py-4 col-span-3 text-center">
+                    Chưa có tài khoản thiếu hiệp nào kết nối vào gia đình.
+                  </p>
+                )}
               </div>
-            )}
+            </div>
           </div>
         )}
 
@@ -304,6 +245,7 @@ export const ParentConsole: React.FC = () => {
             adminMarkRewardDelivered={adminMarkRewardDelivered as any}
             adminCancelRedemption={adminCancelRedemption as any}
             adminSetEnergy={adminSetEnergy as any}
+            adminSetEnergyConfig={adminSetEnergyConfig as any}
             fetchSkipReviews={fetchSkipReviews}
             resolveSkipReview={resolveSkipReview}
           />

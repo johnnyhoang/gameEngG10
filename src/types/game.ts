@@ -55,7 +55,6 @@ export interface GameSettings {
   /** Bonus Điểm (NP) khi hạ Boss — quảng bá ngay trên Boss Card, do Chủ Viện/Phó Viện đặt (CORE_SPECS §2.1). Thay thế hoàn toàn tiền thưởng VND cũ. */
   bossCompletionBonusNP: [number, number, number];
   challengeEnergyCosts: [number, number, number, number];
-  maxEnergy?: number;
   baseXP?: number;
   baseCoins?: number;
   updatedAt: number;
@@ -95,7 +94,13 @@ export interface PlayerProfile {
   xp: number;
   coins: number;
   streak: number;
-  energy: number; // 0 - 1000
+  energy: number; // 0 - maxEnergy
+  /** Trần Chân Khí riêng của con này — do phụ huynh cấu hình tại Ngân Các (SUB_SPEC_ENERGY §2). Mặc định 100, phạm vi 50-300. */
+  maxEnergy: number;
+  /** Số giờ để hồi ĐẦY Chân Khí sau khi cạn về 0 — phụ huynh chọn 1 trong {2,3,5} (SUB_SPEC_ENERGY §2). */
+  resetHours: 2 | 3 | 5;
+  /** Mốc thời gian (ms) Chân Khí chạm 0 — null nếu chưa cạn/đã hồi. Dùng để tính giờ hồi đầy (SUB_SPEC_ENERGY §5, Phương án A). */
+  energyDepletedAt: number | null;
   /** @deprecated Hệ thống Tim sinh mệnh đã bị xóa (CORE_SPECS §2.1) — field giữ lại optional để không vỡ localStorage cũ. */
   hearts?: number;
   lastActive: string; // ISO String date

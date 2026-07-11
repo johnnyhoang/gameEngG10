@@ -1,5 +1,5 @@
 import { isAdmin } from '../utils/roleHelpers';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Zap, Coins, Flame, Shield, LogOut } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
 import { useSect } from '../contexts/SectContext';
@@ -22,6 +22,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   const currentUser = useGameState(state => state.currentUser);
   const logout = useGameState(state => state.logout);
   const showHelp = useGameState(state => state.showHelp);
+  const tickEnergyRegen = useGameState(state => state.tickEnergyRegen);
   const { activeSectId } = useSect();
   const setSectModalOpen = useGameState(state => state.setSectModalOpen);
   const uiTheme = useGameState(state => state.uiTheme);
@@ -29,6 +30,17 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   const activeSubjectConfig = SUBJECTS_CONFIG[activeSectId as SubjectId];
   const isAdminUser = isAdmin(currentUser?.role);
   const isUnicorn = uiTheme === 'unicorn-dream';
+
+  // Tick Chân Khí đều đặn để mở khóa đúng giờ hồi mà không cần reload trang (SUB_SPEC_ENERGY §5).
+  useEffect(() => {
+    const id = setInterval(() => tickEnergyRegen(), 30000);
+    return () => clearInterval(id);
+  }, [tickEnergyRegen]);
+
+  const isEnergyDepleted = player.energy === 0 && !!player.energyDepletedAt;
+  const energyResetLabel = isEnergyDepleted
+    ? new Date(player.energyDepletedAt! + (player.resetHours ?? 3) * 60 * 60 * 1000).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+    : null;
 
   // Calculate percentage of XP to next level
   const xpNeeded = player.level * 200;
@@ -102,9 +114,15 @@ export const TopHUD: React.FC<TopHUDProps> = ({
           {!isAdminUser && (
             <>
               <div className="w-px h-8 bg-white/10 shrink-0" />
-              <div className={statItemClass} onClick={() => showHelp('energy')} title="Chân Khí — Nhấp để xem hướng dẫn">
-                <Zap className="w-4 h-4 text-synth-cyan fill-synth-cyan animate-pulse shrink-0" />
-                <span className="text-xs font-semibold font-orbitron text-white whitespace-nowrap">{player.energy}/1000</span>
+              <div
+                className={statItemClass}
+                onClick={() => showHelp('energy')}
+                title={isEnergyDepleted ? `Hết Chân Khí — hồi đầy lúc ${energyResetLabel}` : 'Chân Khí — Nhấp để xem hướng dẫn'}
+              >
+                <Zap className={`w-4 h-4 shrink-0 ${isEnergyDepleted ? 'text-red-400 fill-red-400' : 'text-synth-cyan fill-synth-cyan animate-pulse'}`} />
+                <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${isEnergyDepleted ? 'text-red-400' : 'text-white'}`}>
+                  {isEnergyDepleted ? `Hồi lúc ${energyResetLabel}` : `${player.energy}/${player.maxEnergy ?? 100}`}
+                </span>
               </div>
             </>
           )}

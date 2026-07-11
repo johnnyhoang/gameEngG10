@@ -16,7 +16,7 @@ export const createPlayerSlice: StateCreator<
   [],
   [],
   Pick<StoreState, 
-    'player' | 'pet' | 'questions' | 'lessons' | 'lessonsProgress' | 'explorationProgress' | 'pageExplorationStates' | 'categoryStats' | 'rewards' | 'rewardRedemptions' | 'challenges' | 'dailyMission' | 'logs' | 'activeCombo' | 'maxCombo' | 'lastSyncTime' | 'profiles' | 'petStates' | 'categoryStatsAll' | 'answerQuestion' | 'useEnergy' | 'addEnergy' | 'buyStreakShield' | 'buyHint' | 'buyTheme' | 'redeemReward' | 'feedPet' | 'spinWheel' | 'openMysteryBox' | 'masterLesson' | 'applyDefeatPenalty' | 'completeBossVictory' | 'completeLevel3Page' | 'updatePendingKeyQuestion' | 'awardCoinsAndXp' | 'clearExploration' | 'resetProgress' | 'checkDailyReset' | 'getAdaptiveQuestion' | 'getQuestionByWeight'
+    'player' | 'pet' | 'questions' | 'lessons' | 'lessonsProgress' | 'explorationProgress' | 'pageExplorationStates' | 'categoryStats' | 'rewards' | 'rewardRedemptions' | 'challenges' | 'dailyMission' | 'logs' | 'activeCombo' | 'maxCombo' | 'lastSyncTime' | 'profiles' | 'petStates' | 'categoryStatsAll' | 'answerQuestion' | 'useEnergy' | 'addEnergy' | 'tickEnergyRegen' | 'buyStreakShield' | 'buyHint' | 'buyTheme' | 'redeemReward' | 'feedPet' | 'spinWheel' | 'openMysteryBox' | 'masterLesson' | 'applyDefeatPenalty' | 'completeBossVictory' | 'completeLevel3Page' | 'updatePendingKeyQuestion' | 'awardCoinsAndXp' | 'clearExploration' | 'resetProgress' | 'checkDailyReset' | 'getAdaptiveQuestion' | 'getQuestionByWeight'
   >
 > = (set, get) => ({
   player: INITIAL_PLAYER,
@@ -202,12 +202,17 @@ export const createPlayerSlice: StateCreator<
         },
 
   useEnergy: (amount) => {
+          // Tự hồi trước nếu đã cạn đủ lâu, tránh tình trạng còn khóa dù đã tới giờ hồi (SUB_SPEC_ENERGY §5).
+          get().tickEnergyRegen();
           const state = get();
           if (state.player.energy < amount) return false;
+          const remaining = state.player.energy - amount;
           set({
             player: {
               ...state.player,
-              energy: state.player.energy - amount
+              energy: remaining,
+              // Chạm 0 → ghi mốc để tính giờ hồi đầy (Phương án A — Reset trọn gói).
+              energyDepletedAt: remaining === 0 ? Date.now() : state.player.energyDepletedAt
             }
           });
           logActivity(get, set, 'energy_refill', 'Tiêu hao năng lượng', `Tiêu tốn ${amount} năng lượng khởi hành phụ bản.`);
@@ -215,12 +220,37 @@ export const createPlayerSlice: StateCreator<
         },
 
   addEnergy: (amount) => {
-          set((state: any) => ({
-            player: {
-              ...state.player,
-              energy: Math.min(state.gameSettings.maxEnergy ?? 1000, state.player.energy + amount)
-            }
-          }));
+          set((state: any) => {
+            const maxEnergy = state.player.maxEnergy ?? 100;
+            const nextEnergy = Math.min(maxEnergy, state.player.energy + amount);
+            return {
+              player: {
+                ...state.player,
+                energy: nextEnergy,
+                // Có năng lượng trở lại (dù chưa đầy) là hết trạng thái "cạn" — hủy đếm giờ hồi.
+                energyDepletedAt: nextEnergy > 0 ? null : state.player.energyDepletedAt
+              }
+            };
+          });
+        },
+
+  tickEnergyRegen: () => {
+          // Phương án A — Reset trọn gói (SUB_SPEC_ENERGY §5): chỉ khi ĐÃ cạn hẳn về 0 mới bắt đầu
+          // đếm resetHours; hết giờ thì hồi ĐẦY một lần. Chưa cạn hẳn thì không tự hồi giữa chừng.
+          const state = get();
+          const { energyDepletedAt, resetHours, maxEnergy } = state.player;
+          if (!energyDepletedAt) return;
+          const resetMs = (resetHours ?? 3) * 60 * 60 * 1000;
+          if (Date.now() - energyDepletedAt >= resetMs) {
+            set({
+              player: {
+                ...state.player,
+                energy: maxEnergy ?? 100,
+                energyDepletedAt: null
+              }
+            });
+            logActivity(get, set, 'energy_refill', 'Hồi đầy Chân Khí', `Đã nghỉ đủ ${resetHours ?? 3} giờ, Chân Khí hồi đầy trở lại.`);
+          }
         },
 
   buyStreakShield: () => {
@@ -738,7 +768,9 @@ export const createPlayerSlice: StateCreator<
               ...state.player,
               streak: newStreak,
               coins: state.player.coins + streakBonus,
-              energy: state.gameSettings.maxEnergy ?? 1000, // Refill energy daily
+              // Qua ngày mới (00:00) luôn hồi đầy bất kể trạng thái (SUB_SPEC_ENERGY §5).
+              energy: state.player.maxEnergy ?? 100,
+              energyDepletedAt: null,
               lastActive: new Date().toISOString(),
               dailySkips: { date: todayStr, count: 0 }
             },

@@ -13,6 +13,7 @@ interface StudentProfileViewProps {
   adminMarkRewardDelivered: (studentId: string, redemptionId: string) => Promise<void>;
   adminCancelRedemption: (studentId: string, redemptionId: string) => Promise<void>;
   adminSetEnergy: (studentId: string, targetPercent: number) => Promise<void>;
+  adminSetEnergyConfig: (studentId: string, maxEnergy: number, resetHours: 2 | 3 | 5) => Promise<void>;
   fetchSkipReviews: (studentId: string) => Promise<void>;
   resolveSkipReview: (reviewId: string) => Promise<boolean>;
 }
@@ -20,23 +21,28 @@ interface StudentProfileViewProps {
 export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
   currentUser,
   selectedStudentProfile,
-  gameSettings,
   canApproveReward,
   skipReviews,
   adminMarkRewardDelivered,
   adminCancelRedemption,
   adminSetEnergy,
+  adminSetEnergyConfig,
   fetchSkipReviews,
   resolveSkipReview
 }) => {
-  const maxE = gameSettings?.maxEnergy ?? 1000;
+  // Chân Khí v2 (SUB_SPEC_ENERGY §2): maxEnergy/resetHours là cấu hình RIÊNG của con này, không còn đọc gameSettings global.
+  const maxE = selectedStudentProfile?.player?.maxEnergy ?? 100;
   const [studentEnergyPercent, setStudentEnergyPercent] = useState(100);
+  const [maxEnergyInput, setMaxEnergyInput] = useState(100);
+  const [resetHoursInput, setResetHoursInput] = useState<2 | 3 | 5>(3);
 
   useEffect(() => {
     if (selectedStudentProfile?.player) {
       setStudentEnergyPercent(Math.round((selectedStudentProfile.player.energy / maxE) * 100));
+      setMaxEnergyInput(selectedStudentProfile.player.maxEnergy ?? 100);
+      setResetHoursInput((selectedStudentProfile.player.resetHours ?? 3) as 2 | 3 | 5);
     }
-  }, [selectedStudentProfile?.player?.energy, maxE]);
+  }, [selectedStudentProfile?.player?.energy, selectedStudentProfile?.player?.maxEnergy, selectedStudentProfile?.player?.resetHours, maxE]);
 
   if (!selectedStudentProfile) {
     return (
@@ -128,6 +134,48 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
           >
             Nạp chân khí ⚡
           </button>
+
+          {/* Cấu hình Trần Chân Khí + giờ hồi RIÊNG cho con này (SUB_SPEC_ENERGY §2) */}
+          <div className="pt-3 mt-1 border-t border-white/5 space-y-3">
+            <h5 className="text-[10px] font-bold uppercase tracking-wider text-synth-text-muted">
+              ⚙️ Cấu Hình Riêng Cho Con Này
+            </h5>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="space-y-1 text-xs">
+                <span className="block text-synth-text-muted font-semibold">Trần Chân Khí (50-300)</span>
+                <input
+                  type="number"
+                  min={50}
+                  max={300}
+                  step={10}
+                  value={maxEnergyInput}
+                  onChange={e => setMaxEnergyInput(Number(e.target.value) || 100)}
+                  className="w-full p-2 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
+                />
+              </label>
+              <label className="space-y-1 text-xs">
+                <span className="block text-synth-text-muted font-semibold">Giờ hồi đầy</span>
+                <select
+                  value={resetHoursInput}
+                  onChange={e => setResetHoursInput(Number(e.target.value) as 2 | 3 | 5)}
+                  className="w-full p-2 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs cursor-pointer"
+                >
+                  <option value={2}>2 giờ</option>
+                  <option value={3}>3 giờ</option>
+                  <option value={5}>5 giờ</option>
+                </select>
+              </label>
+            </div>
+            <button
+              onClick={async () => {
+                if (!selectedStudentProfile?.studentUser?.id) return;
+                await adminSetEnergyConfig(selectedStudentProfile.studentUser.id, maxEnergyInput, resetHoursInput);
+              }}
+              className="w-full py-2 border border-synth-cyan/40 text-synth-cyan font-bold rounded-lg hover:bg-synth-cyan/10 transition-all text-xs uppercase"
+            >
+              Lưu cấu hình Chân Khí
+            </button>
+          </div>
         </div>
 
         {/* Pet stable information */}

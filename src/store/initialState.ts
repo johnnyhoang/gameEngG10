@@ -5,7 +5,10 @@
 import type { PlayerProfile, PetState, Challenge, ParentReward, GameSettings, UiThemeId } from '../types/game';
 
 export const DEFAULT_PIN = '1234';
-export const PLAYER_ENERGY_MAX = 1000;
+// Chân Khí v2 (SUB_SPEC_ENERGY §2): maxEnergy giờ là cấu hình RIÊNG từng con (PlayerProfile.maxEnergy),
+// không còn nằm trong GameSettings global. Hằng số này chỉ còn là giá trị mặc định khi tạo hồ sơ mới.
+export const PLAYER_ENERGY_MAX = 100;
+export const DEFAULT_RESET_HOURS: 2 | 3 | 5 = 3;
 export const THEME_UNLOCK_COST = 200;
 export const FREE_UI_THEME: UiThemeId = 'current';
 
@@ -14,7 +17,6 @@ export const DEFAULT_GAME_SETTINGS: GameSettings = {
   bossCompletionBonusNP: [100, 150, 200],
   // Hao tổn Chân khí (SUB_SPEC_ENERGY): ải thường tiêu 30 Chân khí mỗi lượt.
   challengeEnergyCosts: [30, 30, 30, 30],
-  maxEnergy: 1000,
   baseXP: 15,
   baseCoins: 5,
   updatedAt: Date.now()
@@ -29,6 +31,9 @@ export const INITIAL_PLAYER: PlayerProfile = {
   coins: 200,
   streak: 0,
   energy: PLAYER_ENERGY_MAX,
+  maxEnergy: PLAYER_ENERGY_MAX,
+  resetHours: DEFAULT_RESET_HOURS,
+  energyDepletedAt: null,
   hearts: 3,
   lastActive: new Date().toISOString(),
   badges: [],

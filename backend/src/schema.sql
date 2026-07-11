@@ -50,6 +50,17 @@ CREATE TABLE IF NOT EXISTS ge10_player_profiles (
 -- App không quản lý tiền nữa (CORE_SPECS §3.2) — Ví VND bị bãi bỏ hoàn toàn.
 ALTER TABLE ge10_player_profiles DROP COLUMN IF EXISTS wallet_vnd;
 
+-- Chân Khí v2 (SUB_SPEC_ENERGY.md) — maxEnergy/resetHours là cấu hình RIÊNG từng con,
+-- không còn dùng ge10_game_settings global nữa (mỗi con một mức do phụ huynh chỉnh ở Ngân Các).
+ALTER TABLE ge10_player_profiles ALTER COLUMN energy SET DEFAULT 100;
+ALTER TABLE ge10_player_profiles ADD COLUMN IF NOT EXISTS max_energy INTEGER NOT NULL DEFAULT 100;
+ALTER TABLE ge10_player_profiles ADD COLUMN IF NOT EXISTS reset_hours INTEGER NOT NULL DEFAULT 3;
+ALTER TABLE ge10_player_profiles ADD COLUMN IF NOT EXISTS energy_depleted_at BIGINT;
+-- Chặn tràn: hồ sơ cũ (thời maxEnergy=1000) có thể đang có energy > 100 mới, hạ về đúng trần mới.
+UPDATE ge10_player_profiles SET energy = max_energy WHERE energy > max_energy;
+-- max_energy cũ là setting global — bỏ hẳn, không còn ai đọc key này nữa.
+DELETE FROM ge10_game_settings WHERE setting_key = 'max_energy';
+
 -- Pet States Table
 CREATE TABLE IF NOT EXISTS ge10_pet_states (
     user_id VARCHAR(255) PRIMARY KEY REFERENCES ge10_users(id) ON DELETE CASCADE,
@@ -234,7 +245,7 @@ $$ LANGUAGE plpgsql;
 
 CREATE TABLE IF NOT EXISTS ge10_gatekeeper_history (
   id SERIAL PRIMARY KEY,
-  student_id UUID REFERENCES ge10_player_profiles(id) ON DELETE CASCADE,
+  student_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
   page_id VARCHAR(50) NOT NULL,
   question_id VARCHAR(50) NOT NULL,
   used_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

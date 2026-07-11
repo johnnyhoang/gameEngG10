@@ -7,15 +7,16 @@ import { INITIAL_LESSONS } from '../../data/lessons';
 import { DEFAULT_UI_THEME } from '../../theme/uiThemes';
 import { supabase } from '../../utils/supabaseClient';
 import { logActivity } from '../helpers';
+import { toast } from '../../utils/toast';
 
 export const createAuthSlice: StateCreator<
   StoreState,
   [],
   [],
-  Pick<StoreState, 
-    'currentUser' | 'sessionAccountId' | 'availableProfiles' | 
-    'setSessionAccountId' | 'fetchProfiles' | 'selectProfile' | 
-    'createProfile' | 'login' | 'logout'
+  Pick<StoreState,
+    'currentUser' | 'sessionAccountId' | 'availableProfiles' |
+    'setSessionAccountId' | 'fetchProfiles' | 'selectProfile' |
+    'createProfile' | 'quickStartProfile' | 'login' | 'logout'
   >
 > = (set, get) => ({
   currentUser: null,
@@ -125,6 +126,31 @@ export const createAuthSlice: StateCreator<
     }
   },
 
+  quickStartProfile: async (role: 'student' | 'parent') => {
+    const session = (await supabase.auth.getSession()).data.session;
+    const token = session?.access_token;
+    if (!token) return;
+    const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+    try {
+      const res = await fetch(`${backendUrl}/api/profiles/quick-start`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ role })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.profile?.id) {
+          await get().selectProfile(data.profile.id);
+        }
+      } else {
+        toast.error('Không thể kết nối máy chủ. Vui lòng thử lại.');
+      }
+    } catch (e) {
+      console.error('quickStartProfile error', e);
+      toast.error('Không thể kết nối máy chủ. Vui lòng kiểm tra kết nối mạng.');
+    }
+  },
+
   login: async (user) => {
     // Mốc "vừa đăng nhập" để Heo chờ đủ 30 phút mới xuất hiện (PetStableOverlay).
     // Phải ghi lại MỖI lần login, không chỉ lần đầu — nếu không, học viên đăng
@@ -142,7 +168,10 @@ export const createAuthSlice: StateCreator<
           xp: 0,
           coins: 200,
           streak: 0,
-          energy: 100, // PLAYER_ENERGY_MAX
+          energy: 100,
+          maxEnergy: 100,
+          resetHours: 3,
+          energyDepletedAt: null,
           hearts: 3,
           lastActive: new Date().toISOString(),
           badges: []
@@ -237,6 +266,9 @@ export const createAuthSlice: StateCreator<
               coins: 200,
               streak: 0,
               energy: 100,
+              maxEnergy: 100,
+              resetHours: 3,
+              energyDepletedAt: null,
               hearts: 3,
               lastActive: new Date().toISOString(),
               badges: []
@@ -283,6 +315,9 @@ export const createAuthSlice: StateCreator<
           coins: 200,
           streak: 0,
           energy: 100,
+          maxEnergy: 100,
+          resetHours: 3,
+          energyDepletedAt: null,
           hearts: 3,
           lastActive: new Date().toISOString(),
           badges: []

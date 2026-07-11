@@ -69,7 +69,7 @@ export const createUISlice: StateCreator<
     const unsubEnergy = eventBus.subscribe('ENERGY_RESTORED', (data: any) => {
       set((state: any) => {
         if (!state.player) return state;
-        const maxEnergy = state.gameSettings?.maxEnergy ?? 1000;
+        const maxEnergy = state.player?.maxEnergy ?? 100;
         const amount = data.amount || Math.floor(maxEnergy * 0.1);
         const nextEnergy = Math.min(state.player.energy + amount, maxEnergy);
         return { player: { ...state.player, energy: nextEnergy } };

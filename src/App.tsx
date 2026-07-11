@@ -58,6 +58,7 @@ const APP_PUSH_TIME = 'Tue, 7 Jul 2026 12:05 ICT';
 function App() {
   const currentUser = useGameState(state => state.currentUser);
   const checkDailyReset = useGameState(state => state.checkDailyReset);
+  const tickEnergyRegen = useGameState(state => state.tickEnergyRegen);
   const initEventSubscriptions = useGameState(state => state.initEventSubscriptions);
   const openMysteryBox = useGameState(state => state.openMysteryBox);
   const spinWheel = useGameState(state => state.spinWheel);
@@ -152,13 +153,16 @@ function App() {
 
     // Run daily resets
     checkDailyReset();
-    
+    // Hồi Chân Khí ngay nếu đã cạn đủ resetHours trong lúc app đóng (SUB_SPEC_ENERGY §5).
+    tickEnergyRegen();
+
     // Subscribe to Event Bus listeners
     const unsub = initEventSubscriptions();
 
-    // Check reset every 5 minutes
+    // Check reset every 5 minutes (đồng thời tick Chân Khí để mở khóa đúng giờ hồi)
     const interval = setInterval(() => {
       checkDailyReset();
+      tickEnergyRegen();
     }, 5 * 60 * 1000);
 
     return () => {

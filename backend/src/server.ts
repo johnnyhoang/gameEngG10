@@ -55,10 +55,12 @@ const initDB = async () => {
       );
     }
 
-    // Auto-link existing questions to their lessons by category
+    // Auto-link existing questions to their lessons by category.
+    // Nhiều lesson có thể trùng category (vd "grammar" có 11 bài) — LIMIT 1 để chọn xác định,
+    // tránh lỗi "more than one row returned by a subquery used as an expression".
     await pool.query(
-      `UPDATE ge10_custom_questions 
-       SET lesson_id = (SELECT id FROM ge10_lessons WHERE ge10_lessons.category = ge10_custom_questions.category)
+      `UPDATE ge10_custom_questions
+       SET lesson_id = (SELECT id FROM ge10_lessons WHERE ge10_lessons.category = ge10_custom_questions.category LIMIT 1)
        WHERE lesson_id IS NULL`
     );
 
@@ -108,7 +110,7 @@ const authMiddleware = async (req: any, res: any, next: any) => {
 };
 
 // Helper function to check parent or admin permissions over a student
-const checkStudentManagementPermission = async (actorId: string, studentUserId: string, action: 'approve_reward' | 'refill_energy' | 'view_profile') => {
+const checkStudentManagementPermission = async (actorId: string, studentUserId: string, action: 'approve_reward' | 'refill_energy' | 'set_energy_config' | 'view_profile') => {
   const actorCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [actorId]);
   if (actorCheck.rowCount === 0) return false;
   const role = actorCheck.rows[0].role;
@@ -127,7 +129,7 @@ const checkStudentManagementPermission = async (actorId: string, studentUserId: 
   }
 
   if (role === 'secondary_parent') {
-    if (action === 'refill_energy') {
+    if (action === 'refill_energy' || action === 'set_energy_config') {
       return false; // Secondary parents cannot manage energy
     }
 
@@ -281,15 +283,6 @@ const loadChallengeEnergyCosts = async (): Promise<[number, number, number, numb
   return DEFAULT_CHALLENGE_ENERGY_COSTS;
 };
 
-const loadMaxEnergy = async (): Promise<number> => {
-  const res = await pool.query(
-    "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'max_energy'"
-  );
-  const raw = res.rows[0]?.setting_json;
-  const value = Number(raw?.['value']);
-  return (Number.isFinite(value) && value > 0) ? value : 1000;
-};
-
 const loadBaseXP = async (): Promise<number> => {
   const res = await pool.query(
     "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'base_xp'"
@@ -306,15 +299,6 @@ const loadBaseCoins = async (): Promise<number> => {
   const raw = res.rows[0]?.setting_json;
   const value = Number(raw?.['value']);
   return (Number.isFinite(value) && value > 0) ? value : 5;
-};
-
-const saveMaxEnergy = async (maxEnergy: number) => {
-  await pool.query(
-    `INSERT INTO ge10_game_settings (setting_key, setting_json)
-     VALUES ('max_energy', $1::jsonb)
-     ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
-    [JSON.stringify({ value: maxEnergy })]
-  );
 };
 
 const saveBaseXP = async (baseXP: number) => {
@@ -452,6 +436,52 @@ app.post('/api/profiles', authMiddleware, async (req: any, res) => {
   }
 });
 
+// POST /api/profiles/quick-start: Find-or-create the account's single Student/Parent profile —
+// dùng cho luồng đăng nhập đơn giản (2 lựa chọn), không yêu cầu người dùng tự đặt tên hồ sơ.
+// Tách riêng khỏi POST /api/profiles để không giới hạn admin tạo nhiều hồ sơ cùng role để test.
+app.post('/api/profiles/quick-start', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const email = req.user.email;
+  const { role } = req.body;
+
+  if (role !== 'student' && role !== 'parent') {
+    return res.status(400).json({ error: 'Invalid role. Must be student or parent.' });
+  }
+
+  try {
+    const roleFilter = role === 'parent' ? ['parent', 'secondary_parent'] : ['student'];
+    const existing = await pool.query(
+      'SELECT * FROM ge10_users WHERE account_id = $1 AND role = ANY($2::text[]) LIMIT 1',
+      [accountId, roleFilter]
+    );
+    if (existing.rowCount && existing.rowCount > 0) {
+      return res.json({ success: true, profile: existing.rows[0], existed: true });
+    }
+
+    const profileId = 'prof-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+    const name = req.user.user_metadata?.full_name || req.user.user_metadata?.name || email || 'Thiếu hiệp';
+    const finalAvatar = req.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+
+    await pool.query(
+      `INSERT INTO ge10_users (id, account_id, name, email, avatar_url, role)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [profileId, accountId, name, email, finalAvatar, role]
+    );
+
+    await pool.query(`INSERT INTO ge10_player_profiles (user_id) VALUES ($1)`, [profileId]);
+    await pool.query(`INSERT INTO ge10_pet_states (user_id) VALUES ($1)`, [profileId]);
+
+    res.json({
+      success: true,
+      profile: { id: profileId, account_id: accountId, name, email, avatar_url: finalAvatar, role },
+      existed: false
+    });
+  } catch (err) {
+    console.error('Error in quick-start profile:', err);
+    res.status(500).json({ error: 'Failed to quick-start profile' });
+  }
+});
+
 // GET /api/profile/:id: Retrieves the complete profile bundle from Supabase Postgres
 app.get('/api/profile/:id', authMiddleware, async (req: any, res) => {
   const accountId = req.user.sub;
@@ -530,7 +560,6 @@ app.get('/api/profile/:id', authMiddleware, async (req: any, res) => {
 
     const bossCompletionBonusNP = await loadBossCompletionBonusNP();
     const challengeEnergyCosts = await loadChallengeEnergyCosts();
-    const maxEnergy = await loadMaxEnergy();
     const baseXP = await loadBaseXP();
     const baseCoins = await loadBaseCoins();
 
@@ -618,6 +647,9 @@ app.get('/api/profile/:id', authMiddleware, async (req: any, res) => {
         coins: playerRes.rows[0].coins,
         streak: playerRes.rows[0].streak,
         energy: playerRes.rows[0].energy,
+        maxEnergy: playerRes.rows[0].max_energy,
+        resetHours: playerRes.rows[0].reset_hours,
+        energyDepletedAt: playerRes.rows[0].energy_depleted_at ? Number(playerRes.rows[0].energy_depleted_at) : null,
         hearts: playerRes.rows[0].hearts,
         lastActive: playerRes.rows[0].last_active,
         badges: playerRes.rows[0].badges || []
@@ -640,7 +672,6 @@ app.get('/api/profile/:id', authMiddleware, async (req: any, res) => {
       gameSettings: {
         bossCompletionBonusNP,
         challengeEnergyCosts,
-        maxEnergy,
         baseXP,
         baseCoins
       },
@@ -676,12 +707,13 @@ app.post('/api/profile/:id/sync', authMiddleware, async (req: any, res) => {
   try {
     await client.query('BEGIN');
 
-    let mergedEnergy = player ? player.energy : 1000;
+    let mergedEnergy = player ? player.energy : 100;
+    let mergedEnergyDepletedAt = player ? (player.energyDepletedAt ?? null) : null;
 
     // 1. Sync player profile
     if (player) {
       const currentProfileRes = await client.query(
-        'SELECT energy, server_updated_at FROM ge10_player_profiles WHERE user_id = $1',
+        'SELECT energy, energy_depleted_at, server_updated_at FROM ge10_player_profiles WHERE user_id = $1',
         [userId]
       );
       if (currentProfileRes.rows.length > 0) {
@@ -690,20 +722,24 @@ app.post('/api/profile/:id/sync', authMiddleware, async (req: any, res) => {
         const clientLastSyncTime = req.body.lastSyncTime ? new Date(req.body.lastSyncTime).getTime() : 0;
 
         if (dbServerUpdatedAt > clientLastSyncTime) {
-          // Keep server values since they are newer (e.g. from parent console)
+          // Keep server values since they are newer (e.g. từ "Ban Chân Khí" thủ công của phụ huynh ở ParentConsole)
           mergedEnergy = dbProfile.energy;
+          mergedEnergyDepletedAt = dbProfile.energy_depleted_at ? Number(dbProfile.energy_depleted_at) : null;
         }
       }
 
+      // maxEnergy/resetHours KHÔNG nằm trong sync này — đó là cấu hình do phụ huynh chỉnh riêng
+      // qua /api/admin/set-energy-config, con tự sync không được phép ghi đè (SUB_SPEC_ENERGY §2).
       await client.query(
-        `INSERT INTO ge10_player_profiles (user_id, level, xp, coins, streak, energy, hearts, last_active, badges)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        `INSERT INTO ge10_player_profiles (user_id, level, xp, coins, streak, energy, energy_depleted_at, hearts, last_active, badges)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
          ON CONFLICT (user_id) DO UPDATE SET
            level = EXCLUDED.level,
            xp = EXCLUDED.xp,
            coins = EXCLUDED.coins,
            streak = EXCLUDED.streak,
            energy = EXCLUDED.energy,
+           energy_depleted_at = EXCLUDED.energy_depleted_at,
            hearts = EXCLUDED.hearts,
            last_active = EXCLUDED.last_active,
            badges = EXCLUDED.badges`,
@@ -714,6 +750,7 @@ app.post('/api/profile/:id/sync', authMiddleware, async (req: any, res) => {
           player.coins,
           player.streak,
           mergedEnergy,
+          mergedEnergyDepletedAt,
           player.hearts,
           player.lastActive,
           player.badges
@@ -849,7 +886,8 @@ app.post('/api/profile/:id/sync', authMiddleware, async (req: any, res) => {
       success: true,
       timestamp: new Date().toISOString(),
       player: player ? {
-        energy: mergedEnergy
+        energy: mergedEnergy,
+        energyDepletedAt: mergedEnergyDepletedAt
       } : null
     });
   } catch (error) {
@@ -2041,14 +2079,15 @@ app.post('/api/admin/refill-energy', authMiddleware, async (req: any, res: any) 
       return res.status(400).json({ error: 'Invalid parameters: studentUserId.' });
     }
 
-    const currentRes = await pool.query('SELECT energy FROM ge10_player_profiles WHERE user_id = $1', [studentUserId]);
+    const currentRes = await pool.query('SELECT energy, max_energy FROM ge10_player_profiles WHERE user_id = $1', [studentUserId]);
     if (currentRes.rowCount === 0) {
       return res.status(404).json({ error: 'Student profile not found.' });
     }
 
     const rawPercent = Number(req.body.energyPercent);
     const rawEnergyValue = Number(req.body.energyValue);
-    const maxEnergy = await loadMaxEnergy();
+    // Chân Khí v2 (SUB_SPEC_ENERGY §2): maxEnergy giờ là Trần RIÊNG của con này, không còn đọc setting global.
+    const maxEnergy = currentRes.rows[0].max_energy ?? 100;
     let targetEnergy = maxEnergy;
     if (Number.isFinite(rawPercent)) {
       const clampedPercent = Math.max(0, Math.min(100, rawPercent));
@@ -2058,7 +2097,8 @@ app.post('/api/admin/refill-energy', authMiddleware, async (req: any, res: any) 
     }
 
     await pool.query(
-      'UPDATE ge10_player_profiles SET energy = $2, server_updated_at = NOW() WHERE user_id = $1',
+      // "Ban Chân Khí" thủ công (SUB_SPEC_ENERGY §6): hủy luôn đếm giờ hồi nếu con đang ở trạng thái cạn.
+      'UPDATE ge10_player_profiles SET energy = $2, energy_depleted_at = CASE WHEN $2 > 0 THEN NULL ELSE energy_depleted_at END, server_updated_at = NOW() WHERE user_id = $1',
       [studentUserId, targetEnergy]
     );
 
@@ -2087,6 +2127,47 @@ app.post('/api/admin/refill-energy', authMiddleware, async (req: any, res: any) 
   }
 });
 
+// POST /api/admin/set-energy-config: Phụ huynh chỉnh Trần Chân Khí + giờ hồi RIÊNG cho 1 con (SUB_SPEC_ENERGY §2).
+app.post('/api/admin/set-energy-config', authMiddleware, async (req: any, res: any) => {
+  const adminId = req.user.sub;
+  try {
+    const { studentUserId, maxEnergy, resetHours } = req.body || {};
+    if (!studentUserId) {
+      return res.status(400).json({ error: 'Invalid parameters: studentUserId.' });
+    }
+
+    const hasPermission = await checkStudentManagementPermission(adminId, studentUserId, 'set_energy_config');
+    if (!hasPermission) {
+      return res.status(403).json({ error: 'Forbidden: You do not have permission to configure energy for this student.' });
+    }
+
+    const clampedMax = Math.max(50, Math.min(300, Math.round(Number(maxEnergy))));
+    if (!Number.isFinite(clampedMax)) {
+      return res.status(400).json({ error: 'Invalid maxEnergy value.' });
+    }
+    const allowedResetHours = [2, 3, 5];
+    const normalizedResetHours = allowedResetHours.includes(Number(resetHours)) ? Number(resetHours) : 3;
+
+    const currentRes = await pool.query('SELECT energy FROM ge10_player_profiles WHERE user_id = $1', [studentUserId]);
+    if (currentRes.rowCount === 0) {
+      return res.status(404).json({ error: 'Student profile not found.' });
+    }
+
+    // Hạ trần thấp hơn năng lượng hiện có thì clamp luôn energy xuống trần mới, tránh hiển thị tràn (VD 120/100).
+    const clampedEnergy = Math.min(currentRes.rows[0].energy, clampedMax);
+
+    await pool.query(
+      'UPDATE ge10_player_profiles SET max_energy = $2, reset_hours = $3, energy = $4, server_updated_at = NOW() WHERE user_id = $1',
+      [studentUserId, clampedMax, normalizedResetHours, clampedEnergy]
+    );
+
+    res.json({ success: true, maxEnergy: clampedMax, resetHours: normalizedResetHours, energy: clampedEnergy });
+  } catch (error: any) {
+    console.error('Error updating student energy config:', error.message);
+    res.status(500).json({ error: 'Failed to update energy config.' });
+  }
+});
+
 // PUT /api/admin/game-settings: Updates global game configuration parameters
 app.put('/api/admin/game-settings', authMiddleware, async (req: any, res: any) => {
   const adminId = req.user.sub;
@@ -2096,7 +2177,7 @@ app.put('/api/admin/game-settings', authMiddleware, async (req: any, res: any) =
       return res.status(403).json({ error: 'Forbidden: Admin access only.' });
     }
 
-    const { bossCompletionBonusNP, challengeEnergyCosts, maxEnergy, baseXP, baseCoins } = req.body || {};
+    const { bossCompletionBonusNP, challengeEnergyCosts, baseXP, baseCoins } = req.body || {};
     const response: any = { success: true };
 
     if (bossCompletionBonusNP !== undefined) {
@@ -2121,15 +2202,6 @@ app.put('/api/admin/game-settings', authMiddleware, async (req: any, res: any) =
       }
       await saveChallengeEnergyCosts(normalizedCosts);
       response.challengeEnergyCosts = normalizedCosts;
-    }
-
-    if (maxEnergy !== undefined) {
-      const val = Math.max(1, Math.round(Number(maxEnergy)));
-      if (!Number.isFinite(val)) {
-        return res.status(400).json({ error: 'Invalid maxEnergy value.' });
-      }
-      await saveMaxEnergy(val);
-      response.maxEnergy = val;
     }
 
     if (baseXP !== undefined) {
@@ -2257,6 +2329,9 @@ app.get('/api/admin/student-profile', authMiddleware, async (req: any, res) => {
         coins: playerRes.rows[0].coins,
         streak: playerRes.rows[0].streak,
         energy: playerRes.rows[0].energy,
+        maxEnergy: playerRes.rows[0].max_energy,
+        resetHours: playerRes.rows[0].reset_hours,
+        energyDepletedAt: playerRes.rows[0].energy_depleted_at ? Number(playerRes.rows[0].energy_depleted_at) : null,
         hearts: playerRes.rows[0].hearts,
         lastActive: playerRes.rows[0].last_active,
         badges: playerRes.rows[0].badges || []

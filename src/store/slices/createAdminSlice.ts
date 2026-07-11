@@ -15,7 +15,7 @@ export const createAdminSlice: StateCreator<
   [],
   [],
   Pick<StoreState, 
-    'parentPIN' | 'adminStudents' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'parentQuests' | 'verifyPIN' | 'changePIN' | 'markRewardDelivered' | 'cancelRedemption' | 'addParentReward' | 'deleteParentReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'updateGameSettings' | 'addParentQuest' | 'completeParentQuest' | 'deleteParentQuest' | 'claimParentQuest' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
+    'parentPIN' | 'adminStudents' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'parentQuests' | 'changePIN' | 'markRewardDelivered' | 'cancelRedemption' | 'addParentReward' | 'deleteParentReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'adminSetEnergyConfig' | 'updateGameSettings' | 'addParentQuest' | 'completeParentQuest' | 'deleteParentQuest' | 'claimParentQuest' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
   >
 > = (set, get) => ({
   parentPIN: DEFAULT_PIN,
@@ -31,27 +31,6 @@ export const createAdminSlice: StateCreator<
   parentQuests: [],
 
   auditLogs: [],
-
-  verifyPIN: async (pin) => {
-    const state = get();
-    const pId = state.currentUser?.id;
-    if (!pId) return false;
-    const session = (await supabase.auth.getSession()).data.session;
-    const token = session?.access_token;
-    if (!token) return false;
-    const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-    try {
-      const res = await fetch(`${backendUrl}/api/security/verify-pin`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ profileId: pId, pin })
-      });
-      return res.ok;
-    } catch (e) {
-      console.error('Error verifying PIN:', e);
-      return false;
-    }
-  },
 
   changePIN: async (newPIN) => {
     const state = get();
@@ -504,6 +483,35 @@ export const createAdminSlice: StateCreator<
           } catch (e) {
             console.error('Error updating student energy:', e);
             toast.error('Lỗi kết nối khi cập nhật năng lượng.');
+          }
+        },
+
+  adminSetEnergyConfig: async (studentUserId: string, maxEnergy: number, resetHours: 2 | 3 | 5) => {
+          try {
+            const session = (await supabase.auth.getSession()).data.session;
+            const token = session?.access_token;
+            if (!token) return;
+
+            const clampedMax = Math.max(50, Math.min(300, Math.round(maxEnergy)));
+            const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+            const res = await fetch(`${backendUrl}/api/admin/set-energy-config`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + token
+              },
+              body: JSON.stringify({ studentUserId, maxEnergy: clampedMax, resetHours })
+            });
+            if (!res.ok) {
+              const errData = await res.json();
+              toast.error(errData.error || 'Lỗi khi cập nhật cấu hình Chân Khí.');
+              return;
+            }
+            await get().fetchStudentProfile(studentUserId);
+            toast.success(`Đã cập nhật Trần Chân Khí ${clampedMax} + giờ hồi ${resetHours}h cho con.`);
+          } catch (e) {
+            console.error('Error updating student energy config:', e);
+            toast.error('Lỗi kết nối khi cập nhật cấu hình Chân Khí.');
           }
         },
 
