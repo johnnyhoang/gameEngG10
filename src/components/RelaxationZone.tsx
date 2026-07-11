@@ -170,7 +170,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   const pageExplorationStates = useGameState(state => state.pageExplorationStates || {});
   const completeLevel3Page = useGameState(state => state.completeLevel3Page);
   const player = useGameState(state => state.player);
-  const useEnergy = useGameState(state => state.useEnergy);
+  const consumeEnergy = useGameState(state => state.useEnergy);
 
   const [activeGame, setActiveGame] = useState<GameCard | null>(null);
 
@@ -180,7 +180,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
         toast.error('Hết năng lượng rồi. Nghỉ một nhịp hoặc đọc Cẩm Nang trong lúc chờ hồi Chân Khí.');
         return;
       }
-      useEnergy(MINIGAME_ENERGY_COST);
+      consumeEnergy(MINIGAME_ENERGY_COST);
     }
     setActiveGame(game);
   };

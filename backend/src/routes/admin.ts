@@ -1,7 +1,7 @@
 import express from 'express';
 import { pool } from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
-import { checkStudentManagementPermission, logAuditEvent } from '../helpers/permissions.js';
+import { checkStudentManagementPermission } from '../helpers/permissions.js';
 import { ensureDefaultRewards } from '../helpers/questions.js';
 import {
   saveBossCompletionBonusNP,

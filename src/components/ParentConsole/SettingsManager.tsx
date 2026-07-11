@@ -490,7 +490,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
                       } else {
                         detailText = JSON.stringify(p);
                       }
-                    } catch (e) {
+                    } catch {
                       detailText = typeof log.payload === 'string' ? log.payload : JSON.stringify(log.payload);
                     }
 

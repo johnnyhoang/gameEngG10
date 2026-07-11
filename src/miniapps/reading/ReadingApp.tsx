@@ -64,7 +64,7 @@ export const ReadingApp: React.FC<ReadingAppProps> = ({  uiTheme, onReward,   })
   const checkReadingChallenge = () => {
     const data = READING_DATA[readingSubject];
     if (!selectedReadingOption.trim()) { toast.error('Vui lòng chọn một đáp án!'); return; }
-    const highlightedWords = highlightedIndices.map(idx => data.words[idx].replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ''));
+    const highlightedWords = highlightedIndices.map(idx => data.words[idx].replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ''));
     const matchCount = highlightedWords.filter(w => data.targetWords.some(tw => tw.toLowerCase().includes(w.toLowerCase()))).length;
     const isOptionCorrect = selectedReadingOption.trim() === data.correctOption;
     const isHighlightAcceptable = matchCount >= 1;
