@@ -11,6 +11,11 @@ export const GoogleLoginScreen: React.FC = () => {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
+          // Không set redirectTo thì Supabase rơi về "Site URL" cấu hình sẵn trên Dashboard —
+          // nếu Site URL đó trỏ nhầm sang domain khác (vd project demo cũ), Google login xong
+          // sẽ bay lạc sang domain đó thay vì quay lại đúng app đang chạy (localhost hay production).
+          // Luôn trỏ về chính origin hiện tại để đúng cả dev lẫn mọi domain deploy.
+          redirectTo: window.location.origin,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',

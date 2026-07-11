@@ -176,20 +176,28 @@ function App() {
   useEffect(() => {
     let mounted = true;
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event: AuthChangeEvent, session: Session | null) => {
-      if (session && session.user) {
-        const state = useGameState.getState();
-        if (state.sessionAccountId !== session.user.id) {
-          state.setSessionAccountId(session.user.id);
-          await state.fetchProfiles();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event: AuthChangeEvent, session: Session | null) => {
+      // QUAN TRỌNG: không gọi lại các method supabase.auth.* (getSession/signOut...) TRỰC TIẾP
+      // trong callback này — onAuthStateChange chạy trong lúc GoTrueClient đang giữ internal
+      // lock, rõ nhất ở sự kiện INITIAL_SESSION (bắn ra ngay trong initialize() khi F5 lại trang
+      // đã có session cũ). Gọi lại getSession()/signOut() lồng vào sẽ deadlock vô thời hạn —
+      // treo mãi ở màn hình loading, không log/lỗi gì (đúng bug OOM-khi-refresh đã gặp).
+      // Fix chính thức theo khuyến nghị của Supabase: defer ra khỏi lock bằng setTimeout(0).
+      setTimeout(async () => {
+        if (session && session.user) {
+          const state = useGameState.getState();
+          if (state.sessionAccountId !== session.user.id) {
+            state.setSessionAccountId(session.user.id);
+            await state.fetchProfiles();
+          }
+        } else {
+          useGameState.getState().logout();
         }
-      } else {
-        useGameState.getState().logout();
-      }
 
-      if (mounted) {
-        setAuthLoading(false);
-      }
+        if (mounted) {
+          setAuthLoading(false);
+        }
+      }, 0);
     });
 
     // Check initial session

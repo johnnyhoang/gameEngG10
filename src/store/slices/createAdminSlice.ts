@@ -200,10 +200,10 @@ export const createAdminSlice: StateCreator<
 
   importQuestions: (importedQuestions) => {
           set((state: any) => {
-            // Filter duplicates by checking prompts/ids
-            const filteredNew = importedQuestions.filter(newQ => 
-              !state.questions.some(existingQ => existingQ.prompt === newQ.prompt)
-            );
+            // Dedup bằng Set thay vì .some() lồng trong .filter() — O(N*M) cũ từng
+            // gây OOM tương tự bug đã fix ở customQuestions merge (login/selectProfile).
+            const existingPrompts = new Set(state.questions.map((q: any) => q.prompt));
+            const filteredNew = importedQuestions.filter(newQ => !existingPrompts.has(newQ.prompt));
             return {
               questions: [...state.questions, ...filteredNew]
             };
