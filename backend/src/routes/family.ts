@@ -20,10 +20,21 @@ router.get('/users/search', authMiddleware, async (req: any, res) => {
     const params: any[] = [searchTerm];
     if (role) {
       if (role === 'parent' || role === 'secondary_parent') {
-        queryText += ' AND role IN (\'parent\', \'secondary_parent\')';
+        queryText += " AND role IN ('parent', 'secondary_parent')";
       } else {
         queryText += ' AND role = $2';
         params.push(role);
+
+        if (role === 'student') {
+          queryText += `
+            AND NOT EXISTS (
+              SELECT 1 FROM ge10_family_links 
+              WHERE student_id = ge10_users.id 
+                AND status = 'active' 
+                AND link_type = 'primary'
+            )
+          `;
+        }
       }
     }
     queryText += ' LIMIT 15';
