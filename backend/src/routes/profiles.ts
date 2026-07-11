@@ -32,6 +32,58 @@ router.get('/profiles', authMiddleware, async (req: any, res) => {
   }
 });
 
+// POST /api/profiles/quick-start
+router.post('/profiles/quick-start', authMiddleware, async (req: any, res) => {
+  const accountId = req.user?.sub;
+  const email = req.user?.email;
+  const { role } = req.body;
+
+  if (!accountId) return res.status(401).json({ error: 'Unauthorized: missing accountId' });
+  if (!role || (role !== 'student' && role !== 'parent')) {
+    return res.status(400).json({ error: 'Invalid or missing role' });
+  }
+
+  try {
+    // Check if profile of this role already exists and is active
+    const existCheck = await pool.query(
+      'SELECT * FROM ge10_users WHERE account_id = $1 AND role = $2 AND is_active = TRUE',
+      [accountId, role]
+    );
+    if (existCheck.rowCount && existCheck.rowCount > 0) {
+      const profile = existCheck.rows[0];
+      return res.json({ success: true, profile });
+    }
+
+    // Create a new profile automatically
+    const profileId = 'prof-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+    
+    // Fallbacks for name and avatar from user_metadata
+    const name = req.user.user_metadata?.full_name || email?.split('@')[0] || 'User';
+    const avatarUrl = req.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+
+    await pool.query(
+      `INSERT INTO ge10_users (id, account_id, name, email, avatar_url, role, is_active)
+       VALUES ($1, $2, $3, $4, $5, $6, TRUE)`,
+      [profileId, accountId, name, email, avatarUrl, role]
+    );
+
+    // Initialize stats
+    await pool.query(`INSERT INTO ge10_player_profiles (user_id) VALUES ($1)`, [profileId]);
+    await pool.query(`INSERT INTO ge10_pet_states (user_id) VALUES ($1)`, [profileId]);
+    
+    // Ensure default rewards exist for parent
+    if (role === 'parent') {
+      await ensureDefaultRewards(profileId);
+    }
+
+    const newProfile = { id: profileId, account_id: accountId, name, email, avatar_url: avatarUrl, role, is_active: true };
+    res.json({ success: true, profile: newProfile });
+  } catch (err: any) {
+    console.error('Error in quick-start profile:', err);
+    res.status(500).json({ error: 'Failed to quick start profile', details: err?.message });
+  }
+});
+
 // POST /api/profiles: Create a new profile for the Google Account
 router.post('/profiles', authMiddleware, async (req: any, res) => {
   const accountId = req.user.sub;
