@@ -1,4 +1,4 @@
-import { isAdmin } from '../utils/roleHelpers';
+import { isAdmin, isParentRole } from '../utils/roleHelpers';
 import React, { useEffect } from 'react';
 import { Zap, Coins, Flame, Shield, LogOut } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
@@ -28,8 +28,11 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   const uiTheme = useGameState(state => state.uiTheme);
 
   const activeSubjectConfig = SUBJECTS_CONFIG[activeSectId as SubjectId];
-  const isAdminUser = isAdmin(currentUser?.role);
   const isUnicorn = uiTheme === 'unicorn-dream';
+
+  const isStudent = currentUser?.role === 'student';
+  const isTeacher = isParentRole(currentUser?.role);
+  const isSchoolAdmin = isAdmin(currentUser?.role);
 
   // Tick Chân Khí đều đặn để mở khóa đúng giờ hồi mà không cần reload trang (SUB_SPEC_ENERGY §5).
   useEffect(() => {
@@ -87,11 +90,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
               <span className="text-[11px] font-black text-white font-orbitron tracking-wide max-w-[90px] truncate">
                 {currentUser ? currentUser.name : 'Con yêu'}
               </span>
-              {isAdminUser ? (
-                <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-synth-magenta/30 text-synth-magenta border border-synth-magenta/20 uppercase font-orbitron shrink-0">
-                  Hiệu Trưởng 👑
-                </span>
-              ) : (
+              {isStudent ? (
                 <span
                   onClick={() => showHelp('xp')}
                   className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-synth-purple/30 text-synth-cyan border border-synth-cyan/20 uppercase font-orbitron cursor-pointer hover:bg-synth-purple/50 shrink-0"
@@ -99,9 +98,20 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                 >
                   {getStudentRankForLevel(player.level).icon} Lvl.{player.level}
                 </span>
+              ) : (
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase font-orbitron shrink-0 ${
+                  currentUser?.role === 'truong_vien' ? 'bg-synth-magenta/30 text-synth-magenta border border-synth-magenta/20' :
+                  currentUser?.role === 'pho_vien' ? 'bg-purple-500/30 text-purple-400 border border-purple-500/20' :
+                  currentUser?.role === 'parent' ? 'bg-synth-orange/30 text-synth-orange border border-synth-orange/20' :
+                  'bg-pink-500/30 text-pink-400 border border-pink-500/20'
+                }`}>
+                  {currentUser?.role === 'truong_vien' ? 'Hiệu Trưởng 👑' :
+                   currentUser?.role === 'pho_vien' ? 'Hiệu Phó 🛡️' :
+                   currentUser?.role === 'parent' ? 'Chủ Nhiệm 📋' : 'Chủ Nhiệm Phụ 📋'}
+                </span>
               )}
             </div>
-            {!isAdminUser && (
+            {isStudent && (
               <div className="w-24 sm:w-28 h-1.5 bg-synth-gray rounded-full overflow-hidden border border-synth-cyan/10">
                 <div
                   className="h-full bg-gradient-to-r from-synth-cyan to-synth-purple"
@@ -112,7 +122,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             )}
           </div>
 
-          {!isAdminUser && (
+          {isStudent && (
             <>
               <div className="w-px h-8 bg-white/10 shrink-0" />
               <div
@@ -129,8 +139,8 @@ export const TopHUD: React.FC<TopHUDProps> = ({
           )}
         </div>
 
-        {/* Cụm 2: Dải tài nguyên — Ngân Lượng + Chuỗi (Tim sinh mệnh đã bị xóa khỏi hệ thống — CORE_SPECS §2.1) */}
-        {!isAdminUser && (
+        {/* Cụm 2: Dải tài nguyên — Ngân Lượng + Chuỗi (Chỉ dành cho học sinh) */}
+        {isStudent && (
           <div className={`${groupBoxClass} order-2 md:order-none w-full sm:w-auto justify-between sm:justify-start overflow-x-auto`}>
             <div className={statItemClass} onClick={() => showHelp('nanite')} title={player.coins < 0 ? 'Ngân Lượng đang ÂM — trả nợ bằng cách luyện tập thêm!' : 'Ngân Lượng (NP) — Nhấp để xem hướng dẫn'}>
               <Coins className={`w-4 h-4 shrink-0 ${player.coins < 0 ? 'text-red-400 fill-red-400' : 'text-synth-orange fill-synth-orange'}`} />
@@ -151,9 +161,9 @@ export const TopHUD: React.FC<TopHUDProps> = ({
           </div>
         )}
 
-        {/* Cụm 3: Điều hướng nhanh + Thân Phận (mang luôn badge môn phái, là nơi duy nhất đổi môn — CORE_SPECS §7.4) + Thoái Ẩn */}
+        {/* Cụm 3: Điều hướng nhanh + Thân Phận + Thoái Ẩn */}
         <div className="flex items-center gap-2 order-3 md:order-none ml-auto">
-          {!isAdminUser && (
+          {isStudent && (
             <>
               <button
                 onClick={onOpenShop}
@@ -180,10 +190,37 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                 <span>📚</span>
                 <span className="hidden lg:inline">Hang Luyện Công</span>
               </button>
+
+              <button
+                onClick={() => setSectModalOpen(true)}
+                title={`Môn phái hiện tại: ${activeSubjectConfig?.name}. Bấm để đổi.`}
+                className={`relative flex items-center gap-1.5 px-3 h-10 rounded-lg border font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 ${
+                  isUnicorn 
+                    ? 'border-violet-200/40 bg-violet-50 text-violet-800 hover:bg-violet-100' 
+                    : 'border-synth-cyan/30 bg-synth-cyan/10 text-synth-cyan hover:bg-synth-cyan/20'
+                }`}
+              >
+                <span className="text-sm">{activeSubjectConfig?.icon}</span>
+                <span className="hidden md:inline">{activeSubjectConfig?.name}</span>
+              </button>
             </>
           )}
 
-          {isAdminUser && (
+          {isTeacher && (
+            <button
+              onClick={onOpenParent}
+              className={navBtnClass(
+                currentScreen === 'parent',
+                'bg-synth-cyan border-synth-cyan text-black shadow-[0_0_12px_#00f0ff]',
+                'bg-transparent border-synth-cyan/50 text-synth-cyan hover:bg-synth-cyan/10'
+              )}
+            >
+              <span>📋</span>
+              <span className="hidden sm:inline">Bảng Chủ Nhiệm</span>
+            </button>
+          )}
+
+          {isSchoolAdmin && (
             <button
               onClick={onOpenParent}
               className={navBtnClass(
@@ -193,25 +230,11 @@ export const TopHUD: React.FC<TopHUDProps> = ({
               )}
             >
               <span>👑</span>
-              <span className="hidden sm:inline">Bảng Hiệu Trưởng</span>
+              <span className="hidden sm:inline">
+                {currentUser?.role === 'truong_vien' ? 'Bảng Hiệu Trưởng' : 'Bảng Hiệu Phó'}
+              </span>
             </button>
           )}
-
-          {!isAdminUser && currentUser && (
-            <button
-              onClick={() => setSectModalOpen(true)}
-              title={`Môn phái hiện tại: ${activeSubjectConfig?.name}. Bấm để đổi.`}
-              className={`relative flex items-center gap-1.5 px-3 h-10 rounded-lg border font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 ${
-                isUnicorn 
-                  ? 'border-violet-200/40 bg-violet-50 text-violet-800 hover:bg-violet-100' 
-                  : 'border-synth-cyan/30 bg-synth-cyan/10 text-synth-cyan hover:bg-synth-cyan/20'
-              }`}
-            >
-              <span className="text-sm">{activeSubjectConfig?.icon}</span>
-              <span className="hidden md:inline">{activeSubjectConfig?.name}</span>
-            </button>
-          )}
-
 
           {currentUser && (
             <button

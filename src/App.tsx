@@ -534,8 +534,8 @@ function App() {
         />
       )}
 
-      {/* Mobile Bottom Navigation Bar */}
-      {currentUser && currentUser.role !== 'admin' && screen !== 'play' && !isHangMatterScreen && (
+      {/* Mobile Bottom Navigation Bar (Chỉ hiển thị cho Học sinh) */}
+      {currentUser && currentUser.role === 'student' && screen !== 'play' && !isHangMatterScreen && (
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-cyan/20 px-3 py-2.5 pb-3 flex justify-around items-center z-50 shadow-[0_-4px_20px_rgba(0,240,255,0.15)]">
           <button
             onClick={() => setScreen('map')}
@@ -599,14 +599,15 @@ function App() {
         </nav>
       )}
 
-      {/* Pet Stable Overlay handling smart reminders and floating button */}
-      <PetStableOverlay isDungeonScreen={isDungeonScreen || isHangMatterScreen || screen === 'pet'} />
-
-      {/* Popup chúc mừng thăng cấp — Luật Một Bảng, CORE_SPECS §7.2 (Task #40) */}
-      <LevelUpCelebration />
-
-      <GatekeeperModal />
-      <GlobalSectModal />
+      {/* Các tính năng chỉ dành cho Học sinh */}
+      {currentUser && currentUser.role === 'student' && (
+        <>
+          <PetStableOverlay isDungeonScreen={isDungeonScreen || isHangMatterScreen || screen === 'pet'} />
+          <LevelUpCelebration />
+          <GatekeeperModal />
+          <GlobalSectModal />
+        </>
+      )}
 
       {/* Footer */}
       <footer className="py-6 border-t border-synth-gray/30 text-center space-y-2">
