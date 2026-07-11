@@ -310,10 +310,12 @@ Những thay đổi cốt lõi cần lưu ý:
 
 > ❌ **Bãi bỏ:** quy tắc tỷ giá "100 NP = 10.000đ", Ví VND, thưởng tiền mặt từ Boss. Lý do: dễ gây lạm phát điểm và không có người chi trả bảo chứng. **App không quản lý tiền** — không tồn tại tài khoản tiền trong hệ thống; tiền mặt (nếu có) chỉ là MỘT LOẠI phần thưởng như mọi phần thưởng khác.
 
-*   **Chủ nhiệm tự tạo Phần Thưởng:** Mỗi chủ nhiệm tự tạo danh mục phần thưởng riêng và tự định giá bằng NP. Ví dụ: 1 ly trà sữa 25.000đ = 500 NP; bao lì xì tiền mặt 10k / 20k / 50k = mức NP tùy chủ nhiệm đặt. Chỉ các con thuộc lớp chủ nhiệm của chủ nhiệm đó **thấy được và đổi được** danh mục này.
-*   **Số lượng giới hạn (khan hiếm có chủ đích):** Mỗi phần thưởng có số lượng cụ thể (ví dụ: 10 bao lì xì 10k, 4 ly trà sữa). Ai kiếm đủ điểm đổi sớm thì lấy trước; mỗi lần đổi số lượng giảm xuống, hết là thôi. Đây đồng thời là **van an toàn ngân sách** cho giáo viên/chủ nhiệm — tổng chi tối đa luôn biết trước.
-*   **Luồng trao thưởng ngoài app:** Đổi quà = trừ NP của thiếu hiệp + tạo một yêu cầu chờ trao. Việc trao quà diễn ra hoàn toàn **ngoài đời thực**; chủ nhiệm bấm nút **"Đã Trao"** để đóng yêu cầu. Không có bất kỳ giao dịch tiền nào chạy bên trong hệ thống.
-*   **Boss không thưởng tiền:** phần thưởng Boss quy hết về Điểm + bonus hoàn thành cấu hình bởi Chủ Viện / Hiệu Phó (xem §2.1).
+Chi tiết về cơ chế hoạt động của **Phúc Lợi Lớp Học (Class Rewards)**, luồng giao dịch atomic trừ điểm/hoàn điểm, rút lại yêu cầu pending của học sinh và phê duyệt phát thưởng của Giáo viên, vui lòng xem tại đặc tả riêng **[SUB_SPEC_CLASS_REWARDS.md](./SUB_SPEC_CLASS_REWARDS.md)**.
+*   **Chủ nhiệm tự tạo Phần Thưởng:** Mỗi chủ nhiệm tự tạo danh mục phần thưởng riêng cho lớp mình và tự định giá bằng NP. Chỉ học sinh thuộc lớp của chủ nhiệm/phó chủ nhiệm đó mới nhìn thấy và đổi được. Học sinh chưa có lớp (orphan) sẽ nhìn thấy danh mục quà tặng toàn trường do Hiệu Trưởng/Phó tạo.
+*   **Số lượng giới hạn (khan hiếm có chủ đích):** Mỗi phần thưởng có số lượng cụ thể (`quantity`). Ai kiếm đủ điểm đổi sớm thì lấy trước; mỗi lần đổi số lượng giảm xuống, hết là thôi.
+*   **Cơ chế Rút Lại (Cancel/Refund):** Khi giáo viên chưa bấm "Phát Thưởng", học sinh có thể tự hủy yêu cầu đổi quà ngay lập tức để nhận lại 100% số NP đã tiêu và trả lại số lượng tồn kho cho quà tặng.
+*   **Luồng trao thưởng ngoài app:** Việc trao quà diễn ra hoàn toàn **ngoài đời thực**; chủ nhiệm bấm nút **"Phát Thưởng" (confirm delivery)** để đóng yêu cầu. Không có giao dịch tiền thật chạy bên trong hệ thống.
+*   **Boss không thưởng tiền:** Phần thưởng Boss quy hết về Điểm + bonus hoàn thành cấu hình bởi Chủ Viện / Hiệu Phó (xem §2.1).
 
 ### 3.3 Phút Tu Luyện (Learning Minutes) — thước đo North Star
 *   **Nguồn phút được ghi nhận:**
