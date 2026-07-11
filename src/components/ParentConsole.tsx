@@ -17,7 +17,6 @@ export const ParentConsole: React.FC = () => {
   const cancelRedemption = useGameState(state => state.cancelRedemption);
   const addParentReward = useGameState(state => state.addParentReward);
   const deleteParentReward = useGameState(state => state.deleteParentReward);
-  const parentPIN = useGameState(state => state.parentPIN);
 
   // Admin and member management states
   const currentUser = useGameState(state => state.currentUser);
@@ -195,7 +194,6 @@ export const ParentConsole: React.FC = () => {
           <div className="space-y-6">
             <FamilyManager
               currentUser={currentUser}
-              parentPIN={parentPIN}
               familyLinks={familyLinks}
               secondaryParents={secondaryParents}
               sendInvite={sendInvite}

@@ -4,11 +4,11 @@ import { UI_THEMES, type UiThemeConfig } from '../theme/uiThemes';
 import type { UiThemeId, UserProfile } from '../types/game';
 import { useGameState, THEME_UNLOCK_COST } from '../hooks/useGameState';
 import { useSect } from '../contexts/SectContext';
-import { SUBJECTS_CONFIG, GRADE_TIERS } from '../types/game';
+import { SUBJECTS_CONFIG, GRADE_TIERS, getStudentRankForLevel } from '../types/game';
+import { computeSubjectMasteryRatio, getMasteryRankByRatio, getMasteryRankByOrder } from '../utils/masteryRank';
 import type { SubjectId } from '../types/game';
 import { toast } from '../utils/toast';
 import { GiangHoCamNang } from './GiangHoCamNang';
-import { CORE_KNOWLEDGE_TOPICS } from '../data/coreKnowledge';
 
 interface ProfilePageProps {
   currentUser: UserProfile;
@@ -105,56 +105,33 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const activeTheme = UI_THEMES.find(theme => theme.id === currentTheme) || UI_THEMES[0];
   const isUnicorn = currentTheme === 'unicorn-dream';
 
-  // Local helper for Subject Mastery calculations
+  // Local helper for Subject Mastery calculations — công thức dùng chung với store (src/utils/masteryRank.ts)
+  // để ratchet maxAchievedMasteryRank khớp đúng số hiển thị (Luật Một Bảng, CORE_SPECS §7.4).
   const getSubjectMastery = (subId: SubjectId) => {
-    // Find all categories associated with this subject
-    const subjectCategories = Array.from(new Set(questions.filter(q => q.subject === subId).map(q => q.category)));
+    const ratio = computeSubjectMasteryRatio({
+      subjectId: subId,
+      questions,
+      categoryStats,
+      lessons,
+      lessonsProgress
+    });
 
-    // Calculate correct questions count
+    // Nội Công hiển thị (§7.4.3) — tổng câu đúng của môn, tách biệt khỏi công thức % tu luyện.
+    const subjectCategories = Array.from(new Set(questions.filter(q => q.subject === subId).map(q => q.category)));
     const correctCount = subjectCategories.reduce((sum, cat) => sum + (categoryStats[cat]?.totalCorrect || 0), 0);
 
-    // CORE_SPECS §9.4 & §9.E Completion Rate using Core Knowledge minQuestions as the base total
-    const topics = CORE_KNOWLEDGE_TOPICS.filter(t => t.subjectId === subId);
-    const totalQuestions = topics.reduce((sum, t) => sum + t.minQuestions, 0) || questions.filter(q => q.subject === subId).length || 1;
-
-    // Calculate lessons progress
-    const totalLessons = lessons.filter(l => l.subject === subId).length;
-    const completedLessons = lessons.filter(l => l.subject === subId && lessonsProgress[l.id]).length;
-
-    // Ratio calculation: 50% lessons completed + 50% correct questions ratio
-    const lessonRatio = totalLessons > 0 ? (completedLessons / totalLessons) : 0;
-    const questionRatio = totalQuestions > 0 ? (correctCount / totalQuestions) : 0;
-    const ratio = (lessonRatio * 0.5) + (questionRatio * 0.5);
-
-    // Determine rank based on ratio
-    let rankName = '🌱 Nhập Môn';
-    let rankColor = 'text-slate-400';
-    if (ratio >= 0.98) {
-      rankName = '🏆 Xuất Chúng';
-      rankColor = 'text-yellow-400 shadow-[0_0_8px_#facc15] font-black';
-    } else if (ratio >= 0.85) {
-      rankName = '⭐ Đại Thành';
-      rankColor = 'text-cyan-400 font-bold';
-    } else if (ratio >= 0.65) {
-      rankName = '🔥 Tinh Thông';
-      rankColor = 'text-orange-500 font-bold';
-    } else if (ratio >= 0.40) {
-      rankName = '⚔️ Tiểu Thành';
-      rankColor = 'text-fuchsia-400 font-semibold';
-    } else if (ratio >= 0.15) {
-      rankName = '📜 Lĩnh Ngộ';
-      rankColor = 'text-violet-400 font-semibold';
-    }
+    // Luật Bất Thoái (CORE_SPECS §7.4.4): hiển thị đẳng cấp CAO NHẤT giữa tỉ lệ thực tế hiện tại
+    // và đẳng cấp cao nhất từng đạt đã lưu — không bao giờ tụt hạng dù mẫu số tăng lên.
+    const liveRank = getMasteryRankByRatio(ratio);
+    const maxAchievedOrder = player.maxAchievedMasteryRank?.[subId] ?? 0;
+    const displayRank = liveRank.order >= maxAchievedOrder ? liveRank : getMasteryRankByOrder(maxAchievedOrder);
 
     return {
-      correctCount,
-      totalQuestions,
-      completedLessons,
-      totalLessons,
       ratio,
+      correctCount,
       percent: Math.min(100, Math.round(ratio * 100)),
-      rankName,
-      rankColor
+      rankName: `${displayRank.icon} ${displayRank.name}`,
+      rankColor: displayRank.colorClass
     };
   };
 
@@ -247,8 +224,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             {/* General Stats Header */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 text-xs">
               <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Cấp độ tu học</span>
-                <span className="font-orbitron font-black text-synth-cyan text-base">LV.{player.level}</span>
+                <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Danh hiệu tu học</span>
+                <span className="font-orbitron font-black text-synth-cyan text-base">
+                  {getStudentRankForLevel(player.level).icon} {getStudentRankForLevel(player.level).name}
+                </span>
+                <span className="block text-[10px] text-slate-400 font-semibold">Level {player.level}</span>
               </div>
               <div>
                 <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Tích lũy Chân Lý</span>

@@ -10,13 +10,14 @@ import { supabase } from '../../utils/supabaseClient';
 import { logActivity, checkLevelUp } from '../helpers';
 import { eventBus } from '../../utils/EventBus';
 import { toast } from '../../utils/toast';
+import { computeSubjectMasteryRatio, getMasteryRankByRatio } from '../../utils/masteryRank';
 
 export const createPlayerSlice: StateCreator<
   StoreState,
   [],
   [],
   Pick<StoreState, 
-    'player' | 'pet' | 'questions' | 'lessons' | 'lessonsProgress' | 'explorationProgress' | 'pageExplorationStates' | 'categoryStats' | 'rewards' | 'rewardRedemptions' | 'challenges' | 'dailyMission' | 'logs' | 'activeCombo' | 'maxCombo' | 'lastSyncTime' | 'profiles' | 'petStates' | 'categoryStatsAll' | 'answerQuestion' | 'useEnergy' | 'addEnergy' | 'tickEnergyRegen' | 'buyStreakShield' | 'buyHint' | 'buyTheme' | 'redeemReward' | 'feedPet' | 'spinWheel' | 'openMysteryBox' | 'masterLesson' | 'applyDefeatPenalty' | 'completeBossVictory' | 'completeLevel3Page' | 'updatePendingKeyQuestion' | 'awardCoinsAndXp' | 'clearExploration' | 'resetProgress' | 'checkDailyReset' | 'getAdaptiveQuestion' | 'getQuestionByWeight'
+    'player' | 'pet' | 'questions' | 'lessons' | 'lessonsProgress' | 'explorationProgress' | 'pageExplorationStates' | 'categoryStats' | 'rewards' | 'rewardRedemptions' | 'challenges' | 'dailyMission' | 'logs' | 'activeCombo' | 'maxCombo' | 'lastSyncTime' | 'profiles' | 'petStates' | 'categoryStatsAll' | 'answerQuestion' | 'useEnergy' | 'addEnergy' | 'tickEnergyRegen' | 'ratchetMasteryRank' | 'buyStreakShield' | 'buyHint' | 'buyTheme' | 'redeemReward' | 'feedPet' | 'spinWheel' | 'openMysteryBox' | 'masterLesson' | 'applyDefeatPenalty' | 'completeBossVictory' | 'completeLevel3Page' | 'updatePendingKeyQuestion' | 'awardCoinsAndXp' | 'clearExploration' | 'resetProgress' | 'checkDailyReset' | 'getAdaptiveQuestion' | 'getQuestionByWeight'
   >
 > = (set, get) => ({
   player: INITIAL_PLAYER,
@@ -161,6 +162,17 @@ export const createPlayerSlice: StateCreator<
             }
           });
 
+          // Luật Bất Thoái (CORE_SPECS §7.4.4): cập nhật Đẳng Cấp Môn Phái cao nhất từng đạt.
+          const answeredSubject = question.subject || 'english';
+          const masteryRatio = computeSubjectMasteryRatio({
+            subjectId: answeredSubject,
+            questions: state.questions,
+            categoryStats: updatedStats,
+            lessons: state.lessons,
+            lessonsProgress: state.lessonsProgress
+          });
+          get().ratchetMasteryRank(answeredSubject, masteryRatio);
+
           // Write activity log
           if (performanceScore > 0 && !effectiveCorrect) {
             logActivity(get, set, 
@@ -251,6 +263,24 @@ export const createPlayerSlice: StateCreator<
             });
             logActivity(get, set, 'energy_refill', 'Hồi đầy Chân Khí', `Đã nghỉ đủ ${resetHours ?? 3} giờ, Chân Khí hồi đầy trở lại.`);
           }
+        },
+
+  ratchetMasteryRank: (subjectId, ratio) => {
+          // Luật Bất Thoái (CORE_SPECS §7.4.4): Đẳng Cấp Môn Phái đã đạt không bao giờ tự tụt,
+          // kể cả khi Viện Chủ import thêm câu hỏi/bài học làm mẫu số tăng và tỉ lệ % thô giảm.
+          const state = get();
+          const newOrder = getMasteryRankByRatio(ratio).order;
+          const currentMax = state.player.maxAchievedMasteryRank?.[subjectId] ?? 0;
+          if (newOrder <= currentMax) return;
+          set({
+            player: {
+              ...state.player,
+              maxAchievedMasteryRank: {
+                ...(state.player.maxAchievedMasteryRank || {}),
+                [subjectId]: newOrder
+              }
+            }
+          });
         },
 
   buyStreakShield: () => {
@@ -470,6 +500,17 @@ export const createPlayerSlice: StateCreator<
               badges: levelCheck.badges
             }
           });
+
+          // Luật Bất Thoái (CORE_SPECS §7.4.4): hoàn thành bài học cũng tính vào tỉ lệ tu luyện môn phái.
+          const updatedLessonsProgress = { ...state.lessonsProgress, [lessonId]: true };
+          const lessonMasteryRatio = computeSubjectMasteryRatio({
+            subjectId: lesson.subject,
+            questions: state.questions,
+            categoryStats: state.categoryStats,
+            lessons: state.lessons,
+            lessonsProgress: updatedLessonsProgress
+          });
+          get().ratchetMasteryRank(lesson.subject, lessonMasteryRatio);
 
           logActivity(get, set,
             'exercise',

@@ -5,11 +5,18 @@ import { LogOut, Plus, GraduationCap, Users } from 'lucide-react';
 import { supabase } from '../utils/supabaseClient';
 
 export const ProfileSelectionScreen: React.FC = () => {
-  const { availableProfiles, selectProfile, createProfile } = useGameState();
+  const { availableProfiles, selectProfile, createProfile, quickStartProfile } = useGameState();
   const [isCreating, setIsCreating] = useState(false);
   const [newRole, setNewRole] = useState<'student' | 'parent'>('student');
   const [newName, setNewName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [quickStarting, setQuickStarting] = useState<'student' | 'parent' | null>(null);
+
+  // Chỉ Viện Trưởng/Phó Viện mới cần thấy toàn bộ danh sách hồ sơ + form tạo thủ công —
+  // người dùng thường (1 Google Account = 1 Học Sinh và/hoặc 1 Phụ Huynh) chỉ cần 2 lựa chọn đơn giản.
+  const hasAdminProfile = availableProfiles.some((p: any) => isAdmin(p.role));
+  const existingStudent = availableProfiles.find((p: any) => p.role === 'student');
+  const existingParent = availableProfiles.find((p: any) => p.role === 'parent' || p.role === 'secondary_parent');
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -29,6 +36,90 @@ export const ProfileSelectionScreen: React.FC = () => {
     }
   };
 
+  const handleQuickStart = async (role: 'student' | 'parent') => {
+    const existing = role === 'student' ? existingStudent : existingParent;
+    if (existing) {
+      selectProfile(existing.id);
+      return;
+    }
+    setQuickStarting(role);
+    try {
+      await quickStartProfile(role);
+    } finally {
+      setQuickStarting(null);
+    }
+  };
+
+  // Người dùng thường: hiện 1 modal chọn vai trò gọn nhẹ (không phải trang riêng) —
+  // đồng bộ phong cách với GoogleLoginScreen + các modal khác trong app.
+  if (!hasAdminProfile) {
+    return (
+      <div className="min-h-screen synth-grid-bg bg-synth-bg flex items-center justify-center p-4">
+        <div className="glass-panel rounded-3xl border border-synth-cyan/20 p-8 max-w-md w-full text-center space-y-6 shadow-[0_0_30px_rgba(0,240,255,0.15)] relative overflow-hidden">
+          <div className="absolute -top-12 -left-12 w-24 h-24 bg-synth-cyan/10 rounded-full blur-2xl"></div>
+          <div className="absolute -bottom-12 -right-12 w-24 h-24 bg-synth-magenta/10 rounded-full blur-2xl"></div>
+
+          <div className="space-y-1">
+            <h2 className="font-orbitron text-2xl font-black uppercase text-white tracking-widest">
+              Chọn Vai Trò
+            </h2>
+            <p className="text-xs text-synth-text-muted">Bạn muốn trải nghiệm với tư cách nào?</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              onClick={() => handleQuickStart('student')}
+              disabled={quickStarting !== null}
+              className="group relative flex flex-col items-center gap-3 p-5 rounded-2xl border border-white/10 bg-white/5 hover:border-synth-cyan/50 hover:bg-synth-cyan/5 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {existingStudent ? (
+                <img src={existingStudent.avatar} alt={existingStudent.name} className="w-16 h-16 rounded-xl object-cover ring-2 ring-white/20 group-hover:ring-synth-cyan/50" />
+              ) : (
+                <div className="w-16 h-16 rounded-xl bg-synth-cyan/10 border border-synth-cyan/30 flex items-center justify-center">
+                  <GraduationCap className="w-8 h-8 text-synth-cyan" />
+                </div>
+              )}
+              <div className="text-center">
+                <div className="font-orbitron font-bold text-sm">
+                  {quickStarting === 'student' ? 'Đang vào...' : existingStudent ? existingStudent.name : 'Học Sinh'}
+                </div>
+                <div className="text-[9px] uppercase tracking-wider text-synth-cyan font-bold mt-1">Thiếu Hiệp 🌱</div>
+              </div>
+            </button>
+
+            <button
+              onClick={() => handleQuickStart('parent')}
+              disabled={quickStarting !== null}
+              className="group relative flex flex-col items-center gap-3 p-5 rounded-2xl border border-white/10 bg-white/5 hover:border-synth-orange/50 hover:bg-synth-orange/5 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {existingParent ? (
+                <img src={existingParent.avatar} alt={existingParent.name} className="w-16 h-16 rounded-xl object-cover ring-2 ring-white/20 group-hover:ring-synth-orange/50" />
+              ) : (
+                <div className="w-16 h-16 rounded-xl bg-synth-orange/10 border border-synth-orange/30 flex items-center justify-center">
+                  <Users className="w-8 h-8 text-synth-orange" />
+                </div>
+              )}
+              <div className="text-center">
+                <div className="font-orbitron font-bold text-sm">
+                  {quickStarting === 'parent' ? 'Đang vào...' : existingParent ? existingParent.name : 'Phụ Huynh'}
+                </div>
+                <div className="text-[9px] uppercase tracking-wider text-synth-orange font-bold mt-1">Viện Chủ 👑</div>
+              </div>
+            </button>
+          </div>
+
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 mx-auto text-[11px] uppercase tracking-widest text-slate-400 hover:text-synth-magenta transition-colors cursor-pointer"
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            Đăng xuất
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-synth-bg text-white flex flex-col font-mono">
       {/* HUD Header */}
@@ -37,7 +128,7 @@ export const ProfileSelectionScreen: React.FC = () => {
           <h1 className="font-orbitron font-black text-xl tracking-wider text-synth-cyan">
             GAME_ENG_G10 <span className="text-synth-magenta">::</span> SYSTEM
           </h1>
-          <button 
+          <button
             onClick={handleLogout}
             className="flex items-center gap-2 text-xs uppercase tracking-widest text-slate-400 hover:text-synth-magenta transition-colors cursor-pointer"
           >

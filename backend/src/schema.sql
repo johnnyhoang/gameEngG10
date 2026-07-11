@@ -61,6 +61,10 @@ UPDATE ge10_player_profiles SET energy = max_energy WHERE energy > max_energy;
 -- max_energy cũ là setting global — bỏ hẳn, không còn ai đọc key này nữa.
 DELETE FROM ge10_game_settings WHERE setting_key = 'max_energy';
 
+-- Luật Bất Thoái (CORE_SPECS §7.4.4): Đẳng Cấp Môn Phái cao nhất từng đạt theo từng môn,
+-- key = SubjectId, value = order (0-5 trong SECT_MASTERY_RANKS) — không bao giờ tự hạ.
+ALTER TABLE ge10_player_profiles ADD COLUMN IF NOT EXISTS max_achieved_mastery_rank JSONB DEFAULT '{}'::jsonb;
+
 -- Pet States Table
 CREATE TABLE IF NOT EXISTS ge10_pet_states (
     user_id VARCHAR(255) PRIMARY KEY REFERENCES ge10_users(id) ON DELETE CASCADE,

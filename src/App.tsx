@@ -7,6 +7,7 @@ import { supabase } from './utils/supabaseClient';
 import type { Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { useSect } from './contexts/SectContext';
 import { PetStableOverlay } from './components/PetStableOverlay';
+import { LevelUpCelebration } from './components/LevelUpCelebration';
 import { WorldMap } from './components/WorldMap';
 import { PlayArea } from './components/PlayArea';
 import { ParentConsole } from './components/ParentConsole';
@@ -588,6 +589,9 @@ function App() {
 
       {/* Pet Stable Overlay handling smart reminders and floating button */}
       <PetStableOverlay isDungeonScreen={isDungeonScreen || isHangMatterScreen || screen === 'pet'} />
+
+      {/* Popup chúc mừng thăng cấp — Luật Một Bảng, CORE_SPECS §7.2 (Task #40) */}
+      <LevelUpCelebration />
 
       <GatekeeperModal />
       <GlobalSectModal />

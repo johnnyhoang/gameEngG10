@@ -222,3 +222,29 @@ Bối cảnh: ClaudeCode thực hiện một đợt **PM review toàn bộ CORE_
 
 ### Backlog refactor
 Toàn bộ item triển khai code (kèm priority / độ khó / model đề xuất) đã được tạo trong task list phiên làm việc — xem các task mới #33+ (Tier isolation, xóa Tim, Reward Catalog, Boss points, Energy v2, Streak leo thang, NP âm, Rank thống nhất, Mastery one-way, Gatekeeper 2/5, Phút Tu Luyện, Leaderboards, Kỳ Ngộ analysis, terminology sweep). Task #18 cũ (giới hạn 3 skip/ngày) đã lỗi thời theo spec Môn Chủ mới (không giới hạn, trừ NP).
+
+---
+
+## Đợt cập nhật 2026-07-11 (4): Popup chúc mừng thăng cấp (Task #40)
+
+Bối cảnh: phần "thống nhất 1 bảng" của §7.2 Luật Một Bảng hóa ra đã xong sẵn ở tầng spec + code từ đợt PM review trước (`STUDENT_RANKS`/`getStudentRankForLevel` trong `types/game.ts` đã khớp đúng bảng CORE_SPECS §7.2, bảng cũ trong SUB_SPEC_XP_NP.md đã bị bãi bỏ) — chỉ còn thiếu popup chúc mừng thăng cấp mà spec yêu cầu, hoàn toàn chưa tồn tại trong code.
+
+- [x] **`store/helpers.ts` — `checkLevelUp()`:** bắn `eventBus.publish('PLAYER_LEVEL_UP', {fromLevel, toLevel, rank, rankChanged})` đúng 1 lần dù nhảy nhiều cấp cùng lúc (VD Boss cộng dồn XP lớn).
+- [x] **Bug phát hiện thêm khi đọc kỹ hàm này:** log "Thăng cấp!" claim +50 Coin nhưng không có caller nào (`answerQuestion`/`masterLesson`/`completeBossVictory`) thực sự cộng số đó vào `player.coins` — chỉ mốc danh hiệu (rank-up) mới thật sự thưởng +100 qua `badgesChanged`. Sửa log về đúng 0 coin cho lên cấp thường, khớp đúng ý §7.3 "chỉ mốc danh hiệu mới tặng thưởng đột biến".
+- [x] **`LevelUpCelebration.tsx` mới:** overlay toàn cục nghe `PLAYER_LEVEL_UP`, popup đơn giản cho lên cấp thường, hoành tráng hơn (mô tả danh hiệu + bonus) khi đổi rank; tự đóng sau 4-6s hoặc chạm để đóng. Mount 1 lần trong `App.tsx`.
+- [x] **`ProfilePage.tsx`:** bổ sung hiển thị danh hiệu (icon+tên+level) ở tab Thân Phận — điểm tích hợp UI thứ 3 mà §7.3 liệt kê (TopHUD + Bảng Phụ Huynh/SettingsManager đã có sẵn từ trước, chỉ Profile còn thiếu).
+- [x] **Verify:** `npm run build` xanh. Chưa test trực quan được lúc lên cấp thật (cần chơi đủ XP, có dev server phiên khác đang chiếm port).
+
+---
+
+## Đợt cập nhật 2026-07-11 (5): Sect Mastery Luật Bất Thoái — maxAchievedMasteryRank (Task #41)
+
+Bối cảnh: Đẳng Cấp Môn Phái (§7.4) trước đây được tính 100% derived mỗi lần render `ProfilePage.tsx` (`getSubjectMastery`, công thức 50% bài học + 50% câu đúng/tổng câu Core Knowledge), KHÔNG hề persist ở đâu — nghĩa là khi Viện Chủ import thêm câu hỏi (mẫu số công thức tăng), tỉ lệ % và đẳng cấp hiển thị tụt xuống ngay, vi phạm thẳng §7.4.4 "Luật Bất Thoái".
+
+- [x] **`utils/masteryRank.ts` mới — nguồn định nghĩa DUY NHẤT:** `SECT_MASTERY_RANKS` (6 đẳng cấp kèm `order` 0-5 để so sánh) + `getMasteryRankByRatio`/`getMasteryRankByOrder` + `computeSubjectMasteryRatio` (port nguyên công thức cũ từ `ProfilePage.tsx`, dùng chung giữa UI hiển thị và store ratchet — tránh lệch bảng như từng xảy ra ở Task #40).
+- [x] **Data model:** `PlayerProfile.maxAchievedMasteryRank?: Partial<Record<SubjectId, number>>` — lưu `order` cao nhất từng đạt theo từng môn.
+- [x] **Store — ratchet tại đúng điểm tiến độ tăng (không phụ thuộc việc có mở ProfilePage hay không):** action mới `ratchetMasteryRank(subjectId, ratio)` trong `createPlayerSlice.ts` — chỉ nâng lên, không bao giờ hạ (`if (newOrder <= currentMax) return`). Gọi tại 2 điểm duy nhất tiến độ thực sự tăng: `answerQuestion` (sau khi `categoryStats` cập nhật) và `masterLesson` (sau khi `lessonsProgress` cập nhật) — KHÔNG gọi ở `completeBossVictory` (Boss không sinh câu trả lời mới cho category stats theo dạng ratchet cần).
+- [x] **`ProfilePage.tsx`:** `getSubjectMastery` giờ dùng `computeSubjectMasteryRatio` dùng chung, hiển thị đẳng cấp = MAX(rank theo tỉ lệ thực tế, rank cao nhất từng đạt đã lưu) — tỉ lệ % chi tiết dưới thanh progress vẫn phản ánh số thực đúng yêu cầu spec ("Tỉ lệ % chi tiết bên dưới đẳng cấp vẫn phản ánh số thực"). Xóa import chết `CORE_KNOWLEDGE_TOPICS` (logic đã chuyển vào `masteryRank.ts`).
+- [x] **Backend:** `schema.sql` — cột mới `ge10_player_profiles.max_achieved_mastery_rank JSONB DEFAULT '{}'::jsonb`. `server.ts` — 2 endpoint GET profile (chủ tài khoản + admin xem học sinh khác) trả thêm field này; `POST /api/profile/:id/sync` merge theo giá trị CAO HƠN từng môn giữa client/DB (`Math.max` per-key) thay vì ghi đè thẳng — tránh 2 thiết bị đồng bộ lệch làm mất mốc đẳng cấp đã đạt trên 1 thiết bị khác.
+- [x] **Verify:** `npm run build` (frontend) và `cd backend && npm run build` đều xanh.
+- [ ] *(Ghi nhận, không thuộc phạm vi Task #41)* `StudentProfileView.tsx`/`SettingsManager.tsx` (Bảng Phụ Huynh) chưa hiển thị Đẳng Cấp Môn Phái của con — §7.4 chỉ yêu cầu hiển thị ở Profile Page, không bắt buộc ở Bảng Phụ Huynh, nên để nguyên phạm vi hẹp.

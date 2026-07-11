@@ -109,6 +109,8 @@ export interface PlayerProfile {
   unlockedThemes?: UiThemeId[];
   /** Track daily skips for Môn Chủ Hỏi Tội */
   dailySkips?: { date: string, count: number };
+  /** Luật Bất Thoái (CORE_SPECS §7.4.4): Đẳng Cấp Môn Phái cao nhất từng đạt theo từng môn (lưu `order` trong SECT_MASTERY_RANKS) — không bao giờ tụt kể cả khi Viện Chủ import thêm câu hỏi/bài học làm tỉ lệ % thô giảm. */
+  maxAchievedMasteryRank?: Partial<Record<SubjectId, number>>;
 }
 
 export interface Question {

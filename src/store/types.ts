@@ -55,6 +55,8 @@ export interface StoreState {
   addEnergy: (amount: number) => void;
   /** Tự hồi ĐẦY Chân Khí nếu đã cạn 0 đủ lâu (>= resetHours) — gọi định kỳ từ TopHUD + lúc khởi động app (SUB_SPEC_ENERGY §5, Phương án A). */
   tickEnergyRegen: () => void;
+  /** Luật Bất Thoái (CORE_SPECS §7.4.4): nâng maxAchievedMasteryRank[subjectId] nếu ratio hiện tại quy ra rank cao hơn — không bao giờ hạ. */
+  ratchetMasteryRank: (subjectId: SubjectId, ratio: number) => void;
   buyStreakShield: () => boolean;
   buyHint: () => boolean;
   buyTheme: (themeId: UiThemeId) => boolean;

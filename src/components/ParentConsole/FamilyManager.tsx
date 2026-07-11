@@ -4,7 +4,6 @@ import { toast } from '../../utils/toast';
 
 interface FamilyManagerProps {
   currentUser: any;
-  parentPIN: string;
   familyLinks: any[];
   secondaryParents: any[];
   sendInvite: (studentId: string) => Promise<boolean>;
@@ -16,7 +15,6 @@ interface FamilyManagerProps {
 
 export const FamilyManager: React.FC<FamilyManagerProps> = ({
   currentUser,
-  parentPIN,
   familyLinks,
   secondaryParents,
   sendInvite,
@@ -72,19 +70,6 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
       <h3 className="font-orbitron font-bold text-sm text-synth-magenta uppercase tracking-wider flex items-center gap-2">
         🏛️ Chính Điện — Quản lý thiếu hiệp & Cấp quyền
       </h3>
-
-      {/* Family Connection Information */}
-      <div className="rounded-2xl border border-synth-cyan/20 bg-synth-cyan/5 p-4 flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="space-y-1">
-          <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">Mã Liên Kết Gia Đình</h4>
-          <p className="text-xs text-slate-300">Sử dụng mã PIN này để Học sinh kết nối tài khoản vào gia đình.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className="px-6 py-3 bg-black/40 border border-synth-cyan/30 rounded-xl font-orbitron font-bold text-2xl text-white tracking-[0.25em]">
-            {parentPIN}
-          </div>
-        </div>
-      </div>
 
       {/* Mời Thiếu Hiệp (Family System Phase 1.1) */}
       <div className="rounded-2xl border border-synth-magenta/20 bg-synth-magenta/5 p-4 space-y-4">

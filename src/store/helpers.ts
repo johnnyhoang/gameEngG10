@@ -43,7 +43,9 @@ export const checkLevelUp = (
     while (xp >= level * 200) {
       xp -= level * 200;
       level += 1;
-      logActivity(get, set, 'exercise', 'Thăng cấp!', `Bạn vừa chạm Level ${level}.`, 50, 0);
+      // Lên cấp thường không tự thưởng NP (chỉ mốc danh hiệu mới thưởng đột biến — CORE_SPECS §7.3);
+      // log chỉ ghi nhận sự kiện, không claim số Coin không thực sự được cộng.
+      logActivity(get, set, 'exercise', 'Thăng cấp!', `Bạn vừa chạm Level ${level}.`, 0, 0);
       eventBus.publish('PET_GROWTH', { levelUp: true });
     }
   };
@@ -67,6 +69,17 @@ export const checkLevelUp = (
         rankUpBonusXp
       );
     }
+  }
+
+  // Popup chúc mừng thăng cấp (Luật Một Bảng — CORE_SPECS §7.2): bắn đúng 1 lần dù nhảy nhiều
+  // cấp cùng lúc (VD hoàn thành Boss cộng dồn XP lớn), UI subscribe để hiện overlay ăn mừng.
+  if (level > currentLevel) {
+    eventBus.publish('PLAYER_LEVEL_UP', {
+      fromLevel: currentLevel,
+      toLevel: level,
+      rank: newRank,
+      rankChanged: newRank.id !== oldRank.id
+    });
   }
 
   return { level, xp, badges, badgesChanged };
