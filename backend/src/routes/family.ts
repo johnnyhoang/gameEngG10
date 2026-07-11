@@ -11,18 +11,24 @@ router.get('/users/search', authMiddleware, async (req: any, res) => {
   const { q, role } = req.query;
   if (!q || typeof q !== 'string' || !q.trim()) return res.json([]);
   try {
+    const accountId = req.user?.sub;
+    if (!accountId) return res.status(401).json({ error: 'Unauthorized: missing accountId' });
+
     const searchTerm = `%${q.trim()}%`;
     let queryText = `
       SELECT id, name, email, avatar_url, role 
       FROM ge10_users 
-      WHERE is_active = TRUE AND (LOWER(name) LIKE LOWER($1) OR LOWER(email) LIKE LOWER($1))
+      WHERE is_active = TRUE 
+        AND account_id <> $1
+        AND (LOWER(name) LIKE LOWER($2) OR LOWER(email) LIKE LOWER($2))
     `;
-    const params: any[] = [searchTerm];
+    const params: any[] = [accountId, searchTerm];
+
     if (role) {
       if (role === 'parent' || role === 'secondary_parent') {
         queryText += " AND role IN ('parent', 'secondary_parent')";
       } else {
-        queryText += ' AND role = $2';
+        queryText += ' AND role = $3';
         params.push(role);
 
         if (role === 'student') {
