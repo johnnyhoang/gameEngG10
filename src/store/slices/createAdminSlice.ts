@@ -16,10 +16,11 @@ export const createAdminSlice: StateCreator<
   [],
   [],
   Pick<StoreState, 
-    'adminStudents' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'parentQuests' | 'markRewardDelivered' | 'cancelRedemption' | 'addParentReward' | 'deleteParentReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'adminSetEnergyConfig' | 'updateGameSettings' | 'addParentQuest' | 'completeParentQuest' | 'deleteParentQuest' | 'claimParentQuest' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
+    'adminStudents' | 'adminLinks' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'parentQuests' | 'markRewardDelivered' | 'cancelRedemption' | 'addParentReward' | 'deleteParentReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'adminSetEnergyConfig' | 'updateGameSettings' | 'addParentQuest' | 'completeParentQuest' | 'deleteParentQuest' | 'claimParentQuest' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
   >
 > = (set, get) => ({
   adminStudents: [],
+  adminLinks: [],
 
   selectedStudentProfile: null,
 
@@ -252,13 +253,13 @@ export const createAdminSlice: StateCreator<
   },
 
   fetchAdminStudents: async () => {
-          try {
-            const users = await adminService.fetchAdminStudents();
-            set({ adminStudents: users });
-          } catch (e) {
-            console.error('Error fetching admin students list:', e);
-          }
-        },
+    try {
+      const data = await adminService.fetchAdminStudents();
+      set({ adminStudents: data.users || [], adminLinks: data.links || [] });
+    } catch (e) {
+      console.error('Error fetching admin students list:', e);
+    }
+  },
 
   promoteUser: async (targetUserId: string, newRole: string) => {
           try {

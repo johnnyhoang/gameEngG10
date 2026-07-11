@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { isAdmin, isParentRole } from '../utils/roleHelpers';
 import { Unlock } from 'lucide-react';
@@ -23,6 +23,7 @@ export const ParentConsole: React.FC = () => {
   // Admin and member management states
   const currentUser = useGameState(state => state.currentUser);
   const adminStudents = useGameState(state => state.adminStudents || []);
+  const adminLinks = useGameState(state => state.adminLinks || []);
   const selectedStudentProfile = useGameState(state => state.selectedStudentProfile);
   const fetchAdminStudents = useGameState(state => state.fetchAdminStudents);
   const fetchStudentProfile = useGameState(state => state.fetchStudentProfile);
@@ -81,11 +82,9 @@ export const ParentConsole: React.FC = () => {
   }, [currentUser?.role]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (activeTab === 'chinh_dien') {
-      const { fetchAdminStudents: fetchAdm, fetchFamily: fetchFam } = useGameState.getState();
-      fetchAdm();
-      fetchFam();
-    }
+    const { fetchAdminStudents: fetchAdm, fetchFamily: fetchFam } = useGameState.getState();
+    fetchAdm();
+    fetchFam();
   }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -122,6 +121,16 @@ export const ParentConsole: React.FC = () => {
   const activeRewardCatalog = selectedStudentProfile?.rewards || [];
   const activeRedemptions = selectedStudentProfile?.rewardRedemptions || [];
 
+  const consoleTitle = useMemo(() => {
+    switch (currentUser?.role) {
+      case 'truong_vien': return 'Bảng Quản Trị Hiệu Trưởng 👑';
+      case 'pho_vien': return 'Bảng Quản Trị Hiệu Phó 🛡️';
+      case 'parent': return 'Bảng Quản Trị Chủ Nhiệm 📋';
+      case 'secondary_parent': return 'Bảng Quản Trị Phó Chủ Nhiệm 🤝';
+      default: return 'Bảng Quản Trị Học Viện 🏛️';
+    }
+  }, [currentUser?.role]);
+
   return (
     <div className="space-y-6 pb-20 md:pb-6">
       {/* HUD Header */}
@@ -129,7 +138,7 @@ export const ParentConsole: React.FC = () => {
         <div className="flex items-center gap-3">
           <Unlock className="w-6 h-6 text-synth-magenta" />
           <h2 className="font-orbitron text-lg font-black text-white uppercase tracking-wider flex items-center gap-1.5">
-            Bảng Quản Trị Hiệu Trưởng 👑
+            {consoleTitle}
             <button
               onClick={() => showHelp('parent-console')}
               className="w-5 h-5 rounded-full bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta text-[10px] font-black flex items-center justify-center hover:bg-synth-magenta/40 cursor-pointer transition-colors"
@@ -139,6 +148,7 @@ export const ParentConsole: React.FC = () => {
             </button>
           </h2>
         </div>
+
 
         {/* Tab Controls */}
         <div className="hidden md:flex gap-2 flex-wrap">
@@ -290,7 +300,6 @@ export const ParentConsole: React.FC = () => {
               currentUser={currentUser!}
               currentTheme={uiTheme}
               onSelectTheme={setUiTheme}
-              onOpenLogs={() => {}}
             />
           )
         )}
@@ -299,7 +308,7 @@ export const ParentConsole: React.FC = () => {
           <SettingsManager
             currentUser={currentUser}
             adminStudents={adminStudents}
-            questions={questions}
+            adminLinks={adminLinks}
             gameSettings={gameSettings}
             updateGameSettings={updateGameSettings as any}
             addHandbookPage={addHandbookPage as any}

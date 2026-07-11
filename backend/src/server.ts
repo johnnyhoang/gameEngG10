@@ -16,6 +16,7 @@ import adminRouter from './routes/admin.js';
 import economyRouter from './routes/economy.js';
 import gatekeeperRouter from './routes/gatekeeper.js';
 import gameRouter from './routes/game.js';
+import classRewardsRouter from './routes/classRewards.js';
 import { adaptLegacyProfiles } from './helpers/profileAdapter.js';
 
 dotenv.config();
@@ -91,6 +92,7 @@ app.use('/api', adminRouter);
 app.use('/api', economyRouter);
 app.use('/api', gatekeeperRouter);
 app.use('/api', gameRouter);
+app.use('/api', classRewardsRouter);
 
 app.listen(PORT, () => {
   console.log(`CyberEnglish API Server booting on port ${PORT}...`);

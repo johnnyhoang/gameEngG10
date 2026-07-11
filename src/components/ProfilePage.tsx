@@ -9,12 +9,12 @@ import { computeSubjectMasteryRatio, getMasteryRankByRatio, getMasteryRankByOrde
 import type { SubjectId } from '../types/game';
 import { toast } from '../utils/toast';
 import { GiangHoCamNang } from './GiangHoCamNang';
+import { ActivityLog } from './ActivityLog';
 
 interface ProfilePageProps {
   currentUser: UserProfile;
   currentTheme: UiThemeId;
   onSelectTheme: (themeId: UiThemeId) => void;
-  onOpenLogs: () => void;
 }
 
 const getThemeCardClass = (themeId: UiThemeId, isActive: boolean) => {
@@ -85,8 +85,7 @@ const ThemePreview: React.FC<{ theme: UiThemeConfig }> = ({ theme }) => {
 export const ProfilePage: React.FC<ProfilePageProps> = ({
   currentUser,
   currentTheme,
-  onSelectTheme,
-  onOpenLogs
+  onSelectTheme
 }) => {
   // Load game state values internally
   const questions = useGameState(state => state.questions);
@@ -99,7 +98,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const activeGradeTier = useGameState(state => state.activeGradeTier);
   const setGradeTier = useGameState(state => state.setGradeTier);
 
-  const [activeTab, setActiveTab] = useState<'identity' | 'themes'>('identity');
+  const [activeTab, setActiveTab] = useState<'identity' | 'themes' | 'logs'>('identity');
+
   const [isCamNangOpen, setIsCamNangOpen] = useState(false);
 
   const activeTheme = UI_THEMES.find(theme => theme.id === currentTheme) || UI_THEMES[0];
@@ -216,7 +216,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           >
             🎨 Cá Tính & Phong Vị
           </button>
+          <button
+            onClick={() => setActiveTab('logs')}
+            className={`px-4 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
+              activeTab === 'logs'
+                ? 'bg-synth-magenta border border-synth-magenta text-black shadow-[0_0_8px_#ff007f]'
+                : 'bg-white/5 border border-white/5 text-slate-400 hover:text-white'
+            }`}
+          >
+            📊 Dòng Hoạt Động
+          </button>
         </div>
+
 
         {/* TAB 1: THÂN PHẬN & VÕ HỌC */}
         {activeTab === 'identity' && (
@@ -322,12 +333,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   </div>
                 </div>
                 <button
-                  onClick={onOpenLogs}
+                  onClick={() => setActiveTab('logs')}
                   className="w-full sm:w-auto px-5 py-2.5 bg-white/10 hover:bg-white/15 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer border border-white/10 hover:scale-[1.02]"
                 >
                   Xem Nhật Ký 📊
                 </button>
               </div>
+
             )}
 
             {/* Subject Sects Grid */}
@@ -538,7 +550,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </div>
           </div>
         )}
+
+        {activeTab === 'logs' && (
+          <div className="space-y-4 max-w-3xl mx-auto">
+            <ActivityLog />
+          </div>
+        )}
       </div>
     </div>
   );
 };
+

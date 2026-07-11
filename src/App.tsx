@@ -458,24 +458,12 @@ function App() {
               currentUser={currentUser}
               currentTheme={uiTheme}
               onSelectTheme={setUiTheme}
-              onOpenLogs={() => setScreen('logs')}
             />
           )}
 
-          {screen === 'logs' && (
-            <div className="lg:hidden">
-              <ActivityLog />
-            </div>
-          )}
         </section>
-
-        {/* Right Info Ledger (Hidden in play area, hidden on mobile) */}
-        {!isDungeonScreen && !isHangMatterScreen && !isAdmin(currentUser?.role) && (
-          <aside className="hidden lg:block w-80 shrink-0 h-fit lg:sticky lg:top-24">
-            <ActivityLog />
-          </aside>
-        )}
       </main>
+
 
       {/* Reward/Notification Modal */}
       {modalData?.isOpen && (

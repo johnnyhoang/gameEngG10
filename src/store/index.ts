@@ -7,6 +7,7 @@ import { createFamilySlice } from './slices/createFamilySlice';
 import { createUISlice } from './slices/createUISlice';
 import { createPlayerSlice } from './slices/createPlayerSlice';
 import { createAdminSlice } from './slices/createAdminSlice';
+import { createClassRewardSlice } from './slices/createClassRewardSlice';
 import { ALL_HANDBOOK_PAGES } from '../data/handbookPages';
 
 export const useGameState = create<StoreState>()(
@@ -17,6 +18,7 @@ export const useGameState = create<StoreState>()(
       ...createUISlice(set, get, store),
       ...createPlayerSlice(set, get, store),
       ...createAdminSlice(set, get, store),
+      ...createClassRewardSlice(set, get, store),
     }),
     {
       name: 'cyber-english-state',

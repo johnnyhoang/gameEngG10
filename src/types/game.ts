@@ -221,6 +221,32 @@ export interface RewardRedemption {
   deliveredAt?: number;
 }
 
+/** Phần thưởng do giáo viên (Chủ Nhiệm) tạo cho cả lớp — học sinh trong lớp đều thấy, first-come-first-served. */
+export interface ClassReward {
+  id: string;
+  teacherId: string;
+  teacherName?: string;
+  title: string;
+  costCoins: number;
+  quantity: number;
+  remaining: number;
+  createdAt: number;
+}
+
+/** Một lượt đổi phần thưởng lớp — học sinh gửi yêu cầu, giáo viên bấm "Phát Thưởng". */
+export interface ClassRewardRedemption {
+  id: string;
+  classRewardId: string;
+  studentId?: string;
+  studentName?: string;
+  studentAvatar?: string;
+  rewardTitle: string;
+  costCoins: number;
+  status: RewardStatus;
+  requestedAt: number;
+  deliveredAt?: number;
+}
+
 export interface HistoryLog {
   id: string;
   timestamp: number;

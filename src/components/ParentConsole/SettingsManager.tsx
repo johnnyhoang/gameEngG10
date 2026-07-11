@@ -1,7 +1,6 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { SlidersHorizontal, BookOpen, BarChart as ChartIcon, FileText, Shield, RefreshCw } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { SUBJECTS_CONFIG, getStudentRankForLevel } from '../../types/game';
+import { getStudentRankForLevel } from '../../types/game';
 import { isAdmin, isSuperAdmin } from '../../utils/roleHelpers';
 import { toast } from '../../utils/toast';
 import { authService } from '../../services/authService';
@@ -9,7 +8,7 @@ import { authService } from '../../services/authService';
 interface SettingsManagerProps {
   currentUser: any;
   adminStudents: any[];
-  questions: any[];
+  adminLinks?: any[];
   gameSettings: any;
   updateGameSettings: (settings: any) => Promise<void>;
   addHandbookPage: (page: any) => void;
@@ -346,7 +345,7 @@ const VicePrincipalApplicationsManager: React.FC<{ currentUser: any }> = ({ curr
 export const SettingsManager: React.FC<SettingsManagerProps> = ({
   currentUser,
   adminStudents,
-  questions,
+  adminLinks = [],
   gameSettings,
   updateGameSettings,
   addHandbookPage,
@@ -379,33 +378,116 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
     toast.success('Đã lưu cấu hình hoạt động của game thành công!');
   };
 
-  const totalQuestions = questions.length;
-  const subjectQuestionStats = useMemo(() => {
-    return Object.values(SUBJECTS_CONFIG).map(sub => {
-      const count = questions.filter(q => q.subject === sub.id).length;
-      return {
-        name: sub.name,
-        icon: sub.icon,
-        color: sub.color,
-        count
-      };
-    });
-  }, [questions]);
+  const [rosterTab, setRosterTab] = useState<'students' | 'primary_teachers' | 'secondary_teachers' | 'admins'>('students');
+  const [teacherStudentTab, setTeacherStudentTab] = useState<'mine' | 'co_managed'>('mine');
 
-  const nonAdminStudents = useMemo(() => {
-    return adminStudents.filter((s: any) => !isAdmin(s.role));
+  const isCallerAdmin = isAdmin(currentUser?.role);
+
+  // Filter students strictly by role
+  const allStudents = useMemo(() => {
+    return adminStudents.filter((s: any) => s.role === 'student');
   }, [adminStudents]);
 
-  const totalStudents = nonAdminStudents.length;
-  const totalXP = nonAdminStudents.reduce((acc, s) => acc + (s.player?.xp || 0), 0);
-  const totalCoins = nonAdminStudents.reduce((acc, s) => acc + (s.player?.coins || 0), 0);
+  // If teacher: filter students into "My Class" (Primary link) and "Co-managed Class" (Secondary link)
+  const myClassStudents = useMemo(() => {
+    if (isCallerAdmin) return allStudents;
+    const studentIds = (adminLinks || [])
+      .filter((l: any) => l.parent_id === currentUser?.id && l.link_type === 'primary')
+      .map((l: any) => l.student_id);
+    return allStudents.filter((s: any) => studentIds.includes(s.id));
+  }, [allStudents, adminLinks, currentUser?.id, isCallerAdmin]);
+
+  const coManagedClassStudents = useMemo(() => {
+    if (isCallerAdmin) return [];
+    const studentIds = (adminLinks || [])
+      .filter((l: any) => l.parent_id === currentUser?.id && l.link_type === 'secondary')
+      .map((l: any) => l.student_id);
+    return allStudents.filter((s: any) => studentIds.includes(s.id));
+  }, [allStudents, adminLinks, currentUser?.id, isCallerAdmin]);
+
+  const activeDisplayStudents = useMemo(() => {
+    if (isCallerAdmin) {
+      return [...allStudents].sort((a, b) => (b.player?.xp || 0) - (a.player?.xp || 0));
+    }
+    const pool = teacherStudentTab === 'mine' ? myClassStudents : coManagedClassStudents;
+    return [...pool].sort((a, b) => (b.player?.xp || 0) - (a.player?.xp || 0));
+  }, [isCallerAdmin, allStudents, teacherStudentTab, myClassStudents, coManagedClassStudents]);
+
+  // Combined students for stats cards
+  const combinedStudentsForStats = useMemo(() => {
+    if (isCallerAdmin) return allStudents;
+    const uniqueMap = new Map();
+    [...myClassStudents, ...coManagedClassStudents].forEach(s => uniqueMap.set(s.id, s));
+    return Array.from(uniqueMap.values());
+  }, [isCallerAdmin, allStudents, myClassStudents, coManagedClassStudents]);
+
+  const totalStudents = combinedStudentsForStats.length;
+  const totalXP = combinedStudentsForStats.reduce((acc, s) => acc + (s.player?.xp || 0), 0);
+  const totalCoins = combinedStudentsForStats.reduce((acc, s) => acc + (s.player?.coins || 0), 0);
   const avgLevel = totalStudents > 0
-    ? Math.round(nonAdminStudents.reduce((acc, s) => acc + (s.player?.level || 1), 0) / totalStudents)
+    ? Math.round(combinedStudentsForStats.reduce((acc, s) => acc + (s.player?.level || 1), 0) / totalStudents)
     : 0;
 
-  const sortedStudents = useMemo(() => {
-    return [...nonAdminStudents].sort((a, b) => (b.player?.level || 1) - (a.player?.level || 1));
-  }, [nonAdminStudents]);
+  // Other personnel lists
+  const primaryTeachers = useMemo(() => {
+    const list = adminStudents.filter((u: any) => u.role === 'parent');
+    if (isCallerAdmin) return list;
+    const studentIds = [...myClassStudents, ...coManagedClassStudents].map(s => s.id);
+    const parentIds = (adminLinks || [])
+      .filter(l => studentIds.includes(l.student_id) && l.parent_role === 'parent')
+      .map(l => l.parent_id);
+    return list.filter(u => parentIds.includes(u.id) || u.id === currentUser?.id);
+  }, [adminStudents, isCallerAdmin, myClassStudents, coManagedClassStudents, adminLinks, currentUser?.id]);
+
+  const secondaryTeachers = useMemo(() => {
+    const list = adminStudents.filter((u: any) => u.role === 'secondary_parent');
+    if (isCallerAdmin) return list;
+    const studentIds = [...myClassStudents, ...coManagedClassStudents].map(s => s.id);
+    const parentIds = (adminLinks || [])
+      .filter(l => studentIds.includes(l.student_id) && l.parent_role === 'secondary_parent')
+      .map(l => l.parent_id);
+    return list.filter(u => parentIds.includes(u.id) || u.id === currentUser?.id);
+  }, [adminStudents, isCallerAdmin, myClassStudents, coManagedClassStudents, adminLinks, currentUser?.id]);
+
+  const schoolAdmins = useMemo(() => {
+    return adminStudents.filter((u: any) => u.role === 'truong_vien' || u.role === 'pho_vien');
+  }, [adminStudents]);
+
+  // Helpers to get relationships
+  const getStudentCoManagers = (studentId: string) => {
+    const links = (adminLinks || []).filter(l => l.student_id === studentId);
+    const managers = links.map(l => {
+      const roleName = l.parent_role === 'parent' ? 'Chủ Nhiệm' : 'Hỗ Trợ';
+      return `${l.parent_name} (${roleName})`;
+    });
+    return managers.length > 0 ? managers.join(', ') : 'Chưa nhận lớp';
+  };
+
+  const getTeacherManagedStudents = (teacherId: string, linkType: 'primary' | 'secondary') => {
+    const studentIds = (adminLinks || [])
+      .filter(l => l.parent_id === teacherId && l.link_type === linkType)
+      .map(l => l.student_id);
+    const names = adminStudents
+      .filter(s => s.role === 'student' && studentIds.includes(s.id))
+      .map(s => s.name);
+    return names.length > 0 ? names.join(', ') : 'Trống';
+  };
+
+  const handleCreateHandbookPage = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!hbTitle || !hbContent) {
+      toast.error('Vui lòng điền tiêu đề và nội dung trang sách!');
+      return;
+    }
+    addHandbookPage({
+      category: hbCategory,
+      title: hbTitle,
+      content: hbContent
+    });
+    toast.success('Đã nạp thêm trang dặn dò thành công vào cẩm nang của thiếu hiệp! ✍️');
+    setHbTitle('');
+    setHbContent('');
+  };
 
   return (
     <div className="space-y-6">
@@ -508,92 +590,77 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
             onClick={handleSaveSettings}
             className="px-4 py-2.5 rounded-xl bg-synth-cyan text-black font-orbitron font-bold text-[10px] uppercase tracking-wider hover:synth-glow-cyan transition-all shrink-0 cursor-pointer"
           >
-            Lưu cấu hình quy tắc
+            Lưu Quy Tắc ⚙️
           </button>
         </div>
       </div>
 
-      {/* 2. Cẩm Nang Bí Lục Management Panel */}
-      <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5">
-        <div className="flex items-center gap-2">
-          <BookOpen className="w-4 h-4 text-synth-magenta" />
-          <h3 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-1.5">
-            📖 Cẩm Nang Bí Lục — Sổ tay dặn dò & Giang Hồ Quy Tắc
-          </h3>
-        </div>
-
-        <div className="bg-synth-gray/10 p-4 rounded-xl border border-white/5">
-          <h4 className="text-xs font-bold text-white uppercase tracking-wider mb-3">
-            Nạp thêm trang dặn dò / quy định mới 📜
-          </h4>
-          <form 
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (!hbTitle || !hbContent) {
-                toast.error('Vui lòng điền tiêu đề và nội dung trang sách!');
-                return;
-              }
-              addHandbookPage({
-                category: hbCategory,
-                title: hbTitle,
-                content: hbContent
-              });
-              toast.success('Đã nạp thêm trang dặn dò thành công vào cẩm nang của thiếu hiệp! ✍️');
-              setHbTitle('');
-              setHbContent('');
-            }}
-            className="space-y-3"
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-              <label className="space-y-1">
-                <span className="text-synth-text-muted font-semibold block">Chương (Category)</span>
-                <select
-                  value={hbCategory}
-                  onChange={(e) => setHbCategory(e.target.value)}
-                  className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-magenta cursor-pointer text-xs"
-                >
-                  <option value="Dặn Dò của Hiệu Trưởng">Dặn Dò của Hiệu Trưởng 👑</option>
-                  <option value="Võ Học & Tinh Tấn">Võ Học & Tinh Tấn ⚔️</option>
-                  <option value="Đấu Trường Kỳ Ngộ">Đấu Trường Kỳ Ngộ 🏟️</option>
-                  <option value="Giang Hồ Quy Tắc">Giang Hồ Quy Tắc 📜</option>
-                </select>
-              </label>
-              <label className="space-y-1">
-                <span className="text-synth-text-muted font-semibold block">Tiêu đề trang</span>
-                <input
-                  type="text"
-                  value={hbTitle}
-                  onChange={(e) => setHbTitle(e.target.value)}
-                  placeholder="Ví dụ: Quy tắc phân bổ NP, Nhắc nhở kỷ luật"
-                  className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-magenta text-xs"
+      {/* 2. Cẩm nang học viện */}
+      {isCallerAdmin && (
+        <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-synth-magenta" />
+              <h3 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-1.5">
+                📜 Cẩm Nang Học Viện (Handbook)
+              </h3>
+            </div>
+          </div>
+          <div className="bg-white/5 rounded-xl border border-white/5 p-4 space-y-4">
+            <h4 className="font-bold text-xs text-slate-300">Viết thêm trang cẩm nang</h4>
+            <form onSubmit={handleCreateHandbookPage} className="space-y-4 text-left">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label className="space-y-1 text-xs block">
+                  <span className="text-synth-text-muted font-semibold block">Đề mục trang sách (Category)</span>
+                  <input
+                    type="text"
+                    required
+                    value={hbCategory}
+                    onChange={(e) => setHbCategory(e.target.value)}
+                    placeholder="Ví dụ: Quy định, Bí kíp"
+                    className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-magenta text-xs"
+                  />
+                </label>
+                <label className="space-y-1 text-xs block">
+                  <span className="text-synth-text-muted font-semibold block">Tiêu đề (Title)</span>
+                  <input
+                    type="text"
+                    required
+                    value={hbTitle}
+                    onChange={(e) => setHbTitle(e.target.value)}
+                    placeholder="Ví dụ: Quy tắc phân bổ NP, Nhắc nhở kỷ luật"
+                    className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-magenta text-xs"
+                  />
+                </label>
+              </div>
+              <label className="space-y-1 text-xs block">
+                <span className="text-synth-text-muted font-semibold block">Nội dung bài viết (Markdown / Text)</span>
+                <textarea
+                  required
+                  value={hbContent}
+                  onChange={(e) => setHbContent(e.target.value)}
+                  placeholder="Nhập nội dung dặn dò chi tiết tại đây..."
+                  className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-magenta text-xs h-24 resize-none"
                 />
               </label>
-            </div>
-            <label className="space-y-1 text-xs block">
-              <span className="text-synth-text-muted font-semibold block">Nội dung bài viết (Markdown / Text)</span>
-              <textarea
-                value={hbContent}
-                onChange={(e) => setHbContent(e.target.value)}
-                placeholder="Nhập nội dung dặn dò chi tiết tại đây..."
-                className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-magenta text-xs h-24 resize-none"
-              />
-            </label>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-synth-magenta text-white font-bold rounded-lg hover:bg-synth-magenta/80 transition-colors uppercase text-xs cursor-pointer"
-            >
-              Nạp trang sách ✍️
-            </button>
-          </form>
+              <button
+                type="submit"
+                className="px-4 py-2 bg-synth-magenta text-white font-bold rounded-lg hover:bg-synth-magenta/80 transition-colors uppercase text-xs cursor-pointer"
+              >
+                Nạp trang sách ✍️
+              </button>
+            </form>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* 3. Thống Kê Thống Kê Toàn Viện */}
+
+      {/* 3. Thống Kê Hoạt Động & Roster */}
       <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-6">
         <div className="flex items-center gap-2">
           <ChartIcon className="w-4 h-4 text-synth-cyan" />
           <h3 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">
-            📊 Thiên Cơ Các — Báo cáo & Thống kê toàn viện
+            📊 Thiên Cơ Các — {isCallerAdmin ? 'Báo cáo & Thống kê toàn viện' : 'Báo cáo & Thống kê các lớp phụ trách'}
           </h3>
         </div>
 
@@ -617,126 +684,239 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
           </div>
         </div>
 
-        {/* Chart & Distribution */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="bg-white/5 border border-white/5 rounded-xl p-4 lg:col-span-2 space-y-4">
-            <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
-              Mật Độ Câu Hỏi Trong Vạn Quyển Các
-            </h4>
-            <div className="h-64 w-full text-xs">
-              {totalQuestions > 0 ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={subjectQuestionStats}>
-                    <XAxis dataKey="name" stroke="#888888" fontSize={9} tickLine={false} />
-                    <YAxis stroke="#888888" fontSize={9} tickLine={false} />
-                    <Tooltip 
-                      contentStyle={{ backgroundColor: '#181b2a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
-                      labelStyle={{ color: '#fff', fontWeight: 'bold' }}
-                    />
-                    <Bar dataKey="count" fill="#00f0ff" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center justify-center text-synth-text-muted">
-                  Vạn Quyển Các chưa được nạp câu hỏi nào.
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="bg-white/5 border border-white/5 rounded-xl p-4 space-y-3">
-            <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
-              Kho Tàng Tri Thức (Tỷ Lệ Môn)
-            </h4>
-            <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
-              {subjectQuestionStats.map(stat => {
-                const percent = totalQuestions > 0 ? Math.round((stat.count / totalQuestions) * 100) : 0;
-                return (
-                  <div key={stat.name} className="space-y-1">
-                    <div className="flex justify-between text-[10px] font-bold text-slate-300">
-                      <span className="flex items-center gap-1">
-                        <span>{stat.icon}</span>
-                        <span>{stat.name}</span>
-                      </span>
-                      <span>{stat.count} câu ({percent}%)</span>
-                    </div>
-                    <div className="w-full h-1.5 bg-black/30 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full rounded-full transition-all duration-500" 
-                        style={{ width: `${percent}%`, backgroundColor: stat.color }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* Leaderboard */}
+        {/* Rich Directory & Roster Lists Section */}
         <div className="bg-white/5 border border-white/5 rounded-xl p-4 space-y-4">
-          <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
-            Bảng Tinh Anh Thiếu Hiệp (Xếp Hạng Tu Học)
-          </h4>
+          <div className="flex flex-col xl:flex-row xl:items-center justify-between border-b border-white/10 pb-3 gap-2.5">
+            <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
+              📁 Danh Sách Thành Viên Học Viện
+            </h4>
+            {/* Roster Tabs */}
+            <div className="flex gap-1 bg-black/40 p-1 rounded-lg border border-white/5 text-[10px] uppercase font-bold font-orbitron overflow-x-auto">
+              {[
+                { key: 'students', label: `Học Sinh (${allStudents.length})` },
+                { key: 'primary_teachers', label: `Chủ Nhiệm (${primaryTeachers.length})` },
+                { key: 'secondary_teachers', label: `Phó Chủ Nhiệm / Hỗ Trợ (${secondaryTeachers.length})` },
+                { key: 'admins', label: `Ban Giám Hiệu (${schoolAdmins.length})` }
+              ].map(tab => (
+                <button
+                  key={tab.key}
+                  onClick={() => setRosterTab(tab.key as any)}
+                  className={`px-3 py-1.5 rounded-md cursor-pointer transition-all ${
+                    rosterTab === tab.key ? 'bg-synth-cyan text-black font-black' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Sub-selector for Students (Only for Teachers) */}
+          {rosterTab === 'students' && !isCallerAdmin && (
+            <div className="flex gap-2">
+              <button
+                onClick={() => setTeacherStudentTab('mine')}
+                className={`px-3 py-1 rounded-lg font-orbitron font-bold text-[9px] uppercase cursor-pointer transition-all border ${
+                  teacherStudentTab === 'mine' 
+                    ? 'bg-synth-magenta/15 border-synth-magenta text-synth-magenta'
+                    : 'border-white/5 text-slate-400 hover:text-white'
+                }`}
+              >
+                Lớp của tôi (Chủ nhiệm) ({myClassStudents.length})
+              </button>
+              <button
+                onClick={() => setTeacherStudentTab('co_managed')}
+                className={`px-3 py-1 rounded-lg font-orbitron font-bold text-[9px] uppercase cursor-pointer transition-all border ${
+                  teacherStudentTab === 'co_managed'
+                    ? 'bg-synth-magenta/15 border-synth-magenta text-synth-magenta'
+                    : 'border-white/5 text-slate-400 hover:text-white'
+                }`}
+              >
+                Lớp tham gia phụ (Phó chủ nhiệm) ({coManagedClassStudents.length})
+              </button>
+            </div>
+          )}
+
+          {/* Roster Tables */}
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-white/10 text-slate-400 font-orbitron uppercase text-[9px] tracking-wider">
-                  <th className="py-2.5 px-3">Xếp hạng</th>
-                  <th className="py-2.5 px-3">Thiếu Hiệp</th>
-                  <th className="py-2.5 px-3">Vai Trò</th>
-                  <th className="py-2.5 px-3">Cấp Độ</th>
-                  <th className="py-2.5 px-3">Danh Hiệu Kiếm Hiệp</th>
-                  <th className="py-2.5 px-3">Chuỗi Ngày</th>
-                  <th className="py-2.5 px-3 text-right">Tích Lũy XP</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedStudents.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className="py-8 text-center text-synth-text-muted">
-                      Chưa có tài khoản thiếu hiệp nào đăng ký học viện.
-                    </td>
+            {rosterTab === 'students' && (
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-white/10 text-slate-400 font-orbitron uppercase text-[9px] tracking-wider">
+                    <th className="py-2.5 px-3">Xếp hạng</th>
+                    <th className="py-2.5 px-3">Thiếu Hiệp</th>
+                    <th className="py-2.5 px-3">Cấp Độ</th>
+                    <th className="py-2.5 px-3">Danh Hiệu Võ Học</th>
+                    <th className="py-2.5 px-3">Chuỗi Ngày</th>
+                    <th className="py-2.5 px-3">Người Quản Lý</th>
+                    <th className="py-2.5 px-3 text-right">Tích Lũy XP</th>
                   </tr>
-                ) : (
-                  sortedStudents.map((stud, idx) => {
-                    const lv = stud.player?.level || 1;
-                    const studentRank = getStudentRankForLevel(lv);
-                    return (
-                      <tr key={stud.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
-                        <td className="py-2.5 px-3 font-orbitron font-bold text-slate-400">#{idx + 1}</td>
+                </thead>
+                <tbody>
+                  {activeDisplayStudents.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="py-8 text-center text-synth-text-muted italic">
+                        Không có thiếu hiệp nào trong danh sách.
+                      </td>
+                    </tr>
+                  ) : (
+                    activeDisplayStudents.map((stud, idx) => {
+                      const lv = stud.player?.level || 1;
+                      const studentRank = getStudentRankForLevel(lv);
+                      return (
+                        <tr key={stud.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                          <td className="py-2.5 px-3 font-orbitron font-bold text-slate-400">#{idx + 1}</td>
+                          <td className="py-2.5 px-3 font-bold text-white flex items-center gap-2">
+                            <img 
+                              src={stud.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'} 
+                              alt={stud.name} 
+                              className="w-5 h-5 rounded-full object-cover"
+                            />
+                            <div>
+                              <span className="block">{stud.name}</span>
+                              <span className="block text-[9px] text-slate-500 font-sans font-normal">{stud.email}</span>
+                            </div>
+                          </td>
+                          <td className="py-2.5 px-3 font-orbitron font-black text-synth-magenta">LV.{lv}</td>
+                          <td className="py-2.5 px-3 font-bold text-synth-orange">
+                            {studentRank.icon} {studentRank.name}
+                          </td>
+                          <td className="py-2.5 px-3 text-orange-400 font-semibold">{stud.player?.streak || 0} Ngày</td>
+                          <td className="py-2.5 px-3 text-slate-300 max-w-[180px] truncate" title={getStudentCoManagers(stud.id)}>
+                            {getStudentCoManagers(stud.id)}
+                          </td>
+                          <td className="py-2.5 px-3 text-right font-orbitron text-synth-green font-bold">
+                            {(stud.player?.xp || 0).toLocaleString()} XP
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            )}
+
+            {rosterTab === 'primary_teachers' && (
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-white/10 text-slate-400 font-orbitron uppercase text-[9px] tracking-wider">
+                    <th className="py-2.5 px-3">Tên Giáo Viên</th>
+                    <th className="py-2.5 px-3">Email</th>
+                    <th className="py-2.5 px-3">Học Sinh Phụ Trách (Chủ Nhiệm)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {primaryTeachers.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="py-8 text-center text-synth-text-muted italic">
+                        Không có giáo viên chủ nhiệm nào.
+                      </td>
+                    </tr>
+                  ) : (
+                    primaryTeachers.map(teacher => (
+                      <tr key={teacher.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
                         <td className="py-2.5 px-3 font-bold text-white flex items-center gap-2">
                           <img 
-                            src={stud.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'} 
-                            alt={stud.name} 
-                            className="w-5 h-5 rounded-full"
+                            src={teacher.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'} 
+                            alt={teacher.name} 
+                            className="w-5 h-5 rounded-full object-cover"
                           />
-                          {stud.name}
+                          {teacher.name}
                         </td>
-                        <td className="py-2.5 px-3">
-                          <span className={`px-1.5 py-0.5 rounded font-bold uppercase text-[9px] ${
-                            isSuperAdmin(stud.role) ? 'bg-synth-magenta/20 text-synth-magenta' : stud.role === 'pho_vien' ? 'bg-synth-yellow/20 text-synth-yellow' : 'bg-synth-cyan/20 text-synth-cyan'
-                          }`}>
-                            {isSuperAdmin(stud.role) ? 'Hiệu Trưởng 👑' : stud.role === 'pho_vien' ? 'Hiệu Phó 🛡️' : 'Thiếu Hiệp'}
-                          </span>
-                        </td>
-                        <td className="py-2.5 px-3 font-orbitron font-black text-synth-magenta">LV.{lv}</td>
-                        <td className="py-2.5 px-3 font-bold text-synth-orange">
-                          {studentRank.icon} {studentRank.name}
-                        </td>
-                        <td className="py-2.5 px-3 text-orange-400 font-semibold">{stud.player?.streak || 0} Ngày</td>
-                        <td className="py-2.5 px-3 text-right font-orbitron text-synth-green font-bold">
-                          {stud.player?.xp || 0} XP
+                        <td className="py-2.5 px-3 text-slate-300 font-sans">{teacher.email}</td>
+                        <td className="py-2.5 px-3 text-slate-400 max-w-xs truncate" title={getTeacherManagedStudents(teacher.id, 'primary')}>
+                          {getTeacherManagedStudents(teacher.id, 'primary')}
                         </td>
                       </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            )}
+
+            {rosterTab === 'secondary_teachers' && (
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-white/10 text-slate-400 font-orbitron uppercase text-[9px] tracking-wider">
+                    <th className="py-2.5 px-3">Tên Người Hỗ Trợ</th>
+                    <th className="py-2.5 px-3">Email</th>
+                    <th className="py-2.5 px-3">Học Sinh Hỗ Trợ (Phó Chủ Nhiệm)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {secondaryTeachers.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="py-8 text-center text-synth-text-muted italic">
+                        Không có phó chủ nhiệm hoặc giáo viên hỗ trợ nào.
+                      </td>
+                    </tr>
+                  ) : (
+                    secondaryTeachers.map(teacher => (
+                      <tr key={teacher.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                        <td className="py-2.5 px-3 font-bold text-white flex items-center gap-2">
+                          <img 
+                            src={teacher.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'} 
+                            alt={teacher.name} 
+                            className="w-5 h-5 rounded-full object-cover"
+                          />
+                          {teacher.name}
+                        </td>
+                        <td className="py-2.5 px-3 text-slate-300 font-sans">{teacher.email}</td>
+                        <td className="py-2.5 px-3 text-slate-400 max-w-xs truncate" title={getTeacherManagedStudents(teacher.id, 'secondary')}>
+                          {getTeacherManagedStudents(teacher.id, 'secondary')}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            )}
+
+            {rosterTab === 'admins' && (
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-white/10 text-slate-400 font-orbitron uppercase text-[9px] tracking-wider">
+                    <th className="py-2.5 px-3">Ban Giám Hiệu</th>
+                    <th className="py-2.5 px-3">Email</th>
+                    <th className="py-2.5 px-3">Vai Trò Giang Hồ</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {schoolAdmins.length === 0 ? (
+                    <tr>
+                      <td colSpan={3} className="py-8 text-center text-synth-text-muted italic">
+                        Không tìm thấy thành viên ban giám hiệu.
+                      </td>
+                    </tr>
+                  ) : (
+                    schoolAdmins.map(admin => (
+                      <tr key={admin.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                        <td className="py-2.5 px-3 font-bold text-white flex items-center gap-2">
+                          <img 
+                            src={admin.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'} 
+                            alt={admin.name} 
+                            className="w-5 h-5 rounded-full object-cover"
+                          />
+                          {admin.name}
+                        </td>
+                        <td className="py-2.5 px-3 text-slate-300 font-sans">{admin.email}</td>
+                        <td className="py-2.5 px-3">
+                          <span className={`px-1.5 py-0.5 rounded font-bold uppercase text-[9px] ${
+                            admin.role === 'truong_vien' ? 'bg-synth-magenta/20 text-synth-magenta' : 'bg-synth-yellow/20 text-synth-yellow'
+                          }`}>
+                            {admin.role === 'truong_vien' ? 'Hiệu Trưởng 👑' : 'Hiệu Phó 🛡️'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            )}
           </div>
         </div>
       </div>
+
 
       {/* 4. Nhật Ký Quyết Nghị Hiệu Trưởng (Audit Logs) (Cả Hiệu Trưởng & Hiệu Phó xem được) */}
       {isAdmin(currentUser?.role) && (

@@ -12,20 +12,118 @@ import {
 
 const router = express.Router();
 
-// GET /api/admin/users: Lists all ACTIVE users (dùng cho danh sách học sinh trong lớp)
+// GET /api/admin/users: Lists active users and links (academy-wide for admins, class-specific for teachers)
 router.get('/admin/users', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
-    const adminCheck = await pool.query(
-      'SELECT role FROM ge10_users WHERE account_id = $1 AND role IN (\'truong_vien\', \'pho_vien\') AND is_active = TRUE',
+    const check = await pool.query(
+      "SELECT id, role FROM ge10_users WHERE account_id = $1 AND is_active = TRUE LIMIT 1",
       [adminId]
     );
-    if (adminCheck.rowCount === 0) {
-      return res.status(403).json({ error: 'Forbidden: Admin access only.' });
+    if (check.rowCount === 0) {
+      return res.status(403).json({ error: 'Forbidden: Bạn không có quyền truy cập.' });
     }
+    const caller = check.rows[0];
+    const callerProfileId = caller.id;
+    const callerRole = caller.role;
 
-    const usersRes = await pool.query('SELECT id, name, email, avatar_url, role FROM ge10_users WHERE is_active = TRUE');
-    res.json(usersRes.rows);
+    if (callerRole === 'truong_vien' || callerRole === 'pho_vien') {
+      // 1. Admin: Lấy toàn bộ học viên và cán bộ trong viện
+      const usersRes = await pool.query(`
+        SELECT u.id, u.name, u.email, u.avatar_url, u.role,
+               p.level, p.xp, p.coins, p.streak, p.energy, p.max_energy, p.reset_hours
+        FROM ge10_users u
+        LEFT JOIN ge10_player_profiles p ON u.id = p.user_id
+        WHERE u.is_active = TRUE
+        ORDER BY u.role, u.name
+      `);
+
+      const linksRes = await pool.query(`
+        SELECT l.id, l.parent_id, l.student_id, l.link_type, l.status,
+               u_parent.name as parent_name, u_parent.role as parent_role,
+               u_student.name as student_name, u_student.role as student_role
+        FROM ge10_family_links l
+        JOIN ge10_users u_parent ON l.parent_id = u_parent.id
+        JOIN ge10_users u_student ON l.student_id = u_student.id
+        WHERE l.status = 'active'
+      `);
+
+      return res.json({ users: usersRes.rows, links: linksRes.rows });
+    } else if (callerRole === 'parent' || callerRole === 'secondary_parent') {
+      // 2. Giáo viên: Chỉ lấy thông tin liên quan đến lớp của mình
+      const studentsRes = await pool.query(`
+        SELECT DISTINCT u.id, u.name, u.email, u.avatar_url, u.role,
+               p.level, p.xp, p.coins, p.streak, p.energy, p.max_energy, p.reset_hours
+        FROM ge10_users u
+        JOIN ge10_family_links l ON u.id = l.student_id
+        LEFT JOIN ge10_player_profiles p ON u.id = p.user_id
+        WHERE l.parent_id = $1 AND l.status = 'active' AND u.is_active = TRUE
+      `, [callerProfileId]);
+
+      const studentIds = studentsRes.rows.map(s => s.id);
+      let relatedUsers = [...studentsRes.rows];
+
+      // Thêm chính profile của giáo viên gọi API
+      const callerProfileRes = await pool.query(`
+        SELECT u.id, u.name, u.email, u.avatar_url, u.role
+        FROM ge10_users u
+        WHERE u.id = $1
+      `, [callerProfileId]);
+      if (callerProfileRes.rowCount > 0) {
+        relatedUsers.push(callerProfileRes.rows[0]);
+      }
+
+      let linksRows: any[] = [];
+
+      if (studentIds.length > 0) {
+        // Lấy thêm các giáo viên phụ/co-teachers quản lý chung các học sinh này
+        const coTeachersRes = await pool.query(`
+          SELECT DISTINCT u.id, u.name, u.email, u.avatar_url, u.role
+          FROM ge10_users u
+          JOIN ge10_family_links l ON u.id = l.parent_id
+          WHERE l.student_id = ANY($1) AND l.status = 'active' AND u.id != $2 AND u.is_active = TRUE
+        `, [studentIds, callerProfileId]);
+
+        relatedUsers.push(...coTeachersRes.rows);
+
+        // Lấy thêm Ban Giám Hiệu (Hiệu Trưởng/Hiệu Phó) để giáo viên liên hệ
+        const adminsRes = await pool.query(`
+          SELECT u.id, u.name, u.email, u.avatar_url, u.role
+          FROM ge10_users u
+          WHERE u.role IN ('truong_vien', 'pho_vien') AND u.is_active = TRUE
+        `);
+        relatedUsers.push(...adminsRes.rows);
+
+        // Lấy tất cả links kết nối liên quan đến các học sinh này
+        const linksRes = await pool.query(`
+          SELECT l.id, l.parent_id, l.student_id, l.link_type, l.status,
+                 u_parent.name as parent_name, u_parent.role as parent_role,
+                 u_student.name as student_name, u_student.role as student_role
+          FROM ge10_family_links l
+          JOIN ge10_users u_parent ON l.parent_id = u_parent.id
+          JOIN ge10_users u_student ON l.student_id = u_student.id
+          WHERE l.student_id = ANY($1) AND l.status = 'active'
+        `, [studentIds]);
+
+        linksRows = linksRes.rows;
+      } else {
+        // Nếu lớp trống, vẫn trả về Ban Giám Hiệu để giáo viên liên hệ
+        const adminsRes = await pool.query(`
+          SELECT u.id, u.name, u.email, u.avatar_url, u.role
+          FROM ge10_users u
+          WHERE u.role IN ('truong_vien', 'pho_vien') AND u.is_active = TRUE
+        `);
+        relatedUsers.push(...adminsRes.rows);
+      }
+
+      // Loại trùng lặp users
+      const uniqueUsersMap = new Map();
+      relatedUsers.forEach(u => uniqueUsersMap.set(u.id, u));
+
+      return res.json({ users: Array.from(uniqueUsersMap.values()), links: linksRows });
+    } else {
+      return res.status(403).json({ error: 'Forbidden: Vai trò này không được phép truy cập roster.' });
+    }
   } catch (error: any) {
     console.error('Error fetching admin users:', error.message);
     res.status(500).json({ error: 'Failed to fetch users list.' });

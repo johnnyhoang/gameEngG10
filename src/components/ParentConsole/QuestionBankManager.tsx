@@ -329,94 +329,238 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)_320px] gap-6 items-start">
-              {/* Left Column: Filters */}
-              <div className="space-y-4">
-                <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">Lọc câu hỏi</span>
-                    <button
-                      onClick={() => {
-                        setQuestionTypeFilter('all');
-                        setExamPartFilter('all');
-                        setTopicFilter('all');
-                        setConfusedFilter('all');
-                        setQuestionQuery('');
-                      }}
-                      className="text-[9px] px-2 py-0.5 rounded bg-white/5 border border-white/10 font-bold uppercase hover:bg-white/10 text-white"
-                    >
-                      Xóa lọc
-                    </button>
-                  </div>
+            <div className="flex flex-col gap-6">
+              {/* Row 1: Filters */}
+              <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+                <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                  <span className="text-[10px] uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">Bộ lọc câu hỏi</span>
+                  <button
+                    onClick={() => {
+                      setQuestionTypeFilter('all');
+                      setExamPartFilter('all');
+                      setTopicFilter('all');
+                      setConfusedFilter('all');
+                      setQuestionQuery('');
+                    }}
+                    className="text-[9px] px-2 py-0.5 rounded bg-white/5 border border-white/10 font-bold uppercase hover:bg-white/10 text-white cursor-pointer transition-colors"
+                  >
+                    Xóa lọc
+                  </button>
+                </div>
 
-                  <div className="space-y-3">
-                    <label className="space-y-1 text-[10px] block">
-                      <span className="uppercase font-orbitron font-bold text-synth-text-muted">Dạng câu</span>
-                      <select
-                        value={questionTypeFilter}
-                        onChange={(e) => setQuestionTypeFilter(e.target.value as any)}
-                        className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs"
-                      >
-                        <option value="all">Tất cả dạng</option>
-                        {topTypeEntries.map(([type, count]) => (
-                          <option key={type} value={type}>
-                            {QUESTION_TYPE_LABELS[type as Question['type']] || type} ({count})
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="space-y-1 text-[10px] block">
-                      <span className="uppercase font-orbitron font-bold text-synth-text-muted">Bài / Part</span>
-                      <select
-                        value={examPartFilter}
-                        onChange={(e) => setExamPartFilter(e.target.value)}
-                        className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs"
-                      >
-                        <option value="all">Tất cả part</option>
-                        {topExamParts.map(([part, count]) => (
-                          <option key={part} value={part}>
-                            {examPartLabelMap[part] || part} ({count})
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="space-y-1 text-[10px] block">
-                      <span className="uppercase font-orbitron font-bold text-synth-text-muted">Chuyên đề (Topic)</span>
-                      <select
-                        value={topicFilter}
-                        onChange={(e) => setTopicFilter(e.target.value)}
-                        className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs"
-                      >
-                        <option value="all">Tất cả topic</option>
-                        {topTopics.map(([topic, count]) => (
-                          <option key={topic} value={topic}>
-                            {topicLabelMap[topic] || topic} ({count})
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                    <label className="space-y-1 text-[10px] block">
-                      <span className="uppercase font-orbitron font-bold text-synth-text-muted">Trạng thái</span>
-                      <select
-                        value={confusedFilter}
-                        onChange={(e) => setConfusedFilter(e.target.value as any)}
-                        className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs"
-                      >
-                        <option value="all">Tất cả câu</option>
-                        <option value="confused">Con hổng hiểu 🧠 ({questions.filter(q => q.isConfused).length})</option>
-                      </select>
-                    </label>
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <label className="space-y-1 text-[10px] block">
+                    <span className="uppercase font-orbitron font-bold text-synth-text-muted">Dạng câu</span>
+                    <select
+                      value={questionTypeFilter}
+                      onChange={(e) => setQuestionTypeFilter(e.target.value as any)}
+                      className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs cursor-pointer outline-none focus:border-synth-cyan"
+                    >
+                      <option value="all">Tất cả dạng</option>
+                      {topTypeEntries.map(([type, count]) => (
+                        <option key={type} value={type}>
+                          {QUESTION_TYPE_LABELS[type as Question['type']] || type} ({count})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="space-y-1 text-[10px] block">
+                    <span className="uppercase font-orbitron font-bold text-synth-text-muted">Bài / Part</span>
+                    <select
+                      value={examPartFilter}
+                      onChange={(e) => setExamPartFilter(e.target.value)}
+                      className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs cursor-pointer outline-none focus:border-synth-cyan"
+                    >
+                      <option value="all">Tất cả part</option>
+                      {topExamParts.map(([part, count]) => (
+                        <option key={part} value={part}>
+                          {examPartLabelMap[part] || part} ({count})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="space-y-1 text-[10px] block">
+                    <span className="uppercase font-orbitron font-bold text-synth-text-muted">Chuyên đề (Topic)</span>
+                    <select
+                      value={topicFilter}
+                      onChange={(e) => setTopicFilter(e.target.value)}
+                      className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs cursor-pointer outline-none focus:border-synth-cyan"
+                    >
+                      <option value="all">Tất cả topic</option>
+                      {topTopics.map(([topic, count]) => (
+                        <option key={topic} value={topic}>
+                          {topicLabelMap[topic] || topic} ({count})
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="space-y-1 text-[10px] block">
+                    <span className="uppercase font-orbitron font-bold text-synth-text-muted">Trạng thái</span>
+                    <select
+                      value={confusedFilter}
+                      onChange={(e) => setConfusedFilter(e.target.value as any)}
+                      className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs cursor-pointer outline-none focus:border-synth-cyan"
+                    >
+                      <option value="all">Tất cả câu</option>
+                      <option value="confused">Con hổng hiểu 🧠 ({questions.filter(q => q.isConfused).length})</option>
+                    </select>
+                  </label>
                 </div>
               </div>
 
-              {/* Middle Column: List of Questions */}
+              {/* Row 2: Ingest tool & Edit tool */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* AI Ingest tool */}
+                <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-5 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-synth-orange animate-pulse" />
+                    <h5 className="text-xs font-bold text-synth-orange uppercase font-orbitron">
+                      Ingest đề thi bằng AI ✨ (Dán thô văn bản đề thi)
+                    </h5>
+                  </div>
+                  <p className="text-[10px] text-synth-text-muted leading-relaxed">
+                    Dán đề thi của bạn vào ô dưới đây (hỗ trợ đề thi trắc nghiệm tiếng Việt/tiếng Anh thô). AI của Thiên Cơ Các sẽ tự động nhận diện câu hỏi, lựa chọn, đáp án, và đề xuất lời giải thích chi tiết.
+                  </p>
+
+                  <form onSubmit={handleAiIngest} className="space-y-3">
+                    <textarea
+                      value={rawText}
+                      onChange={(e) => setRawText(e.target.value)}
+                      placeholder="Ví dụ:&#10;Câu 1: Cho biểu thức A = (căn x + 1)/(căn x - 1)...&#10;Câu 2: Rút gọn biểu thức..."
+                      className="w-full p-2.5 rounded-lg border border-white/10 bg-black/40 text-[11px] text-white h-36 resize-none outline-none focus:border-synth-orange"
+                    />
+
+                    <button
+                      type="submit"
+                      disabled={isIngesting || !rawText.trim()}
+                      className="w-full py-2.5 bg-synth-orange text-black font-bold rounded-lg hover:synth-glow-orange disabled:opacity-50 transition-all text-xs uppercase cursor-pointer flex items-center justify-center gap-1.5"
+                    >
+                      {isIngesting ? 'AI đang phân tích...' : 'Ingest Đề Thi 🎇'}
+                    </button>
+                  </form>
+                </div>
+
+                {/* Form sửa câu hỏi */}
+                <div className="space-y-4">
+                  {editingQuestion ? (
+                    <div className="glass-panel rounded-2xl border border-synth-cyan/30 bg-synth-cyan/5 p-5 space-y-3">
+                      <h5 className="text-xs font-bold text-synth-cyan uppercase font-orbitron flex items-center justify-between">
+                        <span>✏️ Chỉnh sửa câu hỏi</span>
+                        <button onClick={() => setEditingQuestion(null)} className="text-[10px] text-white hover:text-synth-cyan cursor-pointer transition-colors">Đóng</button>
+                      </h5>
+                      <form onSubmit={handleUpdate} className="space-y-3 text-xs">
+                        <label className="space-y-1 block">
+                          <span>Đề bài</span>
+                          <textarea
+                            value={editPrompt}
+                            onChange={(e) => setEditPrompt(e.target.value)}
+                            className="w-full p-2.5 rounded-lg border border-white/10 bg-black/40 text-xs text-white h-16 resize-none"
+                          />
+                        </label>
+                        <label className="space-y-1 block">
+                          <span>Giải thích lời giải</span>
+                          <textarea
+                            value={editExplanation}
+                            onChange={(e) => setEditExplanation(e.target.value)}
+                            className="w-full p-2.5 rounded-lg border border-white/10 bg-black/40 text-xs text-white h-12 resize-none"
+                          />
+                        </label>
+                        <div className="grid grid-cols-2 gap-2">
+                          <label className="space-y-1 block">
+                            <span>Kỹ năng (Category)</span>
+                            <input
+                              type="text"
+                              value={editCategory}
+                              onChange={(e) => setEditCategory(e.target.value)}
+                              className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white"
+                            />
+                          </label>
+                          <label className="space-y-1 block">
+                            <span>Topic Lõi (Core Knowledge)</span>
+                            <select
+                              value={editTopicId}
+                              onChange={(e) => setEditTopicId(e.target.value)}
+                              className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white cursor-pointer"
+                            >
+                              <option value="">-- Chưa chọn topic --</option>
+                              {CORE_KNOWLEDGE_TOPICS.filter(t => t.subjectId === editSubject).map(t => (
+                                <option key={t.id} value={t.id}>
+                                  {t.label} ({t.hamNguyenTo === 'hoa' ? '🔥 Hỏa' : t.hamNguyenTo === 'bang' ? '❄️ Băng' : '🪨 Thạch'})
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <label className="space-y-1 block">
+                            <span>Độ khó (1-10)</span>
+                            <input
+                              type="number"
+                              min={1}
+                              max={10}
+                              value={editDifficulty}
+                              onChange={(e) => setEditDifficulty(Number(e.target.value) || 5)}
+                              className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white"
+                            />
+                          </label>
+                          <label className="space-y-1 block">
+                            <span>Nguồn (Source)</span>
+                            <input
+                              type="text"
+                              value={editSource}
+                              onChange={(e) => setEditSource(e.target.value)}
+                              className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white"
+                            />
+                          </label>
+                        </div>
+
+                        {editType === 'mcq' && (
+                          <div className="space-y-2">
+                            <label className="space-y-1 block">
+                              <span>Các lựa chọn (Mỗi lựa chọn 1 dòng)</span>
+                              <textarea
+                                value={editOptions}
+                                onChange={(e) => setEditOptions(e.target.value)}
+                                placeholder="Lựa chọn A&#10;Lựa chọn B&#10;Lựa chọn C&#10;Lựa chọn D"
+                                className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white h-20 resize-none font-mono"
+                              />
+                            </label>
+                            <label className="space-y-1 block">
+                              <span>Đáp án đúng (Khớp với một trong các lựa chọn)</span>
+                              <input
+                                type="text"
+                                value={editCorrectAnswer}
+                                onChange={(e) => setEditCorrectAnswer(e.target.value)}
+                                className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white"
+                              />
+                            </label>
+                          </div>
+                        )}
+
+                        <button
+                          type="submit"
+                          className="w-full py-2 bg-synth-cyan text-black font-bold rounded-lg hover:synth-glow-cyan transition-all text-xs uppercase cursor-pointer"
+                        >
+                          Cập nhật câu hỏi 💾
+                        </button>
+                      </form>
+                    </div>
+                  ) : (
+                    <div className="h-full rounded-2xl border border-dashed border-white/10 bg-white/5 p-8 flex flex-col items-center justify-center text-center text-xs text-synth-text-muted min-h-[250px]">
+                      <Database className="w-8 h-8 text-synth-text-muted mb-2 opacity-50" />
+                      <p>Hãy bấm nút "Sửa" trên các câu hỏi tùy chọn ở danh sách bên dưới để chỉnh sửa nội dung.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Row 3: List of Questions (Full Width) */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center text-xs text-synth-text-muted">
                   <span>Hiển thị: <strong>{filteredQuestions.length}</strong> / {questions.length} câu</span>
                 </div>
 
-                <div className="space-y-3 max-h-[500px] overflow-y-auto pr-1">
+                <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
                   {filteredQuestions.length > 0 ? (
                     filteredQuestions.map(q => {
                       const isCustom = q.source?.startsWith('AI Ingested') || q.id.startsWith('hcmc-') || q.id.startsWith('mock-') || q.isConfused;
@@ -493,158 +637,6 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                       Không có câu hỏi nào khớp bộ lọc.
                     </div>
                   )}
-                </div>
-              </div>
-
-              {/* Right Column: Edit Form / Ingest tool */}
-              <div className="space-y-4">
-                {/* Form sửa câu hỏi */}
-                {editingQuestion && (
-                  <div className="glass-panel rounded-2xl border border-synth-cyan/30 bg-synth-cyan/5 p-4 space-y-3">
-                    <h5 className="text-xs font-bold text-synth-cyan uppercase font-orbitron flex items-center justify-between">
-                      <span>✏️ Chỉnh sửa câu hỏi</span>
-                      <button onClick={() => setEditingQuestion(null)} className="text-[10px] text-white">Đóng</button>
-                    </h5>
-                    <form onSubmit={handleUpdate} className="space-y-3 text-xs">
-                      <label className="space-y-1 block">
-                        <span>Đề bài</span>
-                        <textarea
-                          value={editPrompt}
-                          onChange={(e) => setEditPrompt(e.target.value)}
-                          className="w-full p-2.5 rounded-lg border border-white/10 bg-black/40 text-xs text-white h-16 resize-none"
-                        />
-                      </label>
-                      <label className="space-y-1 block">
-                        <span>Giải thích lời giải</span>
-                        <textarea
-                          value={editExplanation}
-                          onChange={(e) => setEditExplanation(e.target.value)}
-                          className="w-full p-2.5 rounded-lg border border-white/10 bg-black/40 text-xs text-white h-12 resize-none"
-                        />
-                      </label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <label className="space-y-1 block">
-                          <span>Kỹ năng (Category)</span>
-                          <input
-                            type="text"
-                            value={editCategory}
-                            onChange={(e) => setEditCategory(e.target.value)}
-                            className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white"
-                          />
-                        </label>
-                        <label className="space-y-1 block">
-                          <span>Topic Lõi (Core Knowledge)</span>
-                          <select
-                            value={editTopicId}
-                            onChange={(e) => setEditTopicId(e.target.value)}
-                            className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white"
-                          >
-                            <option value="">-- Chưa chọn topic --</option>
-                            {CORE_KNOWLEDGE_TOPICS.filter(t => t.subjectId === editSubject).map(t => (
-                              <option key={t.id} value={t.id}>
-                                {t.label} ({t.hamNguyenTo === 'hoa' ? '🔥 Hỏa' : t.hamNguyenTo === 'bang' ? '❄️ Băng' : '🪨 Thạch'})
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                      </div>
-
-                      {/* Hiển thị đặc tính của Topic được chọn */}
-                      {(() => {
-                        const topic = CORE_KNOWLEDGE_TOPICS.find(t => t.id === editTopicId);
-                        if (!topic) return null;
-                        const hamLabel = topic.hamNguyenTo === 'hoa' ? '🔥 Hỏa Hầm (Phản xạ)' : topic.hamNguyenTo === 'bang' ? '❄️ Băng Hầm (Logic)' : '🪨 Thạch Hầm (Nền tảng)';
-                        const relevanceLabel = topic.examRelevance === 'high' ? '🔴 Quan Trọng Cao' : topic.examRelevance === 'medium' ? '🟡 Trung Bình' : '🟢 Thấp';
-                        return (
-                          <div className="flex gap-2 py-1.5 px-2 bg-white/5 rounded-lg text-[9px] items-center flex-wrap">
-                            <span className="text-slate-400">Đặc tính:</span>
-                            <span className="font-bold text-white">{hamLabel}</span>
-                            <span className="text-slate-400">|</span>
-                            <span className="font-bold text-white">{relevanceLabel}</span>
-                            <span className="text-slate-400">|</span>
-                            <span className="text-slate-400">Min: {topic.minQuestions} câu</span>
-                          </div>
-                        );
-                      })()}
-
-                      <div className="grid grid-cols-2 gap-2">
-                        <label className="space-y-1 block">
-                          <span>Độ khó (1-10)</span>
-                          <input
-                            type="number"
-                            min={1}
-                            max={10}
-                            value={editDifficulty}
-                            onChange={(e) => setEditDifficulty(Number(e.target.value))}
-                            className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white"
-                          />
-                        </label>
-                        <label className="space-y-1 block">
-                          <span>Nguồn (Source)</span>
-                          <input
-                            type="text"
-                            value={editSource}
-                            onChange={(e) => setEditSource(e.target.value)}
-                            className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white"
-                          />
-                        </label>
-                      </div>
-
-                      {editType === 'mcq' && (
-                        <label className="space-y-1 block">
-                          <span>Các lựa chọn (Mỗi dòng 1 lựa chọn)</span>
-                          <textarea
-                            value={editOptions}
-                            onChange={(e) => setEditOptions(e.target.value)}
-                            className="w-full p-2.5 rounded-lg border border-white/10 bg-black/40 text-xs text-white h-16 resize-none font-mono"
-                          />
-                        </label>
-                      )}
-
-                      <label className="space-y-1 block">
-                        <span>Đáp án đúng (Nếu trắc nghiệm, phải giống hệt lựa chọn. Nếu nhiều đáp án đúng, mỗi dòng 1 đáp án)</span>
-                        <textarea
-                          value={editCorrectAnswer}
-                          onChange={(e) => setEditCorrectAnswer(e.target.value)}
-                          className="w-full p-2.5 rounded-lg border border-white/10 bg-black/40 text-xs text-white h-12 resize-none font-mono"
-                        />
-                      </label>
-
-                      <button
-                        type="submit"
-                        className="w-full py-2 bg-synth-cyan text-black font-bold rounded-lg hover:synth-glow-cyan text-xs uppercase"
-                      >
-                        Cập nhật câu hỏi
-                      </button>
-                    </form>
-                  </div>
-                )}
-
-                {/* AI Ingest đề thi */}
-                <div className="glass-panel rounded-2xl border border-white/5 p-4 space-y-3">
-                  <h5 className="text-xs font-bold text-white uppercase font-orbitron flex items-center gap-1">
-                    <Sparkles className="w-3.5 h-3.5 text-synth-orange" /> Ingest Đề Thi Tự Động bằng AI
-                  </h5>
-                  <p className="text-[10px] text-synth-text-muted">
-                    Sao chép các câu hỏi thi tuyển sinh 10 (Text thô) vào khung dưới đây. AI của Hiệu Trưởng sẽ tự động phân loại cấu trúc đề thi, tách đáp án, topic và nạp trực tiếp vào Vạn Quyển Các!
-                  </p>
-
-                  <form onSubmit={handleAiIngest} className="space-y-3">
-                    <textarea
-                      value={rawText}
-                      onChange={(e) => setRawText(e.target.value)}
-                      placeholder="Ví dụ:&#10;Câu 1: Cho biểu thức A = (căn x + 1)/(căn x - 1)...&#10;Câu 2: Rút gọn biểu thức..."
-                      className="w-full p-2.5 rounded-lg border border-white/10 bg-black/40 text-[11px] text-white h-36 resize-none outline-none focus:border-synth-orange"
-                    />
-
-                    <button
-                      type="submit"
-                      disabled={isIngesting || !rawText.trim()}
-                      className="w-full py-2 bg-synth-orange text-black font-bold rounded-lg hover:synth-glow-orange disabled:opacity-50 transition-all text-xs uppercase cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      {isIngesting ? 'AI đang phân tích...' : 'Ingest Đề Thi 🎇'}
-                    </button>
-                  </form>
                 </div>
               </div>
             </div>

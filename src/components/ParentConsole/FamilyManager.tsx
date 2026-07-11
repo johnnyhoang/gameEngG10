@@ -258,14 +258,15 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
         </div>
       )}
 
-      {/* ================= SECTION 3: SEND CONNECTION INVITES & REQUESTS ================= */}
+      {/* ================= SECTION 3: SEND CONNECTION INVITES & REQUESTS (Layout 2 cột 2 hàng) ================= */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Form dành cho Giáo Viên Chính */}
+        {/* Card 1: Mời Thành Viên Lớp Học */}
         {isPrimaryTeacher && (
-          <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-4">
-            <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">Mời Thành Viên Lớp Học</h4>
-            
-            {/* Mời Học Sinh */}
+          <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-3 flex flex-col justify-between">
+            <div>
+              <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">Mời Thành Viên Lớp Học</h4>
+              <p className="text-[10px] text-slate-400 mt-1">Tìm kiếm và mời học sinh gia nhập lớp học của bạn để quản lý và học tập.</p>
+            </div>
             <div className="space-y-2">
               <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Mời Học Sinh Gia Nhập</span>
               <div className="flex gap-2">
@@ -303,13 +304,21 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                   disabled={isInvitingStudent || !inviteStudentEmail.trim()}
                   className="px-3 bg-synth-cyan text-black font-bold rounded-lg hover:bg-synth-cyan/85 disabled:opacity-50 text-[10px] uppercase cursor-pointer"
                 >
-                  Mời Học Sinh
+                  Mời
                 </button>
               </div>
             </div>
+          </div>
+        )}
 
-            {/* Mời Giáo Viên Phụ (Phó Chủ Nhiệm) */}
-            <div className="space-y-2 pt-2 border-t border-white/5">
+        {/* Card 2: Mời Giáo Viên Phụ Đồng Hành */}
+        {isPrimaryTeacher && (
+          <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-3 flex flex-col justify-between">
+            <div>
+              <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">Mời Giáo Viên Phụ Đồng Hành</h4>
+              <p className="text-[10px] text-slate-400 mt-1">Mời đồng nghiệp làm Phó Chủ Nhiệm cùng quản lý và hỗ trợ học sinh trong lớp.</p>
+            </div>
+            <div className="space-y-2">
               <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Mời Giáo Viên Phụ Đồng Hành</span>
               <div className="flex gap-2">
                 <SearchSuggest
@@ -334,17 +343,19 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                   disabled={isInvitingTeacher || !inviteTeacherEmail.trim()}
                   className="px-3 bg-synth-purple text-white font-bold rounded-lg hover:bg-synth-purple/85 disabled:opacity-50 text-[10px] uppercase cursor-pointer"
                 >
-                  Mời Chủ Nhiệm Phụ
+                  Mời
                 </button>
               </div>
             </div>
           </div>
         )}
 
-        {/* Form xin kết nối lớp dành cho mọi Giáo Viên (cả chính và phụ đều có thể xin phụ lớp khác) */}
-        <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-4">
-          <h4 className="font-orbitron font-bold text-xs text-synth-purple uppercase tracking-wider">Xin Đồng Hành Lớp Khác</h4>
-          <p className="text-[10px] text-slate-400">Bạn muốn xin làm Phó Chủ Nhiệm hỗ trợ quản lý học sinh cho lớp của đồng nghiệp? Nhập email đồng nghiệp bên dưới.</p>
+        {/* Card 3: Xin Đồng Hành Lớp Khác */}
+        <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-3 flex flex-col justify-between">
+          <div>
+            <h4 className="font-orbitron font-bold text-xs text-synth-purple uppercase tracking-wider">Xin Đồng Hành Lớp Khác</h4>
+            <p className="text-[10px] text-slate-400 mt-1">Xin làm Phó Chủ Nhiệm hỗ trợ quản lý học sinh cho lớp của đồng nghiệp. Nhập email của họ.</p>
+          </div>
           <div className="space-y-2">
             <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Email Giáo Viên Chính</span>
             <div className="flex gap-2">
@@ -372,12 +383,57 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                 disabled={isRequestingClass || !requestClassEmail.trim()}
                 className="px-3 bg-synth-magenta text-white font-bold rounded-lg hover:bg-synth-magenta/85 disabled:opacity-50 text-[10px] uppercase cursor-pointer"
               >
-                Xin Làm GV Phụ
+                Gửi Xin
               </button>
             </div>
           </div>
         </div>
+
+        {/* Card 4: Ứng Tuyển Làm Hiệu Phó Trường Học */}
+        {(isPrimaryTeacher || isSecondaryTeacher) && (
+          <div className="rounded-2xl border border-synth-magenta/20 bg-synth-magenta/5 p-4 space-y-3 flex flex-col justify-between">
+            <div>
+              <h4 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-2">
+                🛡️ Ứng Tuyển Làm Hiệu Phó Trường Học
+              </h4>
+              <p className="text-[10px] text-slate-400 mt-1">Ứng tuyển làm Hiệu Phó trường học để hỗ trợ Ban Giám Hiệu quản lý toàn diện.</p>
+            </div>
+            {vicePrincipalApplication ? (
+              <div className="flex items-center justify-between p-2 rounded-xl bg-black/40 border border-white/5">
+                <div className="flex items-center gap-1.5">
+                  <span className="animate-pulse text-synth-orange">⏳</span>
+                  <div>
+                    <span className="text-[11px] text-white font-bold block">Chờ duyệt ứng cử</span>
+                    <span className="text-[8px] text-slate-400 block">Gửi: {new Date(vicePrincipalApplication.created_at).toLocaleDateString('vi-VN')}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={async () => {
+                    if (window.confirm('Bạn có chắc muốn hủy đơn ứng cử Hiệu Phó này không?')) {
+                      const ok = await leaveFamily(vicePrincipalApplication.id);
+                      if (ok) toast.success('Đã hủy đơn ứng cử Hiệu Phó.');
+                    }
+                  }}
+                  className="px-2.5 py-1 rounded border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-[9px] uppercase cursor-pointer transition-colors"
+                >
+                  Hủy Đơn
+                </button>
+              </div>
+            ) : (
+              <div className="flex justify-start">
+                <button
+                  disabled={isApplyingVicePrincipal}
+                  onClick={handleApplyVicePrincipal}
+                  className="w-full px-4 py-2 bg-synth-magenta text-black font-bold font-orbitron text-xs uppercase rounded-lg hover:synth-glow-magenta transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {isApplyingVicePrincipal ? 'Đang gửi...' : 'Gửi Yêu Cầu Ứng Tuyển 🛡️'}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
 
       {/* ================= SECTION 4: OUTGOING REQUESTS PENDING RESPONSE ================= */}
       {(outgoingStudentInvites.length > 0 || outgoingTeacherInvites.length > 0) && (
@@ -569,52 +625,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
         </div>
       )}
 
-      {/* ================= SECTION 7: VICE PRINCIPAL APPLICATION ================= */}
-      {(isPrimaryTeacher || isSecondaryTeacher) && (
-        <div className="rounded-2xl border border-synth-magenta/20 bg-synth-magenta/5 p-4 space-y-4">
-          <div>
-            <h4 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-2">
-              🛡️ Ứng Tuyển Làm Hiệu Phó Trường Học
-            </h4>
-            <p className="text-[11px] text-slate-300 mt-1">
-              Bạn có thể ứng cử làm Hiệu Phó để hỗ trợ Ban Giám Hiệu quản lý ngân hàng câu hỏi, học sinh và phân quyền toàn trường. Đơn ứng cử sẽ được gửi trực tiếp đến tất cả Hiệu Trưởng để phê duyệt.
-            </p>
-          </div>
-
-          {vicePrincipalApplication ? (
-            <div className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/5">
-              <div className="flex items-center gap-2">
-                <span className="animate-pulse text-synth-orange">⏳</span>
-                <div>
-                  <span className="text-xs text-white font-bold block">Đang chờ Hiệu Trưởng duyệt ứng cử</span>
-                  <span className="text-[9px] text-slate-400">Ngày gửi: {new Date(vicePrincipalApplication.created_at).toLocaleDateString('vi-VN')}</span>
-                </div>
-              </div>
-              <button
-                onClick={async () => {
-                  if (window.confirm('Bạn có chắc muốn hủy đơn ứng cử Hiệu Phó này không?')) {
-                    const ok = await leaveFamily(vicePrincipalApplication.id);
-                    if (ok) toast.success('Đã hủy đơn ứng cử Hiệu Phó.');
-                  }
-                }}
-                className="px-3 py-1.5 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-xs uppercase cursor-pointer transition-colors"
-              >
-                Hủy Ứng Tuyển
-              </button>
-            </div>
-          ) : (
-            <div className="flex justify-start">
-              <button
-                disabled={isApplyingVicePrincipal}
-                onClick={handleApplyVicePrincipal}
-                className="px-4 py-2 bg-synth-magenta text-black font-bold font-orbitron text-xs uppercase rounded-lg hover:synth-glow-magenta transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isApplyingVicePrincipal ? 'Đang gửi yêu cầu...' : 'Gửi Yêu Cầu Ứng Tuyển 🛡️'}
-              </button>
-            </div>
-          )}
-        </div>
-      )}
     </div>
   );
 };
+

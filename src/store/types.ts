@@ -1,5 +1,7 @@
 import type {
-  UserProfile, PlayerProfile, Question, CategoryStat, PetState, ParentReward, RewardRedemption, Challenge, DailyMission, HistoryLog,
+  UserProfile, PlayerProfile, Question, CategoryStat, PetState, ParentReward, RewardRedemption,
+  ClassReward, ClassRewardRedemption,
+  Challenge, DailyMission, HistoryLog,
   HandbookPage, ParentQuest, GradeTier, SubjectId, UiThemeId, GameSettings, FamilyLink,
   PageExplorationState, ExplorationProgress
 } from '../types/game';
@@ -33,6 +35,12 @@ export interface StoreState {
   topicStats: Record<string, CategoryStat>;
   rewards: ParentReward[];
   rewardRedemptions: RewardRedemption[];
+  /** Phần thưởng lớp học do giáo viên tạo. Học sinh trong lớp thấy; orphan student thấy rewards thường. */
+  classRewards: ClassReward[];
+  /** Lượt đổi class rewards — teacher thấy toàn bộ pending; student thấy của mình. */
+  classRewardRedemptions: ClassRewardRedemption[];
+  /** true nếu student chưa vào lớp nào → hiện school rewards thay vì class rewards. */
+  isOrphanStudent: boolean;
   challenges: Challenge[];
   dailyMission: DailyMission | null;
   logs: HistoryLog[];
@@ -83,6 +91,7 @@ export interface StoreState {
 
   // === ADMIN & PARENT SLICE ===
   adminStudents: any[];
+  adminLinks: any[];
   selectedStudentProfile: any | null;
   failedQuestionIds: string[];
   recentlyPlayedQuestionIds: string[];
@@ -99,6 +108,14 @@ export interface StoreState {
   cancelRedemption: (redemptionId: string) => void;
   addParentReward: (title: string, costCoins: number, quantity: number) => void;
   deleteParentReward: (rewardId: string) => void;
+
+  // === CLASS REWARDS (Phúc Lợi Lớp Học) ===
+  fetchClassRewards: () => Promise<void>;
+  createClassReward: (title: string, costCoins: number, quantity: number) => Promise<boolean>;
+  deleteClassReward: (rewardId: string) => Promise<boolean>;
+  redeemClassReward: (rewardId: string) => Promise<boolean>;
+  cancelClassRedemption: (redemptionId: string) => Promise<boolean>;
+  deliverClassRedemption: (redemptionId: string) => Promise<boolean>;
   importQuestions: (questions: Question[]) => void;
   deleteQuestion: (questionId: string) => Promise<boolean>;
   updateQuestion: (questionId: string, payload: Partial<Question>) => Promise<boolean>;

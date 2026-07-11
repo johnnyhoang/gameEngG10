@@ -9,17 +9,20 @@ export const ActivityLog: React.FC = () => {
   const logs = useGameState(state => state.logs);
   const { activeSectId } = useSect();
   const uiTheme = useGameState(state => state.uiTheme);
+  const currentUser = useGameState(state => state.currentUser);
   const isUnicorn = uiTheme === 'unicorn-dream';
   const [visibleCount, setVisibleCount] = useState(15);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const loadMoreLockRef = useRef(false);
   const pageSize = 15;
 
-  // Cô lập nhật ký hoạt động theo Môn phái đang hoạt động (CORE_SPECS §1.3 Sect Isolation Principle).
-  // Log cũ chưa có field subject (trước bản cập nhật) vẫn được giữ hiển thị để không mất dấu vết lịch sử.
+  // Cô lập nhật ký hoạt động theo Môn phái đang hoạt động (Chỉ áp dụng cho Học Sinh).
   const sectLogs = useMemo(
-    () => logs.filter(log => !log.subject || log.subject === activeSectId),
-    [logs, activeSectId]
+    () => {
+      if (currentUser?.role !== 'student') return logs;
+      return logs.filter(log => !log.subject || log.subject === activeSectId);
+    },
+    [logs, activeSectId, currentUser?.role]
   );
 
   useEffect(() => {
@@ -61,60 +64,63 @@ export const ActivityLog: React.FC = () => {
       isUnicorn ? 'border-violet-200/35 bg-white/80' : 'border-synth-cyan/15'
     }`}>
       {/* Nhiệm vụ ngày Section */}
-      <div className={`mb-6 pb-4 ${isUnicorn ? 'border-b border-violet-200/35' : 'border-b border-synth-gray'}`}>
-        <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 mb-3 ${isUnicorn ? 'text-violet-700' : 'text-synth-orange'}`}>
-          <Target className={`w-4 h-4 ${isUnicorn ? 'text-fuchsia-500' : ''}`} /> Nhiệm vụ ngày
-        </h3>
+      {currentUser?.role === 'student' && (
+        <div className={`mb-6 pb-4 ${isUnicorn ? 'border-b border-violet-200/35' : 'border-b border-synth-gray'}`}>
+          <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 mb-3 ${isUnicorn ? 'text-violet-700' : 'text-synth-orange'}`}>
+            <Target className={`w-4 h-4 ${isUnicorn ? 'text-fuchsia-500' : ''}`} /> Nhiệm vụ ngày
+          </h3>
 
-        {dailyMission ? (
-          <div className="space-y-3">
-            <div className="flex justify-between items-start">
-              <h4 className={`text-xs font-bold leading-tight ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-                {dailyMission.title}
-              </h4>
-              <span className={`text-[10px] px-1.5 py-0.5 rounded font-orbitron font-semibold ${
-                dailyMission.completed ? 'bg-synth-green/20 text-synth-green border border-synth-green/30' : 'bg-synth-orange/20 text-synth-orange border border-synth-orange/30'
+          {dailyMission ? (
+            <div className="space-y-3">
+              <div className="flex justify-between items-start">
+                <h4 className={`text-xs font-bold leading-tight ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
+                  {dailyMission.title}
+                </h4>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded font-orbitron font-semibold ${
+                  dailyMission.completed ? 'bg-synth-green/20 text-synth-green border border-synth-green/30' : 'bg-synth-orange/20 text-synth-orange border border-synth-orange/30'
+                }`}>
+                  {dailyMission.completed ? 'ĐÃ XONG' : 'ĐANG ĐÁNH'}
+                </span>
+              </div>
+
+              {/* Requirements list */}
+              <div className="space-y-2">
+                {dailyMission.requirements.map((req, idx) => (
+                  <div key={idx} className={`rounded-lg p-2 text-[11px] ${isUnicorn ? 'bg-white/70 border border-violet-200/25' : 'bg-synth-gray/20 border border-white/5'}`}>
+                    <div className={`flex justify-between font-semibold mb-1 ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
+                      <span>{req.description}</span>
+                      <span>{req.current}/{req.target}</span>
+                    </div>
+                    <div className={`w-full h-1 rounded-full overflow-hidden ${isUnicorn ? 'bg-violet-100' : 'bg-synth-gray'}`}>
+                      <div 
+                        className={`h-full transition-all duration-300 ${
+                          req.completed ? (isUnicorn ? 'unicorn-rainbow-strip' : 'bg-synth-green') : (isUnicorn ? 'bg-violet-300' : 'bg-synth-orange')
+                        }`}
+                        style={{ width: `${Math.min(100, (req.current / req.target) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Mission Rewards */}
+              <div className={`flex items-center justify-between rounded-lg p-2 text-xs font-semibold ${
+                isUnicorn ? 'bg-white/70 border border-violet-200/25' : 'bg-synth-blue/30 border border-synth-cyan/10'
               }`}>
-                {dailyMission.completed ? 'ĐÃ XONG' : 'ĐANG ĐÁNH'}
-              </span>
+                <span className={isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}>Phần thưởng hoàn thành:</span>
+                <span className={`font-orbitron font-bold ${isUnicorn ? 'text-violet-700' : 'text-synth-magenta'}`}>
+                  +{dailyMission.rewardXP} XP
+                </span>
+              </div>
             </div>
+          ) : (
+            <div className="text-center py-4 bg-synth-gray/10 rounded-lg border border-dashed border-synth-gray">
+              <span className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>Vào ải hôm nay để nhận Nhiệm vụ ngày!</span>
+            </div>
+          )}
+        </div>
+      )}
 
-            {/* Requirements list */}
-            <div className="space-y-2">
-              {dailyMission.requirements.map((req, idx) => (
-                <div key={idx} className={`rounded-lg p-2 text-[11px] ${isUnicorn ? 'bg-white/70 border border-violet-200/25' : 'bg-synth-gray/20 border border-white/5'}`}>
-                  <div className={`flex justify-between font-semibold mb-1 ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-                    <span>{req.description}</span>
-                    <span>{req.current}/{req.target}</span>
-                  </div>
-                  <div className={`w-full h-1 rounded-full overflow-hidden ${isUnicorn ? 'bg-violet-100' : 'bg-synth-gray'}`}>
-                    <div 
-                      className={`h-full transition-all duration-300 ${
-                        req.completed ? (isUnicorn ? 'unicorn-rainbow-strip' : 'bg-synth-green') : (isUnicorn ? 'bg-violet-300' : 'bg-synth-orange')
-                      }`}
-                      style={{ width: `${Math.min(100, (req.current / req.target) * 100)}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Mission Rewards */}
-            <div className={`flex items-center justify-between rounded-lg p-2 text-xs font-semibold ${
-              isUnicorn ? 'bg-white/70 border border-violet-200/25' : 'bg-synth-blue/30 border border-synth-cyan/10'
-            }`}>
-              <span className={isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}>Phần thưởng hoàn thành:</span>
-              <span className={`font-orbitron font-bold ${isUnicorn ? 'text-violet-700' : 'text-synth-magenta'}`}>
-                +{dailyMission.rewardXP} XP
-              </span>
-            </div>
-          </div>
-        ) : (
-          <div className="text-center py-4 bg-synth-gray/10 rounded-lg border border-dashed border-synth-gray">
-            <span className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>Vào ải hôm nay để nhận Nhiệm vụ ngày!</span>
-          </div>
-        )}
-      </div>
 
       {/* Activity Logs Section */}
       <div className="flex-1 flex flex-col min-h-0">
