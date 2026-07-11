@@ -133,6 +133,7 @@ export interface StoreState {
   updateSecondaryPermissions: (linkId: string, permissions: { can_approve_rewards?: boolean, can_create_missions?: boolean, read_only?: boolean }) => Promise<boolean>;
   respondInvite: (linkId: string, accept: boolean) => Promise<boolean>;
   leaveFamily: (linkId: string) => Promise<boolean>;
+  applyVicePrincipal: () => Promise<{ success: boolean; error?: string }>;
 
   // === UI & SYSTEM SLICE ===
   handbookPages: HandbookPage[];

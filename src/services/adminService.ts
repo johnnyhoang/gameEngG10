@@ -186,5 +186,30 @@ export const adminService = {
       body: JSON.stringify(payload)
     });
     return res.ok;
+  },
+
+  fetchVicePrincipalApplications: async (): Promise<any[]> => {
+    const token = await adminService.getAccessToken();
+    if (!token) return [];
+
+    const res = await fetch(`${backendUrl}/api/admin/vice-principal-applications`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+    return [];
+  },
+
+  respondVicePrincipal: async (applicationId: string, accept: boolean): Promise<boolean> => {
+    const token = await adminService.getAccessToken();
+    if (!token) return false;
+
+    const res = await fetch(`${backendUrl}/api/admin/respond-vice-principal`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ applicationId, accept })
+    });
+    return res.ok;
   }
 };

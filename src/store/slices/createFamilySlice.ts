@@ -8,7 +8,7 @@ export const createFamilySlice: StateCreator<
   [],
   [],
   Pick<StoreState, 
-    'familyLinks' | 'secondaryParents' | 'fetchFamily' | 'sendInvite' | 'inviteSecondary' | 'inviteSecondaryRequest' | 'searchUsers' | 'updateSecondaryPermissions' | 'respondInvite' | 'leaveFamily'
+    'familyLinks' | 'secondaryParents' | 'fetchFamily' | 'sendInvite' | 'inviteSecondary' | 'inviteSecondaryRequest' | 'searchUsers' | 'updateSecondaryPermissions' | 'respondInvite' | 'leaveFamily' | 'applyVicePrincipal'
   >
 > = (set, get) => ({
   familyLinks: [],
@@ -93,6 +93,15 @@ export const createFamilySlice: StateCreator<
     const success = await familyService.leaveFamily(pId, linkId);
     if (success) { await state.fetchFamily(); }
     return success;
+  },
+
+  applyVicePrincipal: async () => {
+    const state = get();
+    const pId = state.currentUser?.id;
+    if (!pId) return { success: false, error: 'Chưa chọn profile' };
+    const res = await familyService.applyVicePrincipal(pId);
+    if (res.success) { await state.fetchFamily(); }
+    return res;
   }
 });
 

@@ -548,6 +548,16 @@ router.post('/family/leave', authMiddleware, async (req: any, res) => {
     if (linkCheck.rowCount === 0) return res.status(404).json({ error: 'Link not found' });
     const link = linkCheck.rows[0];
 
+    // Hủy yêu cầu ứng tuyển Hiệu Phó
+    if (link.link_type === 'vice_principal') {
+      if (link.parent_id !== profileId) {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+      await pool.query('DELETE FROM ge10_family_links WHERE id = $1', [linkId]);
+      await logAuditEvent(profileId, 'cancel_vice_principal_request', null, { linkId });
+      return res.json({ success: true, message: 'Đã hủy yêu cầu ứng tuyển Hiệu Phó.' });
+    }
+
     // Primary link delete: delete all primary and secondary links for this student
     if (link.link_type === 'primary') {
       if (link.student_id !== profileId && link.parent_id !== profileId) {
@@ -644,6 +654,59 @@ router.post('/family/skip-reviews/resolve', authMiddleware, async (req: any, res
   } catch (error) {
     console.error('Error resolving skip review:', error);
     res.status(500).json({ error: 'Failed to resolve skip review.' });
+  }
+});
+
+// POST /api/family/apply-vice-principal
+router.post('/family/apply-vice-principal', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const { profileId } = req.body;
+
+  try {
+    // 1. Verify ownership
+    const check = await pool.query(
+      'SELECT role, is_active FROM ge10_users WHERE id = $1 AND account_id = $2',
+      [profileId, accountId]
+    );
+    if (check.rowCount === 0) {
+      return res.status(403).json({ error: 'Unauthorized: Profile not owned by user.' });
+    }
+    const role = check.rows[0].role;
+    if (role !== 'parent' && role !== 'secondary_parent') {
+      return res.status(400).json({ error: 'Chỉ Giáo viên (Chủ nhiệm) mới có thể gửi đơn xin làm Hiệu Phó.' });
+    }
+
+    // 2. Check if they already have a pho_vien profile
+    const pvCheck = await pool.query(
+      "SELECT id, is_active FROM ge10_users WHERE account_id = $1 AND role = 'pho_vien'",
+      [accountId]
+    );
+    if (pvCheck.rowCount && pvCheck.rowCount > 0 && pvCheck.rows[0].is_active) {
+      return res.status(400).json({ error: 'Tài khoản của bạn đã được cấp quyền Hiệu Phó rồi!' });
+    }
+
+    // 3. Check if they already applied
+    const appliedCheck = await pool.query(
+      "SELECT id FROM ge10_family_links WHERE parent_id = $1 AND link_type = 'vice_principal'",
+      [profileId]
+    );
+    if (appliedCheck.rowCount && appliedCheck.rowCount > 0) {
+      return res.status(400).json({ error: 'Yêu cầu ứng tuyển Hiệu Phó của bạn đã tồn tại và đang chờ duyệt!' });
+    }
+
+    // 4. Create the application
+    const linkId = 'lnk-vp-' + Date.now();
+    await pool.query(
+      `INSERT INTO ge10_family_links (id, parent_id, student_id, status, link_type)
+       VALUES ($1, $2, NULL, 'pending', 'vice_principal')`,
+      [linkId, profileId]
+    );
+
+    await logAuditEvent(profileId, 'apply_vice_principal', null, { linkId });
+    res.json({ success: true, message: 'Đã gửi yêu cầu ứng tuyển Hiệu Phó thành công!' });
+  } catch (error: any) {
+    console.error('Error applying for vice principal:', error);
+    res.status(500).json({ error: 'Không thể gửi yêu cầu ứng tuyển Hiệu Phó.', details: error.message });
   }
 });
 

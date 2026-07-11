@@ -1,7 +1,7 @@
 import express from 'express';
 import { pool } from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
-import { checkStudentManagementPermission } from '../helpers/permissions.js';
+import { checkStudentManagementPermission, logAuditEvent } from '../helpers/permissions.js';
 import { ensureDefaultRewards } from '../helpers/questions.js';
 import {
   saveBossCompletionBonusNP,
@@ -133,7 +133,114 @@ router.post('/api/admin/update-user-role', authMiddleware, async (req: any, res)
   }
 });
 
+// GET /api/admin/vice-principal-applications: Lấy tất cả yêu cầu ứng tuyển Hiệu Phó đang chờ duyệt (Chỉ dành cho Hiệu Trưởng)
+router.get('/admin/vice-principal-applications', authMiddleware, async (req: any, res) => {
+  const adminId = req.user.sub;
+  try {
+    const adminCheck = await pool.query(
+      "SELECT role FROM ge10_users WHERE account_id = $1 AND role = 'truong_vien' AND is_active = TRUE",
+      [adminId]
+    );
+    if (adminCheck.rowCount === 0) {
+      return res.status(403).json({ error: 'Forbidden: Chỉ Hiệu Trưởng mới có quyền duyệt đơn ứng tuyển Hiệu Phó.' });
+    }
 
+    const appsRes = await pool.query(`
+      SELECT l.id, l.status, l.created_at, 
+             u.id as teacher_id, u.name as teacher_name, u.email as teacher_email, u.avatar_url as teacher_avatar, u.account_id as teacher_account_id
+      FROM ge10_family_links l
+      JOIN ge10_users u ON l.parent_id = u.id
+      WHERE l.link_type = 'vice_principal' AND l.status = 'pending'
+      ORDER BY l.created_at DESC
+    `);
+    res.json(appsRes.rows);
+  } catch (error: any) {
+    console.error('Error fetching VP applications:', error);
+    res.status(500).json({ error: 'Failed to fetch VP applications.', details: error.message });
+  }
+});
+
+// POST /api/admin/respond-vice-principal: Duyệt hoặc từ chối yêu cầu ứng tuyển Hiệu Phó (Chỉ dành cho Hiệu Trưởng)
+router.post('/api/admin/respond-vice-principal', authMiddleware, async (req: any, res) => {
+  const adminId = req.user.sub;
+  try {
+    const adminCheck = await pool.query(
+      "SELECT role FROM ge10_users WHERE account_id = $1 AND role = 'truong_vien' AND is_active = TRUE",
+      [adminId]
+    );
+    if (adminCheck.rowCount === 0) {
+      return res.status(403).json({ error: 'Forbidden: Chỉ Hiệu Trưởng mới có quyền duyệt đơn ứng tuyển.' });
+    }
+
+    const { applicationId, accept } = req.body;
+    if (!applicationId || accept === undefined) {
+      return res.status(400).json({ error: 'Missing applicationId or accept status.' });
+    }
+
+    // 1. Lấy thông tin đơn ứng tuyển
+    const appCheck = await pool.query(
+      "SELECT * FROM ge10_family_links WHERE id = $1 AND link_type = 'vice_principal' AND status = 'pending'",
+      [applicationId]
+    );
+    if (appCheck.rowCount === 0) {
+      return res.status(404).json({ error: 'Đơn ứng tuyển không tồn tại hoặc đã được xử lý.' });
+    }
+    const appRow = appCheck.rows[0];
+    const teacherProfileId = appRow.parent_id;
+
+    // 2. Lấy thông tin tài khoản giáo viên
+    const teacherRes = await pool.query(
+      "SELECT account_id, name, email, avatar_url FROM ge10_users WHERE id = $1",
+      [teacherProfileId]
+    );
+    if (teacherRes.rows.length === 0) {
+      return res.status(404).json({ error: 'Không tìm thấy thông tin giáo viên ứng tuyển.' });
+    }
+    const teacherInfo = teacherRes.rows[0];
+    const targetAccountId = teacherInfo.account_id;
+
+    if (accept) {
+      // 3. Kích hoạt hoặc Tạo mới profile pho_vien (Hiệu Phó) cho tài khoản này
+      const profileCheck = await pool.query(
+        "SELECT id FROM ge10_users WHERE account_id = $1 AND role = 'pho_vien'",
+        [targetAccountId]
+      );
+
+      if (profileCheck.rows.length > 0) {
+        // Đã từng có profile -> Kích hoạt lại
+        await pool.query("UPDATE ge10_users SET is_active = TRUE WHERE id = $1", [profileCheck.rows[0].id]);
+      } else {
+        // Chưa có profile -> Tạo mới profile Hiệu Phó
+        const newProfileId = `u-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const cleanName = teacherInfo.name.replace(/\s*\(Hiệu Trưởng\)|\s*\(Hiệu Phó\)|\s*\(Chủ Nhiệm\)|\s*\(Học Sinh\)/g, '');
+        const finalName = `${cleanName} (Hiệu Phó)`;
+
+        await pool.query(
+          `INSERT INTO ge10_users (id, account_id, name, email, avatar_url, role, is_active)
+           VALUES ($1, $2, $3, $4, $5, 'pho_vien', TRUE)`,
+          [newProfileId, targetAccountId, finalName, teacherInfo.email, teacherInfo.avatar_url]
+        );
+
+        // Khởi tạo player_profile & pet_state
+        await pool.query(`INSERT INTO ge10_player_profiles (user_id) VALUES ($1) ON CONFLICT DO NOTHING`, [newProfileId]);
+        await pool.query(`INSERT INTO ge10_pet_states (user_id) VALUES ($1) ON CONFLICT DO NOTHING`, [newProfileId]);
+      }
+
+      // Cập nhật trạng thái đơn ứng tuyển sang active
+      await pool.query("UPDATE ge10_family_links SET status = 'active' WHERE id = $1", [applicationId]);
+      await logAuditEvent(teacherProfileId, 'approve_vice_principal_request', null, { applicationId });
+    } else {
+      // Từ chối: Xóa đơn ứng tuyển
+      await pool.query("DELETE FROM ge10_family_links WHERE id = $1", [applicationId]);
+      await logAuditEvent(teacherProfileId, 'reject_vice_principal_request', null, { applicationId });
+    }
+
+    res.json({ success: true, message: accept ? 'Đã duyệt thăng cấp Hiệu Phó thành công!' : 'Đã từ chối đơn ứng tuyển.' });
+  } catch (error: any) {
+    console.error('Error responding to VP application:', error);
+    res.status(500).json({ error: 'Failed to process application.', details: error.message });
+  }
+});
 
 // GET /api/admin/audit-logs: Fetches all admin/parent audit logs (only for truong_vien)
 router.get('/admin/audit-logs', authMiddleware, async (req: any, res) => {

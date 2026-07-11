@@ -12,6 +12,7 @@ interface FamilyManagerProps {
   inviteSecondaryRequest: (email: string) => Promise<{ success: boolean; error?: string }>;
   updateSecondaryPermissions: (linkId: string, permissions: any) => Promise<boolean>;
   leaveFamily: (linkId: string) => Promise<boolean>;
+  applyVicePrincipal?: () => Promise<{ success: boolean; error?: string }>;
 }
 
 export const FamilyManager: React.FC<FamilyManagerProps> = ({
@@ -23,7 +24,8 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
   inviteSecondary,
   inviteSecondaryRequest,
   updateSecondaryPermissions,
-  leaveFamily
+  leaveFamily,
+  applyVicePrincipal
 }) => {
   const [inviteStudentEmail, setInviteStudentEmail] = useState('');
   const [isInvitingStudent, setIsInvitingStudent] = useState(false);
@@ -33,9 +35,33 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
 
   const [requestClassEmail, setRequestClassEmail] = useState('');
   const [isRequestingClass, setIsRequestingClass] = useState(false);
+  const [isApplyingVicePrincipal, setIsApplyingVicePrincipal] = useState(false);
 
   const isPrimaryTeacher = currentUser?.role === 'parent';
   const isSecondaryTeacher = currentUser?.role === 'secondary_parent';
+
+  const vicePrincipalApplication = familyLinks.find(
+    l => l.link_type === 'vice_principal' && l.parent_id === currentUser?.id
+  );
+
+  const handleApplyVicePrincipal = async () => {
+    if (!applyVicePrincipal) return;
+    if (window.confirm('Bạn có chắc muốn ứng tuyển làm Hiệu Phó của trường không?')) {
+      setIsApplyingVicePrincipal(true);
+      try {
+        const res = await applyVicePrincipal();
+        if (res.success) {
+          toast.success('Gửi yêu cầu ứng tuyển thành công!');
+        } else {
+          toast.error(res.error || 'Có lỗi xảy ra.');
+        }
+      } catch (err: any) {
+        toast.error(err.message || 'Có lỗi xảy ra.');
+      } finally {
+        setIsApplyingVicePrincipal(false);
+      }
+    }
+  };
 
   // --- FILTERS ---
   // Active students under this teacher
@@ -540,6 +566,53 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* ================= SECTION 7: VICE PRINCIPAL APPLICATION ================= */}
+      {(isPrimaryTeacher || isSecondaryTeacher) && (
+        <div className="rounded-2xl border border-synth-magenta/20 bg-synth-magenta/5 p-4 space-y-4">
+          <div>
+            <h4 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-2">
+              🛡️ Ứng Tuyển Làm Hiệu Phó Trường Học
+            </h4>
+            <p className="text-[11px] text-slate-300 mt-1">
+              Bạn có thể ứng cử làm Hiệu Phó để hỗ trợ Ban Giám Hiệu quản lý ngân hàng câu hỏi, học sinh và phân quyền toàn trường. Đơn ứng cử sẽ được gửi trực tiếp đến tất cả Hiệu Trưởng để phê duyệt.
+            </p>
+          </div>
+
+          {vicePrincipalApplication ? (
+            <div className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/5">
+              <div className="flex items-center gap-2">
+                <span className="animate-pulse text-synth-orange">⏳</span>
+                <div>
+                  <span className="text-xs text-white font-bold block">Đang chờ Hiệu Trưởng duyệt ứng cử</span>
+                  <span className="text-[9px] text-slate-400">Ngày gửi: {new Date(vicePrincipalApplication.created_at).toLocaleDateString('vi-VN')}</span>
+                </div>
+              </div>
+              <button
+                onClick={async () => {
+                  if (window.confirm('Bạn có chắc muốn hủy đơn ứng cử Hiệu Phó này không?')) {
+                    const ok = await leaveFamily(vicePrincipalApplication.id);
+                    if (ok) toast.success('Đã hủy đơn ứng cử Hiệu Phó.');
+                  }
+                }}
+                className="px-3 py-1.5 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-xs uppercase cursor-pointer transition-colors"
+              >
+                Hủy Ứng Tuyển
+              </button>
+            </div>
+          ) : (
+            <div className="flex justify-start">
+              <button
+                disabled={isApplyingVicePrincipal}
+                onClick={handleApplyVicePrincipal}
+                className="px-4 py-2 bg-synth-magenta text-black font-bold font-orbitron text-xs uppercase rounded-lg hover:synth-glow-magenta transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isApplyingVicePrincipal ? 'Đang gửi yêu cầu...' : 'Gửi Yêu Cầu Ứng Tuyển 🛡️'}
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
