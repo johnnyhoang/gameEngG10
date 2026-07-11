@@ -35,11 +35,7 @@ const withSuspense = <P extends object>(
   );
 };
 
-// Lazy-loaded heavy components — code-split để giảm tải ban đầu
 const PetSanctuary = withSuspense(lazy(() => import('./components/PetSanctuary').then(m => ({ default: m.PetSanctuary }))));
-const ActivityLog = withSuspense(lazy(() => import('./components/ActivityLog').then(m => ({ default: m.ActivityLog }))), (
-  <div className="text-center py-5 font-orbitron text-xs text-slate-500">Đang tải nhật ký...</div>
-));
 const Arena = withSuspense(lazy(() => import('./components/Arena').then(m => ({ default: m.Arena }))));
 const ItemShop = withSuspense(lazy(() => import('./components/ItemShop').then(m => ({ default: m.ItemShop }))));
 const ProfilePage = withSuspense(lazy(() => import('./components/ProfilePage').then(m => ({ default: m.ProfilePage }))));

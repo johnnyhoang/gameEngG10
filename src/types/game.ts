@@ -1,7 +1,7 @@
 export type QuestionType = 'mcq' | 'multiple_choice' | 'text_input' | 'matching' | 'wordform' | 'rewrite' | 'cloze' | 'reading' | 'short-answer' | 'proof' | 'multi-part';
 export type ChallengeType = 'daily' | 'weekly' | 'achievement' | 'one-time';
 /** Trạng thái một lượt đổi quà (RewardRedemption) — CORE_SPECS §3.2. 'pending' = đã trừ NP, chờ chủ nhiệm trao; 'delivered' = chủ nhiệm đã bấm "Đã Trao". */
-export type RewardStatus = 'pending' | 'delivered';
+export type RewardStatus = 'pending' | 'delivered' | 'cancelled';
 export type PetStage = 'egg' | 'baby' | 'adult' | 'legend';
 export type PetMood = 'happy' | 'neutral' | 'sad' | 'sleeping';
 
