@@ -147,6 +147,8 @@ export interface GatekeeperHistoryEntry {
 
 /** Lấy danh sách questionId đã dùng từ backend */
 export async function getRecentlyUsedGatekeeperIds(studentId: string, pageId: string): Promise<string[]> {
+  // Phiên dev-backdoor (mock-*) không có dữ liệu lịch sử trên backend — bỏ qua gọi mạng.
+  if (studentId.startsWith('mock-')) return [];
   try {
     const session = (await supabase.auth.getSession()).data.session;
     const token = session?.access_token;
@@ -173,6 +175,8 @@ export async function getRecentlyUsedGatekeeperIds(studentId: string, pageId: st
 
 /** Ghi lại câu hỏi Gatekeeper đã dùng lên backend */
 export async function recordGatekeeperUsage(studentId: string, pageId: string, questionId: string): Promise<void> {
+  // Phiên dev-backdoor (mock-*) không có backend thật để ghi lịch sử — bỏ qua gọi mạng.
+  if (studentId.startsWith('mock-')) return;
   try {
     const session = (await supabase.auth.getSession()).data.session;
     const token = session?.access_token;

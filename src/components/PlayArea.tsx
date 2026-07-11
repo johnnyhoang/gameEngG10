@@ -100,6 +100,11 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     let active = true;
 
     const initOnlineSession = async () => {
+      // Phiên dev-backdoor (mock-*) không có backend thật — dùng thẳng bộ câu hỏi local.
+      if (player.id?.startsWith('mock-')) {
+        runLocalFallback();
+        return;
+      }
       try {
         const res = await gameService.startSession({
           profileId: player.id,

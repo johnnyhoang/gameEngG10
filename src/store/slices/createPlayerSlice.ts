@@ -1,11 +1,12 @@
 // @ts-nocheck
 import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
-import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS, INITIAL_CHALLENGES, DEFAULT_REWARDS } from '../initialState';
+import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS, INITIAL_CHALLENGES, DEFAULT_REWARDS, THEME_UNLOCK_COST, FREE_UI_THEME } from '../initialState';
 import { INITIAL_QUESTIONS } from '../../data/questions';
 import { INITIAL_LESSONS } from '../../data/lessons';
-import { DEFAULT_UI_THEME } from '../../theme/uiThemes';
+import { DEFAULT_UI_THEME, UI_THEMES } from '../../theme/uiThemes';
 import type { RewardRedemption } from '../../types/game';
+import { DEFAULT_GRADE_TIER } from '../../types/game';
 import { supabase } from '../../utils/supabaseClient';
 import { logActivity, checkLevelUp } from '../helpers';
 import { eventBus } from '../../utils/EventBus';
@@ -656,8 +657,9 @@ export const createPlayerSlice: StateCreator<
             }
           });
           
-          // Send transaction to Ledger backend if coins != 0
-          if (coins !== 0 && state.currentUser?.id) {
+          // Send transaction to Ledger backend if coins != 0 — bỏ qua với phiên dev-backdoor
+          // (mock-*), vì các phiên này không có session Supabase/backend thật để đồng bộ.
+          if (coins !== 0 && state.currentUser?.id && !state.currentUser.id.startsWith('mock-')) {
             try {
               const updatedCoins = await playerService.awardCoins(state.currentUser.id, coins, activityTitle, activityDetails);
               // Sync exact coins from DB back
@@ -684,7 +686,7 @@ export const createPlayerSlice: StateCreator<
             }
           });
 
-          if (state.currentUser?.id) {
+          if (state.currentUser?.id && !state.currentUser.id.startsWith('mock-')) {
             try {
               const progress = await playerService.clearExploration(state.currentUser.id, pageId);
               // Sync exact count from server

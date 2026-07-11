@@ -88,15 +88,26 @@ export const FogCard: React.FC<FogCardProps> = ({
         {children}
       </div>
 
-      {/* Lớp phủ mờ sương — mây trắng/hồng theo theme, không dùng nền đen hay icon ổ khóa (SUB_SPEC_UI_RULES.md §2) */}
+      {/* Lớp phủ mờ sương — cùng tông với nền trang (theo theme đang chọn), không dùng nền đen hay icon ổ khóa (SUB_SPEC_UI_RULES.md §2) */}
       {status === 'shadowed' && (
-        <div className={`absolute inset-0 z-10 flex flex-col items-center justify-center overflow-hidden rounded-2xl transition-opacity duration-300 ${
-          isHovered ? 'opacity-80' : 'opacity-100'
-        }`}>
-          <div className="absolute inset-0 bg-gradient-to-br from-white/80 via-synth-cyan/15 to-white/60" />
-          <div className="absolute -inset-8 rounded-full bg-white/60 blur-2xl animate-[fog-drift_9s_ease-in-out_infinite]" />
-          <div className="absolute -inset-10 rounded-full bg-synth-cyan/25 blur-2xl animate-[fog-drift-reverse_12s_ease-in-out_infinite]" />
-          <span className="relative z-10 text-[10px] uppercase font-orbitron font-bold tracking-wider text-slate-600 bg-white/70 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/70 shadow-sm text-center max-w-[85%]">
+        <div
+          className={`absolute inset-0 z-10 flex flex-col items-end justify-end overflow-hidden rounded-2xl transition-opacity duration-300 ${
+            isHovered ? 'opacity-40' : 'opacity-55'
+          }`}
+          style={{ backgroundColor: 'color-mix(in srgb, var(--color-synth-bg) 55%, transparent)' }}
+        >
+          <div
+            className="absolute -inset-8 rounded-full blur-xl animate-[fog-drift_9s_ease-in-out_infinite]"
+            style={{ backgroundColor: 'color-mix(in srgb, var(--color-synth-bg) 55%, white 10%)' }}
+          />
+          <div
+            className="absolute -inset-10 rounded-full blur-xl animate-[fog-drift-reverse_12s_ease-in-out_infinite]"
+            style={{ backgroundColor: 'color-mix(in srgb, var(--color-synth-bg) 45%, black 8%)' }}
+          />
+          <span
+            className="relative z-10 text-[10px] uppercase font-orbitron font-bold tracking-wider text-right max-w-[85%] px-3 pb-2"
+            style={{ color: 'color-mix(in srgb, var(--color-synth-text-muted) 75%, transparent)' }}
+          >
             {label}
           </span>
         </div>

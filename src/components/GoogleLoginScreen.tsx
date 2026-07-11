@@ -1,10 +1,35 @@
 import React from 'react';
+import { useGameState } from '../hooks/useGameState';
 import { supabase } from '../utils/supabaseClient';
-import { Sparkles, LogIn } from 'lucide-react';
+import type { UserProfile } from '../types/game';
+import { Sparkles, LogIn, FlaskConical } from 'lucide-react';
 import { toast } from '../utils/toast';
 
+const DEV_AVATAR = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#0b0c10"/><text x="20" y="27" font-size="18" text-anchor="middle">🐷</text></svg>'
+);
+
+const DEV_BACKDOOR_ROLES = [
+  { role: 'student', label: 'Thiếu Hiệp (Học sinh)', id: 'mock-dev-student', name: 'Dev Thiếu Hiệp' },
+  { role: 'pho_vien', label: 'Phó Viện (Phó hiệu trưởng)', id: 'mock-dev-pho-vien', name: 'Dev Phó Viện' },
+  { role: 'truong_vien', label: 'Viện Chủ (Phụ huynh/Admin)', id: 'mock-dev-truong-vien', name: 'Dev Viện Chủ' },
+] as const;
+
 export const GoogleLoginScreen: React.FC = () => {
-  // Dev Backdoor removed due to new Multi-Profile Auth architecture.
+  const login = useGameState(state => state.login);
+
+  // Chỉ hiển thị khi chạy `npm run dev` trên máy local — Vite loại bỏ hoàn toàn
+  // nhánh này khỏi bundle production (import.meta.env.DEV là hằng số biên dịch).
+  const handleDevBackdoorLogin = (entry: typeof DEV_BACKDOOR_ROLES[number]) => {
+    const mockUser: UserProfile = {
+      id: entry.id,
+      name: entry.name,
+      email: `${entry.id}@local.test`,
+      avatar: DEV_AVATAR,
+      role: entry.role,
+    };
+    login(mockUser);
+  };
 
   const handleSupabaseGoogleLogin = async () => {
     try {
@@ -67,6 +92,28 @@ export const GoogleLoginScreen: React.FC = () => {
             <LogIn className="w-4 h-4" /> Đăng nhập bằng tài khoản Google
           </button>
         </div>
+
+        {import.meta.env.DEV && (
+          <div className="space-y-2.5 text-left">
+            <div className="flex items-center gap-2 text-[10px] text-synth-text-muted uppercase font-bold">
+              <div className="flex-1 h-[1px] bg-synth-gray"></div>
+              <span>Dev backdoor — chỉ local</span>
+              <div className="flex-1 h-[1px] bg-synth-gray"></div>
+            </div>
+            <div className="grid grid-cols-1 gap-2">
+              {DEV_BACKDOOR_ROLES.map(entry => (
+                <button
+                  key={entry.id}
+                  onClick={() => handleDevBackdoorLogin(entry)}
+                  className="flex items-center gap-2.5 p-2.5 rounded-xl border border-white/5 bg-synth-gray/10 hover:border-synth-cyan/40 hover:bg-synth-gray/25 cursor-pointer text-left text-xs font-semibold text-white transition-all duration-200"
+                >
+                  <FlaskConical className="w-3.5 h-3.5 text-synth-cyan shrink-0" />
+                  {entry.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -15,12 +15,21 @@ const router = express.Router();
 // GET /api/admin/users: Lists active users and links (academy-wide for admins, class-specific for teachers)
 router.get('/admin/users', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
+  const profileId = req.query.profileId;
   try {
-    const check = await pool.query(
-      "SELECT id, role FROM ge10_users WHERE account_id = $1 AND is_active = TRUE LIMIT 1",
-      [adminId]
-    );
-    if (check.rowCount === 0) {
+    let check;
+    if (profileId) {
+      check = await pool.query(
+        "SELECT id, role FROM ge10_users WHERE id = $1 AND account_id = $2 AND is_active = TRUE",
+        [profileId, adminId]
+      );
+    } else {
+      check = await pool.query(
+        "SELECT id, role FROM ge10_users WHERE account_id = $1 AND is_active = TRUE ORDER BY (role IN ('truong_vien', 'pho_vien', 'parent', 'secondary_parent')) DESC LIMIT 1",
+        [adminId]
+      );
+    }
+    if ((check.rowCount ?? 0) === 0) {
       return res.status(403).json({ error: 'Forbidden: Bạn không có quyền truy cập.' });
     }
     const caller = check.rows[0];
@@ -69,7 +78,7 @@ router.get('/admin/users', authMiddleware, async (req: any, res) => {
         FROM ge10_users u
         WHERE u.id = $1
       `, [callerProfileId]);
-      if (callerProfileRes.rowCount > 0) {
+      if ((callerProfileRes.rowCount ?? 0) > 0) {
         relatedUsers.push(callerProfileRes.rows[0]);
       }
 

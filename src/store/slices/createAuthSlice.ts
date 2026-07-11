@@ -120,7 +120,7 @@ export const createAuthSlice: StateCreator<
         const newPlayer = state.profiles[user.id] || {
           id: user.id,
           name: user.name,
-          role: 'student',
+          role: (user.role as any) || 'student',
           level: 1,
           xp: 0,
           coins: 200,
@@ -148,6 +148,7 @@ export const createAuthSlice: StateCreator<
 
         return {
           currentUser: user,
+          sessionAccountId: user.id,
           player: newPlayer,
           pet: newPet,
           categoryStats: newStats,

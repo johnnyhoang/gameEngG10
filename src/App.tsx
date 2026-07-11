@@ -192,7 +192,12 @@ function App() {
             await state.fetchProfiles();
           }
         } else {
-          useGameState.getState().logout();
+          // Không đăng xuất phiên dev-backdoor (mock-*) — nó không có session Supabase
+          // thật nên luôn rơi vào nhánh này, và sẽ bị logout() xoá ngay sau khi vừa login.
+          const state = useGameState.getState();
+          if (!state.sessionAccountId?.startsWith('mock-')) {
+            state.logout();
+          }
         }
 
         if (mounted) {

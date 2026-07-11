@@ -217,18 +217,20 @@ export const createAdminSlice: StateCreator<
 
     try {
       if (!state.currentUser?.id) return false;
-      
-      // Gọi API transaction thông qua playerService
-      const updatedCoins = await playerService.awardCoins(
-        state.currentUser.id,
-        -10,
-        'Bỏ qua câu hỏi (Skip)',
-        {
-          questionId: question.id,
-          questionPrompt: question.prompt,
-          reason: reason || 'Quá khó'
-        }
-      );
+
+      // Phiên dev-backdoor (mock-*) không có backend thật để ghi transaction — trừ NP tại chỗ.
+      const updatedCoins = state.currentUser.id.startsWith('mock-')
+        ? Math.max(0, state.player.coins - 10)
+        : await playerService.awardCoins(
+            state.currentUser.id,
+            -10,
+            'Bỏ qua câu hỏi (Skip)',
+            {
+              questionId: question.id,
+              questionPrompt: question.prompt,
+              reason: reason || 'Quá khó'
+            }
+          );
 
       // Đánh dấu câu hỏi bị ghim local
       const nextQuestion = { ...question, isConfused: true, skipReason: reason, skipSeverity: severity } as Question;
