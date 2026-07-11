@@ -4,6 +4,8 @@ import { isAdmin, isParentRole } from '../utils/roleHelpers';
 import { Unlock } from 'lucide-react';
 
 // Import child managers
+import { AdminConnectionManager } from './ParentConsole/AdminConnectionManager';
+import { ProfilePage } from './ProfilePage';
 import { FamilyManager } from './ParentConsole/FamilyManager';
 import { RewardManager } from './ParentConsole/RewardManager';
 import { QuestManager } from './ParentConsole/QuestManager';
@@ -56,6 +58,9 @@ export const ParentConsole: React.FC = () => {
   const updateSecondaryPermissions = useGameState(state => state.updateSecondaryPermissions);
   const leaveFamily = useGameState(state => state.leaveFamily);
   const applyVicePrincipal = useGameState(state => state.applyVicePrincipal);
+  const inviteAdminConnection = useGameState(state => state.inviteAdminConnection);
+  const uiTheme = useGameState(state => state.uiTheme);
+  const setUiTheme = useGameState(state => state.setUiTheme);
 
   // Local state for layout
   const [activeTab, setActiveTab] = useState<'chinh_dien' | 'thien_co_cac' | 'van_quyen_cac' | 'ngan_cac' | 'than_phan'>('chinh_dien');
@@ -198,18 +203,28 @@ export const ParentConsole: React.FC = () => {
       <div className="glass-panel rounded-2xl border border-white/5 p-5">
         {activeTab === 'chinh_dien' && (
           <div className="space-y-6">
-            <FamilyManager
-              currentUser={currentUser}
-              familyLinks={familyLinks}
-              secondaryParents={secondaryParents}
-              sendInvite={sendInvite}
-              respondInvite={respondInvite}
-              inviteSecondary={inviteSecondary}
-              inviteSecondaryRequest={inviteSecondaryRequest}
-              updateSecondaryPermissions={updateSecondaryPermissions}
-              leaveFamily={leaveFamily}
-              applyVicePrincipal={applyVicePrincipal}
-            />
+            {(currentUser?.role === 'truong_vien' || currentUser?.role === 'pho_vien') ? (
+              <AdminConnectionManager
+                currentUser={currentUser}
+                familyLinks={familyLinks}
+                respondInvite={respondInvite}
+                leaveFamily={leaveFamily}
+                inviteAdminConnection={inviteAdminConnection}
+              />
+            ) : (
+              <FamilyManager
+                currentUser={currentUser}
+                familyLinks={familyLinks}
+                secondaryParents={secondaryParents}
+                sendInvite={sendInvite}
+                respondInvite={respondInvite}
+                inviteSecondary={inviteSecondary}
+                inviteSecondaryRequest={inviteSecondaryRequest}
+                updateSecondaryPermissions={updateSecondaryPermissions}
+                leaveFamily={leaveFamily}
+                applyVicePrincipal={applyVicePrincipal}
+              />
+            )}
 
             {/* List of students for parent/admin viewing */}
             <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-4">
@@ -253,20 +268,29 @@ export const ParentConsole: React.FC = () => {
         )}
 
         {activeTab === 'than_phan' && (
-          <StudentProfileView
-            currentUser={currentUser}
-            selectedStudentProfile={selectedStudentProfile}
-            gameSettings={gameSettings}
-            canApproveReward={!!canApproveReward}
-            canManageEnergy={!!canManageEnergy}
-            skipReviews={skipReviews}
-            adminMarkRewardDelivered={adminMarkRewardDelivered as any}
-            adminCancelRedemption={adminCancelRedemption as any}
-            adminSetEnergy={adminSetEnergy as any}
-            adminSetEnergyConfig={adminSetEnergyConfig as any}
-            fetchSkipReviews={fetchSkipReviews}
-            resolveSkipReview={resolveSkipReview}
-          />
+          viewingStudentId ? (
+            <StudentProfileView
+              currentUser={currentUser}
+              selectedStudentProfile={selectedStudentProfile}
+              gameSettings={gameSettings}
+              canApproveReward={!!canApproveReward}
+              canManageEnergy={!!canManageEnergy}
+              skipReviews={skipReviews}
+              adminMarkRewardDelivered={adminMarkRewardDelivered as any}
+              adminCancelRedemption={adminCancelRedemption as any}
+              adminSetEnergy={adminSetEnergy as any}
+              adminSetEnergyConfig={adminSetEnergyConfig as any}
+              fetchSkipReviews={fetchSkipReviews}
+              resolveSkipReview={resolveSkipReview}
+            />
+          ) : (
+            <ProfilePage
+              currentUser={currentUser!}
+              currentTheme={uiTheme}
+              onSelectTheme={setUiTheme}
+              onOpenLogs={() => {}}
+            />
+          )
         )}
 
         {activeTab === 'thien_co_cac' && (

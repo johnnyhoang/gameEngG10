@@ -221,28 +221,30 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         {/* TAB 1: THÂN PHẬN & VÕ HỌC */}
         {activeTab === 'identity' && (
           <div className="space-y-6">
-            {/* General Stats Header */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 text-xs">
-              <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Danh hiệu tu học</span>
-                <span className="font-orbitron font-black text-synth-cyan text-base">
-                  {getStudentRankForLevel(player.level).icon} {getStudentRankForLevel(player.level).name}
-                </span>
-                <span className="block text-[10px] text-slate-400 font-semibold">Level {player.level}</span>
+            {/* General Stats Header (Chỉ hiển thị cho Học Sinh) */}
+            {currentUser.role === 'student' && (
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 text-xs">
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Danh hiệu tu học</span>
+                  <span className="font-orbitron font-black text-synth-cyan text-base">
+                    {getStudentRankForLevel(player.level).icon} {getStudentRankForLevel(player.level).name}
+                  </span>
+                  <span className="block text-[10px] text-slate-400 font-semibold">Level {player.level}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Tích lũy Chân Lý</span>
+                  <span className="font-orbitron font-black text-synth-magenta text-base">{player.xp} XP</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Ngân khoản Nanite</span>
+                  <span className="font-orbitron font-black text-synth-orange text-base">{player.coins} NP</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Chuỗi luyện công</span>
+                  <span className="font-orbitron font-black text-synth-green text-base">{player.streak} Ngày</span>
+                </div>
               </div>
-              <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Tích lũy Chân Lý</span>
-                <span className="font-orbitron font-black text-synth-magenta text-base">{player.xp} XP</span>
-              </div>
-              <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Ngân khoản Nanite</span>
-                <span className="font-orbitron font-black text-synth-orange text-base">{player.coins} NP</span>
-              </div>
-              <div>
-                <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Chuỗi luyện công</span>
-                <span className="font-orbitron font-black text-synth-green text-base">{player.streak} Ngày</span>
-              </div>
-            </div>
+            )}
 
             {/* Tầng Thế Giới (Grade Tier — CORE_SPECS §1.4). Đây là NƠI DUY NHẤT được đổi tầng. */}
             <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
@@ -309,23 +311,24 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               />
             )}
 
-            {/* Nhật Ký Truyền Công — không phải 1 trong 7 Page Cấp 1 (CORE_SPECS §2.8.1),
-                gói gọn lối vào tại đây thay vì chiếm 1 slot điều hướng cấp 1. */}
-            <div className="flex flex-col sm:flex-row justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/10 gap-4">
-              <div className="flex items-center gap-3">
-                <span className="text-3xl">📊</span>
-                <div>
-                  <h4 className="text-sm font-bold text-white">Nhật Ký Truyền Công</h4>
-                  <p className="text-xs text-slate-400">Xem lại lịch sử hoạt động và tu luyện của môn phái đang mở.</p>
+            {/* Nhật Ký Truyền Công (Chỉ cho Học Sinh) */}
+            {currentUser.role === 'student' && (
+              <div className="flex flex-col sm:flex-row justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/10 gap-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">📊</span>
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Nhật Ký Truyền Công</h4>
+                    <p className="text-xs text-slate-400">Xem lại lịch sử hoạt động và tu luyện của môn phái đang mở.</p>
+                  </div>
                 </div>
+                <button
+                  onClick={onOpenLogs}
+                  className="w-full sm:w-auto px-5 py-2.5 bg-white/10 hover:bg-white/15 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer border border-white/10 hover:scale-[1.02]"
+                >
+                  Xem Nhật Ký 📊
+                </button>
               </div>
-              <button
-                onClick={onOpenLogs}
-                className="w-full sm:w-auto px-5 py-2.5 bg-white/10 hover:bg-white/15 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer border border-white/10 hover:scale-[1.02]"
-              >
-                Xem Nhật Ký 📊
-              </button>
-            </div>
+            )}
 
             {/* Subject Sects Grid */}
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -370,38 +373,45 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                       )}
                     </div>
 
-                    {/* Subject stats metrics */}
-                    <div className="space-y-2 text-[11px] text-slate-300 w-full mt-2">
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-400 font-semibold flex items-center gap-1"><Shield className="w-3.5 h-3.5 text-synth-orange" /> Đẳng Cấp:</span>
-                        <span className={`font-black uppercase ${stats.rankColor}`}>{stats.rankName}</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-400 font-semibold flex items-center gap-1"><Award className="w-3.5 h-3.5 text-synth-green" /> Nội Công:</span>
-                        <span className="font-bold text-white">{stats.correctCount} thành tựu (Đúng)</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-slate-400 font-semibold flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-synth-cyan" /> Thời Gian:</span>
-                        <span className="font-bold text-white">{timeStr}</span>
-                      </div>
-                    </div>
+                    {/* Subject stats metrics & progress (Học Sinh) hoặc Description (Giáo viên/Admin) */}
+                    {currentUser.role === 'student' ? (
+                      <>
+                        <div className="space-y-2 text-[11px] text-slate-300 w-full mt-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400 font-semibold flex items-center gap-1"><Shield className="w-3.5 h-3.5 text-synth-orange" /> Đẳng Cấp:</span>
+                            <span className={`font-black uppercase ${stats.rankColor}`}>{stats.rankName}</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400 font-semibold flex items-center gap-1"><Award className="w-3.5 h-3.5 text-synth-green" /> Nội Công:</span>
+                            <span className="font-bold text-white">{stats.correctCount} thành tựu (Đúng)</span>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-slate-400 font-semibold flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-synth-cyan" /> Thời Gian:</span>
+                            <span className="font-bold text-white">{timeStr}</span>
+                          </div>
+                        </div>
 
-                    {/* Progress bar */}
-                    <div className="space-y-1 w-full mt-2">
-                      <div className="flex justify-between text-[9px] font-bold text-slate-400">
-                        <span>Tu luyện hoàn thành</span>
-                        <span>{stats.percent}%</span>
+                        <div className="space-y-1 w-full mt-2">
+                          <div className="flex justify-between text-[9px] font-bold text-slate-400">
+                            <span>Tu luyện hoàn thành</span>
+                            <span>{stats.percent}%</span>
+                          </div>
+                          <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all duration-500"
+                              style={{
+                                width: `${stats.percent}%`,
+                                backgroundColor: isActive ? sub.color : '#64748b'
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="text-[11px] text-slate-400 mt-2 leading-relaxed flex-1 flex items-center">
+                        Nhấp để tập trung quản lý lớp học, ngân hàng câu hỏi và nghiên cứu học liệu thuộc môn {sub.name}.
                       </div>
-                      <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden">
-                        <div
-                          className="h-full rounded-full transition-all duration-500"
-                          style={{
-                            width: `${stats.percent}%`,
-                            backgroundColor: isActive ? sub.color : '#64748b'
-                          }}
-                        />
-                      </div>
-                    </div>
+                    )}
                   </button>
                 );
               })}

@@ -27,6 +27,8 @@ router.get('/users/search', authMiddleware, async (req: any, res) => {
     if (role) {
       if (role === 'parent' || role === 'secondary_parent') {
         queryText += " AND role IN ('parent', 'secondary_parent')";
+      } else if (role === 'admin_board') {
+        queryText += " AND role IN ('truong_vien', 'pho_vien')";
       } else {
         queryText += ' AND role = $3';
         params.push(role);
@@ -114,6 +116,20 @@ router.get('/family/:profileId', authMiddleware, async (req: any, res) => {
         role: 'secondary_parent',
         links: studentLinks.rows,
         classSecondaryLinks: classSecondaryLinks.rows
+      });
+    } else if (myRole === 'truong_vien' || myRole === 'pho_vien') {
+      const adminLinks = await pool.query(`
+        SELECT l.id, l.status, l.link_type, l.created_at,
+               u.id as peer_id, u.name as peer_name, u.email as peer_email, u.avatar_url as peer_avatar, u.role as peer_role,
+               l.parent_id as sender_id
+        FROM ge10_family_links l
+        JOIN ge10_users u ON (l.parent_id = u.id AND l.student_id = $1) OR (l.student_id = u.id AND l.parent_id = $1)
+        WHERE l.link_type = 'admin_connection'
+      `, [profileId]);
+      
+      return res.json({
+        role: myRole,
+        links: adminLinks.rows
       });
     } else {
       return res.json({ role: myRole, links: [] });
@@ -459,6 +475,19 @@ router.post('/family/respond', authMiddleware, async (req: any, res) => {
     const link = linkCheck.rows[0];
 
     // Authorize response
+    if (link.link_type === 'admin_connection') {
+      if (profileId !== link.student_id) {
+        return res.status(403).json({ error: 'Unauthorized: Chỉ người nhận mới có thể chấp nhận kết nối.' });
+      }
+      if (!accept) {
+        await pool.query('DELETE FROM ge10_family_links WHERE id = $1', [linkId]);
+        return res.json({ success: true, message: 'Đã từ chối kết nối Ban Giám Hiệu.' });
+      }
+      await pool.query("UPDATE ge10_family_links SET status = 'active', updated_at = NOW() WHERE id = $1", [linkId]);
+      await logAuditEvent(profileId, 'respond_admin_connection', link.parent_id, { accept: true });
+      return res.json({ success: true, message: 'Đã kết nối Ban Giám Hiệu thành công!' });
+    }
+
     if (link.status === 'pending_primary') {
       // Recipient is primary parent (link.parent_id)
       if (profileId !== link.parent_id) {
@@ -556,6 +585,16 @@ router.post('/family/leave', authMiddleware, async (req: any, res) => {
       await pool.query('DELETE FROM ge10_family_links WHERE id = $1', [linkId]);
       await logAuditEvent(profileId, 'cancel_vice_principal_request', null, { linkId });
       return res.json({ success: true, message: 'Đã hủy yêu cầu ứng tuyển Hiệu Phó.' });
+    }
+
+    // Hủy / Xóa kết nối Ban Giám Hiệu
+    if (link.link_type === 'admin_connection') {
+      if (link.parent_id !== profileId && link.student_id !== profileId) {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+      await pool.query('DELETE FROM ge10_family_links WHERE id = $1', [linkId]);
+      await logAuditEvent(profileId, 'leave_admin_connection', link.parent_id === profileId ? link.student_id : link.parent_id, { linkId });
+      return res.json({ success: true, message: 'Đã hủy kết nối Ban Giám Hiệu.' });
     }
 
     // Primary link delete: delete all primary and secondary links for this student
@@ -707,6 +746,65 @@ router.post('/family/apply-vice-principal', authMiddleware, async (req: any, res
   } catch (error: any) {
     console.error('Error applying for vice principal:', error);
     res.status(500).json({ error: 'Không thể gửi yêu cầu ứng tuyển Hiệu Phó.', details: error.message });
+  }
+});
+
+// POST /api/family/invite-admin-connection: Gửi yêu cầu kết nối Ban Giám Hiệu (Hiệu Trưởng / Hiệu Phó)
+router.post('/family/invite-admin-connection', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const { senderProfileId, targetEmail } = req.body;
+
+  if (!senderProfileId || !targetEmail) {
+    return res.status(400).json({ error: 'Missing required parameters.' });
+  }
+
+  try {
+    // 1. Verify sender is active admin profile (truong_vien or pho_vien)
+    const senderCheck = await pool.query(
+      "SELECT id, role FROM ge10_users WHERE id = $1 AND account_id = $2 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
+      [senderProfileId, accountId]
+    );
+    if (senderCheck.rowCount === 0) {
+      return res.status(403).json({ error: 'Forbidden: Chỉ Ban Giám Hiệu mới có thể kết nối với nhau.' });
+    }
+
+    // 2. Find target admin profile by email
+    const targetCheck = await pool.query(
+      "SELECT id, role FROM ge10_users WHERE LOWER(email) = LOWER($1) AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE LIMIT 1",
+      [targetEmail.trim()]
+    );
+    if (targetCheck.rowCount === 0) {
+      return res.status(404).json({ error: 'Không tìm thấy tài khoản Hiệu Trưởng hoặc Hiệu Phó với email này.' });
+    }
+    const targetProfileId = targetCheck.rows[0].id;
+
+    if (targetProfileId === senderProfileId) {
+      return res.status(400).json({ error: 'Không thể kết nối với chính mình!' });
+    }
+
+    // 3. Check if connection already exists
+    const linkExist = await pool.query(
+      `SELECT id, status FROM ge10_family_links 
+       WHERE link_type = 'admin_connection' 
+         AND ((parent_id = $1 AND student_id = $2) OR (parent_id = $2 AND student_id = $1))`,
+      [senderProfileId, targetProfileId]
+    );
+    if (linkExist.rowCount && linkExist.rowCount > 0) {
+      return res.status(400).json({ error: 'Yêu cầu kết nối đã tồn tại hoặc hai người đã kết nối!' });
+    }
+
+    // 4. Create request
+    const linkId = 'lnk-adm-' + Date.now();
+    await pool.query(
+      "INSERT INTO ge10_family_links (id, parent_id, student_id, status, link_type) VALUES ($1, $2, $3, 'pending', 'admin_connection')",
+      [linkId, senderProfileId, targetProfileId]
+    );
+
+    await logAuditEvent(senderProfileId, 'invite_admin_connection', targetProfileId, {});
+    res.json({ success: true, message: 'Đã gửi yêu cầu kết nối Ban Giám Hiệu thành công!' });
+  } catch (error: any) {
+    console.error('Error inviting admin connection:', error);
+    res.status(500).json({ error: 'Không thể gửi yêu cầu kết nối.', details: error.message });
   }
 });
 

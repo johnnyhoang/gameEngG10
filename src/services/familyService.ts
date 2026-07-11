@@ -135,5 +135,19 @@ export const familyService = {
     if (res.ok) return { success: true };
     const err = await res.json();
     return { success: false, error: err.error || 'Có lỗi xảy ra' };
+  },
+
+  inviteAdminConnection: async (senderProfileId: string, targetEmail: string): Promise<any> => {
+    const token = await familyService.getAccessToken();
+    if (!token) return { success: false, error: 'No token' };
+
+    const res = await fetch(`${backendUrl}/api/family/invite-admin-connection`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ senderProfileId, targetEmail })
+    });
+    if (res.ok) return { success: true };
+    const err = await res.json();
+    return { success: false, error: err.error || 'Có lỗi xảy ra' };
   }
 };

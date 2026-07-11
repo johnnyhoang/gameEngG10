@@ -134,6 +134,7 @@ export interface StoreState {
   respondInvite: (linkId: string, accept: boolean) => Promise<boolean>;
   leaveFamily: (linkId: string) => Promise<boolean>;
   applyVicePrincipal: () => Promise<{ success: boolean; error?: string }>;
+  inviteAdminConnection: (targetEmail: string) => Promise<{ success: boolean; error?: string }>;
 
   // === UI & SYSTEM SLICE ===
   handbookPages: HandbookPage[];

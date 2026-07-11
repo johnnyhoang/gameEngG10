@@ -3,7 +3,7 @@ import { useGameState } from '../../hooks/useGameState';
 
 interface SearchSuggestProps {
   placeholder: string;
-  roleFilter?: 'student' | 'parent' | 'secondary_parent';
+  roleFilter?: 'student' | 'parent' | 'secondary_parent' | 'admin_board';
   onSelect: (user: { id: string; name: string; email: string; avatar_url?: string }) => void;
   className?: string;
   value?: string;
