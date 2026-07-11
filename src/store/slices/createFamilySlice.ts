@@ -29,13 +29,15 @@ export const createFamilySlice: StateCreator<
     }
   },
 
-  sendInvite: async (targetId: string) => {
+  sendInvite: async (targetEmail: string, connectAsSecondary?: boolean) => {
     const state = get();
     const pId = state.currentUser?.id;
-    if (!pId) return false;
-    const success = await familyService.sendInvite(pId, targetId);
-    if (success) { await state.fetchFamily(); }
-    return success;
+    if (!pId) return { success: false, error: 'No current user' };
+    const result = await familyService.sendInvite(pId, targetEmail, connectAsSecondary);
+    if (result.success) { 
+      await state.fetchFamily(); 
+    }
+    return result;
   },
 
   inviteSecondary: async (targetEmail: string, studentId: string) => {

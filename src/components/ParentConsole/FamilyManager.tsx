@@ -6,7 +6,7 @@ interface FamilyManagerProps {
   currentUser: any;
   familyLinks: any[];
   secondaryParents: any[];
-  sendInvite: (studentId: string) => Promise<boolean>;
+  sendInvite: (targetEmail: string, connectAsSecondary?: boolean) => Promise<{ success: boolean; conflictCode?: string; error?: string }>;
   respondInvite: (linkId: string, accept: boolean) => Promise<boolean>;
   inviteSecondary: (email: string, studentId: string) => Promise<boolean>;
   updateSecondaryPermissions: (linkId: string, permissions: any) => Promise<boolean>;
@@ -21,7 +21,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
   inviteSecondary,
   updateSecondaryPermissions
 }) => {
-  const [inviteId, setInviteId] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
   const [isInviting, setIsInviting] = useState(false);
   const [inviteSecondaryEmail, setInviteSecondaryEmail] = useState('');
   const [selectedSecondaryStudentId, setSelectedSecondaryStudentId] = useState('');
@@ -37,30 +37,40 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
       <div className="rounded-2xl border border-synth-magenta/20 bg-synth-magenta/5 p-4 space-y-4">
         <div className="space-y-1">
           <h4 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider">Mời Học Sinh</h4>
-          <p className="text-xs text-slate-300">Nhập ID của học sinh để gửi lời mời liên kết gia đình. Bạn cũng có thể xem danh sách lời mời đang chờ bên dưới.</p>
+          <p className="text-xs text-slate-300">Nhập Email Google của học sinh để gửi lời mời liên kết lớp chủ nhiệm. Bạn cũng có thể xem danh sách lời mời đang chờ bên dưới.</p>
         </div>
         <div className="flex items-center gap-3">
           <input
-            type="text"
-            value={inviteId}
-            onChange={e => setInviteId(e.target.value)}
-            placeholder="Nhập ID học sinh (ví dụ: b1a3...)"
+            type="email"
+            value={inviteEmail}
+            onChange={e => setInviteEmail(e.target.value)}
+            placeholder="Nhập Email Google của học sinh (ví dụ: hocsinh@gmail.com)"
             className="flex-1 p-2.5 rounded-lg border border-white/10 bg-black/40 text-white outline-none focus:border-synth-magenta font-mono text-sm"
           />
           <button
             onClick={async () => {
-              if (!inviteId.trim()) return;
+              if (!inviteEmail.trim()) return;
               setIsInviting(true);
-              const success = await sendInvite(inviteId.trim());
-              if (success) {
-                toast.success('Đã gửi lời mời thành công');
-                setInviteId('');
+              const result = await sendInvite(inviteEmail.trim());
+              if (result.success) {
+                toast.success('Đã gửi lời mời kết nối thành công!');
+                setInviteEmail('');
+              } else if (result.conflictCode === 'STUDENT_HAS_PRIMARY') {
+                if (window.confirm(`${result.error}\n\nBạn có muốn gửi lời mời làm Phó Chủ Nhiệm để cùng quản lý không?`)) {
+                  const secRes = await sendInvite(inviteEmail.trim(), true);
+                  if (secRes.success) {
+                    toast.success('Đã gửi lời mời làm Phó Chủ Nhiệm thành công!');
+                    setInviteEmail('');
+                  } else {
+                    toast.error(secRes.error || 'Gửi lời mời làm Phó Chủ Nhiệm thất bại.');
+                  }
+                }
               } else {
-                toast.error('Gửi lời mời thất bại. ID không tồn tại hoặc đã kết nối.');
+                toast.error(result.error || 'Gửi lời mời thất bại. Email không tồn tại hoặc đã liên kết.');
               }
               setIsInviting(false);
             }}
-            disabled={isInviting || !inviteId.trim()}
+            disabled={isInviting || !inviteEmail.trim()}
             className="px-4 py-2.5 bg-synth-magenta text-white font-bold rounded-lg hover:bg-synth-magenta/80 disabled:opacity-50 transition-colors uppercase text-xs cursor-pointer"
           >
             {isInviting ? 'Đang gửi...' : 'Gửi lời mời'}
@@ -69,11 +79,11 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
 
         {familyLinks.filter(l => l.status === 'pending_student' && l.parent_id === currentUser?.id).length > 0 && (
           <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
-            <h5 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase">Lời mời đang chờ</h5>
+            <h5 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase">Lời mời đang chờ học sinh duyệt</h5>
             <div className="space-y-2">
               {familyLinks.filter(l => l.status === 'pending_student' && l.parent_id === currentUser?.id).map(link => (
                 <div key={link.id} className="flex items-center justify-between p-2 rounded bg-white/5 border border-white/10">
-                  <span className="text-xs text-slate-300">ID Nhận: <span className="font-mono text-synth-cyan">{link.student_id}</span></span>
+                  <span className="text-xs text-slate-300">Gửi tới Học sinh: <span className="font-bold text-synth-cyan">{link.student_name || link.student_id}</span></span>
                   <span className="text-[10px] text-synth-orange uppercase px-2 py-1 bg-synth-orange/10 rounded">Đang chờ</span>
                 </div>
               ))}

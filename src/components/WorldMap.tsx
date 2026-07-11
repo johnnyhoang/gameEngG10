@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { toast } from '../utils/toast';
 import { INITIAL_LESSONS } from '../data/lessons';
@@ -46,6 +46,10 @@ export function WorldMap({
   const familyLinks = useGameState(state => state.familyLinks || []);
   const respondInvite = useGameState(state => state.respondInvite);
   const leaveFamily = useGameState(state => state.leaveFamily);
+  const currentUser = useGameState(state => state.currentUser);
+  const sendInvite = useGameState(state => state.sendInvite);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [isInviting, setIsInviting] = useState(false);
 
   const isWeekend = () => {
     const day = new Date().getDay();
@@ -343,7 +347,7 @@ export function WorldMap({
 
       {/* 5 Module Gate — CORE_SPECS §2.1 */}
       {/* Trạng thái gia đình hiện tại (Học sinh đã có Chủ nhiệm) */}
-      {familyLinks.filter(l => l.status === 'active').length > 0 && (
+      {familyLinks.filter(l => l.status === 'active').length > 0 ? (
         <div className="glass-panel rounded-2xl border border-synth-cyan/30 bg-synth-cyan/5 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <span className="text-2xl">👨‍👩‍👧</span>
@@ -351,7 +355,7 @@ export function WorldMap({
               <p className="font-orbitron font-bold text-xs uppercase text-synth-cyan tracking-wider">Gia Đình Liên Kết</p>
               {familyLinks.filter(l => l.status === 'active').map((link: any) => (
                 <p key={link.id} className="text-xs text-slate-300">
-                  {link.parent_id ? `Chủ nhiệm: ${link.parent_name || link.parent_id}` : `Học sinh: ${link.student_name || link.student_id}`}
+                  {link.parent_id ? `Chủ nhiệm: ${link.parent_name || link.parent_id} (${link.parent_email || ''})` : `Học sinh: ${link.student_name || link.student_id}`}
                 </p>
               ))}
             </div>
@@ -372,6 +376,74 @@ export function WorldMap({
               </button>
             ))}
           </div>
+        </div>
+      ) : (
+        <div className="glass-panel rounded-2xl border border-synth-cyan/30 bg-synth-cyan/5 p-5 space-y-4">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">👨‍👩‍👧</span>
+            <div className="space-y-0.5">
+              <h3 className="font-orbitron font-bold text-xs uppercase text-synth-cyan tracking-wider">
+                Kết Nối Lớp Chủ Nhiệm
+              </h3>
+              <p className="text-[11px] text-slate-300">
+                Bạn chưa kết nối với Chủ Nhiệm (Thầy/Cô). Nhập Email Google của Thầy/Cô để xin gia nhập lớp.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 max-w-lg">
+            <input
+              type="email"
+              value={inviteEmail}
+              onChange={e => setInviteEmail(e.target.value)}
+              placeholder="Nhập Email Google của Thầy/Cô..."
+              className="flex-1 p-2 rounded-lg border border-white/10 bg-black/40 text-white outline-none focus:border-synth-cyan font-sans text-xs"
+            />
+            <button
+              onClick={async () => {
+                if (!inviteEmail.trim()) return;
+                setIsInviting(true);
+                const result = await sendInvite(inviteEmail.trim());
+                if (result.success) {
+                  toast.success('Đã gửi yêu cầu kết nối thành công! Vui lòng chờ Thầy/Cô phê duyệt.');
+                  setInviteEmail('');
+                } else {
+                  toast.error(result.error || 'Gửi yêu cầu thất bại.');
+                }
+                setIsInviting(false);
+              }}
+              disabled={isInviting || !inviteEmail.trim()}
+              className="px-4 py-2 bg-synth-cyan text-black font-bold rounded-lg hover:bg-synth-cyan/80 disabled:opacity-50 transition-colors uppercase text-[10px] cursor-pointer"
+            >
+              {isInviting ? 'Đang gửi...' : 'Xin Kết Nối'}
+            </button>
+          </div>
+
+          {familyLinks.filter(l => l.status === 'pending_parent' && l.student_id === currentUser?.id).length > 0 && (
+            <div className="pt-3 border-t border-white/10 space-y-2">
+              <h4 className="font-orbitron font-bold text-[10px] text-synth-text-muted uppercase tracking-wider">
+                Yêu cầu kết nối đang chờ duyệt
+              </h4>
+              <div className="space-y-1.5">
+                {familyLinks.filter(l => l.status === 'pending_parent' && l.student_id === currentUser?.id).map((link: any) => (
+                  <div key={link.id} className="flex items-center justify-between p-2 rounded bg-white/5 border border-white/10 text-xs">
+                    <span className="text-slate-300">Gửi tới Thầy/Cô: <strong className="text-synth-orange">{link.parent_name || link.parent_id}</strong></span>
+                    <button
+                      onClick={async () => {
+                        if (window.confirm('Bạn có chắc muốn hủy yêu cầu kết nối này không?')) {
+                          const ok = await leaveFamily(link.id);
+                          if (ok) toast.success('Đã hủy yêu cầu kết nối.');
+                        }
+                      }}
+                      className="px-2 py-1 text-[9px] font-bold text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded uppercase"
+                    >
+                      Hủy Yêu Cầu
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       )}
 

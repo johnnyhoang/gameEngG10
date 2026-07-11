@@ -25,19 +25,18 @@ export const familyService = {
     throw new Error('Failed to fetch family data');
   },
 
-  sendInvite: async (senderProfileId: string, targetId: string): Promise<boolean> => {
+  sendInvite: async (senderProfileId: string, targetEmail: string, connectAsSecondary?: boolean): Promise<{ success: boolean; conflictCode?: string; error?: string }> => {
     const token = await familyService.getAccessToken();
-    if (!token) return false;
+    if (!token) return { success: false, error: 'No access token' };
 
     const res = await fetch(`${backendUrl}/api/family/invite`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ senderProfileId, targetId })
+      body: JSON.stringify({ senderProfileId, targetEmail, connectAsSecondary })
     });
-    if (res.ok) return true;
+    if (res.ok) return { success: true };
     const err = await res.json();
-    alert(err.error || 'Có lỗi xảy ra');
-    return false;
+    return { success: false, conflictCode: err.code, error: err.error || 'Có lỗi xảy ra' };
   },
 
   inviteSecondary: async (senderProfileId: string, targetEmail: string, studentId: string): Promise<boolean> => {

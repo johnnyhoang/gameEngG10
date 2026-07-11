@@ -78,53 +78,133 @@ router.get('/family/:profileId', authMiddleware, async (req: any, res) => {
 // POST /api/family/invite
 router.post('/family/invite', authMiddleware, async (req: any, res) => {
   const accountId = req.user.sub;
-  const { senderProfileId, targetId } = req.body; // targetId can be student ID or parent ID
+  const { senderProfileId, targetEmail, connectAsSecondary } = req.body;
+
+  if (!senderProfileId || !targetEmail) {
+    return res.status(400).json({ error: 'Missing required parameters.' });
+  }
 
   try {
-    const check = await pool.query('SELECT id, role FROM ge10_users WHERE id = $1 AND account_id = $2', [senderProfileId, accountId]);
-    if (check.rowCount === 0) return res.status(403).json({ error: 'Unauthorized' });
-    const myRole = check.rows[0].role;
+    // 1. Verify sender profile and active account
+    const senderRes = await pool.query(
+      'SELECT id, role, name, email, avatar_url FROM ge10_users WHERE id = $1 AND account_id = $2 AND is_active = TRUE',
+      [senderProfileId, accountId]
+    );
+    if (senderRes.rowCount === 0) {
+      return res.status(403).json({ error: 'Unauthorized sender.' });
+    }
+    const myRole = senderRes.rows[0].role;
 
-    // Check if target exists
-    const targetCheck = await pool.query('SELECT id, role FROM ge10_users WHERE id = $1 OR email = $1', [targetId]);
-    if (targetCheck.rowCount === 0) return res.status(404).json({ error: 'User not found' });
-    const target = targetCheck.rows[0];
-
-    let parentId, studentId, initialStatus;
-
-    if (myRole === 'student') {
-      if (target.role === 'student') return res.status(400).json({ error: 'Cannot invite another student' });
-      // Check if student already has a parent
-      const existCheck = await pool.query("SELECT id FROM ge10_family_links WHERE student_id = $1 AND link_type = 'primary'", [senderProfileId]);
-      if (existCheck.rowCount && existCheck.rowCount > 0) return res.status(400).json({ error: 'You already have a primary parent or pending primary invite' });
-      
-      studentId = senderProfileId;
-      parentId = target.id;
-      initialStatus = 'pending_parent'; // needs parent approval
-    } else {
-      if (target.role !== 'student') return res.status(400).json({ error: 'Can only invite a student' });
-      const existCheck = await pool.query("SELECT id FROM ge10_family_links WHERE student_id = $1 AND link_type = 'primary'", [target.id]);
-      if (existCheck.rowCount && existCheck.rowCount > 0) return res.status(400).json({ error: 'Student already has a primary parent or pending primary invite' });
-      
-      parentId = senderProfileId;
-      studentId = target.id;
-      initialStatus = 'pending_student'; // needs student approval
+    // 2. Find target user by email (case-insensitive)
+    const targetCheck = await pool.query(
+      'SELECT id, account_id, name, email, avatar_url, role FROM ge10_users WHERE LOWER(email) = LOWER($1) AND is_active = TRUE ORDER BY created_at ASC',
+      [targetEmail.trim()]
+    );
+    if (targetCheck.rowCount === 0) {
+      return res.status(404).json({ error: 'Không tìm thấy tài khoản trong hệ thống với email này. Vui lòng yêu cầu đối phương đăng ký trước.' });
     }
 
-    // Đây là link CHA-CON CHÍNH (primary) — mời Chủ nhiệm Phụ nằm ở endpoint riêng
-    // /api/family/invite-secondary. Trước đây INSERT bỏ qua parentId/studentId/initialStatus
-    // vừa tính ở trên và hard-code 'pending_parent'/'secondary'/target.id — khiến link tạo ra
-    // sai chiều (parent_id = student_id = id học sinh) và không khớp status mà 2 phía UI đang lọc.
+    const targetAccountId = targetCheck.rows[0].account_id;
+    const targetName = targetCheck.rows[0].name;
+    const targetEmailVal = targetCheck.rows[0].email;
+    const targetAvatar = targetCheck.rows[0].avatar_url;
+
+    let parentId, studentId, initialStatus, linkType;
+
+    if (myRole === 'student') {
+      // --- Case 1: Student invites Teacher/Parent ---
+      let parentProfile = targetCheck.rows.find((r: any) => r.role === 'parent');
+      if (!parentProfile) {
+        // Auto-create parent profile
+        const newParentId = 'prof-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+        await pool.query(
+          `INSERT INTO ge10_users (id, account_id, name, email, avatar_url, role, is_active)
+           VALUES ($1, $2, $3, $4, $5, 'parent', TRUE)`,
+          [newParentId, targetAccountId, targetName, targetEmailVal, targetAvatar]
+        );
+        parentId = newParentId;
+      } else {
+        parentId = parentProfile.id;
+      }
+
+      // Check if student already has a primary parent
+      const existCheck = await pool.query(
+        "SELECT id FROM ge10_family_links WHERE student_id = $1 AND link_type = 'primary' AND status IN ('active', 'pending_student', 'pending_parent')",
+        [senderProfileId]
+      );
+      if (existCheck.rowCount && existCheck.rowCount > 0) {
+        return res.status(400).json({ error: 'Bạn đã có Chủ Nhiệm chính hoặc đang có lời mời kết nối chờ duyệt.' });
+      }
+
+      studentId = senderProfileId;
+      initialStatus = 'pending_parent';
+      linkType = 'primary';
+
+    } else if (myRole === 'parent' || myRole === 'secondary_parent') {
+      // --- Case 2: Teacher/Parent invites Student ---
+      let studentProfile = targetCheck.rows.find((r: any) => r.role === 'student');
+      if (!studentProfile) {
+        // Auto-create student profile
+        const newStudentId = 'prof-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+        await pool.query(
+          `INSERT INTO ge10_users (id, account_id, name, email, avatar_url, role, is_active)
+           VALUES ($1, $2, $3, $4, $5, 'student', TRUE)`,
+          [newStudentId, targetAccountId, targetName, targetEmailVal, targetAvatar]
+        );
+        await pool.query(`INSERT INTO ge10_player_profiles (user_id) VALUES ($1)`, [newStudentId]);
+        await pool.query(`INSERT INTO ge10_pet_states (user_id) VALUES ($1)`, [newStudentId]);
+        studentId = newStudentId;
+      } else {
+        studentId = studentProfile.id;
+      }
+
+      // Check if student already has a primary parent
+      const existCheck = await pool.query(
+        "SELECT l.id, u.name as parent_name FROM ge10_family_links l JOIN ge10_users u ON l.parent_id = u.id WHERE l.student_id = $1 AND l.link_type = 'primary' AND l.status IN ('active', 'pending_student', 'pending_parent')",
+        [studentId]
+      );
+
+      if (existCheck.rowCount && existCheck.rowCount > 0) {
+        if (!connectAsSecondary) {
+          const primaryParentName = existCheck.rows[0].parent_name || 'Chủ Nhiệm khác';
+          return res.status(409).json({
+            code: 'STUDENT_HAS_PRIMARY',
+            error: `Học sinh này đã có Chủ Nhiệm chính là "${primaryParentName}". Bạn có muốn kết nối làm Phó Chủ Nhiệm không?`,
+            primaryParentName
+          });
+        }
+        parentId = senderProfileId;
+        initialStatus = 'pending_primary';
+        linkType = 'secondary';
+      } else {
+        parentId = senderProfileId;
+        initialStatus = 'pending_student';
+        linkType = 'primary';
+      }
+    } else {
+      return res.status(403).json({ error: 'Forbidden: Vai trò này không được phép gửi lời mời.' });
+    }
+
+    // Check if link already exists
+    const linkExist = await pool.query(
+      "SELECT id, status FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2",
+      [parentId, studentId]
+    );
+    if (linkExist.rowCount && linkExist.rowCount > 0) {
+      return res.status(400).json({ error: 'Yêu cầu kết nối này đã tồn tại hoặc đã hoạt động.' });
+    }
+
     const linkId = crypto.randomUUID();
     await pool.query(
-      "INSERT INTO ge10_family_links (id, parent_id, student_id, status, link_type) VALUES ($1, $2, $3, $4, 'primary')",
-      [linkId, parentId, studentId, initialStatus]
+      "INSERT INTO ge10_family_links (id, parent_id, student_id, status, link_type) VALUES ($1, $2, $3, $4, $5)",
+      [linkId, parentId, studentId, initialStatus, linkType]
     );
-    await logAuditEvent(senderProfileId, 'invite_family', target.id, { studentId, parentId });
-    res.json({ success: true, message: 'Family invite sent.' });
+
+    await logAuditEvent(senderProfileId, 'invite_family', studentId, { studentId, parentId, linkType });
+    res.json({ success: true, message: 'Gửi lời mời kết nối thành công.' });
   } catch (error) {
     console.error('Error inviting family member:', error);
-    res.status(500).json({ error: 'Failed to send invite.' });
+    res.status(500).json({ error: 'Gửi lời mời thất bại.' });
   }
 });
 
@@ -149,19 +229,37 @@ router.post('/family/invite-secondary', authMiddleware, async (req: any, res) =>
     }
 
     // 2. Check if secondary parent user exists by email
-    const targetCheck = await pool.query('SELECT id, role FROM ge10_users WHERE email = $1', [targetEmail]);
+    const targetCheck = await pool.query(
+      'SELECT id, account_id, name, email, avatar_url, role FROM ge10_users WHERE LOWER(email) = LOWER($1) AND is_active = TRUE ORDER BY created_at ASC',
+      [targetEmail.trim()]
+    );
     if (targetCheck.rowCount === 0) {
-      return res.status(404).json({ error: 'Không tìm thấy tài khoản Chủ nhiệm Phụ với email này. Hãy yêu cầu Chủ nhiệm Phụ đăng ký trước.' });
+      return res.status(404).json({ error: 'Không tìm thấy tài khoản trong hệ thống với email này. Vui lòng yêu cầu đối phương đăng ký trước.' });
     }
-    const targetParent = targetCheck.rows[0];
-    if (targetParent.role !== 'parent' && targetParent.role !== 'secondary_parent') {
-      return res.status(400).json({ error: 'Tài khoản được mời phải có vai trò Chủ nhiệm.' });
+
+    const targetAccountId = targetCheck.rows[0].account_id;
+    const targetName = targetCheck.rows[0].name;
+    const targetEmailVal = targetCheck.rows[0].email;
+    const targetAvatar = targetCheck.rows[0].avatar_url;
+
+    let parentId;
+    let parentProfile = targetCheck.rows.find((r: any) => r.role === 'parent' || r.role === 'secondary_parent');
+    if (!parentProfile) {
+      const newParentId = 'prof-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+      await pool.query(
+        `INSERT INTO ge10_users (id, account_id, name, email, avatar_url, role, is_active)
+         VALUES ($1, $2, $3, $4, $5, 'parent', TRUE)`,
+        [newParentId, targetAccountId, targetName, targetEmailVal, targetAvatar]
+      );
+      parentId = newParentId;
+    } else {
+      parentId = parentProfile.id;
     }
 
     // 3. Check if link already exists
     const linkExist = await pool.query(
       "SELECT id, status FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'secondary'",
-      [targetParent.id, studentId]
+      [parentId, studentId]
     );
     if (linkExist.rowCount && linkExist.rowCount > 0) {
       return res.status(400).json({ error: `Lời mời chủ nhiệm phụ đã tồn tại với trạng thái: ${linkExist.rows[0].status}` });
@@ -173,13 +271,13 @@ router.post('/family/invite-secondary', authMiddleware, async (req: any, res) =>
       "INSERT INTO ge10_family_links (id, parent_id, student_id, status, link_type, secondary_permissions) VALUES ($1, $2, $3, 'pending_parent', 'secondary', $4)",
       [
         linkId,
-        targetParent.id,
+        parentId,
         studentId,
         JSON.stringify({ can_approve_rewards: false, can_create_missions: false, read_only: true })
       ]
     );
 
-    await logAuditEvent(senderProfileId, 'invite_secondary_parent', targetParent.id, { studentId });
+    await logAuditEvent(senderProfileId, 'invite_secondary_parent', parentId, { studentId });
     res.json({ success: true, message: 'Secondary parent invite sent.' });
   } catch (error) {
     console.error('Error inviting secondary parent:', error);
@@ -253,8 +351,19 @@ router.post('/family/respond', authMiddleware, async (req: any, res) => {
     const link = linkCheck.rows[0];
 
     // Authorize response
-    if (myRole === 'student' && link.student_id !== profileId) return res.status(403).json({ error: 'Unauthorized' });
-    if (myRole !== 'student' && link.parent_id !== profileId) return res.status(403).json({ error: 'Unauthorized' });
+    if (link.status === 'pending_primary') {
+      // Only active primary parent of that student can approve this secondary parent request
+      const primaryCheck = await pool.query(
+        "SELECT id FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'primary' AND status = 'active'",
+        [profileId, link.student_id]
+      );
+      if (primaryCheck.rowCount === 0) {
+        return res.status(403).json({ error: 'Unauthorized: Only the primary parent can approve this request.' });
+      }
+    } else {
+      if (myRole === 'student' && link.student_id !== profileId) return res.status(403).json({ error: 'Unauthorized' });
+      if (myRole !== 'student' && link.parent_id !== profileId) return res.status(403).json({ error: 'Unauthorized' });
+    }
 
     if (!accept) {
       await pool.query('DELETE FROM ge10_family_links WHERE id = $1', [linkId]);

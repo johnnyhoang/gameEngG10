@@ -126,15 +126,18 @@ Lớp Chủ Nhiệm là không gian liên kết giữa Người Quản Trị (Ch
 - Một Chủ nhiệm Chính có thể mời **nhiều Chủ nhiệm Phụ** tham gia cùng quản lý.
 
 ### 3.1 Cơ Chế Mời và Kết Nối
-Tất cả các lời mời đều thông qua việc nhập ID tài khoản hoặc quét mã QR Code.
+Tất cả các lời mời kết nối được xử lý thông qua việc nhập Email Google hoặc quét mã QR Code sau này.
 
-- **Chủ Nhiệm mời Con:**
-  - Chủ nhiệm tìm ID/Mã QR của Học Sinh để gửi lời mời. Chỉ những Học Sinh *chưa có Cha* mới nhận được lời mời này.
-  - Con có quyền **Approve (Chấp nhận)** hoặc **Reject (Từ chối)** lời mời.
-  - Lời mời chờ (pending) tự hết hạn sau 7 ngày nếu không được phản hồi.
-- **Con mời Chủ Nhiệm:**
-  - Học Sinh chưa có Cha có thể nhập ID/Mã QR của một Chủ Nhiệm để chủ động xin vào nhóm.
-  - Chủ nhiệm nhận được thông báo và có quyền chấp nhận/từ chối.
+- **Kết nối bằng Email Google (bãi bỏ ID):**
+  - Mọi lời mời kết nối (Chủ Nhiệm mời Học Sinh, Học Sinh xin kết nối với Chủ Nhiệm, hay mời Chủ Nhiệm Phụ) đều sử dụng **Email Google** làm định danh kết nối thay vì ID hồ sơ DB rườm rà.
+  - Khi gửi lời mời tới một email, nếu tài khoản Google đó đã đăng ký hệ thống nhưng chưa tạo vai trò cần thiết, hệ thống sẽ **tự động khởi tạo vai trò tương ứng ở background** (Học Sinh hoặc Chủ Nhiệm) để nhận lời mời.
+- **Thầy/Cô mời Học Sinh (Chủ Nhiệm mời Con):**
+  - Chủ Nhiệm nhập Email Google của Học Sinh để gửi lời mời.
+  - Hệ thống kiểm tra: Nếu Học Sinh **chưa có Chủ Nhiệm**, hệ thống tạo liên kết chính (`primary`) với trạng thái chờ Học Sinh duyệt (`pending_student`).
+  - Nếu Học Sinh **đã có Chủ Nhiệm chính**, hệ thống sẽ cảnh báo (alert). Chủ Nhiệm có thể chọn gửi lời mời làm **Phó Chủ Nhiệm (Chủ Nhiệm Phụ)** để cùng quản lý. Liên kết này được gửi dưới dạng `secondary` với trạng thái chờ Chủ Nhiệm chính của Học Sinh duyệt (`pending_primary`).
+- **Con xin kết nối với Thầy/Cô (Học Sinh mời Chủ Nhiệm):**
+  - Học Sinh chưa có Chủ Nhiệm có thể nhập Email Google của một Thầy/Cô để xin vào lớp.
+  - Thầy/Cô nhận được yêu cầu kết nối dưới dạng chờ duyệt (`pending_parent`) và có quyền chấp nhận hoặc từ chối.
 - **🔓 Mã PIN bảo mật cá nhân bị bãi bỏ hoàn toàn (2026-07-11):** Hệ thống mã PIN bảo mật cá nhân (`parentPIN` / `changePIN` / `verifyPIN`) trước đây dùng để khóa các hành động nhạy cảm đã bị **bãi bỏ hoàn toàn**. Do thiết kế mới chia profile độc lập, phân quyền cực kỳ chặt chẽ ngay từ màn hình Login của Google/Supabase, nên việc dùng thêm mã PIN là không cần thiết và gây rườm rà. Mọi thao tác quản lý vai trò giờ đây được kiểm soát trực tiếp qua phiên đăng nhập của Hiệu Trưởng.
 - **Rời Nhóm:**
   - Chủ Nhiệm có quyền kick/rời Học Sinh khỏi nhóm (Học Sinh mất liên kết nhưng tài khoản không bị xóa).
