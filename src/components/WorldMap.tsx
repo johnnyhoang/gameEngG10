@@ -268,7 +268,7 @@ export function WorldMap({
               <div key={link.id} className="flex flex-col md:flex-row md:items-center justify-between p-3 rounded-xl border border-white/10 bg-black/40 gap-3">
                 <div className="space-y-1 text-sm">
                   <p className="text-white">Chủ nhiệm <strong className="text-synth-cyan">{link.parent_name || 'Chưa có tên'}</strong> muốn kết nối với bạn.</p>
-                  <p className="text-xs text-slate-400">ID: {link.parent_id}</p>
+                  <p className="text-xs text-slate-400">Email: {link.parent_email || 'Chưa cập nhật'}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -356,7 +356,7 @@ export function WorldMap({
               <p className="font-orbitron font-bold text-xs uppercase text-synth-cyan tracking-wider">Gia Đình Liên Kết</p>
               {familyLinks.filter(l => l.status === 'active').map((link: any) => (
                 <p key={link.id} className="text-xs text-slate-300">
-                  {link.parent_id ? `Chủ nhiệm: ${link.parent_name || link.parent_id} (${link.parent_email || ''})` : `Học sinh: ${link.student_name || link.student_id}`}
+                  {link.parent_id ? `Chủ nhiệm: ${link.parent_name || link.parent_email || 'Giáo viên'}` : `Học sinh: ${link.student_name || link.student_email || 'Học sinh'}`}
                 </p>
               ))}
             </div>
@@ -429,7 +429,7 @@ export function WorldMap({
               <div className="space-y-1.5">
                 {familyLinks.filter(l => l.status === 'pending_parent' && l.student_id === currentUser?.id).map((link: any) => (
                   <div key={link.id} className="flex items-center justify-between p-2 rounded bg-white/5 border border-white/10 text-xs">
-                    <span className="text-slate-300">Gửi tới Thầy/Cô: <strong className="text-synth-orange">{link.parent_name || link.parent_id}</strong></span>
+                    <span className="text-slate-300">Gửi tới Thầy/Cô: <strong className="text-synth-orange">{link.parent_name || link.parent_email || 'Giáo viên'}</strong></span>
                     <button
                       onClick={async () => {
                         if (window.confirm('Bạn có chắc muốn hủy yêu cầu kết nối này không?')) {

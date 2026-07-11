@@ -219,7 +219,7 @@ export const ParentConsole: React.FC = () => {
                   <div key={link.student_id} className="p-4 rounded-xl bg-synth-gray/20 border border-white/5 flex flex-col justify-between gap-3">
                     <div>
                       <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <span className="font-bold text-white text-sm block">{link.student_name || link.student_id}</span>
+                        <span className="font-bold text-white text-sm block">{link.student_name || link.student_email || 'Học sinh'}</span>
                         {link.link_type === 'primary' ? (
                           <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded bg-synth-cyan/20 border border-synth-cyan/40 text-synth-cyan" title="Bạn là Chủ nhiệm chính của lớp này">
                             Chủ nhiệm chính
@@ -230,7 +230,7 @@ export const ParentConsole: React.FC = () => {
                           </span>
                         )}
                       </div>
-                      <span className="text-[10px] text-synth-text-muted font-mono">{link.student_id}</span>
+                      <span className="text-[10px] text-synth-text-muted">{link.student_email}</span>
                     </div>
                     <button
                       onClick={() => handleInspectStudent(link.student_id)}
