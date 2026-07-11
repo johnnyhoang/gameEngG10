@@ -8,7 +8,7 @@ export const createFamilySlice: StateCreator<
   [],
   [],
   Pick<StoreState, 
-    'familyLinks' | 'secondaryParents' | 'fetchFamily' | 'sendInvite' | 'inviteSecondary' | 'updateSecondaryPermissions' | 'respondInvite' | 'leaveFamily'
+    'familyLinks' | 'secondaryParents' | 'fetchFamily' | 'sendInvite' | 'inviteSecondary' | 'inviteSecondaryRequest' | 'searchUsers' | 'updateSecondaryPermissions' | 'respondInvite' | 'leaveFamily'
   >
 > = (set, get) => ({
   familyLinks: [],
@@ -22,7 +22,7 @@ export const createFamilySlice: StateCreator<
       const data = await familyService.fetchFamily(pId);
       set({ 
         familyLinks: data.links || [],
-        secondaryParents: data.secondaryParents || []
+        secondaryParents: data.classSecondaryLinks || []
       });
     } catch (e) {
       console.error('Lỗi lấy dữ liệu gia đình', e);
@@ -40,15 +40,30 @@ export const createFamilySlice: StateCreator<
     return result;
   },
 
-  inviteSecondary: async (targetEmail: string, studentId: string) => {
+  inviteSecondary: async (targetEmail: string) => {
     const state = get();
     const pId = state.currentUser?.id;
     if (!pId) return false;
-    const success = await familyService.inviteSecondary(pId, targetEmail, studentId);
+    const success = await familyService.inviteSecondary(pId, targetEmail);
     if (success) { 
       await state.fetchFamily(); 
     }
     return success;
+  },
+
+  inviteSecondaryRequest: async (targetEmail: string) => {
+    const state = get();
+    const pId = state.currentUser?.id;
+    if (!pId) return { success: false, error: 'No current user' };
+    const result = await familyService.inviteSecondaryRequest(pId, targetEmail);
+    if (result.success) {
+      await state.fetchFamily();
+    }
+    return result;
+  },
+
+  searchUsers: async (q: string, role?: string) => {
+    return familyService.searchUsers(q, role);
   },
 
   updateSecondaryPermissions: async (linkId: string, permissions: any) => {

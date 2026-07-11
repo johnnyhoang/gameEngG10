@@ -52,7 +52,9 @@ export const ParentConsole: React.FC = () => {
   const sendInvite = useGameState(state => state.sendInvite);
   const respondInvite = useGameState(state => state.respondInvite);
   const inviteSecondary = useGameState(state => state.inviteSecondary);
+  const inviteSecondaryRequest = useGameState(state => state.inviteSecondaryRequest);
   const updateSecondaryPermissions = useGameState(state => state.updateSecondaryPermissions);
+  const leaveFamily = useGameState(state => state.leaveFamily);
 
   // Local state for layout
   const [activeTab, setActiveTab] = useState<'chinh_dien' | 'thien_co_cac' | 'van_quyen_cac' | 'ngan_cac' | 'than_phan'>('chinh_dien');
@@ -202,7 +204,9 @@ export const ParentConsole: React.FC = () => {
               sendInvite={sendInvite}
               respondInvite={respondInvite}
               inviteSecondary={inviteSecondary}
+              inviteSecondaryRequest={inviteSecondaryRequest}
               updateSecondaryPermissions={updateSecondaryPermissions}
+              leaveFamily={leaveFamily}
             />
 
             {/* List of students for parent/admin viewing */}

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { isParentRole } from '../../utils/roleHelpers';
 import { toast } from '../../utils/toast';
+import { SearchSuggest } from '../Common/SearchSuggest';
 
 interface FamilyManagerProps {
   currentUser: any;
@@ -8,8 +8,10 @@ interface FamilyManagerProps {
   secondaryParents: any[];
   sendInvite: (targetEmail: string, connectAsSecondary?: boolean) => Promise<{ success: boolean; conflictCode?: string; error?: string }>;
   respondInvite: (linkId: string, accept: boolean) => Promise<boolean>;
-  inviteSecondary: (email: string, studentId: string) => Promise<boolean>;
+  inviteSecondary: (email: string) => Promise<boolean>;
+  inviteSecondaryRequest: (email: string) => Promise<{ success: boolean; error?: string }>;
   updateSecondaryPermissions: (linkId: string, permissions: any) => Promise<boolean>;
+  leaveFamily: (linkId: string) => Promise<boolean>;
 }
 
 export const FamilyManager: React.FC<FamilyManagerProps> = ({
@@ -19,102 +21,196 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
   sendInvite,
   respondInvite,
   inviteSecondary,
-  updateSecondaryPermissions
+  inviteSecondaryRequest,
+  updateSecondaryPermissions,
+  leaveFamily
 }) => {
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [isInviting, setIsInviting] = useState(false);
-  const [inviteSecondaryEmail, setInviteSecondaryEmail] = useState('');
-  const [selectedSecondaryStudentId, setSelectedSecondaryStudentId] = useState('');
-  const [isInvitingSecondary, setIsInvitingSecondary] = useState(false);
+  const [inviteStudentEmail, setInviteStudentEmail] = useState('');
+  const [isInvitingStudent, setIsInvitingStudent] = useState(false);
+
+  const [inviteTeacherEmail, setInviteTeacherEmail] = useState('');
+  const [isInvitingTeacher, setIsInvitingTeacher] = useState(false);
+
+  const [requestClassEmail, setRequestClassEmail] = useState('');
+  const [isRequestingClass, setIsRequestingClass] = useState(false);
+
+  const isPrimaryTeacher = currentUser?.role === 'parent';
+  const isSecondaryTeacher = currentUser?.role === 'secondary_parent';
+
+  // --- FILTERS ---
+  // Active students under this teacher
+  const activeStudents = familyLinks.filter(l => l.status === 'active');
+  
+  // Incoming requests from students trying to join class (Primary Link & pending_parent)
+  const incomingStudentRequests = familyLinks.filter(
+    l => l.status === 'pending_parent' && l.link_type === 'primary'
+  );
+
+  // Incoming requests from other teachers wanting to join my class as Secondary Teacher
+  const incomingTeacherRequests = secondaryParents.filter(
+    sp => sp.status === 'pending_primary'
+  );
+
+  // Outgoing invitations sent to students
+  const outgoingStudentInvites = familyLinks.filter(
+    l => l.status === 'pending_student'
+  );
+
+  // Outgoing invitations sent to secondary teachers
+  const outgoingTeacherInvites = secondaryParents.filter(
+    sp => sp.status === 'pending_parent'
+  );
+
+  // Active secondary teachers connected to my class
+  const activeSecondaryTeachers = secondaryParents.filter(
+    sp => sp.status === 'active'
+  );
 
   return (
-    <div className="space-y-4">
-      <h3 className="font-orbitron font-bold text-sm text-synth-magenta uppercase tracking-wider flex items-center gap-2">
-        🏛️ Chính Điện — Quản lý thiếu hiệp & Cấp quyền
-      </h3>
-
-      {/* Mời Thiếu Hiệp (Family System Phase 1.1) */}
-      <div className="rounded-2xl border border-synth-magenta/20 bg-synth-magenta/5 p-4 space-y-4">
-        <div className="space-y-1">
-          <h4 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider">Mời Học Sinh</h4>
-          <p className="text-xs text-slate-300">Nhập Email Google của học sinh để gửi lời mời liên kết lớp chủ nhiệm. Bạn cũng có thể xem danh sách lời mời đang chờ bên dưới.</p>
+    <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
+        <div>
+          <h3 className="font-orbitron font-bold text-lg text-synth-cyan uppercase tracking-wider flex items-center gap-2">
+            🏫 Quản Lý Lớp Học & Đội Ngũ Chủ Nhiệm
+          </h3>
+          <p className="text-xs text-slate-400 mt-1">
+            Vai trò hiện tại: <span className="font-bold text-synth-magenta uppercase font-orbitron">{isPrimaryTeacher ? 'Chủ nhiệm chính' : 'Phó chủ nhiệm'}</span>
+          </p>
         </div>
-        <div className="flex items-center gap-3">
-          <input
-            type="email"
-            value={inviteEmail}
-            onChange={e => setInviteEmail(e.target.value)}
-            placeholder="Nhập Email Google của học sinh (ví dụ: hocsinh@gmail.com)"
-            className="flex-1 p-2.5 rounded-lg border border-white/10 bg-black/40 text-white outline-none focus:border-synth-magenta font-mono text-sm"
-          />
-          <button
-            onClick={async () => {
-              if (!inviteEmail.trim()) return;
-              setIsInviting(true);
-              const result = await sendInvite(inviteEmail.trim());
-              if (result.success) {
-                toast.success('Đã gửi lời mời kết nối thành công!');
-                setInviteEmail('');
-              } else if (result.conflictCode === 'STUDENT_HAS_PRIMARY') {
-                if (window.confirm(`${result.error}\n\nBạn có muốn gửi lời mời làm Phó Chủ Nhiệm để cùng quản lý không?`)) {
-                  const secRes = await sendInvite(inviteEmail.trim(), true);
-                  if (secRes.success) {
-                    toast.success('Đã gửi lời mời làm Phó Chủ Nhiệm thành công!');
-                    setInviteEmail('');
-                  } else {
-                    toast.error(secRes.error || 'Gửi lời mời làm Phó Chủ Nhiệm thất bại.');
-                  }
-                }
-              } else {
-                toast.error(result.error || 'Gửi lời mời thất bại. Email không tồn tại hoặc đã liên kết.');
-              }
-              setIsInviting(false);
-            }}
-            disabled={isInviting || !inviteEmail.trim()}
-            className="px-4 py-2.5 bg-synth-magenta text-white font-bold rounded-lg hover:bg-synth-magenta/80 disabled:opacity-50 transition-colors uppercase text-xs cursor-pointer"
-          >
-            {isInviting ? 'Đang gửi...' : 'Gửi lời mời'}
-          </button>
-        </div>
-
-        {familyLinks.filter(l => l.status === 'pending_student' && l.parent_id === currentUser?.id).length > 0 && (
-          <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
-            <h5 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase">Lời mời đang chờ học sinh duyệt</h5>
-            <div className="space-y-2">
-              {familyLinks.filter(l => l.status === 'pending_student' && l.parent_id === currentUser?.id).map(link => (
-                <div key={link.id} className="flex items-center justify-between p-2 rounded bg-white/5 border border-white/10">
-                  <span className="text-xs text-slate-300">Gửi tới Học sinh: <span className="font-bold text-synth-cyan">{link.student_name || link.student_id}</span></span>
-                  <span className="text-[10px] text-synth-orange uppercase px-2 py-1 bg-synth-orange/10 rounded">Đang chờ</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Lời mời làm Chủ Nhiệm Phụ nhận được (Sprint 2) */}
-      {isParentRole(currentUser?.role) && familyLinks.filter(l => l.status === 'pending_parent' && l.parent_id === currentUser?.id && l.link_type === 'secondary').length > 0 && (
-        <div className="rounded-2xl border border-synth-orange/20 bg-synth-orange/5 p-4 space-y-3 mt-4">
-          <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider">
-             📩 Lời Mời Đồng Hành (Chủ Nhiệm Phụ)
+      {/* ================= SECTION 1: INCOMING REQUESTS FOR PRIMARY TEACHER ================= */}
+      {isPrimaryTeacher && (incomingStudentRequests.length > 0 || incomingTeacherRequests.length > 0) && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {/* Học sinh xin vào lớp */}
+          {incomingStudentRequests.length > 0 && (
+            <div className="rounded-2xl border border-synth-orange/20 bg-synth-orange/5 p-4 space-y-3">
+              <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider flex items-center gap-2">
+                📥 Học Sinh Xin Gia Nhập Lớp ({incomingStudentRequests.length})
+              </h4>
+              <div className="space-y-2">
+                {incomingStudentRequests.map(link => (
+                  <div key={link.id} className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/10">
+                    <div className="flex items-center gap-2.5">
+                      {link.student_avatar ? (
+                        <img src={link.student_avatar} alt={link.student_name} className="w-8 h-8 rounded-full border border-white/10 object-cover" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-synth-cyan/10 border border-synth-cyan/30 flex items-center justify-center text-xs font-bold text-synth-cyan">
+                          {link.student_name ? link.student_name.charAt(0).toUpperCase() : 'S'}
+                        </div>
+                      )}
+                      <div>
+                        <span className="text-xs text-white font-bold block">{link.student_name || 'Học sinh'}</span>
+                        <span className="text-[10px] text-slate-400 font-sans">{link.student_email}</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={async () => {
+                          const ok = await respondInvite(link.id, true);
+                          if (ok) toast.success('Đã nhận học sinh vào lớp!');
+                        }}
+                        className="px-3 py-1.5 rounded bg-synth-green text-black font-bold text-[10px] uppercase cursor-pointer"
+                      >
+                        Nhận
+                      </button>
+                      <button
+                        onClick={async () => {
+                          const ok = await respondInvite(link.id, false);
+                          if (ok) toast.info('Đã từ chối yêu cầu.');
+                        }}
+                        className="px-3 py-1.5 rounded border border-red-500 text-red-400 font-bold text-[10px] uppercase cursor-pointer"
+                      >
+                        Từ chối
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Giáo viên phụ xin đồng hành */}
+          {incomingTeacherRequests.length > 0 && (
+            <div className="rounded-2xl border border-synth-purple/20 bg-synth-purple/5 p-4 space-y-3">
+              <h4 className="font-orbitron font-bold text-xs text-synth-purple uppercase tracking-wider flex items-center gap-2">
+                📥 Giáo Viên Khác Xin Đồng Hành ({incomingTeacherRequests.length})
+              </h4>
+              <p className="text-[11px] text-slate-300">Giáo viên phụ xin cùng quản lý toàn bộ học sinh trong lớp của bạn.</p>
+              <div className="space-y-2">
+                {incomingTeacherRequests.map(sp => (
+                  <div key={sp.id} className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/10">
+                    <div className="flex items-center gap-2.5">
+                      {sp.parent_avatar ? (
+                        <img src={sp.parent_avatar} alt={sp.parent_name} className="w-8 h-8 rounded-full border border-white/10 object-cover" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-synth-purple/10 border border-synth-purple/30 flex items-center justify-center text-xs font-bold text-synth-purple">
+                          {sp.parent_name ? sp.parent_name.charAt(0).toUpperCase() : 'T'}
+                        </div>
+                      )}
+                      <div>
+                        <span className="text-xs text-white font-bold block">{sp.parent_name || 'Giáo viên phụ'}</span>
+                        <span className="text-[10px] text-slate-400 font-sans">{sp.parent_email}</span>
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={async () => {
+                          const ok = await respondInvite(sp.id, true);
+                          if (ok) toast.success('Đã duyệt Phó Chủ Nhiệm!');
+                        }}
+                        className="px-3 py-1.5 rounded bg-synth-green text-black font-bold text-[10px] uppercase cursor-pointer"
+                      >
+                        Duyệt
+                      </button>
+                      <button
+                        onClick={async () => {
+                          const ok = await respondInvite(sp.id, false);
+                          if (ok) toast.info('Đã từ chối yêu cầu.');
+                        }}
+                        className="px-3 py-1.5 rounded border border-red-500 text-red-400 font-bold text-[10px] uppercase cursor-pointer"
+                      >
+                        Từ chối
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ================= SECTION 2: INCOMING CLASS INVITATIONS FOR SECONDARY TEACHER ================= */}
+      {isSecondaryTeacher && familyLinks.filter(l => l.status === 'pending_parent' && l.link_type === 'secondary').length > 0 && (
+        <div className="rounded-2xl border border-synth-magenta/20 bg-synth-magenta/5 p-4 space-y-3">
+          <h4 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-2">
+             📩 Lời Mời Đồng Hành Từ Giáo Viên Chính
           </h4>
           <p className="text-xs text-slate-300">
-            Bạn được mời làm Chủ nhiệm Phụ cùng quản lý học sinh sau:
+            Bạn được mời làm Giáo viên phụ (Phó Chủ Nhiệm) quản lý chung cho lớp học sau:
           </p>
           <div className="space-y-2">
-            {familyLinks.filter(l => l.status === 'pending_parent' && l.parent_id === currentUser?.id && l.link_type === 'secondary').map(link => (
+            {familyLinks.filter(l => l.status === 'pending_parent' && l.link_type === 'secondary').map(link => (
               <div key={link.id} className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/10">
-                <div>
-                  <span className="text-xs text-white font-bold block">{link.student_name || 'Học sinh'}</span>
-                  <span className="text-[10px] text-synth-text-muted font-mono">{link.student_id}</span>
+                <div className="flex items-center gap-2.5">
+                  {link.parent_avatar ? (
+                    <img src={link.parent_avatar} alt={link.parent_name} className="w-8 h-8 rounded-full border border-white/10 object-cover" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-synth-cyan/10 border border-synth-cyan/30 flex items-center justify-center text-xs font-bold text-synth-cyan">
+                      {link.parent_name ? link.parent_name.charAt(0).toUpperCase() : 'T'}
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-xs text-white font-bold block">Lớp của Thầy/Cô: {link.parent_name || 'Giáo viên'}</span>
+                    <span className="text-[10px] text-slate-400 font-mono">{link.parent_email}</span>
+                  </div>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={async () => {
                       const ok = await respondInvite(link.id, true);
-                      if (ok) {
-                        toast.success('Đã chấp nhận làm Chủ nhiệm Phụ!');
-                      }
+                      if (ok) toast.success('Đã chấp nhận làm Phó Chủ Nhiệm!');
                     }}
                     className="px-3 py-1.5 rounded bg-synth-green text-black font-bold text-xs uppercase cursor-pointer"
                   >
@@ -123,9 +219,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                   <button
                     onClick={async () => {
                       const ok = await respondInvite(link.id, false);
-                      if (ok) {
-                        toast.info('Đã từ chối lời mời');
-                      }
+                      if (ok) toast.info('Đã từ chối lời mời');
                     }}
                     className="px-3 py-1.5 rounded border border-red-500 text-red-400 font-bold text-xs uppercase cursor-pointer"
                   >
@@ -138,140 +232,314 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
         </div>
       )}
 
-      {/* Quản lý Chủ Nhiệm Phụ (Sprint 2) */}
-      {currentUser?.role === 'parent' && (
-        <div className="rounded-2xl border border-synth-purple/20 bg-synth-purple/5 p-4 space-y-4 mt-4">
-          <div className="space-y-1">
-            <h4 className="font-orbitron font-bold text-xs text-synth-purple uppercase tracking-wider flex items-center gap-2">
-              👥 Quản lý Chủ Nhiệm Phụ (Secondary Parents)
-            </h4>
-            <p className="text-xs text-slate-300">
-              Mời chủ nhiệm khác cùng theo dõi báo cáo, duyệt quà hoặc giao nhiệm vụ cho con.
-            </p>
-          </div>
-
-          {/* Form mời Chủ nhiệm phụ */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
-            <label className="space-y-1.5 text-xs">
-              <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Email Chủ Nhiệm cần mời</span>
-              <input
-                type="email"
-                value={inviteSecondaryEmail}
-                onChange={e => setInviteSecondaryEmail(e.target.value)}
-                placeholder="example@gmail.com"
-                className="w-full p-2.5 rounded-lg border border-white/10 bg-black/40 text-white outline-none focus:border-synth-purple text-xs"
-              />
-            </label>
-            <label className="space-y-1.5 text-xs">
-              <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Chọn Con cùng quản lý</span>
-              <select
-                value={selectedSecondaryStudentId}
-                onChange={e => setSelectedSecondaryStudentId(e.target.value)}
-                className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-purple text-xs"
-              >
-                <option value="">-- Chọn học sinh --</option>
-                {familyLinks.filter(l => l.status === 'active' && l.parent_id === currentUser?.id).map((link: any) => (
-                  <option key={link.student_id} value={link.student_id}>
-                    {link.student_name || link.student_id}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <button
-              onClick={async () => {
-                if (!inviteSecondaryEmail.trim() || !selectedSecondaryStudentId) {
-                  toast.error('Vui lòng điền email và chọn học sinh!');
-                  return;
-                }
-                setIsInvitingSecondary(true);
-                const ok = await inviteSecondary(inviteSecondaryEmail.trim(), selectedSecondaryStudentId);
-                if (ok) {
-                  toast.success('Đã gửi lời mời Chủ nhiệm Phụ thành công!');
-                  setInviteSecondaryEmail('');
-                }
-                setIsInvitingSecondary(false);
-              }}
-              disabled={isInvitingSecondary || !inviteSecondaryEmail.trim() || !selectedSecondaryStudentId}
-              className="px-4 py-2.5 bg-synth-purple text-white font-bold rounded-lg hover:bg-synth-purple/80 disabled:opacity-50 transition-colors uppercase text-xs cursor-pointer h-10 flex items-center justify-center"
-            >
-              {isInvitingSecondary ? 'Đang gửi...' : 'Mời Chủ Nhiệm Phụ'}
-            </button>
-          </div>
-
-          {/* Danh sách Chủ nhiệm phụ và phân quyền */}
-          {secondaryParents.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-white/10 space-y-3">
-              <h5 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase">Danh sách Chủ Nhiệm Phụ liên kết</h5>
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="border-b border-white/10 text-synth-purple uppercase font-orbitron text-[9px] tracking-wider">
-                      <th className="py-2 px-3">Chủ Nhiệm</th>
-                      <th className="py-2 px-3">Học Sinh</th>
-                      <th className="py-2 px-3">Trạng Thái</th>
-                      <th className="py-2 px-3">Quyền Hạn</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-white/5">
-                    {secondaryParents.map((sp: any) => {
-                      const studentLink = familyLinks.find(l => l.student_id === sp.student_id);
-                      const studentName = studentLink ? (studentLink.student_name || sp.student_id) : sp.student_id;
-                      const perms = sp.secondary_permissions || {};
-
-                      return (
-                        <tr key={sp.id} className="hover:bg-white/5 transition-colors">
-                          <td className="py-2 px-3">
-                            <span className="font-bold text-white block">{sp.parent_name || 'Đang chờ tạo hồ sơ'}</span>
-                            <span className="text-[10px] text-synth-text-muted">{sp.parent_email}</span>
-                          </td>
-                          <td className="py-2 px-3 font-semibold text-synth-cyan">{studentName}</td>
-                          <td className="py-2 px-3">
-                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold uppercase font-orbitron bg-synth-cyan/10 text-synth-cyan border border-synth-cyan/20">
-                              {sp.status === 'active' ? 'Hoạt Động' : 'Chờ Chấp Nhận'}
-                            </span>
-                          </td>
-                          <td className="py-2 px-3">
-                            <div className="flex flex-col gap-1.5">
-                              <label className="flex items-center gap-1.5 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={perms.can_approve_rewards || false}
-                                  disabled={sp.status !== 'active'}
-                                  onChange={async (e) => {
-                                    await updateSecondaryPermissions(sp.id, {
-                                      can_approve_rewards: e.target.checked
-                                    });
-                                    toast.success('Đã cập nhật quyền duyệt quà');
-                                  }}
-                                  className="accent-synth-purple"
-                                />
-                                <span>Duyệt đổi quà</span>
-                              </label>
-                              <label className="flex items-center gap-1.5 cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={perms.can_create_missions || false}
-                                  disabled={sp.status !== 'active'}
-                                  onChange={async (e) => {
-                                    await updateSecondaryPermissions(sp.id, {
-                                      can_create_missions: e.target.checked
-                                    });
-                                    toast.success('Đã cập nhật quyền giao nhiệm vụ');
-                                  }}
-                                  className="accent-synth-purple"
-                                />
-                                <span>Giao nhiệm vụ</span>
-                              </label>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+      {/* ================= SECTION 3: SEND CONNECTION INVITES & REQUESTS ================= */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Form dành cho Giáo Viên Chính */}
+        {isPrimaryTeacher && (
+          <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-4">
+            <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">Mời Thành Viên Lớp Học</h4>
+            
+            {/* Mời Học Sinh */}
+            <div className="space-y-2">
+              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Mời Học Sinh Gia Nhập</span>
+              <div className="flex gap-2">
+                <SearchSuggest
+                  placeholder="Tìm học sinh theo tên/email..."
+                  roleFilter="student"
+                  value={inviteStudentEmail}
+                  onChange={setInviteStudentEmail}
+                  onSelect={user => setInviteStudentEmail(user.email)}
+                  className="flex-1"
+                />
+                <button
+                  onClick={async () => {
+                    if (!inviteStudentEmail.trim()) return;
+                    setIsInvitingStudent(true);
+                    const result = await sendInvite(inviteStudentEmail.trim());
+                    if (result.success) {
+                      toast.success('Đã gửi lời mời thành công!');
+                      setInviteStudentEmail('');
+                    } else if (result.conflictCode === 'STUDENT_HAS_PRIMARY') {
+                      if (window.confirm(`${result.error}\n\nBạn có muốn gửi lời mời làm Phó Chủ Nhiệm để cùng quản lý không?`)) {
+                        const secRes = await sendInvite(inviteStudentEmail.trim(), true);
+                        if (secRes.success) {
+                          toast.success('Đã gửi lời mời làm Phó Chủ Nhiệm thành công!');
+                          setInviteStudentEmail('');
+                        } else {
+                          toast.error(secRes.error || 'Thao tác thất bại.');
+                        }
+                      }
+                    } else {
+                      toast.error(result.error || 'Gửi lời mời thất bại.');
+                    }
+                    setIsInvitingStudent(false);
+                  }}
+                  disabled={isInvitingStudent || !inviteStudentEmail.trim()}
+                  className="px-3 bg-synth-cyan text-black font-bold rounded-lg hover:bg-synth-cyan/85 disabled:opacity-50 text-[10px] uppercase cursor-pointer"
+                >
+                  Mời Học Sinh
+                </button>
               </div>
             </div>
-          )}
+
+            {/* Mời Giáo Viên Phụ (Phó Chủ Nhiệm) */}
+            <div className="space-y-2 pt-2 border-t border-white/5">
+              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Mời Giáo Viên Phụ Đồng Hành</span>
+              <div className="flex gap-2">
+                <SearchSuggest
+                  placeholder="Tìm giáo viên theo tên/email..."
+                  roleFilter="parent"
+                  value={inviteTeacherEmail}
+                  onChange={setInviteTeacherEmail}
+                  onSelect={user => setInviteTeacherEmail(user.email)}
+                  className="flex-1"
+                />
+                <button
+                  onClick={async () => {
+                    if (!inviteTeacherEmail.trim()) return;
+                    setIsInvitingTeacher(true);
+                    const success = await inviteSecondary(inviteTeacherEmail.trim());
+                    if (success) {
+                      toast.success('Đã gửi lời mời Giáo viên phụ thành công!');
+                      setInviteTeacherEmail('');
+                    }
+                    setIsInvitingTeacher(false);
+                  }}
+                  disabled={isInvitingTeacher || !inviteTeacherEmail.trim()}
+                  className="px-3 bg-synth-purple text-white font-bold rounded-lg hover:bg-synth-purple/85 disabled:opacity-50 text-[10px] uppercase cursor-pointer"
+                >
+                  Mời Chủ Nhiệm Phụ
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Form xin kết nối lớp dành cho mọi Giáo Viên (cả chính và phụ đều có thể xin phụ lớp khác) */}
+        <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-4">
+          <h4 className="font-orbitron font-bold text-xs text-synth-purple uppercase tracking-wider">Xin Đồng Hành Lớp Khác</h4>
+          <p className="text-[10px] text-slate-400">Bạn muốn xin làm Phó Chủ Nhiệm hỗ trợ quản lý học sinh cho lớp của đồng nghiệp? Nhập email đồng nghiệp bên dưới.</p>
+          <div className="space-y-2">
+            <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Email Giáo Viên Chính</span>
+            <div className="flex gap-2">
+              <SearchSuggest
+                placeholder="Nhập email Giáo viên chính..."
+                roleFilter="parent"
+                value={requestClassEmail}
+                onChange={setRequestClassEmail}
+                onSelect={user => setRequestClassEmail(user.email)}
+                className="flex-1"
+              />
+              <button
+                onClick={async () => {
+                  if (!requestClassEmail.trim()) return;
+                  setIsRequestingClass(true);
+                  const result = await inviteSecondaryRequest(requestClassEmail.trim());
+                  if (result.success) {
+                    toast.success('Đã gửi yêu cầu kết nối thành công! Vui lòng chờ Giáo viên chính phê duyệt.');
+                    setRequestClassEmail('');
+                  } else {
+                    toast.error(result.error || 'Gửi yêu cầu thất bại.');
+                  }
+                  setIsRequestingClass(false);
+                }}
+                disabled={isRequestingClass || !requestClassEmail.trim()}
+                className="px-3 bg-synth-magenta text-white font-bold rounded-lg hover:bg-synth-magenta/85 disabled:opacity-50 text-[10px] uppercase cursor-pointer"
+              >
+                Xin Làm GV Phụ
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ================= SECTION 4: OUTGOING REQUESTS PENDING RESPONSE ================= */}
+      {(outgoingStudentInvites.length > 0 || outgoingTeacherInvites.length > 0) && (
+        <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-3">
+          <h4 className="font-orbitron font-bold text-xs text-slate-400 uppercase tracking-wider">
+            ⏳ Yêu Cầu Kết Nối Đã Gửi Đi (Đang Chờ Duyệt)
+          </h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Học sinh chờ duyệt */}
+            {outgoingStudentInvites.map(link => (
+              <div key={link.id} className="flex items-center justify-between p-2 rounded-xl bg-black/20 border border-white/5 text-xs">
+                <div>
+                  <span className="block text-slate-300 font-bold">{link.student_name || 'Học sinh'}</span>
+                  <span className="text-[10px] text-slate-500">{link.student_email}</span>
+                </div>
+                <button
+                  onClick={async () => {
+                    if (window.confirm('Bạn có chắc muốn thu hồi lời mời này?')) {
+                      const ok = await leaveFamily(link.id);
+                      if (ok) toast.success('Đã thu hồi lời mời.');
+                    }
+                  }}
+                  className="px-2 py-1 text-[9px] text-red-400 hover:text-red-300 bg-red-500/10 rounded font-bold uppercase cursor-pointer"
+                >
+                  Thu Hồi
+                </button>
+              </div>
+            ))}
+
+            {/* Giáo viên phụ chờ duyệt */}
+            {outgoingTeacherInvites.map(sp => (
+              <div key={sp.id} className="flex items-center justify-between p-2 rounded-xl bg-black/20 border border-white/5 text-xs">
+                <div>
+                  <span className="block text-synth-purple font-bold">{sp.parent_name || 'Giáo viên phụ'}</span>
+                  <span className="text-[10px] text-slate-500">{sp.parent_email}</span>
+                </div>
+                <button
+                  onClick={async () => {
+                    if (window.confirm('Bạn có chắc muốn thu hồi lời mời này?')) {
+                      const ok = await leaveFamily(sp.id);
+                      if (ok) toast.success('Đã thu hồi lời mời.');
+                    }
+                  }}
+                  className="px-2 py-1 text-[9px] text-red-400 hover:text-red-300 bg-red-500/10 rounded font-bold uppercase cursor-pointer"
+                >
+                  Thu Hồi
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* ================= SECTION 5: ACTIVE SECONDARY TEACHERS & PERMISSIONS ================= */}
+      {isPrimaryTeacher && activeSecondaryTeachers.length > 0 && (
+        <div className="rounded-2xl border border-synth-purple/20 bg-synth-purple/5 p-4 space-y-4">
+          <div>
+            <h4 className="font-orbitron font-bold text-xs text-synth-purple uppercase tracking-wider flex items-center gap-2">
+              👥 Đội Ngũ Giáo Viên Phụ (Phó Chủ Nhiệm)
+            </h4>
+            <p className="text-[11px] text-slate-300 mt-1">Các giáo viên phụ này có quyền truy cập, theo dõi báo cáo và hỗ trợ lớp của bạn.</p>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr className="border-b border-white/10 text-synth-purple uppercase font-orbitron text-[9px] tracking-wider">
+                  <th className="py-2 px-3">Giáo Viên Phụ</th>
+                  <th className="py-2 px-3">Quyền Hạn</th>
+                  <th className="py-2 px-3 text-right">Hành Động</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {activeSecondaryTeachers.map((sp: any) => {
+                  const perms = sp.secondary_permissions || {};
+
+                  return (
+                    <tr key={sp.id} className="hover:bg-white/5 transition-colors">
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-2">
+                          {sp.parent_avatar ? (
+                            <img src={sp.parent_avatar} alt={sp.parent_name} className="w-6 h-6 rounded-full object-cover" />
+                          ) : (
+                            <div className="w-6 h-6 rounded-full bg-synth-purple/10 border border-synth-purple/25 flex items-center justify-center text-[10px] font-bold text-synth-purple">
+                              {sp.parent_name ? sp.parent_name.charAt(0).toUpperCase() : 'T'}
+                            </div>
+                          )}
+                          <div>
+                            <span className="font-bold text-white block">{sp.parent_name || 'Giáo viên phụ'}</span>
+                            <span className="text-[10px] text-slate-400">{sp.parent_email}</span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-3">
+                          <label className="flex items-center gap-1.5 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={perms.can_approve_rewards || false}
+                              onChange={async (e) => {
+                                await updateSecondaryPermissions(sp.id, {
+                                  can_approve_rewards: e.target.checked
+                                });
+                                toast.success('Đã cập nhật quyền duyệt quà');
+                              }}
+                              className="accent-synth-purple"
+                            />
+                            <span>Duyệt quà</span>
+                          </label>
+                          <label className="flex items-center gap-1.5 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={perms.can_create_missions || false}
+                              onChange={async (e) => {
+                                await updateSecondaryPermissions(sp.id, {
+                                  can_create_missions: e.target.checked
+                                });
+                                toast.success('Đã cập nhật quyền giao nhiệm vụ');
+                              }}
+                              className="accent-synth-purple"
+                            />
+                            <span>Giao nhiệm vụ</span>
+                          </label>
+                        </div>
+                      </td>
+                      <td className="py-3 px-3 text-right">
+                        <button
+                          onClick={async () => {
+                            if (window.confirm(`Bạn có chắc muốn mời Giáo viên phụ ${sp.parent_name || sp.parent_email} ra khỏi lớp không?`)) {
+                              const success = await leaveFamily(sp.id);
+                              if (success) toast.success('Đã xóa Giáo viên phụ khỏi lớp.');
+                            }
+                          }}
+                          className="px-2 py-1 text-[9px] border border-red-500/30 hover:border-red-500/60 bg-red-500/10 text-red-400 rounded uppercase font-bold cursor-pointer"
+                        >
+                          Hủy Đồng Hành
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ================= SECTION 6: ACTIVE CLASSES THAT I CO-MANAGE AS SECONDARY TEACHER ================= */}
+      {isSecondaryTeacher && activeStudents.length > 0 && (
+        <div className="rounded-2xl border border-synth-cyan/20 bg-synth-cyan/5 p-4 space-y-4">
+          <div>
+            <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-2">
+              🏛️ Lớp Học Đang Đồng Hành (Phó Chủ Nhiệm)
+            </h4>
+            <p className="text-[11px] text-slate-300 mt-1">Bạn đang hỗ trợ quản lý học sinh cho các giáo viên chính sau:</p>
+          </div>
+
+          <div className="space-y-3">
+            {/* We find unique active class-level links for this secondary parent */}
+            {secondaryParents.filter(sp => sp.status === 'active').map((sp: any) => (
+              <div key={sp.id} className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/5">
+                <div className="flex items-center gap-2.5">
+                  {sp.parent_avatar ? (
+                    <img src={sp.parent_avatar} alt={sp.parent_name} className="w-8 h-8 rounded-full border border-white/10 object-cover" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-synth-cyan/10 border border-synth-cyan/30 flex items-center justify-center text-xs font-bold text-synth-cyan">
+                      {sp.parent_name ? sp.parent_name.charAt(0).toUpperCase() : 'T'}
+                    </div>
+                  )}
+                  <div>
+                    <span className="text-xs text-white font-bold block">Giáo Viên Chính: {sp.parent_name}</span>
+                    <span className="text-[10px] text-slate-400">{sp.parent_email}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={async () => {
+                    if (window.confirm('Bạn có chắc muốn xin dừng đồng hành với lớp này không?')) {
+                      const success = await leaveFamily(sp.id);
+                      if (success) toast.success('Đã rời lớp đồng hành.');
+                    }
+                  }}
+                  className="px-3 py-1.5 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-xs uppercase cursor-pointer transition-colors"
+                >
+                  Rừng Đồng Hành
+                </button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

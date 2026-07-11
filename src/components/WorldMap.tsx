@@ -9,6 +9,7 @@ import { CORE_KNOWLEDGE_TOPICS, inferTopicId } from '../data/coreKnowledge';
 import { getHamForPage } from '../utils/gatekeeper';
 import { useSect } from '../contexts/SectContext';
 import { SUBJECTS_CONFIG } from '../types/game';
+import { SearchSuggest } from './Common/SearchSuggest';
 
 interface WorldMapProps {
   onOpenArena: () => void;
@@ -392,12 +393,13 @@ export function WorldMap({
           </div>
 
           <div className="flex items-center gap-3 max-w-lg">
-            <input
-              type="email"
+            <SearchSuggest
+              placeholder="Tìm Thầy/Cô theo tên/email..."
+              roleFilter="parent"
               value={inviteEmail}
-              onChange={e => setInviteEmail(e.target.value)}
-              placeholder="Nhập Email Google của Thầy/Cô..."
-              className="flex-1 p-2 rounded-lg border border-white/10 bg-black/40 text-white outline-none focus:border-synth-cyan font-sans text-xs"
+              onChange={setInviteEmail}
+              onSelect={user => setInviteEmail(user.email)}
+              className="flex-1"
             />
             <button
               onClick={async () => {

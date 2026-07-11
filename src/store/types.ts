@@ -127,7 +127,9 @@ export interface StoreState {
   secondaryParents: any[];
   fetchFamily: () => Promise<void>;
   sendInvite: (targetEmail: string, connectAsSecondary?: boolean) => Promise<{ success: boolean; conflictCode?: string; error?: string }>;
-  inviteSecondary: (targetEmail: string, studentId: string) => Promise<boolean>;
+  inviteSecondary: (targetEmail: string) => Promise<boolean>;
+  inviteSecondaryRequest: (targetEmail: string) => Promise<{ success: boolean; error?: string }>;
+  searchUsers: (q: string, role?: string) => Promise<any[]>;
   updateSecondaryPermissions: (linkId: string, permissions: { can_approve_rewards?: boolean, can_create_missions?: boolean, read_only?: boolean }) => Promise<boolean>;
   respondInvite: (linkId: string, accept: boolean) => Promise<boolean>;
   leaveFamily: (linkId: string) => Promise<boolean>;
