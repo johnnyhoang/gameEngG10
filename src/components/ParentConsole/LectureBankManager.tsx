@@ -11,6 +11,7 @@ interface Lesson {
   topic: string;
   title: string;
   theory: string;
+  is_standard?: boolean;
   created_at?: string;
 }
 
@@ -32,7 +33,24 @@ export const LectureBankManager: React.FC = () => {
   const [formTopic, setFormTopic] = useState('');
   const [formTitle, setFormTitle] = useState('');
   const [formTheory, setFormTheory] = useState('');
+  const [formIsStandard, setFormIsStandard] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Lazy Load Paging
+  const [visibleCount, setVisibleCount] = useState(10);
+
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [searchQuery, selectedSubject]);
+
+  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget;
+    if (target.scrollHeight - target.scrollTop - target.clientHeight < 50) {
+      if (visibleCount < filteredLessons.length) {
+        setVisibleCount(prev => prev + 10);
+      }
+    }
+  };
 
   const fetchLessons = async () => {
     setLoading(true);
@@ -69,6 +87,7 @@ export const LectureBankManager: React.FC = () => {
     setFormTopic('');
     setFormTitle('');
     setFormTheory('');
+    setFormIsStandard(false);
     setIsModalOpen(true);
   };
 
@@ -79,11 +98,12 @@ export const LectureBankManager: React.FC = () => {
     setFormTopic(lesson.topic);
     setFormTitle(lesson.title);
     setFormTheory(lesson.theory);
+    setFormIsStandard(lesson.is_standard || false);
     setIsModalOpen(true);
   };
 
-  const handleSaveLesson = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSaveLesson = async (e: React.FormEvent, isStandardOverride?: boolean) => {
+    if (e) e.preventDefault();
     if (!formSubject || !formCategory.trim() || !formTopic.trim() || !formTitle.trim() || !formTheory.trim()) {
       toast.error('Vui lòng điền đầy đủ tất cả các trường.');
       return;
@@ -100,7 +120,8 @@ export const LectureBankManager: React.FC = () => {
         category: formCategory.trim(),
         topic: formTopic.trim(),
         title: formTitle.trim(),
-        theory: formTheory.trim()
+        theory: formTheory.trim(),
+        is_standard: isStandardOverride !== undefined ? isStandardOverride : formIsStandard
       };
 
       const url = editingLesson 
@@ -343,12 +364,30 @@ export const LectureBankManager: React.FC = () => {
           <p className="text-xs text-slate-400 italic">Không tìm thấy bài giảng nào phù hợp.</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-          {filteredLessons.map(lesson => (
-            <div key={lesson.id} className="glass-panel border border-white/5 p-4 rounded-2xl flex flex-col justify-between hover:border-synth-cyan/35 transition-all">
+        <div 
+          onScroll={handleScroll}
+          className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-1"
+        >
+          {filteredLessons.slice(0, visibleCount).map(lesson => (
+            <div 
+              key={lesson.id} 
+              className="glass-panel border border-white/5 p-4 rounded-2xl flex flex-col justify-between hover:border-synth-cyan/35 transition-all relative group"
+            >
+              {/* Tick xanh nhỏ ở góc trái trên */}
+              {lesson.is_standard && (
+                <span className="absolute top-2 left-2 text-emerald-400 text-[10px]" title="Bài giảng đạt chuẩn">
+                  ✔️
+                </span>
+              )}
+
               <div className="space-y-2">
                 <div className="flex justify-between items-start gap-2">
-                  <div className="flex items-center gap-1.5 flex-wrap">
+                  <div className={`flex items-center gap-1.5 flex-wrap ${lesson.is_standard ? 'pl-4' : ''}`}>
+                    {lesson.is_standard && (
+                      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 uppercase font-orbitron flex items-center gap-1">
+                        🏆 Đạt Chuẩn
+                      </span>
+                    )}
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-synth-cyan/15 text-synth-cyan border border-synth-cyan/25 uppercase font-orbitron">
                       {SUBJECTS_CONFIG[lesson.subject as keyof typeof SUBJECTS_CONFIG]?.name || lesson.subject}
                     </span>
@@ -373,7 +412,7 @@ export const LectureBankManager: React.FC = () => {
                     </button>
                   </div>
                 </div>
-
+ 
                 <div className="text-xs font-semibold text-slate-400 font-sans">
                   Chủ đề: {lesson.topic}
                 </div>
@@ -473,7 +512,7 @@ export const LectureBankManager: React.FC = () => {
               </label>
 
               {/* Action Buttons */}
-              <div className="flex justify-end gap-3 border-t border-white/10 pt-4 mt-2">
+              <div className="flex justify-between items-center gap-3 border-t border-white/10 pt-4 mt-2">
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
@@ -481,13 +520,34 @@ export const LectureBankManager: React.FC = () => {
                 >
                   Hủy bỏ
                 </button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="px-5 py-2 bg-synth-cyan text-black rounded-lg hover:synth-glow-cyan transition-all font-orbitron font-bold text-[10px] tracking-wider uppercase cursor-pointer disabled:opacity-50"
-                >
-                  {isSaving ? 'Đang lưu...' : 'Nhập Bản Ký ✍️'}
-                </button>
+                <div className="flex gap-2">
+                  <button
+                    type="submit"
+                    disabled={isSaving}
+                    className="px-5 py-2 bg-synth-cyan text-black rounded-lg hover:synth-glow-cyan transition-all font-orbitron font-bold text-[10px] tracking-wider uppercase cursor-pointer disabled:opacity-50"
+                  >
+                    {isSaving ? 'Đang lưu...' : editingLesson ? 'Cập Nhật 💾' : 'Tạo mới 💾'}
+                  </button>
+                  {editingLesson?.is_standard ? (
+                    <button
+                      type="button"
+                      disabled={isSaving}
+                      onClick={(e) => handleSaveLesson(e, false)}
+                      className="px-4 py-2 bg-red-600/20 border border-red-500/40 text-red-400 font-bold rounded-lg hover:bg-red-600 hover:text-white transition-all font-orbitron text-[10px] tracking-wider uppercase cursor-pointer disabled:opacity-50"
+                    >
+                      ❌ Chưa Đạt Chuẩn
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      disabled={isSaving}
+                      onClick={(e) => handleSaveLesson(e, true)}
+                      className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-black font-orbitron rounded-lg hover:shadow-[0_0_10px_rgba(245,158,11,0.4)] transition-all text-[10px] tracking-wider uppercase cursor-pointer disabled:opacity-50"
+                    >
+                      🏆 Đạt Chuẩn
+                    </button>
+                  )}
+                </div>
               </div>
             </form>
           </div>

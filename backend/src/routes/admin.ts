@@ -794,7 +794,7 @@ router.get('/admin/lessons', authMiddleware, async (req: any, res) => {
 // POST /api/admin/lessons
 router.post('/admin/lessons', authMiddleware, async (req: any, res) => {
   const accountId = req.user.sub;
-  const { subject, category, topic, title, theory } = req.body;
+  const { subject, category, topic, title, theory, is_standard } = req.body;
 
   if (!subject || !category || !topic || !title || theory === undefined) {
     return res.status(400).json({ error: 'Missing required parameters.' });
@@ -812,13 +812,13 @@ router.post('/admin/lessons', authMiddleware, async (req: any, res) => {
 
     const lessonId = `les-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     await pool.query(
-      `INSERT INTO ge10_lessons (id, subject, category, topic, title, theory)
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      [lessonId, subject, category, topic, title, theory]
+      `INSERT INTO ge10_lessons (id, subject, category, topic, title, theory, is_standard)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      [lessonId, subject, category, topic, title, theory, is_standard || false]
     );
 
     await logAuditEvent(actorProfileId, 'create_lesson', lessonId, { subject, category, title });
-    res.json({ success: true, lesson: { id: lessonId, subject, category, topic, title, theory } });
+    res.json({ success: true, lesson: { id: lessonId, subject, category, topic, title, theory, is_standard: is_standard || false } });
   } catch (error: any) {
     console.error('Error creating lesson:', error);
     res.status(500).json({ error: 'Không thể tạo bài giảng.', details: error.message });
@@ -829,7 +829,7 @@ router.post('/admin/lessons', authMiddleware, async (req: any, res) => {
 router.put('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) => {
   const accountId = req.user.sub;
   const { lessonId } = req.params;
-  const { subject, category, topic, title, theory } = req.body;
+  const { subject, category, topic, title, theory, is_standard } = req.body;
 
   if (!subject || !category || !topic || !title || theory === undefined) {
     return res.status(400).json({ error: 'Missing required parameters.' });
@@ -847,9 +847,9 @@ router.put('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) => 
 
     const updateRes = await pool.query(
       `UPDATE ge10_lessons 
-       SET subject = $1, category = $2, topic = $3, title = $4, theory = $5
-       WHERE id = $6`,
-      [subject, category, topic, title, theory, lessonId]
+       SET subject = $1, category = $2, topic = $3, title = $4, theory = $5, is_standard = $6
+       WHERE id = $7`,
+      [subject, category, topic, title, theory, is_standard !== undefined ? is_standard : false, lessonId]
     );
 
     if (updateRes.rowCount === 0) {

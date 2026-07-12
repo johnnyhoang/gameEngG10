@@ -256,8 +256,13 @@ export const LessonStudyView: React.FC<LessonStudyViewProps> = ({
             {lesson.topic}
           </div>
           
-          <h1 className="font-orbitron font-black text-2xl md:text-4xl text-white uppercase tracking-wider leading-tight">
-            {lesson.title}
+          <h1 className="font-orbitron font-black text-2xl md:text-4xl text-white uppercase tracking-wider leading-tight flex items-center gap-2 flex-wrap">
+            {lesson.is_standard && (
+              <span className="inline-flex items-center justify-center shrink-0 w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-sm font-black" title="Bài giảng đạt chuẩn">
+                ✓
+              </span>
+            )}
+            <span>{lesson.title}</span>
           </h1>
 
           {/* Theory parsed container */}

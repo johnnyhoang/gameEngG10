@@ -7,6 +7,7 @@ export interface Lesson {
   title: string;
   theory: string;
   category: string;
+  is_standard?: boolean;
 }
 
 export const INITIAL_LESSONS: Lesson[] = [
