@@ -293,7 +293,11 @@ export const createAuthSlice: StateCreator<
   },
 
   logout: async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Error signing out:', err);
+    }
     localStorage.removeItem('ge10_login_time');
     set({
       currentUser: null,

@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { LogOut, GraduationCap, Users, Shield, Crown } from 'lucide-react';
-import { supabase } from '../utils/supabaseClient';
 
 export const ProfileSelectionScreen: React.FC = () => {
-  const { availableProfiles, selectProfile, quickStartProfile } = useGameState();
+  const { availableProfiles, selectProfile, quickStartProfile, logout } = useGameState();
   const [quickStarting, setQuickStarting] = useState<'student' | 'parent' | null>(null);
 
   const existingStudent = availableProfiles.find((p: any) => p.role === 'student');
@@ -13,7 +12,7 @@ export const ProfileSelectionScreen: React.FC = () => {
   const existingHieuTruong = availableProfiles.find((p: any) => p.role === 'truong_vien');
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await logout();
   };
 
   const handleSelectRole = async (role: 'student' | 'parent' | 'pho_vien' | 'truong_vien') => {
