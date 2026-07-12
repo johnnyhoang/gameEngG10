@@ -189,6 +189,8 @@ function App() {
           const state = useGameState.getState();
           if (state.sessionAccountId !== session.user.id) {
             state.setSessionAccountId(session.user.id);
+            // Clear currentUser to force profile selection when switching or logging in to a new account
+            useGameState.setState({ currentUser: null });
             await state.fetchProfiles();
           }
         } else {
