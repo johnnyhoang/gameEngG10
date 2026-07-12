@@ -84,6 +84,7 @@ export interface UserProfile {
   avatar: string;
   role?: string;
   familyId?: string;
+  uiTheme?: any;
 }
 
 export interface PlayerProfile {

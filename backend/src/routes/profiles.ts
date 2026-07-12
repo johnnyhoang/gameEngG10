@@ -22,10 +22,23 @@ router.get('/profiles', authMiddleware, async (req: any, res) => {
     }
     // Chỉ trả về profile đang hoạt động (is_active = true) — profile bị vô hiệu hóa sẽ không hiển thị ở màn hình chọn
     const profilesRes = await pool.query(
-      'SELECT * FROM ge10_users WHERE account_id = $1 AND is_active = TRUE',
+      `SELECT u.*, p.ui_theme 
+       FROM ge10_users u
+       LEFT JOIN ge10_player_profiles p ON u.id = p.user_id
+       WHERE u.account_id = $1 AND u.is_active = TRUE`,
       [accountId]
     );
-    res.json({ profiles: profilesRes.rows });
+    const profiles = profilesRes.rows.map((row: any) => ({
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      avatar: row.avatar_url,
+      avatar_url: row.avatar_url,
+      role: row.role,
+      uiTheme: row.ui_theme || 'current',
+      ui_theme: row.ui_theme || 'current'
+    }));
+    res.json({ profiles });
   } catch (err: any) {
     console.error('Error fetching profiles:', err?.message || err);
     res.status(500).json({ error: 'Failed to fetch profiles', details: err?.message });

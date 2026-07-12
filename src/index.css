@@ -104,7 +104,7 @@ body,
   --theme-handbook-seal-text: #ffffff;
 }
 
-:root[data-theme='cute-pink-pastel'] {
+[data-theme='cute-pink-pastel'] {
   --color-synth-bg: #fff5fb;
   --color-synth-card: rgba(255, 255, 255, 0.82);
   --color-synth-card-solid: #fff0f7;
@@ -199,7 +199,7 @@ body[data-theme='cute-pink-pastel'] {
   color: #4b2d66;
 }
 
-:root[data-theme='space-adventure'] {
+[data-theme='space-adventure'] {
   --color-synth-bg: #0a1730;
   --color-synth-card: rgba(18, 29, 58, 0.74);
   --color-synth-card-solid: #122040;
@@ -249,7 +249,7 @@ body[data-theme='space-adventure'] {
   color: #eaf4ff;
 }
 
-:root[data-theme='fantasy-forest'] {
+[data-theme='fantasy-forest'] {
   --color-synth-bg: #f4f8ea;
   --color-synth-card: rgba(255, 255, 248, 0.86);
   --color-synth-card-solid: #f7f9ef;
@@ -344,7 +344,7 @@ body[data-theme='fantasy-forest'] {
   color: #23412a;
 }
 
-:root[data-theme='pixel-arcade'] {
+[data-theme='pixel-arcade'] {
   --color-synth-bg: #07111f;
   --color-synth-card: rgba(14, 24, 42, 0.92);
   --color-synth-card-solid: #0b1729;
@@ -390,7 +390,7 @@ body[data-theme='fantasy-forest'] {
   --theme-handbook-seal-text: #ffffff;
 }
 
-:root[data-theme='unicorn-dream'] {
+[data-theme='unicorn-dream'] {
   --color-synth-bg: #fdf8ff;
   --color-synth-card: rgba(255, 255, 255, 0.82);
   --color-synth-card-solid: #fff8ff;

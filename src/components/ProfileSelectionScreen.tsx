@@ -57,6 +57,7 @@ export const ProfileSelectionScreen: React.FC = () => {
       name: existingStudent?.name || 'Chưa khởi tạo',
       desc: 'Môn Sinh vào học tập & rèn luyện',
       isLoading: quickStarting === 'student',
+      theme: existingStudent?.uiTheme || 'current',
     },
     {
       key: 'parent',
@@ -67,6 +68,7 @@ export const ProfileSelectionScreen: React.FC = () => {
       name: existingParent?.name || 'Chưa khởi tạo',
       desc: 'Quản lý lớp, phê duyệt quà & nhiệm vụ',
       isLoading: quickStarting === 'parent',
+      theme: existingParent?.uiTheme || 'current',
     },
   ];
 
@@ -81,6 +83,7 @@ export const ProfileSelectionScreen: React.FC = () => {
       name: existingHieuPho.name,
       desc: 'Được Ban Giám Hiệu ủy thác quản trị trường',
       isLoading: false,
+      theme: existingHieuPho.uiTheme || 'current',
     });
   }
 
@@ -95,6 +98,7 @@ export const ProfileSelectionScreen: React.FC = () => {
       name: existingHieuTruong.name,
       desc: 'Chủ viện quản trị tối cao học viện',
       isLoading: false,
+      theme: existingHieuTruong.uiTheme || 'current',
     });
   }
 
@@ -124,6 +128,7 @@ export const ProfileSelectionScreen: React.FC = () => {
           {roleCards.map((card) => (
             <button
               key={card.key}
+              data-theme={card.theme}
               disabled={quickStarting !== null}
               onClick={() => handleSelectRole(card.key as any)}
               className={`group flex flex-col items-center justify-between gap-4 p-6 rounded-2xl border bg-white/3 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${card.colorClass}`}
