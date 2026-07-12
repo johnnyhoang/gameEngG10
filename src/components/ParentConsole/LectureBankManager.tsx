@@ -195,36 +195,58 @@ export const LectureBankManager: React.FC = () => {
       </div>
 
       {/* Filters bar */}
-      <div className="flex flex-col md:flex-row gap-3 items-center">
-        <div className="relative flex-1 w-full">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Tìm theo tiêu đề, chủ đề, nhóm hoặc nội dung lý thuyết..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
-          />
-        </div>
-        <div className="flex gap-2 w-full md:w-auto shrink-0">
-          <select
-            value={selectedSubject}
-            onChange={(e) => setSelectedSubject(e.target.value)}
-            className="w-full md:w-44 px-3 py-2 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none text-xs focus:border-synth-cyan cursor-pointer"
-          >
-            <option value="all">Tất cả môn phái</option>
-            {Object.values(SUBJECTS_CONFIG).map(sub => (
-              <option key={sub.id} value={sub.id}>{sub.icon} {sub.name}</option>
-            ))}
-          </select>
+      <div className="space-y-4">
+        <div className="flex gap-3 items-center">
+          <div className="relative flex-1 w-full">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Tìm theo tiêu đề, chủ đề, nhóm hoặc nội dung lý thuyết..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
+            />
+          </div>
           <button
             onClick={fetchLessons}
             disabled={loading}
-            className="p-2 rounded-lg border border-white/10 hover:bg-white/5 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            className="p-2 rounded-lg border border-white/10 hover:bg-white/5 text-slate-400 hover:text-white transition-colors cursor-pointer shrink-0"
             title="Tải lại danh sách"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
           </button>
+        </div>
+
+        {/* Môn phái selector dạng Grid Card đẹp mắt và gọn gàng */}
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-7 gap-2">
+          <button
+            onClick={() => setSelectedSubject('all')}
+            className={`p-2.5 rounded-xl border text-center transition-all duration-300 cursor-pointer flex flex-col items-center justify-center gap-1 ${
+              selectedSubject === 'all'
+                ? 'border-synth-cyan bg-synth-cyan/15 shadow-[0_0_10px_rgba(0,240,255,0.2)] ring-1 ring-synth-cyan text-synth-cyan'
+                : 'border-white/5 bg-white/5 hover:border-white/15 text-slate-400 hover:text-white'
+            }`}
+          >
+            <span className="text-base">📚</span>
+            <span className="text-[9px] font-bold font-orbitron uppercase truncate">Tất Cả Môn</span>
+          </button>
+          {Object.values(SUBJECTS_CONFIG).map(sub => {
+            const isActive = selectedSubject === sub.id;
+            return (
+              <button
+                key={sub.id}
+                onClick={() => setSelectedSubject(sub.id)}
+                className={`p-2.5 rounded-xl border text-center transition-all duration-300 cursor-pointer flex flex-col items-center justify-center gap-1 ${
+                  isActive
+                    ? 'border-synth-cyan bg-synth-cyan/15 shadow-[0_0_10px_rgba(0,240,255,0.2)] ring-1 ring-synth-cyan text-synth-cyan'
+                    : 'border-white/5 bg-white/5 hover:border-white/15 text-slate-400 hover:text-white'
+                }`}
+              >
+                <span className="text-base">{sub.icon}</span>
+                <span className="text-[9px] font-bold font-orbitron uppercase truncate w-full">{sub.name}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 

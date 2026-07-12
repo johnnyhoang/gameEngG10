@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Palette, Sparkles, Clock, Award, Shield } from 'lucide-react';
+import { CheckCircle2, Palette, Sparkles } from 'lucide-react';
 import { UI_THEMES, type UiThemeConfig } from '../theme/uiThemes';
 import type { UiThemeId, UserProfile } from '../types/game';
 import { useGameState, THEME_UNLOCK_COST } from '../hooks/useGameState';
 import { useSect } from '../contexts/SectContext';
 import { SUBJECTS_CONFIG, GRADE_TIERS, getStudentRankForLevel } from '../types/game';
-import { computeSubjectMasteryRatio, getMasteryRankByRatio, getMasteryRankByOrder } from '../utils/masteryRank';
-import type { SubjectId } from '../types/game';
 import { toast } from '../utils/toast';
 import { GiangHoCamNang } from './GiangHoCamNang';
 import { ActivityLog } from './ActivityLog';
@@ -87,11 +85,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   currentTheme,
   onSelectTheme
 }) => {
-  // Load game state values internally
-  const questions = useGameState(state => state.questions);
-  const categoryStats = useGameState(state => state.categoryStats);
-  const lessons = useGameState(state => state.lessons);
-  const lessonsProgress = useGameState(state => state.lessonsProgress);
   const { activeSectId, setActiveSectId } = useSect();
   const player = useGameState(state => state.player);
   const buyTheme = useGameState(state => state.buyTheme);
@@ -123,35 +116,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const activeTheme = UI_THEMES.find(theme => theme.id === currentTheme) || UI_THEMES[0];
   const isUnicorn = currentTheme === 'unicorn-dream';
 
-  // Local helper for Subject Mastery calculations — công thức dùng chung với store (src/utils/masteryRank.ts)
-  // để ratchet maxAchievedMasteryRank khớp đúng số hiển thị (Luật Một Bảng, CORE_SPECS §7.4).
-  const getSubjectMastery = (subId: SubjectId) => {
-    const ratio = computeSubjectMasteryRatio({
-      subjectId: subId,
-      questions,
-      categoryStats,
-      lessons,
-      lessonsProgress
-    });
-
-    // Nội Công hiển thị (§7.4.3) — tổng câu đúng của môn, tách biệt khỏi công thức % tu luyện.
-    const subjectCategories = Array.from(new Set(questions.filter(q => q.subject === subId).map(q => q.category)));
-    const correctCount = subjectCategories.reduce((sum, cat) => sum + (categoryStats[cat]?.totalCorrect || 0), 0);
-
-    // Luật Bất Thoái (CORE_SPECS §7.4.4): hiển thị đẳng cấp CAO NHẤT giữa tỉ lệ thực tế hiện tại
-    // và đẳng cấp cao nhất từng đạt đã lưu — không bao giờ tụt hạng dù mẫu số tăng lên.
-    const liveRank = getMasteryRankByRatio(ratio);
-    const maxAchievedOrder = player.maxAchievedMasteryRank?.[subId] ?? 0;
-    const displayRank = liveRank.order >= maxAchievedOrder ? liveRank : getMasteryRankByOrder(maxAchievedOrder);
-
-    return {
-      ratio,
-      correctCount,
-      percent: Math.min(100, Math.round(ratio * 100)),
-      rankName: `${displayRank.icon} ${displayRank.name}`,
-      rankColor: displayRank.colorClass
-    };
-  };
 
   return (
     <div className="space-y-6">
@@ -395,91 +359,31 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
             )}
 
-            {/* Subject Sects Grid */}
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {Object.values(SUBJECTS_CONFIG).map(sub => {
-                const stats = getSubjectMastery(sub.id);
-                const isActive = activeSectId === sub.id;
-                const timeTrained = Math.round(stats.correctCount * 1.5);
-                const hours = Math.floor(timeTrained / 60);
-                const minutes = timeTrained % 60;
-                const timeStr = hours > 0 ? `${hours} giờ ${minutes} phút` : `${minutes} phút`;
-
-                return (
-                  <button
-                    key={sub.id}
-                    onClick={() => {
-                      setActiveSectId(sub.id);
-                      toast.success(`Đã nhập môn phái ${sub.name}! ⚔️`);
-                    }}
-                    className={`relative overflow-hidden rounded-3xl border p-4 text-left transition-all duration-300 cursor-pointer hover:-translate-y-1 flex flex-col justify-between h-[210px] ${
-                      isActive
-                        ? 'border-synth-cyan bg-synth-cyan/10 shadow-[0_0_15px_rgba(0,240,255,0.15)] ring-1 ring-synth-cyan'
-                        : 'border-white/5 bg-white/5'
-                    }`}
-                  >
-                    {/* Subject icon & title */}
-                    <div className="flex justify-between items-start w-full">
-                      <div className="flex items-center gap-3">
-                        <span className="text-3xl">{sub.icon}</span>
-                        <div>
-                          <span className="block text-xs font-black uppercase font-orbitron text-white">
-                            {sub.name}
-                          </span>
-                          <span className="block text-[8px] text-slate-400 uppercase font-semibold">
-                            {sub.group === 'chuyen_sau' ? 'Môn Chuyên Sâu' : 'Môn Cơ Bản'}
-                          </span>
-                        </div>
-                      </div>
-                      {isActive && (
-                        <span className="text-[8px] font-black uppercase tracking-wider bg-synth-cyan text-black px-2 py-0.5 rounded-full shadow-[0_0_8px_rgba(0,240,255,0.4)]">
-                          Đang tu luyện
-                        </span>
-                      )}
-                    </div>
-
-                    {/* Subject stats metrics & progress (Học Sinh) hoặc Description (Giáo viên/Admin) */}
-                    {currentUser.role === 'student' ? (
-                      <>
-                        <div className="space-y-2 text-[11px] text-slate-300 w-full mt-2">
-                          <div className="flex justify-between items-center">
-                            <span className="text-slate-400 font-semibold flex items-center gap-1"><Shield className="w-3.5 h-3.5 text-synth-orange" /> Đẳng Cấp:</span>
-                            <span className={`font-black uppercase ${stats.rankColor}`}>{stats.rankName}</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-slate-400 font-semibold flex items-center gap-1"><Award className="w-3.5 h-3.5 text-synth-green" /> Nội Công:</span>
-                            <span className="font-bold text-white">{stats.correctCount} thành tựu (Đúng)</span>
-                          </div>
-                          <div className="flex justify-between items-center">
-                            <span className="text-slate-400 font-semibold flex items-center gap-1"><Clock className="w-3.5 h-3.5 text-synth-cyan" /> Thời Gian:</span>
-                            <span className="font-bold text-white">{timeStr}</span>
-                          </div>
-                        </div>
-
-                        <div className="space-y-1 w-full mt-2">
-                          <div className="flex justify-between text-[9px] font-bold text-slate-400">
-                            <span>Tu luyện hoàn thành</span>
-                            <span>{stats.percent}%</span>
-                          </div>
-                          <div className="w-full h-1.5 bg-black/40 rounded-full overflow-hidden">
-                            <div
-                              className="h-full rounded-full transition-all duration-500"
-                              style={{
-                                width: `${stats.percent}%`,
-                                backgroundColor: isActive ? sub.color : '#64748b'
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="text-[11px] text-slate-400 mt-2 leading-relaxed flex-1 flex items-center">
-                        Nhấp để tập trung quản lý lớp học, ngân hàng câu hỏi và nghiên cứu học liệu thuộc môn {sub.name}.
-                      </div>
-                    )}
-                  </button>
-                );
-              })}
+            {/* Subject Selection (Dropdown gọn gàng) */}
+            <div className="bg-white/5 p-4 rounded-2xl border border-white/5 space-y-3">
+              <h4 className="text-xs font-black uppercase tracking-wider font-orbitron text-slate-300">
+                ⚔️ Chọn Môn Phái Tập Trung Tu Luyện
+              </h4>
+              <div className="flex gap-3 items-center">
+                <select
+                  value={activeSectId}
+                  onChange={(e) => {
+                    setActiveSectId(e.target.value);
+                    const subName = SUBJECTS_CONFIG[e.target.value as keyof typeof SUBJECTS_CONFIG]?.name;
+                    toast.success(`Đã nhập môn phái ${subName}! ⚔️`);
+                  }}
+                  className="flex-1 p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none text-xs focus:border-synth-cyan cursor-pointer font-bold font-orbitron"
+                >
+                  {Object.values(SUBJECTS_CONFIG).map(sub => (
+                    <option key={sub.id} value={sub.id} className="bg-slate-950 text-white">
+                      {sub.icon} {sub.name} ({sub.group === 'chuyen_sau' ? 'Môn Chuyên Sâu' : 'Môn Cơ Bản'})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <p className="text-[10px] text-slate-500">
+                Toàn bộ dữ liệu hiển thị (Đấu Trường, Hang Luyện Công, Shop...) sẽ tự động thay đổi theo môn phái bạn chọn.
+              </p>
             </div>
           </div>
         )}
