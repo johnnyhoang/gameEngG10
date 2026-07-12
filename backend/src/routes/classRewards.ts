@@ -3,6 +3,8 @@ import crypto from 'crypto';
 import { pool } from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
 
+import { ensureDefaultClassRewards } from '../helpers/questions.js';
+
 const router = express.Router();
 
 const TEACHER_ROLES = ['parent', 'secondary_parent', 'truong_vien', 'pho_vien'];
@@ -35,6 +37,7 @@ router.get('/class-rewards', authMiddleware, async (req: any, res) => {
     const isTeacher = TEACHER_ROLES.includes(role || '');
 
     if (isTeacher) {
+      await ensureDefaultClassRewards(profileId);
       const rewardsRes = await pool.query(
         'SELECT * FROM ge10_class_rewards WHERE teacher_id = $1 ORDER BY created_at DESC',
         [profileId]
@@ -66,6 +69,11 @@ router.get('/class-rewards', authMiddleware, async (req: any, res) => {
 
     if (teacherIds.length === 0) {
       return res.json({ rewards: [], redemptions: [], isOrphan: true });
+    }
+
+    // Seed default rewards for student's teachers if not existing
+    for (const tId of teacherIds) {
+      await ensureDefaultClassRewards(tId);
     }
 
     const rewardsRes = await pool.query(

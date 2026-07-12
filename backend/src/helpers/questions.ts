@@ -71,3 +71,25 @@ export const ensureDefaultRewards = async (userId: string) => {
     }
   }
 };
+
+export const ensureDefaultClassRewards = async (teacherId: string) => {
+  const rewardsRes = await pool.query('SELECT id FROM ge10_class_rewards WHERE teacher_id = $1', [teacherId]);
+  if (rewardsRes.rowCount === 0) {
+    const defaultRewards = [
+      { id: `default-cls-rew-1-${teacherId}`, title: '15 phút chơi game', cost_coins: 150, quantity: 10 },
+      { id: `default-cls-rew-2-${teacherId}`, title: 'Ly trà sữa đặc biệt', cost_coins: 400, quantity: 4 },
+      { id: `default-cls-rew-3-${teacherId}`, title: 'Bao lì xì 20.000đ', cost_coins: 500, quantity: 5 },
+      { id: `default-cls-rew-4-${teacherId}`, title: 'Bao lì xì 50.000đ', cost_coins: 1000, quantity: 3 },
+      { id: `default-cls-rew-5-${teacherId}`, title: 'Bao lì xì 100.000đ', cost_coins: 1800, quantity: 1 }
+    ];
+
+    for (const dr of defaultRewards) {
+      await pool.query(
+        `INSERT INTO ge10_class_rewards (id, teacher_id, title, cost_coins, quantity, remaining, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, NOW())
+         ON CONFLICT (id) DO NOTHING`,
+        [dr.id, teacherId, dr.title, dr.cost_coins, dr.quantity, dr.quantity]
+      );
+    }
+  }
+};

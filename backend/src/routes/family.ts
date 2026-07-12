@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { pool } from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { logAuditEvent, checkStudentManagementPermission } from '../helpers/permissions.js';
+import { ensureDefaultClassRewards } from '../helpers/questions.js';
 
 const router = express.Router();
 
@@ -544,6 +545,9 @@ router.post('/family/respond', authMiddleware, async (req: any, res) => {
     }
 
     await pool.query("UPDATE ge10_family_links SET status = 'active', updated_at = NOW() WHERE id = $1", [linkId]);
+    if (link.link_type === 'primary') {
+      await ensureDefaultClassRewards(link.parent_id);
+    }
     
     // --- Auto-populating student-level links for secondary parents ---
     if (link.link_type === 'secondary') {
