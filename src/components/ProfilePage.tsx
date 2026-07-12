@@ -359,31 +359,57 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
             )}
 
-            {/* Subject Selection (Dropdown gọn gàng) */}
-            <div className="bg-white/5 p-4 rounded-2xl border border-white/5 space-y-3">
-              <h4 className="text-xs font-black uppercase tracking-wider font-orbitron text-slate-300">
-                ⚔️ Chọn Môn Phái Tập Trung Tu Luyện
-              </h4>
-              <div className="flex gap-3 items-center">
-                <select
-                  value={activeSectId}
-                  onChange={(e) => {
-                    setActiveSectId(e.target.value);
-                    const subName = SUBJECTS_CONFIG[e.target.value as keyof typeof SUBJECTS_CONFIG]?.name;
-                    toast.success(`Đã nhập môn phái ${subName}! ⚔️`);
-                  }}
-                  className="flex-1 p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none text-xs focus:border-synth-cyan cursor-pointer font-bold font-orbitron"
-                >
-                  {Object.values(SUBJECTS_CONFIG).map(sub => (
-                    <option key={sub.id} value={sub.id} className="bg-slate-950 text-white">
-                      {sub.icon} {sub.name} ({sub.group === 'chuyen_sau' ? 'Môn Chuyên Sâu' : 'Môn Cơ Bản'})
-                    </option>
-                  ))}
-                </select>
+            {/* Subject Selection (Giao diện Card ngang Vạn Quyển Các) */}
+            <div className="glass-panel rounded-3xl border border-white/5 p-6 space-y-6">
+              <div className="text-center space-y-2">
+                <div className="w-12 h-12 mx-auto rounded-full bg-synth-cyan/10 border border-synth-cyan/30 flex items-center justify-center">
+                  <span className="text-xl">🛡️</span>
+                </div>
+                <h4 className="font-orbitron font-black text-sm text-white uppercase tracking-wider flex items-center justify-center gap-2">
+                  ⚔️ VẠN QUYỂN CÁC (KHO TRI THỨC & KHẢO HẠCH)
+                </h4>
+                <p className="text-[10px] text-slate-400">
+                  Kính xin Môn Sinh lựa chọn Môn phái cần thiết lập giáo án và khảo hạch để tiếp tục.
+                </p>
               </div>
-              <p className="text-[10px] text-slate-500">
-                Toàn bộ dữ liệu hiển thị (Đấu Trường, Hang Luyện Công, Shop...) sẽ tự động thay đổi theo môn phái bạn chọn.
-              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pt-2">
+                {Object.values(SUBJECTS_CONFIG).map(sub => {
+                  const isActive = activeSectId === sub.id;
+                  return (
+                    <button
+                      key={sub.id}
+                      onClick={() => {
+                        setActiveSectId(sub.id);
+                        toast.success(`Đã nhập môn phái ${sub.name}! ⚔️`);
+                      }}
+                      className={`rounded-2xl border p-5 text-left transition-all duration-300 cursor-pointer group shadow-lg flex items-center justify-between ${
+                        isActive
+                          ? 'border-synth-cyan bg-synth-cyan/15 shadow-[0_0_15px_rgba(0,240,255,0.2)] ring-1 ring-synth-cyan'
+                          : 'border-white/5 bg-synth-gray/10 hover:border-white/10 hover:bg-synth-gray/20'
+                      }`}
+                      style={{ borderLeft: `4px solid ${sub.color}` }}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-3xl">{sub.icon}</span>
+                        <div>
+                          <span className="block text-xs font-black uppercase font-orbitron text-white group-hover:text-synth-cyan transition-colors">
+                            {sub.name}
+                          </span>
+                          <span className="block text-[10px] text-synth-text-muted mt-0.5">
+                            {sub.group === 'chuyen_sau' ? 'Môn thi Chuyên Sâu Lớp 10' : 'Môn tu học Cơ Bản Lớp 9'}
+                          </span>
+                        </div>
+                      </div>
+                      {isActive && (
+                        <span className="text-[9px] font-black uppercase tracking-wider bg-synth-cyan text-black px-2 py-0.5 rounded-full shadow-[0_0_8px_rgba(0,240,255,0.4)]">
+                          Đang chọn
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}

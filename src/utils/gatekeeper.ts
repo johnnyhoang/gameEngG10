@@ -7,8 +7,78 @@
 
 import type { Question, SubjectId } from '../types/game';
 import type { HamNguyenTo } from '../types/game';
-import { getTopicsBySubjectAndHam } from '../data/coreKnowledge';
+import { getTopicsBySubjectAndHam, getTopicById } from '../data/coreKnowledge';
 import { supabase } from './supabaseClient';
+
+/**
+ * Băng độ khó dùng để phân loại câu hỏi cho mục đích Gatekeeper (CORE_SPECS §9.5):
+ * Dễ (1-3) và Vừa (4-5) đủ điều kiện; Khó (6-10) không dùng cho Gatekeeper.
+ */
+export type DifficultyBand = 'de' | 'vua' | 'kho';
+
+export function getDifficultyBand(difficulty: number): DifficultyBand {
+  if (difficulty <= 3) return 'de';
+  if (difficulty <= 5) return 'vua';
+  return 'kho';
+}
+
+/**
+ * Một câu hỏi "đủ điều kiện Gác Cổng" (CORE_SPECS §9.5) khi:
+ * - Dạng MCQ (trắc nghiệm) — không dùng Wordform/tự luận.
+ * - Độ khó Dễ hoặc Vừa (1-5/10) — không dùng câu Khó.
+ * - Đã gắn `topicId` thuộc Core Knowledge taxonomy (không phải 'misc') — có tính kiến thức cốt lõi.
+ *
+ * Không kiểm tra `subject` ở đây — việc lọc theo môn phái do caller tự áp dụng,
+ * vì hàm này còn dùng để tính thống kê tổng quát trên toàn bộ ngân hàng câu hỏi.
+ */
+export function isGatekeeperEligible(q: Question): boolean {
+  const isMcq = q.type === 'mcq' || q.type === 'multiple_choice';
+  const band = getDifficultyBand(q.difficulty);
+  const isEasyOrMedium = band === 'de' || band === 'vua';
+  const hasCoreTopic = !!q.topicId && q.topicId !== 'misc';
+  return isMcq && isEasyOrMedium && hasCoreTopic;
+}
+
+/**
+ * Môn phái thực tế của một câu hỏi — câu hỏi không gắn `subject` tường minh
+ * (phần lớn ngân hàng câu Tiếng Anh cũ) mặc định thuộc 'english', theo đúng quy
+ * ước đã dùng ở nơi khác trong app (vd. PlayArea.tsx runLocalFallback).
+ */
+export function getQuestionSubject(q: Question): SubjectId {
+  return (q.subject as SubjectId) || 'english';
+}
+
+export interface GatekeeperCoverageStats {
+  total: number;
+  eligible: number;
+  byHam: Record<HamNguyenTo, number>;
+}
+
+/**
+ * Thống kê số câu hỏi đủ điều kiện Gác Cổng theo từng môn phái (và theo Hầm
+ * nguyên tố) — dùng cho màn thống kê phía Giáo viên/Hiệu trưởng (Vạn Quyển Các).
+ */
+export function getGatekeeperCoverageStats(
+  allQuestions: Question[]
+): Partial<Record<SubjectId, GatekeeperCoverageStats>> {
+  const stats: Partial<Record<SubjectId, GatekeeperCoverageStats>> = {};
+
+  for (const q of allQuestions) {
+    const subjectId = getQuestionSubject(q);
+    if (!stats[subjectId]) {
+      stats[subjectId] = { total: 0, eligible: 0, byHam: { hoa: 0, bang: 0, thach: 0 } };
+    }
+    const entry = stats[subjectId]!;
+    entry.total += 1;
+    if (isGatekeeperEligible(q)) {
+      entry.eligible += 1;
+      const topic = q.topicId ? getTopicById(q.topicId) : undefined;
+      if (topic) entry.byHam[topic.hamNguyenTo] += 1;
+    }
+  }
+
+  return stats;
+}
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
 
@@ -78,9 +148,10 @@ export function getHamForPage(pageId: string): HamNguyenTo {
  * Quy tắc (CORE_SPECS §9.5):
  * 1. Xác định hamNguyenTo của page đó.
  * 2. Lấy tập chuyên đề thuộc hầm đó + môn phái hiện tại.
- * 3. Lọc câu hỏi: topicId thuộc hầm đó, difficulty 3–5, type MCQ hoặc wordform.
- * 4. Ưu tiên câu chưa được dùng trong 30 ngày (dựa trên usedQuestionIds).
- * 5. Random chọn 1 câu.
+ * 3. Lọc câu hỏi đủ điều kiện Gác Cổng (`isGatekeeperEligible`) thuộc đúng hầm đó.
+ * 4. Nếu hầm đó chưa đủ câu, nới ra toàn bộ câu đủ điều kiện của môn phái (không phân biệt hầm).
+ * 5. Ưu tiên câu chưa được dùng trong 30 ngày (dựa trên usedQuestionIds).
+ * 6. Random chọn 1 câu; nếu môn phái không có câu nào đủ điều kiện, dùng câu tạm thời.
  */
 export function pickGatekeeperQuestion(
   pageId: string,
@@ -92,47 +163,25 @@ export function pickGatekeeperQuestion(
   const eligibleTopics = getTopicsBySubjectAndHam(subjectId, ham);
   const eligibleTopicIds = new Set(eligibleTopics.map(t => t.id));
 
-  // Lọc câu hỏi đủ điều kiện - Ưu tiên câu Core Knowledge DỄ (difficulty 1-3)
-  // §9.5: Gatekeeper chỉ dùng MCQ — không dùng Wordform hay tự luận.
-  const candidates = allQuestions.filter(q => {
-    const matchSubject = q.subject === subjectId;
-    const matchTopic = q.topicId ? eligibleTopicIds.has(q.topicId) : false;
-    const matchDifficulty = q.difficulty >= 1 && q.difficulty <= 3;
-    const matchType = q.type === 'mcq' || q.type === 'multiple_choice';
-    return matchSubject && matchTopic && matchDifficulty && matchType;
-  });
+  const matchSubject = (q: Question) => getQuestionSubject(q) === subjectId;
 
-  if (candidates.length === 0) {
-    // Fallback 1: Cho phép độ khó lên tới 4 nếu quá hiếm câu 1-3
-    const candidates4 = allQuestions.filter(q => {
-      const matchSubject = q.subject === subjectId;
-      const matchTopic = q.topicId ? eligibleTopicIds.has(q.topicId) : false;
-      const matchDifficulty = q.difficulty >= 1 && q.difficulty <= 4;
-      const matchType = q.type === 'mcq' || q.type === 'multiple_choice';
-      return matchSubject && matchTopic && matchDifficulty && matchType;
-    });
+  // Tier 1: đúng môn phái + đúng Hầm nguyên tố + đủ điều kiện Gác Cổng.
+  const candidates = allQuestions.filter(q =>
+    matchSubject(q) && !!q.topicId && eligibleTopicIds.has(q.topicId) && isGatekeeperEligible(q)
+  );
 
-    if (candidates4.length === 0) {
-      // Fallback 2: Bỏ điều kiện topic, chọn câu MCQ dễ của môn phái
-      const fallback = allQuestions.filter(q =>
-        q.subject === subjectId &&
-        (q.type === 'mcq' || q.type === 'multiple_choice') &&
-        q.difficulty <= 3
-      );
-      if (fallback.length === 0) return FALLBACK_GATEKEEPER_QUESTION;
-      const unused = fallback.filter(q => !usedQuestionIds.includes(q.id));
-      const pool = unused.length > 0 ? unused : fallback;
-      return pool[Math.floor(Math.random() * pool.length)];
-    }
-
-    const unused = candidates4.filter(q => !usedQuestionIds.includes(q.id));
-    const pool = unused.length > 0 ? unused : candidates4;
+  if (candidates.length > 0) {
+    const unused = candidates.filter(q => !usedQuestionIds.includes(q.id));
+    const pool = unused.length > 0 ? unused : candidates;
     return pool[Math.floor(Math.random() * pool.length)];
   }
 
-  // Ưu tiên câu chưa được dùng gần đây
-  const unused = candidates.filter(q => !usedQuestionIds.includes(q.id));
-  const pool = unused.length > 0 ? unused : candidates;
+  // Tier 2: Hầm này chưa đủ câu — nới ra toàn bộ câu đủ điều kiện của môn phái.
+  const fallback = allQuestions.filter(q => matchSubject(q) && isGatekeeperEligible(q));
+  if (fallback.length === 0) return FALLBACK_GATEKEEPER_QUESTION;
+
+  const unused = fallback.filter(q => !usedQuestionIds.includes(q.id));
+  const pool = unused.length > 0 ? unused : fallback;
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
