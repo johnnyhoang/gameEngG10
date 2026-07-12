@@ -76,11 +76,7 @@ export const GoogleLoginScreen: React.FC = () => {
         </div>
 
         <p className="text-xs text-synth-text-muted leading-relaxed">
-          MIKAWAII là hệ sinh thái luyện thi cho Tiếng Anh, Toán và Ngữ văn,
-          nơi con bước vào đấu trường, chinh phục hàng loạt thử thách, cày trong
-          hang luyện công, mở mật thất luyện bí kíp và mài giũa hàng ngàn tuyệt
-          chiêu từ ngân hàng câu hỏi. Đăng nhập để lưu tiến trình, ghi dấu
-          thành tích và lên trình mỗi ngày.
+          MIKAWAII là hệ sinh thái ôn thi Tuyển sinh lớp 10 toàn diện, tích hợp các Môn phái chuyên sâu (Toán, Tiếng Anh, Ngữ Văn) cùng các Môn tu học cơ bản. Tại đây, đệ tử bước vào Đấu trường Arena, cày ải Hang Luyện Công, mở khóa Mật Thất Bí Kíp 3D, tích lũy Ngọc Phiếu (NP) để đổi lấy các phần quà thực tế từ Giáo viên và Phụ huynh. Đăng nhập ngay để lưu giữ tiến trình, thăng tiến Cấp độ và bứt phá điểm số mỗi ngày!
         </p>
 
         {/* Active Google Button */}
