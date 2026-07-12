@@ -7,7 +7,6 @@ import {
    Languages,
    Layers3,
    LineChart,
-   Lock,
    Move3D,
    Target,
    NotebookTabs,
@@ -18,7 +17,6 @@ import {
 import {
    HANG_SOURCES
 } from '../data/hangLuyenCong';
-import { SUBJECTS_CONFIG } from '../types/game';
 import type { SubjectId } from '../types/game';
 import { useSect } from '../contexts/SectContext';
 import type { Lesson } from '../data/lessons';
@@ -48,18 +46,6 @@ interface HangLuyenCongProps {
 
 type HangSubjectId = SubjectId;
 
-type StudyPanelId = 'drill' | 'notes' | 'sources';
-
-const STUDY_PANELS: Array<{
-  id: StudyPanelId;
-  label: string;
-  icon: React.ReactNode;
-}> = [
-  { id: 'drill', label: 'Học lý thuyết', icon: <Target className="w-4 h-4" /> },
-  { id: 'notes', label: 'Sổ tay', icon: <CheckCircle2 className="w-4 h-4" /> },
-  { id: 'sources', label: 'Nguồn', icon: <NotebookTabs className="w-4 h-4" /> }
-];
-
 const MAT_THAT_CARDS = [
   {
     id: 'biki3d',
@@ -80,12 +66,6 @@ const MAT_THAT_CARDS = [
     icon: <LineChart className="w-5 h-5" />
   }
 ] as const;
-
-const STUDY_PANEL_LABELS: Record<StudyPanelId, string> = {
-  drill: 'Luyện nhanh',
-  notes: 'Sổ tay',
-  sources: 'Nguồn'
-};
 
 const SUBJECT_META: Record<string, any> = {
   english: {
@@ -344,7 +324,6 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   const lessons = useGameState(state => state.lessons);
   const lessonsProgress = useGameState(state => state.lessonsProgress);
 
-  const [selectedStudyPanel, setSelectedStudyPanel] = useState<StudyPanelId>('drill');
   const [noteText, setNoteText] = useState('');
   const [overlayLessonId, setOverlayLessonId] = useState<string | null>(null);
 
@@ -388,227 +367,138 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
     onStartPractice();
   };
 
-  const subjectTotals: Record<SubjectId, number> = Object.keys(SUBJECTS_CONFIG).reduce((acc, id) => {
-    acc[id as SubjectId] = questions.filter(q => (q.subject || 'english') === id).length;
-    return acc;
-  }, {} as Record<SubjectId, number>);
-
-  const wizardSteps = [
-    {
-      step: '01',
-      title: 'Môn phái đang tu luyện',
-      body: `Đang mở track ${meta.label}: ${track.tag}.`
-    },
-    {
-      step: '02',
-      title: 'Chọn mật thất',
-      body: `Mở đúng cụm ${meta.shortLabel} để đi thẳng vào dạng bài phù hợp.`
-    },
-    {
-      step: '03',
-      title: 'Chọn công cụ',
-      body: `Tab đang mở: ${STUDY_PANEL_LABELS[selectedStudyPanel]}.`
-    }
-  ] as const;
+  const completedLessonsCount = subjectLessons.filter(l => lessonsProgress[l.id]).length;
+  const totalLessonsCount = subjectLessons.length;
+  const progressPct = totalLessonsCount > 0 ? Math.round((completedLessonsCount / totalLessonsCount) * 100) : 0;
 
   return (
     <div className="space-y-6">
-      <section className="glass-panel rounded-3xl border border-synth-cyan/20 p-5 md:p-8 bg-[radial-gradient(circle_at_top_right,rgba(0,240,255,0.12),transparent_28%),radial-gradient(circle_at_bottom_left,rgba(255,0,127,0.10),transparent_32%)]">
-        <div className="flex flex-col gap-5">
-          <div className="space-y-4 max-w-4xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-synth-cyan/30 bg-synth-blue/40 text-[10px] font-orbitron font-bold uppercase tracking-[0.24em] text-synth-cyan">
+      {/* 1. Header Card - Glassmorphism, Premium Synthwave style */}
+      <section className="glass-panel rounded-3xl border border-synth-cyan/20 p-6 md:p-8 bg-[radial-gradient(circle_at_top_right,rgba(0,240,255,0.12),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(255,0,127,0.08),transparent_35%)]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+          <div className="space-y-4 flex-1">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-synth-cyan/30 bg-synth-blue/40 text-[9px] font-orbitron font-bold uppercase tracking-[0.24em] text-synth-cyan">
               <Sparkles className="w-3.5 h-3.5" />
               Hang Luyện Công
             </div>
-            <div className="space-y-2">
-              <h1 className="font-orbitron font-black text-2xl md:text-5xl uppercase tracking-wider text-white leading-tight">
-                Rèn luyện kiến thức lớp 9
-              </h1>
-              <p className="text-sm md:text-base text-slate-200 leading-relaxed max-w-3xl">
-                Phòng luyện riêng cho môn phái {meta.label} đang tu luyện: bản đồ kiến thức, thẻ nhớ, bài luyện nhanh và sổ tay lỗi sai để con ôn tập theo đúng dạng đề.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <button
-                onClick={handleStart}
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-synth-cyan to-synth-purple text-black font-orbitron font-bold text-xs uppercase tracking-wider shadow-[0_0_18px_rgba(0,240,255,0.35)] hover:scale-[1.01] transition-transform cursor-pointer"
-              >
-                Vào học ngay <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          <div className={`rounded-2xl border border-white/10 bg-gradient-to-r ${meta.accentSoft} p-4 flex items-center justify-between gap-3 flex-wrap`}>
-            <div className="flex items-center gap-3">
-              <div className={`w-11 h-11 rounded-xl border border-white/15 bg-black/20 flex items-center justify-center ${meta.accent}`}>
-                {meta.icon}
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-3">
+                <span className="text-3xl filter drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">{meta.icon}</span>
+                <h1 className="font-orbitron font-black text-2xl md:text-4xl uppercase tracking-wider text-white">
+                  Môn Phái {meta.label}
+                </h1>
               </div>
-              <div>
-                <div className="text-[10px] uppercase tracking-[0.26em] text-white/70 font-bold">Đang tu luyện môn phái</div>
-                <h2 className={`font-orbitron font-black text-sm uppercase tracking-wider mt-0.5 ${meta.accent}`}>
-                  {meta.label} · {subjectTotals[selectedSubject]} câu trong kho
-                </h2>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-3">
-            <div className={`rounded-2xl border border-white/10 bg-gradient-to-br ${meta.accentSoft} p-4`}>
-              <div className="text-[10px] uppercase tracking-[0.28em] text-white/70 font-bold">
-                {track.tag}
-              </div>
-              <div className="mt-2 flex items-center gap-2 text-white">
-                {meta.icon}
-                <h3 className="font-orbitron font-black uppercase tracking-wider text-sm md:text-base">{track.title}</h3>
-              </div>
-              <p className="mt-2 text-xs md:text-sm text-white/80 leading-relaxed">
+              <p className="text-xs md:text-sm text-slate-300 leading-relaxed max-w-2xl">
                 {track.description}
               </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <span className={`inline-flex items-center gap-2 rounded-full border border-white/15 bg-synth-gray/30 px-3 py-1 text-[10px] uppercase tracking-[0.24em] font-bold ${meta.accent}`}>
-                  {meta.shortLabel} hiện tại
-                </span>
-                <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-synth-gray/30 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-slate-200 font-bold">
-                  {subjectTotals[selectedSubject]} câu trong kho
-                </span>
-              </div>
             </div>
 
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
-              <div className="text-[10px] uppercase tracking-[0.28em] text-synth-cyan font-bold">
-                {track.focusLabel}
+            {/* Progress bar */}
+            <div className="space-y-2 max-w-md pt-2">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-slate-400 font-medium">Tiến độ lĩnh ngộ chuyên đề:</span>
+                <span className="font-bold font-orbitron text-synth-cyan">{completedLessonsCount}/{totalLessonsCount} ({progressPct}%)</span>
               </div>
-              <ul className="mt-3 space-y-2">
-                {track.focusPoints.map(point => (
-                  <li key={point} className="flex gap-2 text-xs text-slate-300 leading-relaxed">
-                    <span className={`mt-1 h-1.5 w-1.5 rounded-full bg-gradient-to-r ${meta.accentSoft}`} />
-                    <span>{point}</span>
-                  </li>
-                ))}
-              </ul>
+              <div className="w-full h-2 bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px]">
+                <div
+                  className="h-full bg-gradient-to-r from-synth-cyan to-synth-purple rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(0,240,255,0.5)]"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {wizardSteps.map(item => (
-              <div key={item.step} className="rounded-2xl border border-white/10 bg-white/5 p-4">
-                <div className="text-[10px] uppercase tracking-[0.28em] text-synth-cyan font-bold">
-                  Bước {item.step}
-                </div>
-                <div className="mt-2 font-orbitron font-black uppercase tracking-wider text-white text-sm">
-                  {item.title}
-                </div>
-                <p className="mt-2 text-xs text-slate-300 leading-relaxed">
-                  {item.body}
-                </p>
-              </div>
-            ))}
+          <div className="flex flex-col gap-2 shrink-0 md:text-right">
+            <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">Vào ải tổng hợp ({subjectQuestions.length} câu hỏi)</div>
+            <button
+              onClick={handleStart}
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-synth-cyan via-synth-purple to-synth-magenta text-black font-orbitron font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(0,240,255,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
+            >
+              Vào Luyện Công Ngay <ArrowRight className="w-4 h-4" />
+            </button>
           </div>
         </div>
       </section>
 
-      <section className="glass-panel rounded-3xl border border-white/10 p-5 md:p-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between flex-wrap mb-4">
-          <div>
-            <h2 className="font-orbitron font-black text-lg md:text-xl text-white uppercase tracking-wider">
-              Mật thất nhanh - {meta.shortLabel}
-            </h2>
-            <p className="text-xs text-slate-300 mt-1">
-              {track.sampleDescription}
-            </p>
-          </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="rounded-full border border-synth-cyan/30 bg-synth-cyan/10 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-synth-cyan font-bold">
-              Đang xem: {meta.label}
-            </span>
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.24em] text-slate-300 font-bold">
-              {track.focusLabel}
-            </span>
-          </div>
-        </div>
-        {selectedSubject === 'math' ? (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-            {MAT_THAT_CARDS.map(card => {
-              const onOpen = card.id === 'biki3d'
-                ? onOpenMatThat3D
-                : card.id === 'bikiplane'
-                  ? onOpenMatThatPlane
-                  : onOpenMatThatGraph;
-              return (
-                <button
-                  key={card.id}
-                  onClick={onOpen}
-                  className="rounded-2xl border border-white/10 bg-white/5 p-4 text-left hover:border-synth-cyan/30 hover:bg-white/7 transition-all duration-200 cursor-pointer"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="inline-flex items-center gap-2 font-orbitron font-black uppercase tracking-wider text-white">
-                      {card.icon}
-                      {card.title}
-                    </div>
-                    <ExternalLink className="w-4 h-4 text-slate-400" />
-                  </div>
-                  <p className="text-xs text-slate-300 mt-3 leading-relaxed">
-                    {card.description}
-                  </p>
-                  <div className="mt-4 inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-synth-cyan">
-                    Mở mật thất
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="rounded-2xl border border-dashed border-white/15 bg-white/5 p-6 flex items-center gap-4">
-            <div className="w-11 h-11 rounded-xl border border-white/15 bg-black/20 flex items-center justify-center text-slate-400 shrink-0">
-              <Lock className="w-5 h-5" />
+      {/* 2. Main 2-Column Grid */}
+      <div className="grid grid-cols-1 xl:grid-cols-[1.25fr_0.75fr] gap-6 items-start">
+        
+        {/* Column Left: Main Content (Interactive Chambers & Elemental Dungeons & Samples) */}
+        <div className="space-y-6">
+          
+          {/* Interactive Chambers (Mật thất tương tác) - Only for Math, cleaner style */}
+          {selectedSubject === 'math' && (
+            <div className="glass-panel rounded-2xl border border-white/10 p-5 bg-black/20">
+              <h2 className="font-orbitron font-black text-xs text-synth-cyan uppercase tracking-wider mb-3 flex items-center gap-2">
+                <Target className="w-4 h-4 text-synth-cyan" />
+                Mật thất tương tác trực quan
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {MAT_THAT_CARDS.map(card => {
+                  const onOpen = card.id === 'biki3d'
+                    ? onOpenMatThat3D
+                    : card.id === 'bikiplane'
+                      ? onOpenMatThatPlane
+                      : onOpenMatThatGraph;
+                  return (
+                    <button
+                      key={card.id}
+                      onClick={onOpen}
+                      className="group rounded-xl border border-white/5 bg-white/[0.02] p-4 text-left hover:border-synth-cyan/30 hover:bg-white/[0.05] transition-all duration-200 cursor-pointer flex flex-col justify-between"
+                    >
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between text-white">
+                          <div className="inline-flex items-center gap-2 font-orbitron font-bold text-xs uppercase group-hover:text-synth-cyan transition-colors">
+                            {card.icon}
+                            {card.title}
+                          </div>
+                          <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-synth-cyan transition-colors" />
+                        </div>
+                        <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-2">
+                          {card.description}
+                        </p>
+                      </div>
+                      <div className="mt-3 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-synth-cyan group-hover:translate-x-0.5 transition-transform">
+                        Khám phá mật thất <ArrowRight className="w-3 h-3" />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+          )}
+
+          {/* Elemental Dungeons List */}
+          <div className="glass-panel rounded-2xl border border-white/10 p-5 space-y-4">
             <div>
-              <div className="font-orbitron font-black uppercase tracking-wider text-sm text-slate-300">
-                Mật thất tương tác - sắp khai mở cho {meta.label}
-              </div>
-              <p className="text-xs text-slate-400 mt-1 leading-relaxed">
-                Hiện Mật Thất Biki chỉ dựng đủ 3 phòng cho môn Toán (3D, Hình học phẳng, Đồ thị hàm số). Các mô-đun tương tác trực quan riêng cho {meta.label} đang được phát triển.
+              <h2 className="font-orbitron font-black text-sm text-white uppercase tracking-wider">
+                {track.lessonTitle}
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Chọn chuyên đề để học lý thuyết cốt lõi và làm các bài luyện liên quan.
               </p>
-            </div>
-          </div>
-        )}
-      </section>
-
-      <section className="grid grid-cols-1 xl:grid-cols-[1.2fr_0.8fr] gap-5 md:gap-6 items-start">
-        <div className="xl:col-span-2 space-y-6">
-          <div className="glass-panel rounded-2xl border border-white/10 p-5">
-            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-              <div>
-                <h2 className="font-orbitron font-black text-lg text-white uppercase tracking-wider">
-                  {track.lessonTitle} - {meta.label}
-                </h2>
-                <p className="text-xs text-slate-300 mt-1">
-                  {track.lessonDescription}
-                </p>
-              </div>
-              <div className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-white/10 bg-gradient-to-r ${meta.accentSoft} text-xs font-bold ${meta.accent}`}>
-                <Target className="w-4 h-4" />
-                {track.focusLabel}
-              </div>
             </div>
 
             <div className="space-y-6">
               {[
-                { id: 'fire', label: '🔥 Hỏa Hầm', desc: 'Phản xạ nhanh, ghi nhớ ngắn hạn', bg: 'bg-orange-500/10 border-orange-500/30' },
-                { id: 'ice', label: '❄️ Băng Hầm', desc: 'Suy luận logic sâu, điềm tĩnh', bg: 'bg-cyan-500/10 border-cyan-500/30' },
-                { id: 'stone', label: '🪨 Thạch Hầm', desc: 'Kiến thức nền tảng, quy tắc cốt lõi', bg: 'bg-stone-500/10 border-stone-500/30' }
+                { id: 'fire', label: '🔥 Hỏa Hầm', desc: 'Phản xạ nhanh, ghi nhớ ngắn hạn', bg: 'bg-orange-500/[0.02] border-orange-500/15 text-orange-400' },
+                { id: 'ice', label: '❄️ Băng Hầm', desc: 'Suy luận logic sâu, điềm tĩnh', bg: 'bg-cyan-500/[0.02] border-cyan-500/15 text-synth-cyan' },
+                { id: 'stone', label: '🪨 Thạch Hầm', desc: 'Kiến thức nền tảng, quy tắc cốt lõi', bg: 'bg-stone-500/[0.02] border-stone-500/15 text-stone-400' }
               ].map(dungeon => {
                 const dungeonLessons = subjectLessons.filter(l => getElementalDungeon(l) === dungeon.id);
                 if (dungeonLessons.length === 0) return null;
 
                 return (
-                  <div key={dungeon.id} className={`rounded-2xl border p-4 ${dungeon.bg}`}>
-                    <div className="mb-4">
-                      <h3 className="font-orbitron font-black text-sm text-white uppercase tracking-wider">{dungeon.label}</h3>
-                      <p className="text-[10px] text-slate-300 uppercase tracking-wider">{dungeon.desc}</p>
+                  <div key={dungeon.id} className={`rounded-xl border p-4 ${dungeon.bg}`}>
+                    <div className="mb-3 flex justify-between items-center border-b border-white/5 pb-2">
+                      <div>
+                        <h3 className="font-orbitron font-black text-xs uppercase tracking-wider text-white">{dungeon.label}</h3>
+                        <p className="text-[9px] text-slate-400 tracking-wider mt-0.5">{dungeon.desc}</p>
+                      </div>
+                      <span className="text-[10px] text-slate-400 font-orbitron">{dungeonLessons.length} Chuyên đề</span>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {dungeonLessons.map(lesson => {
                         const isCompleted = lessonsProgress[lesson.id] || false;
                         return (
@@ -620,49 +510,49 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                               label="Bài học chưa trải nghiệm"
                               onOpenLevel3={() => setOverlayLessonId(lesson.id)}
                             >
-                              <div className={`rounded-2xl border p-4 flex flex-col justify-between gap-4 transition-all duration-200 h-full ${
-                                isCompleted ? 'border-synth-cyan/20 bg-black/40' : 'border-white/10 bg-black/40'
+                              <div className={`rounded-xl border p-4 flex flex-col justify-between gap-4 transition-all duration-200 h-full bg-black/40 ${
+                                isCompleted ? 'border-synth-cyan/20' : 'border-white/5 hover:border-white/20'
                               }`}>
-                            <div className="space-y-2">
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-slate-300 uppercase tracking-wider">
-                                  {lesson.topic}
-                                </span>
-                                {isCompleted ? (
-                                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-synth-cyan uppercase font-orbitron tracking-wider">
-                                    Đã Lĩnh Ngộ 🌟
-                                  </span>
-                                ) : (
-                                  <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
-                                    Chưa Lĩnh Ngộ ⏳
-                                  </span>
-                                )}
-                              </div>
-                              <h3 className="font-orbitron font-black uppercase text-sm text-white tracking-wide leading-snug">
-                                {lesson.title}
-                              </h3>
-                              <p className="text-xs text-slate-400 line-clamp-2">
-                                {lesson.theory.replace(/[#*`>]/g, '').trim()}
-                              </p>
-                            </div>
+                                <div className="space-y-2">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[8px] font-bold text-slate-400 uppercase tracking-wider">
+                                      {lesson.topic}
+                                    </span>
+                                    {isCompleted ? (
+                                      <span className="text-[8px] font-bold text-synth-cyan uppercase font-orbitron tracking-wider">
+                                        Đã lĩnh ngộ 🌟
+                                      </span>
+                                    ) : (
+                                      <span className="text-[8px] font-semibold text-slate-500 uppercase tracking-wider">
+                                        Chưa học ⏳
+                                      </span>
+                                    )}
+                                  </div>
+                                  <h3 className="font-orbitron font-bold uppercase text-xs text-white tracking-wide leading-snug">
+                                    {lesson.title}
+                                  </h3>
+                                  <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
+                                    {lesson.theory.replace(/[#*`>]/g, '').trim()}
+                                  </p>
+                                </div>
 
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onStudyLesson(lesson.id);
-                              }}
-                              className={`w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider transition-all duration-300 cursor-pointer ${
-                                isCompleted 
-                                  ? 'border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10'
-                                  : 'bg-gradient-to-r from-synth-cyan to-synth-purple text-black shadow-[0_0_12px_rgba(0,240,255,0.2)] hover:scale-[1.01]'
-                              }`}
-                            >
-                              {isCompleted ? 'Học lại bài 🎓' : 'Học bài ngay 📖'}
-                              <ArrowRight className="w-4 h-4" />
-                            </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    onStudyLesson(lesson.id);
+                                  }}
+                                  className={`w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-orbitron font-bold text-[10px] uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+                                    isCompleted 
+                                      ? 'border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
+                                      : 'bg-gradient-to-r from-synth-cyan to-synth-purple text-black shadow-[0_0_10px_rgba(0,240,255,0.2)] hover:scale-[1.01]'
+                                  }`}
+                                >
+                                  {isCompleted ? 'Học lại bài 🎓' : 'Học bài ngay 📖'}
+                                  <ArrowRight className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </FogCard>
                           </div>
-                          </FogCard>
-                        </div>
                         );
                       })}
                     </div>
@@ -672,155 +562,130 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            {sampleQuestions.length > 0 ? sampleQuestions.map(question => (
-              <div key={question.id} className="rounded-2xl border border-white/10 bg-synth-gray/20 p-4 flex flex-col gap-3">
-                <div className="flex items-center justify-between gap-3 text-[10px] uppercase tracking-wider text-slate-400 font-bold">
-                  <span>{track.sampleTitle}</span>
-                  <span>{question.difficulty}/10</span>
-                </div>
-                {question.imageUrl && (
-                  <div className="flex justify-center bg-synth-gray/10 rounded-xl p-2 max-h-[80px] overflow-hidden border border-white/5">
-                    <img 
-                      src={question.imageUrl} 
-                      className="rounded max-h-[60px] object-contain" 
-                      alt="Preview" 
-                    />
+          {/* Sample Questions Section */}
+          <div className="glass-panel rounded-2xl border border-white/10 p-5 space-y-3 bg-black/10">
+            <div>
+              <h2 className="font-orbitron font-black text-xs text-slate-200 uppercase tracking-wider">
+                🎯 {track.sampleTitle}
+              </h2>
+              <p className="text-[11px] text-slate-400 mt-0.5">
+                Các câu hỏi mẫu đại diện tiêu biểu giúp đệ tử hình dung đề thi thực tế.
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {sampleQuestions.length > 0 ? sampleQuestions.map(question => (
+                <div key={question.id} className="rounded-xl border border-white/5 bg-white/[0.01] p-3 flex flex-col justify-between gap-3 text-xs">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-[9px] uppercase tracking-wider text-slate-400 font-bold">
+                      <span className="text-synth-orange">{question.category}</span>
+                      <span>Độ khó {question.difficulty}/10</span>
+                    </div>
+                    {question.imageUrl && (
+                      <div className="flex justify-center bg-black/20 rounded-lg p-2 max-h-[85px] overflow-hidden border border-white/5">
+                        <img 
+                          src={question.imageUrl} 
+                          className="rounded max-h-[65px] object-contain" 
+                          alt="Preview" 
+                        />
+                      </div>
+                    )}
+                    <p className="text-[11px] text-slate-300 leading-relaxed line-clamp-3">
+                      {question.prompt}
+                    </p>
                   </div>
-                )}
-                <p className="text-sm text-white leading-relaxed max-h-24 overflow-hidden">
-                  {question.prompt}
-                </p>
-                <div className="mt-auto text-[10px] text-slate-400">
-                  {question.category} · Nguồn: {question.source}
+                  <div className="text-[8px] text-slate-500 uppercase tracking-wider truncate">
+                    Nguồn: {question.source}
+                  </div>
                 </div>
-              </div>
-            )) : (
-              <div className="rounded-2xl border border-dashed border-white/15 bg-white/5 p-6 text-sm text-slate-300">
-                Chưa có câu hỏi cho môn này trong kho hiện tại.
-              </div>
-            )}
+              )) : (
+                <div className="col-span-3 py-4 text-center text-xs text-slate-500 italic">
+                  Chưa có dữ liệu câu hỏi mẫu cho môn này.
+                </div>
+              )}
+            </div>
           </div>
+
         </div>
 
+        {/* Column Right: Supplement Panel (Fixed Error Notebook & Sources) */}
         <aside className="space-y-6 xl:sticky xl:top-24">
-          <div className="glass-panel rounded-2xl border border-white/10 p-5 space-y-4">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2 text-white">
-                <NotebookTabs className="w-5 h-5 text-synth-cyan" />
-                <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">{track.toolTitle}</h3>
-              </div>
-              <span className="text-[10px] uppercase tracking-[0.24em] text-slate-400 font-bold">
-                1 công cụ / lúc
-              </span>
+          
+          {/* Sổ tay Luyện Công - Error Notebook */}
+          <div className="glass-panel rounded-2xl border border-synth-cyan/20 p-5 bg-gradient-to-b from-synth-blue/30 to-black/50 space-y-3 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-synth-cyan/5 rounded-full blur-2xl pointer-events-none" />
+            
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-synth-cyan" />
+              <h3 className="font-orbitron font-black uppercase tracking-wider text-xs text-white">
+                Sổ tay luyện công
+              </h3>
             </div>
-
-            <p className="text-xs text-slate-300 leading-relaxed">
-              {track.toolDescription}
+            
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Ghi lại những lỗi sai đệ tử thường mắc phải (sai công thức, thiếu điều kiện, dịch nhầm từ...) để ghi nhớ và ôn tập hàng ngày.
             </p>
-            <div className="grid grid-cols-2 gap-2">
-              {STUDY_PANELS.map(panel => {
-                const isActive = selectedStudyPanel === panel.id;
-                return (
-                  <button
-                    key={panel.id}
-                    onClick={() => setSelectedStudyPanel(panel.id)}
-                    className={`inline-flex items-center justify-center gap-2 rounded-xl border px-3 py-2 text-xs font-bold uppercase tracking-wider transition-colors cursor-pointer ${
-                      isActive
-                        ? 'border-synth-cyan/40 bg-synth-cyan/10 text-synth-cyan'
-                        : 'border-white/10 bg-white/5 text-white hover:border-white/20'
-                    }`}
-                  >
-                    {panel.icon}
-                    {panel.label}
-                  </button>
-                );
-              })}
-            </div>
 
-            <div className="rounded-2xl border border-white/10 bg-synth-gray/20 p-4 space-y-4">
-              {selectedStudyPanel === 'drill' && (
-                <>
-                  <div className="flex items-center gap-2 text-white">
-                    <Target className="w-5 h-5 text-synth-orange" />
-                    <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Học theo chuyên đề - {meta.shortLabel}</h3>
-                  </div>
-                  <p className="text-sm text-slate-200 leading-relaxed">
-                    {track.lessonDescription}
-                  </p>
-                  <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-xs text-slate-300 space-y-2">
-                    <div className="flex items-center justify-between gap-2">
-                      <span>Số chuyên đề hiện có</span>
-                      <span className="font-bold text-white">{subjectLessons.length} bài học</span>
-                    </div>
-                    <div className="flex items-center justify-between gap-2">
-                      <span>Môn đang chọn</span>
-                      <span className={`font-bold ${meta.accent}`}>{meta.label}</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={handleStart}
-                    className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-gradient-to-r from-synth-orange to-synth-cyan text-black font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer"
-                  >
-                    Bắt đầu học ngay <ArrowRight className="w-4 h-4" />
-                  </button>
-                </>
-              )}
-
-              {selectedStudyPanel === 'notes' && (
-                <>
-                  <div className="flex items-center gap-2 text-white">
-                    <CheckCircle2 className="w-5 h-5 text-synth-green" />
-                    <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Sổ tay lỗi sai</h3>
-                  </div>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    Ghi đúng một việc cần sửa, không ghi lan man. Mỗi lỗi nên có 1 dòng: sai ở đâu, vì sao sai, lần sau làm thế nào.
-                  </p>
-                  <textarea
-                    value={noteText}
-                    onChange={e => setNoteText(e.target.value)}
-                    placeholder={track.notePlaceholder}
-                    className="w-full min-h-[180px] rounded-2xl border border-white/10 bg-synth-gray/25 p-4 text-sm text-white outline-none focus:border-synth-cyan/40 resize-y"
-                  />
-                </>
-              )}
-
-              {selectedStudyPanel === 'sources' && (
-                <>
-                  <div className="flex items-center gap-2 text-white">
-                    <Sparkles className="w-5 h-5 text-synth-cyan" />
-                    <h3 className="font-orbitron font-black uppercase tracking-wider text-sm">Nguồn học liệu - {meta.shortLabel}</h3>
-                  </div>
-                  <div className="space-y-3">
-                    {(() => {
-                      const sources = HANG_SOURCES[selectedSubject] || [];
-                      if (sources.length === 0) {
-                        return (
-                          <div className="text-xs text-slate-400 italic py-2">
-                            Chưa có nguồn học liệu riêng cho môn này.
-                          </div>
-                        );
-                      }
-                      return sources.map(source => (
-                        <a
-                          key={source.url}
-                          href={source.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="block rounded-xl border border-white/10 bg-white/5 p-3 hover:border-synth-cyan/30 transition-colors"
-                        >
-                          <div className="text-xs font-bold text-white">{source.label}</div>
-                          <div className="text-[10px] text-slate-400 mt-1 leading-relaxed">{source.note}</div>
-                        </a>
-                      ));
-                    })()}
-                  </div>
-                </>
-              )}
+            <div className="relative">
+              <textarea
+                value={noteText}
+                onChange={e => setNoteText(e.target.value)}
+                placeholder={track.notePlaceholder}
+                className="w-full min-h-[220px] rounded-xl border border-white/10 bg-black/40 p-3.5 text-xs text-slate-200 outline-none focus:border-synth-cyan/40 focus:ring-1 focus:ring-synth-cyan/30 resize-y transition-all leading-relaxed placeholder-slate-600"
+              />
+              <div className="absolute bottom-2.5 right-2.5 text-[9px] text-slate-500 font-orbitron uppercase tracking-wider select-none pointer-events-none">
+                Tự động lưu
+              </div>
             </div>
           </div>
+
+          {/* Nguồn Học Liệu - Sources */}
+          <div className="glass-panel rounded-2xl border border-white/10 p-5 bg-black/20 space-y-3">
+            <div className="flex items-center gap-2">
+              <BookOpen className="w-4 h-4 text-synth-orange" />
+              <h3 className="font-orbitron font-black uppercase tracking-wider text-xs text-white">
+                Nguồn học liệu tham khảo
+              </h3>
+            </div>
+            
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Các nguồn tài liệu, đề mẫu, cẩm nang tra cứu chọn lọc cho môn {meta.label}.
+            </p>
+
+            <div className="space-y-2 pt-1">
+              {(() => {
+                const sources = HANG_SOURCES[selectedSubject] || [];
+                if (sources.length === 0) {
+                  return (
+                    <div className="text-[10px] text-slate-500 italic py-2 text-center border border-dashed border-white/5 rounded-xl">
+                      Chưa có nguồn học liệu riêng cho môn này.
+                    </div>
+                  );
+                }
+                return sources.map(source => (
+                  <a
+                    key={source.url}
+                    href={source.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group block rounded-xl border border-white/5 bg-white/[0.01] p-3 hover:border-synth-orange/30 hover:bg-white/[0.04] transition-all"
+                  >
+                    <div className="flex items-center justify-between text-xs font-bold text-slate-200 group-hover:text-synth-orange transition-colors">
+                      <span>{source.label}</span>
+                      <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-synth-orange transition-colors" />
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
+                      {source.note}
+                    </p>
+                  </a>
+                ));
+              })()}
+            </div>
+          </div>
+
         </aside>
-      </section>
+
+      </div>
 
       {overlayLessonId && (
         <Level3Overlay

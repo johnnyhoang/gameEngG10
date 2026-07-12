@@ -2,33 +2,30 @@ import { isAdmin, isParentRole } from '../utils/roleHelpers';
 import React, { useEffect } from 'react';
 import { Zap, Coins, Flame, Shield, LogOut } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
-import { useSect } from '../contexts/SectContext';
-import { SUBJECTS_CONFIG, getStudentRankForLevel } from '../types/game';
+
+import { getStudentRankForLevel } from '../types/game';
 import { isLightTheme } from '../theme/uiThemes';
-import type { SubjectId } from '../types/game';
 
 interface TopHUDProps {
   currentScreen: 'map' | 'arena' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang' | 'profile';
   onOpenShop: () => void;
   onOpenParent: () => void;
-  onOpenHang: () => void;
+  onOpenPet: () => void;
+  onOpenProfile: () => void;
   onBackToMap: () => void;
   onLogout?: () => void;
 }
 
 export const TopHUD: React.FC<TopHUDProps> = ({
-  currentScreen, onOpenShop, onOpenParent, onOpenHang, onBackToMap, onLogout
+  currentScreen, onOpenShop, onOpenParent, onOpenPet, onOpenProfile, onBackToMap, onLogout
 }) => {
   const player = useGameState(state => state.player);
   const currentUser = useGameState(state => state.currentUser);
   const logout = useGameState(state => state.logout);
   const showHelp = useGameState(state => state.showHelp);
   const tickEnergyRegen = useGameState(state => state.tickEnergyRegen);
-  const { activeSectId } = useSect();
-  const setSectModalOpen = useGameState(state => state.setSectModalOpen);
   const uiTheme = useGameState(state => state.uiTheme);
 
-  const activeSubjectConfig = SUBJECTS_CONFIG[activeSectId as SubjectId];
   const isUnicorn = isLightTheme(uiTheme);
 
   const isStudent = currentUser?.role === 'student';
@@ -166,12 +163,27 @@ export const TopHUD: React.FC<TopHUDProps> = ({
         <div className="flex items-center gap-2 order-3 md:order-none ml-auto">
           {isStudent && (
             <>
+              {/* Bản đồ */}
+              <button
+                onClick={onBackToMap}
+                title="Bản Đồ Giang Hồ"
+                className={navBtnClass(
+                  currentScreen === 'map',
+                  isUnicorn ? 'bg-gradient-to-r from-fuchsia-400 to-cyan-300 border-violet-200 text-violet-900 shadow-[0_0_10px_rgba(192,132,252,0.2)]' : 'bg-synth-cyan border-synth-cyan text-black shadow-[0_0_12px_#00f0ff]',
+                  isUnicorn ? 'bg-white/50 border-violet-200/50 text-violet-700 hover:bg-white/80' : 'bg-transparent border-synth-cyan/50 text-synth-cyan hover:bg-synth-cyan/10'
+                )}
+              >
+                <span>🗺️</span>
+                <span className="hidden lg:inline">Bản đồ</span>
+              </button>
+
+              {/* Bách Hóa */}
               <button
                 onClick={onOpenShop}
                 title="Bách Hóa Phường"
                 className={navBtnClass(
                   currentScreen === 'shop',
-                  isUnicorn ? 'bg-gradient-to-r from-fuchsia-400 to-cyan-300 border-violet-200 text-violet-900' : 'bg-synth-orange border-synth-orange text-black shadow-[0_0_12px_#ff9f1c]',
+                  isUnicorn ? 'bg-gradient-to-r from-fuchsia-400 to-cyan-300 border-violet-200 text-violet-900 shadow-[0_0_10px_rgba(192,132,252,0.2)]' : 'bg-synth-orange border-synth-orange text-black shadow-[0_0_12px_#ff9f1c]',
                   isUnicorn ? 'bg-white/50 border-violet-200/50 text-violet-700 hover:bg-white/80' : 'bg-transparent border-synth-orange/50 text-synth-orange hover:bg-synth-orange/10'
                 )}
               >
@@ -179,30 +191,32 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                 <span className="hidden lg:inline">Bách Hóa</span>
               </button>
 
+              {/* Sân Thú */}
               <button
-                onClick={onOpenHang}
-                title="Hang Luyện Công"
+                onClick={onOpenPet}
+                title="Sân Thú Linh Vật"
                 className={navBtnClass(
-                  currentScreen === 'hang',
-                  isUnicorn ? 'bg-gradient-to-r from-fuchsia-300 to-cyan-200 border-violet-200 text-violet-900' : 'bg-synth-cyan border-synth-cyan text-black shadow-[0_0_12px_#00f0ff]',
-                  isUnicorn ? 'bg-white/50 border-violet-200/50 text-violet-700 hover:bg-white/80' : 'bg-transparent border-synth-cyan/50 text-synth-cyan hover:bg-synth-cyan/10'
+                  currentScreen === 'pet',
+                  isUnicorn ? 'bg-gradient-to-r from-fuchsia-400 to-cyan-300 border-violet-200 text-violet-900 shadow-[0_0_10px_rgba(192,132,252,0.2)]' : 'bg-purple-500 border-purple-500 text-white shadow-[0_0_12px_#a855f7]',
+                  isUnicorn ? 'bg-white/50 border-violet-200/50 text-violet-700 hover:bg-white/80' : 'bg-transparent border-purple-500/50 text-purple-400 hover:bg-purple-500/10'
                 )}
               >
-                <span>📚</span>
-                <span className="hidden lg:inline">Hang Luyện Công</span>
+                <span>🐷</span>
+                <span className="hidden lg:inline">Sân Thú</span>
               </button>
 
+              {/* Thân Phận */}
               <button
-                onClick={() => setSectModalOpen(true)}
-                title={`Môn phái hiện tại: ${activeSubjectConfig?.name}. Bấm để đổi.`}
-                className={`relative flex items-center gap-1.5 px-3 h-10 rounded-lg border font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 ${
-                  isUnicorn 
-                    ? 'border-violet-200/40 bg-violet-50 text-violet-800 hover:bg-violet-100' 
-                    : 'border-synth-cyan/30 bg-synth-cyan/10 text-synth-cyan hover:bg-synth-cyan/20'
-                }`}
+                onClick={onOpenProfile}
+                title="Thân Phận Đệ Tử"
+                className={navBtnClass(
+                  currentScreen === 'profile',
+                  isUnicorn ? 'bg-gradient-to-r from-fuchsia-400 to-cyan-300 border-violet-200 text-violet-900 shadow-[0_0_10px_rgba(192,132,252,0.2)]' : 'bg-synth-magenta border-synth-magenta text-black shadow-[0_0_12px_#ff007f]',
+                  isUnicorn ? 'bg-white/50 border-violet-200/50 text-violet-700 hover:bg-white/80' : 'bg-transparent border-synth-magenta/50 text-synth-magenta hover:bg-synth-magenta/10'
+                )}
               >
-                <span className="text-sm">{activeSubjectConfig?.icon}</span>
-                <span className="hidden md:inline">{activeSubjectConfig?.name}</span>
+                <span>👑</span>
+                <span className="hidden lg:inline">Thân Phận</span>
               </button>
             </>
           )}

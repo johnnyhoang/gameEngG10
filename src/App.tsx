@@ -308,7 +308,8 @@ function App() {
       <TopHUD
         onOpenParent={() => navigateWithWarning('parent')}
         onOpenShop={() => navigateWithWarning('shop')}
-        onOpenHang={() => navigateWithWarning('hang')}
+        onOpenPet={() => navigateWithWarning('pet')}
+        onOpenProfile={() => navigateWithWarning('profile')}
         onBackToMap={() => navigateWithWarning('map')}
         onLogout={handleLogoutIntercept}
         currentScreen={topHudScreen}
@@ -320,8 +321,8 @@ function App() {
         {/* Dynamic Center Stage */}
         <section className="flex-1 min-w-0">
           
-          {/* Desktop Central Navigation Hub */}
-          {['arena', 'hang', 'shop', 'relax', 'pet', 'profile'].includes(screen) && !isDungeonScreen && !isHangMatterScreen && !isAdmin(currentUser?.role) && (
+          {/* Desktop Central Navigation Hub - only on study screens */}
+          {['arena', 'hang', 'relax'].includes(screen) && !isDungeonScreen && !isHangMatterScreen && !isAdmin(currentUser?.role) && (
             <DesktopCentralNav currentScreen={screen} onNavigate={(s) => setScreen(s)} />
           )}
 
@@ -537,26 +538,6 @@ function App() {
           </button>
 
           <button
-            onClick={() => setScreen('arena')}
-            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
-              screen === 'arena' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
-            }`}
-          >
-            <span className="text-lg">⚔️</span>
-            <span>Đấu Trường</span>
-          </button>
-
-          <button
-            onClick={() => setScreen('hang')}
-            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
-              screen === 'hang' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
-            }`}
-          >
-            <span className="text-lg">📚</span>
-            <span>Hang</span>
-          </button>
-
-          <button
             onClick={() => setScreen('shop')}
             className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
               screen === 'shop' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
@@ -573,7 +554,7 @@ function App() {
             }`}
           >
             <span className="text-lg">🐷</span>
-            <span>Pet</span>
+            <span>Sân Thú</span>
           </button>
 
           <button
