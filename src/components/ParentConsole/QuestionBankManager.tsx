@@ -248,6 +248,38 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
     }
   };
 
+  const handleRemoveStandard = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!editingQuestion) return;
+
+    const parsedOptions = editOptions.split('\n').map(o => o.trim()).filter(Boolean);
+    const parsedCorrectAnswer = editCorrectAnswer.split('\n').map(a => a.trim()).filter(Boolean);
+
+    const payload: Partial<Question> = {
+      type: editType,
+      prompt: editPrompt,
+      explanation: editExplanation,
+      category: editCategory,
+      topicId: editTopicId || undefined,
+      difficulty: editDifficulty,
+      options: parsedOptions.length > 0 ? parsedOptions : undefined,
+      correctAnswer: parsedCorrectAnswer.length > 1 ? parsedCorrectAnswer : parsedCorrectAnswer[0] || '',
+      source: editSource,
+      imageUrl: editImageUrl || undefined,
+      subject: editSubject,
+      metadata: {
+        ...(editingQuestion.metadata || {}),
+        isStandard: false
+      }
+    };
+
+    const ok = await updateQuestion(editingQuestion.id, payload);
+    if (ok) {
+      setEditingQuestion(null);
+      toast.success('Đã hủy trạng thái Đạt Chuẩn câu hỏi thành công! ❌');
+    }
+  };
+
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -734,13 +766,23 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                           >
                             {isAddingNew ? 'Tạo câu hỏi mới 💾' : 'Cập nhật câu hỏi 💾'}
                           </button>
-                          <button
-                            type="button"
-                            onClick={handleSubmitStandard}
-                            className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-black font-orbitron rounded-lg hover:shadow-[0_0_10px_rgba(245,158,11,0.4)] transition-all text-xs uppercase cursor-pointer flex items-center gap-1 shrink-0"
-                          >
-                            🏆 Đạt Chuẩn
-                          </button>
+                          {editingQuestion?.metadata?.isStandard ? (
+                            <button
+                              type="button"
+                              onClick={handleRemoveStandard}
+                              className="px-3 py-2 bg-red-600/20 border border-red-500/40 text-red-400 font-black font-orbitron rounded-lg hover:bg-red-600 hover:text-white transition-all text-xs uppercase cursor-pointer flex items-center gap-1 shrink-0"
+                            >
+                              ❌ Chưa Đạt Chuẩn
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={handleSubmitStandard}
+                              className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-black font-orbitron rounded-lg hover:shadow-[0_0_10px_rgba(245,158,11,0.4)] transition-all text-xs uppercase cursor-pointer flex items-center gap-1 shrink-0"
+                            >
+                              🏆 Đạt Chuẩn
+                            </button>
+                          )}
                         </div>
                       </form>
                     </div>

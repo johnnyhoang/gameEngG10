@@ -353,7 +353,7 @@ AI đóng vai trò là xương sống trong việc chấm điểm tự luận, d
     *   **Nút Thêm mới (+):** Đặt nút "Thêm Câu Hỏi" ở header quản lý môn học, click để mở form trống, đổi nút submit thành "Tạo câu hỏi mới 💾".
     *   **Nút Xóa nhanh (X):** Khi hover vào thẻ câu hỏi xuất hiện nút X đỏ góc trên bên phải, bắt buộc hiển thị hộp thoại xác nhận (Delete Confirmation) chi tiết trước khi tiến hành xóa vĩnh viễn khỏi Database.
 *   **Cơ chế "Đạt Chuẩn" (Standard Questions):**
-    *   **Nút "Đạt Chuẩn 🏆":** Form tạo/sửa câu hỏi hỗ trợ nút "Đạt Chuẩn 🏆". Khi click, hệ thống gán cờ `isStandard: true` vào trường `metadata` của câu hỏi và lưu xuống Database.
+    *   **Nút "Đạt Chuẩn 🏆" / "Chưa Đạt Chuẩn ❌":** Form tạo/sửa câu hỏi hỗ trợ nút "Đạt Chuẩn 🏆". Khi click, hệ thống gán cờ `isStandard: true` vào trường `metadata` của câu hỏi và lưu xuống Database. Ngược lại, nếu câu hỏi đang sửa đã đạt chuẩn, form sẽ hiển thị nút "Chưa Đạt Chuẩn ❌" giúp hủy check cờ này dễ dàng.
     *   **Tick xanh hiển thị:** Trong mọi nơi hiển thị câu hỏi (Vạn Quyển Các, Đấu Trường PlayArea...), các câu hỏi đạt chuẩn sẽ có một **icon tick xanh nhỏ xíu ở góc** (hoặc bên cạnh đề bài) để biểu thị tính chuẩn mực và chính thống.
 
 ### 4.2 AI Chấm điểm Tự luận Văn & Toán (AI Grading)
