@@ -40,7 +40,7 @@ export const createAuthSlice: StateCreator<
   selectProfile: async (profileId: string) => {
     try {
       const data = await authService.selectProfile(profileId);
-      const resolvedTheme = (get().uiThemesByUser[profileId]?.[0] || DEFAULT_UI_THEME) as any;
+      const resolvedTheme = (get().uiThemesByUser[profileId] || DEFAULT_UI_THEME) as any;
       const mergedQuestions = [...INITIAL_QUESTIONS];
       const idMap = new Map<string, number>();
       mergedQuestions.forEach((q, idx) => {
