@@ -395,7 +395,6 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
           });
 
           await client.query('ROLLBACK');
-          client.release();
           return res.status(409).json({
             error: 'OUTDATED_CLIENT',
             message: 'Client state is outdated. Please pull the latest data first.',
