@@ -25,7 +25,6 @@ export const useGameState = create<StoreState>()(
       partialize: (state: any) => ({
         currentUser: state.currentUser,
         player: state.player,
-        questions: state.questions,
         currentSubject: state.currentSubject,
         activeGradeTier: state.activeGradeTier,
         categoryStats: state.categoryStats,
@@ -33,7 +32,6 @@ export const useGameState = create<StoreState>()(
         rewards: state.rewards,
         challenges: state.challenges,
         dailyMission: state.dailyMission,
-        logs: state.logs,
         maxCombo: state.maxCombo,
         profiles: state.profiles,
         petStates: state.petStates,
@@ -43,7 +41,6 @@ export const useGameState = create<StoreState>()(
         uiThemesByUser: state.uiThemesByUser,
         failedQuestionIds: state.failedQuestionIds,
         recentlyPlayedQuestionIds: state.recentlyPlayedQuestionIds,
-        handbookPages: state.handbookPages
       }),
       merge: (persistedState: any, currentState: any) => {
         const merged = { ...currentState, ...(persistedState as object) } as any;

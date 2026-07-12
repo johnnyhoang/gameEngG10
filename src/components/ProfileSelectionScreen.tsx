@@ -3,7 +3,10 @@ import { useGameState } from '../hooks/useGameState';
 import { LogOut, GraduationCap, Users, Shield, Crown } from 'lucide-react';
 
 export const ProfileSelectionScreen: React.FC = () => {
-  const { availableProfiles, selectProfile, quickStartProfile, logout } = useGameState();
+  const availableProfiles = useGameState(state => state.availableProfiles);
+  const selectProfile = useGameState(state => state.selectProfile);
+  const quickStartProfile = useGameState(state => state.quickStartProfile);
+  const logout = useGameState(state => state.logout);
   const [quickStarting, setQuickStarting] = useState<'student' | 'parent' | null>(null);
 
   const existingStudent = availableProfiles.find((p: any) => p.role === 'student');

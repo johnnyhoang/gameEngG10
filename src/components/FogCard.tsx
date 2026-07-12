@@ -53,7 +53,7 @@ export const FogCard: React.FC<FogCardProps> = ({
   children,
   label = 'Khu vực chưa khám phá'
 }) => {
-  const { explorationProgress } = useGameState();
+  const explorationProgress = useGameState(state => state.explorationProgress);
   const status = getFogStatus(pageId, explorationProgress, requiredCompletions, decayDays);
   
   const [isHovered, setIsHovered] = useState(false);

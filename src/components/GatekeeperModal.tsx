@@ -27,7 +27,11 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const [geometryMode, setGeometryMode] = useState<'2d' | '3d' | null>(null);
 
-  const { questions, pageExplorationStates, updatePendingKeyQuestion, player, awardCoinsAndXp } = useGameState();
+  const questions = useGameState(state => state.questions);
+  const pageExplorationStates = useGameState(state => state.pageExplorationStates);
+  const updatePendingKeyQuestion = useGameState(state => state.updatePendingKeyQuestion);
+  const player = useGameState(state => state.player);
+  const awardCoinsAndXp = useGameState(state => state.awardCoinsAndXp);
   const { activeSectId } = useSect();
 
   const isGeometry2D = React.useMemo(() => {
