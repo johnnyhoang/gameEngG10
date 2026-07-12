@@ -247,6 +247,7 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
       id: row.id,
       type: row.type,
       category: row.category,
+      topicId: row.topic_id,
       prompt: row.prompt,
       options: row.options,
       correctAnswer: row.correct_answer,
@@ -256,7 +257,8 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
       subject: row.subject,
       imageUrl: row.image_url,
       lessonId: row.lesson_id,
-      isConfused: row.is_confused
+      isConfused: row.is_confused,
+      metadata: row.metadata || undefined
     }));
 
     res.json({
