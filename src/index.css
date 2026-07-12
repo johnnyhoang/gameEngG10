@@ -132,50 +132,50 @@ body,
   --theme-border-error: rgba(190, 24, 93, 0.22);
   --theme-text-highlight: #4b2d66;
 
-  /* Redefine Tailwind scale variables for light/pastel mode */
+  /* Redefine Tailwind scale variables for light/pastel mode - High Contrast */
   --color-slate-950: #fff5fb;
   --color-slate-900: #fff0f7;
   --color-slate-800: #fce7f3;
   --color-slate-700: #fbcfe8;
-  --color-slate-600: #f472b6;
-  --color-slate-500: #9f7b8e;
-  --color-slate-400: #8c6a9f;
-  --color-slate-300: #724f85;
-  --color-slate-200: #5f3c77;
-  --color-slate-100: #4b2d66;
+  --color-slate-600: #835391;
+  --color-slate-500: #6d457c;
+  --color-slate-400: #5f336e;
+  --color-slate-300: #4b2d66;
+  --color-slate-200: #3a1c53;
+  --color-slate-100: #290f3f;
 
   --color-gray-950: #fff5fb;
   --color-gray-900: #fff0f7;
   --color-gray-800: #fce7f3;
   --color-gray-700: #fbcfe8;
-  --color-gray-600: #f472b6;
-  --color-gray-500: #9f7b8e;
-  --color-gray-400: #8c6a9f;
-  --color-gray-300: #724f85;
-  --color-gray-200: #5f3c77;
-  --color-gray-100: #4b2d66;
+  --color-gray-600: #835391;
+  --color-gray-500: #6d457c;
+  --color-gray-400: #5f336e;
+  --color-gray-300: #4b2d66;
+  --color-gray-200: #3a1c53;
+  --color-gray-100: #290f3f;
 
   --color-zinc-950: #fff5fb;
   --color-zinc-900: #fff0f7;
   --color-zinc-800: #fce7f3;
   --color-zinc-700: #fbcfe8;
-  --color-zinc-600: #f472b6;
-  --color-zinc-500: #9f7b8e;
-  --color-zinc-400: #8c6a9f;
-  --color-zinc-300: #724f85;
-  --color-zinc-200: #5f3c77;
-  --color-zinc-100: #4b2d66;
+  --color-zinc-600: #835391;
+  --color-zinc-500: #6d457c;
+  --color-zinc-400: #5f336e;
+  --color-zinc-300: #4b2d66;
+  --color-zinc-200: #3a1c53;
+  --color-zinc-100: #290f3f;
 
   --color-neutral-950: #fff5fb;
   --color-neutral-900: #fff0f7;
   --color-neutral-800: #fce7f3;
   --color-neutral-700: #fbcfe8;
-  --color-neutral-600: #f472b6;
-  --color-neutral-500: #9f7b8e;
-  --color-neutral-400: #8c6a9f;
-  --color-neutral-300: #724f85;
-  --color-neutral-200: #5f3c77;
-  --color-neutral-100: #4b2d66;
+  --color-neutral-600: #835391;
+  --color-neutral-500: #6d457c;
+  --color-neutral-400: #5f336e;
+  --color-neutral-300: #4b2d66;
+  --color-neutral-200: #3a1c53;
+  --color-neutral-100: #290f3f;
 
   /* Cẩm Nang Phong Vị Đào Hoa */
   --theme-handbook-paper: #fdeef5;
@@ -277,50 +277,50 @@ body[data-theme='space-adventure'] {
   --theme-border-error: rgba(190, 18, 60, 0.22);
   --theme-text-highlight: #1e3a1e;
 
-  /* Redefine Tailwind scale variables for light forest mode */
+  /* Redefine Tailwind scale variables for light forest mode - High Contrast */
   --color-slate-950: #f4f8ea;
   --color-slate-900: #f7f9ef;
   --color-slate-800: #eef3de;
   --color-slate-700: #dbe4c2;
-  --color-slate-600: #22c55e;
-  --color-slate-500: #7c8a68;
-  --color-slate-400: #556b2f;
-  --color-slate-300: #3f6348;
-  --color-slate-200: #2d4f36;
-  --color-slate-100: #23412a;
+  --color-slate-600: #487255;
+  --color-slate-500: #325d3f;
+  --color-slate-400: #20492c;
+  --color-slate-300: #15331d;
+  --color-slate-200: #0f2716;
+  --color-slate-100: #0a1b0f;
 
   --color-gray-950: #f4f8ea;
   --color-gray-900: #f7f9ef;
   --color-gray-800: #eef3de;
   --color-gray-700: #dbe4c2;
-  --color-gray-600: #22c55e;
-  --color-gray-500: #7c8a68;
-  --color-gray-400: #556b2f;
-  --color-gray-300: #3f6348;
-  --color-gray-200: #2d4f36;
-  --color-gray-100: #23412a;
+  --color-gray-600: #487255;
+  --color-gray-500: #325d3f;
+  --color-gray-400: #20492c;
+  --color-gray-300: #15331d;
+  --color-gray-200: #0f2716;
+  --color-gray-100: #0a1b0f;
 
   --color-zinc-950: #f4f8ea;
   --color-zinc-900: #f7f9ef;
   --color-zinc-800: #eef3de;
   --color-zinc-700: #dbe4c2;
-  --color-zinc-600: #22c55e;
-  --color-zinc-500: #7c8a68;
-  --color-zinc-400: #556b2f;
-  --color-zinc-300: #3f6348;
-  --color-zinc-200: #2d4f36;
-  --color-zinc-100: #23412a;
+  --color-zinc-600: #487255;
+  --color-zinc-500: #325d3f;
+  --color-zinc-400: #20492c;
+  --color-zinc-300: #15331d;
+  --color-zinc-200: #0f2716;
+  --color-zinc-100: #0a1b0f;
 
   --color-neutral-950: #f4f8ea;
   --color-neutral-900: #f7f9ef;
   --color-neutral-800: #eef3de;
   --color-neutral-700: #dbe4c2;
-  --color-neutral-600: #22c55e;
-  --color-neutral-500: #7c8a68;
-  --color-neutral-400: #556b2f;
-  --color-neutral-300: #3f6348;
-  --color-neutral-200: #2d4f36;
-  --color-neutral-100: #23412a;
+  --color-neutral-600: #487255;
+  --color-neutral-500: #325d3f;
+  --color-neutral-400: #20492c;
+  --color-neutral-300: #15331d;
+  --color-neutral-200: #0f2716;
+  --color-neutral-100: #0a1b0f;
 
   /* Cẩm Nang Phong Vị Trúc Lâm */
   --theme-handbook-paper: #f4f0da;
@@ -418,50 +418,50 @@ body[data-theme='fantasy-forest'] {
   --theme-border-error: rgba(185, 28, 28, 0.22);
   --theme-text-highlight: #371c4a;
 
-  /* Redefine Tailwind scale variables for light unicorn mode */
+  /* Redefine Tailwind scale variables for light unicorn mode - High Contrast */
   --color-slate-950: #fdf8ff;
   --color-slate-900: #fff8ff;
   --color-slate-800: #eadcf7;
   --color-slate-700: #d8b4fe;
-  --color-slate-600: #c084fc;
-  --color-slate-500: #8b6f9c;
-  --color-slate-400: #7c5996;
-  --color-slate-300: #6d4b88;
-  --color-slate-200: #5f3c77;
-  --color-slate-100: #371c4a;
+  --color-slate-600: #7e52a2;
+  --color-slate-500: #653d86;
+  --color-slate-400: #4e2a6d;
+  --color-slate-300: #3b1c55;
+  --color-slate-200: #2a1040;
+  --color-slate-100: #1a062b;
 
   --color-gray-950: #fdf8ff;
   --color-gray-900: #fff8ff;
   --color-gray-800: #eadcf7;
   --color-gray-700: #d8b4fe;
-  --color-gray-600: #c084fc;
-  --color-gray-500: #8b6f9c;
-  --color-gray-400: #7c5996;
-  --color-gray-300: #6d4b88;
-  --color-gray-200: #5f3c77;
-  --color-gray-100: #371c4a;
+  --color-gray-600: #7e52a2;
+  --color-gray-500: #653d86;
+  --color-gray-400: #4e2a6d;
+  --color-gray-300: #3b1c55;
+  --color-gray-200: #2a1040;
+  --color-gray-100: #1a062b;
 
   --color-zinc-950: #fdf8ff;
   --color-zinc-900: #fff8ff;
   --color-zinc-800: #eadcf7;
   --color-zinc-700: #d8b4fe;
-  --color-zinc-600: #c084fc;
-  --color-zinc-500: #8b6f9c;
-  --color-zinc-400: #7c5996;
-  --color-zinc-300: #6d4b88;
-  --color-zinc-200: #5f3c77;
-  --color-zinc-100: #371c4a;
+  --color-zinc-600: #7e52a2;
+  --color-zinc-500: #653d86;
+  --color-zinc-400: #4e2a6d;
+  --color-zinc-300: #3b1c55;
+  --color-zinc-200: #2a1040;
+  --color-zinc-100: #1a062b;
 
   --color-neutral-950: #fdf8ff;
   --color-neutral-900: #fff8ff;
   --color-neutral-800: #eadcf7;
   --color-neutral-700: #d8b4fe;
-  --color-neutral-600: #c084fc;
-  --color-neutral-500: #8b6f9c;
-  --color-neutral-400: #7c5996;
-  --color-neutral-300: #6d4b88;
-  --color-neutral-200: #5f3c77;
-  --color-neutral-100: #371c4a;
+  --color-neutral-600: #7e52a2;
+  --color-neutral-500: #653d86;
+  --color-neutral-400: #4e2a6d;
+  --color-neutral-300: #3b1c55;
+  --color-neutral-200: #2a1040;
+  --color-neutral-100: #1a062b;
 
   /* Cẩm Nang Phong Vị Tuyết Sơn */
   --theme-handbook-paper: #f7f4ff;
