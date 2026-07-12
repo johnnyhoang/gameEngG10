@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { BookOpen, Plus, Edit2, Trash2, Search, X, RefreshCw } from 'lucide-react';
+import { BookOpen, Plus, Trash2, Search, X, RefreshCw } from 'lucide-react';
 import { SUBJECTS_CONFIG } from '../../types/game';
 import { toast } from '../../utils/toast';
 import { supabase } from '../../utils/supabaseClient';
@@ -371,7 +371,8 @@ export const LectureBankManager: React.FC = () => {
           {filteredLessons.slice(0, visibleCount).map(lesson => (
             <div 
               key={lesson.id} 
-              className="glass-panel border border-white/5 p-4 rounded-2xl flex flex-col justify-between hover:border-synth-cyan/35 transition-all relative group"
+              onClick={() => handleOpenEditModal(lesson)}
+              className="glass-panel border border-white/5 bg-white/5 p-4 rounded-2xl flex flex-col justify-between hover:border-synth-cyan/35 hover:bg-white/[0.07] transition-all relative group cursor-pointer"
             >
               {/* Tick xanh nhỏ ở góc trái trên */}
               {lesson.is_standard && (
@@ -397,15 +398,11 @@ export const LectureBankManager: React.FC = () => {
                   </div>
                   <div className="flex gap-1">
                     <button
-                      onClick={() => handleOpenEditModal(lesson)}
-                      className="p-1.5 rounded hover:bg-white/5 text-slate-300 hover:text-synth-cyan transition-colors cursor-pointer"
-                      title="Chỉnh sửa bài giảng"
-                    >
-                      <Edit2 className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteLesson(lesson.id)}
-                      className="p-1.5 rounded hover:bg-white/5 text-slate-300 hover:text-red-400 transition-colors cursor-pointer"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteLesson(lesson.id);
+                      }}
+                      className="p-1.5 rounded hover:bg-red-500 hover:text-black bg-red-500/10 border border-red-500/20 text-red-400 transition-colors cursor-pointer"
                       title="Xóa bài giảng"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
