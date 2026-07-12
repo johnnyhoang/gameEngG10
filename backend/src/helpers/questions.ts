@@ -86,9 +86,9 @@ export const ensureDefaultClassRewards = async (teacherId: string) => {
     for (const dr of defaultRewards) {
       await pool.query(
         `INSERT INTO ge10_class_rewards (id, teacher_id, title, cost_coins, quantity, remaining, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, NOW())
+         VALUES ($1, $2, $3, $4, $5, $6, $7)
          ON CONFLICT (id) DO NOTHING`,
-        [dr.id, teacherId, dr.title, dr.cost_coins, dr.quantity, dr.quantity]
+        [dr.id, teacherId, dr.title, dr.cost_coins, dr.quantity, dr.quantity, Date.now()]
       );
     }
   }

@@ -18,6 +18,7 @@ import gatekeeperRouter from './routes/gatekeeper.js';
 import gameRouter from './routes/game.js';
 import classRewardsRouter from './routes/classRewards.js';
 import { adaptLegacyProfiles } from './helpers/profileAdapter.js';
+import { ensureDefaultClassRewards } from './helpers/questions.js';
 
 dotenv.config();
 
@@ -73,6 +74,18 @@ const initDB = async () => {
     
     // Tự động thích ứng và phân tách các profile cũ chứa dữ liệu chéo
     await adaptLegacyProfiles();
+
+    // Migration: Seed default classroom rewards for all existing active teachers
+    console.log('=== Khởi chạy migration phúc lợi lớp học cho Giáo viên ===');
+    const teachersRes = await pool.query(
+      `SELECT DISTINCT parent_id FROM ge10_family_links 
+       WHERE status = 'active' 
+         AND parent_id IN (SELECT id FROM ge10_users WHERE role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien'))`
+    );
+    for (const row of teachersRes.rows) {
+      await ensureDefaultClassRewards(row.parent_id);
+    }
+    console.log(`=== Hoàn tất migration phúc lợi lớp học cho ${teachersRes.rows.length} Giáo viên! ===`);
   } catch (error) {
     console.error('Error initializing database:', error);
   }
