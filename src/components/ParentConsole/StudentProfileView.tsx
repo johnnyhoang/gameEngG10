@@ -61,12 +61,12 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
   return (
     <div className="space-y-6">
       {/* 1. Header Profile */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white/5 border border-white/5 p-5 rounded-2xl">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r from-synth-cyan/5 via-white/3 to-synth-magenta/5 border border-white/10 p-5 rounded-2xl">
         <div className="flex items-center gap-4">
           <img 
             src={studentUser?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'} 
             alt={studentUser?.name} 
-            className="w-16 h-16 rounded-full border-2 border-synth-magenta/30"
+            className="w-16 h-16 rounded-full border-2 border-synth-magenta/40 shadow-md object-cover"
           />
           <div>
             <h3 className="font-orbitron font-bold text-base text-white">{studentUser?.name}</h3>
@@ -76,21 +76,21 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
 
         {/* Quick parameters display */}
         <div className="grid grid-cols-2 sm:flex sm:items-center gap-4 text-xs">
-          <div className="bg-black/30 border border-white/5 rounded-xl px-4 py-2 text-center">
+          <div className="bg-white/3 border border-white/5 rounded-2xl px-4 py-2.5 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
             <span className="block text-[9px] uppercase text-synth-text-muted">Cấp Độ</span>
             <span className="font-orbitron font-black text-synth-magenta text-sm">LV.{player?.level || 1}</span>
           </div>
-          <div className="bg-black/30 border border-white/5 rounded-xl px-4 py-2 text-center">
+          <div className="bg-white/3 border border-white/5 rounded-2xl px-4 py-2.5 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
             <span className="block text-[9px] uppercase text-synth-text-muted">Ngân Lượng (NP)</span>
             <span className={`font-orbitron font-black text-sm ${(player?.coins || 0) < 0 ? 'text-red-400' : 'text-synth-orange'}`}>
               {player?.coins || 0} NP
             </span>
           </div>
-          <div className="bg-black/30 border border-white/5 rounded-xl px-4 py-2 text-center">
+          <div className="bg-white/3 border border-white/5 rounded-2xl px-4 py-2.5 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
             <span className="block text-[9px] uppercase text-synth-text-muted">Tích Lũy Chân Lý</span>
             <span className="font-orbitron font-black text-synth-green text-sm">{player?.xp || 0} XP</span>
           </div>
-          <div className="bg-black/30 border border-white/5 rounded-xl px-4 py-2 text-center">
+          <div className="bg-white/3 border border-white/5 rounded-2xl px-4 py-2.5 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
             <span className="block text-[9px] uppercase text-synth-text-muted">Chuỗi ngày</span>
             <span className="font-orbitron font-black text-orange-400 text-sm">{player?.streak || 0} ngày</span>
           </div>
@@ -108,36 +108,53 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
             </h4>
           </div>
           <p className="text-xs text-slate-300">
-            Nạp đầy chân khí để con có năng lượng hoàn thành các đảo thử thách. Chân khí hiện tại: <strong className="text-synth-cyan">{player?.energy || 0}/{maxE}</strong>.
+            Nạp đầy chân khí để con có năng lượng hoàn thành các đảo thử thách.
           </p>
 
-          <div className="flex items-center gap-4">
-            <input
-              type="range"
-              min={10}
-              max={100}
-              step={10}
-              value={studentEnergyPercent}
-              onChange={e => setStudentEnergyPercent(Number(e.target.value))}
-              disabled={!canManageEnergy}
-              className="flex-1 accent-synth-cyan cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
-            />
-            <span className="font-orbitron font-bold text-sm text-synth-cyan w-12 text-right">
-              {studentEnergyPercent}%
-            </span>
+          {/* Visual Progress Bar showing exact current level */}
+          <div className="space-y-2 bg-white/3 p-3.5 rounded-xl border border-white/5">
+            <div className="flex justify-between text-[10px] font-bold text-slate-400 font-mono">
+              <span>TRẠNG THÁI CHÂN KHÍ HIỆN TẠI</span>
+              <span>{player?.energy || 0} / {maxE} ({(player?.energy && maxE) ? Math.round((player.energy / maxE) * 100) : 0}%)</span>
+            </div>
+            <div className="w-full h-3 bg-black/40 rounded-full overflow-hidden border border-white/5 p-0.5">
+              <div 
+                className="h-full bg-gradient-to-r from-synth-cyan to-blue-500 rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(0,240,255,0.4)]"
+                style={{ width: `${Math.min(100, Math.max(0, (player?.energy && maxE) ? (player.energy / maxE) * 100 : 0))}%` }}
+              />
+            </div>
           </div>
 
-          <button
-            onClick={async () => {
-              if (!selectedStudentProfile?.studentUser?.id) return;
-              await adminSetEnergy(selectedStudentProfile.studentUser.id, studentEnergyPercent);
-              toast.success(`Đã nạp chân khí lên ${studentEnergyPercent}% thành công!`);
-            }}
-            disabled={!canManageEnergy}
-            className="w-full py-2 bg-synth-cyan text-black font-bold rounded-lg hover:synth-glow-cyan transition-all text-xs uppercase disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Nạp chân khí ⚡
-          </button>
+          <div className="bg-white/3 p-4 rounded-xl border border-white/5 space-y-3">
+            <span className="block text-[10px] font-bold uppercase tracking-wider text-synth-cyan">⚡ Điều chỉnh lượng nạp</span>
+            <div className="flex items-center gap-4">
+              <input
+                type="range"
+                min={10}
+                max={100}
+                step={10}
+                value={studentEnergyPercent}
+                onChange={e => setStudentEnergyPercent(Number(e.target.value))}
+                disabled={!canManageEnergy}
+                className="flex-1 accent-synth-cyan cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+              />
+              <span className="font-orbitron font-bold text-sm text-synth-cyan w-12 text-right">
+                {studentEnergyPercent}%
+              </span>
+            </div>
+
+            <button
+              onClick={async () => {
+                if (!selectedStudentProfile?.studentUser?.id) return;
+                await adminSetEnergy(selectedStudentProfile.studentUser.id, studentEnergyPercent);
+                toast.success(`Đã nạp chân khí lên ${studentEnergyPercent}% thành công!`);
+              }}
+              disabled={!canManageEnergy}
+              className="w-full py-2 bg-synth-cyan text-black font-bold rounded-lg hover:shadow-[0_0_12px_rgba(0,240,255,0.4)] hover:scale-[1.01] active:scale-[0.99] transition-all text-xs uppercase disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              Xác Nhận Nạp Chân Khí ⚡
+            </button>
+          </div>
 
           {/* Cấu hình Trần Chân Khí + giờ hồi RIÊNG cho con này (SUB_SPEC_ENERGY §2) */}
           <div className="pt-3 mt-1 border-t border-white/5 space-y-3">
@@ -178,7 +195,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
                 await adminSetEnergyConfig(selectedStudentProfile.studentUser.id, maxEnergyInput, resetHoursInput);
               }}
               disabled={!canManageEnergy}
-              className="w-full py-2 border border-synth-cyan/40 text-synth-cyan font-bold rounded-lg hover:bg-synth-cyan/10 transition-all text-xs uppercase disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-2 border border-synth-cyan/40 text-synth-cyan font-bold rounded-lg hover:bg-synth-cyan/10 transition-all text-xs uppercase disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               Lưu cấu hình Chân Khí
             </button>
@@ -196,33 +213,38 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
             🐷 Linh Thú Hộ Vệ (Pet Stable)
           </h4>
           {pet ? (
-            <div className="flex items-center gap-4 text-xs">
-              <div className="w-16 h-16 rounded-2xl bg-black/40 border border-white/10 flex items-center justify-center text-4xl shrink-0">
-                {pet.stage === 'egg' ? '🥚' : pet.stage === 'baby' ? '🐷' : '🐗'}
+            <div className="flex items-center gap-5 bg-white/3 border border-white/5 p-4 rounded-2xl w-full">
+              <div className="w-20 h-20 rounded-3xl bg-black/40 border border-synth-magenta/25 flex items-center justify-center text-5xl shrink-0 shadow-lg relative group overflow-hidden">
+                <div className="absolute inset-0 bg-synth-magenta/5 animate-pulse pointer-events-none"></div>
+                <span className="relative z-10 group-hover:scale-115 transition-transform duration-300 inline-block">
+                  {pet.stage === 'egg' ? '🥚' : pet.stage === 'baby' ? '🐷' : '🐗'}
+                </span>
               </div>
-              <div className="space-y-1.5 flex-1">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-3 flex-1 text-xs">
                 <div>
-                  <span className="text-synth-text-muted">Tên linh thú: </span>
-                  <span className="font-bold text-white">{pet.name}</span>
+                  <span className="block text-[9px] uppercase text-slate-400 font-bold">Tên linh thú</span>
+                  <span className="font-bold text-white text-sm">{pet.name}</span>
                 </div>
                 <div>
-                  <span className="text-synth-text-muted">Cấp độ: </span>
-                  <span className="font-bold text-white">LV.{pet.level}</span>
+                  <span className="block text-[9px] uppercase text-slate-400 font-bold">Cấp độ</span>
+                  <span className="font-orbitron font-black text-synth-magenta text-sm">LV.{pet.level}</span>
                 </div>
                 <div>
-                  <span className="text-synth-text-muted">Tâm trạng: </span>
-                  <span className="font-bold text-white capitalize">{pet.mood}</span>
+                  <span className="block text-[9px] uppercase text-slate-400 font-bold">Tâm trạng</span>
+                  <span className="inline-flex items-center gap-1 font-bold text-white mt-0.5 capitalize">
+                    {pet.mood === 'happy' ? '😄 Hân Hoan' : pet.mood === 'neutral' ? '😐 Bình Hòa' : '😢 U Uất'}
+                  </span>
                 </div>
                 <div>
-                  <span className="text-synth-text-muted">Cho ăn lần cuối: </span>
-                  <span className="font-semibold text-slate-300">
+                  <span className="block text-[9px] uppercase text-slate-400 font-bold">Cho ăn gần cuối</span>
+                  <span className="font-semibold text-slate-300 block mt-0.5">
                     {pet.lastFed ? new Date(pet.lastFed).toLocaleDateString('vi-VN') : 'Chưa rõ'}
                   </span>
                 </div>
               </div>
             </div>
           ) : (
-            <p className="text-xs text-synth-text-muted italic py-6 text-center">
+            <p className="text-xs text-synth-text-muted italic py-6 text-center w-full">
               Thiếu hiệp chưa kích hoạt Linh Thú Hộ Vệ.
             </p>
           )}
@@ -248,8 +270,8 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
                   contentStyle={{ backgroundColor: '#181b2a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
                   labelStyle={{ color: '#fff', fontWeight: 'bold' }}
                 />
-                <Bar dataKey="correct" name="Đúng" fill="#10b981" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="total" name="Tổng" fill="#64748b" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="correct" name="Đúng" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={30} />
+                <Bar dataKey="total" name="Tổng" fill="#334155" radius={[6, 6, 0, 0]} maxBarSize={30} />
               </BarChart>
             </ResponsiveContainer>
           ) : (

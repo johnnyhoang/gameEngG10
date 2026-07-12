@@ -126,18 +126,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         isLight ? 'border-violet-200/35 bg-white/40' : 'border-white/15 bg-slate-950/60'
       }`}>
         {isUnicorn && (
-          <>
-            <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-fuchsia-200/45 via-white/80 to-cyan-200/45" />
-            <div className="pointer-events-none absolute left-6 top-4 flex gap-2 text-xl opacity-70">
+          <div className="pointer-events-none absolute inset-0 z-0">
+            <div className="absolute inset-x-0 top-0 h-24 bg-gradient-to-r from-fuchsia-200/45 via-white/80 to-cyan-200/45" />
+            <div className="absolute left-6 top-4 flex gap-2 text-xl opacity-70">
               <span className="unicorn-twinkle">✨</span>
               <span className="unicorn-twinkle" style={{ animationDelay: '0.3s' }}>🦄</span>
               <span className="unicorn-twinkle" style={{ animationDelay: '0.6s' }}>🌈</span>
             </div>
-            <div className="pointer-events-none absolute right-8 top-8 h-16 w-24 rounded-full bg-white/40 blur-2xl unicorn-cloud" />
-          </>
+            <div className="absolute right-8 top-8 h-16 w-24 rounded-full bg-white/40 blur-2xl unicorn-cloud" />
+          </div>
         )}
 
-        <div className="mb-6 flex flex-col gap-4 border-b border-white/10 pb-6 md:flex-row md:items-center md:justify-between">
+        <div className="relative z-10 mb-6 flex flex-col gap-4 border-b border-white/10 pb-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
             <img
               src={currentUser.avatar}
@@ -197,7 +197,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </div>
           </div>
 
-          <div className={`grid gap-2 rounded-3xl border p-4 text-sm ${
+          <div className={`relative z-10 grid gap-2 rounded-3xl border p-4 text-sm ${
             isUnicorn
               ? 'border-violet-200/40 bg-white/80 text-violet-700'
               : 'border-white/10 bg-white/5 text-white/75'
