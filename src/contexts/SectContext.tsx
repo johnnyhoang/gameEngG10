@@ -1,5 +1,7 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext } from 'react';
 import type { ReactNode } from 'react';
+import { useGameState } from '../hooks/useGameState';
+import type { SubjectId } from '../types/game';
 
 type SectContextType = {
   activeSectId: string;
@@ -9,7 +11,12 @@ type SectContextType = {
 const SectContext = createContext<SectContextType | undefined>(undefined);
 
 export const SectProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [activeSectId, setActiveSectId] = useState<string>('english');
+  const activeSectId = useGameState(state => state.currentSubject);
+  const setSubject = useGameState(state => state.setSubject);
+
+  const setActiveSectId = (sectId: string) => {
+    setSubject(sectId as SubjectId);
+  };
 
   return (
     <SectContext.Provider value={{ activeSectId, setActiveSectId }}>

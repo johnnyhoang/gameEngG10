@@ -114,6 +114,10 @@ export interface PlayerProfile {
   dailySkips?: { date: string, count: number };
   /** Luật Bất Thoái (CORE_SPECS §7.4.4): Đẳng Cấp Môn Phái cao nhất từng đạt theo từng môn (lưu `order` trong SECT_MASTERY_RANKS) — không bao giờ tụt kể cả khi Hiệu Trưởng import thêm câu hỏi/bài học làm tỉ lệ % thô giảm. */
   maxAchievedMasteryRank?: Partial<Record<SubjectId, number>>;
+  /** Môn học đang chọn tu học (Sect) */
+  activeSubject?: SubjectId;
+  /** Tầng (Lớp) đang đứng */
+  activeGradeTier?: GradeTier;
 }
 
 export interface Question {

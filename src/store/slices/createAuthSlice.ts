@@ -75,6 +75,8 @@ export const createAuthSlice: StateCreator<
         questions: mergedQuestions,
         gameSettings: data.gameSettings || DEFAULT_GAME_SETTINGS,
         uiTheme: resolvedTheme,
+        currentSubject: data.player?.activeSubject || 'english',
+        activeGradeTier: data.player?.activeGradeTier || DEFAULT_GRADE_TIER,
         lastSyncTime: new Date().toISOString(),
       });
       // Fetch family data after profile is selected
@@ -193,6 +195,8 @@ export const createAuthSlice: StateCreator<
         return {
           currentUser: data.currentUser || user,
           uiTheme: resolvedTheme,
+          currentSubject: data.player?.activeSubject || 'english',
+          activeGradeTier: data.player?.activeGradeTier || DEFAULT_GRADE_TIER,
           player: data.player || {
             id: user.id,
             name: user.name,
@@ -261,6 +265,8 @@ export const createAuthSlice: StateCreator<
           currentUser: updatedUser,
           player: newPlayer,
           uiTheme: resolvedTheme,
+          currentSubject: newPlayer.activeSubject || 'english',
+          activeGradeTier: newPlayer.activeGradeTier || DEFAULT_GRADE_TIER,
           gameSettings: state.gameSettings || DEFAULT_GAME_SETTINGS
         };
       });
@@ -302,7 +308,9 @@ export const createAuthSlice: StateCreator<
       adminStudents: [],
       selectedStudentProfile: null,
       helpPageId: null,
-      uiTheme: DEFAULT_UI_THEME as any
+      uiTheme: DEFAULT_UI_THEME as any,
+      currentSubject: 'english',
+      activeGradeTier: DEFAULT_GRADE_TIER
     });
   },
 });

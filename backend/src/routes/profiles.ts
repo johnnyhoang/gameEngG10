@@ -281,7 +281,9 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
         hearts: playerRes.rows[0].hearts,
         lastActive: playerRes.rows[0].last_active,
         badges: playerRes.rows[0].badges || [],
-        uiTheme: playerRes.rows[0].ui_theme || 'current'
+        uiTheme: playerRes.rows[0].ui_theme || 'current',
+        activeSubject: playerRes.rows[0].active_subject || 'english',
+        activeGradeTier: playerRes.rows[0].active_grade_tier || 9
       } : null,
       pet: petRes.rows[0] ? {
         name: petRes.rows[0].name,
@@ -414,7 +416,10 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
                 hearts: dbProfile.hearts,
                 lastActive: dbProfile.last_active,
                 badges: dbProfile.badges,
-                maxAchievedMasteryRank: dbProfile.max_achieved_mastery_rank
+                maxAchievedMasteryRank: dbProfile.max_achieved_mastery_rank,
+                uiTheme: dbProfile.ui_theme || 'current',
+                activeSubject: dbProfile.active_subject || 'english',
+                activeGradeTier: dbProfile.active_grade_tier || 9
               },
               pet: petRes.rows[0] ? {
                 name: petRes.rows[0].name,
@@ -465,8 +470,8 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
       // maxEnergy/resetHours KHÔNG nằm trong sync này — đó là cấu hình do chủ nhiệm chỉnh riêng
       // qua /api/admin/set-energy-config, con tự sync không được phép ghi đè (SUB_SPEC_ENERGY §2).
       await client.query(
-        `INSERT INTO ge10_player_profiles (user_id, level, xp, coins, streak, energy, energy_depleted_at, hearts, last_active, badges, max_achieved_mastery_rank, ui_theme, server_updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
+        `INSERT INTO ge10_player_profiles (user_id, level, xp, coins, streak, energy, energy_depleted_at, hearts, last_active, badges, max_achieved_mastery_rank, ui_theme, active_subject, active_grade_tier, server_updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())
          ON CONFLICT (user_id) DO UPDATE SET
            level = EXCLUDED.level,
            xp = EXCLUDED.xp,
@@ -479,6 +484,8 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
            badges = EXCLUDED.badges,
            max_achieved_mastery_rank = EXCLUDED.max_achieved_mastery_rank,
            ui_theme = EXCLUDED.ui_theme,
+           active_subject = EXCLUDED.active_subject,
+           active_grade_tier = EXCLUDED.active_grade_tier,
            server_updated_at = NOW()`,
         [
           userId,
@@ -492,7 +499,9 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
           player.lastActive,
           player.badges,
           JSON.stringify(mergedMasteryRank),
-          player.uiTheme || 'current'
+          player.uiTheme || 'current',
+          player.activeSubject || 'english',
+          player.activeGradeTier || 9
         ]
       );
     }

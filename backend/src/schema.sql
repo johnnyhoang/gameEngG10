@@ -48,11 +48,17 @@ CREATE TABLE IF NOT EXISTS ge10_player_profiles (
     last_np_earned_date VARCHAR(10) DEFAULT '',
     daily_skips JSONB DEFAULT '{"date": "", "count": 0}'::jsonb,
     ui_theme VARCHAR(50) DEFAULT 'current',
+    active_subject VARCHAR(50) NOT NULL DEFAULT 'english',
+    active_grade_tier INTEGER NOT NULL DEFAULT 9,
     server_updated_at TIMESTAMP DEFAULT NOW()
 );
 
 -- App không quản lý tiền nữa (CORE_SPECS §3.2) — Ví VND bị bãi bỏ hoàn toàn.
 ALTER TABLE ge10_player_profiles DROP COLUMN IF EXISTS wallet_vnd;
+
+-- Migration for active subject and grade tier
+ALTER TABLE ge10_player_profiles ADD COLUMN IF NOT EXISTS active_subject VARCHAR(50) NOT NULL DEFAULT 'english';
+ALTER TABLE ge10_player_profiles ADD COLUMN IF NOT EXISTS active_grade_tier INTEGER NOT NULL DEFAULT 9;
 
 -- Chân Khí v2 (SUB_SPEC_ENERGY.md) — maxEnergy/resetHours là cấu hình RIÊNG từng con,
 -- không còn dùng ge10_game_settings global nữa (mỗi con một mức do chủ nhiệm chỉnh ở Ngân Các).

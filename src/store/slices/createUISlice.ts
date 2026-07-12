@@ -28,7 +28,13 @@ export const createUISlice: StateCreator<
 
   setSectModalOpen: (open) => set({ isSectModalOpen: open }),
 
-  setSubject: (subject) => set({ currentSubject: subject }),
+  setSubject: (subject) => {
+    set(state => {
+      const updatedPlayer = state.player ? { ...state.player, activeSubject: subject } : state.player;
+      return { currentSubject: subject, player: updatedPlayer } as any;
+    });
+    get().syncWithServer?.();
+  },
 
   setGradeTier: (tier: GradeTier) => {
     const config = getGradeTierConfig(tier);
@@ -37,8 +43,12 @@ export const createUISlice: StateCreator<
       return;
     }
     if (get().activeGradeTier === tier) return;
-    set({ activeGradeTier: tier });
+    set(state => {
+      const updatedPlayer = state.player ? { ...state.player, activeGradeTier: tier } : state.player;
+      return { activeGradeTier: tier, player: updatedPlayer } as any;
+    });
     toast.success(`Đã bước vào ${config.name}`);
+    get().syncWithServer?.();
   },
 
   setUiTheme: (themeId) => {

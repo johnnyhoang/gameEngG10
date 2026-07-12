@@ -964,18 +964,23 @@ export const createPlayerSlice: StateCreator<
   },
 
   pullServerState: (serverData: any) => {
-    set((state: any) => ({
-      player: serverData.player ? { ...state.player, ...serverData.player } : state.player,
-      pet: serverData.pet ? { ...state.pet, ...serverData.pet } : state.pet,
-      categoryStats: serverData.categoryStats || state.categoryStats,
-      logs: serverData.logs || state.logs,
-      rewards: serverData.rewards || state.rewards,
-      rewardRedemptions: serverData.rewardRedemptions || state.rewardRedemptions,
-      challenges: serverData.challenges || state.challenges,
-      dailyMission: serverData.dailyMission || state.dailyMission,
-      lessonsProgress: serverData.lessonsProgress || state.lessonsProgress,
-      explorationProgress: serverData.explorationProgress || state.explorationProgress
-    }));
+    set((state: any) => {
+      const updatedPlayer = serverData.player ? { ...state.player, ...serverData.player } : state.player;
+      return {
+        player: updatedPlayer,
+        currentSubject: updatedPlayer?.activeSubject || state.currentSubject,
+        activeGradeTier: updatedPlayer?.activeGradeTier || state.activeGradeTier,
+        pet: serverData.pet ? { ...state.pet, ...serverData.pet } : state.pet,
+        categoryStats: serverData.categoryStats || state.categoryStats,
+        logs: serverData.logs || state.logs,
+        rewards: serverData.rewards || state.rewards,
+        rewardRedemptions: serverData.rewardRedemptions || state.rewardRedemptions,
+        challenges: serverData.challenges || state.challenges,
+        dailyMission: serverData.dailyMission || state.dailyMission,
+        lessonsProgress: serverData.lessonsProgress || state.lessonsProgress,
+        explorationProgress: serverData.explorationProgress || state.explorationProgress
+      };
+    });
   },
 
 });
