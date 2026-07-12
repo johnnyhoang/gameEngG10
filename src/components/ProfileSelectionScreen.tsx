@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { LogOut, GraduationCap, Users, Shield, Crown } from 'lucide-react';
+import { LogoutConfirmModal } from './Common/LogoutConfirmModal';
 
 export const ProfileSelectionScreen: React.FC = () => {
   const availableProfiles = useGameState(state => state.availableProfiles);
@@ -15,8 +16,10 @@ export const ProfileSelectionScreen: React.FC = () => {
   const existingHieuPho = availableProfiles.find((p: any) => p.role === 'pho_vien');
   const existingHieuTruong = availableProfiles.find((p: any) => p.role === 'truong_vien');
 
-  const handleLogout = async () => {
-    await logout();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
+  const handleLogout = () => {
+    setShowLogoutConfirm(true);
   };
 
   const handleSelectRole = async (role: 'student' | 'parent' | 'pho_vien' | 'truong_vien') => {
@@ -200,6 +203,11 @@ export const ProfileSelectionScreen: React.FC = () => {
           ))}
         </div>
       </div>
+      <LogoutConfirmModal
+        isOpen={showLogoutConfirm}
+        onConfirm={logout}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
     </div>
   );
 };

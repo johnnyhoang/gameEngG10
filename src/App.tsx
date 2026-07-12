@@ -14,6 +14,7 @@ import { GoogleLoginScreen } from './components/GoogleLoginScreen';
 import { GatekeeperModal } from './components/GatekeeperModal';
 import { ProfileSelectionScreen } from './components/ProfileSelectionScreen';
 import { GlobalSectModal } from './components/GlobalSectModal';
+import { LogoutConfirmModal } from './components/Common/LogoutConfirmModal';
 
 // Helper decorator to encapsulate Suspense for each lazy component individually, avoiding app-wide unmount loops
 const withSuspense = <P extends object>(
@@ -78,8 +79,10 @@ function App() {
   const logout = useGameState(state => state.logout);
   const sessionAccountId = useGameState(state => state.sessionAccountId);
 
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+
   const handleLogoutIntercept = () => {
-    logout();
+    setShowLogoutConfirm(true);
   };
 
   // Auto-switch screen for admin/parent users on login & show handbook on student login
@@ -566,6 +569,11 @@ function App() {
         </div>
       </footer>
 
+      <LogoutConfirmModal
+        isOpen={showLogoutConfirm}
+        onConfirm={logout}
+        onCancel={() => setShowLogoutConfirm(false)}
+      />
     </div>
   );
 }
