@@ -98,5 +98,20 @@ export const authService = {
       return await res.json();
     }
     throw new Error('Failed to fetch current profile');
+  },
+
+  renameProfile: async (profileId: string, newName: string): Promise<boolean> => {
+    const token = await authService.getAccessToken();
+    if (!token) return false;
+
+    const res = await fetch(`${backendUrl}/api/profiles/rename`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({ profileId, newName })
+    });
+    return res.ok;
   }
 };

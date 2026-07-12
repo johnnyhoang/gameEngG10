@@ -761,6 +761,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           typedAnswer={typedAnswer}
           checked={checked}
           onTypeAnswer={setTypedAnswer}
+          lang="vi-VN"
         />
       );
     }
@@ -769,6 +770,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         typedAnswer={typedAnswer}
         checked={checked}
         onTypeAnswer={setTypedAnswer}
+        lang={activeSectId === 'english' ? 'en-US' : 'vi-VN'}
       />
     );
   };

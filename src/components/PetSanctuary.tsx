@@ -15,15 +15,15 @@ const PET_STAGE_LABELS: Record<PetStage, string> = {
 
 const STAGE_MEMORIES: Record<PetStage, { story: string; photoConcept: string }> = {
   egg: {
-    story: "Mầm Nấm sương mai ngậm mưa bông rơi rụng trên thảm lá khô. Đây là ngày đầu tiên thiếu hiệp đặt chân đến Sân Thú, truyền chân khí ấm áp đánh thức Heo Maikawaii khỏi giấc ngủ ngàn năm.",
+    story: "Mầm Nấm sương mai ngậm mưa bông rơi rụng trên thảm lá khô. Đây là ngày đầu tiên môn sinh đặt chân đến Sân Thú, truyền chân khí ấm áp đánh thức Heo Maikawaii khỏi giấc ngủ ngàn năm.",
     photoConcept: "Ảnh chụp ngày đầu nhập môn: Thiếu hiệp chạm tay vào mầm nấm 🍄"
   },
   baby: {
-    story: "Cây nấm múp míp nứt vỡ ra chú heo hồng hào, nhỏ xíu xiu. Kỷ niệm những miếng bánh khô chia đôi bên bếp lửa học viện, những câu thoại ngây ngô và tiếng cười khúc khích khi được thiếu hiệp thọc lét nhột tai.",
+    story: "Cây nấm múp míp nứt vỡ ra chú heo hồng hào, nhỏ xíu xiu. Kỷ niệm những miếng bánh khô chia đôi bên bếp lửa học viện, những câu thoại ngây ngô và tiếng cười khúc khích khi được môn sinh thọc lét nhột tai.",
     photoConcept: "Ảnh chụp chung đầu tiên: Thiếu hiệp ôm heo con múp míp ngủ gục bên lò sưởi 🔥"
   },
   adult: {
-    story: "Heo con oai phong khoác băng trán đỏ, đeo kiếm gỗ sau lưng bôn tẩu giang hồ cùng thiếu hiệp. Tấm hình chụp chung tại Đấu Trường đầy kiêu hãnh: Heo luôn giương kiếm đỡ bụi cỏ gai, đồng hành qua hàng trăm đề thi thử thách.",
+    story: "Heo con oai phong khoác băng trán đỏ, đeo kiếm gỗ sau lưng bôn tẩu giang hồ cùng môn sinh. Tấm hình chụp chung tại Đấu Trường đầy kiêu hãnh: Heo luôn giương kiếm đỡ bụi cỏ gai, đồng hành qua hàng trăm đề thi thử thách.",
     photoConcept: "Ảnh chụp nơi Đấu Trường: Thiếu hiệp làm bài, Heo giương kiếm gỗ bảo vệ ⚔️"
   },
   legend: {
@@ -48,7 +48,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
 
   const [interacting, setInteracting] = useState(false);
   const [tickled, setTickled] = useState(false);
-  const [speech, setSpeech] = useState('Ủn ỉn... chào thiếu hiệp! Hôm nay ta cùng tinh tấn học tập nhé! 🌸');
+  const [speech, setSpeech] = useState('Ủn ỉn... chào môn sinh! Hôm nay ta cùng tinh tấn học tập nhé! 🌸');
 
   const unlockedStageCount = PET_STAGE_ORDER.indexOf(pet.stage) + 1;
   const [albumIndex, setAlbumIndex] = useState(0);
@@ -70,7 +70,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
       return;
     }
     setInteracting(true);
-    setSpeech('Chao ôi... ngon quá! Ngon múp míp luôn á! Cảm ơn thiếu hiệp! 🍖🐷 (-10 NP)');
+    setSpeech('Chao ôi... ngon quá! Ngon múp míp luôn á! Cảm ơn môn sinh! 🍖🐷 (-10 NP)');
     onInteract?.();
     setTimeout(() => {
       setInteracting(false);
@@ -98,8 +98,8 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
 
     const speechOptions = [
       // Study Reminders
-      "Hôm nay thiếu hiệp đã ôn luyện chuyên đề nào ở Hang Luyện Công chưa? Ôn ngay kẻo lười nhé! 📐",
-      "Chân khí của thiếu hiệp đang dồi dào, mau vào Hang luyện vài chiêu thức thôi nào! ⚔️",
+      "Hôm nay môn sinh đã ôn luyện chuyên đề nào ở Hang Luyện Công chưa? Ôn ngay kẻo lười nhé! 📐",
+      "Chân khí của môn sinh đang dồi dào, mau vào Hang luyện vài chiêu thức thôi nào! ⚔️",
       "Nhớ duy trì Streak học tập đều đặn nhé! Đứt chuỗi Heo Maikawaii sẽ buồn ngủ lắm đó! 😴",
       "Mỗi ngày một chút tinh tấn, võ học của nàng sẽ đạt cảnh giới Xuất Chúng! 🏆",
       "Đấu trường đang rộn rã trống trận, ta vào tỷ thí một trận xem tài trí ra sao đi! 🏟️",
@@ -108,7 +108,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
 
     // Add praises if student has accomplished tasks today
     if (todayCorrect > 0) {
-      speechOptions.push(`Oa! Hôm nay thiếu hiệp đã trả lời đúng ${todayCorrect} câu hỏi rồi! Giỏi quá đi! Ta tặng một nụ hôn heo! 💋`);
+      speechOptions.push(`Oa! Hôm nay môn sinh đã trả lời đúng ${todayCorrect} câu hỏi rồi! Giỏi quá đi! Ta tặng một nụ hôn heo! 💋`);
       speechOptions.push("Ta thấy hôm nay nàng làm bài xuất sắc cực kỳ, đúng là tài trí phi phàm! 🌟");
     } else {
       speechOptions.push("Hôm nay nàng chưa làm đúng câu nào sao? Vào Hang Luyện Công cày chút Ngân Lượng thôi!");

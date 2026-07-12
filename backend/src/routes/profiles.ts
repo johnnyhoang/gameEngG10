@@ -648,4 +648,35 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
   }
 });
 
+// PATCH /api/profiles/rename
+router.patch('/profiles/rename', authMiddleware, async (req: any, res) => {
+  const accountId = req.user?.sub;
+  const { profileId, newName } = req.body;
+
+  if (!accountId) return res.status(401).json({ error: 'Unauthorized' });
+  if (!profileId || !newName?.trim()) {
+    return res.status(400).json({ error: 'Missing profileId or newName' });
+  }
+
+  try {
+    const check = await pool.query(
+      'SELECT id FROM ge10_users WHERE id = $1 AND account_id = $2 AND is_active = TRUE',
+      [profileId, accountId]
+    );
+    if (check.rowCount === 0) {
+      return res.status(404).json({ error: 'Profile not found or access denied.' });
+    }
+
+    await pool.query(
+      'UPDATE ge10_users SET name = $1 WHERE id = $2',
+      [newName.trim(), profileId]
+    );
+
+    return res.json({ success: true, newName: newName.trim() });
+  } catch (err: any) {
+    console.error('[PATCH /profiles/rename]', err);
+    return res.status(500).json({ error: 'Failed to update profile name.' });
+  }
+});
+
 export default router;

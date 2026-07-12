@@ -1,9 +1,9 @@
 # Sub-Spec: Hệ Thống Kinh Tế & Kinh Nghiệm (XP & NP)
 
-Tài liệu này quy định chi tiết luồng tiền tệ (Ngân lượng - NP) và điểm kinh nghiệm (XP) trong hệ thống GameEngG10, đảm bảo tính nhất quán về động lực tu học của Thiếu Hiệp.
+Tài liệu này quy định chi tiết luồng tiền tệ (Ngân lượng - NP) và điểm kinh nghiệm (XP) trong hệ thống GameEngG10, đảm bảo tính nhất quán về động lực tu học của Môn Sinh.
 
 ## 1. Nguyên tắc Cốt lõi của Kinh Nghiệm (XP)
-- **Luật Bất Cảm:** Điểm Kinh Nghiệm (XP) là thước đo nỗ lực học tập của Thiếu Hiệp. **XP chỉ có thể tăng hoặc đứng im, KHÔNG BAO GIỜ bị trừ** trong bất kỳ tình huống nào (kể cả khi bị phạt, chăm pet, hay bỏ học).
+- **Luật Bất Cảm:** Điểm Kinh Nghiệm (XP) là thước đo nỗ lực học tập của Môn Sinh. **XP chỉ có thể tăng hoặc đứng im, KHÔNG BAO GIỜ bị trừ** trong bất kỳ tình huống nào (kể cả khi bị phạt, chăm pet, hay bỏ học).
 - Cấp độ (Level) được tính toán dựa trên tổng XP tích lũy. XP không bao giờ giảm đồng nghĩa Level không bao giờ tụt.
 
 ### 1.1 Các mốc nhận XP (Võ học Tinh tấn)
@@ -20,12 +20,12 @@ Tài liệu này quy định chi tiết luồng tiền tệ (Ngân lượng - NP
 Bảng định nghĩa **duy nhất** cho quan hệ XP → Level → Danh hiệu nằm tại **CORE_SPECS §7.2** (6 danh hiệu: Tân Đệ Tử → Tông Sư). Không tồn tại bảng thứ hai.
 - **Công thức lên cấp (theo code hiện hành):** từ Level *n* lên Level *n+1* cần **n × 200 XP**.
 - Khi vượt ngưỡng: hệ thống hiển thị **chúc mừng thăng cấp**, ghi log truyền công; chạm mốc danh hiệu (Level 5/15/30/50/80) thì tặng badge + thưởng đột biến (CORE_SPECS §7.3).
-- *(Bảng cũ "Cấp 1–5: Tân Đệ Tử / Đệ Tử / Thiếu Hiệp / Đại Hiệp / Chưởng Môn theo mốc XP thô" đã bị **bãi bỏ** vì trùng lặp và lệch tên gọi với §7.2.)*
+- *(Bảng cũ "Cấp 1–5: Tân Đệ Tử / Đệ Tử / Môn Sinh / Đại Hiệp / Chưởng Môn theo mốc XP thô" đã bị **bãi bỏ** vì trùng lặp và lệch tên gọi với §7.2.)*
 
 ---
 
 ## 2. Nguyên tắc Cốt lõi của Ngân Lượng (NP - Coins)
-- Ngân lượng (NP) là đơn vị tiền tệ trao đổi trong game. Có thể **tăng và giảm** liên tục dựa trên các quyết định và kết quả tương tác của Thiếu Hiệp.
+- Ngân lượng (NP) là đơn vị tiền tệ trao đổi trong game. Có thể **tăng và giảm** liên tục dựa trên các quyết định và kết quả tương tác của Môn Sinh.
 - Có thể dùng NP để mua vật phẩm trong Shop, hoặc gửi yêu cầu đổi thành Ví VND với Viện Chủ.
 
 ### 2.1 Các tình huống Tăng NP (Thu Nhập)

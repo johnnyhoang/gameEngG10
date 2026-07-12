@@ -22,6 +22,7 @@ export interface StoreState {
   quickStartProfile: (role: 'student' | 'parent') => Promise<void>;
   login: (user: UserProfile) => Promise<void>;
   logout: () => Promise<void>;
+  renameProfile: (newName: string) => Promise<boolean>;
 
   // === PLAYER & MECHANICS SLICE ===
   player: PlayerProfile;

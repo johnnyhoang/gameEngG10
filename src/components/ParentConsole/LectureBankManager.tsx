@@ -14,6 +14,8 @@ interface Lesson {
   created_at?: string;
 }
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+
 export const LectureBankManager: React.FC = () => {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(false);
@@ -39,7 +41,7 @@ export const LectureBankManager: React.FC = () => {
       const token = session.data.session?.access_token;
       if (!token) return;
 
-      const res = await fetch('/api/admin/lessons', {
+      const res = await fetch(`${backendUrl}/api/admin/lessons`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -102,8 +104,8 @@ export const LectureBankManager: React.FC = () => {
       };
 
       const url = editingLesson 
-        ? `/api/admin/lessons/${editingLesson.id}`
-        : '/api/admin/lessons';
+        ? `${backendUrl}/api/admin/lessons/${editingLesson.id}`
+        : `${backendUrl}/api/admin/lessons`;
       const method = editingLesson ? 'PUT' : 'POST';
 
       const res = await fetch(url, {
@@ -141,7 +143,7 @@ export const LectureBankManager: React.FC = () => {
       const token = session.data.session?.access_token;
       if (!token) return;
 
-      const res = await fetch(`/api/admin/lessons/${lessonId}`, {
+      const res = await fetch(`${backendUrl}/api/admin/lessons/${lessonId}`, {
         method: 'DELETE',
         headers: { Authorization: `Bearer ${token}` }
       });

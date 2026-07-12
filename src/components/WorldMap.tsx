@@ -23,7 +23,7 @@ interface WorldMapProps {
   onStartLessonPractice?: (lessonId: string) => void;
 }
 
-// Worldmap hub (CORE_SPECS §2.1): 5 module chính ngang hàng cho Thiếu Hiệp —
+// Worldmap hub (CORE_SPECS §2.1): 5 module chính ngang hàng cho Môn Sinh —
 // Đấu Trường, Hang Luyện Công, Sơn Trang Thư Giãn, Bách Hóa Phường, Sân Thú Nuôi.
 export function WorldMap({
   onOpenArena, onOpenHang, onOpenRelax, onOpenShop, onOpenPet,

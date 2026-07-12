@@ -10,7 +10,7 @@ const DEV_AVATAR = 'data:image/svg+xml;utf8,' + encodeURIComponent(
 );
 
 const DEV_BACKDOOR_ROLES = [
-  { role: 'student', label: 'Thiếu Hiệp (Học sinh)', id: 'mock-dev-student', name: 'Dev Thiếu Hiệp' },
+  { role: 'student', label: 'Môn Sinh (Học sinh)', id: 'mock-dev-student', name: 'Dev Môn Sinh' },
   { role: 'pho_vien', label: 'Phó Viện (Phó hiệu trưởng)', id: 'mock-dev-pho-vien', name: 'Dev Phó Viện' },
   { role: 'truong_vien', label: 'Viện Chủ (Phụ huynh/Admin)', id: 'mock-dev-truong-vien', name: 'Dev Viện Chủ' },
 ] as const;

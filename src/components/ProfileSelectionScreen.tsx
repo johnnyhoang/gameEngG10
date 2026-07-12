@@ -55,7 +55,7 @@ export const ProfileSelectionScreen: React.FC = () => {
       colorClass: 'border-synth-cyan/30 hover:border-synth-cyan hover:bg-synth-cyan/5 text-synth-cyan shadow-[0_0_15px_rgba(0,240,255,0.05)]',
       exists: !!existingStudent,
       name: existingStudent?.name || 'Chưa khởi tạo',
-      desc: 'Thiếu Hiệp vào học tập & rèn luyện',
+      desc: 'Môn Sinh vào học tập & rèn luyện',
       isLoading: quickStarting === 'student',
     },
     {

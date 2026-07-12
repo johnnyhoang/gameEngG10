@@ -1,6 +1,6 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useGameState } from '../hooks/useGameState';
-import { ShieldAlert, X, Brain, AlertCircle, ArrowRight } from 'lucide-react';
+import { ShieldAlert, X, Brain, AlertCircle, ArrowRight, Lightbulb } from 'lucide-react';
 import type { SubjectId } from '../types/game';
 import { useSect } from '../contexts/SectContext';
 import type { Question } from '../types/game';
@@ -101,26 +101,15 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
       if (pageId) updatePendingKeyQuestion(pageId, null);
       awardCoinsAndXp(10, 0, 'Giải mã cổng sương mù đúng', `Trả lời đúng câu hỏi Gatekeeper tại ${pageId}`);
       toast.success('Trả lời chính xác! +10 NP 🎉');
+      setIsError(false);
       setShowWelcome(true);
     } else {
+      // Giữ nguyên câu hỏi để con làm lại tới khi đúng — không đổi sang câu khác
+      // (CORE_SPECS §9.5: Retry-Same-Question).
       setIsError(true);
       awardCoinsAndXp(-5, 0, 'Giải mã cổng sương mù sai', `Trả lời sai câu hỏi Gatekeeper tại ${pageId}`);
-      toast.error('Nhầm rồi thiếu hiệp! Bị phạt -5 NP. Đang đổi câu hỏi mới... 🐷');
-      
-      // Tự động load câu hỏi mới sau 2 giây để người dùng kịp quan sát
-      setTimeout(async () => {
-        const studentId = player?.id ?? 'guest';
-        const recentlyUsed = pageId ? await getRecentlyUsedGatekeeperIds(studentId, pageId) : [];
-        const picked = pageId ? pickGatekeeperQuestion(pageId, activeSectId as SubjectId, questions, recentlyUsed) : null;
-        if (picked) {
-          setQuestion(picked);
-          if (pageId) await recordGatekeeperUsage(studentId, pageId, picked.id);
-        } else {
-          setQuestion(null);
-        }
-        setSelectedAnswer('');
-        setIsError(false);
-      }, 2000);
+      toast.error('Nhầm rồi môn sinh! Bị phạt -5 NP. Hãy thử lại câu này nhé! 🐷');
+      setSelectedAnswer('');
     }
   };
 
@@ -136,9 +125,24 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
           <h2 className="font-orbitron font-black text-2xl text-white mb-2 uppercase tracking-widest">
             Sương mù tản ra!
           </h2>
-          <p className="text-slate-300 mb-8 text-sm leading-relaxed">
+          <p className="text-slate-300 mb-4 text-sm leading-relaxed">
             Tuyệt vời! Tri thức của con đã thắp sáng khu vực này. Cánh cổng đã mở, hãy tiến vào và bắt đầu hành trình.
           </p>
+
+          {question?.explanation && (
+            <div className="flex items-start gap-2 p-4 mb-6 rounded-xl bg-synth-cyan/5 border border-synth-cyan/20 text-left">
+              <Lightbulb className="w-5 h-5 shrink-0 text-synth-cyan mt-0.5" />
+              <div>
+                <p className="text-[10px] uppercase font-orbitron font-bold text-synth-cyan tracking-wider mb-1">
+                  Vì sao đáp án này đúng?
+                </p>
+                <p className="text-sm text-slate-300 leading-relaxed">
+                  {question.explanation}
+                </p>
+              </div>
+            </div>
+          )}
+
           <button
             onClick={() => {
               setIsOpen(false);
@@ -209,7 +213,7 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
               {isError && (
                 <div className="flex items-start gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
                   <AlertCircle className="w-5 h-5 shrink-0" />
-                  <p>Đáp án chưa chính xác! Câu hỏi này đã bị ghim lại. Hãy ôn tập và quay lại thử sức nhé.</p>
+                  <p>Đáp án chưa chính xác! Xem lại đề và chọn đáp án khác nhé.</p>
                 </div>
               )}
 

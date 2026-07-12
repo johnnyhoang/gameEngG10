@@ -206,7 +206,7 @@ export const ParentConsole: React.FC = () => {
             }}
             className="px-3 py-1.5 rounded bg-synth-gray/30 border border-white/10 text-xs text-white hover:bg-white/10 font-bold cursor-pointer transition-colors"
           >
-            Đổi thiếu hiệp khác
+            Đổi môn sinh khác
           </button>
         </div>
       )}
@@ -241,7 +241,7 @@ export const ParentConsole: React.FC = () => {
             {/* List of students for parent/admin viewing */}
             <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-4">
               <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
-                👥 Danh sách Thiếu Hiệp liên kết
+                👥 Danh sách Môn Sinh liên kết
               </h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {familyLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).map((link: any) => (
@@ -271,7 +271,7 @@ export const ParentConsole: React.FC = () => {
                 ))}
                 {familyLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).length === 0 && (
                   <p className="text-xs text-synth-text-muted italic py-4 col-span-3 text-center">
-                    Chưa có tài khoản thiếu hiệp nào kết nối vào gia đình.
+                    Chưa có tài khoản môn sinh nào kết nối vào gia đình.
                   </p>
                 )}
               </div>

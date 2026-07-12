@@ -99,8 +99,26 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const setGradeTier = useGameState(state => state.setGradeTier);
 
   const [activeTab, setActiveTab] = useState<'identity' | 'themes' | 'logs'>('identity');
-
   const [isCamNangOpen, setIsCamNangOpen] = useState(false);
+
+  // States for Profile Renaming
+  const renameProfile = useGameState(state => state.renameProfile);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [tempName, setTempName] = useState(currentUser.name);
+  const [isRenaming, setIsRenaming] = useState(false);
+
+  const handleSaveName = async () => {
+    if (!tempName.trim()) {
+      toast.error('Tên gọi không được để trống.');
+      return;
+    }
+    setIsRenaming(true);
+    const ok = await renameProfile(tempName.trim());
+    if (ok) {
+      setIsEditingName(false);
+    }
+    setIsRenaming(false);
+  };
 
   const activeTheme = UI_THEMES.find(theme => theme.id === currentTheme) || UI_THEMES[0];
   const isUnicorn = currentTheme === 'unicorn-dream';
@@ -168,9 +186,44 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 <Palette className={`h-3.5 w-3.5 ${isUnicorn ? 'text-fuchsia-500' : ''}`} />
                 Thân phận hồ sơ
               </p>
-              <h2 className={`text-2xl font-black md:text-3xl ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-                {currentUser.name}
-              </h2>
+              {isEditingName ? (
+                <div className="flex items-center gap-2 mt-1">
+                  <input
+                    type="text"
+                    value={tempName}
+                    onChange={e => setTempName(e.target.value)}
+                    className={`px-3 py-1 text-sm rounded border outline-none bg-white/10 ${
+                      isUnicorn ? 'border-violet-300 text-violet-900' : 'border-white/20 text-white'
+                    }`}
+                    disabled={isRenaming}
+                    autoFocus
+                  />
+                  <button
+                    onClick={handleSaveName}
+                    disabled={isRenaming}
+                    className="px-3 py-1 rounded bg-synth-green text-black font-orbitron font-bold text-xs cursor-pointer hover:opacity-80"
+                  >
+                    {isRenaming ? '...' : 'Lưu'}
+                  </button>
+                  <button
+                    onClick={() => { setIsEditingName(false); setTempName(currentUser.name); }}
+                    className="px-3 py-1 rounded bg-white/10 text-xs text-white cursor-pointer hover:bg-white/20"
+                  >
+                    Hủy
+                  </button>
+                </div>
+              ) : (
+                <h2 className={`text-2xl font-black md:text-3xl flex items-center gap-2 ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
+                  {currentUser.name}
+                  <button
+                    onClick={() => setIsEditingName(true)}
+                    className="p-1 rounded text-slate-400 hover:text-white transition-colors cursor-pointer text-xs"
+                    title="Đổi tên gọi"
+                  >
+                    ✏️
+                  </button>
+                </h2>
+              )}
               <p className={`mt-1 text-sm ${isUnicorn ? 'text-violet-700/75' : 'text-white/60'}`}>
                 {currentUser.email}
               </p>

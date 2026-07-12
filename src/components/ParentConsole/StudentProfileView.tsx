@@ -50,7 +50,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
     return (
       <div className="glass-panel rounded-2xl border border-white/5 p-8 text-center space-y-3">
         <p className="text-xs text-synth-text-muted">
-          Chọn tài khoản thiếu hiệp tại tab <strong className="text-synth-magenta">🏛️ Chính Điện</strong> (bấm "Xem Hoạt Động") để theo dõi báo cáo, tiến độ và nạp chân khí.
+          Chọn tài khoản môn sinh tại tab <strong className="text-synth-magenta">🏛️ Chính Điện</strong> (bấm "Xem Hoạt Động") để theo dõi báo cáo, tiến độ và nạp chân khí.
         </p>
       </div>
     );
@@ -104,7 +104,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
           <div className="flex items-center gap-2">
             <SlidersHorizontal className="w-4 h-4 text-synth-cyan" />
             <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
-              ⚡ Nạp Chân Khí cho Thiếu Hiệp
+              ⚡ Nạp Chân Khí cho Môn Sinh
             </h4>
           </div>
           <p className="text-xs text-slate-300">

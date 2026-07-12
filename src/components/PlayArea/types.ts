@@ -25,12 +25,14 @@ export interface QuestionEssayProps {
   typedAnswer: string;
   checked: boolean;
   onTypeAnswer: (answer: string) => void;
+  lang?: 'en-US' | 'vi-VN';
 }
 
 export interface QuestionTextInputProps {
   typedAnswer: string;
   checked: boolean;
   onTypeAnswer: (answer: string) => void;
+  lang?: 'en-US' | 'vi-VN';
 }
 
 export interface ExplanationBoxProps {

@@ -160,7 +160,7 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
             {/* Custom greeting based on trigger reason */}
             {triggerReason === 'login' && (
               <div className="text-center mb-4 font-orbitron font-bold text-synth-cyan animate-bounce drop-shadow-md">
-                Chào ngày mới, thiếu hiệp! 🐷
+                Chào ngày mới, môn sinh! 🐷
               </div>
             )}
             {triggerReason === 'idle' && (

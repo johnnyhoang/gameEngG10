@@ -17,7 +17,7 @@ export const createAuthSlice: StateCreator<
   Pick<StoreState,
     'currentUser' | 'sessionAccountId' | 'availableProfiles' |
     'setSessionAccountId' | 'fetchProfiles' | 'selectProfile' |
-    'createProfile' | 'quickStartProfile' | 'login' | 'logout'
+    'createProfile' | 'quickStartProfile' | 'login' | 'logout' | 'renameProfile'
   >
 > = (set, get) => ({
   currentUser: null,
@@ -265,6 +265,25 @@ export const createAuthSlice: StateCreator<
         };
       });
     }
+  },
+
+  renameProfile: async (newName: string) => {
+    const profile = get().currentUser;
+    if (!profile) return false;
+
+    const ok = await authService.renameProfile(profile.id, newName);
+    if (ok) {
+      set(state => ({
+        currentUser: state.currentUser ? { ...state.currentUser, name: newName } : null,
+        availableProfiles: state.availableProfiles.map(p =>
+          p.id === profile.id ? { ...p, name: newName } : p
+        )
+      }));
+      toast.success('Đã thay đổi tên gọi thành công! 🎉');
+      return true;
+    }
+    toast.error('Không thể thay đổi tên gọi.');
+    return false;
   },
 
   logout: async () => {
