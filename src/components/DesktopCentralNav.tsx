@@ -1,5 +1,6 @@
 import React from 'react';
 import { useGameState } from '../hooks/useGameState';
+import { isLightTheme } from '../theme/uiThemes';
 
 interface DesktopCentralNavProps {
   currentScreen: string;
@@ -8,7 +9,7 @@ interface DesktopCentralNavProps {
 
 export const DesktopCentralNav: React.FC<DesktopCentralNavProps> = ({ currentScreen, onNavigate }) => {
   const uiTheme = useGameState(state => state.uiTheme);
-  const isUnicorn = uiTheme === 'unicorn-dream';
+  const isUnicorn = isLightTheme(uiTheme);
 
   const gates = [
     { id: 'map', icon: '🗺️', label: 'Bản Đồ' },

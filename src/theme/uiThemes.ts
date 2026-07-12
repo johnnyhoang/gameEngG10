@@ -87,3 +87,7 @@ export const DEFAULT_UI_THEME: UiThemeId = 'current';
 
 export const getUiTheme = (themeId: UiThemeId) =>
   UI_THEMES.find(theme => theme.id === themeId) ?? UI_THEMES[0];
+
+export const isLightTheme = (themeId: UiThemeId): boolean => {
+  return themeId === 'cute-pink-pastel' || themeId === 'fantasy-forest' || themeId === 'unicorn-dream';
+};

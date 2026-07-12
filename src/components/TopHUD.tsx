@@ -4,6 +4,7 @@ import { Zap, Coins, Flame, Shield, LogOut } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
 import { useSect } from '../contexts/SectContext';
 import { SUBJECTS_CONFIG, getStudentRankForLevel } from '../types/game';
+import { isLightTheme } from '../theme/uiThemes';
 import type { SubjectId } from '../types/game';
 
 interface TopHUDProps {
@@ -28,7 +29,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   const uiTheme = useGameState(state => state.uiTheme);
 
   const activeSubjectConfig = SUBJECTS_CONFIG[activeSectId as SubjectId];
-  const isUnicorn = uiTheme === 'unicorn-dream';
+  const isUnicorn = isLightTheme(uiTheme);
 
   const isStudent = currentUser?.role === 'student';
   const isTeacher = isParentRole(currentUser?.role);

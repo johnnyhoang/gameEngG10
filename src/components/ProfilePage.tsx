@@ -80,6 +80,8 @@ const ThemePreview: React.FC<{ theme: UiThemeConfig }> = ({ theme }) => {
   );
 };
 
+import { isLightTheme } from '../theme/uiThemes';
+
 export const ProfilePage: React.FC<ProfilePageProps> = ({
   currentUser,
   currentTheme,
@@ -115,12 +117,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
   const activeTheme = UI_THEMES.find(theme => theme.id === currentTheme) || UI_THEMES[0];
   const isUnicorn = currentTheme === 'unicorn-dream';
+  const isLight = isLightTheme(currentTheme);
 
 
   return (
     <div className="space-y-6">
       <div className={`relative overflow-hidden rounded-[2rem] border p-5 md:p-8 ${
-        isUnicorn ? 'border-violet-200/35 bg-white/40' : 'border-white/15 bg-slate-950/60'
+        isLight ? 'border-violet-200/35 bg-white/40' : 'border-white/15 bg-slate-950/60'
       }`}>
         {isUnicorn && (
           <>

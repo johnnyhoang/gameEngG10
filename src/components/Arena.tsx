@@ -12,6 +12,8 @@ import {
 import { toast } from '../utils/toast';
 import { FogCard } from './FogCard';
 
+import { isLightTheme } from '../theme/uiThemes';
+
 interface ArenaProps {
   onStartPlay: (
     mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'survival',
@@ -32,7 +34,7 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
   const categoryStats = useGameState(state => state.categoryStats);
   const lessonsProgress = useGameState(state => state.lessonsProgress);
   const questions = useGameState(state => state.questions);
-  const isUnicorn = uiTheme === 'unicorn-dream';
+  const isUnicorn = isLightTheme(uiTheme);
 
   const [topicOpen, setTopicOpen] = useState(false);
 

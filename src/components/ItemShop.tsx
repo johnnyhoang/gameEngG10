@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { useGameState, THEME_UNLOCK_COST } from '../hooks/useGameState';
 import { Shield, Coins, Gift, Palette, RotateCcw } from 'lucide-react';
 import { toast } from '../utils/toast';
-import { UI_THEMES } from '../theme/uiThemes';
+import { UI_THEMES, isLightTheme } from '../theme/uiThemes';
 import { FogCard } from './FogCard';
 
 export const ItemShop: React.FC = () => {
@@ -15,7 +15,7 @@ export const ItemShop: React.FC = () => {
   const setUiTheme = useGameState(state => state.setUiTheme);
   const redeemReward = useGameState(state => state.redeemReward);
   const uiTheme = useGameState(state => state.uiTheme);
-  const isUnicorn = uiTheme === 'unicorn-dream';
+  const isUnicorn = isLightTheme(uiTheme);
   const unlockedThemes = player.unlockedThemes || ['current'];
 
   // Class Rewards (mới)

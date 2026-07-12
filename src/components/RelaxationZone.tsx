@@ -161,9 +161,11 @@ const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onO
   </div>
 );
 
+import { isLightTheme } from '../theme/uiThemes';
+
 export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   const uiTheme = useGameState(state => state.uiTheme);
-  const isUnicorn = uiTheme === 'unicorn-dream';
+  const isUnicorn = isLightTheme(uiTheme);
 
   const currentUser = useGameState(state => state.currentUser);
   const { activeSectId } = useSect();

@@ -3,6 +3,7 @@ import { X, Check } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
 import { SUBJECTS_CONFIG } from '../types/game';
 import { useSect } from '../contexts/SectContext';
+import { isLightTheme } from '../theme/uiThemes';
 import type { SubjectId } from '../types/game';
 
 export const GlobalSectModal: React.FC = () => {
@@ -10,7 +11,7 @@ export const GlobalSectModal: React.FC = () => {
   const setSectModalOpen = useGameState(state => state.setSectModalOpen);
   const { activeSectId, setActiveSectId } = useSect();
   const uiTheme = useGameState(state => state.uiTheme);
-  const isUnicorn = uiTheme === 'unicorn-dream';
+  const isUnicorn = isLightTheme(uiTheme);
 
   if (!isSectModalOpen) return null;
 

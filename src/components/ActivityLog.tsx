@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { useSect } from '../contexts/SectContext';
 import { Target, Clock, Gift, ShieldAlert, Award, FileText, CheckCircle2 } from 'lucide-react';
-
+import { isLightTheme } from '../theme/uiThemes';
 
 export const ActivityLog: React.FC = () => {
   const dailyMission = useGameState(state => state.dailyMission);
@@ -10,7 +10,7 @@ export const ActivityLog: React.FC = () => {
   const { activeSectId } = useSect();
   const uiTheme = useGameState(state => state.uiTheme);
   const currentUser = useGameState(state => state.currentUser);
-  const isUnicorn = uiTheme === 'unicorn-dream';
+  const isUnicorn = isLightTheme(uiTheme);
   const [visibleCount, setVisibleCount] = useState(15);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const loadMoreLockRef = useRef(false);

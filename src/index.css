@@ -132,6 +132,51 @@ body,
   --theme-border-error: rgba(190, 24, 93, 0.22);
   --theme-text-highlight: #4b2d66;
 
+  /* Redefine Tailwind scale variables for light/pastel mode */
+  --color-slate-950: #fff5fb;
+  --color-slate-900: #fff0f7;
+  --color-slate-800: #fce7f3;
+  --color-slate-700: #fbcfe8;
+  --color-slate-600: #f472b6;
+  --color-slate-500: #9f7b8e;
+  --color-slate-400: #8c6a9f;
+  --color-slate-300: #724f85;
+  --color-slate-200: #5f3c77;
+  --color-slate-100: #4b2d66;
+
+  --color-gray-950: #fff5fb;
+  --color-gray-900: #fff0f7;
+  --color-gray-800: #fce7f3;
+  --color-gray-700: #fbcfe8;
+  --color-gray-600: #f472b6;
+  --color-gray-500: #9f7b8e;
+  --color-gray-400: #8c6a9f;
+  --color-gray-300: #724f85;
+  --color-gray-200: #5f3c77;
+  --color-gray-100: #4b2d66;
+
+  --color-zinc-950: #fff5fb;
+  --color-zinc-900: #fff0f7;
+  --color-zinc-800: #fce7f3;
+  --color-zinc-700: #fbcfe8;
+  --color-zinc-600: #f472b6;
+  --color-zinc-500: #9f7b8e;
+  --color-zinc-400: #8c6a9f;
+  --color-zinc-300: #724f85;
+  --color-zinc-200: #5f3c77;
+  --color-zinc-100: #4b2d66;
+
+  --color-neutral-950: #fff5fb;
+  --color-neutral-900: #fff0f7;
+  --color-neutral-800: #fce7f3;
+  --color-neutral-700: #fbcfe8;
+  --color-neutral-600: #f472b6;
+  --color-neutral-500: #9f7b8e;
+  --color-neutral-400: #8c6a9f;
+  --color-neutral-300: #724f85;
+  --color-neutral-200: #5f3c77;
+  --color-neutral-100: #4b2d66;
+
   /* Cẩm Nang Phong Vị Đào Hoa */
   --theme-handbook-paper: #fdeef5;
   --theme-handbook-border: #9d174d;
@@ -232,6 +277,51 @@ body[data-theme='space-adventure'] {
   --theme-border-error: rgba(190, 18, 60, 0.22);
   --theme-text-highlight: #1e3a1e;
 
+  /* Redefine Tailwind scale variables for light forest mode */
+  --color-slate-950: #f4f8ea;
+  --color-slate-900: #f7f9ef;
+  --color-slate-800: #eef3de;
+  --color-slate-700: #dbe4c2;
+  --color-slate-600: #22c55e;
+  --color-slate-500: #7c8a68;
+  --color-slate-400: #556b2f;
+  --color-slate-300: #3f6348;
+  --color-slate-200: #2d4f36;
+  --color-slate-100: #23412a;
+
+  --color-gray-950: #f4f8ea;
+  --color-gray-900: #f7f9ef;
+  --color-gray-800: #eef3de;
+  --color-gray-700: #dbe4c2;
+  --color-gray-600: #22c55e;
+  --color-gray-500: #7c8a68;
+  --color-gray-400: #556b2f;
+  --color-gray-300: #3f6348;
+  --color-gray-200: #2d4f36;
+  --color-gray-100: #23412a;
+
+  --color-zinc-950: #f4f8ea;
+  --color-zinc-900: #f7f9ef;
+  --color-zinc-800: #eef3de;
+  --color-zinc-700: #dbe4c2;
+  --color-zinc-600: #22c55e;
+  --color-zinc-500: #7c8a68;
+  --color-zinc-400: #556b2f;
+  --color-zinc-300: #3f6348;
+  --color-zinc-200: #2d4f36;
+  --color-zinc-100: #23412a;
+
+  --color-neutral-950: #f4f8ea;
+  --color-neutral-900: #f7f9ef;
+  --color-neutral-800: #eef3de;
+  --color-neutral-700: #dbe4c2;
+  --color-neutral-600: #22c55e;
+  --color-neutral-500: #7c8a68;
+  --color-neutral-400: #556b2f;
+  --color-neutral-300: #3f6348;
+  --color-neutral-200: #2d4f36;
+  --color-neutral-100: #23412a;
+
   /* Cẩm Nang Phong Vị Trúc Lâm */
   --theme-handbook-paper: #f4f0da;
   --theme-handbook-border: #14532d;
@@ -327,6 +417,51 @@ body[data-theme='fantasy-forest'] {
   --theme-border-success: rgba(4, 120, 87, 0.22);
   --theme-border-error: rgba(185, 28, 28, 0.22);
   --theme-text-highlight: #371c4a;
+
+  /* Redefine Tailwind scale variables for light unicorn mode */
+  --color-slate-950: #fdf8ff;
+  --color-slate-900: #fff8ff;
+  --color-slate-800: #eadcf7;
+  --color-slate-700: #d8b4fe;
+  --color-slate-600: #c084fc;
+  --color-slate-500: #8b6f9c;
+  --color-slate-400: #7c5996;
+  --color-slate-300: #6d4b88;
+  --color-slate-200: #5f3c77;
+  --color-slate-100: #371c4a;
+
+  --color-gray-950: #fdf8ff;
+  --color-gray-900: #fff8ff;
+  --color-gray-800: #eadcf7;
+  --color-gray-700: #d8b4fe;
+  --color-gray-600: #c084fc;
+  --color-gray-500: #8b6f9c;
+  --color-gray-400: #7c5996;
+  --color-gray-300: #6d4b88;
+  --color-gray-200: #5f3c77;
+  --color-gray-100: #371c4a;
+
+  --color-zinc-950: #fdf8ff;
+  --color-zinc-900: #fff8ff;
+  --color-zinc-800: #eadcf7;
+  --color-zinc-700: #d8b4fe;
+  --color-zinc-600: #c084fc;
+  --color-zinc-500: #8b6f9c;
+  --color-zinc-400: #7c5996;
+  --color-zinc-300: #6d4b88;
+  --color-zinc-200: #5f3c77;
+  --color-zinc-100: #371c4a;
+
+  --color-neutral-950: #fdf8ff;
+  --color-neutral-900: #fff8ff;
+  --color-neutral-800: #eadcf7;
+  --color-neutral-700: #d8b4fe;
+  --color-neutral-600: #c084fc;
+  --color-neutral-500: #8b6f9c;
+  --color-neutral-400: #7c5996;
+  --color-neutral-300: #6d4b88;
+  --color-neutral-200: #5f3c77;
+  --color-neutral-100: #371c4a;
 
   /* Cẩm Nang Phong Vị Tuyết Sơn */
   --theme-handbook-paper: #f7f4ff;
@@ -754,3 +889,98 @@ body[data-theme='fantasy-forest'] .glass-panel,
   transform: translateY(-2px);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+/* ==========================================
+   Light Themes Support & Styling Coverage
+   ========================================== */
+
+/* Universal adjustments for all light themes */
+body[data-theme='cute-pink-pastel'],
+body[data-theme='fantasy-forest'],
+body[data-theme='unicorn-dream'] {
+  
+  /* dialog backdrops - make them look like soft blur glass instead of pitch black */
+  .bg-black\/80, .bg-black\/85, .bg-black\/90, .bg-black\/75 {
+    background-color: rgba(255, 255, 255, 0.3) !important;
+    backdrop-filter: blur(16px) saturate(130%) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(130%) !important;
+  }
+  
+  /* inside dialog panels, background should be white/card-like, not transparent black */
+  .fixed.inset-0 + div, 
+  .fixed.inset-0 .glass-panel,
+  .modal-content, 
+  dialog,
+  [role="dialog"] {
+    background: var(--theme-card-strong) !important;
+    border: 1px solid var(--theme-border) !important;
+    color: inherit !important;
+  }
+
+  /* card lists, settings and management panels */
+  .bg-black\/40, 
+  .bg-black\/35, 
+  .bg-black\/30, 
+  .bg-black\/20,
+  .bg-black\/10,
+  .bg-white\/5,
+  .bg-synth-gray\/10,
+  .bg-synth-gray\/20 {
+    background-color: var(--color-synth-card) !important;
+    color: inherit;
+  }
+
+  /* borders */
+  .border-white\/5, 
+  .border-white\/10, 
+  .border-white\/15,
+  .border-white\/20,
+  .border-slate-800,
+  .border-slate-700 {
+    border-color: var(--theme-border) !important;
+  }
+
+  /* inputs & form control elements */
+  input, 
+  textarea, 
+  select {
+    background-color: var(--color-synth-bg) !important;
+    color: inherit !important;
+    border-color: var(--theme-border) !important;
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-synth-text-muted) !important;
+    opacity: 0.8;
+  }
+
+  /* fix text white over light backgrounds */
+  .text-white,
+  .text-slate-100,
+  .text-slate-200 {
+    color: inherit !important;
+  }
+
+  /* buttons (like 'bg-slate-800 text-slate-300' or similar) */
+  .bg-slate-800,
+  .bg-zinc-800 {
+    background-color: var(--color-synth-gray) !important;
+    color: inherit !important;
+    border-color: var(--theme-border) !important;
+  }
+
+  .bg-slate-800:hover,
+  .bg-zinc-800:hover {
+    background-color: color-mix(in srgb, var(--color-synth-gray) 80%, black 10%) !important;
+  }
+
+  /* custom scrollbars for light themes */
+  ::-webkit-scrollbar-thumb {
+    background: var(--theme-border) !important;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-synth-cyan) !important;
+  }
+}
+

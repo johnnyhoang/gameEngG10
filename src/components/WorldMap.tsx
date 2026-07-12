@@ -23,6 +23,8 @@ interface WorldMapProps {
   onStartLessonPractice?: (lessonId: string) => void;
 }
 
+import { isLightTheme } from '../theme/uiThemes';
+
 // Worldmap hub (CORE_SPECS §2.1): 5 module chính ngang hàng cho Môn Sinh —
 // Đấu Trường, Hang Luyện Công, Sơn Trang Thư Giãn, Bách Hóa Phường, Sân Thú Nuôi.
 export function WorldMap({
@@ -34,7 +36,7 @@ export function WorldMap({
   const uiTheme = useGameState(state => state.uiTheme);
   const categoryStats = useGameState(state => state.categoryStats);
   const lessonsProgress = useGameState(state => state.lessonsProgress);
-  const isUnicorn = uiTheme === 'unicorn-dream';
+  const isUnicorn = isLightTheme(uiTheme);
   const syncWithServer = useGameState(state => state.syncWithServer);
 
   useEffect(() => {

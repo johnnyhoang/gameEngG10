@@ -1,9 +1,10 @@
 import React from 'react';
 import { useGameState } from '../hooks/useGameState';
+import { isLightTheme } from '../theme/uiThemes';
 
 export const SonTrangThuGian: React.FC = () => {
   const uiTheme = useGameState(state => state.uiTheme);
-  const isUnicorn = uiTheme === 'unicorn-dream';
+  const isUnicorn = isLightTheme(uiTheme);
 
   return (
     <div className="space-y-6 animate-fade-in">

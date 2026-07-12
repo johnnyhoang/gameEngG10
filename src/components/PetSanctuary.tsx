@@ -32,6 +32,8 @@ const STAGE_MEMORIES: Record<PetStage, { story: string; photoConcept: string }> 
   }
 };
 
+import { isLightTheme } from '../theme/uiThemes';
+
 interface PetSanctuaryProps {
   /** 'sidebar' = widget đồng hành thu gọn (mặc định); 'full' = module Sân Thú Nuôi đầy đủ, gồm Album Kỷ Niệm. */
   variant?: 'sidebar' | 'full';
@@ -53,7 +55,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
   const unlockedStageCount = PET_STAGE_ORDER.indexOf(pet.stage) + 1;
   const [albumIndex, setAlbumIndex] = useState(0);
 
-  const isUnicorn = uiTheme === 'unicorn-dream';
+  const isUnicorn = isLightTheme(uiTheme);
 
   const handleFeed = () => {
     const success = feedPet();
