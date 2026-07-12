@@ -413,20 +413,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
     return [...pool].sort((a, b) => (b.player?.xp || 0) - (a.player?.xp || 0));
   }, [isCallerAdmin, allStudents, teacherStudentTab, myClassStudents, coManagedClassStudents]);
 
-  // Combined students for stats cards
-  const combinedStudentsForStats = useMemo(() => {
-    if (isCallerAdmin) return allStudents;
-    const uniqueMap = new Map();
-    [...myClassStudents, ...coManagedClassStudents].forEach(s => uniqueMap.set(s.id, s));
-    return Array.from(uniqueMap.values());
-  }, [isCallerAdmin, allStudents, myClassStudents, coManagedClassStudents]);
 
-  const totalStudents = combinedStudentsForStats.length;
-  const totalXP = combinedStudentsForStats.reduce((acc, s) => acc + (s.player?.xp || 0), 0);
-  const totalCoins = combinedStudentsForStats.reduce((acc, s) => acc + (s.player?.coins || 0), 0);
-  const avgLevel = totalStudents > 0
-    ? Math.round(combinedStudentsForStats.reduce((acc, s) => acc + (s.player?.level || 1), 0) / totalStudents)
-    : 0;
 
   // Other personnel lists
   const primaryTeachers = useMemo(() => {
@@ -660,28 +647,8 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
         <div className="flex items-center gap-2">
           <ChartIcon className="w-4 h-4 text-synth-cyan" />
           <h3 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">
-            📊 Thiên Cơ Các — {isCallerAdmin ? 'Báo cáo & Thống kê toàn viện' : 'Báo cáo & Thống kê các lớp phụ trách'}
+            📊 Thư Tịch Thành Viên & Học Lực
           </h3>
-        </div>
-
-        {/* Overview Stats Grid */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white/5 border border-white/5 rounded-xl p-4 flex flex-col justify-between">
-            <span className="text-[10px] uppercase text-slate-400 font-bold font-orbitron">Tổng Số Môn Sinh</span>
-            <span className="text-2xl font-black text-synth-cyan font-orbitron mt-1">{totalStudents}</span>
-          </div>
-          <div className="bg-white/5 border border-white/5 rounded-xl p-4 flex flex-col justify-between">
-            <span className="text-[10px] uppercase text-slate-400 font-bold font-orbitron">Cấp Độ Trung Bình</span>
-            <span className="text-2xl font-black text-synth-magenta font-orbitron mt-1">LV.{avgLevel}</span>
-          </div>
-          <div className="bg-white/5 border border-white/5 rounded-xl p-4 flex flex-col justify-between">
-            <span className="text-[10px] uppercase text-slate-400 font-bold font-orbitron">Tổng XP Tích Lũy</span>
-            <span className="text-2xl font-black text-synth-green font-orbitron mt-1">{totalXP.toLocaleString()}</span>
-          </div>
-          <div className="bg-white/5 border border-white/5 rounded-xl p-4 flex flex-col justify-between">
-            <span className="text-[10px] uppercase text-slate-400 font-bold font-orbitron">Tổng Ngân Sách (NP)</span>
-            <span className="text-2xl font-black text-synth-orange font-orbitron mt-1">{totalCoins.toLocaleString()}</span>
-          </div>
         </div>
 
         {/* Rich Directory & Roster Lists Section */}

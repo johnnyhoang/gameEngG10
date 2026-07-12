@@ -1,4 +1,3 @@
-import { isAdmin, isParentRole } from '../utils/roleHelpers';
 import React, { useEffect } from 'react';
 import { Zap, Coins, Flame, Shield, LogOut } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
@@ -17,7 +16,7 @@ interface TopHUDProps {
 }
 
 export const TopHUD: React.FC<TopHUDProps> = ({
-  currentScreen, onOpenShop, onOpenParent, onOpenPet, onOpenProfile, onBackToMap, onLogout
+  currentScreen, onOpenShop, onOpenParent: _onOpenParent, onOpenPet, onOpenProfile, onBackToMap, onLogout
 }) => {
   const player = useGameState(state => state.player);
   const currentUser = useGameState(state => state.currentUser);
@@ -29,8 +28,6 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   const isUnicorn = isLightTheme(uiTheme);
 
   const isStudent = currentUser?.role === 'student';
-  const isTeacher = isParentRole(currentUser?.role);
-  const isSchoolAdmin = isAdmin(currentUser?.role);
 
   // Tick Chân Khí đều đặn để mở khóa đúng giờ hồi mà không cần reload trang (SUB_SPEC_ENERGY §5).
   useEffect(() => {
@@ -221,35 +218,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             </>
           )}
 
-          {isTeacher && (
-            <button
-              onClick={onOpenParent}
-              className={navBtnClass(
-                currentScreen === 'parent',
-                'bg-synth-cyan border-synth-cyan text-black shadow-[0_0_12px_#00f0ff]',
-                'bg-transparent border-synth-cyan/50 text-synth-cyan hover:bg-synth-cyan/10'
-              )}
-            >
-              <span>📋</span>
-              <span className="hidden sm:inline">Bảng Chủ Nhiệm</span>
-            </button>
-          )}
 
-          {isSchoolAdmin && (
-            <button
-              onClick={onOpenParent}
-              className={navBtnClass(
-                currentScreen === 'parent',
-                'bg-synth-magenta border-synth-magenta text-black shadow-[0_0_12px_#ff007f]',
-                'bg-transparent border-synth-magenta/50 text-synth-magenta hover:bg-synth-magenta/10'
-              )}
-            >
-              <span>👑</span>
-              <span className="hidden sm:inline">
-                {currentUser?.role === 'truong_vien' ? 'Bảng Hiệu Trưởng' : 'Bảng Hiệu Phó'}
-              </span>
-            </button>
-          )}
 
           {currentUser && (
             <button

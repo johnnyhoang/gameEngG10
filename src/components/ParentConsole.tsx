@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { isAdmin, isParentRole } from '../utils/roleHelpers';
 import { Unlock } from 'lucide-react';
+import { toast } from '../utils/toast';
 
 // Import child managers
 import { AdminConnectionManager } from './ParentConsole/AdminConnectionManager';
@@ -66,8 +67,45 @@ export const ParentConsole: React.FC = () => {
   const setUiTheme = useGameState(state => state.setUiTheme);
 
   // Local state for layout
-  const [activeTab, setActiveTab] = useState<'chinh_dien' | 'thien_co_cac' | 'van_quyen_cac' | 'tang_kinh_cac' | 'ngan_cac' | 'than_phan'>('chinh_dien');
+  const [activeTab, setActiveTab] = useState<'thien_co_cac' | 'van_quyen_cac' | 'tang_kinh_cac' | 'ngan_cac' | 'than_phan'>('thien_co_cac');
+  const [thienCoSubTab, setThienCoSubTab] = useState<'dashboard' | 'settings'>('dashboard');
   const [viewingStudentId, setViewingStudentId] = useState<string | null>(null);
+
+  // Filter students strictly by role for stats
+  const allStudents = useMemo(() => {
+    return adminStudents.filter((s: any) => s.role === 'student');
+  }, [adminStudents]);
+
+  // If teacher: filter students into "My Class" (Primary link) and "Co-managed Class" (Secondary link)
+  const myClassStudents = useMemo(() => {
+    if (isAdmin(currentUser?.role)) return allStudents;
+    const studentIds = (adminLinks || [])
+      .filter((l: any) => l.parent_id === currentUser?.id && l.link_type === 'primary')
+      .map((l: any) => l.student_id);
+    return allStudents.filter((s: any) => studentIds.includes(s.id));
+  }, [allStudents, adminLinks, currentUser?.id, currentUser?.role]);
+
+  const coManagedClassStudents = useMemo(() => {
+    if (isAdmin(currentUser?.role)) return [];
+    const studentIds = (adminLinks || [])
+      .filter((l: any) => l.parent_id === currentUser?.id && l.link_type === 'secondary')
+      .map((l: any) => l.student_id);
+    return allStudents.filter((s: any) => studentIds.includes(s.id));
+  }, [allStudents, adminLinks, currentUser?.id, currentUser?.role]);
+
+  const combinedStudentsForStats = useMemo(() => {
+    if (isAdmin(currentUser?.role)) return allStudents;
+    const uniqueMap = new Map();
+    [...myClassStudents, ...coManagedClassStudents].forEach(s => uniqueMap.set(s.id, s));
+    return Array.from(uniqueMap.values());
+  }, [currentUser?.role, allStudents, myClassStudents, coManagedClassStudents]);
+
+  const totalStudents = combinedStudentsForStats.length;
+  const totalXP = combinedStudentsForStats.reduce((acc, s) => acc + (s.player?.xp || 0), 0);
+  const totalCoins = combinedStudentsForStats.reduce((acc, s) => acc + (s.player?.coins || 0), 0);
+  const avgLevel = totalStudents > 0
+    ? Math.round(combinedStudentsForStats.reduce((acc, s) => acc + (s.player?.level || 1), 0) / totalStudents)
+    : 0;
 
   // Load students list on mount for admin users
   // NOTE: fetchAdminStudents/fetchFamily intentionally NOT in deps — Zustand actions get new references
@@ -151,29 +189,20 @@ export const ParentConsole: React.FC = () => {
         </div>
 
 
-        {/* Tab Controls */}
-        <div className="hidden md:flex gap-2 flex-wrap">
-          {(['chinh_dien', 'than_phan', 'thien_co_cac', 'van_quyen_cac', 'tang_kinh_cac', 'ngan_cac'] as const).map(tab => {
+        {/* Nav 1: Primary Navigation */}
+        <div className="hidden md:flex gap-2">
+          {(['than_phan', 'ngan_cac'] as const).map(tab => {
             const tabNames: Record<string, string> = {
-              chinh_dien: '🏛️ Chính Điện',
-              than_phan: currentUser?.role === 'truong_vien' || currentUser?.role === 'pho_vien' ? '👑 Viện Tích' : '👑 Giáo Tích',
-              thien_co_cac: '📖 Thiên Cơ Các',
-              van_quyen_cac: '📚 Vạn Quyển Các',
-              tang_kinh_cac: '📖 Tàng Kinh Các',
+              than_phan: currentUser?.role === 'truong_vien' || currentUser?.role === 'pho_vien' ? '👤 Viện Tích' : '👤 Giáo Tích',
               ngan_cac: '💰 Ngân Các'
             };
             return (
               <button
                 key={tab}
-                onClick={() => {
-                  setActiveTab(tab);
-                  if (tab === 'chinh_dien') {
-                    fetchAdminStudents();
-                  }
-                }}
-                className={`px-3 py-1.5 rounded-lg font-orbitron font-bold text-[10px] uppercase tracking-wider border cursor-pointer transition-all duration-300 ${
-                  activeTab === tab 
-                    ? 'bg-synth-magenta border-synth-magenta text-black shadow-[0_0_8px_#ff007f]' 
+                onClick={() => setActiveTab(tab)}
+                className={`px-4 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider border cursor-pointer transition-all duration-300 ${
+                  activeTab === tab
+                    ? 'bg-synth-magenta border-synth-magenta text-black shadow-[0_0_12px_#ff007f]'
                     : 'bg-transparent border-synth-magenta/30 text-synth-magenta hover:bg-synth-magenta/10'
                 }`}
               >
@@ -182,6 +211,47 @@ export const ParentConsole: React.FC = () => {
             );
           })}
         </div>
+      </div>
+
+      {/* Nav 2: Secondary Navigation */}
+      <div className="hidden md:flex items-center justify-between bg-synth-gray/10 border border-white/5 p-3 rounded-2xl gap-2">
+        <div className="flex gap-2">
+          {(['thien_co_cac', 'van_quyen_cac', 'tang_kinh_cac'] as const).map(tab => {
+            const tabNames: Record<string, string> = {
+              thien_co_cac: '⚙️ Thiên Cơ Các',
+              van_quyen_cac: '📚 Vạn Quyển Các',
+              tang_kinh_cac: '📖 Tàng Kinh Các'
+            };
+            return (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-3.5 py-2 rounded-xl font-orbitron font-bold text-[10px] uppercase tracking-wider border cursor-pointer transition-all duration-300 ${
+                  activeTab === tab
+                    ? 'bg-synth-cyan border-synth-cyan text-black shadow-[0_0_10px_#00f0ff]'
+                    : 'bg-transparent border-synth-cyan/30 text-synth-cyan hover:bg-synth-cyan/10'
+                }`}
+              >
+                {tabNames[tab]}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Đổi Môn Sinh Quick Action */}
+        {viewingStudentId && (
+          <button
+            onClick={() => {
+              setViewingStudentId(null);
+              setActiveTab('thien_co_cac');
+              toast.success('Đã quay lại danh sách môn sinh');
+            }}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-red-500/30 text-red-500 hover:bg-red-500/10 font-orbitron font-bold text-[10px] uppercase tracking-wider cursor-pointer transition-all duration-300"
+          >
+            <span>🔄</span>
+            <span>Đổi môn sinh</span>
+          </button>
+        )}
       </div>
 
       {/* Inspected Student Banner */}
@@ -203,7 +273,8 @@ export const ParentConsole: React.FC = () => {
           <button
             onClick={() => {
               setViewingStudentId(null);
-              setActiveTab('chinh_dien');
+              setActiveTab('thien_co_cac');
+              toast.success('Đã quay lại danh sách môn sinh');
             }}
             className="px-3 py-1.5 rounded bg-synth-gray/30 border border-white/10 text-xs text-white hover:bg-white/10 font-bold cursor-pointer transition-colors"
           >
@@ -214,69 +285,146 @@ export const ParentConsole: React.FC = () => {
 
       {/* Tab Panels */}
       <div className="glass-panel rounded-2xl border border-white/5 p-5">
-        {activeTab === 'chinh_dien' && (
+        {activeTab === 'thien_co_cac' && (
           <div className="space-y-6">
-            {(currentUser?.role === 'truong_vien' || currentUser?.role === 'pho_vien') ? (
-              <AdminConnectionManager
-                currentUser={currentUser}
-                familyLinks={familyLinks}
-                respondInvite={respondInvite}
-                leaveFamily={leaveFamily}
-                inviteAdminConnection={inviteAdminConnection}
-              />
-            ) : (
-              <FamilyManager
-                currentUser={currentUser}
-                familyLinks={familyLinks}
-                secondaryParents={secondaryParents}
-                sendInvite={sendInvite}
-                respondInvite={respondInvite}
-                inviteSecondary={inviteSecondary}
-                inviteSecondaryRequest={inviteSecondaryRequest}
-                updateSecondaryPermissions={updateSecondaryPermissions}
-                leaveFamily={leaveFamily}
-                applyVicePrincipal={applyVicePrincipal}
-              />
-            )}
-
-            {/* List of students for parent/admin viewing */}
-            <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-4">
-              <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
-                👥 Danh sách Môn Sinh liên kết
-              </h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {familyLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).map((link: any) => (
-                  <div key={link.student_id} className="p-4 rounded-xl bg-synth-gray/20 border border-white/5 flex flex-col justify-between gap-3">
-                    <div>
-                      <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <span className="font-bold text-white text-sm block">{link.student_name || link.student_email || 'Học sinh'}</span>
-                        {link.link_type === 'primary' ? (
-                          <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded bg-synth-cyan/20 border border-synth-cyan/40 text-synth-cyan" title="Bạn là Chủ nhiệm chính của lớp này">
-                            Chủ nhiệm chính
-                          </span>
-                        ) : (
-                          <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta" title="Bạn là Chủ nhiệm phụ hỗ trợ lớp này">
-                            Chủ nhiệm phụ
-                          </span>
-                        )}
-                      </div>
-                      <span className="text-[10px] text-synth-text-muted">{link.student_email}</span>
-                    </div>
-                    <button
-                      onClick={() => handleInspectStudent(link.student_id)}
-                      className="px-3 py-2 bg-synth-cyan text-black font-bold font-orbitron text-[10px] uppercase rounded-lg hover:synth-glow-cyan transition-all cursor-pointer w-full text-center"
-                    >
-                      Xem Hoạt Động 👑
-                    </button>
-                  </div>
-                ))}
-                {familyLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).length === 0 && (
-                  <p className="text-xs text-synth-text-muted italic py-4 col-span-3 text-center">
-                    Chưa có tài khoản môn sinh nào kết nối vào gia đình.
-                  </p>
-                )}
+            {/* Welcome & Introduction Banner */}
+            <div className="glass-panel rounded-2xl border border-synth-cyan/30 p-6 bg-gradient-to-r from-synth-cyan/10 via-transparent to-synth-magenta/5 relative overflow-hidden shadow-lg">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-synth-cyan/5 rounded-full blur-2xl pointer-events-none"></div>
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-synth-magenta/5 rounded-full blur-3xl pointer-events-none"></div>
+              <div className="relative z-10 space-y-2">
+                <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
+                  🔮 THIÊN CƠ CÁC — TRUNG TÂM ĐIỀU HÀNH & QUẢN TRỊ
+                </h3>
+                <p className="text-xs text-synth-text-muted leading-relaxed max-w-4xl">
+                  Chào mừng Viện Chủ đến với Thiên Cơ Các! Đây là pháp đường điều hành tối cao của học viện. Viện Chủ có thể theo dõi danh sách môn sinh, thiết lập liên kết gia đình/trường học, điều chỉnh quy tắc nhận thưởng (Ngân Lượng NP), cấm nang võ học, và kiểm tra lịch sử quyết nghị.
+                </p>
               </div>
             </div>
+
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="glass-panel border border-white/5 rounded-2xl p-4 flex flex-col justify-between hover:border-synth-cyan/30 transition-all duration-300 group bg-white/3">
+                <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-cyan transition-colors">👥 Tổng Số Môn Sinh</span>
+                <span className="text-2xl font-black text-synth-cyan font-orbitron mt-1">{totalStudents}</span>
+              </div>
+              <div className="glass-panel border border-white/5 rounded-2xl p-4 flex flex-col justify-between hover:border-synth-magenta/30 transition-all duration-300 group bg-white/3">
+                <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-magenta transition-colors">🔥 Cấp Độ Trung Bình</span>
+                <span className="text-2xl font-black text-synth-magenta font-orbitron mt-1">LV.{avgLevel}</span>
+              </div>
+              <div className="glass-panel border border-white/5 rounded-2xl p-4 flex flex-col justify-between hover:border-synth-green/30 transition-all duration-300 group bg-white/3">
+                <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-green transition-colors">⚡ Tổng XP Tích Lũy</span>
+                <span className="text-2xl font-black text-synth-green font-orbitron mt-1">{totalXP.toLocaleString()}</span>
+              </div>
+              <div className="glass-panel border border-white/5 rounded-2xl p-4 flex flex-col justify-between hover:border-synth-orange/30 transition-all duration-300 group bg-white/3">
+                <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-orange transition-colors">💰 Tổng Ngân Sách (NP)</span>
+                <span className="text-2xl font-black text-synth-orange font-orbitron mt-1">{totalCoins.toLocaleString()}</span>
+              </div>
+            </div>
+
+            {/* Sub-Tab Control inside Thiên Cơ Các */}
+            <div className="flex gap-2 border-b border-white/5 pb-3">
+              <button
+                onClick={() => setThienCoSubTab('dashboard')}
+                className={`px-4 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider border cursor-pointer transition-all duration-300 ${
+                  thienCoSubTab === 'dashboard'
+                    ? 'bg-synth-cyan border-synth-cyan text-black shadow-[0_0_8px_#00f0ff]'
+                    : 'bg-transparent border-white/10 text-synth-text-muted hover:text-white hover:border-white/30'
+                }`}
+              >
+                👥 Môn Sinh & Liên Kết
+              </button>
+              <button
+                onClick={() => setThienCoSubTab('settings')}
+                className={`px-4 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider border cursor-pointer transition-all duration-300 ${
+                  thienCoSubTab === 'settings'
+                    ? 'bg-synth-cyan border-synth-cyan text-black shadow-[0_0_8px_#00f0ff]'
+                    : 'bg-transparent border-white/10 text-synth-text-muted hover:text-white hover:border-white/30'
+                }`}
+              >
+                ⚙️ Cấu Hình & Học Viện
+              </button>
+            </div>
+
+            {/* Sub-Tab Contents */}
+            {thienCoSubTab === 'dashboard' ? (
+              <div className="space-y-6">
+                {/* List of students for parent/admin viewing */}
+                <div className="rounded-2xl border border-white/5 bg-white/5 p-5 space-y-4">
+                  <div className="flex justify-between items-center">
+                    <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
+                      👥 Danh sách Môn Sinh liên kết
+                    </h4>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {familyLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).map((link: any) => (
+                      <div key={link.student_id} className="p-4 rounded-xl bg-synth-gray/20 border border-white/5 flex flex-col justify-between gap-3 hover:border-synth-cyan/40 transition-colors">
+                        <div>
+                          <div className="flex flex-wrap items-center gap-2 mb-1">
+                            <span className="font-bold text-white text-sm block">{link.student_name || link.student_email || 'Học sinh'}</span>
+                            {link.link_type === 'primary' ? (
+                              <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded bg-synth-cyan/20 border border-synth-cyan/40 text-synth-cyan" title="Bạn là Chủ nhiệm chính của lớp này">
+                                Chủ nhiệm chính
+                              </span>
+                            ) : (
+                              <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta" title="Bạn là Chủ nhiệm phụ hỗ trợ lớp này">
+                                Chủ nhiệm phụ
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-synth-text-muted">{link.student_email}</span>
+                        </div>
+                        <button
+                          onClick={() => handleInspectStudent(link.student_id)}
+                          className="px-3 py-2 bg-synth-cyan text-black font-bold font-orbitron text-[10px] uppercase rounded-lg hover:synth-glow-cyan transition-all cursor-pointer w-full text-center"
+                        >
+                          Xem Hoạt Động 👑
+                        </button>
+                      </div>
+                    ))}
+                    {familyLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).length === 0 && (
+                      <p className="text-xs text-synth-text-muted italic py-4 col-span-3 text-center">
+                        Chưa có tài khoản môn sinh nào kết nối vào gia đình.
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Connection Manager */}
+                {(currentUser?.role === 'truong_vien' || currentUser?.role === 'pho_vien') ? (
+                  <AdminConnectionManager
+                    currentUser={currentUser}
+                    familyLinks={familyLinks}
+                    respondInvite={respondInvite}
+                    leaveFamily={leaveFamily}
+                    inviteAdminConnection={inviteAdminConnection}
+                  />
+                ) : (
+                  <FamilyManager
+                    currentUser={currentUser}
+                    familyLinks={familyLinks}
+                    secondaryParents={secondaryParents}
+                    sendInvite={sendInvite}
+                    respondInvite={respondInvite}
+                    inviteSecondary={inviteSecondary}
+                    inviteSecondaryRequest={inviteSecondaryRequest}
+                    updateSecondaryPermissions={updateSecondaryPermissions}
+                    leaveFamily={leaveFamily}
+                    applyVicePrincipal={applyVicePrincipal}
+                  />
+                )}
+              </div>
+            ) : (
+              <SettingsManager
+                currentUser={currentUser}
+                adminStudents={adminStudents}
+                adminLinks={adminLinks}
+                gameSettings={gameSettings}
+                updateGameSettings={updateGameSettings as any}
+                addHandbookPage={addHandbookPage as any}
+                auditLogs={auditLogs}
+                fetchAuditLogs={fetchAuditLogs}
+              />
+            )}
           </div>
         )}
 
@@ -303,19 +451,6 @@ export const ParentConsole: React.FC = () => {
               onSelectTheme={setUiTheme}
             />
           )
-        )}
-
-        {activeTab === 'thien_co_cac' && (
-          <SettingsManager
-            currentUser={currentUser}
-            adminStudents={adminStudents}
-            adminLinks={adminLinks}
-            gameSettings={gameSettings}
-            updateGameSettings={updateGameSettings as any}
-            addHandbookPage={addHandbookPage as any}
-            auditLogs={auditLogs}
-            fetchAuditLogs={fetchAuditLogs}
-          />
         )}
 
         {activeTab === 'van_quyen_cac' && (
@@ -360,44 +495,44 @@ export const ParentConsole: React.FC = () => {
       </div>
 
       {/* Mobile Admin Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-3 py-2.5 pb-3 grid grid-cols-6 gap-1 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)] text-center">
-        <button
-          onClick={() => {
-            setActiveTab('chinh_dien');
-            fetchAdminStudents();
-          }}
-          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-            activeTab === 'chinh_dien' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
-          }`}
-        >
-          <span className="text-base">🏛️</span>
-          <span>Chính Điện</span>
-        </button>
-
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-2 py-2 pb-3 grid ${viewingStudentId ? 'grid-cols-6' : 'grid-cols-5'} gap-1 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)] text-center`}>
         <button
           onClick={() => setActiveTab('than_phan')}
           className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-            activeTab === 'than_phan' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
+            activeTab === 'than_phan' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
           }`}
         >
-          <span className="text-base">👑</span>
-          <span>{currentUser?.role === 'truong_vien' || currentUser?.role === 'pho_vien' ? 'Viện Tích' : 'Giáo Tích'}</span>
+          <span className="text-base">👤</span>
+          <span>Thân Phận</span>
         </button>
 
         <button
-          onClick={() => setActiveTab('thien_co_cac')}
+          onClick={() => setActiveTab('ngan_cac')}
           className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-            activeTab === 'thien_co_cac' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
+            activeTab === 'ngan_cac' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
           }`}
         >
-          <span className="text-base">📖</span>
+          <span className="text-base">💰</span>
+          <span>Ngân Các</span>
+        </button>
+
+        <button
+          onClick={() => {
+            setActiveTab('thien_co_cac');
+            fetchAdminStudents();
+          }}
+          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
+            activeTab === 'thien_co_cac' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
+          }`}
+        >
+          <span className="text-base">⚙️</span>
           <span>Thiên Cơ</span>
         </button>
 
         <button
           onClick={() => setActiveTab('van_quyen_cac')}
           className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-            activeTab === 'van_quyen_cac' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
+            activeTab === 'van_quyen_cac' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
           }`}
         >
           <span className="text-base">📚</span>
@@ -407,22 +542,26 @@ export const ParentConsole: React.FC = () => {
         <button
           onClick={() => setActiveTab('tang_kinh_cac')}
           className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-            activeTab === 'tang_kinh_cac' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
+            activeTab === 'tang_kinh_cac' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
           }`}
         >
           <span className="text-base">📖</span>
           <span>Tàng Kinh</span>
         </button>
 
-        <button
-          onClick={() => setActiveTab('ngan_cac')}
-          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-            activeTab === 'ngan_cac' ? 'text-synth-magenta' : 'text-synth-text-muted hover:text-white'
-          }`}
-        >
-          <span className="text-base">💰</span>
-          <span>Ngân Các</span>
-        </button>
+        {viewingStudentId && (
+          <button
+            onClick={() => {
+              setViewingStudentId(null);
+              setActiveTab('thien_co_cac');
+              toast.success('Đã quay lại danh sách môn sinh');
+            }}
+            className="flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider text-red-400 hover:text-red-300 transition-colors cursor-pointer"
+          >
+            <span className="text-base">🔄</span>
+            <span>Đổi Môn</span>
+          </button>
+        )}
       </nav>
     </div>
   );
