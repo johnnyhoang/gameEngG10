@@ -151,7 +151,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   : 'border-white/10 bg-white/5 text-white/70'
               }`}>
                 <Palette className={`h-3.5 w-3.5 ${isUnicorn ? 'text-fuchsia-500' : ''}`} />
-                Thân phận hồ sơ
+                Học tịch hồ sơ
               </p>
               {isEditingName ? (
                 <div className="flex items-center gap-2 mt-1">
@@ -224,7 +224,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 : 'bg-white/5 border border-white/5 text-slate-400 hover:text-white'
             }`}
           >
-            👑 Thân Phận & Võ Học
+            👑 Học Tích & Võ Học
           </button>
           <button
             onClick={() => setActiveTab('themes')}
@@ -249,7 +249,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         </div>
 
 
-        {/* TAB 1: THÂN PHẬN & VÕ HỌC */}
+        {/* TAB 1: HỌC TÍCH & VÕ HỌC */}
         {activeTab === 'identity' && (
           <div className="space-y-6">
             {/* General Stats Header (Chỉ hiển thị cho Học Sinh) */}

@@ -584,7 +584,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
 
         <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between bg-white/5 rounded-xl border border-white/5 p-4">
           <p className="text-[10px] text-synth-text-muted leading-relaxed">
-            Các cấu hình này áp dụng chung cho tất cả môn sinh (Đảo thử thách và lượng điểm nhận được). Riêng Trần Chân Khí + giờ hồi thì chỉnh RIÊNG cho từng con tại tab 🏛️ Thân Phận → xem hồ sơ con.
+            Các cấu hình này áp dụng chung cho tất cả môn sinh (Đảo thử thách và lượng điểm nhận được). Riêng Trần Chân Khí + giờ hồi thì chỉnh RIÊNG cho từng con tại tab 🏛️ {currentUser?.role === 'truong_vien' || currentUser?.role === 'pho_vien' ? 'Viện Tích' : 'Giáo Tích'} → xem hồ sơ con.
           </p>
           <button
             onClick={handleSaveSettings}

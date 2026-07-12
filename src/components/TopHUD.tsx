@@ -205,10 +205,10 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                 <span className="hidden lg:inline">Sân Thú</span>
               </button>
 
-              {/* Thân Phận */}
+              {/* Học Tích */}
               <button
                 onClick={onOpenProfile}
-                title="Thân Phận Đệ Tử"
+                title="Học Tích Đệ Tử"
                 className={navBtnClass(
                   currentScreen === 'profile',
                   isUnicorn ? 'bg-gradient-to-r from-fuchsia-400 to-cyan-300 border-violet-200 text-violet-900 shadow-[0_0_10px_rgba(192,132,252,0.2)]' : 'bg-synth-magenta border-synth-magenta text-black shadow-[0_0_12px_#ff007f]',
@@ -216,7 +216,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                 )}
               >
                 <span>👑</span>
-                <span className="hidden lg:inline">Thân Phận</span>
+                <span className="hidden lg:inline">Học tịch</span>
               </button>
             </>
           )}

@@ -156,7 +156,7 @@ export const ParentConsole: React.FC = () => {
           {(['chinh_dien', 'than_phan', 'thien_co_cac', 'van_quyen_cac', 'tang_kinh_cac', 'ngan_cac'] as const).map(tab => {
             const tabNames: Record<string, string> = {
               chinh_dien: '🏛️ Chính Điện',
-              than_phan: '👑 Thân Phận',
+              than_phan: currentUser?.role === 'truong_vien' || currentUser?.role === 'pho_vien' ? '👑 Viện Tích' : '👑 Giáo Tích',
               thien_co_cac: '📖 Thiên Cơ Các',
               van_quyen_cac: '📚 Vạn Quyển Các',
               tang_kinh_cac: '📖 Tàng Kinh Các',
@@ -381,7 +381,7 @@ export const ParentConsole: React.FC = () => {
           }`}
         >
           <span className="text-base">👑</span>
-          <span>Thân Phận</span>
+          <span>{currentUser?.role === 'truong_vien' || currentUser?.role === 'pho_vien' ? 'Viện Tích' : 'Giáo Tích'}</span>
         </button>
 
         <button

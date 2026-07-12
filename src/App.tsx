@@ -566,7 +566,7 @@ function App() {
             }`}
           >
             <span className="text-lg">👑</span>
-            <span>Thân Phận</span>
+            <span>Học tịch</span>
           </button>
         </nav>
       )}
