@@ -256,7 +256,8 @@ export const createAdminSlice: StateCreator<
 
   fetchAdminStudents: async () => {
     try {
-      const data = await adminService.fetchAdminStudents();
+      const activeProfileId = get().currentUser?.id;
+      const data = await adminService.fetchAdminStudents(activeProfileId);
       set({ adminStudents: data.users || [], adminLinks: data.links || [] });
     } catch (e) {
       console.error('Error fetching admin students list:', e);

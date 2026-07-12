@@ -72,11 +72,15 @@ export const adminService = {
     return res.ok;
   },
 
-  fetchAdminStudents: async (): Promise<any[]> => {
+  fetchAdminStudents: async (profileId?: string): Promise<any[]> => {
     const token = await adminService.getAccessToken();
     if (!token) return [];
 
-    const res = await fetch(`${backendUrl}/api/admin/users`, {
+    const url = profileId
+      ? `${backendUrl}/api/admin/users?profileId=${encodeURIComponent(profileId)}`
+      : `${backendUrl}/api/admin/users`;
+
+    const res = await fetch(url, {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (res.ok) {
