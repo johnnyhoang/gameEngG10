@@ -40,7 +40,7 @@ export const createAuthSlice: StateCreator<
   selectProfile: async (profileId: string) => {
     try {
       const data = await authService.selectProfile(profileId);
-      const resolvedTheme = (get().uiThemesByUser[profileId] || DEFAULT_UI_THEME) as any;
+      const resolvedTheme = data.player?.uiTheme || (get().uiThemesByUser[profileId] || DEFAULT_UI_THEME) as any;
       const mergedQuestions = [...INITIAL_QUESTIONS];
       const idMap = new Map<string, number>();
       mergedQuestions.forEach((q, idx) => {
@@ -165,7 +165,7 @@ export const createAuthSlice: StateCreator<
       await authService.syncUser();
       const data = await authService.fetchCurrentProfile();
       const dbCustomQs = data.customQuestions || [];
-      const resolvedTheme = (get().uiThemesByUser[data.currentUser?.id || user.id] || DEFAULT_UI_THEME) as any;
+      const resolvedTheme = data.player?.uiTheme || (get().uiThemesByUser[data.currentUser?.id || user.id] || DEFAULT_UI_THEME) as any;
 
       set(_state => {
         const mergedQuestions = [...INITIAL_QUESTIONS];

@@ -107,6 +107,8 @@ export interface PlayerProfile {
   badges: string[];
   /** Phong Vị (theme giao diện) đã mở khóa bằng NP tại Bách Hóa Phường (CORE_SPECS §2.4). 'current' luôn miễn phí mặc định. */
   unlockedThemes?: UiThemeId[];
+  /** Phong vị giao diện đang dùng của profile này */
+  uiTheme?: UiThemeId;
   /** Track daily skips for Môn Chủ Hỏi Tội */
   dailySkips?: { date: string, count: number };
   /** Luật Bất Thoái (CORE_SPECS §7.4.4): Đẳng Cấp Môn Phái cao nhất từng đạt theo từng môn (lưu `order` trong SECT_MASTERY_RANKS) — không bao giờ tụt kể cả khi Hiệu Trưởng import thêm câu hỏi/bài học làm tỉ lệ % thô giảm. */

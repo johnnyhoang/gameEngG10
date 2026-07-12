@@ -47,6 +47,7 @@ CREATE TABLE IF NOT EXISTS ge10_player_profiles (
     daily_np_earned INTEGER DEFAULT 0,
     last_np_earned_date VARCHAR(10) DEFAULT '',
     daily_skips JSONB DEFAULT '{"date": "", "count": 0}'::jsonb,
+    ui_theme VARCHAR(50) DEFAULT 'current',
     server_updated_at TIMESTAMP DEFAULT NOW()
 );
 

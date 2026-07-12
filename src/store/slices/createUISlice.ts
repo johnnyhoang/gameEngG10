@@ -43,10 +43,12 @@ export const createUISlice: StateCreator<
 
   setUiTheme: (themeId) => {
     set(state => {
-      if (!state.currentUser) return { uiTheme: themeId };
+      if (!state.currentUser) return { uiTheme: themeId } as any;
       const newMap = { ...state.uiThemesByUser, [state.currentUser.id]: themeId };
-      return { uiTheme: themeId, uiThemesByUser: newMap };
+      const updatedPlayer = state.player ? { ...state.player, uiTheme: themeId } : state.player;
+      return { uiTheme: themeId, uiThemesByUser: newMap, player: updatedPlayer } as any;
     });
+    get().syncWithServer?.();
   },
 
   showHelp: (topic: string) => set({ helpPageId: topic }),

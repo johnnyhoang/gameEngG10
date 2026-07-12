@@ -265,7 +265,8 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
         energy: playerRes.rows[0].energy,
         hearts: playerRes.rows[0].hearts,
         lastActive: playerRes.rows[0].last_active,
-        badges: playerRes.rows[0].badges || []
+        badges: playerRes.rows[0].badges || [],
+        uiTheme: playerRes.rows[0].ui_theme || 'current'
       } : null,
       pet: petRes.rows[0] ? {
         name: petRes.rows[0].name,
@@ -450,8 +451,8 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
       // maxEnergy/resetHours KHÔNG nằm trong sync này — đó là cấu hình do chủ nhiệm chỉnh riêng
       // qua /api/admin/set-energy-config, con tự sync không được phép ghi đè (SUB_SPEC_ENERGY §2).
       await client.query(
-        `INSERT INTO ge10_player_profiles (user_id, level, xp, coins, streak, energy, energy_depleted_at, hearts, last_active, badges, max_achieved_mastery_rank, server_updated_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, NOW())
+        `INSERT INTO ge10_player_profiles (user_id, level, xp, coins, streak, energy, energy_depleted_at, hearts, last_active, badges, max_achieved_mastery_rank, ui_theme, server_updated_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, NOW())
          ON CONFLICT (user_id) DO UPDATE SET
            level = EXCLUDED.level,
            xp = EXCLUDED.xp,
@@ -463,6 +464,7 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
            last_active = EXCLUDED.last_active,
            badges = EXCLUDED.badges,
            max_achieved_mastery_rank = EXCLUDED.max_achieved_mastery_rank,
+           ui_theme = EXCLUDED.ui_theme,
            server_updated_at = NOW()`,
         [
           userId,
@@ -475,7 +477,8 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
           player.hearts,
           player.lastActive,
           player.badges,
-          JSON.stringify(mergedMasteryRank)
+          JSON.stringify(mergedMasteryRank),
+          player.uiTheme || 'current'
         ]
       );
     }
