@@ -68,13 +68,14 @@ export const familyService = {
     return { success: false, error: err.error || 'Có lỗi xảy ra' };
   },
 
-  searchUsers: async (q: string, role?: string): Promise<any[]> => {
+  searchUsers: async (q: string, role?: string, profileId?: string): Promise<any[]> => {
     const token = await familyService.getAccessToken();
     if (!token) return [];
 
     const url = new URL(`${backendUrl}/api/users/search`);
     url.searchParams.append('q', q);
     if (role) url.searchParams.append('role', role);
+    if (profileId) url.searchParams.append('profileId', profileId);
 
     const res = await fetch(url.toString(), {
       method: 'GET',

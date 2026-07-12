@@ -63,7 +63,8 @@ export const createFamilySlice: StateCreator<
   },
 
   searchUsers: async (q: string, role?: string) => {
-    return familyService.searchUsers(q, role);
+    const profileId = get().currentUser?.id;
+    return familyService.searchUsers(q, role, profileId);
   },
 
   updateSecondaryPermissions: async (linkId: string, permissions: any) => {

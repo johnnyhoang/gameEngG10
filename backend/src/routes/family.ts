@@ -8,11 +8,20 @@ const router = express.Router();
 
 // GET /api/users/search
 router.get('/users/search', authMiddleware, async (req: any, res) => {
-  const { q, role } = req.query;
+  const { q, role, profileId } = req.query;
   if (!q || typeof q !== 'string' || !q.trim()) return res.json([]);
   try {
     const accountId = req.user?.sub;
     if (!accountId) return res.status(401).json({ error: 'Unauthorized: missing accountId' });
+
+    let callerProfileId = profileId;
+    if (!callerProfileId) {
+      const check = await pool.query(
+        "SELECT id FROM ge10_users WHERE account_id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien') LIMIT 1",
+        [accountId]
+      );
+      callerProfileId = check.rows[0]?.id;
+    }
 
     const searchTerm = `%${q.trim()}%`;
     let queryText = `
@@ -27,6 +36,19 @@ router.get('/users/search', authMiddleware, async (req: any, res) => {
     if (role) {
       if (role === 'parent' || role === 'secondary_parent') {
         queryText += " AND role IN ('parent', 'secondary_parent')";
+        if (callerProfileId) {
+          queryText += `
+            AND NOT EXISTS (
+              SELECT 1 FROM ge10_family_links
+              WHERE parent_id = ge10_users.id
+                AND student_id IN (
+                  SELECT student_id FROM ge10_family_links WHERE parent_id = $3 AND status = 'active'
+                )
+                AND status IN ('active', 'pending_primary')
+            )
+          `;
+          params.push(callerProfileId);
+        }
       } else if (role === 'admin_board') {
         queryText += " AND role IN ('truong_vien', 'pho_vien')";
       } else {
@@ -34,6 +56,7 @@ router.get('/users/search', authMiddleware, async (req: any, res) => {
         params.push(role);
 
         if (role === 'student') {
+          // Bắt buộc học sinh chưa có primary link
           queryText += `
             AND NOT EXISTS (
               SELECT 1 FROM ge10_family_links 
@@ -42,6 +65,19 @@ router.get('/users/search', authMiddleware, async (req: any, res) => {
                 AND link_type = 'primary'
             )
           `;
+          // Lọc bỏ học sinh đã có active/pending link với chính giáo viên hiện tại
+          if (callerProfileId) {
+            const nextParamIdx = params.length + 1;
+            queryText += `
+              AND NOT EXISTS (
+                SELECT 1 FROM ge10_family_links
+                WHERE student_id = ge10_users.id
+                  AND parent_id = $${nextParamIdx}
+                  AND status IN ('active', 'pending_student', 'pending_parent')
+              )
+            `;
+            params.push(callerProfileId);
+          }
         }
       }
     }
