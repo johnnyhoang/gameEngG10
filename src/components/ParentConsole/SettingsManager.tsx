@@ -246,7 +246,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
 
         <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between bg-white/5 rounded-xl border border-white/5 p-4">
           <p className="text-[10px] text-synth-text-muted leading-relaxed">
-            Các cấu hình này áp dụng chung cho tất cả môn sinh (Đảo thử thách và lượng điểm nhận được). Riêng Trần Chân Khí + giờ hồi thì chỉnh RIÊNG cho từng con tại tab 🏛️ {currentUser?.role === 'truong_vien' || currentUser?.role === 'pho_vien' ? 'Viện Tích' : 'Giáo Tích'} → xem hồ sơ con.
+            Các cấu hình này áp dụng chung cho tất cả học sinh (Đảo thử thách và lượng điểm nhận được). Riêng Năng Lượng Tối Đa + giờ hồi thì chỉnh RIÊNG cho từng học sinh tại tab 👤 {currentUser?.role === 'truong_vien' || currentUser?.role === 'pho_vien' ? 'Học Tích Học Viện' : 'Hồ Sơ Học Sinh'} → xem hồ sơ con.
           </p>
           <button
             onClick={handleSaveSettings}
@@ -386,9 +386,9 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
                 <thead>
                   <tr className="border-b border-white/10 text-slate-400 font-orbitron uppercase text-[9px] tracking-wider">
                     <th className="py-2.5 px-3">Xếp hạng</th>
-                    <th className="py-2.5 px-3">Môn Sinh</th>
+                    <th className="py-2.5 px-3">Học Sinh</th>
                     <th className="py-2.5 px-3">Cấp Độ</th>
-                    <th className="py-2.5 px-3">Danh Hiệu Võ Học</th>
+                    <th className="py-2.5 px-3">Danh Hiệu Học Tập</th>
                     <th className="py-2.5 px-3">Chuỗi Ngày</th>
                     <th className="py-2.5 px-3">Người Quản Lý</th>
                     <th className="py-2.5 px-3 text-right">Tích Lũy XP</th>
@@ -398,7 +398,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
                   {activeDisplayStudents.length === 0 ? (
                     <tr>
                       <td colSpan={7} className="py-8 text-center text-synth-text-muted italic">
-                        Không có môn sinh nào trong danh sách.
+                        Không có học sinh nào trong danh sách.
                       </td>
                     </tr>
                   ) : (

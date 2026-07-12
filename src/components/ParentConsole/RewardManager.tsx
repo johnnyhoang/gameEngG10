@@ -306,7 +306,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
         {!viewingStudentId ? (
           <div className="glass-panel rounded-2xl border border-white/5 p-6 text-center">
             <p className="text-xs text-synth-text-muted">
-              Chọn tài khoản thiếu hiệp tại tab <strong className="text-synth-magenta">🏛️ Chính Điện</strong> → "Xem Hoạt Động" để thiết lập phúc lợi cá nhân.
+              Chọn tài khoản học sinh tại tab <strong className="text-synth-magenta">👥 Học Sinh & Liên Kết</strong> → "Xem Hoạt Động" để thiết lập phúc lợi cá nhân.
             </p>
           </div>
         ) : (

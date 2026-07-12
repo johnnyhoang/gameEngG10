@@ -191,7 +191,7 @@ export const ParentConsole: React.FC = () => {
         <div className="hidden md:flex gap-2">
           {(['than_phan'] as const).map(tab => {
             const tabNames: Record<string, string> = {
-              than_phan: currentUser?.role === 'truong_vien' || currentUser?.role === 'pho_vien' ? '👤 Viện Tích' : '👤 Giáo Tích'
+              than_phan: currentUser?.role === 'truong_vien' || currentUser?.role === 'pho_vien' ? '👤 Học Tích Học Viện' : '👤 Hồ Sơ Học Sinh'
             };
             return (
               <button
@@ -215,9 +215,9 @@ export const ParentConsole: React.FC = () => {
         <div className="flex gap-2">
           {(['thien_co_cac', 'van_quyen_cac', 'tang_kinh_cac'] as const).map(tab => {
             const tabNames: Record<string, string> = {
-              thien_co_cac: '⚙️ Thiên Cơ Các',
-              van_quyen_cac: '📚 Vạn Quyển Các',
-              tang_kinh_cac: '📖 Tàng Kinh Các'
+              thien_co_cac: '⚙️ Ban Điều Hành',
+              van_quyen_cac: '📚 Ngân Hàng Đề Thi',
+              tang_kinh_cac: '📖 Thư Viện Bài Giảng'
             };
             return (
               <button
@@ -235,18 +235,18 @@ export const ParentConsole: React.FC = () => {
           })}
         </div>
 
-        {/* Đổi Môn Sinh Quick Action */}
+        {/* Đổi Học Sinh Quick Action */}
         {viewingStudentId && (
           <button
             onClick={() => {
               setViewingStudentId(null);
               setActiveTab('thien_co_cac');
-              toast.success('Đã quay lại danh sách môn sinh');
+              toast.success('Đã quay lại danh sách học sinh');
             }}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-red-500/30 text-red-500 hover:bg-red-500/10 font-orbitron font-bold text-[10px] uppercase tracking-wider cursor-pointer transition-all duration-300"
           >
             <span>🔄</span>
-            <span>Đổi môn sinh</span>
+            <span>Đổi học sinh</span>
           </button>
         )}
       </div>
@@ -261,7 +261,7 @@ export const ParentConsole: React.FC = () => {
               className="w-9 h-9 rounded-full border border-synth-cyan/40"
             />
             <div>
-              <span className="text-[10px] text-synth-cyan uppercase font-bold tracking-wider font-orbitron">Đang quản trị tài khoản</span>
+              <span className="text-[10px] text-synth-cyan uppercase font-bold tracking-wider font-orbitron">Đang quản lý tài khoản</span>
               <h4 className="font-bold text-white text-sm leading-tight mt-0.5">
                 {selectedStudentProfile.studentUser?.name} ({selectedStudentProfile.studentUser?.email})
               </h4>
@@ -271,11 +271,11 @@ export const ParentConsole: React.FC = () => {
             onClick={() => {
               setViewingStudentId(null);
               setActiveTab('thien_co_cac');
-              toast.success('Đã quay lại danh sách môn sinh');
+              toast.success('Đã quay lại danh sách học sinh');
             }}
             className="px-3 py-1.5 rounded bg-synth-gray/30 border border-white/10 text-xs text-white hover:bg-white/10 font-bold cursor-pointer transition-colors"
           >
-            Đổi môn sinh khác
+            Đổi học sinh khác
           </button>
         </div>
       )}
@@ -290,10 +290,10 @@ export const ParentConsole: React.FC = () => {
               <div className="absolute bottom-0 left-0 w-48 h-48 bg-synth-magenta/5 rounded-full blur-3xl pointer-events-none"></div>
               <div className="relative z-10 space-y-2">
                 <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
-                  🔮 THIÊN CƠ CÁC — TRUNG TÂM ĐIỀU HÀNH & QUẢN TRỊ
+                  ⚙️ BAN ĐIỀU HÀNH — TRUNG TÂM QUẢN TRỊ HỌC VIỆN
                 </h3>
                 <p className="text-xs text-synth-text-muted leading-relaxed max-w-4xl">
-                  Chào mừng Viện Chủ đến với Thiên Cơ Các! Đây là pháp đường điều hành tối cao của học viện. Viện Chủ có thể theo dõi danh sách môn sinh, thiết lập liên kết gia đình/trường học, điều chỉnh quy tắc nhận thưởng (Ngân Lượng NP), cấm nang võ học, và kiểm tra lịch sử quyết nghị.
+                  Chào mừng bạn đến với Ban Điều Hành! Đây là trung tâm điều hành và quản trị của học viện. Tại đây, bạn có thể theo dõi danh sách học sinh, thiết lập liên kết gia đình/trường học, điều chỉnh quy tắc nhận thưởng (NP), biên soạn cẩm nang học tập, và xem lịch sử hoạt động.
                 </p>
               </div>
             </div>
@@ -301,7 +301,7 @@ export const ParentConsole: React.FC = () => {
             {/* Quick Stats Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <div className="glass-panel border border-white/5 rounded-2xl p-4 flex flex-col justify-between hover:border-synth-cyan/30 transition-all duration-300 group bg-white/3">
-                <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-cyan transition-colors">👥 Tổng Số Môn Sinh</span>
+                <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-cyan transition-colors">👥 Tổng Số Học Sinh</span>
                 <span className="text-2xl font-black text-synth-cyan font-orbitron mt-1">{totalStudents}</span>
               </div>
               <div className="glass-panel border border-white/5 rounded-2xl p-4 flex flex-col justify-between hover:border-synth-magenta/30 transition-all duration-300 group bg-white/3">
@@ -328,7 +328,7 @@ export const ParentConsole: React.FC = () => {
                     : 'bg-transparent border-white/10 text-synth-text-muted hover:text-white hover:border-white/30'
                 }`}
               >
-                👥 Môn Sinh & Liên Kết
+                👥 Học Sinh & Liên Kết
               </button>
               <button
                 onClick={() => setThienCoSubTab('settings')}
@@ -349,7 +349,7 @@ export const ParentConsole: React.FC = () => {
                 <div className="rounded-2xl border border-white/5 bg-white/5 p-5 space-y-4">
                   <div className="flex justify-between items-center">
                     <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
-                      👥 Danh sách Môn Sinh liên kết
+                      👥 Danh sách Học Sinh liên kết
                     </h4>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -380,7 +380,7 @@ export const ParentConsole: React.FC = () => {
                     ))}
                     {familyLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).length === 0 && (
                       <p className="text-xs text-synth-text-muted italic py-4 col-span-3 text-center">
-                        Chưa có tài khoản môn sinh nào kết nối vào gia đình.
+                        Chưa có tài khoản học sinh nào kết nối vào gia đình.
                       </p>
                     )}
                   </div>

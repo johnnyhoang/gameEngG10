@@ -623,7 +623,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     
     const success = await flagQuestionConfused(activeQuestion, reason, severity);
     if (success) {
-      toast.success('Đã gửi phản ánh tới Môn Chủ. Câu này sẽ được gác lại.');
+      toast.success('Đã gửi phản ánh tới Chủ Nhiệm. Câu hỏi này sẽ được gác lại.');
       sound.playNext();
       
       setChecked(false);

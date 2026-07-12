@@ -123,7 +123,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
               <div
                 className={statItemClass}
                 onClick={() => showHelp('energy')}
-                title={isEnergyDepleted ? `Hết Chân Khí — hồi đầy lúc ${energyResetLabel}` : 'Chân Khí — Nhấp để xem hướng dẫn'}
+                title={isEnergyDepleted ? `Hết Năng Lượng — hồi đầy lúc ${energyResetLabel}` : 'Năng Lượng — Nhấp để xem hướng dẫn'}
               >
                 <Zap className={`w-4 h-4 shrink-0 ${isEnergyDepleted ? 'text-red-400 fill-red-400' : 'text-synth-cyan fill-synth-cyan animate-pulse'}`} />
                 <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${isEnergyDepleted ? 'text-red-400' : 'text-white'}`}>
@@ -134,21 +134,21 @@ export const TopHUD: React.FC<TopHUDProps> = ({
           )}
         </div>
 
-        {/* Cụm 2: Dải tài nguyên — Ngân Lượng + Chuỗi (Chỉ dành cho học sinh) */}
+        {/* Cụm 2: Dải tài nguyên — Điểm Thưởng + Chuỗi (Chỉ dành cho học sinh) */}
         {isStudent && (
           <div className={`${groupBoxClass} order-2 md:order-none w-full sm:w-auto justify-between sm:justify-start overflow-x-auto`}>
-            <div className={statItemClass} onClick={() => showHelp('nanite')} title={player.coins < 0 ? 'Ngân Lượng đang ÂM — trả nợ bằng cách luyện tập thêm!' : 'Ngân Lượng (NP) — Nhấp để xem hướng dẫn'}>
+            <div className={statItemClass} onClick={() => showHelp('nanite')} title={player.coins < 0 ? 'Điểm NP đang ÂM — trả nợ bằng cách rèn luyện thêm!' : 'Điểm Thưởng (NP) — Nhấp để xem hướng dẫn'}>
               <Coins className={`w-4 h-4 shrink-0 ${player.coins < 0 ? 'text-red-400 fill-red-400' : 'text-synth-orange fill-synth-orange'}`} />
               <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${player.coins < 0 ? 'text-red-400' : 'text-white'}`}>{player.coins}</span>
             </div>
 
             <div className="w-px h-8 bg-white/10 shrink-0" />
 
-            <div className={statItemClass} onClick={() => showHelp('streak')} title="Chuỗi luyện công — Nhấp để xem hướng dẫn">
+            <div className={statItemClass} onClick={() => showHelp('streak')} title="Chuỗi học tập — Nhấp để xem hướng dẫn">
               <Flame className={`w-4 h-4 shrink-0 ${player.streak > 0 ? 'text-orange-500 fill-orange-500' : 'text-synth-gray'}`} />
               <span className="text-xs font-semibold font-orbitron text-white whitespace-nowrap">{player.streak}d</span>
               {hasShield && (
-                <span title="Hộ Tâm Phù đang bảo vệ Chuỗi!">
+                <span title="Khiên Bảo Vệ đang bảo vệ Chuỗi học tập!">
                   <Shield className="w-3.5 h-3.5 text-synth-cyan fill-synth-cyan/20 shrink-0" />
                 </span>
               )}
@@ -163,7 +163,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
               {/* Bản đồ */}
               <button
                 onClick={onBackToMap}
-                title="Bản Đồ Giang Hồ"
+                title="Bản Đồ Học Tập"
                 className={navBtnClass(
                   currentScreen === 'map',
                   isUnicorn ? 'bg-gradient-to-r from-fuchsia-400 to-cyan-300 border-violet-200 text-violet-900 shadow-[0_0_10px_rgba(192,132,252,0.2)]' : 'bg-synth-cyan border-synth-cyan text-black shadow-[0_0_12px_#00f0ff]',
@@ -177,21 +177,21 @@ export const TopHUD: React.FC<TopHUDProps> = ({
               {/* Bách Hóa */}
               <button
                 onClick={onOpenShop}
-                title="Bách Hóa Phường"
+                title="Cửa Hàng Quà Tặng"
                 className={navBtnClass(
                   currentScreen === 'shop',
                   isUnicorn ? 'bg-gradient-to-r from-fuchsia-400 to-cyan-300 border-violet-200 text-violet-900 shadow-[0_0_10px_rgba(192,132,252,0.2)]' : 'bg-synth-orange border-synth-orange text-black shadow-[0_0_12px_#ff9f1c]',
                   isUnicorn ? 'bg-white/50 border-violet-200/50 text-violet-700 hover:bg-white/80' : 'bg-transparent border-synth-orange/50 text-synth-orange hover:bg-synth-orange/10'
                 )}
               >
-                <span>🏮</span>
-                <span className="hidden lg:inline">Bách Hóa</span>
+                <span>🛒</span>
+                <span className="hidden lg:inline">Cửa hàng</span>
               </button>
 
               {/* Sân Thú */}
               <button
                 onClick={onOpenPet}
-                title="Sân Thú Linh Vật"
+                title="Sân Thú Cưng"
                 className={navBtnClass(
                   currentScreen === 'pet',
                   isUnicorn ? 'bg-gradient-to-r from-fuchsia-400 to-cyan-300 border-violet-200 text-violet-900 shadow-[0_0_10px_rgba(192,132,252,0.2)]' : 'bg-purple-500 border-purple-500 text-white shadow-[0_0_12px_#a855f7]',
@@ -205,7 +205,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
               {/* Học Tích */}
               <button
                 onClick={onOpenProfile}
-                title="Học Tích Đệ Tử"
+                title="Hồ Sơ Học Tập"
                 className={navBtnClass(
                   currentScreen === 'profile',
                   isUnicorn ? 'bg-gradient-to-r from-fuchsia-400 to-cyan-300 border-violet-200 text-violet-900 shadow-[0_0_10px_rgba(192,132,252,0.2)]' : 'bg-synth-magenta border-synth-magenta text-black shadow-[0_0_12px_#ff007f]',
@@ -224,7 +224,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             <button
               onClick={onLogout || logout}
               className="w-10 h-10 rounded-lg border border-red-500/30 text-red-500 hover:bg-red-500/15 cursor-pointer hover:synth-glow-red transition-all duration-300 flex items-center justify-center shrink-0"
-              title="Thoái Ẩn Giang Hồ (Đăng xuất)"
+              title="Đăng xuất"
             >
               <LogOut className="w-4.5 h-4.5" />
             </button>

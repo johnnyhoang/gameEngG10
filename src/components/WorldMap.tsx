@@ -145,10 +145,10 @@ export function WorldMap({
             {/* Greeting + Name */}
             <div className="space-y-1">
               <p className={`text-xs font-orbitron font-bold uppercase tracking-[0.2em] ${isUnicorn ? 'text-violet-500' : 'text-synth-cyan/70'}`}>
-                {getGreeting()}, Đệ tử
+                {getGreeting()}, Học viên
               </p>
               <h1 className={`font-orbitron font-black text-2xl md:text-3xl uppercase tracking-wide ${isUnicorn ? 'text-violet-900' : 'text-white'}`}>
-                {currentUser?.name || 'Vô Danh Đệ Tử'} 👋
+                {currentUser?.name || 'Học viên mới'} 👋
               </h1>
             </div>
 
@@ -329,17 +329,17 @@ export function WorldMap({
         </section>
       </div>
 
-      {/* ─── SECTION 3: AI SƯ PHỤ (chỉ hiện khi có điểm yếu) ─── */}
+      {/* ─── SECTION 3: AI TRỢ GIẢNG (chỉ hiện khi có điểm yếu) ─── */}
       {weakLesson && (
         <section className="glass-panel rounded-2xl border border-amber-400/30 bg-gradient-to-r from-amber-400/10 via-orange-400/5 to-transparent p-4 flex flex-col md:flex-row items-start md:items-center gap-4">
           <div className="flex items-center gap-3 shrink-0">
             <div className="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/25 flex items-center justify-center">
               <BrainCircuit className="w-5 h-5 text-amber-400" />
             </div>
-            <span className="font-orbitron font-bold text-xs uppercase text-amber-300 tracking-wider">Tàng Kinh Các · AI Sư Phụ</span>
+            <span className="font-orbitron font-bold text-xs uppercase text-amber-300 tracking-wider">Thư Viện · AI Trợ Giảng</span>
           </div>
           <p className="text-xs text-slate-300 flex-1 leading-relaxed">
-            Con đang yếu ở chuyên đề <span className="text-amber-300 font-bold">{weakLesson.title}</span> (chỉ{' '}
+            Bạn đang yếu ở chuyên đề <span className="text-amber-300 font-bold">{weakLesson.title}</span> (chỉ{' '}
             {Math.round(weakAccuracy * 100)}% chính xác). Ôn lại ngay, đừng để lỗ hổng phình ra.
           </p>
           <div className="flex gap-2 shrink-0">
@@ -348,7 +348,7 @@ export function WorldMap({
                 onClick={() => onStudyLesson(weakLesson.id)}
                 className="px-3 py-2 rounded-lg border border-amber-400/30 bg-amber-400/10 text-amber-300 text-[10px] font-bold uppercase tracking-wider hover:bg-amber-400/20 transition-colors cursor-pointer"
               >
-                Xem bí kíp 📖
+                Xem bài giảng 📖
               </button>
             )}
             {onStartLessonPractice && (
@@ -356,7 +356,7 @@ export function WorldMap({
                 onClick={() => onStartLessonPractice(weakLesson.id)}
                 className="px-3 py-2 rounded-lg bg-amber-400 text-black text-[10px] font-bold uppercase tracking-wider hover:bg-amber-300 transition-colors cursor-pointer"
               >
-                Vào ải ⚔️
+                Luyện tập 📚
               </button>
             )}
           </div>

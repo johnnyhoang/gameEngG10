@@ -308,7 +308,7 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
                   <Star className="w-7 h-7 text-synth-cyan" />
                 </div>
                 <div className="space-y-1 min-w-0">
-                  <h4 className="font-orbitron font-bold text-sm text-white">🌀 Vào ải ngẫu nhiên</h4>
+                  <h4 className="font-orbitron font-bold text-sm text-white">🌀 Luyện tập ngẫu nhiên</h4>
                   <p className="text-xs text-slate-400 leading-relaxed">10 câu hỏi ngẫu nhiên từ toàn bộ chuyên đề, ưu tiên câu yếu.</p>
                   <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">Phần thưởng: <span className="text-white">+15 XP / +5 NP</span></div>
                 </div>

@@ -379,13 +379,13 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
           <div className="space-y-4 flex-1">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-synth-cyan/30 bg-synth-blue/40 text-[9px] font-orbitron font-bold uppercase tracking-[0.24em] text-synth-cyan">
               <Sparkles className="w-3.5 h-3.5" />
-              Hang Luyện Công
+              Phòng Luyện Tập
             </div>
             <div className="space-y-1.5">
               <div className="flex items-center gap-3">
                 <span className="text-3xl filter drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">{meta.icon}</span>
                 <h1 className="font-orbitron font-black text-2xl md:text-4xl uppercase tracking-wider text-white">
-                  Môn Phái {meta.label}
+                  Môn Học {meta.label}
                 </h1>
               </div>
               <p className="text-xs md:text-sm text-slate-300 leading-relaxed max-w-2xl">
@@ -409,12 +409,12 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
           </div>
 
           <div className="flex flex-col gap-2 shrink-0 md:text-right">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">Vào ải tổng hợp ({subjectQuestions.length} câu hỏi)</div>
+            <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">Luyện tập tổng hợp ({subjectQuestions.length} câu hỏi)</div>
             <button
               onClick={handleStart}
               className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-synth-cyan via-synth-purple to-synth-magenta text-black font-orbitron font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(0,240,255,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
             >
-              Vào Luyện Công Ngay <ArrowRight className="w-4 h-4" />
+              Bắt Đầu Luyện Tập <ArrowRight className="w-4 h-4" />
             </button>
           </div>
         </div>
@@ -611,19 +611,19 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
         {/* Column Right: Supplement Panel (Fixed Error Notebook & Sources) */}
         <aside className="space-y-6 xl:sticky xl:top-24">
           
-          {/* Sổ tay Luyện Công - Error Notebook */}
+          {/* Sổ tay Lỗi Sai - Error Notebook */}
           <div className="glass-panel rounded-2xl border border-synth-cyan/20 p-5 bg-gradient-to-b from-synth-blue/30 to-black/50 space-y-3 relative overflow-hidden">
             <div className="absolute top-0 right-0 w-24 h-24 bg-synth-cyan/5 rounded-full blur-2xl pointer-events-none" />
             
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-synth-cyan" />
               <h3 className="font-orbitron font-black uppercase tracking-wider text-xs text-white">
-                Sổ tay luyện công
+                Sổ tay lỗi sai
               </h3>
             </div>
             
             <p className="text-[11px] text-slate-400 leading-relaxed">
-              Ghi lại những lỗi sai đệ tử thường mắc phải (sai công thức, thiếu điều kiện, dịch nhầm từ...) để ghi nhớ và ôn tập hàng ngày.
+              Ghi lại những lỗi sai bạn thường mắc phải (sai công thức, thiếu điều kiện, dịch nhầm từ...) để ghi nhớ và ôn tập hàng ngày.
             </p>
 
             <div className="relative">

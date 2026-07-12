@@ -22,17 +22,17 @@ export const MonChuHoiToiDialog: React.FC<MonChuHoiToiDialogProps> = ({ onConfir
             {isBlocked ? <AlertOctagon className="w-8 h-8 text-red-500" /> : <ShieldAlert className="w-8 h-8 text-red-500" />}
           </div>
           <h2 className="text-xl font-black font-orbitron text-red-500 uppercase tracking-wider text-center">
-            Môn Chủ Vấn Tội
+            Chủ Nhiệm Nhắc Nhở
           </h2>
           <p className="text-xs text-red-400 font-semibold uppercase tracking-widest mt-1">
-            Chi phí bỏ qua: 10 NP (Ví của con: {coins} NP)
+            Chi phí bỏ qua: 10 NP (Ví của bạn: {coins} NP)
           </p>
         </div>
 
         {isBlocked ? (
           <div className="text-center space-y-4">
             <p className="text-slate-300 font-serif italic text-sm border-l-4 border-red-500 pl-4 py-2 bg-red-500/10 rounded-r text-left">
-              "To gan! Ngươi không tích lũy đủ Ngân Lượng (cần ít nhất 10 NP) để xin từ bỏ thử thách này. Con đường tu học không có lối tắt cho kẻ trắng tay. Hãy nỗ lực tự đối mặt và trả lời câu hỏi!"
+              "Bạn chưa tích lũy đủ Điểm NP (cần ít nhất 10 NP) để bỏ qua thử thách này. Con đường học tập không có lối tắt cho người thiếu kiên trì. Hãy nỗ lực tự đối mặt và trả lời câu hỏi!"
             </p>
             <button
               onClick={onCancel}
@@ -44,7 +44,7 @@ export const MonChuHoiToiDialog: React.FC<MonChuHoiToiDialogProps> = ({ onConfir
         ) : (
           <div className="space-y-5">
             <p className="text-slate-300 font-serif italic text-sm border-l-4 border-red-500 pl-4 py-2 bg-red-500/10 rounded-r text-left">
-              "Tại sao ngươi muốn bỏ qua thử thách này? Hãy khai rõ sự tình trước khi ta chấp thuận!"
+              "Tại sao bạn muốn bỏ qua thử thách này? Hãy chọn lý do để hệ thống gửi phản hồi tới Chủ nhiệm!"
             </p>
 
             <div className="space-y-2">

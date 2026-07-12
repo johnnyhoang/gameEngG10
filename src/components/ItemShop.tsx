@@ -45,18 +45,18 @@ export const ItemShop: React.FC = () => {
 
   const handleBuyTheme = (themeId: typeof UI_THEMES[number]['id']) => {
     if (player.coins < THEME_UNLOCK_COST) {
-      toast.error(`Thiếu Ngân lượng. Cần ${THEME_UNLOCK_COST} NP để mở khóa Phong Vị này.`);
+      toast.error(`Thiếu Điểm Thưởng (NP). Cần ${THEME_UNLOCK_COST} NP để mở khóa Giao diện này.`);
       return;
     }
     const themeConfig = UI_THEMES.find(t => t.id === themeId);
     setConfirmModal({
       isOpen: true,
       cost: THEME_UNLOCK_COST,
-      actionDescription: `mở khóa Phong Vị "${themeConfig?.name || themeId}"`,
+      actionDescription: `mở khóa Giao diện "${themeConfig?.name || themeId}"`,
       onConfirm: () => {
         const success = buyTheme(themeId);
         if (success) {
-          toast.success('🎭 Mở khóa Phong Vị thành công! Vào Thân Phận để mặc thử ngay.');
+          toast.success('🎭 Mở khóa giao diện thành công! Vào Hồ Sơ Cá Nhân để áp dụng ngay.');
         }
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
       }
@@ -65,21 +65,21 @@ export const ItemShop: React.FC = () => {
 
   const handleBuyShield = () => {
     if (hasStreakShield) {
-      toast.error('Hộ Tâm Phù đã sẵn sàng rồi.');
+      toast.error('Khiên Bảo Vệ Chuỗi đã sẵn sàng rồi.');
       return;
     }
     if (player.coins < 150) {
-      toast.error('Thiếu Ngân lượng. Cần 150 NP để mua Hộ Tâm Phù.');
+      toast.error('Thiếu Điểm Thưởng (NP). Cần 150 NP để mua Khiên Bảo Vệ Chuỗi.');
       return;
     }
     setConfirmModal({
       isOpen: true,
       cost: 150,
-      actionDescription: 'lĩnh Hộ Tâm Phù bảo vệ Chuỗi Tu Luyện',
+      actionDescription: 'mua Khiên Bảo Vệ để bảo toàn Chuỗi Học Tập',
       onConfirm: () => {
         const success = buyStreakShield();
         if (success) {
-          toast.success('✅ Lĩnh Hộ Tâm Phù thành công! Chuỗi tu luyện được bảo vệ.');
+          toast.success('✅ Mua Khiên Bảo Vệ thành công! Chuỗi học tập được bảo vệ.');
         }
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
       }
@@ -88,17 +88,17 @@ export const ItemShop: React.FC = () => {
 
   const handleBuyHint = () => {
     if (player.coins < 50) {
-      toast.error('Thiếu Ngân lượng để lĩnh Khai Ngộ Quyển!');
+      toast.error('Thiếu Điểm Thưởng (NP) để mua Thẻ Gợi Ý!');
       return;
     }
     setConfirmModal({
       isOpen: true,
       cost: 50,
-      actionDescription: 'lĩnh Khai Ngộ Quyển trợ giúp trong bài làm',
+      actionDescription: 'mua Thẻ Gợi Ý trợ giúp trong bài làm',
       onConfirm: () => {
         const success = buyHint();
         if (success) {
-          toast.success('📜 Khai Ngộ Quyển đã được ghi vào túi vật. Dùng trong bài làm để khai ngộ!');
+          toast.success('📜 Thẻ Gợi Ý đã được ghi vào tủ đồ. Dùng trong bài làm để xem hướng dẫn!');
         }
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
       }
@@ -112,7 +112,7 @@ export const ItemShop: React.FC = () => {
       return;
     }
     if (player.coins < reward.costCoins) {
-      toast.error('Ngân lượng chưa đủ để đổi phần thưởng này!');
+      toast.error('Điểm Thưởng (NP) chưa đủ để đổi phần thưởng này!');
       return;
     }
     setConfirmModal({
@@ -122,7 +122,7 @@ export const ItemShop: React.FC = () => {
       onConfirm: () => {
         const success = redeemReward(id);
         if (success) {
-          toast.success(`🎁 Đã đổi "${title}"! Chờ Hiệu Trưởng trao quà ngoài đời nhé.`);
+          toast.success(`🎁 Đã đổi "${title}"! Chờ Giáo Viên/Chủ Nhiệm trao quà ngoài đời nhé.`);
         }
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
       }
@@ -136,13 +136,13 @@ export const ItemShop: React.FC = () => {
       return;
     }
     if (player.coins < reward.costCoins) {
-      toast.error('Ngân lượng chưa đủ để đổi phúc lợi này!');
+      toast.error('Điểm Thưởng (NP) chưa đủ để đổi phúc lợi này!');
       return;
     }
     setConfirmModal({
       isOpen: true,
       cost: reward.costCoins,
-      actionDescription: `đổi phúc lợi lớp học "${title}"`,
+      actionDescription: `đổi phần thưởng lớp học "${title}"`,
       onConfirm: async () => {
         const ok = await redeemClassReward(rewardId);
         if (ok) {
@@ -180,10 +180,10 @@ export const ItemShop: React.FC = () => {
       }`}>
         <div className="space-y-1">
           <h2 className={`font-orbitron text-lg font-black uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-            🏮 Bách Hóa Phường
+            🛒 Cửa Hàng Quà Tặng
           </h2>
           <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
-            Vận hành nền kinh tế vi mô trong học viện. Tiêu hao Ngân lượng để đổi vật phẩm và đặc quyền.
+            Tiêu hao Điểm Thưởng (NP) tích lũy để đổi các vật phẩm học tập và đặc quyền giao diện.
           </p>
         </div>
         <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-orbitron font-bold ${
@@ -193,10 +193,10 @@ export const ItemShop: React.FC = () => {
         </div>
       </div>
 
-      {/* QUẦY 1: LINH ĐAN & PHÁP BẢO */}
+      {/* QUẦY 1: CÔNG CỤ TRỢ GIÚP */}
       <div className={`rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'bg-cyan-50/40 border-violet-200/40' : 'bg-synth-cyan/5 border-synth-cyan/10'}`}>
         <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
-          <Shield className="w-4 h-4" /> 💊 Quầy Linh Đan &amp; Pháp Bảo
+          <Shield className="w-4 h-4" /> 💊 Quầy Vật Phẩm Trợ Giúp
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative">
@@ -205,8 +205,8 @@ export const ItemShop: React.FC = () => {
                 <div className="flex gap-4 items-center">
                   <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl border shrink-0 ${isUnicorn ? 'bg-cyan-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-cyan/30'}`}>🛡️</div>
                   <div className="space-y-1">
-                    <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>Hộ Tâm Phù</h4>
-                    <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>Bảo vệ chuỗi tu luyện khi lỡ bỏ một ngày, tránh bị áp Luật Phế Bỏ Võ Công.</p>
+                    <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>Khiên Bảo Vệ Chuỗi</h4>
+                    <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>Bảo vệ chuỗi học tập khi lỡ bỏ một ngày rèn luyện, tránh bị phạt ngắt chuỗi.</p>
                     {hasStreakShield && <span className="text-[9px] font-bold text-synth-cyan border border-synth-cyan/40 px-1.5 py-0.5 rounded font-orbitron inline-block">Đang kích hoạt ✓</span>}
                   </div>
                 </div>
@@ -221,7 +221,7 @@ export const ItemShop: React.FC = () => {
                 <div className="flex gap-4 items-center">
                   <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl border shrink-0 ${isUnicorn ? 'bg-amber-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-orange/30'}`}>📜</div>
                   <div className="space-y-1">
-                    <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>Khai Ngộ Quyển</h4>
+                    <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>Thẻ Gợi Ý</h4>
                     <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>Gợi mở hướng giải hoặc loại bỏ một đáp án nhiễu trong câu hỏi đang làm.</p>
                     <span className={`text-[9px] font-bold font-orbitron ${isUnicorn ? 'text-amber-600' : 'text-synth-orange'}`}>Dùng ngay trong câu hỏi đang làm</span>
                   </div>
@@ -234,13 +234,13 @@ export const ItemShop: React.FC = () => {
         </div>
       </div>
 
-      {/* QUẦY 2: TIỆM Y PHỤC */}
+      {/* QUẦY 2: KHO GIAO DIỆN */}
       <div className={`rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'bg-violet-50/40 border-violet-200/40' : 'bg-synth-purple/5 border-synth-purple/10'}`}>
         <div className="space-y-0.5">
           <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
-            <Palette className="w-4 h-4" /> 👘 Tiệm Y Phục (Phong Vị)
+            <Palette className="w-4 h-4" /> 👘 Kho Giao Diện (Phong Vị)
           </h3>
-          <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}`}>Mở khóa phong cách giao diện cá tính để cá nhân hóa không gian học tập của thiếu hiệp.</p>
+          <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}`}>Mở khóa phong cách giao diện cá tính để cá nhân hóa không gian học tập của bạn.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {UI_THEMES.map(theme => {
@@ -283,8 +283,8 @@ export const ItemShop: React.FC = () => {
           </h3>
           <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}`}>
             {isOrphanStudent
-              ? 'Đổi Ngân lượng lấy các phần thưởng thực tế do Hiệu Trưởng thiết lập và phê duyệt.'
-              : 'Đổi Ngân lượng lấy phần thưởng do giáo viên lớp bạn tạo. Số lượng có hạn — đổi sớm!'}
+              ? 'Đổi điểm tích lũy lấy các phần thưởng thực tế do Hiệu Trưởng thiết lập và phê duyệt.'
+              : 'Đổi điểm tích lũy lấy phần thưởng do giáo viên lớp bạn tạo. Số lượng có hạn — đổi sớm!'}
           </p>
         </div>
 

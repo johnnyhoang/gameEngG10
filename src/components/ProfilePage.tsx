@@ -261,29 +261,29 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         </div>
 
 
-        {/* TAB 1: HỌC TÍCH & VÕ HỌC */}
+        {/* TAB 1: HỌC TÍCH & HỌC TẬP */}
         {activeTab === 'identity' && (
           <div className="space-y-6">
             {/* General Stats Header (Chỉ hiển thị cho Học Sinh) */}
             {currentUser.role === 'student' && (
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 text-xs">
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Danh hiệu tu học</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Danh hiệu học tập</span>
                   <span className="font-orbitron font-black text-synth-cyan text-base">
                     {getStudentRankForLevel(player.level).icon} {getStudentRankForLevel(player.level).name}
                   </span>
                   <span className="block text-[10px] text-slate-400 font-semibold">Level {player.level}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Tích lũy Chân Lý</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Tích lũy điểm số</span>
                   <span className="font-orbitron font-black text-synth-magenta text-base">{player.xp} XP</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Ngân khoản Nanite</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Điểm Thưởng (NP)</span>
                   <span className="font-orbitron font-black text-synth-orange text-base">{player.coins} NP</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Chuỗi luyện công</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Chuỗi học tập</span>
                   <span className="font-orbitron font-black text-synth-green text-base">{player.streak} Ngày</span>
                 </div>
               </div>
@@ -293,7 +293,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-xs font-black uppercase tracking-wider font-orbitron text-slate-300">
-                  🗼 Tầng Thế Giới Giang Hồ
+                  🏫 Phân Lớp Học Tập
                 </h4>
                 <span className="text-[10px] text-slate-400">
                   Đang đứng: <span className="font-bold text-synth-cyan">{GRADE_TIERS.find(t => t.tier === activeGradeTier)?.name}</span>
@@ -330,20 +330,20 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               </p>
             </div>
 
-            {/* Cẩm Nang Bí Lục Banner */}
+            {/* Cẩm Nang Học Tập Banner */}
             <div className="flex flex-col sm:flex-row justify-between items-center bg-gradient-to-r from-amber-950/60 to-stone-900/60 p-4 rounded-2xl border border-amber-800/25 gap-4">
               <div className="flex items-center gap-3">
                 <span className="text-3xl">📖</span>
                 <div>
-                  <h4 className="text-sm font-bold text-amber-100 font-serif">Giang Hồ Cẩm Nang Bí Lục</h4>
-                  <p className="text-xs text-slate-300 font-serif">Sổ tay tra cứu quy tắc võ học, điều kiện thăng cấp và kinh nghiệm giang hồ.</p>
+                  <h4 className="text-sm font-bold text-amber-100 font-serif">Cẩm Nang Học Tập</h4>
+                  <p className="text-xs text-slate-300 font-serif">Sổ tay tra cứu nội quy học tập, điều kiện thăng cấp và kinh nghiệm học viện.</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsCamNangOpen(true)}
                 className="w-full sm:w-auto px-5 py-2.5 bg-amber-900 hover:bg-amber-800 text-amber-100 font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer shadow-lg shadow-amber-950/50 border border-amber-800/30 hover:scale-[1.02]"
               >
-                MỞ SÁCH LỤC 📜
+                MỞ CẨM NANG 📖
               </button>
             </div>
 
@@ -354,14 +354,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               />
             )}
 
-            {/* Nhật Ký Truyền Công (Chỉ cho Học Sinh) */}
+            {/* Nhật Ký Học Tập (Chỉ cho Học Sinh) */}
             {currentUser.role === 'student' && (
               <div className="flex flex-col sm:flex-row justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/10 gap-4">
                 <div className="flex items-center gap-3">
                   <span className="text-3xl">📊</span>
                   <div>
-                    <h4 className="text-sm font-bold text-white">Nhật Ký Truyền Công</h4>
-                    <p className="text-xs text-slate-400">Xem lại lịch sử hoạt động và tu luyện của môn phái đang mở.</p>
+                    <h4 className="text-sm font-bold text-white">Nhật Ký Học Tập</h4>
+                    <p className="text-xs text-slate-400">Xem lại lịch sử hoạt động và rèn luyện của môn học đang chọn.</p>
                   </div>
                 </div>
                 <button
@@ -374,17 +374,17 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
             )}
 
-            {/* Subject Selection (Giao diện Card ngang Vạn Quyển Các) */}
+            {/* Subject Selection (Giao diện Card ngang Ngân Hàng Đề Thi) */}
             <div className="glass-panel rounded-3xl border border-white/5 p-6 space-y-6">
               <div className="text-center space-y-2">
                 <div className="w-12 h-12 mx-auto rounded-full bg-synth-cyan/10 border border-synth-cyan/30 flex items-center justify-center">
-                  <span className="text-xl">🛡️</span>
+                  <span className="text-xl">📚</span>
                 </div>
                 <h4 className="font-orbitron font-black text-sm text-white uppercase tracking-wider flex items-center justify-center gap-2">
-                  ⚔️ VẠN QUYỂN CÁC (KHO TRI THỨC & KHẢO HẠCH)
+                  📚 NGÂN HÀNG ĐỀ THI (KHO TRI THỨC & LUYỆN TẬP)
                 </h4>
                 <p className="text-[10px] text-slate-400">
-                  Kính xin Môn Sinh lựa chọn Môn phái cần thiết lập giáo án và khảo hạch để tiếp tục.
+                  Vui lòng lựa chọn Môn học để thiết lập bài ôn luyện và khảo sát.
                 </p>
               </div>
 
@@ -396,7 +396,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                       key={sub.id}
                       onClick={() => {
                         setActiveSectId(sub.id);
-                        toast.success(`Đã nhập môn phái ${sub.name}! ⚔️`);
+                        toast.success(`Đã chọn môn học ${sub.name}! 📚`);
                       }}
                       className={`rounded-2xl border p-5 text-left transition-all duration-300 cursor-pointer group shadow-lg flex items-center justify-between ${
                         isActive
@@ -412,7 +412,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                             {sub.name}
                           </span>
                           <span className="block text-[10px] text-synth-text-muted mt-0.5">
-                            {sub.group === 'chuyen_sau' ? 'Môn thi Chuyên Sâu Lớp 10' : 'Môn tu học Cơ Bản Lớp 9'}
+                            {sub.group === 'chuyen_sau' ? 'Môn thi Chuyên Sâu Lớp 10' : 'Môn học Cơ Bản Lớp 9'}
                           </span>
                         </div>
                       </div>
@@ -545,15 +545,15 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 <div className="inline-block text-[9px] font-black bg-stone-800 text-stone-400 px-2 py-0.5 rounded-full mb-3 uppercase tracking-wider font-mono">
                   Đang thiết kế 🛠️
                 </div>
-                <h4 className="text-sm font-bold text-amber-200 font-serif">Mở Rộng Cá Tính & Phong Vị</h4>
-                <ul className="text-xs text-stone-400 space-y-2 mt-3 list-disc list-inside font-serif">
-                  <li>🌅 **Phong Vị Hoàng Hôn** (cam vàng - Đang nghiên cứu)</li>
-                  <li>🌊 **Phong Vị Thương Hải** (xanh đại dương - Đang nghiên cứu)</li>
-                  <li>🥋 **Trang phục môn phái** (Cá nhân hóa nhân vật)</li>
-                  <li>🧬 **Thần binh & Tọa kỵ** (Vũ khí & Thú cưỡi đồng hành)</li>
+                <h4 className="text-sm font-bold text-slate-200">Mở Rộng Cá Tính & Giao Diện</h4>
+                <ul className="text-xs text-stone-400 space-y-2 mt-3 list-disc list-inside">
+                  <li>🌅 **Giao diện Hoàng Hôn** (cam vàng - Đang nghiên cứu)</li>
+                  <li>🌊 **Giao diện Thương Hải** (xanh đại dương - Đang nghiên cứu)</li>
+                  <li>🥋 **Trang phục học sinh** (Cá nhân hóa nhân vật)</li>
+                  <li>🧬 **Huy hiệu học tập** (Huy hiệu đồng hành)</li>
                 </ul>
               </div>
-              <p className="text-[10px] text-slate-500 italic font-serif">Hệ thống đang tinh luyện các phong vị bổ sung, thiếu hiệp hãy đón chờ!</p>
+              <p className="text-[10px] text-slate-500 italic">Hệ thống đang thiết kế thêm các giao diện bổ sung, bạn hãy đón chờ!</p>
             </div>
           </div>
         )}
