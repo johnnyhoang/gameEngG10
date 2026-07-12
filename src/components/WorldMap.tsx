@@ -78,12 +78,7 @@ export function WorldMap({
   const subjectLessons = INITIAL_LESSONS.filter(l => l.subject === activeSectId);
   const completedLessons = subjectLessons.filter(l => lessonsProgress[l.id]).length;
 
-  // Daily mission progress — use first requirement as the primary target
-  const primaryReq = dailyMission?.requirements?.[0];
-  const missionTarget = primaryReq?.target ?? 10;
-  const missionDone = primaryReq?.current ?? 0;
-  const missionPct = Math.min(100, Math.round((missionDone / missionTarget) * 100));
-  const missionRemaining = Math.max(0, missionTarget - missionDone);
+  // Daily mission progress
   const isMissionComplete = dailyMission?.completed ?? false;
 
   const weakData = useMemo(() => {
@@ -221,7 +216,7 @@ export function WorldMap({
             ? (isUnicorn ? 'border-emerald-300/50 bg-emerald-50/60' : 'border-emerald-500/30 bg-emerald-500/5')
             : (isUnicorn ? 'border-violet-200/35 bg-white/50' : 'border-synth-magenta/25 bg-gradient-to-r from-synth-magenta/8 via-synth-purple/5 to-transparent')
         }`}>
-          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
             <div className="flex-1 space-y-3">
               <div className="flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full ${isMissionComplete ? 'bg-emerald-400' : 'bg-synth-magenta animate-ping'}`} />
@@ -230,35 +225,50 @@ export function WorldMap({
                 </h2>
               </div>
 
-              {/* Progress bar + count */}
-              <div className="space-y-1.5">
-                <div className="flex justify-between items-center text-[11px]">
-                  <span className={isUnicorn ? 'text-violet-600' : 'text-slate-300'}>
-                    {isMissionComplete
-                      ? '✅ Hoàn thành! Nhận thưởng ngay.'
-                      : `Còn ${missionRemaining} câu nữa để mở Hòm Bí Mật 🎁`}
-                  </span>
-                  <span className={`font-orbitron font-bold ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-                    {missionDone}/{missionTarget}
-                  </span>
+              {dailyMission ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
+                  {dailyMission.requirements.map((req, idx) => {
+                    const reqPct = Math.min(100, Math.round((req.current / req.target) * 100));
+                    return (
+                      <div key={idx} className={`rounded-xl p-3 text-[11px] flex flex-col justify-between ${
+                        isUnicorn ? 'bg-white/70 border border-violet-200/25' : 'bg-synth-gray/20 border border-white/5'
+                      }`}>
+                        <div className={`flex justify-between items-start gap-1 font-semibold mb-2 ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
+                          <span className="leading-snug">{req.description}</span>
+                          <span className="font-orbitron whitespace-nowrap shrink-0">{req.current}/{req.target}</span>
+                        </div>
+                        <div className={`w-full h-1.5 rounded-full overflow-hidden ${isUnicorn ? 'bg-violet-100' : 'bg-black/30'}`}>
+                          <div 
+                            className={`h-full transition-all duration-500 rounded-full ${
+                              req.completed ? (isUnicorn ? 'unicorn-rainbow-strip' : 'bg-synth-green') : (isUnicorn ? 'bg-violet-300' : 'bg-synth-orange')
+                            }`}
+                            style={{ width: `${reqPct}%` }}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-                <div className={`h-2.5 rounded-full overflow-hidden border ${isUnicorn ? 'bg-violet-100 border-violet-200/40' : 'bg-black/40 border-white/5'}`}>
-                  <div
-                    className={`h-full rounded-full transition-all duration-700 ${
-                      isMissionComplete
-                        ? 'bg-gradient-to-r from-emerald-400 to-teal-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]'
-                        : 'bg-gradient-to-r from-synth-magenta to-synth-purple shadow-[0_0_8px_rgba(255,0,127,0.4)]'
-                    }`}
-                    style={{ width: `${missionPct}%` }}
-                  />
-                </div>
-              </div>
+              ) : (
+                <p className={`text-[11px] leading-relaxed ${isUnicorn ? 'text-violet-600/80' : 'text-slate-400'}`}>
+                  Chưa nhận được nhiệm vụ hôm nay. Vào ải/đấu trường để nhận nhiệm vụ!
+                </p>
+              )}
 
-              <p className={`text-[11px] leading-relaxed ${isUnicorn ? 'text-violet-600/80' : 'text-slate-400'}`}>
-                {isMissionComplete
-                  ? 'Khá đấy, đệ tử. Hòm Bí Mật đang chờ. Mở nó đi!'
-                  : 'Vào Đấu Trường chiến ngay — hoàn thành chỉ tiêu hôm nay, Hòm Bí Mật sẽ mở.'}
-              </p>
+              {dailyMission && (
+                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] mt-2 pt-2 border-t border-white/5">
+                  <span className={isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}>
+                    {isMissionComplete
+                      ? '✅ Đã hoàn thành tất cả mục tiêu! Hòm Bí Mật đã sẵn sàng.'
+                      : 'Hoàn thành mọi chỉ tiêu bên trên để mở khóa Hòm Bí Mật.'}
+                  </span>
+                  <span className={`font-orbitron font-bold px-2 py-0.5 rounded ${
+                    isUnicorn ? 'bg-violet-100 text-violet-800' : 'bg-synth-magenta/25 text-synth-magenta'
+                  }`}>
+                    Thưởng: +{dailyMission.rewardXP} XP
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col gap-2 shrink-0">
