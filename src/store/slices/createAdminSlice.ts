@@ -16,7 +16,7 @@ export const createAdminSlice: StateCreator<
   [],
   [],
   Pick<StoreState, 
-    'adminStudents' | 'adminLinks' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'parentQuests' | 'markRewardDelivered' | 'cancelRedemption' | 'addParentReward' | 'deleteParentReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'adminSetEnergyConfig' | 'updateGameSettings' | 'addParentQuest' | 'completeParentQuest' | 'deleteParentQuest' | 'claimParentQuest' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
+    'adminStudents' | 'adminLinks' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'parentQuests' | 'markRewardDelivered' | 'cancelRedemption' | 'addParentReward' | 'deleteParentReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'addQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'adminSetEnergyConfig' | 'updateGameSettings' | 'addParentQuest' | 'completeParentQuest' | 'deleteParentQuest' | 'claimParentQuest' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
   >
 > = (set, get) => ({
   adminStudents: [],
@@ -163,6 +163,30 @@ export const createAdminSlice: StateCreator<
             questions: state.questions.filter(q => q.id !== questionId)
           }));
           logActivity(get, set, 'parent_approve', 'Xóa câu hỏi', `Hiệu Trưởng đã xóa câu hỏi mã số ${questionId}`, 0, 0);
+          return true;
+        },
+
+  addQuestion: async (newQ) => {
+          const state = get();
+          const id = 'cust-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+          const question = { id, ...newQ, source: newQ.source || 'AI Ingested' } as Question;
+          
+          try {
+            const ok = await adminService.updateCustomQuestion(id, question);
+            if (!ok) {
+              toast.error('Không thể tạo câu hỏi mới.');
+              return false;
+            }
+          } catch (e) {
+            console.error('Error adding question:', e);
+            toast.error('Lỗi kết nối khi lưu câu hỏi mới.');
+            return false;
+          }
+
+          set((state: any) => ({
+            questions: [question, ...state.questions]
+          }));
+          logActivity(get, set, 'parent_approve', 'Thêm câu hỏi mới', `Hiệu Trưởng đã tạo câu hỏi mới mã số ${id}`, 0, 0);
           return true;
         },
 

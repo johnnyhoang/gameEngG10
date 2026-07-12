@@ -38,6 +38,7 @@ export const ParentConsole: React.FC = () => {
   const deleteQuestion = useGameState(state => state.deleteQuestion);
   const updateQuestion = useGameState(state => state.updateQuestion);
   const importQuestions = useGameState(state => state.importQuestions);
+  const addQuestion = useGameState(state => state.addQuestion);
   const addHandbookPage = useGameState(state => state.addHandbookPage);
 
   const parentQuests = useGameState(state => state.parentQuests || []);
@@ -322,6 +323,7 @@ export const ParentConsole: React.FC = () => {
             questions={questions}
             deleteQuestion={deleteQuestion}
             updateQuestion={updateQuestion}
+            addQuestion={addQuestion}
             importQuestions={importQuestions as any}
           />
         )}

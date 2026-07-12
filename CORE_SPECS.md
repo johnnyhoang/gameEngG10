@@ -883,6 +883,25 @@ Mỗi **Page Cấp 2** (Hầm nguyên tố trong Hang Luyện Công — §2.8.3)
 - **Luật giữ nguyên câu hỏi khi sai (Retry-Same-Question):** Trả lời sai **không** đổi sang câu hỏi khác — hệ thống chỉ báo sai, giữ nguyên `Question` hiện tại, để con tự chọn lại đáp án và bấm Giải Mã lại cho tới khi đúng. Việc chọn câu hỏi khác (`pickGatekeeperQuestion`) chỉ chạy **một lần khi mở modal**, không chạy lại sau mỗi lần trả lời sai.
 - **Luật xác nhận khi đúng (Explain-Before-Continue):** Trả lời đúng không tự động đóng cổng ngay — hiển thị màn xác nhận có kèm `Question.explanation` (vì sao đáp án đó đúng) và yêu cầu con bấm nút tiếp tục ("Tiến vào ngay") mới thực sự vào khu vực.
 
+**Băng độ khó (Difficulty Band) — dùng chung cho phân loại Gatekeeper:**
+
+| Băng | Khoảng `difficulty` (thang 1-10) | Dùng cho Gatekeeper? |
+|:---|:---|:---|
+| Dễ | 1-3 | ✅ |
+| Vừa | 4-5 | ✅ |
+| Khó | 6-10 | ❌ |
+
+**Câu hỏi "đủ điều kiện Gác Cổng" (Gatekeeper-eligible)** — tiêu chí chính thức để một câu hỏi trong ngân hàng được đưa vào vòng random của Người Gác Cổng (implement tại `isGatekeeperEligible()` trong `src/utils/gatekeeper.ts`):
+1. Dạng **MCQ** (`type: 'mcq'` hoặc `'multiple_choice'`).
+2. Độ khó thuộc băng **Dễ hoặc Vừa** (1-5/10) — không lấy câu Khó.
+3. Đã gắn **`topicId`** hợp lệ thuộc Core Knowledge taxonomy (khác `'misc'`) — đảm bảo tính kiến thức cốt lõi.
+
+Môn phái của câu hỏi (`subject`) mặc định là **`english`** nếu không gắn tường minh — quy ước này áp dụng thống nhất ở mọi nơi lọc theo môn phái (Gatekeeper, PlayArea), vì phần lớn ngân hàng câu Tiếng Anh cũ chưa từng gắn `subject`.
+
+**Chọn câu theo 2 tầng (`pickGatekeeperQuestion`):** Tầng 1 ưu tiên câu đủ điều kiện đúng Hầm nguyên tố của khu vực; nếu Hầm đó chưa có đủ câu, Tầng 2 nới ra toàn bộ câu đủ điều kiện của môn phái (không phân biệt Hầm). Chỉ khi môn phái hoàn toàn không có câu nào đủ điều kiện mới dùng câu tạm thời (placeholder) — Hiệu Trưởng/Giáo viên cần bổ sung ngân hàng câu hỏi cho môn/hầm đó khi thấy placeholder xuất hiện thường xuyên.
+
+**Thống kê & CRUD:** Màn Vạn Quyển Các (Kho Ngân Hàng Câu Hỏi, dành cho Giáo viên & Hiệu Trưởng) phải hiển thị: (a) số câu đủ điều kiện Gác Cổng theo từng môn phái + theo từng Hầm nguyên tố, và (b) bộ lọc riêng để xem/quản lý các câu đủ điều kiện Gác Cổng trong CRUD ngân hàng câu hỏi.
+
 ---
 
 ### 9.6 Quy Tắc Import Đề vào Core Knowledge (Mở Rộng §4.1)

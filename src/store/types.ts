@@ -120,6 +120,7 @@ export interface StoreState {
   importQuestions: (questions: Question[]) => void;
   deleteQuestion: (questionId: string) => Promise<boolean>;
   updateQuestion: (questionId: string, payload: Partial<Question>) => Promise<boolean>;
+  addQuestion: (payload: Partial<Question>) => Promise<boolean>;
   flagQuestionConfused: (question: Question, reason?: 'quá khó' | 'quá dài' | 'quá khùng', severity?: number) => Promise<boolean>;
   fetchAdminStudents: () => Promise<void>;
   promoteUser: (targetUserId: string, newRole: string) => Promise<void>;
