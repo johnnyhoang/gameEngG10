@@ -170,6 +170,7 @@ export interface QuestionMeta {
   formulaHints?: string[];
   diagramHint?: string;
   tags?: string[];
+  isStandard?: boolean;
 }
 
 export interface CategoryStat {

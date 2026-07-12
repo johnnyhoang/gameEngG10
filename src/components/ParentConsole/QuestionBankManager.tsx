@@ -209,6 +209,45 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
     setEditSubject(q.subject || 'english');
   };
 
+  const handleSubmitStandard = async (e: React.MouseEvent) => {
+    e.preventDefault();
+
+    const parsedOptions = editOptions.split('\n').map(o => o.trim()).filter(Boolean);
+    const parsedCorrectAnswer = editCorrectAnswer.split('\n').map(a => a.trim()).filter(Boolean);
+
+    const payload: Partial<Question> = {
+      type: editType,
+      prompt: editPrompt,
+      explanation: editExplanation,
+      category: editCategory,
+      topicId: editTopicId || undefined,
+      difficulty: editDifficulty,
+      options: parsedOptions.length > 0 ? parsedOptions : undefined,
+      correctAnswer: parsedCorrectAnswer.length > 1 ? parsedCorrectAnswer : parsedCorrectAnswer[0] || '',
+      source: editSource,
+      imageUrl: editImageUrl || undefined,
+      subject: editSubject,
+      metadata: {
+        ...(editingQuestion?.metadata || {}),
+        isStandard: true
+      }
+    };
+
+    if (isAddingNew) {
+      const ok = await addQuestion(payload);
+      if (ok) {
+        setIsAddingNew(false);
+        toast.success('Đã tạo câu hỏi Đạt Chuẩn thành công! 🏆');
+      }
+    } else if (editingQuestion) {
+      const ok = await updateQuestion(editingQuestion.id, payload);
+      if (ok) {
+        setEditingQuestion(null);
+        toast.success('Đã xác nhận câu hỏi Đạt Chuẩn! 🏆');
+      }
+    }
+  };
+
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -686,14 +725,23 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                           </div>
                         )}
 
-                        <button
-                          type="submit"
-                          className={`w-full py-2 text-black font-bold rounded-lg transition-all text-xs uppercase cursor-pointer ${
-                            isAddingNew ? 'bg-synth-green hover:synth-glow-green font-black' : 'bg-synth-cyan hover:synth-glow-cyan font-black'
-                          }`}
-                        >
-                          {isAddingNew ? 'Tạo câu hỏi mới 💾' : 'Cập nhật câu hỏi 💾'}
-                        </button>
+                        <div className="flex gap-2">
+                          <button
+                            type="submit"
+                            className={`flex-1 py-2 text-black font-bold rounded-lg transition-all text-xs uppercase cursor-pointer ${
+                              isAddingNew ? 'bg-synth-green hover:synth-glow-green font-black' : 'bg-synth-cyan hover:synth-glow-cyan font-black'
+                            }`}
+                          >
+                            {isAddingNew ? 'Tạo câu hỏi mới 💾' : 'Cập nhật câu hỏi 💾'}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleSubmitStandard}
+                            className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-black font-orbitron rounded-lg hover:shadow-[0_0_10px_rgba(245,158,11,0.4)] transition-all text-xs uppercase cursor-pointer flex items-center gap-1 shrink-0"
+                          >
+                            🏆 Đạt Chuẩn
+                          </button>
+                        </div>
                       </form>
                     </div>
                   ) : (
@@ -723,6 +771,13 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                           onClick={() => startEdit(q)}
                           className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-3 cursor-pointer hover:border-synth-cyan/35 hover:bg-white/[0.07] transition-all duration-300 relative group"
                         >
+                          {/* Tick xanh nhỏ xíu ở góc trái trên */}
+                          {q.metadata?.isStandard && (
+                            <span className="absolute top-2 left-2 text-emerald-400 text-[10px]" title="Câu hỏi đạt chuẩn">
+                              ✔️
+                            </span>
+                          )}
+
                           {/* Nút Xóa nhanh ở góc phải khi hover */}
                           <button
                             onClick={async (e) => {
@@ -740,7 +795,12 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
 
                           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between pr-6">
                             <div className="space-y-1.5 flex-1 min-w-0">
-                              <div className="flex flex-wrap items-center gap-1.5">
+                              <div className={`flex flex-wrap items-center gap-1.5 ${q.metadata?.isStandard ? 'pl-4' : ''}`}>
+                                {q.metadata?.isStandard && (
+                                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold uppercase font-orbitron border border-emerald-500/30 flex items-center gap-1">
+                                    🏆 Đạt Chuẩn
+                                  </span>
+                                )}
                                 {q.isConfused && (
                                   <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-bold uppercase font-orbitron border border-red-500/40">
                                     Con hổng hiểu 🧠

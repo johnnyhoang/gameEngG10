@@ -346,6 +346,16 @@ AI đóng vai trò là xương sống trong việc chấm điểm tự luận, d
 *   **Bỏ qua câu không thể số hóa trọn vẹn:** Các câu chứng minh thuần hình học phức tạp không thể dựng qua tọa độ bảng vẽ hoặc câu tự luận đại số cần trình bày sơ đồ dài sẽ bị loại bỏ khi import.
 *   **Lọc trùng lặp nghiêm ngặt:** Nếu câu hỏi mới trùng lặp trên 95% ý tưởng hoặc từ ngữ với câu hỏi đã có trong Database, hệ thống sẽ tự động bỏ qua.
 
+### 4.1.2 Quy tắc Quản Lý & Đạt Chuẩn Ngân Hàng Câu Hỏi (CRUD & Standard Rules)
+*   **Lazy Load & Paging:** Danh sách câu hỏi hiển thị tối đa 10 câu ban đầu. Khi scroll xuống đáy danh sách, hệ thống tự động tải tiếp 10 câu tiếp theo (vô hạn scroll) giúp tối ưu hóa hiệu năng frontend.
+*   **UX CRUD Tinh Gọn:**
+    *   **Click-to-edit:** Nhấp trực tiếp vào thẻ câu hỏi bất kỳ để mở Form sửa đổi ngay tức khắc thay vì bấm nút "Sửa" nhỏ.
+    *   **Nút Thêm mới (+):** Đặt nút "Thêm Câu Hỏi" ở header quản lý môn học, click để mở form trống, đổi nút submit thành "Tạo câu hỏi mới 💾".
+    *   **Nút Xóa nhanh (X):** Khi hover vào thẻ câu hỏi xuất hiện nút X đỏ góc trên bên phải, bắt buộc hiển thị hộp thoại xác nhận (Delete Confirmation) chi tiết trước khi tiến hành xóa vĩnh viễn khỏi Database.
+*   **Cơ chế "Đạt Chuẩn" (Standard Questions):**
+    *   **Nút "Đạt Chuẩn 🏆":** Form tạo/sửa câu hỏi hỗ trợ nút "Đạt Chuẩn 🏆". Khi click, hệ thống gán cờ `isStandard: true` vào trường `metadata` của câu hỏi và lưu xuống Database.
+    *   **Tick xanh hiển thị:** Trong mọi nơi hiển thị câu hỏi (Vạn Quyển Các, Đấu Trường PlayArea...), các câu hỏi đạt chuẩn sẽ có một **icon tick xanh nhỏ xíu ở góc** (hoặc bên cạnh đề bài) để biểu thị tính chuẩn mực và chính thống.
+
 ### 4.2 AI Chấm điểm Tự luận Văn & Toán (AI Grading)
 Khi học sinh làm câu nghị luận xã hội/nghị luận văn học (hoặc lời giải hình học bậc cao):
 1.  Hệ thống gửi câu trả lời của học sinh kèm đề bài, từ khóa tối thiểu cần có (keywords) và các bước ý chính (rubric) lên Gemini.

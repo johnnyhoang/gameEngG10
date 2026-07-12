@@ -832,8 +832,13 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                   />
                 </div>
               )}
-              <p className="text-sm text-white font-semibold leading-relaxed bg-synth-gray/20 border border-white/5 rounded-xl p-3.5 whitespace-pre-line">
-                {questionText}
+              <p className="text-sm text-white font-semibold leading-relaxed bg-synth-gray/20 border border-white/5 rounded-xl p-3.5 whitespace-pre-line flex items-start gap-2">
+                {activeQuestion.metadata?.isStandard && (
+                  <span className="inline-flex items-center justify-center shrink-0 w-4 h-4 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-black mt-0.5" title="Câu hỏi đạt chuẩn">
+                    ✓
+                  </span>
+                )}
+                <span>{questionText}</span>
               </p>
             </div>
 
@@ -858,8 +863,13 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                 />
               </div>
             )}
-            <p className="text-base text-white font-medium leading-relaxed bg-synth-gray/20 border border-white/5 rounded-xl p-4 whitespace-pre-line">
-              {activeQuestion.prompt}
+            <p className="text-base text-white font-medium leading-relaxed bg-synth-gray/20 border border-white/5 rounded-xl p-4 whitespace-pre-line flex items-start gap-2">
+              {activeQuestion.metadata?.isStandard && (
+                <span className="inline-flex items-center justify-center shrink-0 w-4 h-4 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-black mt-1" title="Câu hỏi đạt chuẩn">
+                  ✓
+                </span>
+              )}
+              <span>{activeQuestion.prompt}</span>
             </p>
           </div>
 
