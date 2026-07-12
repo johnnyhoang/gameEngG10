@@ -15,6 +15,7 @@ export interface StoreState {
   currentUser: UserProfile | null;
   sessionAccountId: string | null;
   availableProfiles: UserProfile[];
+  profilesLoading: boolean;
   setSessionAccountId: (accountId: string) => void;
   fetchProfiles: () => Promise<void>;
   selectProfile: (profileId: string) => Promise<void>;

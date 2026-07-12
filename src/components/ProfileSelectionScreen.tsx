@@ -8,6 +8,7 @@ export const ProfileSelectionScreen: React.FC = () => {
   const selectProfile = useGameState(state => state.selectProfile);
   const quickStartProfile = useGameState(state => state.quickStartProfile);
   const logout = useGameState(state => state.logout);
+  const profilesLoading = useGameState(state => state.profilesLoading);
   const [quickStarting, setQuickStarting] = useState<'student' | 'parent' | null>(null);
   const [selectingProfileId, setSelectingProfileId] = useState<string | null>(null);
 
@@ -132,6 +133,19 @@ export const ProfileSelectionScreen: React.FC = () => {
       isSelecting: selectingProfileId === existingHieuTruong.id,
       theme: existingHieuTruong.uiTheme || 'current',
     });
+  }
+
+  if (profilesLoading) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 font-mono text-white animate-fade-in">
+        <div className="glass-panel rounded-3xl border border-white/10 p-8 max-w-sm w-full text-center space-y-4 shadow-[0_0_50px_rgba(0,240,255,0.1)]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-synth-cyan mx-auto"></div>
+          <p className="font-orbitron text-[10px] text-synth-cyan font-bold tracking-widest uppercase animate-pulse">
+            Đang tải danh sách hồ sơ...
+          </p>
+        </div>
+      </div>
+    );
   }
 
   return (

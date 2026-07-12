@@ -15,7 +15,7 @@ export const createAuthSlice: StateCreator<
   [],
   [],
   Pick<StoreState,
-    'currentUser' | 'sessionAccountId' | 'availableProfiles' |
+    'currentUser' | 'sessionAccountId' | 'availableProfiles' | 'profilesLoading' |
     'setSessionAccountId' | 'fetchProfiles' | 'selectProfile' |
     'createProfile' | 'quickStartProfile' | 'login' | 'logout' | 'renameProfile'
   >
@@ -23,17 +23,21 @@ export const createAuthSlice: StateCreator<
   currentUser: null,
   sessionAccountId: null,
   availableProfiles: [],
+  profilesLoading: false,
 
   setSessionAccountId: (accountId: string) => {
     set({ sessionAccountId: accountId });
   },
 
   fetchProfiles: async () => {
+    set({ profilesLoading: true });
     try {
       const profiles = await authService.fetchProfiles();
       set({ availableProfiles: profiles });
     } catch (e) {
       console.error('fetchProfiles error', e);
+    } finally {
+      set({ profilesLoading: false });
     }
   },
 
@@ -299,6 +303,7 @@ export const createAuthSlice: StateCreator<
       currentUser: null,
       sessionAccountId: null,
       availableProfiles: [],
+      profilesLoading: false,
       familyLinks: [],
       player: INITIAL_PLAYER,
       pet: INITIAL_PET,
