@@ -297,8 +297,29 @@ export const createAuthSlice: StateCreator<
   },
 
   logout: async () => {
-    if (!get().sessionAccountId) return;
     localStorage.removeItem('ge10_login_time');
+
+    // 1. Clear all Supabase session keys from localStorage synchronously
+    const keysToRemove: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('sb-') || key.includes('auth-token') || key.includes('supabase.auth'))) {
+        keysToRemove.push(key);
+      }
+    }
+    keysToRemove.forEach(k => localStorage.removeItem(k));
+
+    // 2. Clear from sessionStorage
+    const sessionKeysToRemove: string[] = [];
+    for (let i = 0; i < sessionStorage.length; i++) {
+      const key = sessionStorage.key(i);
+      if (key && (key.startsWith('sb-') || key.includes('auth-token') || key.includes('supabase.auth'))) {
+        sessionKeysToRemove.push(key);
+      }
+    }
+    sessionKeysToRemove.forEach(k => sessionStorage.removeItem(k));
+
+    // 3. Clear Zustand state synchronously
     set({
       currentUser: null,
       sessionAccountId: null,
@@ -317,6 +338,7 @@ export const createAuthSlice: StateCreator<
       currentSubject: 'english',
       activeGradeTier: DEFAULT_GRADE_TIER
     });
+
     try {
       supabase.auth.signOut();
     } catch (err) {
