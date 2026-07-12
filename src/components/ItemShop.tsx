@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useGameState, THEME_UNLOCK_COST } from '../hooks/useGameState';
 import { Shield, Coins, Gift, Palette, RotateCcw } from 'lucide-react';
 import { toast } from '../utils/toast';
 import { UI_THEMES, isLightTheme } from '../theme/uiThemes';
 import { FogCard } from './FogCard';
+import { CoinConfirmModal } from './Common/CoinConfirmModal';
 
 export const ItemShop: React.FC = () => {
   const player = useGameState(state => state.player);
@@ -26,51 +27,130 @@ export const ItemShop: React.FC = () => {
   const redeemClassReward = useGameState(state => state.redeemClassReward);
   const cancelClassRedemption = useGameState(state => state.cancelClassRedemption);
 
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    cost: number;
+    actionDescription: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    cost: 0,
+    actionDescription: '',
+    onConfirm: () => {},
+  });
+
   useEffect(() => {
     fetchClassRewards();
   }, []);
 
   const handleBuyTheme = (themeId: typeof UI_THEMES[number]['id']) => {
-    const success = buyTheme(themeId);
-    if (!success) {
+    if (player.coins < THEME_UNLOCK_COST) {
       toast.error(`Thiếu Ngân lượng. Cần ${THEME_UNLOCK_COST} NP để mở khóa Phong Vị này.`);
-    } else {
-      toast.success('🎭 Mở khóa Phong Vị thành công! Vào Thân Phận để mặc thử ngay.');
+      return;
     }
+    const themeConfig = UI_THEMES.find(t => t.id === themeId);
+    setConfirmModal({
+      isOpen: true,
+      cost: THEME_UNLOCK_COST,
+      actionDescription: `mở khóa Phong Vị "${themeConfig?.name || themeId}"`,
+      onConfirm: () => {
+        const success = buyTheme(themeId);
+        if (success) {
+          toast.success('🎭 Mở khóa Phong Vị thành công! Vào Thân Phận để mặc thử ngay.');
+        }
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      }
+    });
   };
 
   const handleBuyShield = () => {
-    const success = buyStreakShield();
-    if (!success) {
-      toast.error('Thiếu Ngân lượng hoặc Hộ Tâm Phù đã sẵn sàng rồi.');
-    } else {
-      toast.success('✅ Lĩnh Hộ Tâm Phù thành công! Chuỗi tu luyện được bảo vệ.');
+    if (hasStreakShield) {
+      toast.error('Hộ Tâm Phù đã sẵn sàng rồi.');
+      return;
     }
+    if (player.coins < 150) {
+      toast.error('Thiếu Ngân lượng. Cần 150 NP để mua Hộ Tâm Phù.');
+      return;
+    }
+    setConfirmModal({
+      isOpen: true,
+      cost: 150,
+      actionDescription: 'lĩnh Hộ Tâm Phù bảo vệ Chuỗi Tu Luyện',
+      onConfirm: () => {
+        const success = buyStreakShield();
+        if (success) {
+          toast.success('✅ Lĩnh Hộ Tâm Phù thành công! Chuỗi tu luyện được bảo vệ.');
+        }
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      }
+    });
   };
 
   const handleBuyHint = () => {
-    const success = buyHint();
-    if (!success) {
+    if (player.coins < 50) {
       toast.error('Thiếu Ngân lượng để lĩnh Khai Ngộ Quyển!');
-    } else {
-      toast.success('📜 Khai Ngộ Quyển đã được ghi vào túi vật. Dùng trong bài làm để khai ngộ!');
+      return;
     }
+    setConfirmModal({
+      isOpen: true,
+      cost: 50,
+      actionDescription: 'lĩnh Khai Ngộ Quyển trợ giúp trong bài làm',
+      onConfirm: () => {
+        const success = buyHint();
+        if (success) {
+          toast.success('📜 Khai Ngộ Quyển đã được ghi vào túi vật. Dùng trong bài làm để khai ngộ!');
+        }
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      }
+    });
   };
 
   const handleRedeem = (id: string, title: string) => {
-    const success = redeemReward(id);
-    if (!success) {
-      toast.error('Ngân lượng chưa đủ hoặc phần thưởng đã hết số lượng!');
-    } else {
-      toast.success(`🎁 Đã đổi "${title}"! Chờ Hiệu Trưởng trao quà ngoài đời nhé.`);
+    const reward = rewards.find(r => r.id === id);
+    if (!reward || reward.remainingQuantity <= 0) {
+      toast.error('Phần thưởng đã hết số lượng!');
+      return;
     }
+    if (player.coins < reward.costCoins) {
+      toast.error('Ngân lượng chưa đủ để đổi phần thưởng này!');
+      return;
+    }
+    setConfirmModal({
+      isOpen: true,
+      cost: reward.costCoins,
+      actionDescription: `đổi phần thưởng "${title}"`,
+      onConfirm: () => {
+        const success = redeemReward(id);
+        if (success) {
+          toast.success(`🎁 Đã đổi "${title}"! Chờ Hiệu Trưởng trao quà ngoài đời nhé.`);
+        }
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      }
+    });
   };
 
   const handleRedeemClass = async (rewardId: string, title: string) => {
-    const ok = await redeemClassReward(rewardId);
-    if (ok) {
-      toast.success(`🎁 Đã gửi yêu cầu đổi "${title}"! Chờ giáo viên phát thưởng nhé.`);
+    const reward = classRewards.find(r => r.id === rewardId);
+    if (!reward || reward.remaining <= 0) {
+      toast.error('Phúc lợi này đã hết số lượng!');
+      return;
     }
+    if (player.coins < reward.costCoins) {
+      toast.error('Ngân lượng chưa đủ để đổi phúc lợi này!');
+      return;
+    }
+    setConfirmModal({
+      isOpen: true,
+      cost: reward.costCoins,
+      actionDescription: `đổi phúc lợi lớp học "${title}"`,
+      onConfirm: async () => {
+        const ok = await redeemClassReward(rewardId);
+        if (ok) {
+          toast.success(`🎁 Đã gửi yêu cầu đổi "${title}"! Chờ giáo viên phát thưởng nhé.`);
+        }
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      }
+    });
   };
 
   const handleCancelClassRedemption = async (redemptionId: string) => {
@@ -344,6 +424,13 @@ export const ItemShop: React.FC = () => {
           </div>
         )}
       </div>
+      <CoinConfirmModal
+        isOpen={confirmModal.isOpen}
+        cost={confirmModal.cost}
+        actionDescription={confirmModal.actionDescription}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 };

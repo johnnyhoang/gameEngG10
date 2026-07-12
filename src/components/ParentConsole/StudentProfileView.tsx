@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Check, X, SlidersHorizontal } from 'lucide-react';
+import { SlidersHorizontal } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { isParentRole } from '../../utils/roleHelpers';
 import { toast } from '../../utils/toast';
+import { RewardManager } from './RewardManager';
+import { QuestManager } from './QuestManager';
 
 interface StudentProfileViewProps {
   currentUser: any;
@@ -10,6 +12,7 @@ interface StudentProfileViewProps {
   gameSettings: any;
   canApproveReward: boolean;
   canManageEnergy: boolean;
+  canCreateMission: boolean;
   skipReviews: any[];
   adminMarkRewardDelivered: (studentId: string, redemptionId: string) => Promise<void>;
   adminCancelRedemption: (studentId: string, redemptionId: string) => Promise<void>;
@@ -17,6 +20,18 @@ interface StudentProfileViewProps {
   adminSetEnergyConfig: (studentId: string, maxEnergy: number, resetHours: 2 | 3 | 5) => Promise<void>;
   fetchSkipReviews: (studentId: string) => Promise<void>;
   resolveSkipReview: (reviewId: string) => Promise<boolean>;
+  // Reward props
+  activeRewardCatalog: any[];
+  activeRedemptions: any[];
+  addParentReward: (title: string, costCoins: number, quantity: number) => void;
+  deleteParentReward: (rewardId: string) => void;
+  markRewardDelivered: (redemptionId: string) => void;
+  cancelRedemption: (redemptionId: string) => void;
+  // Quest props
+  parentQuests: any[];
+  addParentQuest: (title: string, description: string, rewardNP: number) => void;
+  completeParentQuest: (questId: string) => void;
+  deleteParentQuest: (questId: string) => void;
 }
 
 export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
@@ -24,13 +39,24 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
   selectedStudentProfile,
   canApproveReward,
   canManageEnergy,
+  canCreateMission,
   skipReviews,
   adminMarkRewardDelivered,
   adminCancelRedemption,
   adminSetEnergy,
   adminSetEnergyConfig,
   fetchSkipReviews,
-  resolveSkipReview
+  resolveSkipReview,
+  activeRewardCatalog,
+  activeRedemptions,
+  addParentReward,
+  deleteParentReward,
+  markRewardDelivered,
+  cancelRedemption,
+  parentQuests,
+  addParentQuest,
+  completeParentQuest,
+  deleteParentQuest
 }) => {
   // Chân Khí v2 (SUB_SPEC_ENERGY §2): maxEnergy/resetHours là cấu hình RIÊNG của con này, không còn đọc gameSettings global.
   const maxE = selectedStudentProfile?.player?.maxEnergy ?? 100;
@@ -56,7 +82,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
     );
   }
 
-  const { studentUser, player, pet, categoryStats = {}, rewardRedemptions = [], logs = [] } = selectedStudentProfile;
+  const { studentUser, player, pet, categoryStats = {}, logs = [] } = selectedStudentProfile;
 
   return (
     <div className="space-y-6">
@@ -282,74 +308,39 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
         </div>
       </div>
 
-      {/* 4. Nhật Ký Đổi Quà & Hàng Đợi Skip Reviews */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Nhật ký đổi quà tiêu vặt */}
-        <div className="glass-panel rounded-2xl border border-white/5 p-5 flex flex-col h-[350px]">
-          <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider mb-4">
-            Nhật ký đổi quà tiêu vặt
-          </h4>
-          <div className="flex-1 overflow-y-auto space-y-2.5 text-xs pr-1">
-            {rewardRedemptions.length === 0 ? (
-              <div className="h-full flex items-center justify-center text-synth-text-muted text-center py-12">
-                Con chưa đổi phần quà nào.
-              </div>
-            ) : (
-              rewardRedemptions.map((rr: any) => (
-                <div key={rr.id} className="p-2.5 rounded-lg bg-white/5 border border-white/5 flex justify-between items-center">
-                  <div>
-                    <span className="font-bold text-white block">{rr.rewardTitle}</span>
-                    <span className="text-[10px] text-synth-text-muted">
-                      {new Date(rr.timestamp).toLocaleString('vi-VN')}
-                    </span>
-                  </div>
-                  <div className="text-right flex flex-col items-end gap-1 shrink-0">
-                    <span className="font-bold block text-synth-orange">{rr.costCoins} NP</span>
-                    {rr.status === 'pending' ? (
-                      !canApproveReward ? (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded font-black uppercase font-orbitron bg-white/10 text-slate-400 mt-1">
-                          Chờ duyệt
-                        </span>
-                      ) : (
-                        <div className="flex gap-1 mt-1">
-                          <button
-                            onClick={() => {
-                              if (studentUser?.id) {
-                                adminMarkRewardDelivered(studentUser.id, rr.id);
-                              }
-                            }}
-                            className="p-1 rounded bg-synth-green text-black cursor-pointer hover:synth-glow-green transition-all"
-                            title="Xác nhận đã trao quà thật cho con"
-                          >
-                            <Check className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (studentUser?.id) {
-                                adminCancelRedemption(studentUser.id, rr.id);
-                              }
-                            }}
-                            className="p-1 rounded border border-synth-magenta text-synth-magenta cursor-pointer hover:bg-synth-magenta/10 transition-all"
-                            title="Hủy lượt đổi, hoàn trả xu NP lại cho con"
-                          >
-                            <X className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      )
-                    ) : (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded font-black uppercase font-orbitron bg-green-500/20 text-green-400">
-                        Đã trao ✓
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
+      {/* 4. Quản Lý Phúc Lợi & Duyệt Đổi Quà (Nằm trong Học Tịch) */}
+      <div className="glass-panel rounded-2xl border border-white/5 p-5">
+        <RewardManager
+          viewingStudentId={studentUser?.id}
+          activeRewardCatalog={activeRewardCatalog}
+          activeRedemptions={activeRedemptions}
+          canApproveReward={canApproveReward}
+          addParentReward={addParentReward}
+          deleteParentReward={deleteParentReward}
+          markRewardDelivered={markRewardDelivered}
+          cancelRedemption={cancelRedemption}
+          adminMarkRewardDelivered={adminMarkRewardDelivered}
+          adminCancelRedemption={adminCancelRedemption}
+        />
+      </div>
 
+      {/* 5. Cáo Thị Nhiệm Vụ */}
+      {studentUser?.id && (
+        <div className="glass-panel rounded-2xl border border-white/5 p-5">
+          <QuestManager
+            parentQuests={parentQuests}
+            canCreateMission={canCreateMission}
+            addParentQuest={addParentQuest}
+            completeParentQuest={completeParentQuest}
+            deleteParentQuest={deleteParentQuest}
+          />
+        </div>
+      )}
+
+      {/* 6. Nhật Ký Hoạt Động & Hàng Đợi Skip Reviews */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Hàng đợi Phản hồi Skip (Closed-loop Review) */}
-        {isParentRole(currentUser?.role) && (
+        {isParentRole(currentUser?.role) ? (
           <div className="glass-panel rounded-2xl border border-white/5 p-5 flex flex-col h-[350px]">
             <div className="flex justify-between items-center mb-4">
               <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider flex items-center gap-1.5">
@@ -402,44 +393,48 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
               )}
             </div>
           </div>
+        ) : (
+          <div className="glass-panel rounded-2xl border border-white/5 p-5 flex flex-col h-[350px] items-center justify-center text-center text-xs text-slate-400">
+            <span>🔒 Chỉ phụ huynh mới xem được hàng đợi Skip Reviews.</span>
+          </div>
         )}
-      </div>
 
-      {/* 5. Nhật ký 50 hoạt động học tập gần nhất */}
-      <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-4">
-        <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
-          Nhật ký 50 hoạt động học tập gần nhất
-        </h4>
-        <div className="overflow-y-auto max-h-60 space-y-2.5 text-xs pr-1">
-          {logs.length === 0 ? (
-            <div className="text-center py-8 text-synth-text-muted italic">
-              Chưa ghi nhận hoạt động học tập nào.
-            </div>
-          ) : (
-            logs.slice(0, 50).map((log: any) => (
-              <div key={log.id} className="p-3 rounded-lg bg-white/5 border border-white/5 space-y-1.5">
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-white capitalize">{log.actionType || 'Học tập'}</span>
-                  <span className="text-[10px] text-synth-text-muted">
-                    {new Date(log.timestamp).toLocaleString('vi-VN')}
-                  </span>
-                </div>
-                <p className="text-slate-300 leading-relaxed">{log.description}</p>
-                <div className="flex gap-4 text-[10px] font-bold font-orbitron">
-                  {log.xpAwarded !== 0 && (
-                    <span className={log.xpAwarded > 0 ? 'text-synth-green' : 'text-red-400'}>
-                      {log.xpAwarded > 0 ? '+' : ''}{log.xpAwarded} XP
-                    </span>
-                  )}
-                  {log.coinsAwarded !== 0 && (
-                    <span className={log.coinsAwarded > 0 ? 'text-synth-orange' : 'text-red-400'}>
-                      {log.coinsAwarded > 0 ? '+' : ''}{log.coinsAwarded} NP
-                    </span>
-                  )}
-                </div>
+        {/* Nhật ký hoạt động học tập */}
+        <div className="glass-panel rounded-2xl border border-white/5 p-5 flex flex-col h-[350px]">
+          <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider mb-4">
+            Nhật ký 50 hoạt động học tập gần nhất
+          </h4>
+          <div className="flex-1 overflow-y-auto space-y-2.5 text-xs pr-1">
+            {logs.length === 0 ? (
+              <div className="text-center py-8 text-synth-text-muted italic">
+                Chưa ghi nhận hoạt động học tập nào.
               </div>
-            ))
-          )}
+            ) : (
+              logs.slice(0, 50).map((log: any) => (
+                <div key={log.id} className="p-3 rounded-lg bg-white/5 border border-white/5 space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-white capitalize">{log.actionType || 'Học tập'}</span>
+                    <span className="text-[10px] text-synth-text-muted">
+                      {new Date(log.timestamp).toLocaleString('vi-VN')}
+                    </span>
+                  </div>
+                  <p className="text-slate-300 leading-relaxed">{log.description}</p>
+                  <div className="flex gap-4 text-[10px] font-bold font-orbitron">
+                    {log.xpAwarded !== 0 && (
+                      <span className={log.xpAwarded > 0 ? 'text-synth-green' : 'text-red-400'}>
+                        {log.xpAwarded > 0 ? '+' : ''}{log.xpAwarded} XP
+                      </span>
+                    )}
+                    {log.coinsAwarded !== 0 && (
+                      <span className={log.coinsAwarded > 0 ? 'text-synth-orange' : 'text-red-400'}>
+                        {log.coinsAwarded > 0 ? '+' : ''}{log.coinsAwarded} NP
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -11,6 +11,7 @@ const BikiHinhHocPhang = lazy(() => import('./BikiHinhHocPhang').then(m => ({ de
 const Biki3DStudio = lazy(() => import('./Biki3DStudio').then(m => ({ default: m.Biki3DStudio })));
 import { ArrowRight, Award } from 'lucide-react';
 import { MonChuHoiToiDialog } from './MonChuHoiToiDialog';
+import { CoinConfirmModal } from './Common/CoinConfirmModal';
 import { sound } from '../utils/sound';
 import { toast } from '../utils/toast';
 import { supabase } from '../utils/supabaseClient';
@@ -63,6 +64,17 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const [runMistakes, setRunMistakes] = useState(0);
   const [runFinished, setRunFinished] = useState(false);
   const runEndHandledRef = useRef(false);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    cost: number;
+    actionDescription: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    cost: 0,
+    actionDescription: '',
+    onConfirm: () => {},
+  });
   
   const [lastRubricScore, setLastRubricScore] = useState<number | null>(null);
   const [lastRubricMissing, setLastRubricMissing] = useState<string[]>([]);
@@ -324,64 +336,72 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       return;
     }
     
-    buyHint();
-    sound.playCoin();
-    setHintUsed(true);
+    setConfirmModal({
+      isOpen: true,
+      cost: 50,
+      actionDescription: 'lĩnh Khai Ngộ Quyển trợ giúp trong câu hỏi này',
+      onConfirm: () => {
+        buyHint();
+        sound.playCoin();
+        setHintUsed(true);
 
-    const answerMode = activeQuestion.metadata?.answerMode;
-    const mathTopic = activeQuestion.metadata?.mathTopic;
-    const englishTask = activeQuestion.metadata?.englishTask;
-    const englishSkill = activeQuestion.metadata?.englishSkill;
-    const literatureTask = activeQuestion.metadata?.literatureTask;
-    const textGenre = activeQuestion.metadata?.textGenre;
+        const answerMode = activeQuestion.metadata?.answerMode;
+        const mathTopic = activeQuestion.metadata?.mathTopic;
+        const englishTask = activeQuestion.metadata?.englishTask;
+        const englishSkill = activeQuestion.metadata?.englishSkill;
+        const literatureTask = activeQuestion.metadata?.literatureTask;
+        const textGenre = activeQuestion.metadata?.textGenre;
 
-    if (activeQuestion.type === 'mcq' && activeQuestion.options) {
-      const correctOpt = Array.isArray(activeQuestion.correctAnswer)
-        ? activeQuestion.correctAnswer[0]
-        : activeQuestion.correctAnswer;
-      const wrongOpts = activeQuestion.options.filter(opt => opt !== correctOpt);
-      const randomWrongs = wrongOpts.sort(() => Math.random() - 0.5).slice(0, 2);
-      setRevealedHint(`Gợi ý: Hai lựa chọn này lệch nhịp: "${randomWrongs.join(' và ')}"`);
-    } else if (activeSectId === 'english' && englishTask) {
-      const skillLabel = englishSkill ? ENGLISH_SKILL_LABELS[englishSkill] || englishSkill : '';
-      const taskLabel = ENGLISH_TASK_LABELS[englishTask] || englishTask;
-      if (englishTask === 'guided-cloze') {
-        setRevealedHint('Gợi ý: So câu trước sau chỗ trống rồi chốt loại từ, collocation.');
-      } else if (englishTask === 'reading-true-false') {
-        setRevealedHint('Gợi ý: Quét keyword trong statement rồi đối chiếu từng ý trong passage.');
-      } else if (englishTask === 'reading-mcq') {
-        setRevealedHint('Gợi ý: Bắt keyword chính rồi lần về đoạn chứa dữ kiện.');
-      } else if (englishTask === 'word-form') {
-        setRevealedHint('Gợi ý: Chốt loại từ cần điền: noun, verb, adjective hay adverb.');
-      } else if (mode === 'pronunciation') {
-        setRevealedHint('Gợi ý: Canh đuôi -ed/-s, âm gần nhau và trọng âm.');
-      } else if (englishTask === 'rearrangement') {
-        setRevealedHint('Gợi ý: Đi từ chủ ngữ, động từ và cụm cố định trước.');
-      } else if (englishTask === 'transformation') {
-        setRevealedHint('Gợi ý: Chốt cấu trúc trước: tense, reported speech, passive, clause...');
-      } else {
-        setRevealedHint(`Gợi ý${skillLabel ? ` (${skillLabel})` : ''}: Tập trung vào dạng ${taskLabel.toLowerCase()} và quy tắc ngữ pháp liên quan.`);
+        if (activeQuestion.type === 'mcq' && activeQuestion.options) {
+          const correctOpt = Array.isArray(activeQuestion.correctAnswer)
+            ? activeQuestion.correctAnswer[0]
+            : activeQuestion.correctAnswer;
+          const wrongOpts = activeQuestion.options.filter(opt => opt !== correctOpt);
+          const randomWrongs = wrongOpts.sort(() => Math.random() - 0.5).slice(0, 2);
+          setRevealedHint(`Gợi ý: Hai lựa chọn này lệch nhịp: "${randomWrongs.join(' và ')}"`);
+        } else if (activeSectId === 'english' && englishTask) {
+          const skillLabel = englishSkill ? ENGLISH_SKILL_LABELS[englishSkill] || englishSkill : '';
+          const taskLabel = ENGLISH_TASK_LABELS[englishTask] || englishTask;
+          if (englishTask === 'guided-cloze') {
+            setRevealedHint('Gợi ý: So câu trước sau chỗ trống rồi chốt loại từ, collocation.');
+          } else if (englishTask === 'reading-true-false') {
+            setRevealedHint('Gợi ý: Quét keyword trong statement rồi đối chiếu từng ý trong passage.');
+          } else if (englishTask === 'reading-mcq') {
+            setRevealedHint('Gợi ý: Bắt keyword chính rồi lần về đoạn chứa dữ kiện.');
+          } else if (englishTask === 'word-form') {
+            setRevealedHint('Gợi ý: Chốt loại từ cần điền: noun, verb, adjective hay adverb.');
+          } else if (mode === 'pronunciation') {
+            setRevealedHint('Gợi ý: Canh đuôi -ed/-s, âm gần nhau và trọng âm.');
+          } else if (englishTask === 'rearrangement') {
+            setRevealedHint('Gợi ý: Đi từ chủ ngữ, động từ và cụm cố định trước.');
+          } else if (englishTask === 'transformation') {
+            setRevealedHint('Gợi ý: Chốt cấu trúc trước: tense, reported speech, passive, clause...');
+          } else {
+            setRevealedHint(`Gợi ý${skillLabel ? ` (${skillLabel})` : ''}: Tập trung vào dạng ${taskLabel.toLowerCase()} và quy tắc ngữ pháp liên quan.`);
+          }
+        } else if (activeSectId === 'literature' && literatureTask === 'social-essay') {
+          const steps = activeQuestion.metadata?.solutionSteps || [];
+          setRevealedHint(`Gợi ý: Bám bố cục nghị luận, dựng dàn ý rõ ràng${steps[0] ? `, bắt đầu từ "${steps[0]}"` : ''}.`);
+        } else if (activeSectId === 'literature' && literatureTask) {
+          const genreLabel = textGenre ? LITERATURE_TEXT_GENRE_LABELS[textGenre] || textGenre : '';
+          const taskLabel = LITERATURE_TASK_LABELS[literatureTask] || literatureTask;
+          setRevealedHint(`Gợi ý${genreLabel ? ` (${genreLabel})` : ''}: Tập trung vào ý ${taskLabel.toLowerCase()} và nêu đúng chi tiết trọng tâm.`);
+        } else if (answerMode === 'proof' || activeQuestion.type === 'proof') {
+          setRevealedHint('Gợi ý: Đi từ giả thiết, dựng hình hoặc biến đổi trung gian rồi mới chốt.');
+        } else if (answerMode === 'multi-part' || activeQuestion.type === 'multi-part') {
+          setRevealedHint('Gợi ý: Chia a/b/c rõ ràng, hạ ý dễ trước để lấy đà.');
+        } else if (activeQuestion.type === 'wordform' || answerMode === 'short-answer' || answerMode === 'numeric' || answerMode === 'expression') {
+          const correctStr = Array.isArray(activeQuestion.correctAnswer)
+            ? activeQuestion.correctAnswer[0]
+            : activeQuestion.correctAnswer;
+          setRevealedHint(`Gợi ý: Đáp án thường mở bằng "${correctStr.substring(0, 2).toUpperCase()}..."`);
+        } else {
+          const extra = mathTopic ? ` (${MATH_TOPIC_LABELS[mathTopic] || mathTopic})` : '';
+          setRevealedHint(`Gợi ý${extra}: ${activeQuestion.explanation.substring(0, 50)}...`);
+        }
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
       }
-    } else if (activeSectId === 'literature' && literatureTask === 'social-essay') {
-      const steps = activeQuestion.metadata?.solutionSteps || [];
-      setRevealedHint(`Gợi ý: Bám bố cục nghị luận, dựng dàn ý rõ ràng${steps[0] ? `, bắt đầu từ "${steps[0]}"` : ''}.`);
-    } else if (activeSectId === 'literature' && literatureTask) {
-      const genreLabel = textGenre ? LITERATURE_TEXT_GENRE_LABELS[textGenre] || textGenre : '';
-      const taskLabel = LITERATURE_TASK_LABELS[literatureTask] || literatureTask;
-      setRevealedHint(`Gợi ý${genreLabel ? ` (${genreLabel})` : ''}: Tập trung vào ý ${taskLabel.toLowerCase()} và nêu đúng chi tiết trọng tâm.`);
-    } else if (answerMode === 'proof' || activeQuestion.type === 'proof') {
-      setRevealedHint('Gợi ý: Đi từ giả thiết, dựng hình hoặc biến đổi trung gian rồi mới chốt.');
-    } else if (answerMode === 'multi-part' || activeQuestion.type === 'multi-part') {
-      setRevealedHint('Gợi ý: Chia a/b/c rõ ràng, hạ ý dễ trước để lấy đà.');
-    } else if (activeQuestion.type === 'wordform' || answerMode === 'short-answer' || answerMode === 'numeric' || answerMode === 'expression') {
-      const correctStr = Array.isArray(activeQuestion.correctAnswer)
-        ? activeQuestion.correctAnswer[0]
-        : activeQuestion.correctAnswer;
-      setRevealedHint(`Gợi ý: Đáp án thường mở bằng "${correctStr.substring(0, 2).toUpperCase()}..."`);
-    } else {
-      const extra = mathTopic ? ` (${MATH_TOPIC_LABELS[mathTopic] || mathTopic})` : '';
-      setRevealedHint(`Gợi ý${extra}: ${activeQuestion.explanation.substring(0, 50)}...`);
-    }
+    });
   };
 
   const handleCheckAnswer = async () => {
@@ -1001,6 +1021,14 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           onCancel={() => setIsSkipDialogOpen(false)}
         />
       )}
+
+      <CoinConfirmModal
+        isOpen={confirmModal.isOpen}
+        cost={confirmModal.cost}
+        actionDescription={confirmModal.actionDescription}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 };

@@ -8,6 +8,7 @@ import { SUBJECTS_CONFIG, GRADE_TIERS, getStudentRankForLevel } from '../types/g
 import { toast } from '../utils/toast';
 import { GiangHoCamNang } from './GiangHoCamNang';
 import { ActivityLog } from './ActivityLog';
+import { CoinConfirmModal } from './Common/CoinConfirmModal';
 
 interface ProfilePageProps {
   currentUser: UserProfile;
@@ -95,6 +96,17 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
   const [activeTab, setActiveTab] = useState<'identity' | 'themes' | 'logs'>('identity');
   const [isCamNangOpen, setIsCamNangOpen] = useState(false);
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    cost: number;
+    actionDescription: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    cost: 0,
+    actionDescription: '',
+    onConfirm: () => {},
+  });
 
   // States for Profile Renaming
   const renameProfile = useGameState(state => state.renameProfile);
@@ -434,14 +446,23 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                       onSelectTheme(theme.id);
                       return;
                     }
-                    // 🎭 Phong Vị (CORE_SPECS §2.4): mở khóa bằng NP tại chỗ, tự áp dụng ngay sau khi mua thành công.
-                    const bought = buyTheme(theme.id);
-                    if (bought) {
-                      toast.success(`Đã mở khóa "${theme.name}" (-${THEME_UNLOCK_COST} NP)! Đang áp dụng...`);
-                      onSelectTheme(theme.id);
-                    } else {
+                    if (player.coins < THEME_UNLOCK_COST) {
                       toast.error(`Không đủ NP. Cần ${THEME_UNLOCK_COST} NP để mở khóa Phong Vị này.`);
+                      return;
                     }
+                    setConfirmModal({
+                      isOpen: true,
+                      cost: THEME_UNLOCK_COST,
+                      actionDescription: `mở khóa Phong Vị "${theme.name}"`,
+                      onConfirm: () => {
+                        const bought = buyTheme(theme.id);
+                        if (bought) {
+                          toast.success(`Đã mở khóa "${theme.name}" (-${THEME_UNLOCK_COST} NP)! Đang áp dụng...`);
+                          onSelectTheme(theme.id);
+                        }
+                        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+                      }
+                    });
                   }}
                   className={`${getThemeCardClass(theme.id, isActive)} ${!isUnlocked ? 'opacity-80' : ''}`}
                 >
@@ -543,6 +564,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           </div>
         )}
       </div>
+      <CoinConfirmModal
+        isOpen={confirmModal.isOpen}
+        cost={confirmModal.cost}
+        actionDescription={confirmModal.actionDescription}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 };

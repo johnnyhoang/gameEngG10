@@ -33,6 +33,7 @@ const STAGE_MEMORIES: Record<PetStage, { story: string; photoConcept: string }> 
 };
 
 import { isLightTheme } from '../theme/uiThemes';
+import { CoinConfirmModal } from './Common/CoinConfirmModal';
 
 interface PetSanctuaryProps {
   /** 'sidebar' = widget đồng hành thu gọn (mặc định); 'full' = module Sân Thú Nuôi đầy đủ, gồm Album Kỷ Niệm. */
@@ -47,10 +48,22 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
   const showHelp = useGameState(state => state.showHelp);
   const uiTheme = useGameState(state => state.uiTheme);
   const logs = useGameState(state => state.logs || []);
+  const player = useGameState(state => state.player);
 
   const [interacting, setInteracting] = useState(false);
   const [tickled, setTickled] = useState(false);
   const [speech, setSpeech] = useState('Ủn ỉn... chào môn sinh! Hôm nay ta cùng tinh tấn học tập nhé! 🌸');
+  const [confirmModal, setConfirmModal] = useState<{
+    isOpen: boolean;
+    cost: number;
+    actionDescription: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    cost: 0,
+    actionDescription: '',
+    onConfirm: () => {},
+  });
 
   const unlockedStageCount = PET_STAGE_ORDER.indexOf(pet.stage) + 1;
   const [albumIndex, setAlbumIndex] = useState(0);
@@ -58,9 +71,9 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
   const isUnicorn = isLightTheme(uiTheme);
 
   const handleFeed = () => {
-    const success = feedPet();
-    if (!success) {
-      // Hết NP/XP — thọt lét để đóng overlay
+    if (pet.mood === 'happy' && pet.energy >= 100) return;
+
+    if (player.coins < 10) {
       setTickled(true);
       setInteracting(true);
       setSpeech('Ủn ỉn... hết Ngân Lượng rồi nên Heo tự về chuồng ngủ thôi! Cày thêm NP rồi cho Heo ăn lại nhé! 😴🐷');
@@ -71,12 +84,24 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
       }, 2000);
       return;
     }
-    setInteracting(true);
-    setSpeech('Chao ôi... ngon quá! Ngon múp míp luôn á! Cảm ơn môn sinh! 🍖🐷 (-10 NP)');
-    onInteract?.();
-    setTimeout(() => {
-      setInteracting(false);
-    }, 2000);
+
+    setConfirmModal({
+      isOpen: true,
+      cost: 10,
+      actionDescription: 'cho Pet ăn (tiêu hao 10 NP & 5 XP)',
+      onConfirm: () => {
+        const success = feedPet();
+        if (success) {
+          setInteracting(true);
+          setSpeech('Chao ôi... ngon quá! Ngon múp míp luôn á! Cảm ơn môn sinh! 🍖🐷 (-10 NP)');
+          onInteract?.();
+          setTimeout(() => {
+            setInteracting(false);
+          }, 2000);
+        }
+        setConfirmModal(prev => ({ ...prev, isOpen: false }));
+      }
+    });
   };
 
   // Get dynamic study reminder or performance praise
@@ -686,6 +711,13 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
           );
         })()}
       </div>
+      <CoinConfirmModal
+        isOpen={confirmModal.isOpen}
+        cost={confirmModal.cost}
+        actionDescription={confirmModal.actionDescription}
+        onConfirm={confirmModal.onConfirm}
+        onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+      />
     </div>
   );
 };

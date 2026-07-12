@@ -8,8 +8,6 @@ import { toast } from '../utils/toast';
 import { AdminConnectionManager } from './ParentConsole/AdminConnectionManager';
 import { ProfilePage } from './ProfilePage';
 import { FamilyManager } from './ParentConsole/FamilyManager';
-import { RewardManager } from './ParentConsole/RewardManager';
-import { QuestManager } from './ParentConsole/QuestManager';
 import { SettingsManager } from './ParentConsole/SettingsManager';
 import { StudentProfileView } from './ParentConsole/StudentProfileView';
 import { QuestionBankManager } from './ParentConsole/QuestionBankManager';
@@ -191,10 +189,9 @@ export const ParentConsole: React.FC = () => {
 
         {/* Nav 1: Primary Navigation */}
         <div className="hidden md:flex gap-2">
-          {(['than_phan', 'ngan_cac'] as const).map(tab => {
+          {(['than_phan'] as const).map(tab => {
             const tabNames: Record<string, string> = {
-              than_phan: currentUser?.role === 'truong_vien' || currentUser?.role === 'pho_vien' ? '👤 Viện Tích' : '👤 Giáo Tích',
-              ngan_cac: '💰 Ngân Các'
+              than_phan: currentUser?.role === 'truong_vien' || currentUser?.role === 'pho_vien' ? '👤 Viện Tích' : '👤 Giáo Tích'
             };
             return (
               <button
@@ -436,6 +433,7 @@ export const ParentConsole: React.FC = () => {
               gameSettings={gameSettings}
               canApproveReward={!!canApproveReward}
               canManageEnergy={!!canManageEnergy}
+              canCreateMission={!!canCreateMission}
               skipReviews={skipReviews}
               adminMarkRewardDelivered={adminMarkRewardDelivered as any}
               adminCancelRedemption={adminCancelRedemption as any}
@@ -443,6 +441,18 @@ export const ParentConsole: React.FC = () => {
               adminSetEnergyConfig={adminSetEnergyConfig as any}
               fetchSkipReviews={fetchSkipReviews}
               resolveSkipReview={resolveSkipReview}
+              // Reward props
+              activeRewardCatalog={activeRewardCatalog}
+              activeRedemptions={activeRedemptions}
+              addParentReward={addParentReward as any}
+              deleteParentReward={deleteParentReward as any}
+              markRewardDelivered={markRewardDelivered as any}
+              cancelRedemption={cancelRedemption as any}
+              // Quest props
+              parentQuests={parentQuests}
+              addParentQuest={addParentQuest as any}
+              completeParentQuest={completeParentQuest as any}
+              deleteParentQuest={deleteParentQuest as any}
             />
           ) : (
             <ProfilePage
@@ -466,36 +476,10 @@ export const ParentConsole: React.FC = () => {
         {activeTab === 'tang_kinh_cac' && (
           <LectureBankManager />
         )}
-
-        {activeTab === 'ngan_cac' && (
-          <div className="space-y-8">
-            <RewardManager
-              viewingStudentId={viewingStudentId}
-              activeRewardCatalog={activeRewardCatalog}
-              activeRedemptions={activeRedemptions}
-              canApproveReward={!!canApproveReward}
-              addParentReward={addParentReward as any}
-              deleteParentReward={deleteParentReward as any}
-              markRewardDelivered={markRewardDelivered as any}
-              cancelRedemption={cancelRedemption as any}
-              adminMarkRewardDelivered={adminMarkRewardDelivered as any}
-              adminCancelRedemption={adminCancelRedemption as any}
-            />
-            {viewingStudentId && (
-              <QuestManager
-                parentQuests={parentQuests}
-                canCreateMission={!!canCreateMission}
-                addParentQuest={addParentQuest as any}
-                completeParentQuest={completeParentQuest as any}
-                deleteParentQuest={deleteParentQuest as any}
-              />
-            )}
-          </div>
-        )}
       </div>
 
       {/* Mobile Admin Bottom Navigation Bar */}
-      <nav className={`md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-2 py-2 pb-3 grid ${viewingStudentId ? 'grid-cols-6' : 'grid-cols-5'} gap-1 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)] text-center`}>
+      <nav className={`md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-2 py-2 pb-3 grid ${viewingStudentId ? 'grid-cols-5' : 'grid-cols-4'} gap-1 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)] text-center`}>
         <button
           onClick={() => setActiveTab('than_phan')}
           className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
@@ -504,16 +488,6 @@ export const ParentConsole: React.FC = () => {
         >
           <span className="text-base">👤</span>
           <span>Thân Phận</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('ngan_cac')}
-          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-            activeTab === 'ngan_cac' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
-          }`}
-        >
-          <span className="text-base">💰</span>
-          <span>Ngân Các</span>
         </button>
 
         <button
