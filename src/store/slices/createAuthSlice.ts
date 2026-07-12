@@ -317,6 +317,7 @@ export const createAuthSlice: StateCreator<
     } catch (err) {
       console.error('Error signing out:', err);
     }
+    window.location.href = '/';
   },
 });
 
