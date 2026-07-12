@@ -39,8 +39,13 @@ export const ItemShop: React.FC = () => {
     onConfirm: () => {},
   });
 
+  const [classRewardsLoading, setClassRewardsLoading] = useState(true);
+
   useEffect(() => {
-    fetchClassRewards();
+    setClassRewardsLoading(true);
+    fetchClassRewards().finally(() => {
+      setClassRewardsLoading(false);
+    });
   }, []);
 
   const handleBuyTheme = (themeId: typeof UI_THEMES[number]['id']) => {
@@ -332,7 +337,12 @@ export const ItemShop: React.FC = () => {
           )
         ) : (
           /* Học sinh có lớp → class rewards mới */
-          classRewards.length === 0 ? (
+          classRewardsLoading ? (
+            <div className="flex flex-col items-center justify-center py-12 text-synth-cyan">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-synth-cyan mb-2"></div>
+              <span className="text-xs font-orbitron font-bold tracking-widest uppercase animate-pulse">Đang tải phần thưởng lớp...</span>
+            </div>
+          ) : classRewards.length === 0 ? (
             <div className={`rounded-2xl border border-dashed p-8 text-center ${isUnicorn ? 'border-violet-200/40 text-violet-600/60' : 'border-white/10 text-synth-text-muted'}`}>
               <Gift className="w-8 h-8 mx-auto mb-2 opacity-40" />
               <p className="text-sm font-semibold">Chưa có Phúc Lợi nào từ giáo viên của bạn.</p>

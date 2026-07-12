@@ -105,6 +105,8 @@ export const ParentConsole: React.FC = () => {
     ? Math.round(combinedStudentsForStats.reduce((acc, s) => acc + (s.player?.level || 1), 0) / totalStudents)
     : 0;
 
+  const [inspectLoading, setInspectLoading] = useState(false);
+
   // Load students list on mount for admin users
   // NOTE: fetchAdminStudents/fetchFamily intentionally NOT in deps — Zustand actions get new references
   // on every set() call, which would cause an infinite loop. We only re-run when role changes.
@@ -137,9 +139,14 @@ export const ParentConsole: React.FC = () => {
   }, [viewingStudentId, currentUser?.role]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleInspectStudent = async (studentId: string) => {
+    setInspectLoading(true);
     setViewingStudentId(studentId);
-    await fetchStudentProfile(studentId);
-    setActiveTab('than_phan');
+    try {
+      await fetchStudentProfile(studentId);
+      setActiveTab('than_phan');
+    } finally {
+      setInspectLoading(false);
+    }
   };
 
   // Phân quyền Chủ nhiệm phụ
@@ -537,6 +544,14 @@ export const ParentConsole: React.FC = () => {
           </button>
         )}
       </nav>
+      {inspectLoading && (
+        <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-synth-cyan mb-3"></div>
+          <p className="font-orbitron text-xs text-synth-cyan font-bold tracking-widest uppercase animate-pulse">
+            Đang tải hồ sơ học sinh...
+          </p>
+        </div>
+      )}
     </div>
   );
 };

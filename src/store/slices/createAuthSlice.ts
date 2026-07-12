@@ -293,11 +293,7 @@ export const createAuthSlice: StateCreator<
   },
 
   logout: async () => {
-    try {
-      await supabase.auth.signOut();
-    } catch (err) {
-      console.error('Error signing out:', err);
-    }
+    if (!get().sessionAccountId) return;
     localStorage.removeItem('ge10_login_time');
     set({
       currentUser: null,
@@ -316,6 +312,11 @@ export const createAuthSlice: StateCreator<
       currentSubject: 'english',
       activeGradeTier: DEFAULT_GRADE_TIER
     });
+    try {
+      await supabase.auth.signOut();
+    } catch (err) {
+      console.error('Error signing out:', err);
+    }
   },
 });
 

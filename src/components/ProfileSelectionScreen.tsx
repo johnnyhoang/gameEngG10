@@ -8,6 +8,7 @@ export const ProfileSelectionScreen: React.FC = () => {
   const quickStartProfile = useGameState(state => state.quickStartProfile);
   const logout = useGameState(state => state.logout);
   const [quickStarting, setQuickStarting] = useState<'student' | 'parent' | null>(null);
+  const [selectingProfileId, setSelectingProfileId] = useState<string | null>(null);
 
   const existingStudent = availableProfiles.find((p: any) => p.role === 'student');
   const existingParent = availableProfiles.find((p: any) => p.role === 'parent' || p.role === 'secondary_parent');
@@ -19,9 +20,16 @@ export const ProfileSelectionScreen: React.FC = () => {
   };
 
   const handleSelectRole = async (role: 'student' | 'parent' | 'pho_vien' | 'truong_vien') => {
+    if (selectingProfileId || quickStarting) return;
+
     if (role === 'student') {
       if (existingStudent) {
-        selectProfile(existingStudent.id);
+        setSelectingProfileId(existingStudent.id);
+        try {
+          await selectProfile(existingStudent.id);
+        } finally {
+          setSelectingProfileId(null);
+        }
       } else {
         setQuickStarting('student');
         try {
@@ -32,7 +40,12 @@ export const ProfileSelectionScreen: React.FC = () => {
       }
     } else if (role === 'parent') {
       if (existingParent) {
-        selectProfile(existingParent.id);
+        setSelectingProfileId(existingParent.id);
+        try {
+          await selectProfile(existingParent.id);
+        } finally {
+          setSelectingProfileId(null);
+        }
       } else {
         setQuickStarting('parent');
         try {
@@ -42,9 +55,19 @@ export const ProfileSelectionScreen: React.FC = () => {
         }
       }
     } else if (role === 'pho_vien' && existingHieuPho) {
-      selectProfile(existingHieuPho.id);
+      setSelectingProfileId(existingHieuPho.id);
+      try {
+        await selectProfile(existingHieuPho.id);
+      } finally {
+        setSelectingProfileId(null);
+      }
     } else if (role === 'truong_vien' && existingHieuTruong) {
-      selectProfile(existingHieuTruong.id);
+      setSelectingProfileId(existingHieuTruong.id);
+      try {
+        await selectProfile(existingHieuTruong.id);
+      } finally {
+        setSelectingProfileId(null);
+      }
     }
   };
 
@@ -59,6 +82,7 @@ export const ProfileSelectionScreen: React.FC = () => {
       name: existingStudent?.name || 'Chưa khởi tạo',
       desc: 'Học sinh vào học tập & rèn luyện',
       isLoading: quickStarting === 'student',
+      isSelecting: selectingProfileId === existingStudent?.id,
       theme: existingStudent?.uiTheme || 'current',
     },
     {
@@ -70,6 +94,7 @@ export const ProfileSelectionScreen: React.FC = () => {
       name: existingParent?.name || 'Chưa khởi tạo',
       desc: 'Quản lý lớp, phê duyệt quà & nhiệm vụ',
       isLoading: quickStarting === 'parent',
+      isSelecting: selectingProfileId === existingParent?.id,
       theme: existingParent?.uiTheme || 'current',
     },
   ];
@@ -85,6 +110,7 @@ export const ProfileSelectionScreen: React.FC = () => {
       name: existingHieuPho.name,
       desc: 'Được Ban Giám Hiệu ủy thác quản trị trường',
       isLoading: false,
+      isSelecting: selectingProfileId === existingHieuPho.id,
       theme: existingHieuPho.uiTheme || 'current',
     });
   }
@@ -100,6 +126,7 @@ export const ProfileSelectionScreen: React.FC = () => {
       name: existingHieuTruong.name,
       desc: 'Chủ viện quản trị tối cao học viện',
       isLoading: false,
+      isSelecting: selectingProfileId === existingHieuTruong.id,
       theme: existingHieuTruong.uiTheme || 'current',
     });
   }
@@ -131,7 +158,7 @@ export const ProfileSelectionScreen: React.FC = () => {
             <button
               key={card.key}
               data-theme={card.theme}
-              disabled={quickStarting !== null}
+              disabled={quickStarting !== null || selectingProfileId !== null}
               onClick={() => handleSelectRole(card.key as any)}
               className={`group flex flex-col items-center justify-between gap-4 p-6 rounded-2xl border bg-white/3 transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${card.colorClass}`}
             >
@@ -150,8 +177,20 @@ export const ProfileSelectionScreen: React.FC = () => {
                 <div className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">
                   Trạng thái
                 </div>
-                <div className="font-sans text-xs font-semibold text-white bg-black/40 py-1.5 px-3 rounded-lg truncate border border-white/5">
-                  {card.isLoading ? 'Đang khởi tạo...' : card.name}
+                <div className="font-sans text-xs font-semibold text-white bg-black/40 py-1.5 px-3 rounded-lg truncate border border-white/5 flex items-center justify-center gap-1.5 min-h-[32px]">
+                  {card.isLoading ? (
+                    <>
+                      <span className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-synth-cyan border-t-transparent" />
+                      <span>Khởi tạo...</span>
+                    </>
+                  ) : card.isSelecting ? (
+                    <>
+                      <span className="animate-spin rounded-full h-3.5 w-3.5 border-2 border-synth-cyan border-t-transparent" />
+                      <span>Đăng nhập...</span>
+                    </>
+                  ) : (
+                    card.name
+                  )}
                 </div>
                 <p className="text-[9px] text-slate-400 leading-normal font-sans pt-1">
                   {card.desc}
