@@ -7,8 +7,9 @@ import { MATH_EXAM_BLUEPRINT, MATH_TOPIC_LABELS } from '../../data/mathExamBluep
 import { LITERATURE_EXAM_BLUEPRINT, LITERATURE_TASK_LABELS } from '../../data/literatureExamBlueprint';
 import { toast } from '../../utils/toast';
 import { supabase } from '../../utils/supabaseClient';
-import { CORE_KNOWLEDGE_TOPICS } from '../../data/coreKnowledge';
 import { isGatekeeperEligible, getGatekeeperCoverageStats } from '../../utils/gatekeeper';
+
+import { QuestionFormModal } from './Modals/QuestionFormModal';
 
 interface QuestionBankManagerProps {
   questions: Question[];
@@ -78,17 +79,6 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
   // local state for editing / adding question
   const [isAddingNew, setIsAddingNew] = useState(false);
   const [editingQuestion, setEditingQuestion] = useState<Question | null>(null);
-  const [editType, setEditType] = useState<Question['type']>('mcq');
-  const [editPrompt, setEditPrompt] = useState('');
-  const [editExplanation, setEditExplanation] = useState('');
-  const [editCategory, setEditCategory] = useState('');
-  const [editTopicId, setEditTopicId] = useState('');
-  const [editDifficulty, setEditDifficulty] = useState(5);
-  const [editOptions, setEditOptions] = useState('');
-  const [editCorrectAnswer, setEditCorrectAnswer] = useState('');
-  const [editSource, setEditSource] = useState('');
-  const [editImageUrl, setEditImageUrl] = useState('');
-  const [editSubject, setEditSubject] = useState<SubjectId>('english');
 
   // Lazy Load Paging
   const [visibleCount, setVisibleCount] = useState(10);
@@ -109,17 +99,6 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
   const startAddNew = () => {
     setIsAddingNew(true);
     setEditingQuestion(null);
-    setEditType('mcq');
-    setEditPrompt('');
-    setEditExplanation('');
-    setEditCategory('general');
-    setEditTopicId('');
-    setEditDifficulty(5);
-    setEditOptions('Lựa chọn A\nLựa chọn B\nLựa chọn C\nLựa chọn D');
-    setEditCorrectAnswer('Lựa chọn A');
-    setEditSource('Custom Ingest');
-    setEditImageUrl('');
-    setEditSubject(selectedSect || 'english');
   };
 
   // AI Ingest state
@@ -196,123 +175,6 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
   const startEdit = (q: Question) => {
     setIsAddingNew(false);
     setEditingQuestion(q);
-    setEditType(q.type);
-    setEditPrompt(q.prompt);
-    setEditExplanation(q.explanation || '');
-    setEditCategory(q.category);
-    setEditTopicId(q.topicId || '');
-    setEditDifficulty(q.difficulty || 5);
-    setEditOptions(q.options ? q.options.join('\n') : '');
-    setEditCorrectAnswer(Array.isArray(q.correctAnswer) ? q.correctAnswer.join('\n') : q.correctAnswer);
-    setEditSource(q.source || '');
-    setEditImageUrl(q.imageUrl || '');
-    setEditSubject(q.subject || 'english');
-  };
-
-  const handleSubmitStandard = async (e: React.MouseEvent) => {
-    e.preventDefault();
-
-    const parsedOptions = editOptions.split('\n').map(o => o.trim()).filter(Boolean);
-    const parsedCorrectAnswer = editCorrectAnswer.split('\n').map(a => a.trim()).filter(Boolean);
-
-    const payload: Partial<Question> = {
-      type: editType,
-      prompt: editPrompt,
-      explanation: editExplanation,
-      category: editCategory,
-      topicId: editTopicId || undefined,
-      difficulty: editDifficulty,
-      options: parsedOptions.length > 0 ? parsedOptions : undefined,
-      correctAnswer: parsedCorrectAnswer.length > 1 ? parsedCorrectAnswer : parsedCorrectAnswer[0] || '',
-      source: editSource,
-      imageUrl: editImageUrl || undefined,
-      subject: editSubject,
-      metadata: {
-        ...(editingQuestion?.metadata || {}),
-        isStandard: true
-      }
-    };
-
-    if (isAddingNew) {
-      const ok = await addQuestion(payload);
-      if (ok) {
-        setIsAddingNew(false);
-        toast.success('Đã tạo câu hỏi Đạt Chuẩn thành công! 🏆');
-      }
-    } else if (editingQuestion) {
-      const ok = await updateQuestion(editingQuestion.id, payload);
-      if (ok) {
-        setEditingQuestion(null);
-        toast.success('Đã xác nhận câu hỏi Đạt Chuẩn! 🏆');
-      }
-    }
-  };
-
-  const handleRemoveStandard = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (!editingQuestion) return;
-
-    const parsedOptions = editOptions.split('\n').map(o => o.trim()).filter(Boolean);
-    const parsedCorrectAnswer = editCorrectAnswer.split('\n').map(a => a.trim()).filter(Boolean);
-
-    const payload: Partial<Question> = {
-      type: editType,
-      prompt: editPrompt,
-      explanation: editExplanation,
-      category: editCategory,
-      topicId: editTopicId || undefined,
-      difficulty: editDifficulty,
-      options: parsedOptions.length > 0 ? parsedOptions : undefined,
-      correctAnswer: parsedCorrectAnswer.length > 1 ? parsedCorrectAnswer : parsedCorrectAnswer[0] || '',
-      source: editSource,
-      imageUrl: editImageUrl || undefined,
-      subject: editSubject,
-      metadata: {
-        ...(editingQuestion.metadata || {}),
-        isStandard: false
-      }
-    };
-
-    const ok = await updateQuestion(editingQuestion.id, payload);
-    if (ok) {
-      setEditingQuestion(null);
-      toast.success('Đã hủy trạng thái Đạt Chuẩn câu hỏi thành công! ❌');
-    }
-  };
-
-  const handleUpdate = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const parsedOptions = editOptions.split('\n').map(o => o.trim()).filter(Boolean);
-    const parsedCorrectAnswer = editCorrectAnswer.split('\n').map(a => a.trim()).filter(Boolean);
-
-    const payload: Partial<Question> = {
-      type: editType,
-      prompt: editPrompt,
-      explanation: editExplanation,
-      category: editCategory,
-      topicId: editTopicId || undefined,
-      difficulty: editDifficulty,
-      options: parsedOptions.length > 0 ? parsedOptions : undefined,
-      correctAnswer: parsedCorrectAnswer.length > 1 ? parsedCorrectAnswer : parsedCorrectAnswer[0] || '',
-      source: editSource,
-      imageUrl: editImageUrl || undefined,
-      subject: editSubject
-    };
-
-    if (isAddingNew) {
-      const ok = await addQuestion(payload);
-      if (ok) {
-        setIsAddingNew(false);
-        toast.success('Đã tạo câu hỏi mới thành công! 🎉');
-      }
-    } else if (editingQuestion) {
-      const ok = await updateQuestion(editingQuestion.id, payload);
-      if (ok) {
-        setEditingQuestion(null);
-        toast.success('Đã lưu thay đổi câu hỏi thành công!');
-      }
-    }
   };
 
   // AI Ingest
@@ -385,7 +247,6 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                 key={sub.id}
                 onClick={() => {
                   setSelectedSect(sub.id);
-                  setEditSubject(sub.id);
                   setSubjectFilter(sub.id as any);
                 }}
                 className="rounded-2xl border border-white/5 bg-synth-gray/10 p-5 text-left hover:border-white/10 hover:bg-synth-gray/20 transition-all cursor-pointer group shadow-lg"
@@ -596,203 +457,33 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                 </div>
               </div>
 
-              {/* Row 2: Ingest tool & Edit tool */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* AI Ingest tool */}
-                <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-5 space-y-4">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-synth-orange animate-pulse" />
-                    <h5 className="text-xs font-bold text-synth-orange uppercase font-orbitron">
-                      Ingest đề thi bằng AI ✨ (Dán thô văn bản đề thi)
-                    </h5>
-                  </div>
-                  <p className="text-[10px] text-synth-text-muted leading-relaxed">
-                    Dán đề thi của bạn vào ô dưới đây (hỗ trợ đề thi trắc nghiệm tiếng Việt/tiếng Anh thô). AI của Thiên Cơ Các sẽ tự động nhận diện câu hỏi, lựa chọn, đáp án, và đề xuất lời giải thích chi tiết.
-                  </p>
-
-                  <form onSubmit={handleAiIngest} className="space-y-3">
-                    <textarea
-                      value={rawText}
-                      onChange={(e) => setRawText(e.target.value)}
-                      placeholder="Ví dụ:&#10;Câu 1: Cho biểu thức A = (căn x + 1)/(căn x - 1)...&#10;Câu 2: Rút gọn biểu thức..."
-                      className="w-full p-2.5 rounded-lg border border-white/10 bg-black/40 text-[11px] text-white h-36 resize-none outline-none focus:border-synth-orange"
-                    />
-                    <button
-                      type="submit"
-                      disabled={isIngesting || !rawText.trim()}
-                      className="w-full py-2.5 bg-synth-orange text-black font-bold rounded-lg hover:synth-glow-orange disabled:opacity-50 transition-all text-xs uppercase cursor-pointer flex items-center justify-center gap-1.5"
-                    >
-                      {isIngesting ? 'AI đang phân tích...' : 'Ingest Đề Thi 🎇'}
-                    </button>
-                  </form>
+              {/* Row 2: AI Ingest tool (Full Width) */}
+              <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-5 space-y-4">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-synth-orange animate-pulse" />
+                  <h5 className="text-xs font-bold text-synth-orange uppercase font-orbitron">
+                    Ingest đề thi bằng AI ✨ (Dán thô văn bản đề thi)
+                  </h5>
                 </div>
+                <p className="text-[10px] text-synth-text-muted leading-relaxed">
+                  Dán đề thi của bạn vào ô dưới đây (hỗ trợ đề thi trắc nghiệm tiếng Việt/tiếng Anh thô). AI của Thiên Cơ Các sẽ tự động nhận diện câu hỏi, lựa chọn, đáp án, và đề xuất lời giải thích chi tiết.
+                </p>
 
-                {/* Form sửa/thêm câu hỏi */}
-                <div className="space-y-4">
-                  {(editingQuestion || isAddingNew) ? (
-                    <div className={`glass-panel rounded-2xl border p-5 space-y-3 ${
-                      isAddingNew ? 'border-synth-green/30 bg-synth-green/5' : 'border-synth-cyan/30 bg-synth-cyan/5'
-                    }`}>
-                      <h5 className={`text-xs font-bold uppercase font-orbitron flex items-center justify-between ${
-                        isAddingNew ? 'text-synth-green' : 'text-synth-cyan'
-                      }`}>
-                        <span>{isAddingNew ? '➕ Tạo mới câu hỏi' : '✏️ Chỉnh sửa câu hỏi'}</span>
-                        <button onClick={() => { setEditingQuestion(null); setIsAddingNew(false); }} className="text-[10px] text-white hover:opacity-85 cursor-pointer transition-colors">Đóng</button>
-                      </h5>
-                      <form onSubmit={handleUpdate} className="space-y-3 text-xs">
-                        <div className="grid grid-cols-2 gap-2">
-                          <label className="space-y-1 block">
-                            <span>Môn học</span>
-                            <select
-                              value={editSubject}
-                              onChange={(e) => setEditSubject(e.target.value as any)}
-                              className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white cursor-pointer"
-                            >
-                              {Object.values(SUBJECTS_CONFIG).map(sub => (
-                                <option key={sub.id} value={sub.id}>{sub.name}</option>
-                              ))}
-                            </select>
-                          </label>
-                          <label className="space-y-1 block">
-                            <span>Loại câu hỏi</span>
-                            <select
-                              value={editType}
-                              onChange={(e) => setEditType(e.target.value as any)}
-                              className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white cursor-pointer"
-                            >
-                              {Object.entries(QUESTION_TYPE_LABELS).map(([val, label]) => (
-                                <option key={val} value={val}>{label}</option>
-                              ))}
-                            </select>
-                          </label>
-                        </div>
-                        <label className="space-y-1 block">
-                          <span>Đề bài</span>
-                          <textarea
-                            value={editPrompt}
-                            onChange={(e) => setEditPrompt(e.target.value)}
-                            className="w-full p-2.5 rounded-lg border border-white/10 bg-black/40 text-xs text-white h-16 resize-none"
-                            placeholder="Ví dụ: Hai tam giác đồng dạng khi nào?"
-                          />
-                        </label>
-                        <label className="space-y-1 block">
-                          <span>Giải thích lời giải</span>
-                          <textarea
-                            value={editExplanation}
-                            onChange={(e) => setEditExplanation(e.target.value)}
-                            className="w-full p-2.5 rounded-lg border border-white/10 bg-black/40 text-xs text-white h-12 resize-none"
-                            placeholder="Ví dụ: Theo định nghĩa, tỉ số các cạnh tương ứng..."
-                          />
-                        </label>
-                        <div className="grid grid-cols-2 gap-2">
-                          <label className="space-y-1 block">
-                            <span>Kỹ năng (Category)</span>
-                            <input
-                              type="text"
-                              value={editCategory}
-                              onChange={(e) => setEditCategory(e.target.value)}
-                              className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white"
-                              placeholder="Ví dụ: geometry"
-                            />
-                          </label>
-                          <label className="space-y-1 block">
-                            <span>Topic Lõi (Core Knowledge)</span>
-                            <select
-                              value={editTopicId}
-                              onChange={(e) => setEditTopicId(e.target.value)}
-                              className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white cursor-pointer"
-                            >
-                              <option value="">-- Chưa chọn topic --</option>
-                              {CORE_KNOWLEDGE_TOPICS.filter(t => t.subjectId === editSubject).map(t => (
-                                <option key={t.id} value={t.id}>
-                                  {t.label} ({t.hamNguyenTo === 'hoa' ? '🔥 Hỏa' : t.hamNguyenTo === 'bang' ? '❄️ Băng' : '🪨 Thạch'})
-                                </option>
-                              ))}
-                            </select>
-                          </label>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <label className="space-y-1 block">
-                            <span>Độ khó (1-10)</span>
-                            <input
-                              type="number"
-                              min={1}
-                              max={10}
-                              value={editDifficulty}
-                              onChange={(e) => setEditDifficulty(Number(e.target.value) || 5)}
-                              className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white"
-                            />
-                          </label>
-                          <label className="space-y-1 block">
-                            <span>Nguồn (Source)</span>
-                            <input
-                              type="text"
-                              value={editSource}
-                              onChange={(e) => setEditSource(e.target.value)}
-                              className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white"
-                            />
-                          </label>
-                        </div>
-
-                        {editType === 'mcq' && (
-                          <div className="space-y-2">
-                            <label className="space-y-1 block">
-                              <span>Các lựa chọn (Mỗi lựa chọn 1 dòng)</span>
-                              <textarea
-                                value={editOptions}
-                                onChange={(e) => setEditOptions(e.target.value)}
-                                placeholder="Lựa chọn A&#10;Lựa chọn B&#10;Lựa chọn C&#10;Lựa chọn D"
-                                className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white h-20 resize-none font-mono"
-                              />
-                            </label>
-                            <label className="space-y-1 block">
-                              <span>Đáp án đúng (Khớp với một trong các lựa chọn)</span>
-                              <input
-                                type="text"
-                                value={editCorrectAnswer}
-                                onChange={(e) => setEditCorrectAnswer(e.target.value)}
-                                className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white"
-                              />
-                            </label>
-                          </div>
-                        )}
-
-                        <div className="flex gap-2">
-                          <button
-                            type="submit"
-                            className={`flex-1 py-2 text-black font-bold rounded-lg transition-all text-xs uppercase cursor-pointer ${
-                              isAddingNew ? 'bg-synth-green hover:synth-glow-green font-black' : 'bg-synth-cyan hover:synth-glow-cyan font-black'
-                            }`}
-                          >
-                            {isAddingNew ? 'Tạo câu hỏi mới 💾' : 'Cập nhật câu hỏi 💾'}
-                          </button>
-                          {editingQuestion?.metadata?.isStandard ? (
-                            <button
-                              type="button"
-                              onClick={handleRemoveStandard}
-                              className="px-3 py-2 bg-red-600/20 border border-red-500/40 text-red-400 font-black font-orbitron rounded-lg hover:bg-red-600 hover:text-white transition-all text-xs uppercase cursor-pointer flex items-center gap-1 shrink-0"
-                            >
-                              ❌ Chưa Đạt Chuẩn
-                            </button>
-                          ) : (
-                            <button
-                              type="button"
-                              onClick={handleSubmitStandard}
-                              className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-black font-orbitron rounded-lg hover:shadow-[0_0_10px_rgba(245,158,11,0.4)] transition-all text-xs uppercase cursor-pointer flex items-center gap-1 shrink-0"
-                            >
-                              🏆 Đạt Chuẩn
-                            </button>
-                          )}
-                        </div>
-                      </form>
-                    </div>
-                  ) : (
-                    <div className="h-full rounded-2xl border border-dashed border-white/10 bg-white/5 p-8 flex flex-col items-center justify-center text-center text-xs text-synth-text-muted min-h-[250px]">
-                      <Database className="w-8 h-8 text-synth-text-muted mb-2 opacity-50" />
-                      <p>Nhấp vào bất kỳ câu hỏi nào ở danh sách bên dưới để bắt đầu chỉnh sửa nhanh, hoặc bấm nút "+" ở trên để thêm mới.</p>
-                    </div>
-                  )}
-                </div>
+                <form onSubmit={handleAiIngest} className="space-y-3">
+                  <textarea
+                    value={rawText}
+                    onChange={(e) => setRawText(e.target.value)}
+                    placeholder="Ví dụ:&#10;Câu 1: Cho biểu thức A = (căn x + 1)/(căn x - 1)...&#10;Câu 2: Rút gọn biểu thức..."
+                    className="w-full p-2.5 rounded-lg border border-white/10 bg-black/40 text-[11px] text-white h-24 resize-none outline-none focus:border-synth-orange"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isIngesting || !rawText.trim()}
+                    className="w-full py-2.5 bg-synth-orange text-black font-bold rounded-lg hover:synth-glow-orange disabled:opacity-50 transition-all text-xs uppercase cursor-pointer flex items-center justify-center gap-1.5"
+                  >
+                    {isIngesting ? 'AI đang phân tích...' : 'Ingest Đề Thi 🎇'}
+                  </button>
+                </form>
               </div>
 
               {/* Row 3: List of Questions (Full Width) */}
@@ -901,6 +592,18 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
           </div>
         </div>
       )}
+      <QuestionFormModal
+        isOpen={isAddingNew || !!editingQuestion}
+        onClose={() => {
+          setIsAddingNew(false);
+          setEditingQuestion(null);
+        }}
+        isAddingNew={isAddingNew}
+        editingQuestion={editingQuestion}
+        selectedSect={selectedSect}
+        addQuestion={addQuestion}
+        updateQuestion={updateQuestion}
+      />
     </div>
   );
 };

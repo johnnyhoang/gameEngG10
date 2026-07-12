@@ -165,7 +165,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className={`glass-panel w-full max-w-2xl border rounded-2xl overflow-hidden flex flex-col max-h-[90vh] ${
+      <div className={`glass-panel w-full max-w-4xl border rounded-2xl overflow-hidden flex flex-col max-h-[90vh] ${
         isAddingNew ? 'border-synth-green/30 bg-synth-green/5' : 'border-synth-cyan/30 bg-synth-cyan/5'
       }`}>
         {/* Modal Header */}
