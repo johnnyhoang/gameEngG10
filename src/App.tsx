@@ -1,7 +1,6 @@
 import { isParentRole, isAdmin } from './utils/roleHelpers';
-import { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { useGameState } from './hooks/useGameState';
-import { toast } from './utils/toast';
 import { TopHUD } from './components/TopHUD';
 import { supabase } from './utils/supabaseClient';
 import type { Session, AuthChangeEvent } from '@supabase/supabase-js';
@@ -63,7 +62,6 @@ function App() {
   const closeHelp = useGameState(state => state.closeHelp);
   const uiTheme = useGameState(state => state.uiTheme);
   const setUiTheme = useGameState(state => state.setUiTheme);
-  const awardCoinsAndXp = useGameState(state => state.awardCoinsAndXp);
   
   const { activeSectId } = useSect();
 
@@ -77,9 +75,6 @@ function App() {
   const [lessonBackTarget, setLessonBackTarget] = useState<'map' | 'hang'>('hang');
   const [authLoading, setAuthLoading] = useState(true);
 
-  // Cẩm Nang Bí Lục states
-  const [handbookPageToShow, setHandbookPageToShow] = useState<any | null>(null);
-  const [isHandbookOpen, setIsHandbookOpen] = useState(false);
   const logout = useGameState(state => state.logout);
   const sessionAccountId = useGameState(state => state.sessionAccountId);
 
@@ -94,13 +89,6 @@ function App() {
         setScreen('parent');
       } else if (currentUser.role === 'student') {
         setScreen('map');
-        // Trigger random handbook page on student login
-        const pages = useGameState.getState().handbookPages || [];
-        if (pages.length > 0) {
-          const randomIndex = Math.floor(Math.random() * pages.length);
-          setHandbookPageToShow(pages[randomIndex]);
-          setIsHandbookOpen(true);
-        }
       }
     }
   }, [currentUser]);
@@ -513,18 +501,7 @@ function App() {
         />
       )}
 
-      {isHandbookOpen && handbookPageToShow && (
-        <GiangHoCamNang
-          isOpen={isHandbookOpen}
-          activePage={handbookPageToShow}
-          onClose={() => {
-            setIsHandbookOpen(false);
-            setHandbookPageToShow(null);
-            awardCoinsAndXp(5, 0, 'Đọc cẩm nang', 'Lĩnh ngộ trang cẩm nang bí lục đăng nhập');
-            toast.success('Đã lĩnh ngộ cẩm nang! +5 NP 🎉');
-          }}
-        />
-      )}
+
 
       {/* Mobile Bottom Navigation Bar (Chỉ hiển thị cho Học sinh) */}
       {currentUser && currentUser.role === 'student' && screen !== 'play' && !isHangMatterScreen && (

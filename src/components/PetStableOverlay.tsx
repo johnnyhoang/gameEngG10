@@ -12,6 +12,7 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
   const pet = useGameState(state => state.pet);
   const player = useGameState(state => state.player);
   const uiTheme = useGameState(state => state.uiTheme);
+  const showHelp = useGameState(state => state.showHelp);
 
   const [isOpen, setIsOpen] = useState(false);
   const [triggerReason, setTriggerReason] = useState<'login' | 'manual' | 'idle' | 'hunger' | 'energy-depleted'>('manual');
@@ -150,6 +151,21 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
           {Date.now() - new Date(pet.lastFed).getTime() > 12 * 60 * 60 * 1000 && (
             <span className="absolute top-0 right-0 w-3 h-3 lg:w-4 lg:h-4 bg-red-500 rounded-full border-2 border-synth-bg animate-pulse"></span>
           )}
+        </button>
+      )}
+
+      {/* Cẩm Nang Bí Lục Floating Button */}
+      {!isDungeonScreen && (
+        <button
+          onClick={() => showHelp('all')}
+          className={`fixed bottom-24 lg:bottom-10 right-22 lg:right-24 w-14 h-14 lg:w-16 lg:h-16 rounded-full flex items-center justify-center cursor-pointer shadow-lg z-40 transition-transform hover:scale-110 active:scale-95 ${
+            uiTheme === 'unicorn-dream'
+              ? 'bg-gradient-to-r from-fuchsia-300 via-violet-300 to-cyan-200 border-2 border-violet-200 shadow-[0_0_14px_rgba(192,132,252,0.4)]'
+              : 'bg-synth-gray border-2 border-synth-cyan shadow-[0_0_12px_rgba(0,240,255,0.4)]'
+          }`}
+          title="Cẩm Nang Bí Lục & Trợ Giúp"
+        >
+          <span className="text-2xl lg:text-3xl inline-block">📖</span>
         </button>
       )}
 
