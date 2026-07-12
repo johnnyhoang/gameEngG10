@@ -318,7 +318,7 @@ export const createAuthSlice: StateCreator<
       activeGradeTier: DEFAULT_GRADE_TIER
     });
     try {
-      await supabase.auth.signOut();
+      supabase.auth.signOut();
     } catch (err) {
       console.error('Error signing out:', err);
     }
