@@ -65,24 +65,27 @@ export interface MindmapAppProps {
   onGameStart?: () => void;
 }
 
-export const MindmapApp: React.FC<MindmapAppProps> = ({  uiTheme,    }) => {
+const getSubjectFromSectId = (sectId?: string) => {
+  if (sectId === 'english') return 'english';
+  if (sectId === 'literature') return 'literature';
+  return 'math';
+};
+
+export const MindmapApp: React.FC<MindmapAppProps> = ({ activeSectId, uiTheme }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
-  const [selectedMapSubject, setSelectedMapSubject] = useState<'math' | 'english' | 'literature'>('math');
+  const [selectedMapSubject, setSelectedMapSubject] = useState<'math' | 'english' | 'literature'>(() => getSubjectFromSectId(activeSectId));
   const [activeNodeDetails, setActiveNodeDetails] = useState<MindmapNode | null>(null);
+
+  React.useEffect(() => {
+    setSelectedMapSubject(getSubjectFromSectId(activeSectId));
+    setActiveNodeDetails(null);
+  }, [activeSectId]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className={`lg:col-span-2 glass-panel rounded-3xl border p-5 space-y-4 ${isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-cyan/25'}`}>
         <div className="flex justify-between items-center border-b border-white/5 pb-3">
           <h3 className="font-orbitron font-black text-xs uppercase tracking-wider text-synth-cyan">🗺️ Sơ Đồ Ôn Tập Tri Thức</h3>
-          <div className="flex gap-1.5 bg-black/20 p-1 rounded-lg border border-white/5">
-            {[{ id: 'math', label: 'Toán Học' }, { id: 'english', label: 'Tiếng Anh' }, { id: 'literature', label: 'Ngữ Văn' }].map(opt => (
-              <button key={opt.id} onClick={() => { setSelectedMapSubject(opt.id as any); setActiveNodeDetails(null); }}
-                className={`px-3 py-1 rounded-md text-[9px] font-bold font-orbitron uppercase cursor-pointer ${selectedMapSubject === opt.id ? 'bg-synth-cyan text-black' : 'text-slate-400 hover:text-white'}`}>
-                {opt.label}
-              </button>
-            ))}
-          </div>
         </div>
 
         <div className="bg-black/30 rounded-2xl p-4 min-h-[300px] relative overflow-hidden flex flex-col justify-center gap-3">

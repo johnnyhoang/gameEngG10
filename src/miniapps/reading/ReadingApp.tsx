@@ -38,10 +38,16 @@ export interface ReadingAppProps {
   onGameStart?: () => void;
 }
 
-export const ReadingApp: React.FC<ReadingAppProps> = ({  uiTheme, onReward,   }) => {
+const getSubjectFromSectId = (sectId?: string) => {
+  if (sectId === 'english') return 'english';
+  if (sectId === 'literature') return 'literature';
+  return 'math';
+};
+
+export const ReadingApp: React.FC<ReadingAppProps> = ({ activeSectId, uiTheme, onReward }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
 
-  const [readingSubject, setReadingSubject] = useState<'english' | 'math' | 'literature'>('english');
+  const [readingSubject, setReadingSubject] = useState<'english' | 'math' | 'literature'>(() => getSubjectFromSectId(activeSectId));
   const [highlightedIndices, setHighlightedIndices] = useState<number[]>([]);
   const [selectedReadingOption, setSelectedReadingOption] = useState('');
   const [readingChecked, setReadingChecked] = useState(false);
@@ -53,6 +59,10 @@ export const ReadingApp: React.FC<ReadingAppProps> = ({  uiTheme, onReward,   })
     setReadingChecked(false);
     setReadingResult(null);
   };
+
+  useEffect(() => {
+    setReadingSubject(getSubjectFromSectId(activeSectId));
+  }, [activeSectId]);
 
   useEffect(() => { initReadingGame(); }, [readingSubject]);
 
@@ -86,11 +96,6 @@ export const ReadingApp: React.FC<ReadingAppProps> = ({  uiTheme, onReward,   })
       <div className={`lg:col-span-2 glass-panel rounded-3xl border p-5 space-y-4 ${isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-cyan/25'}`}>
         <div className="flex justify-between items-center border-b border-white/5 pb-3">
           <h3 className="font-orbitron font-black text-xs uppercase tracking-wider text-synth-cyan">📖 Thử Thách Đọc Hiểu</h3>
-          <div className="flex gap-1.5 bg-black/20 p-1 rounded-lg border border-white/5">
-            {[{ id: 'english', label: 'Tiếng Anh 🇬🇧' }, { id: 'math', label: 'Toán Học 📐' }, { id: 'literature', label: 'Ngữ Văn ✍️' }].map(opt => (
-              <button key={opt.id} onClick={() => setReadingSubject(opt.id as any)} className={`px-3 py-1 rounded-md text-[9px] font-bold font-orbitron uppercase cursor-pointer ${readingSubject === opt.id ? 'bg-synth-cyan text-black' : 'text-slate-400 hover:text-white'}`}>{opt.label}</button>
-            ))}
-          </div>
         </div>
 
         <div className="bg-synth-cyan/5 border border-synth-cyan/10 p-3 rounded-xl text-[10px] text-synth-cyan font-semibold">

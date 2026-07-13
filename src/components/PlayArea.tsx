@@ -97,6 +97,37 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     setIsMuted(nextMuted);
   };
 
+  const questionsRef = useRef(questions);
+  const failedQuestionIdsRef = useRef(failedQuestionIds);
+  const playerIdRef = useRef(player.id);
+  const getQuestionByWeightRef = useRef(getQuestionByWeight);
+  const currentQuestionIdRef = useRef(currentQuestions[currentIndex]?.id);
+
+  useEffect(() => {
+    questionsRef.current = questions;
+    failedQuestionIdsRef.current = failedQuestionIds;
+    playerIdRef.current = player.id;
+    getQuestionByWeightRef.current = getQuestionByWeight;
+    currentQuestionIdRef.current = currentQuestions[currentIndex]?.id;
+  }, [questions, failedQuestionIds, player.id, getQuestionByWeight, currentQuestions[currentIndex]?.id]);
+
+  // Reset question-specific states when question ID changes
+  useEffect(() => {
+    setChecked(false);
+    setSelectedAnswer('');
+    setTypedAnswer('');
+    setHintUsed(false);
+    setRevealedHint('');
+    setLastRubricScore(null);
+    setLastRubricMissing([]);
+    setAiFeedback('');
+    setAiSuggestions([]);
+    setAiWarningMessage('');
+    setShowBikiBoard(false);
+    setIsLastCorrect(false);
+  }, [currentQuestions[currentIndex]?.id]);
+
+
   const handleEscape = () => {
     sound.playEscape();
     const accuracyRatio = sessionAnswered > 0 ? sessionCorrect / sessionAnswered : 0;
@@ -113,19 +144,19 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
 
     const initOnlineSession = async () => {
       // Phiên dev-backdoor (mock-*) không có backend thật — dùng thẳng bộ câu hỏi local.
-      if (player.id?.startsWith('mock-')) {
+      if (playerIdRef.current?.startsWith('mock-')) {
         runLocalFallback();
         return;
       }
       try {
         const res = await gameService.startSession({
-          profileId: player.id,
+          profileId: playerIdRef.current,
           sessionType: mode,
           subject: activeSectId,
           gradeTier: activeGradeTier,
           bossId,
           lessonId,
-          failedQuestionIds
+          failedQuestionIds: failedQuestionIdsRef.current
         });
 
         if (active) {
@@ -155,11 +186,11 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     };
 
     const runLocalFallback = () => {
-      const subjectQuestions = questions.filter(q => {
+      const subjectQuestions = questionsRef.current.filter(q => {
         const qSubject = (q as any).subject || 'english';
         return qSubject === activeSectId;
       });
-      const fallbackQuestions = subjectQuestions.length > 0 ? subjectQuestions : questions;
+      const fallbackQuestions = subjectQuestions.length > 0 ? subjectQuestions : questionsRef.current;
 
       let pool: Question[] = [];
       const count = mode === 'boss' ? 5 : mode === 'survival' ? 15 : 10;
@@ -178,7 +209,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           : fullExamPool;
         pool = [...examSample].sort(() => Math.random() - 0.5).slice(0, count);
       } else if (mode === 'revenge') {
-        pool = subjectQuestions.filter(q => failedQuestionIds.includes(q.id));
+        pool = subjectQuestions.filter(q => failedQuestionIdsRef.current.includes(q.id));
       } else if (mode === 'lesson') {
         const lesson = INITIAL_LESSONS.find(l => l.id === lessonId);
         if (lesson) {
@@ -192,7 +223,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       } else {
         const weightMode = mode === 'survival' ? 'mixed' : mode;
         for (let i = 0; i < count; i++) {
-          const q = getQuestionByWeight(weightMode);
+          const q = getQuestionByWeightRef.current(weightMode);
           if (q && ((q as any).subject || 'english') === activeSectId && !pool.some(existing => existing.id === q.id)) {
             pool.push(q);
           }
@@ -237,7 +268,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     return () => {
       active = false;
     };
-  }, [mode, bossId, lessonId, activeSectId, questions, getQuestionByWeight, failedQuestionIds, player.id, activeGradeTier]);
+  }, [mode, bossId, lessonId, activeSectId, activeGradeTier]);
 
   // Handle countdown timer
   useEffect(() => {
@@ -407,6 +438,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const handleCheckAnswer = async () => {
     if (checked || !activeQuestion) return;
 
+    const questionIdBeingGraded = activeQuestion.id;
+
     let isCorrect = false;
     let scoreRatio = 0;
     const cleanAnswer = (str: string) => str
@@ -484,6 +517,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         }
 
         const data = await res.json();
+        if (currentQuestionIdRef.current !== questionIdBeingGraded) return;
         if (data.success && data.result) {
           const { score, missingKeywords = [], feedback = '', suggestions = [] } = data.result;
           scoreRatio = score / 10;
@@ -496,13 +530,16 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           throw new Error('Invalid response structure');
         }
       } catch (err: any) {
+        if (currentQuestionIdRef.current !== questionIdBeingGraded) return;
         console.error('Lỗi khi gọi AI chấm bài, chuyển sang backup:', err);
         setAiWarningMessage('Linh Sư phải chấm dự phòng. Kết quả vẫn ổn, nhưng nên coi như mốc tham chiếu.');
         const fallbackResult = runOldGradingBackup();
         isCorrect = fallbackResult.isCorrect;
         scoreRatio = fallbackResult.scoreRatio;
       } finally {
-        setIsAiGrading(false);
+        if (currentQuestionIdRef.current === questionIdBeingGraded) {
+          setIsAiGrading(false);
+        }
       }
     } else if (activeSectId === 'math' && (activeQuestion.type === 'short-answer' || activeQuestion.type === 'text_input')) {
       setIsAiGrading(true);
@@ -536,10 +573,12 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         if (!res.ok) throw new Error(`API error: ${res.status}`);
 
         const data = await res.json();
+        if (currentQuestionIdRef.current !== questionIdBeingGraded) return;
         isCorrect = data.isCorrect;
         scoreRatio = isCorrect ? 1 : 0;
         setAiFeedback(data.explanation || '');
       } catch (err: any) {
+        if (currentQuestionIdRef.current !== questionIdBeingGraded) return;
         console.error('Lỗi khi gọi AI chấm Toán tự luận, dùng backup:', err);
         setAiWarningMessage('Linh Sư chấm Toán tự luận dự phòng (So khớp chuỗi).');
         const answers = Array.isArray(activeQuestion.correctAnswer)
@@ -549,7 +588,9 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         isCorrect = answers.some(ans => normalizedTyped === cleanAnswer(ans));
         scoreRatio = isCorrect ? 1 : 0;
       } finally {
-        setIsAiGrading(false);
+        if (currentQuestionIdRef.current === questionIdBeingGraded) {
+          setIsAiGrading(false);
+        }
       }
     } else {
       const answers = Array.isArray(activeQuestion.correctAnswer)
@@ -563,6 +604,10 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       setAiFeedback('');
       setAiSuggestions([]);
       setAiWarningMessage('');
+    }
+
+    if (currentQuestionIdRef.current !== questionIdBeingGraded) {
+      return;
     }
 
     if (activeQuestion.type === 'mcq') {
@@ -980,7 +1025,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           {!checked && (
             <button
               onClick={handleUseHint}
-              disabled={hintUsed}
+              disabled={hintUsed || isAiGrading}
               className="px-4 py-2.5 rounded-xl border border-synth-orange/40 hover:bg-synth-orange/5 text-synth-orange font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 text-center"
             >
               Rút gợi ý (50 NP)
@@ -1004,7 +1049,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
             return (
               <button
                 onClick={handleSkipConfused}
-                disabled={isBlocked}
+                disabled={isBlocked || isAiGrading}
                 className="px-4 py-2.5 rounded-xl border border-red-500/40 hover:bg-red-500/10 text-red-400 font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 text-center flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
                 title={player.coins < -100 ? "Bị khóa vì số dư NP âm quá nhiều" : `Lượt bỏ qua hôm nay: ${remainingSkips}/3`}
               >

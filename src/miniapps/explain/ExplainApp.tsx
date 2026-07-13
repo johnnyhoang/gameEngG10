@@ -42,10 +42,16 @@ export interface ExplainAppProps {
   onGameStart?: () => void;
 }
 
-export const ExplainApp: React.FC<ExplainAppProps> = ({  uiTheme, onReward,   }) => {
+const getTopicFromSectId = (sectId?: string) => {
+  if (sectId === 'english') return 'present_perfect';
+  if (sectId === 'literature') return 'song_poem';
+  return 'pythagoras';
+};
+
+export const ExplainApp: React.FC<ExplainAppProps> = ({ activeSectId, uiTheme, onReward }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
 
-  const [explainTopic, setExplainTopic] = useState<'pythagoras' | 'present_perfect' | 'song_poem'>('pythagoras');
+  const [explainTopic, setExplainTopic] = useState<'pythagoras' | 'present_perfect' | 'song_poem'>(() => getTopicFromSectId(activeSectId));
   const [studentText, setStudentText] = useState('');
   const [aiFeedback, setAiFeedback] = useState('');
   const [aiCounterQuestion, setAiCounterQuestion] = useState<{ q: string; opts: string[]; ans: string } | null>(null);
@@ -83,19 +89,16 @@ export const ExplainApp: React.FC<ExplainAppProps> = ({  uiTheme, onReward,   })
     setStudentText(''); setAiFeedback(''); setAiCounterQuestion(null); setCounterAnswer(''); setExplainPhase('input');
   };
 
+  React.useEffect(() => {
+    setExplainTopic(getTopicFromSectId(activeSectId));
+    restartExplainGame();
+  }, [activeSectId]);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className={`lg:col-span-2 glass-panel rounded-3xl border p-5 space-y-4 ${isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-purple/25'}`}>
         <div className="flex justify-between items-center border-b border-white/5 pb-3">
           <h3 className="font-orbitron font-black text-xs uppercase tracking-wider text-synth-purple">✍️ Giảng Giải Cho AI</h3>
-          <div className="flex gap-1.5 bg-black/20 p-1 rounded-lg border border-white/5">
-            {[{ id: 'pythagoras', label: 'Toán' }, { id: 'present_perfect', label: 'Anh' }, { id: 'song_poem', label: 'Văn' }].map(opt => (
-              <button key={opt.id} onClick={() => { setExplainTopic(opt.id as any); restartExplainGame(); }}
-                className={`px-3 py-1 rounded-md text-[9px] font-bold font-orbitron uppercase cursor-pointer ${explainTopic === opt.id ? 'bg-synth-purple text-white' : 'text-slate-400 hover:text-white'}`}>
-                {opt.label}
-              </button>
-            ))}
-          </div>
         </div>
 
         <div className="bg-synth-purple/5 border border-synth-purple/20 p-3 rounded-xl text-xs text-slate-300">
