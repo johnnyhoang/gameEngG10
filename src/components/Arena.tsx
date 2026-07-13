@@ -11,6 +11,7 @@ import { toast } from '../utils/toast';
 import { FogCard } from './FogCard';
 
 import { isLightTheme } from '../theme/uiThemes';
+import { RiddleGames } from '../miniapps/riddle/RiddleGames';
 
 interface ArenaProps {
   onStartPlay: (
@@ -146,6 +147,8 @@ export function Arena({ onStartPlay }: ArenaProps) {
           🏛️ Trường Thi - {activeSubjectConfig.name}
         </h2>
       </div>
+
+      <RiddleGames />
 
       {subjectQuestionCount === 0 && (
         <div className="glass-panel rounded-2xl border border-dashed border-white/15 bg-white/5 p-4 text-xs text-slate-300">

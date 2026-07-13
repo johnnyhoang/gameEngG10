@@ -94,16 +94,16 @@ export const trackStudentQuestionPerformance = async (
 ) => {
   try {
     const updateFields: string[] = [
-      'times_attempted = COALESCE(times_attempted, 0) + 1',
+      'times_attempted = COALESCE(ge10_student_question_performance.times_attempted, 0) + 1',
       'updated_at = CURRENT_TIMESTAMP',
       'last_attempted_at = CURRENT_TIMESTAMP'
     ];
 
     if (isCorrect) {
-      updateFields.push('times_correct = COALESCE(times_correct, 0) + 1');
+      updateFields.push('times_correct = COALESCE(ge10_student_question_performance.times_correct, 0) + 1');
     }
     if (wasSkipped) {
-      updateFields.push('times_skipped = COALESCE(times_skipped, 0) + 1');
+      updateFields.push('times_skipped = COALESCE(ge10_student_question_performance.times_skipped, 0) + 1');
     }
 
     await pool.query(

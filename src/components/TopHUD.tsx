@@ -24,10 +24,12 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   const showHelp = useGameState(state => state.showHelp);
   const tickEnergyRegen = useGameState(state => state.tickEnergyRegen);
   const uiTheme = useGameState(state => state.uiTheme);
+  const familyLinks = useGameState(state => state.familyLinks || []);
 
   const isUnicorn = isLightTheme(uiTheme);
 
   const isStudent = currentUser?.role === 'student';
+  const isConnected = isStudent && familyLinks.some(l => l.status === 'active');
 
   // Tick Năng Lượng đều đặn để mở khóa đúng giờ hồi mà không cần reload trang (SUB_SPEC_ENERGY §5).
   useEffect(() => {
@@ -72,16 +74,30 @@ export const TopHUD: React.FC<TopHUDProps> = ({
         {/* Cụm 1: Thẻ định danh — avatar + tên + rank/vai trò + thanh EXP + Năng Lượng, gộp làm 1 box duy nhất */}
         <div className={`${groupBoxClass} order-1 md:order-none w-full sm:w-auto`}>
           {currentUser && (
-            <img
-              src={currentUser.avatar}
-              alt={currentUser.name}
-              className="w-8 h-8 rounded-full border border-synth-cyan/40 shrink-0 cursor-pointer hover:border-synth-magenta transition-colors"
-              title={`${currentUser.name} (${currentUser.email}) - Nhấp để Đổi Hồ Sơ Sĩ Tử`}
-              onClick={() => {
-                useGameState.setState({ currentUser: null });
-                localStorage.removeItem('ge10_selected_profile_id');
-              }}
-            />
+            <div className="relative shrink-0">
+              <img
+                src={currentUser.avatar}
+                alt={currentUser.name}
+                className="w-8 h-8 rounded-full border border-synth-cyan/40 cursor-pointer hover:border-synth-magenta transition-colors"
+                title={
+                  isStudent
+                    ? `${currentUser.name} (${currentUser.email}) - ${isConnected ? 'Đã kết nối Lớp Chủ nhiệm' : 'Chưa gia nhập Lớp Chủ nhiệm'} - Nhấp để Đổi Hồ Sơ Sĩ Tử`
+                    : `${currentUser.name} (${currentUser.email}) - Nhấp để Đổi Hồ Sơ`
+                }
+                onClick={() => {
+                  useGameState.setState({ currentUser: null });
+                  localStorage.removeItem('ge10_selected_profile_id');
+                }}
+              />
+              {isStudent && (
+                <span
+                  className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-slate-950 ${
+                    isConnected ? 'bg-synth-green' : 'bg-amber-500 animate-pulse'
+                  }`}
+                  title={isConnected ? 'Đã kết nối Lớp Chủ nhiệm 🎓' : 'Chưa kết nối Lớp Chủ nhiệm ⚠️'}
+                />
+              )}
+            </div>
           )}
           <div className="flex flex-col min-w-0 gap-0.5">
             <div className="flex items-center gap-1.5 min-w-0">

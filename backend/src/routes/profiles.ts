@@ -157,9 +157,7 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
     const redemptionsRes = await pool.query('SELECT * FROM ge10_reward_redemptions WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
     // 7. Fetch challenges
     const challengesRes = await pool.query('SELECT * FROM ge10_user_challenges WHERE user_id = $1', [userId]);
-    // 8. Fetch daily mission
-    const missionRes = await pool.query('SELECT * FROM ge10_daily_missions WHERE user_id = $1', [userId]);
-    // 9. Fetch custom questions (retrieve owned, admin-created, and system-wide questions)
+    // 8. Fetch custom questions (retrieve owned, admin-created, and system-wide questions)
     const questionsRes = await pool.query(
       `SELECT * FROM ge10_custom_questions 
        WHERE user_id = $1 
@@ -258,9 +256,6 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
     // Map challenges JSONB
     const challenges = challengesRes.rows[0]?.challenges_json || null;
 
-    // Map daily mission JSONB
-    const dailyMission = missionRes.rows[0]?.mission_json || null;
-
     // Map custom questions
     const customQuestions = questionsRes.rows.map((row: any) => ({
       id: row.id,
@@ -320,7 +315,6 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
       rewards,
       rewardRedemptions,
       challenges,
-      dailyMission,
       gameSettings: {
         bossCompletionBonusRuby,
         bossCompletionBonusNP: bossCompletionBonusRuby,
@@ -395,7 +389,6 @@ router.post('/profile/:id/sync', authMiddleware, activeProfileMiddleware, async 
     rewards: rawRewards,
     rewardRedemptions: rawRewardRedemptions,
     challenges: rawChallenges,
-    dailyMission,
     lessonsProgress
   } = req.body;
   const player = rawPlayer ? { ...rawPlayer, ruby: rawPlayer.ruby ?? rawPlayer.coins ?? 0 } : null;
@@ -455,7 +448,6 @@ router.post('/profile/:id/sync', authMiddleware, activeProfileMiddleware, async 
           const rewardsRes = await client.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
           const redemptionsRes = await client.query('SELECT * FROM ge10_reward_redemptions WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
           const challengesRes = await client.query('SELECT * FROM ge10_user_challenges WHERE user_id = $1', [userId]);
-          const missionRes = await client.query('SELECT * FROM ge10_daily_missions WHERE user_id = $1', [userId]);
           const progressRes = await client.query('SELECT * FROM ge10_user_lessons_progress WHERE user_id = $1', [userId]);
           const explorationRes = await client.query('SELECT * FROM ge10_exploration_progress WHERE user_id = $1', [userId]);
           const activityProgressRes = await client.query('SELECT * FROM ge10_user_activity_progress WHERE user_id = $1', [userId]);
@@ -554,7 +546,6 @@ router.post('/profile/:id/sync', authMiddleware, activeProfileMiddleware, async 
                 deliveredAt: row.delivered_at ? Number(row.delivered_at) : null
               })),
               challenges: challengesRes.rows[0]?.challenges_json || null,
-              dailyMission: missionRes.rows[0]?.mission_json || null,
               lessonsProgress,
               explorationProgress,
               activityProgress
@@ -718,18 +709,7 @@ router.post('/profile/:id/sync', authMiddleware, activeProfileMiddleware, async 
       );
     }
 
-    // 7. Sync daily mission JSON
-    if (dailyMission !== undefined) {
-      await client.query(
-        `INSERT INTO ge10_daily_missions (user_id, mission_json)
-         VALUES ($1, $2)
-         ON CONFLICT (user_id) DO UPDATE SET
-           mission_json = EXCLUDED.mission_json`,
-        [userId, dailyMission ? JSON.stringify(dailyMission) : null]
-      );
-    }
-
-    // 8. Sync lessons progress (Batch INSERT)
+    // 7. Sync lessons progress (Batch INSERT)
     if (lessonsProgress && Object.keys(lessonsProgress).length > 0) {
       const progressEntries = Object.entries(lessonsProgress).filter(([_, completed]) => completed);
       if (progressEntries.length > 0) {

@@ -57,7 +57,7 @@ const renderToast = ({ message, tone, duration }: ToastRender) => {
 
   const toastEl = document.createElement('div');
   toastEl.dataset.toastId = toastId;
-  toastEl.className = `glass-panel pointer-events-auto flex items-start gap-3 rounded-2xl border px-4 py-3 backdrop-blur-xl text-white/95 bg-slate-950/90 ${styles.ring}`;
+  toastEl.className = `glass-panel gameeng-toast pointer-events-auto flex items-start gap-3 rounded-2xl border px-4 py-3 backdrop-blur-xl ${styles.ring}`;
 
   const badge = document.createElement('div');
   badge.className = `mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${styles.accent} text-xs font-black text-white`;
@@ -67,11 +67,11 @@ const renderToast = ({ message, tone, duration }: ToastRender) => {
   body.className = 'min-w-0 flex-1';
 
   const title = document.createElement('div');
-  title.className = 'mb-0.5 text-[10px] font-orbitron font-bold uppercase tracking-[0.25em] text-white/60';
+  title.className = 'mb-0.5 text-[10px] font-orbitron font-bold uppercase tracking-[0.25em] gameeng-toast-title';
   title.textContent = styles.label;
 
   const text = document.createElement('p');
-  text.className = 'text-sm leading-snug text-white/95';
+  text.className = 'text-sm leading-snug gameeng-toast-text';
   text.textContent = message;
 
   body.appendChild(title);
@@ -79,7 +79,7 @@ const renderToast = ({ message, tone, duration }: ToastRender) => {
 
   const close = document.createElement('button');
   close.type = 'button';
-  close.className = 'rounded-full p-1 text-white/60 transition-colors hover:text-white';
+  close.className = 'rounded-full p-1 gameeng-toast-close';
   close.setAttribute('aria-label', 'Đóng thông báo');
   close.textContent = '×';
   close.addEventListener('click', () => toastEl.remove());

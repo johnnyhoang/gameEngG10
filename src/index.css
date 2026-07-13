@@ -102,6 +102,13 @@ body,
   --theme-handbook-seal: #7f1d1d;
   --theme-handbook-seal-hover: #991b1b;
   --theme-handbook-seal-text: #ffffff;
+
+  /* Toast Theme Variables - Default Dark */
+  --theme-toast-bg: rgba(15, 23, 42, 0.95);
+  --theme-toast-text: rgba(255, 255, 255, 0.95);
+  --theme-toast-text-muted: rgba(255, 255, 255, 0.6);
+  --theme-toast-close-hover: #ffffff;
+  --theme-toast-border: rgba(255, 255, 255, 0.1);
 }
 
 [data-theme='cute-pink-pastel'] {
@@ -193,6 +200,13 @@ body,
   --theme-handbook-seal: #be185d;
   --theme-handbook-seal-hover: #9d174d;
   --theme-handbook-seal-text: #ffffff;
+
+  /* Toast Theme Variables - Cute Pink Pastel (Light) */
+  --theme-toast-bg: rgba(255, 240, 247, 0.95);
+  --theme-toast-text: #4b2d66;
+  --theme-toast-text-muted: #835391;
+  --theme-toast-close-hover: #290f3f;
+  --theme-toast-border: rgba(244, 114, 182, 0.35);
 }
 
 body[data-theme='cute-pink-pastel'] {
@@ -243,6 +257,13 @@ body[data-theme='cute-pink-pastel'] {
   --theme-handbook-seal: #2c3e73;
   --theme-handbook-seal-hover: #3a4f94;
   --theme-handbook-seal-text: #ffffff;
+
+  /* Toast Theme Variables - Space Adventure (Dark) */
+  --theme-toast-bg: rgba(18, 32, 64, 0.95);
+  --theme-toast-text: rgba(234, 244, 255, 0.95);
+  --theme-toast-text-muted: rgba(178, 199, 228, 0.6);
+  --theme-toast-close-hover: #ffffff;
+  --theme-toast-border: rgba(155, 231, 255, 0.2);
 }
 
 body[data-theme='space-adventure'] {
@@ -338,6 +359,13 @@ body[data-theme='space-adventure'] {
   --theme-handbook-seal: #166534;
   --theme-handbook-seal-hover: #14532d;
   --theme-handbook-seal-text: #ffffff;
+
+  /* Toast Theme Variables - Fantasy Forest (Light) */
+  --theme-toast-bg: rgba(247, 249, 239, 0.95);
+  --theme-toast-text: #15331d;
+  --theme-toast-text-muted: #487255;
+  --theme-toast-close-hover: #0a1b0f;
+  --theme-toast-border: rgba(52, 211, 153, 0.35);
 }
 
 body[data-theme='fantasy-forest'] {
@@ -388,6 +416,13 @@ body[data-theme='fantasy-forest'] {
   --theme-handbook-seal: #7c2d12;
   --theme-handbook-seal-hover: #5c2c06;
   --theme-handbook-seal-text: #ffffff;
+
+  /* Toast Theme Variables - Pixel Arcade (Dark) */
+  --theme-toast-bg: rgba(11, 23, 41, 0.95);
+  --theme-toast-text: rgba(255, 255, 255, 0.95);
+  --theme-toast-text-muted: rgba(142, 163, 192, 0.6);
+  --theme-toast-close-hover: #ffffff;
+  --theme-toast-border: rgba(132, 204, 22, 0.25);
 }
 
 [data-theme='unicorn-dream'] {
@@ -479,6 +514,13 @@ body[data-theme='fantasy-forest'] {
   --theme-handbook-seal: #7c3aed;
   --theme-handbook-seal-hover: #6d28d9;
   --theme-handbook-seal-text: #ffffff;
+
+  /* Toast Theme Variables - Unicorn Dream (Light) */
+  --theme-toast-bg: rgba(255, 248, 255, 0.95);
+  --theme-toast-text: #3b1c55;
+  --theme-toast-text-muted: #7e52a2;
+  --theme-toast-close-hover: #1a062b;
+  --theme-toast-border: rgba(192, 132, 252, 0.35);
 }
 
 body[data-theme='unicorn-dream'] {
@@ -984,3 +1026,28 @@ body[data-theme='unicorn-dream'] {
   }
 }
 
+/* ==========================================
+   Custom GameEngG10 Toast Styles (Dynamic Theme)
+   ========================================== */
+.gameeng-toast {
+  background-color: var(--theme-toast-bg) !important;
+  color: var(--theme-toast-text) !important;
+  border-color: var(--theme-toast-border) !important;
+}
+
+.gameeng-toast-title {
+  color: var(--theme-toast-text-muted) !important;
+}
+
+.gameeng-toast-text {
+  color: var(--theme-toast-text) !important;
+}
+
+.gameeng-toast-close {
+  color: var(--theme-toast-text-muted) !important;
+  transition: color 150ms ease;
+}
+
+.gameeng-toast-close:hover {
+  color: var(--theme-toast-close-hover) !important;
+}

@@ -15,13 +15,12 @@ Khi Sàn Game khởi chạy một Mini-app, nó sẽ truyền vào (inject) các
 - `currentStudentId`: ID của học sinh đang chơi.
 - `activeSectId`: Môn phái đang được chọn (để app tự động lấy đúng data Toán, Văn, Anh...).
 - `difficultyLevel`: Độ khó hiện tại do Sàn Game quyết định (Dễ/Trung bình/Khó).
-- `lockedStatus`: Trạng thái bị khóa bởi sương mù hay không.
+- `fogStatus`: Trạng thái trải nghiệm được Hub dùng để trình bày; không chặn quyền mở mini-app.
 
 ### 2.2 Dữ liệu Đầu ra (Events Emit to Hub)
 Mini-app phải chịu trách nhiệm gửi các sự kiện chuẩn về cho Sàn Game để hệ thống lõi xử lý (cộng điểm, xóa sương mù):
 - `onGameStart()`: Báo hiệu bắt đầu chơi.
 - `onGameComplete({ correctAnswers, timeSpent, score })`: Gửi kết quả khi game kết thúc.
-- `onGatekeeperTriggered()`: Nếu đây là khu vực có sương mù, gọi Sàn Game để hiển thị Popup Gatekeeper (Pet).
 
 ## 3. Quản lý Trạng Thái & Khám Phá (Fog of War)
 Mỗi Mini-app sẽ được Sàn Game quản lý về trạng thái Khám Phá (Exploration):
@@ -29,6 +28,21 @@ Mỗi Mini-app sẽ được Sàn Game quản lý về trạng thái Khám Phá 
   - Nếu độ khó game là Dễ: Yêu cầu học sinh chơi và `onGameComplete` thành công **2 lần** để vĩnh viễn xóa sương mù cho Mini-app đó.
   - Nếu độ khó game là Khó: Yêu cầu hoàn thành **3 lần**.
 - **Định nghĩa "Hoàn Thành":** Do bản thân mỗi Mini-app tự quyết định và trả về true/false trong sự kiện `onGameComplete` (ví dụ: Thẻ nhớ phải lật hết 10 thẻ, Ghép cặp phải ghép xong trước 60 giây). Sàn Game không can thiệp logic nội bộ của app.
+- **Không có Gatekeeper:** Fog chỉ là presentation/progress. Hub mở mini-app ngay khi click; chỉ `onGameComplete()` hợp lệ mới tăng `clearCount`.
+
+## 5. Mini-game câu đố dùng chung tại Trường Thi
+
+`Đố Vui Nhận Ruby` và `Tốc Chiến Kỳ Ngộ` dùng chung một question engine cấu hình theo mode:
+
+| Mode | Số câu | Thời gian | Thưởng | Sai |
+|---|---:|---:|---:|---|
+| `ruby-riddle` | 1 | Không giới hạn | +10 Ruby nếu đúng | 0 Ruby, kết thúc câu |
+| `encounter-sprint` | 3 | 60 giây tổng | +10 Ruby/câu đúng, tối đa +30 | 0 Ruby, chuyển câu tiếp |
+
+- Câu hỏi đúng lớp/môn hiện hành, MCQ, `topicId` hợp lệ, difficulty 1–5.
+- Mỗi câu chỉ trả lời một lần; sau chấm hiển thị đáp án và explanation.
+- Engine phát `onGameComplete({ correctAnswers, timeSpent, score })`; Hub/ledger là nơi duy nhất ghi Ruby.
+- Tránh lặp trong phiên; lịch sử backend ưu tiên tránh lặp 30 ngày theo profile.
 
 ## 4. English-only Skill Districts
 

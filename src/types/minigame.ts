@@ -6,5 +6,4 @@ export interface MiniGameProps {
   lockedStatus: boolean;
   onGameStart?: () => void;
   onGameComplete?: (results: { correctAnswers: number; timeSpent: number; score: number; passed: boolean }) => void;
-  onGatekeeperTriggered?: () => void;
 }

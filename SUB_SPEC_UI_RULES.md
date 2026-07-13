@@ -18,7 +18,8 @@ Tài liệu này gom các quy tắc **luôn phải tuân theo** khi phát triể
   - Công Viên Thư Giãn (mini-game): **"Trò chơi chưa trải nghiệm"**.
   - Shop Học Cụ → Phong Cách Học Đường (theme/trang phục giao diện): **"Trang phục chưa trải nghiệm"**.
   - Khi thêm loại Page mới có Fog Card, đặt tên nhãn theo mẫu **"[Loại nội dung] chưa trải nghiệm"**, không tự bịa câu ngoài mẫu này.
-- **Bỏ hoàn toàn dòng phụ kiểu "Cần giải mã để tiến vào"** hay bất kỳ biến thể nào dùng từ "giải mã" — cơ chế mở khóa thật sự (câu hỏi Gác Cổng của Heo Maikawaii) đã tự giải thích qua tương tác, không cần nhắc lại bằng chữ.
+- **Bỏ hoàn toàn dòng phụ kiểu "Cần giải mã để tiến vào"** hay bất kỳ biến thể nào dùng từ "giải mã" — sương mù không chặn quyền mở nội dung.
+- **Fog không chặn tương tác:** Bấm card mờ phải mở ngay nội dung. Chỉ completion thật sự mới tăng tiến độ tan sương; không hiển thị modal/câu hỏi trung gian.
 
 ## 3. Quy Tắc Thiết Kế UI Popup & Cảnh Báo (Minimalism)
 Xem đầy đủ tại **CORE_SPECS.md §2.9** — nhắc lại tóm tắt: mọi popup cảnh báo/thông báo chỉ gồm **1 Icon phân loại** + **1 câu thông báo trọng tâm**, không thêm title/label rườm rà.
@@ -28,3 +29,7 @@ Xem CORE_SPECS §2.5 — Heo Maikawaii là nhân vật đồng hành/gác cổng
 
 ## 5. Việc cần chốt tiếp (chưa làm ngay)
 - Rà soát toàn bộ icon `Lock` còn sót lại trong codebase (ví dụ badge chú thích, tab điều hướng giai đoạn Pet) xem có nơi nào thực sự đại diện cho trạng thái Fog Card không để áp cùng quy tắc §2; các icon Lock dùng cho bảo mật PIN admin (`ParentConsole.tsx`) hoặc thẻ "sắp khai mở" (tính năng chưa phát triển) **không thuộc phạm vi** quy tắc này vì khác bản chất (không phải Fog of War).
+
+## 6. Quy Tắc Giao Diện Toast (Thông báo nhanh)
+- **Không hardcode màu sắc cố định** (như `text-white/95 bg-slate-950/90`) cho Toast.
+- **Sử dụng các biến CSS Toast** (`--theme-toast-bg`, `--theme-toast-text`, `--theme-toast-text-muted`, v.v.) định nghĩa riêng theo từng Phong Cách Học Đường để đảm bảo trên các theme có nền sáng (như Đào Hoa, Trúc Lâm, Tuyết Sơn), chữ thông báo Toast tự động đổi sang màu tối dễ đọc, và trên các theme tối chữ tự động chuyển sang màu sáng tương phản tốt.

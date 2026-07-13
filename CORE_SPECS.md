@@ -52,6 +52,8 @@ Hệ thống được thiết kế phân tách rõ ràng thành hai môi trườ
 
 Môi trường dành cho học sinh tập trung vào trải nghiệm tu luyện, học tập và rèn luyện kỹ năng thông qua bản đồ game worldmap (`WorldMap`) — hub trung tâm dẫn vào 5 module chính bên dưới:
 
+Mọi trang Sĩ Tử cùng dùng **Sổ Tu Học** đặt trong app shell ngay dưới TopHUD. Sổ gồm **Nhập Môn** (cột mốc một lần theo profile), **Nhiệm Vụ Hôm Nay** (mục tiêu reset theo ngày) và **Tiến Độ Tu Học** (Level, XP, chuỗi học và tổng quan tiến trình). Tiến độ được backend tính từ domain event idempotent, không do UI tự cộng và không dùng JSON blob làm nguồn sự thật. Contract chi tiết xem **[SUB_SPEC_MISSION_LEDGER.md](./SUB_SPEC_MISSION_LEDGER.md)**.
+
 #### A. Năm Module Chính
 
 ##### 1. 🏛️ Trường Thi (Arena / Play Area)
@@ -101,7 +103,7 @@ Vận hành nền kinh tế vi mô trong học viện. Tiêu hao **Ruby** để 
 
 ##### 5. 🐷 Nhà Của MIKA (Pet Sanctuary - Heo Maikawaii)
 Đại diện trực quan cho tiến trình học tập của học sinh:
-*   **Linh vật dẫn dắt duy nhất của game:** Heo Maikawaii là linh vật của toàn bộ ứng dụng — mọi việc đồng hành bên cạnh học sinh (chào hỏi, gác cổng đăng nhập/đăng xuất, gác cổng sương mù, nhắc học, đòi ăn, thông báo hết Năng Lượng, khen thưởng) đều do **một mình heo** đảm nhiệm. Không thêm bất kỳ nhân vật đồng hành nào khác.
+*   **Linh vật dẫn dắt duy nhất của game:** Heo Maikawaii là linh vật của toàn bộ ứng dụng — mọi việc đồng hành bên cạnh học sinh (chào hỏi, gác cổng đăng nhập/đăng xuất, dẫn vào mini-game câu đố, nhắc học, đòi ăn, thông báo hết Năng Lượng, khen thưởng) đều do **một mình heo** đảm nhiệm. Không thêm bất kỳ nhân vật đồng hành nào khác.
 *   Thú cưng dã thú (**Heo Maikawaii**) phát triển qua 4 giai đoạn tiến hóa đặc trưng (Evolution):
     *   **Đám Mây & Nấm Sơ Sinh (Egg):** Sinh ra từ một đám mây bông, mưa rơi xuống mặt đất nhiều lá khô mọc thành mầm nấm múp míp xinh đẹp.
     *   **Heo Con Mũm Mĩm (Baby):** Cây nấm nứt vỡ ra chú heo con mũm mĩm, hồng hào, cực kỳ đáng yêu.
@@ -280,12 +282,11 @@ interface PageExplorationState {
 6.  *(Đã xong)* Đặt tên/phân loại chính thức cho Daily Quest Banner + AI Sư Phụ banner.
 7.  *(Đã xong)* Thiết kế bảng dữ liệu cho `MapPage` và `PageExplorationState`.
 
-### 2.8.7 Cơ chế "Sương mù Chiến tranh" (Fog of War) và Người Gác Cổng
+### 2.8.7 Cơ chế "Sương mù Chiến tranh" (Fog of War)
 Áp dụng cho toàn bộ các Page Cấp 2 (Mật Thất, Hầm, Khu Vực):
 - **Trạng thái Mờ (Shadowed):** Mặc định, mọi khu vực chưa khám phá đều bị che mờ bởi sương mù.
-- **Trạng thái Tạm thời & Pet Gác Cổng:** Khi bấm vào khu vực mờ sương, **Thú cưng (Heo Maikawaii) sẽ xuất hiện làm Người Gác Cổng** và hỏi một câu kiến thức cốt lõi. Câu hỏi **bắt buộc là Trắc nghiệm (MCQ)** với độ khó chuẩn hóa **2/5**; nội dung là các công thức, định nghĩa, định luật — core knowledge của đúng **Tầng lớp học** (§1.4) và **Môn phái** tương ứng; không yêu cầu tính toán dài hay gõ chữ. 
-  - Nếu trả lời đúng: Tặng Ruby nhỏ, sương mù tan tạm thời và con có thể vào học. Trước khi vào, Heo **luôn hiển thị lời giải thích ngắn gọn vì sao đáp án đó đúng** (dùng `Question.explanation`) — con phải đọc và tự bấm "Tiến vào ngay" mới đóng cổng, không tự động đóng.
-  - Nếu trả lời sai: Bị trừ lượng nhỏ Ruby, chỉ báo "sai" và **giữ nguyên câu hỏi đó** để con làm lại — **không đổi sang câu khác**, không tự động chuyển. Con được thử lại không giới hạn số lần cho tới khi trả lời đúng chính câu đó. Quá trình mở khóa chỉ tốn vài cú click và một chút trí nhớ.
+- **Vào thẳng nội dung:** Sương mù chỉ biểu thị mức độ đã trải nghiệm, không chặn quyền học hoặc làm bài. Khi bấm một `FogCard`, hệ thống mở ngay nội dung tương ứng; không hiển thị câu hỏi gác cổng, không yêu cầu giải đố và không thưởng/phạt Ruby tại thời điểm mở.
+- **Trạng thái Tạm thời:** Chỉ một lượt **hoàn thành thật sự** của nội dung mới tăng `clearCount` và làm sương tan tạm thời. Việc chỉ bấm mở, xem rồi thoát hoặc chuyển trang không được tính hoàn thành.
 - **Tính toán suy giảm (Decay):** Nếu con không tiếp tục luyện tập hoặc đã lâu không quay lại (quá thời hạn `decayDays`), sương mù sẽ dần bao phủ trở lại trên bản đồ học tập (yêu cầu con làm bài Review để xóa mù sương). Tuy nhiên, **Đẳng cấp Môn phái và Huy hiệu Tinh Thông đã đạt được thì không bao giờ bị giảm hoặc hạ cấp** (Bảo toàn Luật Bất Thoái).
 - **Trạng thái Vĩnh viễn (Permanent):** Mở khóa vĩnh viễn sương mù yêu cầu hoàn thành khu vực đó nhiều lần:
   - Bài học/Thử thách mức độ **Dễ**: Cần **2 lần hoàn thành**.
@@ -339,11 +340,18 @@ Chi tiết về cơ chế hoạt động của **Quà Khuyến Học (Class Rewa
 1.  **Bản chất:** Page Cấp 3 đặc biệt (§2.8.4) do **Heo Maikawaii dẫn ra** (đúng luật linh vật duy nhất §2.5), xuất hiện ngẫu nhiên dưới dạng node phát sáng, **không bao giờ bị sương mù** che.
 2.  **Ba biến thể theo vị trí xuất hiện:**
     *   *Daily (Bảng Bài Tập / WorldMap):* thẻ **"Kỳ Ngộ Hôm Nay"** — 1 câu đố vui + thưởng.
-    *   *Trường Thi:* **"Tốc Chiến Kỳ Ngộ"** — 3 câu MCQ trong 60 giây (chơi nhanh).
+    *   *Trường Thi:* **"Tốc Chiến Kỳ Ngộ"** — 3 câu MCQ trong tổng 60 giây; mỗi câu chỉ trả lời một lần, đúng +10 Ruby, sai hoặc hết giờ không thưởng và không phạt, tối đa +30 Ruby/lượt.
     *   *Học Đường:* **"Cơ Duyên Học Nhanh"** — 1 trang lý thuyết cực ngắn + 1 câu hỏi liền sau.
 3.  **Tần suất & chống lạm dụng:** xác suất ~**8%** mỗi lần bước vào một Page Cấp 1; tối đa **2 Kỳ Ngộ/ngày**; node tự biến mất sau **10 phút** nếu không nhận.
 4.  **Thưởng (chỉ thưởng, không phạt):** +15~30 Ruby *hoặc* +20 Năng Lượng. Trả lời **sai không bị phạt** — Kỳ Ngộ là khoảnh khắc may mắn, không phải kỷ luật.
 5.  **Dữ liệu:** `KyNgoEvent { id, date, locationPageId, kind, claimed }` + bộ đếm số Kỳ Ngộ đã nhận trong ngày.
+
+### 3.5 Đố Vui Nhận Ruby — mini-game thường trực tại Trường Thi
+1. **Vị trí:** Thẻ thường trực trong section chào đầu Trường Thi; không phải cổng mở nội dung và không bị sương mù.
+2. **Luồng:** Mỗi lượt chọn một MCQ bất kỳ đúng Tầng lớp + Môn học hiện hành. Mỗi câu chỉ trả lời một lần; sau kết quả hiển thị đáp án đúng và `Question.explanation` nếu có.
+3. **Thưởng:** Đúng +10 Ruby; sai 0 Ruby, không phạt và không cho sửa đáp án của lượt đó.
+4. **Chơi tiếp:** Nút **Chơi tiếp** tạo lượt mới với câu khác; không giới hạn số lượt/ngày, không tốn Năng Lượng. Tránh lặp trong phiên và ưu tiên câu chưa xuất hiện với hồ sơ đó trong 30 ngày.
+5. **Kiến trúc:** Dùng chung question engine, answer evaluator, session history và result UI với **Tốc Chiến Kỳ Ngộ**; hai mode chỉ khác `questionCount`, `timeLimitSeconds` và cách kết thúc lượt.
 
 ---
 
@@ -544,7 +552,7 @@ Mọi ý tưởng hoặc tính năng mới phải cập nhật tự điển trư
 > [!IMPORTANT]
 > Section này định nghĩa **toàn bộ danh mục chuyên đề (topic taxonomy)** mà hệ thống ngân hàng câu hỏi phải bao phủ cho tất cả các môn phái. Đây là nền tảng để:
 > 1. **Khoá (Lock) các Page Cấp 2** trong kiến trúc §2.8 — mỗi Page Cấp 2 cần ít nhất X câu hỏi Core Knowledge tương ứng mới mở được.
-> 2. **Gatekeeper Questions** (§2.8.7 Sương mù Chiến tranh) — câu hỏi kiểm soát cổng vào mỗi khu vực phải lấy từ đúng nhóm chuyên đề cốt lõi của khu vực đó.
+> 2. **Câu hỏi mini-game Đố Vui** (§3.4–§3.5) — câu hỏi phải lấy từ đúng Tầng lớp, Môn học và Core Knowledge hiện hành.
 > 3. **Trường Thi Ôn Luyện** — hệ thống phân loại câu hỏi và đề xuất AI Sư Phụ đều dựa vào taxonomy này.
 > 4. **Báo cáo đẳng cấp môn phái** (§7.4) — tỉ lệ hoàn thành tính trên toàn bộ câu hỏi trong Core Knowledge Taxonomy.
 >
@@ -840,7 +848,7 @@ interface CoreKnowledgeTopic {
 
 ---
 
-### 9.5 Quy Tắc Liên Kết Core Knowledge → Page Cấp 2 (Gatekeeper)
+### 9.5 Quy Tắc Chọn Câu Cho Mini-game Đố Vui
 
 Mỗi **Page Cấp 2** (Hầm nguyên tố trong Học Đường — §2.8.3) được liên kết với một tập con chuyên đề Core Knowledge theo **bản chất kỹ năng**:
 
@@ -850,31 +858,30 @@ Mỗi **Page Cấp 2** (Hầm nguyên tố trong Học Đường — §2.8.3) đ
 | ❄️ **Băng Hầm** | Suy luận logic sâu, Điềm tĩnh, Đọc hiểu, Chứng minh | `eng-conditional`, `eng-reading-passage`, `math-quadratic-function`, `math-plane-geometry-circle`, `sci-bio-genetics-mendelian` |
 | 🪨 **Thạch Hầm** | Kiến thức nền tảng cứng, Quy tắc, Công thức | `eng-tenses`, `eng-word-form`, `math-radicals`, `lit-vietnamese-word-class`, `sci-phy-electricity` |
 
-**Quy tắc Gatekeeper Question (§2.8.7):**
-- Câu hỏi người gác cổng (Gatekeeper) khi Sĩ Tử muốn vào khu vực mờ sương **bắt buộc phải thuộc nhóm chuyên đề** được gán cho Hầm đó.
-- Độ khó Gatekeeper: chuẩn hóa **2/5** — câu công thức / định nghĩa / định luật cốt lõi của đúng Tầng lớp học + Môn phái (thống nhất với §2.8.7).
-- Mỗi câu Gatekeeper chỉ dùng dạng **MCQ (trắc nghiệm)** — không dùng Wordform hay tự luận.
-- **Luật giữ nguyên câu hỏi khi sai (Retry-Same-Question):** Trả lời sai **không** đổi sang câu hỏi khác — hệ thống chỉ báo sai, giữ nguyên `Question` hiện tại, để con tự chọn lại đáp án và bấm Giải Mã lại cho tới khi đúng. Việc chọn câu hỏi khác (`pickGatekeeperQuestion`) chỉ chạy **một lần khi mở modal**, không chạy lại sau mỗi lần trả lời sai.
-- **Luật xác nhận khi đúng (Explain-Before-Continue):** Trả lời đúng không tự động đóng cổng ngay — hiển thị màn xác nhận có kèm `Question.explanation` (vì sao đáp án đó đúng) và yêu cầu con bấm nút tiếp tục ("Tiến vào ngay") mới thực sự vào khu vực.
+**Quy tắc câu đố (§3.4–§3.5):**
+- Câu hỏi bắt buộc đúng Tầng lớp + Môn học đang chọn và có `topicId` hợp lệ.
+- Chỉ dùng **MCQ (trắc nghiệm)** thuộc băng Dễ hoặc Vừa (1–5/10); không dùng Wordform hay tự luận.
+- Mỗi câu chỉ nhận một lần trả lời. Sau khi chấm phải hiển thị đáp án đúng và `Question.explanation` nếu có; sai không được thử lại trong cùng lượt.
+- `Đố Vui Nhận Ruby` lấy 1 câu/lượt; `Tốc Chiến Kỳ Ngộ` lấy 3 câu khác nhau/lượt và dùng một đồng hồ tổng 60 giây.
 
-**Băng độ khó (Difficulty Band) — dùng chung cho phân loại Gatekeeper:**
+**Băng độ khó (Difficulty Band) — dùng chung cho mini-game câu đố:**
 
-| Băng | Khoảng `difficulty` (thang 1-10) | Dùng cho Gatekeeper? |
+| Băng | Khoảng `difficulty` (thang 1-10) | Dùng cho mini-game? |
 |:---|:---|:---|
 | Dễ | 1-3 | ✅ |
 | Vừa | 4-5 | ✅ |
 | Khó | 6-10 | ❌ |
 
-**Câu hỏi "đủ điều kiện Gác Cổng" (Gatekeeper-eligible)** — tiêu chí chính thức để một câu hỏi trong ngân hàng được đưa vào vòng random của Người Gác Cổng (implement tại `isGatekeeperEligible()` trong `src/utils/gatekeeper.ts`):
+**Câu hỏi đủ điều kiện đố vui** — tiêu chí chính thức để một câu hỏi trong ngân hàng được đưa vào vòng random của mini-game:
 1. Dạng **MCQ** (`type: 'mcq'` hoặc `'multiple_choice'`).
 2. Độ khó thuộc băng **Dễ hoặc Vừa** (1-5/10) — không lấy câu Khó.
 3. Đã gắn **`topicId`** hợp lệ thuộc Core Knowledge taxonomy (khác `'misc'`) — đảm bảo tính kiến thức cốt lõi.
 
-Môn phái của câu hỏi (`subject`) mặc định là **`english`** nếu không gắn tường minh — quy ước này áp dụng thống nhất ở mọi nơi lọc theo môn phái (Gatekeeper, PlayArea), vì phần lớn ngân hàng câu Tiếng Anh cũ chưa từng gắn `subject`.
+Môn phái của câu hỏi (`subject`) mặc định là **`english`** nếu không gắn tường minh — quy ước này áp dụng thống nhất ở mọi nơi lọc theo môn phái (mini-game câu đố, PlayArea), vì phần lớn ngân hàng câu Tiếng Anh cũ chưa từng gắn `subject`.
 
-**Chọn câu theo 2 tầng (`pickGatekeeperQuestion`):** Tầng 1 ưu tiên câu đủ điều kiện đúng Hầm nguyên tố của khu vực; nếu Hầm đó chưa có đủ câu, Tầng 2 nới ra toàn bộ câu đủ điều kiện của môn phái (không phân biệt Hầm). Nếu môn phái hoàn toàn không có câu đủ điều kiện, Gatekeeper phải hiển thị trạng thái **“Chưa có câu hỏi kiểm tra phù hợp”** và ghi log kèm `gradeTier`, `subjectId`, khu vực để quản trị viên bổ sung dữ liệu. Tuyệt đối không dùng câu hỏi giả hoặc placeholder để che thiếu coverage.
+**Chọn câu:** Lọc đúng Tầng lớp + Môn học, loại câu đã xuất hiện trong phiên và ưu tiên loại câu đã dùng với hồ sơ đó trong 30 ngày. Nếu không còn câu chưa dùng thì cho phép quay vòng trong tập hợp hợp lệ. Nếu hoàn toàn không có câu phù hợp, mini-game hiển thị **“Chưa có câu hỏi phù hợp”** và ghi log `gradeTier` + `subjectId`; tuyệt đối không dùng placeholder.
 
-**Thống kê & CRUD:** Màn Kho Đề Thi (Kho Ngân Hàng Câu Hỏi, dành cho Giáo viên & Viện Trưởng) phải hiển thị: (a) số câu đủ điều kiện Gác Cổng theo từng môn phái + theo từng Hầm nguyên tố, và (b) bộ lọc riêng để xem/quản lý các câu đủ điều kiện Gác Cổng trong CRUD ngân hàng câu hỏi.
+**Thống kê & CRUD:** Màn Kho Đề Thi phải hiển thị số câu đủ điều kiện mini-game theo từng Tầng lớp + Môn học và có bộ lọc riêng để quản lý coverage câu đố.
 
 ---
 
@@ -882,7 +889,7 @@ Môn phái của câu hỏi (`subject`) mặc định là **`english`** nếu kh
 
 Ngoài các quy tắc AI Ingest (§4.1), khi Viện Trưởng import câu hỏi vào ngân hàng, hệ thống bắt buộc phải:
 
-1. **Tag chuyên đề (`topicId`):** Mỗi câu hỏi phải được gán ít nhất một `CoreKnowledgeTopic.id` từ taxonomy §9.2–9.3. Câu hỏi không tag chuyên đề sẽ được xếp vào nhóm `misc` và **không** xuất hiện trong Gatekeeper cũng như AI Sư Phụ gợi ý.
+1. **Tag chuyên đề (`topicId`):** Mỗi câu hỏi phải được gán ít nhất một `CoreKnowledgeTopic.id` từ taxonomy §9.2–9.3. Câu hỏi không tag chuyên đề sẽ được xếp vào nhóm `misc` và **không** xuất hiện trong mini-game câu đố cũng như AI Sư Phụ gợi ý.
 
 2. **Kiểm tra `examRelevance`:** Khi Viện Trưởng import đề từ file Word/PDF, AI phân tích và đề xuất `examRelevance` (HIGH/MEDIUM/LOW) dựa trên tần suất xuất hiện trong các đề tuyển sinh/HK gần nhất.
 

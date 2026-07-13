@@ -11,11 +11,12 @@ import { WorldMap } from './components/WorldMap';
 import { PlayArea } from './components/PlayArea';
 import { ParentConsole } from './components/ParentConsole';
 import { GoogleLoginScreen } from './components/GoogleLoginScreen';
-import { GatekeeperModal } from './components/GatekeeperModal';
 import { ProfileSelectionScreen } from './components/ProfileSelectionScreen';
 import { GlobalSectModal } from './components/GlobalSectModal';
 import { LogoutConfirmModal } from './components/Common/LogoutConfirmModal';
 import { getSubjectToolIds } from './subject-modules/registry';
+import { LearningLedger } from './components/LearningLedger';
+import { recordMissionEvent } from './services/missionLedgerService';
 
 // Helper decorator to encapsulate Suspense for each lazy component individually, avoiding app-wide unmount loops
 const withSuspense = <P extends object>(
@@ -58,14 +59,14 @@ function App() {
   const checkDailyReset = useGameState(state => state.checkDailyReset);
   const tickEnergyRegen = useGameState(state => state.tickEnergyRegen);
   const initEventSubscriptions = useGameState(state => state.initEventSubscriptions);
-  const openMysteryBox = useGameState(state => state.openMysteryBox);
   const spinWheel = useGameState(state => state.spinWheel);
   const helpPageId = useGameState(state => state.helpPageId);
   const closeHelp = useGameState(state => state.closeHelp);
   const uiTheme = useGameState(state => state.uiTheme);
   const setUiTheme = useGameState(state => state.setUiTheme);
   
-  const { activeSectId } = useSect();
+  const { activeSectId, activeGradeTier } = useSect();
+  const familyLinks = useGameState(state => state.familyLinks || []);
 
   // Screen routing state
   const [screen, setScreen] = useState<'map' | 'arena' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang' | 'hang-3d' | 'hang-plane' | 'hang-graph' | 'lesson-study' | 'relax' | 'profile'>('map');
@@ -76,6 +77,53 @@ function App() {
       setScreen('hang');
     }
   }, [activeSectId, screen]);
+
+  useEffect(() => {
+    if (!currentUser?.id || currentUser.id.startsWith('mock-')) return;
+    const activeLink = familyLinks.find((link: any) => link.status === 'active');
+    if (!activeLink) return;
+    void recordMissionEvent({
+      profileId: currentUser.id,
+      idempotencyKey: `teacher-link:${activeLink.id}`,
+      eventType: 'teacher_link_activated',
+      gradeTier: activeGradeTier,
+      subjectId: activeSectId,
+      entityType: 'family-link',
+      entityId: activeLink.id,
+    });
+  }, [activeGradeTier, activeSectId, currentUser?.id, familyLinks]);
+
+  useEffect(() => {
+    if (screen !== 'hang-3d' || !currentUser?.id) return;
+    void recordMissionEvent({
+      profileId: currentUser.id,
+      idempotencyKey: 'feature-opened:math-3d-studio',
+      eventType: 'feature_opened',
+      gradeTier: activeGradeTier,
+      subjectId: activeSectId,
+      entityType: 'subject-tool',
+      entityId: 'math-3d-studio',
+      metadata: { featureKey: 'math-3d-studio' },
+    });
+  }, [activeGradeTier, activeSectId, currentUser?.id, screen]);
+
+  useEffect(() => {
+    const applyMissionProgress = (event: Event) => {
+      const progress = (event as CustomEvent).detail?.progress;
+      if (!progress) return;
+      useGameState.setState(state => ({
+        player: {
+          ...state.player,
+          level: progress.level ?? state.player.level,
+          xp: progress.xp ?? state.player.xp,
+          streak: progress.streak ?? state.player.streak,
+          ruby: progress.ruby ?? state.player.ruby,
+        },
+      }));
+    };
+    window.addEventListener('mission-ledger-updated', applyMissionProgress);
+    return () => window.removeEventListener('mission-ledger-updated', applyMissionProgress);
+  }, []);
   const [playMode, setPlayMode] = useState<'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'lesson' | 'survival'>('mixed');
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const masterLesson = useGameState(state => state.masterLesson);
@@ -263,16 +311,6 @@ function App() {
     );
   }
 
-  const triggerMysteryBox = () => {
-    const outcome = openMysteryBox();
-    setModalData({
-      isOpen: true,
-      title: 'HÒM BÍ MẬT 🎁',
-      message: outcome.message,
-      type: 'mystery'
-    });
-  };
-
   const triggerSpinWheel = () => {
     const outcome = spinWheel();
     setModalData({
@@ -326,6 +364,10 @@ function App() {
         currentScreen={topHudScreen}
       />
 
+      {!isAdmin(currentUser?.role) && !isParentRole(currentUser?.role) && (
+        <LearningLedger compact={screen === 'play'} />
+      )}
+
       {/* Main Container */}
       <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:py-8 flex flex-col lg:flex-row gap-6 items-stretch pb-20 lg:pb-8">
         
@@ -344,7 +386,6 @@ function App() {
               onOpenRelax={() => setScreen('relax')}
               onOpenShop={() => setScreen('shop')}
               onOpenPet={() => setScreen('pet')}
-              onOpenMysteryBox={triggerMysteryBox}
               onSpinWheel={triggerSpinWheel}
               onStudyLesson={handleStudyLessonFromMap}
               onStartLessonPractice={handleStartLessonPracticeFromMap}
@@ -578,7 +619,6 @@ function App() {
         <>
           <PetStableOverlay isDungeonScreen={isDungeonScreen || isHangMatterScreen || screen === 'pet'} />
           <LevelUpCelebration />
-          <GatekeeperModal />
           <GlobalSectModal />
         </>
       )}

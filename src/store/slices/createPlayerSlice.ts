@@ -14,13 +14,14 @@ import { toast } from '../../utils/toast';
 import { computeSubjectMasteryRatio, getMasteryRankByRatio } from '../../utils/masteryRank';
 import { playerService } from '../../services/playerService';
 import { getSubjectActivities } from '../../subject-modules/registry';
+import { recordMissionEvent } from '../../services/missionLedgerService';
 
 export const createPlayerSlice: StateCreator<
   StoreState,
   [],
   [],
   Pick<StoreState, 
-    'player' | 'pet' | 'questions' | 'lessons' | 'lessonsProgress' | 'explorationProgress' | 'pageExplorationStates' | 'categoryStats' | 'rewards' | 'rewardRedemptions' | 'challenges' | 'dailyMission' | 'logs' | 'activeCombo' | 'maxCombo' | 'lastSyncTime' | 'profiles' | 'petStates' | 'categoryStatsAll' | 'answerQuestion' | 'useEnergy' | 'addEnergy' | 'tickEnergyRegen' | 'ratchetMasteryRank' | 'buyStreakShield' | 'buyHint' | 'buyTheme' | 'redeemReward' | 'feedPet' | 'spinWheel' | 'openMysteryBox' | 'masterLesson' | 'applyDefeatPenalty' | 'completeBossVictory' | 'completeLevel3Page' | 'updatePendingKeyQuestion' | 'awardRubyAndXp' | 'clearExploration' | 'resetProgress' | 'checkDailyReset' | 'getAdaptiveQuestion' | 'getQuestionByWeight' | 'syncSessionResult' | 'syncWithServer' | 'pullServerState'
+    'player' | 'pet' | 'questions' | 'lessons' | 'lessonsProgress' | 'explorationProgress' | 'pageExplorationStates' | 'categoryStats' | 'rewards' | 'rewardRedemptions' | 'challenges' | 'logs' | 'activeCombo' | 'maxCombo' | 'lastSyncTime' | 'profiles' | 'petStates' | 'categoryStatsAll' | 'answerQuestion' | 'useEnergy' | 'addEnergy' | 'tickEnergyRegen' | 'ratchetMasteryRank' | 'buyStreakShield' | 'buyHint' | 'buyTheme' | 'redeemReward' | 'feedPet' | 'spinWheel' | 'openMysteryBox' | 'masterLesson' | 'applyDefeatPenalty' | 'completeBossVictory' | 'completeLevel3Page' | 'awardRubyAndXp' | 'clearExploration' | 'resetProgress' | 'checkDailyReset' | 'getAdaptiveQuestion' | 'getQuestionByWeight' | 'syncSessionResult' | 'syncWithServer' | 'pullServerState'
   >
 > = (set, get) => ({
   player: INITIAL_PLAYER,
@@ -48,7 +49,6 @@ export const createPlayerSlice: StateCreator<
 
   challenges: INITIAL_CHALLENGES,
 
-  dailyMission: null,
 
   logs: [],
 
@@ -216,6 +216,16 @@ export const createPlayerSlice: StateCreator<
             gameMode,
             scoreRatio: performanceScore
           });
+          void recordMissionEvent({
+            profileId: state.currentUser?.id || state.player.id,
+            idempotencyKey: `question:${questionId}:${Date.now()}`,
+            eventType: 'question_answered',
+            gradeTier: state.activeGradeTier,
+            subjectId: answeredSubject,
+            entityType: 'question',
+            entityId: questionId,
+            metadata: { isCorrect: effectiveCorrect, gameMode, scoreRatio: performanceScore },
+          });
 
           return { isCorrect: effectiveCorrect, expGained, rubyGained, comboMultiplier, scoreRatio: performanceScore };
         },
@@ -323,6 +333,15 @@ export const createPlayerSlice: StateCreator<
           });
 
           logActivity(get, set, 'shop', 'Thẻ Nhắc Bài', 'Dùng 50 Ruby lĩnh Thẻ Nhắc Bài hỗ trợ trong bài làm.', -cost, 0);
+          void recordMissionEvent({
+            profileId: state.currentUser?.id || state.player.id,
+            idempotencyKey: 'hint-used:first',
+            eventType: 'hint_used',
+            gradeTier: state.activeGradeTier,
+            subjectId: state.currentSubject,
+            entityType: 'item',
+            entityId: 'study-hint-card',
+          });
           return true;
         },
 
@@ -371,6 +390,15 @@ export const createPlayerSlice: StateCreator<
 
           logActivity(get, set, 'shop', 'Đổi Quà Khuyến Học', `Đã đổi "${reward.title}" — chờ người quản lý trao quà ngoài đời`, -reward.costRuby, 0);
           get().syncWithServer();
+          void recordMissionEvent({
+            profileId: state.currentUser?.id || state.player.id,
+            idempotencyKey: `shop-redemption:${redemption.id}`,
+            eventType: 'shop_item_redeemed',
+            gradeTier: state.activeGradeTier,
+            subjectId: state.currentSubject,
+            entityType: 'reward',
+            entityId: rewardId,
+          });
           return true;
         },
 
@@ -418,6 +446,15 @@ export const createPlayerSlice: StateCreator<
             -xpCost
           );
           get().syncWithServer();
+          void recordMissionEvent({
+            profileId: state.currentUser?.id || state.player.id,
+            idempotencyKey: `pet-fed:${new Date().toISOString()}`,
+            eventType: 'pet_fed',
+            gradeTier: state.activeGradeTier,
+            subjectId: state.currentSubject,
+            entityType: 'pet',
+            entityId: 'maikawaii',
+          });
           return true;
         },
 
@@ -493,6 +530,20 @@ export const createPlayerSlice: StateCreator<
           const lesson = state.lessons.find(l => l.id === lessonId) || INITIAL_LESSONS.find(l => l.id === lessonId);
           if (!lesson) return;
 
+          const learningDate = new Intl.DateTimeFormat('en-CA', {
+            timeZone: 'Asia/Bangkok', year: 'numeric', month: '2-digit', day: '2-digit'
+          }).format(new Date());
+          void recordMissionEvent({
+            profileId: state.currentUser?.id || state.player.id,
+            idempotencyKey: `lesson-completed:${lessonId}:${learningDate}`,
+            eventType: 'lesson_completed',
+            gradeTier: lesson.gradeTier ?? state.activeGradeTier,
+            subjectId: lesson.subject,
+            entityType: 'lesson',
+            entityId: lessonId,
+            metadata: { accuracyRatio: accuracyRatio ?? null },
+          });
+
           // Tránh cộng trùng thưởng nếu bài học đã được hoàn thành trước đó
           if (state.lessonsProgress[lessonId]) {
             // Still mark it as completed for Fog of War to increment completion count
@@ -531,7 +582,6 @@ export const createPlayerSlice: StateCreator<
               badges: levelCheck.badges
             }
           });
-
           // Luật Bất Thoái (CORE_SPECS §7.4.4): hoàn thành bài học cũng tính vào tỉ lệ tu luyện môn phái.
           const updatedLessonsProgress = { ...state.lessonsProgress, [lessonId]: true };
           const lessonMasteryRatio = computeSubjectMasteryRatio({
@@ -616,6 +666,15 @@ export const createPlayerSlice: StateCreator<
             rubyBonus,
             bonusXP
           );
+          void recordMissionEvent({
+            profileId: state.currentUser?.id || state.player.id,
+            idempotencyKey: `boss-completed:${Date.now()}`,
+            eventType: 'boss_completed',
+            gradeTier: state.activeGradeTier,
+            subjectId: state.currentSubject,
+            entityType: 'boss',
+            entityId: bonusIndex === undefined ? 'unknown' : String(bonusIndex),
+          });
         },
 
   completeLevel3Page: (pageId) => {
@@ -626,15 +685,13 @@ export const createPlayerSlice: StateCreator<
             pageId,
             lastExploredAt: new Date().toISOString(),
             lastCompletedAt: null,
-            explorationCount: 0,
-            pendingKeyQuestionId: null
+            explorationCount: 0
           };
 
           const updatedExploration = {
             ...currentExploration,
             lastCompletedAt: new Date().toISOString(),
-            explorationCount: currentExploration.explorationCount + 1,
-            pendingKeyQuestionId: null // Clear any pending question upon success
+            explorationCount: currentExploration.explorationCount + 1
           };
 
           set({
@@ -646,31 +703,6 @@ export const createPlayerSlice: StateCreator<
           
           // Also call the new DB-backed exploration clear logic
           get().clearExploration(pageId);
-        },
-
-  updatePendingKeyQuestion: (pageId, questionId) => {
-          const state = get();
-          const studentId = state.currentUser?.id || state.player.id;
-          const currentExploration = state.pageExplorationStates[pageId] || {
-            studentId,
-            pageId,
-            lastExploredAt: new Date().toISOString(),
-            lastCompletedAt: null,
-            explorationCount: 0,
-            pendingKeyQuestionId: null
-          };
-
-          const updatedExploration = {
-            ...currentExploration,
-            pendingKeyQuestionId: questionId
-          };
-
-          set({
-            pageExplorationStates: {
-              ...state.pageExplorationStates,
-              [pageId]: updatedExploration
-            }
-          });
         },
 
   awardRubyAndXp: async (ruby, xp, activityTitle, activityDetails) => {
@@ -738,7 +770,6 @@ export const createPlayerSlice: StateCreator<
             activeCombo: 0,
             maxCombo: 0,
             challenges: INITIAL_CHALLENGES.map(ch => ({ ...ch, currentCount: 0, completed: false })),
-            dailyMission: null,
             logs: []
           });
           logActivity(get, set, 'parent_approve', 'Khởi tạo lại tiến độ', 'Đã reset toàn bộ tiến độ.', 0, 0);
@@ -792,22 +823,7 @@ export const createPlayerSlice: StateCreator<
             }
           }
 
-          // Generate New Daily Mission
-          const customMission: DailyMission = {
-            id: `m-${todayStr}`,
-            date: todayStr,
-            title: 'Nhiệm Vụ Chiến Binh Ngày Mới',
-            requirements: [
-              { description: 'Hoàn thành làm 20 câu hỏi luyện tập', type: 'count', target: 20, current: 0, completed: false },
-              { description: 'Đạt đúng trên 10 câu Grammar Cave', type: 'category', target: 10, current: 0, completed: false },
-              { description: 'Đạt đúng trên 10 câu Vocabulary Castle', type: 'category', target: 10, current: 0, completed: false }
-            ],
-            rewardXP: 250,
-            completed: false
-          };
-
           set({
-            dailyMission: customMission,
             activeCombo: 0,
             player: {
               ...state.player,
@@ -970,7 +986,6 @@ export const createPlayerSlice: StateCreator<
         rewards: state.rewards,
         rewardRedemptions: state.rewardRedemptions,
         challenges: state.challenges,
-        dailyMission: state.dailyMission,
         lessonsProgress: state.lessonsProgress,
         activityProgress: state.activityProgress,
         lastSyncTime: state.lastSyncTime
@@ -1002,7 +1017,6 @@ export const createPlayerSlice: StateCreator<
         rewards: serverData.rewards || state.rewards,
         rewardRedemptions: serverData.rewardRedemptions || state.rewardRedemptions,
         challenges: serverData.challenges || state.challenges,
-        dailyMission: serverData.dailyMission || state.dailyMission,
         lessonsProgress: serverData.lessonsProgress || state.lessonsProgress,
         topics: serverData.topics || state.topics,
         activities: serverData.activities || state.activities,

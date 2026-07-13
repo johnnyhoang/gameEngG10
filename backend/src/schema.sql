@@ -299,16 +299,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TABLE IF NOT EXISTS ge10_gatekeeper_history (
-  id SERIAL PRIMARY KEY,
-  student_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
-  page_id VARCHAR(50) NOT NULL,
-  question_id VARCHAR(50) NOT NULL,
+CREATE TABLE IF NOT EXISTS ge10_riddle_history (
+  id BIGSERIAL PRIMARY KEY,
+  profile_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
+  mode VARCHAR(50) NOT NULL CHECK (mode IN ('ruby-riddle', 'encounter-sprint')),
+  question_id VARCHAR(255) NOT NULL,
   used_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_gatekeeper_history_student ON ge10_gatekeeper_history(student_id);
-CREATE INDEX IF NOT EXISTS idx_gatekeeper_history_page ON ge10_gatekeeper_history(student_id, page_id);
+CREATE INDEX IF NOT EXISTS idx_riddle_history_profile_mode_used
+  ON ge10_riddle_history(profile_id, mode, used_at DESC);
 
 -- Admin & Parent Audit Logs (Sprint 3)
 CREATE TABLE IF NOT EXISTS ge10_audit_logs (
@@ -413,7 +413,7 @@ CREATE TABLE IF NOT EXISTS ge10_activities (
     topic_id VARCHAR(100) REFERENCES ge10_topics(id) ON DELETE CASCADE,
     subject VARCHAR(50) NOT NULL DEFAULT 'english',
     grade_tier INTEGER NOT NULL DEFAULT 9,
-    activity_type VARCHAR(50) NOT NULL, -- 'lesson', 'boss', 'quiz', 'gatekeeper'
+    activity_type VARCHAR(50) NOT NULL, -- 'lesson', 'boss', 'quiz', 'riddle'
     title VARCHAR(255) NOT NULL,
     config JSONB DEFAULT '{}'::jsonb, -- e.g. { "lesson_id": "eng-tenses", "boss_tag": "2024", "mode": "grammar" }
     sort_order INTEGER DEFAULT 0,

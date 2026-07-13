@@ -7,7 +7,7 @@ import { MATH_EXAM_BLUEPRINT, MATH_TOPIC_LABELS } from '../../data/mathExamBluep
 import { getSubjectQuestionMetadata } from '../../subject-modules/registry';
 import { toast } from '../../utils/toast';
 import { supabase } from '../../utils/supabaseClient';
-import { isGatekeeperEligible, getGatekeeperCoverageStats } from '../../utils/gatekeeper';
+import { getRiddleCoverageStats, isRiddleEligible } from '../../miniapps/riddle/riddleEngine';
 import { CORE_KNOWLEDGE_TOPICS } from '../../data/coreKnowledge';
 import { useGameState } from '../../hooks/useGameState';
 
@@ -76,7 +76,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
   const [examPartFilter, setExamPartFilter] = useState('all');
   const [topicFilter, setTopicFilter] = useState('all');
   const [confusedFilter, setConfusedFilter] = useState<'all' | 'confused'>('all');
-  const [gatekeeperFilter, setGatekeeperFilter] = useState<'all' | 'eligible' | 'not-eligible'>('all');
+  const [riddleFilter, setRiddleFilter] = useState<'all' | 'eligible' | 'not-eligible'>('all');
 
   // local state for editing / adding question
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -87,7 +87,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
 
   useEffect(() => {
     setVisibleCount(10);
-  }, [selectedSect, questionQuery, subjectFilter, questionTypeFilter, examPartFilter, topicFilter, confusedFilter, gatekeeperFilter]);
+  }, [selectedSect, questionQuery, subjectFilter, questionTypeFilter, examPartFilter, topicFilter, confusedFilter, riddleFilter]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
@@ -124,17 +124,17 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
       const matchPart = examPartFilter === 'all' ? true : q.metadata?.examPart === examPartFilter;
       const matchTopic = topicFilter === 'all' ? true : q.topicId === topicFilter;
       const matchConfused = confusedFilter === 'all' ? true : q.isConfused === true;
-      const matchGatekeeper = gatekeeperFilter === 'all' ? true : gatekeeperFilter === 'eligible' ? isGatekeeperEligible(q) : !isGatekeeperEligible(q);
+      const matchRiddle = riddleFilter === 'all' ? true : riddleFilter === 'eligible' ? isRiddleEligible(q) : !isRiddleEligible(q);
 
       const qText = `${q.prompt} ${q.category} ${q.source || ''} ${q.id}`.toLowerCase();
       const matchQuery = qText.includes(questionQuery.toLowerCase());
 
-      return matchGrade && matchSect && matchSub && matchType && matchPart && matchTopic && matchConfused && matchGatekeeper && matchQuery;
+      return matchGrade && matchSect && matchSub && matchType && matchPart && matchTopic && matchConfused && matchRiddle && matchQuery;
     });
-  }, [contextQuestions, activeGradeTier, selectedSect, subjectFilter, questionTypeFilter, examPartFilter, topicFilter, confusedFilter, gatekeeperFilter, questionQuery]);
+  }, [contextQuestions, activeGradeTier, selectedSect, subjectFilter, questionTypeFilter, examPartFilter, topicFilter, confusedFilter, riddleFilter, questionQuery]);
 
-  // Thống kê Gác Cổng theo môn phái + Hầm nguyên tố (CORE_SPECS §9.5) — dành cho Giáo viên/Hiệu trưởng.
-  const gatekeeperStats = useMemo(() => getGatekeeperCoverageStats(contextQuestions), [contextQuestions]);
+  // Thống kê câu đủ điều kiện cho hai mini-game câu đố theo môn và Hầm nguyên tố.
+  const riddleStats = useMemo(() => getRiddleCoverageStats(contextQuestions), [contextQuestions]);
 
   const coreCoverage = useMemo(() => {
     if (!selectedSect) return null;
@@ -353,13 +353,13 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                       {sub.group === 'chuyen_sau' ? 'Môn thi Chuyên Sâu Lớp 10' : 'Môn tu học Cơ Bản Lớp 9'}
                     </span>
                     {(() => {
-                      const stat = gatekeeperStats[sub.id];
+                      const stat = riddleStats[sub.id];
                       const eligible = stat?.eligible || 0;
                       const isLow = eligible === 0;
                       return (
                         <span className={`inline-flex items-center gap-1 mt-1.5 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase font-orbitron border ${isLow ? 'bg-red-500/10 text-red-400 border-red-500/30' : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30'}`}>
                           {isLow ? <AlertTriangle className="w-3 h-3" /> : <ShieldCheck className="w-3 h-3" />}
-                          {eligible} câu Gác Cổng
+                          {eligible} câu đố
                         </span>
                       );
                     })()}
@@ -479,14 +479,14 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
             </div>
           )}
 
-          {/* Thống kê Gác Cổng (CORE_SPECS §9.5) — số câu đủ điều kiện theo Hầm nguyên tố */}
+          {/* Thống kê câu đố (CORE_SPECS §9.5) — số câu đủ điều kiện theo Hầm nguyên tố */}
           <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-[10px] uppercase font-orbitron font-bold text-synth-text-muted tracking-wider flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-synth-cyan" /> Thống kê câu hỏi Gác Cổng — {SUBJECTS_CONFIG[selectedSect].name}
+                <ShieldCheck className="w-3.5 h-3.5 text-synth-cyan" /> Thống kê câu đố — {SUBJECTS_CONFIG[selectedSect].name}
               </span>
               <span className="text-[10px] font-bold text-white">
-                Tổng: {gatekeeperStats[selectedSect]?.eligible || 0} / {gatekeeperStats[selectedSect]?.total || 0} câu
+                Tổng: {riddleStats[selectedSect]?.eligible || 0} / {riddleStats[selectedSect]?.total || 0} câu
               </span>
             </div>
             <div className="grid grid-cols-3 gap-3">
@@ -495,7 +495,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                 { ham: 'bang', label: '❄️ Băng Hầm' },
                 { ham: 'thach', label: '🪨 Thạch Hầm' },
               ] as const).map(({ ham, label }) => {
-                const count = gatekeeperStats[selectedSect]?.byHam[ham] || 0;
+                const count = riddleStats[selectedSect]?.byHam[ham] || 0;
                 const isLow = count === 0;
                 return (
                   <div
@@ -546,7 +546,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                       setExamPartFilter('all');
                       setTopicFilter('all');
                       setConfusedFilter('all');
-                      setGatekeeperFilter('all');
+                      setRiddleFilter('all');
                       setQuestionQuery('');
                     }}
                     className="text-[9px] px-2 py-0.5 rounded bg-white/5 border border-white/10 font-bold uppercase hover:bg-white/10 text-white cursor-pointer transition-colors"
@@ -613,14 +613,14 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                     </select>
                   </label>
                   <label className="space-y-1 text-[10px] block">
-                    <span className="uppercase font-orbitron font-bold text-synth-text-muted">Gác Cổng</span>
+                    <span className="uppercase font-orbitron font-bold text-synth-text-muted">Mini-game câu đố</span>
                     <select
-                      value={gatekeeperFilter}
-                      onChange={(e) => setGatekeeperFilter(e.target.value as any)}
+                      value={riddleFilter}
+                      onChange={(e) => setRiddleFilter(e.target.value as any)}
                       className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs cursor-pointer outline-none focus:border-synth-cyan"
                     >
                       <option value="all">Tất cả câu</option>
-                      <option value="eligible">🐷 Đủ điều kiện Gác Cổng ({questions.filter(isGatekeeperEligible).length})</option>
+                      <option value="eligible">🐷 Đủ điều kiện câu đố ({questions.filter(isRiddleEligible).length})</option>
                       <option value="not-eligible">Chưa đủ điều kiện</option>
                     </select>
                   </label>
@@ -784,9 +784,9 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                                 <span className="text-[9px] px-1.5 py-0.5 rounded bg-synth-green/15 text-synth-green font-bold uppercase font-orbitron">
                                   Độ khó: {q.difficulty}/10
                                 </span>
-                                {isGatekeeperEligible(q) && (
+                                {isRiddleEligible(q) && (
                                   <span className="text-[9px] px-1.5 py-0.5 rounded bg-yellow-500/15 text-yellow-400 font-bold uppercase font-orbitron border border-yellow-500/30 flex items-center gap-1">
-                                    🐷 Gác Cổng
+                                    🐷 Câu đố
                                   </span>
                                 )}
                               </div>

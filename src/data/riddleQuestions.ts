@@ -1,9 +1,9 @@
 /**
- * Ngân hàng câu hỏi Người Gác Cổng — CORE_SPECS §9.5 & §2.8.7
+ * Ngân hàng câu hỏi nền tảng cho mini-game câu đố — CORE_SPECS §9.5
  *
  * Câu hỏi trắc nghiệm (MCQ) độ khó thấp (1-3), bám sát công thức / định luật /
  * khái niệm cốt lõi của từng chuyên đề trong Bộ Nội Công Cốt Lõi (coreKnowledge.ts).
- * Dùng làm câu hỏi kiểm soát cổng khi Thiếu Hiệp vào khu vực mờ sương.
+ * Dùng cho Đố Vui Nhận Ruby và Tốc Chiến Kỳ Ngộ trong Trường Thi.
  *
  * Nguồn: Chương trình GDPT 2018 lớp 9 (Khoa học tự nhiên, Lịch sử-Địa lý, GDCD,
  * Công nghệ, Tin học, Nghệ thuật) — tổng hợp từ SGK và tài liệu ôn tập công khai.
@@ -11,7 +11,7 @@
 import type { Question } from '../types/game';
 
 // ==================== KHOA HỌC TỰ NHIÊN ====================
-export const SCIENCE_GATEKEEPER_QUESTIONS: Question[] = [
+export const SCIENCE_RIDDLE_QUESTIONS: Question[] = [
   // sci-phy-electricity
   {
     id: 'gk-sci-electricity-1',
@@ -939,7 +939,7 @@ export const SCIENCE_GATEKEEPER_QUESTIONS: Question[] = [
 ];
 
 // ==================== LỊCH SỬ & ĐỊA LÝ ====================
-export const HISTORY_GEOGRAPHY_GATEKEEPER_QUESTIONS: Question[] = [
+export const HISTORY_GEOGRAPHY_RIDDLE_QUESTIONS: Question[] = [
   // his-world-ww2-background
   {
     id: 'gk-his-ww2bg-1',
@@ -1669,7 +1669,7 @@ export const HISTORY_GEOGRAPHY_GATEKEEPER_QUESTIONS: Question[] = [
 ];
 
 // ==================== GIÁO DỤC CÔNG DÂN ====================
-export const CIVICS_GATEKEEPER_QUESTIONS: Question[] = [
+export const CIVICS_RIDDLE_QUESTIONS: Question[] = [
   // civ-ideal-life
   {
     id: 'gk-civ-ideal-1',
@@ -2333,7 +2333,7 @@ export const CIVICS_GATEKEEPER_QUESTIONS: Question[] = [
 ];
 
 // ==================== CÔNG NGHỆ ====================
-export const TECHNOLOGY_GATEKEEPER_QUESTIONS: Question[] = [
+export const TECHNOLOGY_RIDDLE_QUESTIONS: Question[] = [
   // tech-career-jobs
   {
     id: 'gk-tech-jobs-1',
@@ -2667,7 +2667,7 @@ export const TECHNOLOGY_GATEKEEPER_QUESTIONS: Question[] = [
 ];
 
 // ==================== TIN HỌC ====================
-export const INFORMATICS_GATEKEEPER_QUESTIONS: Question[] = [
+export const INFORMATICS_RIDDLE_QUESTIONS: Question[] = [
   // inf-digital-world
   {
     id: 'gk-inf-digital-1',
@@ -3067,7 +3067,7 @@ export const INFORMATICS_GATEKEEPER_QUESTIONS: Question[] = [
 ];
 
 // ==================== NGHỆ THUẬT ====================
-export const ARTS_GATEKEEPER_QUESTIONS: Question[] = [
+export const ARTS_RIDDLE_QUESTIONS: Question[] = [
   // art-music-theory
   {
     id: 'gk-art-theory-1',
@@ -3467,7 +3467,7 @@ export const ARTS_GATEKEEPER_QUESTIONS: Question[] = [
 ];
 
 // ==================== TOÁN HỌC ====================
-export const MATH_GATEKEEPER_QUESTIONS: Question[] = [
+export const MATH_RIDDLE_QUESTIONS: Question[] = [
   // math-quadratic-function
   {
     id: 'gk-math-quadratic-fn-1',
@@ -3637,7 +3637,7 @@ export const MATH_GATEKEEPER_QUESTIONS: Question[] = [
 ];
 
 // ==================== TIẾNG ANH ====================
-export const ENGLISH_GATEKEEPER_QUESTIONS: Question[] = [
+export const ENGLISH_RIDDLE_QUESTIONS: Question[] = [
   // eng-pronunciation
   {
     id: 'gk-eng-pronunciation-1',

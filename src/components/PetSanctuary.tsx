@@ -35,6 +35,7 @@ const STAGE_MEMORIES: Record<PetStage, { story: string; photoConcept: string }> 
 
 import { isLightTheme } from '../theme/uiThemes';
 import { RubyConfirmModal } from './Common/RubyConfirmModal';
+import { recordMissionEvent } from '../services/missionLedgerService';
 
 interface PetSanctuaryProps {
   /** 'sidebar' = widget đồng hành thu gọn (mặc định); 'full' = module Sân Thú Nuôi đầy đủ, gồm Nhật Ký MIKA. */
@@ -50,6 +51,9 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
   const uiTheme = useGameState(state => state.uiTheme);
   const logs = useGameState(state => state.logs || []);
   const player = useGameState(state => state.player);
+  const profileId = useGameState(state => state.currentUser?.id);
+  const gradeTier = useGameState(state => state.activeGradeTier);
+  const subjectId = useGameState(state => state.currentSubject);
 
   const [interacting, setInteracting] = useState(false);
   const [tickled, setTickled] = useState(false);
@@ -169,6 +173,17 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
 
     setTickled(true);
     setInteracting(true);
+    if (profileId) {
+      void recordMissionEvent({
+        profileId,
+        idempotencyKey: `pet-tickled:${new Date().toISOString()}`,
+        eventType: 'pet_tickled',
+        gradeTier,
+        subjectId,
+        entityType: 'pet',
+        entityId: 'maikawaii',
+      });
+    }
 
     const tickleQuotes = [
       "Ủn ỉn... nhột quá đi! Hahaha! Đừng thọt lét Heo Maikawaii mà! 🐷",

@@ -1,7 +1,7 @@
 import type {
   UserProfile, PlayerProfile, Question, CategoryStat, PetState, ParentReward, RewardRedemption,
   ClassReward, ClassRewardRedemption,
-  Challenge, DailyMission, HistoryLog,
+  Challenge, HistoryLog,
   HandbookPage, ParentQuest, GradeTier, SubjectId, UiThemeId, GameSettings, FamilyLink, LearningContext,
   PageExplorationState, ExplorationProgress
 } from '../types/game';
@@ -49,7 +49,6 @@ export interface StoreState {
   /** true nếu student chưa vào lớp nào → hiện school rewards thay vì class rewards. */
   isOrphanStudent: boolean;
   challenges: Challenge[];
-  dailyMission: DailyMission | null;
   logs: HistoryLog[];
   activeCombo: number;
   maxCombo: number;
@@ -85,7 +84,6 @@ export interface StoreState {
   /** bonusIndex khớp với chỉ số [dễ,trung bình,khó] trong gameSettings.bossCompletionBonusRuby — để bonus thực nhận khớp đúng số đã quảng bá trên Boss Card. Bỏ trống thì chọn ngẫu nhiên (tương thích ngược). */
   completeBossVictory: (bonusIndex?: number) => void;
   completeLevel3Page: (pageId: string) => void;
-  updatePendingKeyQuestion: (pageId: string, questionId: string | null) => void;
   awardRubyAndXp: (ruby: number, xp: number, activityTitle: string, activityDetails: string) => Promise<void>;
   clearExploration: (pageId: string) => Promise<void>;
   resetProgress: () => void;

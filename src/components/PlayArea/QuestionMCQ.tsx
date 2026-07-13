@@ -1,6 +1,26 @@
 import React from 'react';
 import type { QuestionMCQProps } from './types';
 
+const getMCQLayoutClass = (options: string[]) => {
+  if (!options || options.length === 0) return 'grid grid-cols-1 gap-2.5';
+  const maxLength = Math.max(...options.map(opt => {
+    if (!opt) return 0;
+    let clean = opt.trim();
+    if (/^[A-Z]\s*\.\s*/i.test(clean)) {
+      clean = clean.replace(/^[A-Z]\s*\.\s*/i, '');
+    }
+    return clean.length;
+  }));
+
+  if (maxLength <= 8) {
+    return 'grid grid-cols-2 md:grid-cols-4 gap-2.5';
+  }
+  if (maxLength <= 25) {
+    return 'grid grid-cols-1 md:grid-cols-2 gap-2.5';
+  }
+  return 'grid grid-cols-1 gap-2.5';
+};
+
 export const QuestionMCQ: React.FC<QuestionMCQProps> = ({
   activeQuestion,
   selectedAnswer,
@@ -10,7 +30,7 @@ export const QuestionMCQ: React.FC<QuestionMCQProps> = ({
   if (!activeQuestion.options) return null;
 
   return (
-    <div className="grid grid-cols-1 gap-2.5">
+    <div className={getMCQLayoutClass(activeQuestion.options)}>
       {activeQuestion.options.map((option, idx) => {
         const cleanOpt = option.trim();
         const isSelected = selectedAnswer === cleanOpt;

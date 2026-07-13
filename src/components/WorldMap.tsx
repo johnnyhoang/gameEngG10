@@ -3,14 +3,18 @@ import { useGameState } from '../hooks/useGameState';
 import { toast } from '../utils/toast';
 import {
   Sword, Mountain, Palmtree, Store, PawPrint, BrainCircuit, ArrowRight,
-  Flame, Zap, Star, Gift
+  Flame, Zap, Star
 } from 'lucide-react';
 import { CORE_KNOWLEDGE_TOPICS, inferTopicId } from '../data/coreKnowledge';
-import { getHamForPage } from '../utils/gatekeeper';
 import { useSect } from '../contexts/SectContext';
 import { SUBJECTS_CONFIG } from '../types/game';
 import { SearchSuggest } from './Common/SearchSuggest';
 import { isLightTheme } from '../theme/uiThemes';
+
+const getHamForPage = (pageId: string) => {
+  const ham = pageId.split('-').at(-1);
+  return ham === 'hoa' || ham === 'thach' || ham === 'bang' ? ham : 'thach';
+};
 
 interface WorldMapProps {
   onOpenArena: () => void;
@@ -18,7 +22,6 @@ interface WorldMapProps {
   onOpenRelax: () => void;
   onOpenShop: () => void;
   onOpenPet: () => void;
-  onOpenMysteryBox: () => void;
   onSpinWheel: () => void;
   onStudyLesson?: (lessonId: string) => void;
   onStartLessonPractice?: (lessonId: string) => void;
@@ -28,9 +31,8 @@ interface WorldMapProps {
 // Trường Thi, Học Đường, Công Viên Thư Giãn, Shop Học Cụ, Sân Thú Nuôi.
 export function WorldMap({
   onOpenArena, onOpenHang, onOpenRelax, onOpenShop, onOpenPet,
-  onOpenMysteryBox, onSpinWheel, onStudyLesson, onStartLessonPractice
+  onSpinWheel, onStudyLesson, onStartLessonPractice
 }: WorldMapProps) {
-  const dailyMission = useGameState(state => state.dailyMission);
   const { activeSectId, activeGradeTier, setActiveSectId } = useSect();
   const uiTheme = useGameState(state => state.uiTheme);
   const categoryStats = useGameState(state => state.categoryStats);
@@ -53,6 +55,10 @@ export function WorldMap({
   const sendInvite = useGameState(state => state.sendInvite);
   const [inviteEmail, setInviteEmail] = useState('');
   const [isInviting, setIsInviting] = useState(false);
+
+  const activeLink = familyLinks.find((l: any) => l.status === 'active');
+  const pendingLink = familyLinks.find((l: any) => l.status === 'pending_parent' && l.student_id === currentUser?.id);
+  const pendingStudentInvites = familyLinks.filter((l: any) => l.status === 'pending_student');
 
   const isWeekend = () => {
     const day = new Date().getDay();
@@ -79,8 +85,6 @@ export function WorldMap({
   );
   const completedLessons = subjectLessons.filter(l => lessonsProgress[l.id]).length;
 
-  // Daily mission progress
-  const isMissionComplete = dailyMission?.completed ?? false;
 
   const weakData = useMemo(() => {
     const subjectPageStates = Object.values(pageExplorationStates).filter(state => 
@@ -148,10 +152,10 @@ export function WorldMap({
             {/* Greeting + Name */}
             <div className="space-y-1">
               <p className={`text-xs font-orbitron font-bold uppercase tracking-[0.2em] ${isUnicorn ? 'text-violet-500' : 'text-synth-cyan/70'}`}>
-                {getGreeting()}, Học viên
+                {getGreeting()}, Sĩ Tử
               </p>
               <h1 className={`font-orbitron font-black text-2xl md:text-3xl uppercase tracking-wide ${isUnicorn ? 'text-violet-900' : 'text-white'}`}>
-                {currentUser?.name || 'Học viên mới'} 👋
+                {currentUser?.name || 'Sĩ Tử mới'} 👋
               </h1>
             </div>
 
@@ -177,6 +181,153 @@ export function WorldMap({
                 <span>{activeSubjectConfig?.icon}</span>
                 Môn: {activeSubjectConfig?.name}
               </div>
+            </div>
+
+            {/* Connection Status & Action Form */}
+            <div className="pt-1 text-xs">
+              {activeLink ? (
+                <div className={`flex flex-wrap items-center gap-2 px-3 py-2 rounded-xl border ${
+                  isUnicorn ? 'border-violet-200/50 bg-violet-50/50 text-violet-800' : 'border-synth-cyan/20 bg-synth-cyan/5 text-synth-cyan'
+                }`}>
+                  <span className="font-bold">🎓 Lớp Chủ Nhiệm:</span>
+                  <span className={isUnicorn ? 'text-violet-900' : 'text-white font-bold'}>
+                    {activeLink.parent_name || activeLink.parent_email || 'Chưa rõ tên'}
+                  </span>
+                  <span className={`text-[10px] ${isUnicorn ? 'text-violet-600/70' : 'text-slate-400'}`}>
+                    ({activeLink.parent_email})
+                  </span>
+                  <button
+                    onClick={async () => {
+                      if (window.confirm('Bạn có chắc muốn rời khỏi lớp của Chủ Nhiệm này không?')) {
+                        const success = await leaveFamily(activeLink.id);
+                        if (success) toast.success('Đã rời Lớp Chủ Nhiệm');
+                      }
+                    }}
+                    className={`ml-2 px-2.5 py-1 rounded-lg border text-[9px] uppercase font-black tracking-wide cursor-pointer transition-colors ${
+                      isUnicorn
+                        ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100'
+                        : 'border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                    }`}
+                  >
+                    Rời Lớp 🚪
+                  </button>
+                </div>
+              ) : pendingLink ? (
+                <div className={`flex flex-wrap items-center gap-2 px-3 py-2 rounded-xl border ${
+                  isUnicorn ? 'border-amber-200/50 bg-amber-50/50 text-amber-800' : 'border-synth-orange/20 bg-synth-orange/5 text-synth-orange'
+                }`}>
+                  <span className="font-bold">⏳ Xin gia nhập lớp:</span>
+                  <span className={isUnicorn ? 'text-amber-900' : 'text-white font-bold'}>
+                    {pendingLink.parent_name || pendingLink.parent_email || 'Chưa rõ tên'}
+                  </span>
+                  <span className="text-[10px] opacity-70">
+                    ({pendingLink.parent_email})
+                  </span>
+                  <span className="font-bold text-[9px] uppercase animate-pulse tracking-wider">(Chờ duyệt)</span>
+                  <button
+                    onClick={async () => {
+                      if (window.confirm('Bạn có chắc muốn hủy yêu cầu kết nối này không?')) {
+                        const ok = await leaveFamily(pendingLink.id);
+                        if (ok) toast.success('Đã hủy yêu cầu kết nối.');
+                      }
+                    }}
+                    className={`ml-2 px-2.5 py-1 rounded-lg border text-[9px] uppercase font-black tracking-wide cursor-pointer transition-colors ${
+                      isUnicorn
+                        ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100'
+                        : 'border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                    }`}
+                  >
+                    Hủy Yêu Cầu
+                  </button>
+                </div>
+              ) : (
+                <div className={`flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-2xl border ${
+                  isUnicorn ? 'border-violet-200/50 bg-white/70' : 'border-white/10 bg-black/20'
+                }`}>
+                  <div className="space-y-0.5 shrink-0">
+                    <p className={`font-bold flex items-center gap-1.5 ${isUnicorn ? 'text-violet-800' : 'text-synth-cyan'}`}>
+                      <span>🎓</span> Kết nối Lớp Chủ Nhiệm
+                    </p>
+                    <p className={`text-[10px] leading-relaxed ${isUnicorn ? 'text-violet-600/70' : 'text-slate-400'}`}>
+                      Sĩ Tử mới? Nhập Email Google của Thầy/Cô để gia nhập lớp.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-1 max-w-sm w-full">
+                    <SearchSuggest
+                      placeholder="Email Thầy/Cô..."
+                      roleFilter="parent"
+                      value={inviteEmail}
+                      onChange={setInviteEmail}
+                      onSelect={user => setInviteEmail(user.email)}
+                      className="flex-1"
+                    />
+                    <button
+                      onClick={async () => {
+                        if (!inviteEmail.trim()) return;
+                        setIsInviting(true);
+                        const result = await sendInvite(inviteEmail.trim());
+                        if (result.success) {
+                          toast.success('Đã gửi yêu cầu kết nối thành công! Vui lòng chờ Thầy/Cô phê duyệt.');
+                          setInviteEmail('');
+                        } else {
+                          toast.error(result.error || 'Gửi yêu cầu thất bại.');
+                        }
+                        setIsInviting(false);
+                      }}
+                      disabled={isInviting || !inviteEmail.trim()}
+                      className={`px-3 py-2 rounded-lg font-orbitron font-bold text-[9px] uppercase tracking-wider cursor-pointer transition-all ${
+                        isUnicorn
+                          ? 'bg-violet-600 hover:bg-violet-700 text-white disabled:bg-violet-200'
+                          : 'bg-synth-cyan hover:bg-synth-cyan/80 text-black disabled:opacity-50'
+                      }`}
+                    >
+                      {isInviting ? 'Gửi...' : 'Xin Kết Nối'}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Lời mời kết nối từ thầy cô gửi tới */}
+              {pendingStudentInvites.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  <p className="font-bold text-synth-magenta flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
+                    <span>💌</span> Lời mời kết nối từ Thầy/Cô:
+                  </p>
+                  {pendingStudentInvites.map((link: any) => (
+                    <div key={link.id} className={`flex items-center justify-between p-2.5 rounded-xl border ${
+                      isUnicorn ? 'border-pink-200 bg-pink-50/50' : 'border-synth-magenta/30 bg-synth-magenta/5'
+                    }`}>
+                      <div className="text-[11px]">
+                        Thầy/Cô <strong className={isUnicorn ? 'text-pink-700' : 'text-synth-cyan'}>{link.parent_name || 'Chưa rõ tên'}</strong> ({link.parent_email}) muốn nhận bạn vào lớp.
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={async () => {
+                            const success = await respondInvite(link.id, true);
+                            if (success) toast.success('Đã đồng ý kết nối!');
+                          }}
+                          className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase cursor-pointer ${
+                            isUnicorn ? 'bg-pink-600 text-white hover:bg-pink-700' : 'bg-synth-cyan text-black hover:bg-synth-cyan/80'
+                          }`}
+                        >
+                          Đồng ý
+                        </button>
+                        <button
+                          onClick={async () => {
+                            const success = await respondInvite(link.id, false);
+                            if (success) toast.success('Đã từ chối kết nối');
+                          }}
+                          className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase cursor-pointer ${
+                            isUnicorn ? 'bg-white border border-pink-200 text-pink-700 hover:bg-pink-50' : 'bg-white/10 border border-white/20 text-white hover:bg-white/20'
+                          }`}
+                        >
+                          Từ chối
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 
@@ -210,100 +361,8 @@ export function WorldMap({
         </div>
       </section>
 
-      {/* ─── SECTION 2: DAILY MISSION + WEEKEND TEASER (side by side) ─── */}
-      <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4">
-
-        {/* Daily Mission */}
-        <section className={`glass-panel rounded-2xl border p-5 ${
-          isMissionComplete
-            ? (isUnicorn ? 'border-emerald-300/50 bg-emerald-50/60' : 'border-emerald-500/30 bg-emerald-500/5')
-            : (isUnicorn ? 'border-violet-200/35 bg-white/50' : 'border-synth-magenta/25 bg-gradient-to-r from-synth-magenta/8 via-synth-purple/5 to-transparent')
-        }`}>
-          <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-4">
-            <div className="flex-1 space-y-3">
-              <div className="flex items-center gap-2">
-                <span className={`w-2 h-2 rounded-full ${isMissionComplete ? 'bg-emerald-400' : 'bg-synth-magenta animate-ping'}`} />
-                <h2 className={`font-orbitron font-black text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-                  📋 Bảng Bài Tập (Daily Quest)
-                </h2>
-              </div>
-
-              {dailyMission ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2">
-                  {dailyMission.requirements.map((req, idx) => {
-                    const reqPct = Math.min(100, Math.round((req.current / req.target) * 100));
-                    return (
-                      <div key={idx} className={`rounded-xl p-3 text-[11px] flex flex-col justify-between ${
-                        isUnicorn ? 'bg-white/70 border border-violet-200/25' : 'bg-synth-gray/20 border border-white/5'
-                      }`}>
-                        <div className={`flex justify-between items-start gap-1 font-semibold mb-2 ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-                          <span className="leading-snug">{req.description}</span>
-                          <span className="font-orbitron whitespace-nowrap shrink-0">{req.current}/{req.target}</span>
-                        </div>
-                        <div className={`w-full h-1.5 rounded-full overflow-hidden ${isUnicorn ? 'bg-violet-100' : 'bg-black/30'}`}>
-                          <div 
-                            className={`h-full transition-all duration-500 rounded-full ${
-                              req.completed ? (isUnicorn ? 'unicorn-rainbow-strip' : 'bg-synth-green') : (isUnicorn ? 'bg-violet-300' : 'bg-synth-orange')
-                            }`}
-                            style={{ width: `${reqPct}%` }}
-                          />
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <p className={`text-[11px] leading-relaxed ${isUnicorn ? 'text-violet-600/80' : 'text-slate-400'}`}>
-                  Chưa nhận được nhiệm vụ hôm nay. Vào bài học hoặc Trường Thi để nhận nhiệm vụ!
-                </p>
-              )}
-
-              {dailyMission && (
-                <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] mt-2 pt-2 border-t border-white/5">
-                  <span className={isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}>
-                    {isMissionComplete
-                      ? '✅ Đã hoàn thành tất cả mục tiêu! Hòm Bí Mật đã sẵn sàng.'
-                      : 'Hoàn thành mọi chỉ tiêu bên trên để mở khóa Hòm Bí Mật.'}
-                  </span>
-                  <span className={`font-orbitron font-bold px-2 py-0.5 rounded ${
-                    isUnicorn ? 'bg-violet-100 text-violet-800' : 'bg-synth-magenta/25 text-synth-magenta'
-                  }`}>
-                    Thưởng: +{dailyMission.rewardXP} XP
-                  </span>
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-2 shrink-0">
-              {isMissionComplete ? (
-                <button
-                  onClick={onOpenMysteryBox}
-                  className={`inline-flex items-center gap-2 px-5 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all animate-bounce shadow-[0_0_18px_rgba(52,211,153,0.45)] ${
-                    isUnicorn
-                      ? 'bg-gradient-to-r from-emerald-400 to-teal-300 text-white'
-                      : 'bg-gradient-to-r from-emerald-500 to-teal-400 text-black'
-                  }`}
-                >
-                  <Gift className="w-4 h-4" />
-                  Mở Hòm Bí Mật
-                </button>
-              ) : (
-                <button
-                  onClick={onOpenArena}
-                  className={`inline-flex items-center gap-2 px-5 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all hover:scale-[1.02] shadow-[0_0_16px_rgba(255,0,127,0.3)] ${
-                    isUnicorn
-                      ? 'bg-gradient-to-r from-fuchsia-400 to-violet-400 text-white'
-                      : 'bg-gradient-to-r from-synth-magenta to-synth-purple text-white'
-                  }`}
-                >
-                  <Sword className="w-4 h-4" />
-                  Chiến ngay ⚡
-                </button>
-              )}
-            </div>
-          </div>
-        </section>
-
+      {/* ─── SECTION 2: WEEKEND TEASER ─── */}
+      <div className="flex justify-end">
         {/* Weekend Spin Wheel teaser — always visible */}
         <section
           onClick={isWeekend() ? onSpinWheel : undefined}
@@ -562,146 +621,7 @@ export function WorldMap({
         </div>
       </div>
 
-      {/* ─── SECTION 6: SOCIAL — Lời mời kết nối + Gia đình ─── */}
-      {familyLinks.filter(l => l.status === 'pending_student').length > 0 && (
-        <section className="glass-panel rounded-2xl border border-synth-magenta/50 bg-gradient-to-r from-synth-magenta/20 to-transparent p-4 space-y-3">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">👨‍👩‍👧</span>
-            <h3 className="font-orbitron font-bold text-xs uppercase tracking-wider text-synth-magenta">
-              Lời Mời Kết Nối Gia Đình
-            </h3>
-          </div>
-          <div className="space-y-2">
-            {familyLinks.filter(l => l.status === 'pending_student').map((link: any) => (
-              <div key={link.id} className="flex flex-col md:flex-row md:items-center justify-between p-3 rounded-xl border border-white/10 bg-black/40 gap-3">
-                <div className="space-y-1 text-sm">
-                  <p className="text-white">Chủ nhiệm <strong className="text-synth-cyan">{link.parent_name || 'Chưa có tên'}</strong> muốn kết nối với bạn.</p>
-                  <p className="text-xs text-slate-400">Email: {link.parent_email || 'Chưa cập nhật'}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={async () => {
-                      const success = await respondInvite(link.id, true);
-                      if (success) toast.success('Đã đồng ý kết nối!');
-                    }}
-                    className="px-4 py-2 bg-synth-cyan text-black font-bold text-xs uppercase rounded cursor-pointer hover:bg-synth-cyan/80"
-                  >
-                    Đồng Ý
-                  </button>
-                  <button
-                    onClick={async () => {
-                      const success = await respondInvite(link.id, false);
-                      if (success) toast.success('Đã từ chối kết nối');
-                    }}
-                    className="px-4 py-2 bg-white/10 border border-white/20 text-white font-bold text-xs uppercase rounded cursor-pointer hover:bg-white/20"
-                  >
-                    Từ Chối
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
 
-      {familyLinks.filter(l => l.status === 'active').length > 0 ? (
-        <section className="glass-panel rounded-2xl border border-synth-cyan/30 bg-synth-cyan/5 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">👨‍👩‍👧</span>
-            <div className="space-y-0.5">
-              <p className="font-orbitron font-bold text-xs uppercase text-synth-cyan tracking-wider">Gia Đình Liên Kết</p>
-              {familyLinks.filter(l => l.status === 'active').map((link: any) => (
-                <p key={link.id} className="text-xs text-slate-300">
-                  {link.parent_id ? `Chủ nhiệm: ${link.parent_name || link.parent_email || 'Giáo viên'}` : `Học sinh: ${link.student_name || link.student_email || 'Học sinh'}`}
-                </p>
-              ))}
-            </div>
-          </div>
-          <div className="flex gap-2">
-            {familyLinks.filter(l => l.status === 'active').map((link: any) => (
-              <button
-                key={link.id}
-                onClick={async () => {
-                  if (window.confirm('Bạn có chắc muốn rời khỏi gia đình này không?')) {
-                    const success = await leaveFamily(link.id);
-                    if (success) toast.success('Đã rời gia đình');
-                  }
-                }}
-                className="px-3 py-1.5 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-xs uppercase cursor-pointer transition-colors"
-              >
-                Rời Chủ Nhiệm
-              </button>
-            ))}
-          </div>
-        </section>
-      ) : (
-        <section className="glass-panel rounded-2xl border border-synth-cyan/30 bg-synth-cyan/5 p-5 space-y-4">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">👨‍👩‍👧</span>
-            <div className="space-y-0.5">
-              <h3 className="font-orbitron font-bold text-xs uppercase text-synth-cyan tracking-wider">
-                Kết Nối Lớp Chủ Nhiệm
-              </h3>
-              <p className="text-[11px] text-slate-300">
-                Bạn chưa kết nối với Chủ Nhiệm (Thầy/Cô). Nhập Email Google của Thầy/Cô để xin gia nhập lớp.
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 max-w-lg">
-            <SearchSuggest
-              placeholder="Tìm Thầy/Cô theo tên/email..."
-              roleFilter="parent"
-              value={inviteEmail}
-              onChange={setInviteEmail}
-              onSelect={user => setInviteEmail(user.email)}
-              className="flex-1"
-            />
-            <button
-              onClick={async () => {
-                if (!inviteEmail.trim()) return;
-                setIsInviting(true);
-                const result = await sendInvite(inviteEmail.trim());
-                if (result.success) {
-                  toast.success('Đã gửi yêu cầu kết nối thành công! Vui lòng chờ Thầy/Cô phê duyệt.');
-                  setInviteEmail('');
-                } else {
-                  toast.error(result.error || 'Gửi yêu cầu thất bại.');
-                }
-                setIsInviting(false);
-              }}
-              disabled={isInviting || !inviteEmail.trim()}
-              className="px-4 py-2 bg-synth-cyan text-black font-bold rounded-lg hover:bg-synth-cyan/80 disabled:opacity-50 transition-colors uppercase text-[10px] cursor-pointer"
-            >
-              {isInviting ? 'Đang gửi...' : 'Xin Kết Nối'}
-            </button>
-          </div>
-          {familyLinks.filter(l => l.status === 'pending_parent' && l.student_id === currentUser?.id).length > 0 && (
-            <div className="pt-3 border-t border-white/10 space-y-2">
-              <h4 className="font-orbitron font-bold text-[10px] text-synth-text-muted uppercase tracking-wider">
-                Yêu cầu kết nối đang chờ duyệt
-              </h4>
-              <div className="space-y-1.5">
-                {familyLinks.filter(l => l.status === 'pending_parent' && l.student_id === currentUser?.id).map((link: any) => (
-                  <div key={link.id} className="flex items-center justify-between p-2 rounded bg-white/5 border border-white/10 text-xs">
-                    <span className="text-slate-300">Gửi tới Thầy/Cô: <strong className="text-synth-orange">{link.parent_name || link.parent_email || 'Giáo viên'}</strong></span>
-                    <button
-                      onClick={async () => {
-                        if (window.confirm('Bạn có chắc muốn hủy yêu cầu kết nối này không?')) {
-                          const ok = await leaveFamily(link.id);
-                          if (ok) toast.success('Đã hủy yêu cầu kết nối.');
-                        }
-                      }}
-                      className="px-2 py-1 text-[9px] font-bold text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded uppercase"
-                    >
-                      Hủy Yêu Cầu
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </section>
-      )}
 
     </div>
   );

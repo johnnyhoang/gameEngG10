@@ -59,15 +59,7 @@ export const FogCard: React.FC<FogCardProps> = ({
   const [isHovered, setIsHovered] = useState(false);
 
   const handleClick = () => {
-    if (status === 'shadowed') {
-      // Bắn event để hiển thị GatekeeperModal
-      const event = new CustomEvent('FOG_CARD_CLICKED', {
-        detail: { pageId, onUnlock: onOpenLevel3 }
-      });
-      window.dispatchEvent(event);
-    } else {
-      onOpenLevel3();
-    }
+    onOpenLevel3();
   };
 
   return (

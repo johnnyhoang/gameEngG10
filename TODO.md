@@ -498,3 +498,111 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
   - *Phải làm:* FE/BE build, lint, static scan, diff audit và cập nhật trạng thái backlog.
   - *Acceptance:* Không đổi hành vi người dùng ngoài tên/ID kỹ thuật đã chuẩn hóa; docs/code đồng bộ.
   - *Kết quả:* FE build và BE build đạt; lint không có error; contract matrix 7/7 đạt; DB postflight đủ bốn activity canonical. Static scan chỉ còn entrypoint serverless và exported helper/type đã biết, không phát sinh feature ẩn mới.
+
+# Sửa lỗi UI và tương phản màu sắc Toast (đã duyệt 2026-07-13)
+
+- [x] **UT1 — Giải quyết tương phản màu chữ Toast trên theme sáng**
+  - *Mục tiêu:* Đảm bảo chữ thông báo Toast có thể đọc được trên tất cả các Phong Cách Học Đường (theme sáng và tối).
+  - *Phải làm:* Khai báo biến CSS Toast (`--theme-toast-*`) trong từng theme tại `src/index.css`, viết class CSS helper và cập nhật `src/utils/toast.ts` sử dụng các class helper này thay thế mã màu cố định.
+  - *Impact:* Giao diện Toast thông báo lỗi/thành công trên toàn ứng dụng.
+  - *Acceptance:* Toast hiển thị rõ chữ ở cả theme tối (Mặc định, Tinh Không, Thu Phong) và theme sáng (Đào Hoa, Trúc Lâm, Tuyết Sơn); build dự án thành công không lỗi type check.
+  - *Kết quả:* Đã cập nhật `SUB_SPEC_UI_RULES.md` bổ sung đặc tả, khai báo các biến CSS Toast cho 6 theme và các class helper trong `src/index.css`, chuyển đổi render trong `src/utils/toast.ts` sang class helper động.
+
+# Backlog bỏ Gatekeeper sương mù và hoàn thiện mini-game câu đố (đã duyệt 2026-07-13)
+
+- [x] **RQ1 — Tách Fog khỏi cơ chế giải đố**
+  - *Mục tiêu:* Click `FogCard` mở ngay nội dung; Fog chỉ phản ánh tiến độ trải nghiệm.
+  - *Phải sửa:* `FogCard.tsx`, `App.tsx`, mọi event `FOG_CARD_CLICKED`; giữ `completeLevel3Page()`/`clearExploration()` làm nguồn duy nhất tăng `clearCount`.
+  - *Impact:* Toàn bộ Học Đường, Trường Thi, Công Viên và card có Fog.
+  - *Rủi ro:* Click bị tính nhầm completion hoặc bỏ qua callback mở trang; cần rà từng consumer.
+  - *Acceptance:* Không còn modal/câu hỏi trung gian; click mở ngay; chỉ hoàn thành thật tăng count; luật 2–3 lần và decay giữ nguyên.
+  - *Kết quả:* `FogCard` gọi thẳng callback mở nội dung; App không còn mount modal trung gian; completion/decay vẫn do `clearExploration()` quản lý.
+
+- [x] **RQ2 — Contract question engine dùng chung**
+  - *Dependency:* RQ1.
+  - *Mục tiêu:* Một engine production-ready cho `ruby-riddle` và `encounter-sprint`, không nhân đôi evaluator/reward/result UI.
+  - *Phải sửa:* Refactor logic hữu ích từ `GatekeeperModal.tsx` và `utils/gatekeeper.ts` thành module mini-game; contract gồm mode, question count, time limit, current subject/grade, used IDs và kết quả.
+  - *Impact:* Question selection, answer normalization, explanation, empty/error state.
+  - *Rủi ro:* Đáp án lưu dạng ký tự A/B/C/D hoặc nguyên văn; timer/unmount có thể chấm hoặc thưởng lặp.
+  - *Acceptance:* Mỗi câu chỉ submit một lần; MCQ đúng context; không placeholder; kết quả deterministic; không double-award.
+  - *Kết quả:* Thêm engine chung lọc theo profile context lớp/môn, chuẩn hóa đáp án, coverage, lịch sử 30 ngày và khóa submit theo question ID.
+
+- [x] **RQ3 — Đố Vui Nhận Ruby tại welcome Trường Thi**
+  - *Dependency:* RQ2.
+  - *Phải làm:* Thẻ entry đầu Trường Thi + modal/page mini-game 1 câu; đúng +10 Ruby, sai 0; hiển thị đáp án/explanation; `Chơi tiếp` lấy câu khác; không giới hạn ngày và không tốn Năng Lượng.
+  - *Impact:* `Arena.tsx`, mini-game registry/component, Ruby ledger và activity log.
+  - *Rủi ro:* Spam/double-click làm cộng Ruby hai lần; phải khóa submit và dùng ledger một lần/lượt.
+  - *Acceptance:* Đúng cộng chính xác 10 Ruby một lần; sai không đổi balance; chơi tiếp không lặp trong phiên; refresh không làm nhận lại lượt cũ.
+  - *Kết quả:* Entry nằm trong welcome Trường Thi; đúng thưởng +10 Ruby, sai không phạt, hiển thị đáp án/giải thích và hỗ trợ chơi tiếp.
+
+- [x] **RQ4 — Tốc Chiến Kỳ Ngộ 3 câu/60 giây**
+  - *Dependency:* RQ2.
+  - *Phải làm:* Mode 3 câu khác nhau, đồng hồ tổng 60 giây, tự kết thúc khi hết giờ; +10 Ruby mỗi câu đúng, tối đa +30; sai/hết giờ không phạt.
+  - *Impact:* Section welcome Trường Thi, timer lifecycle, result summary, ledger/activity log.
+  - *Rủi ro:* Timer chạy nền, đổi profile/môn giữa lượt, race giữa answer cuối và timeout.
+  - *Acceptance:* Đúng 3 câu tối đa 30 Ruby; hết giờ dừng nhận input; không double-award; cleanup timer khi đóng/unmount/logout.
+  - *Kết quả:* Dùng cùng question engine; một lượt gồm 3 câu khác nhau, đồng hồ tổng 60 giây, tối đa +30 Ruby và có màn tổng kết/chơi lại.
+
+- [x] **RQ5 — Generalize lịch sử Gatekeeper và dọn contract cũ**
+  - *Dependency:* RQ2-RQ4.
+  - *Phải sửa:* Migration idempotent chuyển `ge10_gatekeeper_history` sang lịch sử câu đố tổng quát theo profile/mode; route/service/type mới; chuyển dữ liệu cũ an toàn rồi xóa consumer `pendingKeyQuestionId`, `updatePendingKeyQuestion`, picker/modal Gatekeeper cũ.
+  - *Impact:* PostgreSQL schema, backend route, frontend store/types, admin coverage naming.
+  - *Rủi ro:* Mất lịch sử hoặc route cũ còn consumer; migration phải có compatibility window và postflight.
+  - *Acceptance:* Dữ liệu cũ được bảo toàn; lịch sử cô lập theo profile; không còn runtime Gatekeeper/Fog-question; static scan không còn code chết liên quan.
+  - *Kết quả:* Thêm `ge10_riddle_history` + route owner-only theo active profile/mode; migration chuyển dữ liệu cũ idempotent; xóa modal, picker, route và pending-question contract cũ.
+
+- [x] **RQ6 — Đồng bộ specs, coverage UI và verification**
+  - *Dependency:* RQ1-RQ5.
+  - *Phải làm:* Chuyển hai thuật ngữ từ `PROVISIONAL` sang `APPROVED` sau xác nhận; đổi nhãn/bộ lọc Gatekeeper trong Kho Đề Thi thành coverage câu đố; cập nhật audit; FE/BE build, lint, migration pre/postflight và Vercel production build.
+  - *Acceptance:* Docs/code/schema/UI thống nhất; không còn chữ “Gatekeeper/Gác Cổng” trong ngữ cảnh Fog; deployment bundle chứa migration; không có lỗi build/test do thay đổi.
+  - *Kết quả:* Core/sub-spec/từ điển/admin coverage đã đồng bộ; `npm run build`, `npm run build:backend`, `npm run lint` đều pass (lint chỉ còn warning có sẵn ngoài phạm vi).
+
+# Backlog Sổ Tu Học (đã duyệt 2026-07-13)
+
+- [x] **STH1 — Chuẩn hóa spec và contract dữ liệu**
+  - *Mục tiêu:* Tách Nhập Môn, Nhiệm Vụ Hôm Nay và Tiến Độ Tu Học; backend là nguồn sự thật.
+  - *Phải sửa:* Core Specs, terminology, sub-spec; định nghĩa event, period, status, reward và idempotency.
+  - *Impact:* Toàn bộ gameplay event và shell Sĩ Tử.
+  - *Rủi ro:* Trộn nhiệm vụ một lần với daily hoặc dùng account ID làm owner.
+  - *Acceptance:* Thuật ngữ/contract thống nhất; mọi record sở hữu bởi active profile.
+  - *Kết quả:* Core Specs, từ điển và `SUB_SPEC_MISSION_LEDGER.md` đã chốt ba nhóm, event contract, period/status/reward và profile ownership.
+
+- [x] **STH2 — Schema, seed và mission engine backend**
+  - *Dependency:* STH1.
+  - *Phải sửa:* Migration bốn bảng normalized, seed definition có version, route GET ledger và POST event; transaction/idempotency/reward ledger.
+  - *Compatibility:* Đọc dữ liệu daily JSON cũ chỉ để migration/audit, sau đó không còn consumer runtime.
+  - *Rủi ro:* Double progress/reward, rollover sai timezone, definition không phù hợp capability.
+  - *Acceptance:* Retry cùng event không tăng lần hai; profile khác không đọc/ghi được; lifetime và daily period đúng.
+  - *Kết quả:* Migration bốn bảng normalized + seed/reconcile; GET/POST owner-only; event unique theo profile, row lock chống race, reward ledger và Level/XP transaction.
+
+- [x] **STH3 — Nối domain event từ feature**
+  - *Dependency:* STH2.
+  - *Phải sửa:* teacher link, pet feed/tickle, hai riddle mode, lesson/question, feature open, fog/Boss, shop/hint/level.
+  - *Impact:* Store actions, component interactions và backend family/profile routes.
+  - *Rủi ro:* Event phát trước khi action thành công hoặc thiếu entity ID để dedupe.
+  - *Acceptance:* Chỉ action thành công phát event; event key ổn định; refresh/retry không cộng trùng.
+  - *Kết quả:* Đã nối teacher link, pet feed/tickle, hai riddle mode, question, lesson, 3D feature, hint, shop redemption, Boss và level reached. Fog được hoãn có chủ ý đến khi event nhận đúng `requiredCompletions`, tránh hoàn thành giả ngay lần đầu.
+
+- [x] **STH4 — Sổ Tu Học trong app shell**
+  - *Dependency:* STH2.
+  - *Phải sửa:* Component/hook/service mới, mount dưới TopHUD cho mọi student screen; compact khi làm bài; bỏ block daily mission riêng ở WorldMap.
+  - *Impact:* Layout toàn app Sĩ Tử và mobile.
+  - *Rủi ro:* Chiếm diện tích/che câu hỏi, fetch lặp theo screen.
+  - *Acceptance:* Một instance toàn cục; summary luôn thấy; panel đầy đủ loading/empty/error; không render ở auth/admin.
+  - *Kết quả:* `LearningLedger` mount một lần dưới TopHUD trên mọi student screen, compact khi làm bài; block Daily Quest JSON cũ đã bỏ khỏi WorldMap.
+
+- [x] **STH5 — Verification và migration audit**
+  - *Dependency:* STH1-STH4.
+  - *Phải làm:* Static scan JSON mission cũ, FE/BE build, lint, SQL pre/postflight, profile isolation và idempotency test.
+  - *Acceptance:* Docs/code/schema đồng bộ; không có nguồn mission song song; build không lỗi do thay đổi.
+  - *Kết quả:* Runtime không còn `dailyMission`; bảng JSON cũ chỉ giữ audit. FE/BE build và lint pass, static scan không còn consumer nguồn cũ; migration sẽ chạy trong startup backend.
+
+## Release audit cuối trước publish (2026-07-13)
+
+- [x] **RA1 — Rà logic mission/riddle/Fog và chống race**
+  - *Phải sửa:* Daily lesson phải lặp được theo ngày; Tốc Chiến phải tính daily riddle nhưng không hoàn thành nhầm onboarding Đố Vui; evaluator hỗ trợ đáp án A/B/C/D; mission Fog không được hoàn thành giả trước `requiredCompletions`; API chỉ nhận event allowlist và khóa assignment khi update.
+  - *Kết quả:* Idempotency lesson theo ngày Bangkok; hai mode phân biệt bằng metadata; evaluator map letter sang option index; Fog event được hoãn đến khi có completion contract; backend validation/row lock/retry đã bổ sung.
+
+- [x] **RA2 — Full release gate**
+  - *Phải làm:* FE production build, BE TypeScript build, lint, diff whitespace và static scan contract cũ.
+  - *Kết quả:* FE/BE build pass; lint không error (chỉ warning cũ); `git diff --check` sạch; không còn runtime DailyMission/Gatekeeper contract.

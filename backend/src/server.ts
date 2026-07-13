@@ -14,10 +14,11 @@ import familyRouter from './routes/family.js';
 import aiRouter from './routes/ai.js';
 import adminRouter from './routes/admin.js';
 import economyRouter from './routes/economy.js';
-import gatekeeperRouter from './routes/gatekeeper.js';
+import riddleRouter from './routes/riddle.js';
 import gameRouter from './routes/game.js';
 import classRewardsRouter from './routes/classRewards.js';
 import learningContextRouter from './routes/learningContext.js';
+import missionLedgerRouter from './routes/missionLedger.js';
 import { ensureDefaultClassRewards } from './helpers/questions.js';
 import { seedTopicsAndActivities } from './helpers/seedTopicsAndActivities.js';
 
@@ -89,6 +90,18 @@ const initDB = async () => {
     } else {
       throw new Error(`Missing required pet name normalization migration: ${normalizePetNamePath}`);
     }
+    const riddleHistoryPath = path.join(__dirname, '..', 'migrations', '20260713_generalize_riddle_history.sql');
+    if (fs.existsSync(riddleHistoryPath)) {
+      await pool.query(fs.readFileSync(riddleHistoryPath, 'utf8'));
+    } else {
+      throw new Error(`Missing required riddle history migration: ${riddleHistoryPath}`);
+    }
+    const missionLedgerPath = path.join(__dirname, '..', 'migrations', '20260713_mission_ledger.sql');
+    if (fs.existsSync(missionLedgerPath)) {
+      await pool.query(fs.readFileSync(missionLedgerPath, 'utf8'));
+    } else {
+      throw new Error(`Missing required mission ledger migration: ${missionLedgerPath}`);
+    }
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS subject VARCHAR(50) DEFAULT 'english';`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS image_url TEXT;`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;`);
@@ -157,10 +170,11 @@ app.use('/api', familyRouter);
 app.use('/api', aiRouter);
 app.use('/api', adminRouter);
 app.use('/api', economyRouter);
-app.use('/api', gatekeeperRouter);
+app.use('/api', riddleRouter);
 app.use('/api', gameRouter);
 app.use('/api', classRewardsRouter);
 app.use('/api', learningContextRouter);
+app.use('/api', missionLedgerRouter);
 
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {

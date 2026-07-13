@@ -24,7 +24,6 @@ export interface PageExplorationState {
   lastExploredAt: string; // Lần cuối click vào
   lastCompletedAt: string | null; // Lần cuối thực sự hoàn thành task bên trong
   explorationCount: number; // Tương đương số lần hoàn thành (completionCount)
-  pendingKeyQuestionId: string | null; // ID câu hỏi gatekeeper nếu giải sai
 }
 
 export interface ExplorationProgress {
@@ -124,7 +123,7 @@ export interface Question {
   id: string;
   type: QuestionType;
   category: string; // e.g. "tenses", "passive-voice", "relative-clauses", "vocabulary", "wordform", "reading", "pronunciation", "stress"
-  /** ID chuyên đề Core Knowledge (§9 CORE_SPECS) — dùng cho Gatekeeper, Coverage Dashboard, AI Sư Phụ */
+  /** ID chuyên đề Core Knowledge (§9 CORE_SPECS) — dùng cho Coverage Dashboard, câu đố và AI Sư Phụ */
   topicId?: string;
   prompt: string;
   options?: string[]; // for MCQs
@@ -304,21 +303,6 @@ export interface HandbookPage {
   audience?: 'student' | 'admin';
   /** Bậc Học của trang cẩm nang (CORE_SPECS §1.4). Bỏ trống = dùng chung mọi tầng. */
   gradeTier?: number;
-}
-
-export interface DailyMission {
-  id: string;
-  date: string; // YYYY-MM-DD
-  title: string;
-  requirements: {
-    description: string;
-    type: 'count' | 'accuracy' | 'category' | 'time';
-    target: number;
-    current: number;
-    completed: boolean;
-  }[];
-  rewardXP: number;
-  completed: boolean;
 }
 
 export interface ParentQuest {

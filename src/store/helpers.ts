@@ -1,6 +1,7 @@
 import type { HistoryLog } from '../types/game';
 import { getStudentRankForLevel } from '../types/game';
 import { eventBus } from '../utils/EventBus';
+import { recordMissionEvent } from '../services/missionLedgerService';
 
 export const logActivity = (
   get: any,
@@ -80,6 +81,18 @@ export const checkLevelUp = (
       toLevel: level,
       rank: newRank,
       rankChanged: newRank.id !== oldRank.id
+    });
+    const state = get();
+    void recordMissionEvent({
+      profileId: state.currentUser?.id || state.player.id,
+      idempotencyKey: `level-reached:${level}`,
+      eventType: 'level_reached',
+      gradeTier: state.activeGradeTier,
+      subjectId: state.currentSubject,
+      entityType: 'level',
+      entityId: String(level),
+      value: 1,
+      metadata: { level },
     });
   }
 

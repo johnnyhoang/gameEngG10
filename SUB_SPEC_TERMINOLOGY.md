@@ -69,6 +69,10 @@ Quy trình thêm hoặc đổi thuật ngữ:
 | **Danh Mục Quà Khuyến Học** 🎁 | Learning Reward Catalog | `parentReward`, `rewardQuantity`, `markRewardDelivered` | Feature | Danh mục quà ngoài đời do người quản lý tạo, định lượng và xác nhận trao. | APPROVED |
 | **Phút Đèn Sách** ⏱️ | Learning Minutes | `learningMinutes`, `estimatedMinutes` | Metric | Tổng thời gian học, chỉ số North Star. | APPROVED |
 | **Bảng Bài Tập** 📜 | Assigned Learning Tasks | `parentQuest` | Feature | Nhiệm vụ học tập do người quản lý giao cho Sĩ Tử. | APPROVED |
+| **Sổ Tu Học** 📖 | Learning Journey Ledger | `LearningLedger`, `mission-ledger` | Global module | Module chung dưới TopHUD, hiển thị Nhập Môn, Nhiệm Vụ Hôm Nay và Tiến Độ Tu Học trên mọi trang Sĩ Tử. | APPROVED |
+| **Nhập Môn** 🌱 | Onboarding Journey | `onboarding` | Mission group | Chuỗi cột mốc chỉ hoàn thành một lần trong đời profile để khám phá và làm quen với học viện. | APPROVED |
+| **Nhiệm Vụ Hôm Nay** 📋 | Daily Missions | `daily` | Mission group | Mục tiêu học tập theo ngày, sinh từ capability và nội dung thật của profile; reset theo timezone học viện. | APPROVED |
+| **Tiến Độ Tu Học** 📈 | Learning Progress | `learning-progress` | Progress summary | Tóm tắt Level, XP, chuỗi học, bài hoàn thành và cột mốc kế tiếp của profile. | APPROVED |
 | **Phong Cách Học Đường** 🎭 | School Style / Appearance Theme | `uiTheme`, `UiThemeId`, `ProfileThemeModal` | Feature | Giao diện cá nhân hóa theo hồ sơ. | APPROVED |
 | **Quà Khuyến Học** 🎁 | Learning Reward | `rewards`, `ParentReward`, `claimParentReward` | Feature | Món quà thực tế mà Sĩ Tử có thể xem, đổi và chờ xác nhận trao. | APPROVED |
 | **Nhà Của MIKA** 🐷 | MIKA's Home / Pet Sanctuary | `PetSanctuary`, `pet` | Module | Nơi chăm sóc và tương tác với Heo Maikawaii. | APPROVED |
@@ -83,6 +87,8 @@ Quy trình thêm hoặc đổi thuật ngữ:
 | **Năng Lượng** ⚡ | Energy | `energy`, `maxEnergy`, `resetHours` | Resource | Tài nguyên tiêu hao khi học/chơi; xem `SUB_SPEC_ENERGY.md`. | APPROVED |
 | **Ruby** 💎 | Ruby | `ruby`, `rubyChanged`, `costRuby`; legacy: `coins`, `coinsChanged`, `costCoins`, `NP` | Resource | Đơn vị tích lũy dùng để đổi học cụ, phong cách và quà khuyến học. Ruby là tên hiển thị và domain term chuẩn; các tên legacy chỉ tồn tại trong giai đoạn migration tương thích. | APPROVED |
 | **Thử Thách Bất Ngờ** | Random Challenge | `randomEvent` | Feature | Thử thách xuất hiện ngẫu nhiên trong các luồng học tập. | APPROVED |
+| **Đố Vui Nhận Ruby** | Ruby Riddle | `ruby-riddle`, `RubyRiddleGame` | Mini-game | Trò một câu MCQ thường trực tại Trường Thi; đúng nhận Ruby, sai không bị phạt. | APPROVED |
+| **Tốc Chiến Kỳ Ngộ** | Encounter Sprint | `encounter-sprint`, `EncounterSprintGame` | Mini-game | Lượt nhanh 3 câu MCQ trong tổng 60 giây tại Trường Thi. | APPROVED |
 | **Rời Học Viện** 🚪 | Logout | `onLogout`, `logout` | Action | Đăng xuất khỏi ứng dụng. | APPROVED |
 | **Miễn Phạt** ⚖️ | Penalty Exemption | `skipPunishment`, `MonChuHoiToi` | Action/flow | Cho phép bỏ qua câu hỏi mà không bị trừ Ruby; vẫn áp dụng giới hạn lượt bỏ qua theo ngày. | APPROVED |
 
