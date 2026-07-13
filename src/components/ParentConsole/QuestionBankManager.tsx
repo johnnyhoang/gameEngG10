@@ -104,6 +104,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
   // AI Ingest state
   const [rawText, setRawText] = useState('');
   const [isIngesting, setIsIngesting] = useState(false);
+  const [deletingIds, setDeletingIds] = useState<Record<string, boolean>>({});
 
   // Filters logic
   const filteredQuestions = useMemo(() => {
@@ -222,6 +223,23 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
       toast.error('Có lỗi xảy ra khi gọi AI Ingest đề thi.');
     } finally {
       setIsIngesting(false);
+    }
+  };
+
+  const handleDeleteQuestion = async (e: React.MouseEvent, qId: string, qPrompt: string) => {
+    e.stopPropagation();
+    if (deletingIds[qId]) return;
+    if (window.confirm(`⚠️ BẠN CÓ CHẮC CHẮN MUỐN XÓA CÂU HỎI NÀY?\n\nĐề bài: "${qPrompt}"\n\nHành động này sẽ xóa vĩnh viễn khỏi ngân hàng câu hỏi.`)) {
+      setDeletingIds(prev => ({ ...prev, [qId]: true }));
+      try {
+        const ok = await deleteQuestion(qId);
+        if (ok) toast.success('Đã xóa câu hỏi thành công! 🗑️');
+      } catch (err) {
+        console.error(err);
+        toast.error('Xóa câu hỏi thất bại.');
+      } finally {
+        setDeletingIds(prev => ({ ...prev, [qId]: false }));
+      }
     }
   };
 
@@ -513,17 +531,16 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
 
                           {/* Nút Xóa nhanh ở góc phải khi hover */}
                           <button
-                            onClick={async (e) => {
-                              e.stopPropagation();
-                              if (window.confirm(`⚠️ BẠN CÓ CHẮC CHẮN MUỐN XÓA CÂU HỎI NÀY?\n\nĐề bài: "${q.prompt}"\n\nHành động này sẽ xóa vĩnh viễn khỏi ngân hàng câu hỏi.`)) {
-                                const ok = await deleteQuestion(q.id);
-                                if (ok) toast.success('Đã xóa câu hỏi thành công! 🗑️');
-                              }
-                            }}
-                            className="absolute top-3 right-3 p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-black transition-all cursor-pointer"
+                            disabled={deletingIds[q.id]}
+                            onClick={(e) => handleDeleteQuestion(e, q.id, q.prompt)}
+                            className="absolute top-3 right-3 p-1.5 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-black transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center min-w-[28px] min-h-[28px]"
                             title="Xóa câu hỏi này"
                           >
-                            <X className="w-3.5 h-3.5" />
+                            {deletingIds[q.id] ? (
+                              <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-red-400 border-t-transparent rounded-full"></span>
+                            ) : (
+                              <X className="w-3.5 h-3.5" />
+                            )}
                           </button>
 
                           <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between pr-6">

@@ -195,6 +195,36 @@ CREATE TABLE IF NOT EXISTS ge10_custom_questions (
     is_confused BOOLEAN DEFAULT FALSE
 );
 
+-- Question Statistics Tracking Table — tracks how many times each question is used
+CREATE TABLE IF NOT EXISTS ge10_question_stats (
+    question_id VARCHAR(255) PRIMARY KEY REFERENCES ge10_custom_questions(id) ON DELETE CASCADE,
+    times_opened INTEGER DEFAULT 0,
+    times_answered_correctly INTEGER DEFAULT 0,
+    times_skipped INTEGER DEFAULT 0,
+    last_opened_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Add tracking columns to custom_questions table for denormalization (faster reads)
+ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS times_opened INTEGER DEFAULT 0;
+ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS times_answered_correctly INTEGER DEFAULT 0;
+ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS times_skipped INTEGER DEFAULT 0;
+ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS last_opened_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP;
+
+-- Per-Student Question Performance Table — tracks individual student performance on each question
+CREATE TABLE IF NOT EXISTS ge10_student_question_performance (
+    id SERIAL PRIMARY KEY,
+    student_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
+    question_id VARCHAR(255) REFERENCES ge10_custom_questions(id) ON DELETE CASCADE,
+    times_attempted INTEGER DEFAULT 0,
+    times_correct INTEGER DEFAULT 0,
+    times_skipped INTEGER DEFAULT 0,
+    last_attempted_at TIMESTAMP WITH TIME ZONE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(student_id, question_id)
+);
+
 -- Force promote hoang.hoa@gmail.com to admin (in case they pre-existed in DB as student)
 UPDATE ge10_users SET role = 'truong_vien' WHERE email = 'hoang.hoa@gmail.com';
 

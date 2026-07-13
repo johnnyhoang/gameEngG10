@@ -183,6 +183,18 @@ function App() {
             // Clear currentUser to force profile selection when switching or logging in to a new account
             useGameState.setState({ currentUser: null });
             await state.fetchProfiles();
+
+            // Auto-select saved profile if available
+            const savedProfileId = localStorage.getItem('ge10_selected_profile_id');
+            if (savedProfileId) {
+              const profiles = useGameState.getState().availableProfiles;
+              const hasProfile = profiles.some((p: any) => p.id === savedProfileId);
+              if (hasProfile) {
+                await state.selectProfile(savedProfileId);
+              } else {
+                localStorage.removeItem('ge10_selected_profile_id');
+              }
+            }
           }
         } else {
           const state = useGameState.getState();
@@ -344,9 +356,12 @@ function App() {
               mode={playMode}
               bossId={bossId}
               lessonId={selectedLessonId || undefined}
-              onFinish={async (summary) => {
+              onFinish={async (result) => {
                 if (playMode === 'lesson' && selectedLessonId) {
-                  await masterLesson(selectedLessonId, summary?.accuracyRatio);
+                  // Only award mastery + fog unlock when the run actually passed
+                  if (result.passed) {
+                    await masterLesson(selectedLessonId, result.accuracyRatio);
+                  }
                   setScreen('hang');
                 } else {
                   setScreen('map');

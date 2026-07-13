@@ -9,6 +9,7 @@ import { supabase } from '../../utils/supabaseClient';
 import { logActivity } from '../helpers';
 import { toast } from '../../utils/toast';
 import { authService } from '../../services/authService';
+import { DEFAULT_GRADE_TIER } from '../../types/game';
 
 export const createAuthSlice: StateCreator<
   StoreState,
@@ -17,13 +18,15 @@ export const createAuthSlice: StateCreator<
   Pick<StoreState,
     'currentUser' | 'sessionAccountId' | 'availableProfiles' | 'profilesLoading' |
     'setSessionAccountId' | 'fetchProfiles' | 'selectProfile' |
-    'createProfile' | 'quickStartProfile' | 'login' | 'logout' | 'renameProfile'
+    'createProfile' | 'quickStartProfile' | 'login' | 'logout' | 'renameProfile' |
+    'logoutState'
   >
 > = (set, get) => ({
   currentUser: null,
   sessionAccountId: null,
   availableProfiles: [],
   profilesLoading: false,
+  logoutState: 'idle',
 
   setSessionAccountId: (accountId: string) => {
     set({ sessionAccountId: accountId });
@@ -83,6 +86,7 @@ export const createAuthSlice: StateCreator<
         activeGradeTier: data.player?.activeGradeTier || DEFAULT_GRADE_TIER,
         lastSyncTime: new Date().toISOString(),
       });
+      localStorage.setItem('ge10_selected_profile_id', profileId);
       // Fetch family data after profile is selected
       const state = get();
       if(state.fetchFamily) await state.fetchFamily();
@@ -297,54 +301,108 @@ export const createAuthSlice: StateCreator<
   },
 
   logout: async () => {
-    localStorage.removeItem('ge10_login_time');
-
-    // 1. Clear all Supabase session keys from localStorage synchronously
-    const keysToRemove: string[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && (key.startsWith('sb-') || key.includes('auth-token') || key.includes('supabase.auth'))) {
-        keysToRemove.push(key);
-      }
+    // Prevent duplicate concurrent logout runs
+    if (get().logoutState === 'processing') {
+      console.warn('Logout execution already in progress.');
+      return;
     }
-    keysToRemove.forEach(k => localStorage.removeItem(k));
 
-    // 2. Clear from sessionStorage
-    const sessionKeysToRemove: string[] = [];
-    for (let i = 0; i < sessionStorage.length; i++) {
-      const key = sessionStorage.key(i);
-      if (key && (key.startsWith('sb-') || key.includes('auth-token') || key.includes('supabase.auth'))) {
-        sessionKeysToRemove.push(key);
-      }
-    }
-    sessionKeysToRemove.forEach(k => sessionStorage.removeItem(k));
-
-    // 3. Clear Zustand state synchronously
-    set({
-      currentUser: null,
-      sessionAccountId: null,
-      availableProfiles: [],
-      profilesLoading: false,
-      familyLinks: [],
-      player: INITIAL_PLAYER,
-      pet: INITIAL_PET,
-      categoryStats: {},
-      gameSettings: DEFAULT_GAME_SETTINGS,
-      activeCombo: 0,
-      adminStudents: [],
-      selectedStudentProfile: null,
-      helpPageId: null,
-      uiTheme: DEFAULT_UI_THEME as any,
-      currentSubject: 'english',
-      activeGradeTier: DEFAULT_GRADE_TIER
-    });
+    set({ logoutState: 'processing' });
 
     try {
-      supabase.auth.signOut();
+      // 1. Clear all credentials from localStorage & sessionStorage immediately & synchronously
+      try {
+        localStorage.removeItem('ge10_login_time');
+        localStorage.removeItem('ge10_selected_profile_id');
+
+        const keysToRemove: string[] = [];
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (key && (key.startsWith('sb-') || key.includes('auth-token') || key.includes('supabase.auth'))) {
+            keysToRemove.push(key);
+          }
+        }
+        keysToRemove.forEach(k => localStorage.removeItem(k));
+
+        const sessionKeysToRemove: string[] = [];
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (key && (key.startsWith('sb-') || key.includes('auth-token') || key.includes('supabase.auth'))) {
+            sessionKeysToRemove.push(key);
+          }
+        }
+        sessionKeysToRemove.forEach(k => sessionStorage.removeItem(k));
+      } catch (err) {
+        console.error('Error clearing local storage credentials during logout:', err);
+      }
+
+      // 2. Clear Zustand state synchronously to reset all user data
+      try {
+        set({
+          currentUser: null,
+          sessionAccountId: null,
+          availableProfiles: [],
+          profilesLoading: false,
+          familyLinks: [],
+          player: INITIAL_PLAYER,
+          pet: INITIAL_PET,
+          categoryStats: {},
+          topicStats: {},
+          lessonsProgress: {},
+          explorationProgress: {},
+          pageExplorationStates: {},
+          rewards: DEFAULT_REWARDS,
+          rewardRedemptions: [],
+          classRewards: [],
+          classRewardRedemptions: [],
+          isOrphanStudent: true,
+          challenges: INITIAL_CHALLENGES,
+          dailyMission: null,
+          logs: [],
+          activeCombo: 0,
+          maxCombo: 0,
+          lastSyncTime: null,
+          adminStudents: [],
+          selectedStudentProfile: null,
+          failedQuestionIds: [],
+          recentlyPlayedQuestionIds: [],
+          parentQuests: [],
+          helpPageId: null,
+          uiTheme: DEFAULT_UI_THEME as any,
+          currentSubject: 'english',
+          activeGradeTier: DEFAULT_GRADE_TIER,
+          gameSettings: DEFAULT_GAME_SETTINGS
+        });
+      } catch (err) {
+        console.error('Error resetting Zustand state during logout:', err);
+      }
+
+      // 3. Asynchronously sign out from Supabase with timeout fallback
+      try {
+        const signOutPromise = supabase.auth.signOut();
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Supabase signOut timeout')), 1000)
+        );
+
+        await Promise.race([signOutPromise, timeoutPromise])
+          .catch(err => {
+            console.warn('Supabase signOut non-blocking warning:', err);
+          });
+      } catch (err) {
+        console.error('Error executing supabase signOut:', err);
+      }
+
+      set({ logoutState: 'success' });
+
+      // Clean redirect to root path
+      window.location.replace('/');
     } catch (err) {
-      console.error('Error signing out:', err);
+      console.error('Fatal error during logout sequence:', err);
+      set({ logoutState: 'failed' });
+      throw err;
+    } finally {
+      set({ logoutState: 'idle' });
     }
-    window.location.href = '/';
   },
 });
 

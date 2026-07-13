@@ -37,29 +37,20 @@ export interface StepBuilderAppProps {
   activeSectId?: string;
   uiTheme: UiThemeId;
   onReward: (coins: number, xp: number, type: string, detail: string) => void;
-  onGameComplete?: (result: any) => void;
+  onGameComplete?: (result: { correctAnswers: number; timeSpent: number; score: number; passed: boolean }) => void;
   onGameStart?: () => void;
 }
 
 export const StepBuilderApp: React.FC<StepBuilderAppProps> = ({ activeSectId, uiTheme, onReward, onGameComplete, onGameStart }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
 
-  const initialSubject = (activeSectId === 'english' || activeSectId === 'literature') ? activeSectId : 'math';
-  const [stepSubject, setStepSubject] = useState<'math' | 'english' | 'literature'>(initialSubject);
+  const stepSubject = (activeSectId === 'english' || activeSectId === 'literature') ? activeSectId : 'math';
   const [scrambledSteps, setScrambledSteps] = useState<StepItem[]>([]);
   const [stepStatus, setStepStatus] = useState<'playing' | 'won'>('playing');
 
   useEffect(() => {
     onGameStart?.();
   }, []);
-
-  useEffect(() => {
-    if (activeSectId === 'english' || activeSectId === 'literature') {
-      setStepSubject(activeSectId);
-    } else {
-      setStepSubject('math');
-    }
-  }, [activeSectId]);
 
   const initStepGame = () => {
     setScrambledSteps([...STEP_DATA[stepSubject]].sort(() => 0.5 - Math.random()));
@@ -83,7 +74,7 @@ export const StepBuilderApp: React.FC<StepBuilderAppProps> = ({ activeSectId, ui
       setStepStatus('won');
       onReward(30, 25, 'Hoàn thành Sắp xếp', `Sắp xếp trình tự giải chủ đề ${stepSubject}`);
       toast.success('Chuẩn xác, xếp trình tự ngon rồi! 🎉');
-      onGameComplete?.({ correctAnswers: scrambledSteps.length, timeSpent: 0, score: 100 });
+      onGameComplete?.({ correctAnswers: scrambledSteps.length, timeSpent: 0, score: 100, passed: true });
     } else {
       toast.error('Trình tự chưa đúng rồi, hãy suy nghĩ lại nhé!');
     }
@@ -96,12 +87,8 @@ export const StepBuilderApp: React.FC<StepBuilderAppProps> = ({ activeSectId, ui
           <h3 className="font-orbitron font-black text-sm uppercase text-white">🧩 Trình Tự Giải</h3>
           <p className="text-[10px] text-slate-400 mt-0.5">{TITLES[stepSubject]}</p>
         </div>
-        <div className="flex gap-1.5 bg-black/20 p-1 rounded-lg border border-white/5">
-          {(['math', 'english', 'literature'] as const).map(s => (
-            <button key={s} onClick={() => setStepSubject(s)} className={`px-3 py-1 rounded-md text-[9px] font-bold font-orbitron uppercase cursor-pointer ${stepSubject === s ? 'bg-synth-cyan text-black' : 'text-slate-400 hover:text-white'}`}>
-              {s === 'math' ? '📐' : s === 'english' ? '🇬🇧' : '✍️'}
-            </button>
-          ))}
+        <div className="text-[10px] font-bold font-orbitron uppercase px-3 py-1.5 rounded-lg bg-black/20 border border-white/5 text-slate-400">
+          Chủ đề: {stepSubject === 'math' ? 'Toán Học 📐' : stepSubject === 'english' ? 'Tiếng Anh 🇬🇧' : 'Ngữ Văn ✍️'}
         </div>
       </div>
 

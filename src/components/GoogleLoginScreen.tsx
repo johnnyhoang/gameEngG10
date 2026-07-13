@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { supabase } from '../utils/supabaseClient';
 import type { UserProfile } from '../types/game';
@@ -17,6 +17,7 @@ const DEV_BACKDOOR_ROLES = [
 
 export const GoogleLoginScreen: React.FC = () => {
   const login = useGameState(state => state.login);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Chỉ hiển thị khi chạy `npm run dev` trên máy local — Vite loại bỏ hoàn toàn
   // nhánh này khỏi bundle production (import.meta.env.DEV là hằng số biên dịch).
@@ -32,6 +33,8 @@ export const GoogleLoginScreen: React.FC = () => {
   };
 
   const handleSupabaseGoogleLogin = async () => {
+    if (isLoggingIn) return;
+    setIsLoggingIn(true);
     try {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -51,6 +54,7 @@ export const GoogleLoginScreen: React.FC = () => {
     } catch (error: any) {
       console.error('Lỗi đăng nhập Google Supabase:', error.message);
       toast.error('Không thể kết nối với Google Auth: ' + error.message);
+      setIsLoggingIn(false);
     }
   };
   return (
@@ -83,9 +87,19 @@ export const GoogleLoginScreen: React.FC = () => {
         <div className="py-4 flex justify-center">
           <button
             onClick={handleSupabaseGoogleLogin}
-            className="w-full py-3.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 shadow-[0_0_12px_rgba(0,240,255,0.3)] flex items-center justify-center gap-2"
+            disabled={isLoggingIn}
+            className="w-full py-3.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 shadow-[0_0_12px_rgba(0,240,255,0.3)] flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <LogIn className="w-4 h-4" /> Đăng nhập bằng tài khoản Google
+            {isLoggingIn ? (
+              <>
+                <span className="animate-spin inline-block w-4 h-4 border-2 border-black border-t-transparent rounded-full"></span>
+                Đang chuyển hướng...
+              </>
+            ) : (
+              <>
+                <LogIn className="w-4 h-4" /> Đăng nhập bằng tài khoản Google
+              </>
+            )}
           </button>
         </div>
 

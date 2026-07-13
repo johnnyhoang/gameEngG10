@@ -41,6 +41,61 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
   const [classQty, setClassQty] = useState(5);
   const [isCreating, setIsCreating] = useState(false);
   const [showPendingOnly, setShowPendingOnly] = useState(true);
+  const [processingRedemptions, setProcessingRedemptions] = useState<Record<string, boolean>>({});
+
+  const handleDeliverClassRedemption = async (redemptionId: string) => {
+    if (processingRedemptions[redemptionId]) return;
+    setProcessingRedemptions(prev => ({ ...prev, [redemptionId]: true }));
+    try {
+      const ok = await deliverClassRedemption(redemptionId);
+      if (ok) {
+        toast.success('Đã phát thưởng phúc lợi lớp học thành công! 🎁');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Phát thưởng phúc lợi thất bại.');
+    } finally {
+      setProcessingRedemptions(prev => ({ ...prev, [redemptionId]: false }));
+    }
+  };
+
+  const handleApproveRedemption = async (redemptionId: string) => {
+    if (processingRedemptions[redemptionId]) return;
+    setProcessingRedemptions(prev => ({ ...prev, [redemptionId]: true }));
+    try {
+      if (viewingStudentId) {
+        await adminMarkRewardDelivered(viewingStudentId, redemptionId);
+      } else {
+        await markRewardDelivered(redemptionId);
+      }
+      toast.success('Đã xác nhận trao phần quà thành công! 🎁');
+    } catch (err) {
+      console.error(err);
+      toast.error('Xác nhận trao quà thất bại.');
+    } finally {
+      setProcessingRedemptions(prev => ({ ...prev, [redemptionId]: false }));
+    }
+  };
+
+  const handleCancelRedemption = async (redemptionId: string) => {
+    if (processingRedemptions[redemptionId]) return;
+    if (window.confirm('Bạn có chắc muốn hủy đơn đổi quà này và hoàn lại NP cho học sinh?')) {
+      setProcessingRedemptions(prev => ({ ...prev, [redemptionId]: true }));
+      try {
+        if (viewingStudentId) {
+          await adminCancelRedemption(viewingStudentId, redemptionId);
+        } else {
+          await cancelRedemption(redemptionId);
+        }
+        toast.success('Đã hủy và hoàn NP thành công! 🪙');
+      } catch (err) {
+        console.error(err);
+        toast.error('Hủy đơn đổi quà thất bại.');
+      } finally {
+        setProcessingRedemptions(prev => ({ ...prev, [redemptionId]: false }));
+      }
+    }
+  };
 
   // ── Per-student (old) form state ─────────────────────────
   const [rewardTitle, setRewardTitle] = useState('');
@@ -264,11 +319,17 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                     {red.status === 'pending' ? (
                       canApproveReward ? (
                         <button
-                          onClick={() => deliverClassRedemption(red.id)}
-                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-synth-green text-black text-[11px] font-orbitron font-bold cursor-pointer hover:synth-glow-green transition-all"
+                          disabled={processingRedemptions[red.id]}
+                          onClick={() => handleDeliverClassRedemption(red.id)}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-synth-green text-black text-[11px] font-orbitron font-bold cursor-pointer hover:synth-glow-green transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                           title="Xác nhận đã phát thưởng ngoài đời"
                         >
-                          <Check className="w-3.5 h-3.5" /> Phát Thưởng
+                          {processingRedemptions[red.id] ? (
+                            <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full"></span>
+                          ) : (
+                            <Check className="w-3.5 h-3.5" />
+                          )}
+                          Phát Thưởng
                         </button>
                       ) : (
                         <span className="text-[10px] px-2 py-1 rounded bg-white/10 text-slate-400 font-bold uppercase font-orbitron">
@@ -399,18 +460,28 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                         ) : (
                           <>
                             <button
-                              onClick={() => viewingStudentId ? adminMarkRewardDelivered(viewingStudentId, redemption.id) : markRewardDelivered(redemption.id)}
-                              className="p-2 rounded-lg bg-synth-green text-black cursor-pointer hover:synth-glow-green transition-all"
+                              disabled={processingRedemptions[redemption.id]}
+                              onClick={() => handleApproveRedemption(redemption.id)}
+                              className="p-2 rounded-lg bg-synth-green text-black cursor-pointer hover:synth-glow-green transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center min-w-[32px] min-h-[32px]"
                               title="Xác nhận đã trao"
                             >
-                              <Check className="w-4 h-4" />
+                              {processingRedemptions[redemption.id] ? (
+                                <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full"></span>
+                              ) : (
+                                <Check className="w-4 h-4" />
+                              )}
                             </button>
                             <button
-                              onClick={() => viewingStudentId ? adminCancelRedemption(viewingStudentId, redemption.id) : cancelRedemption(redemption.id)}
-                              className="p-2 rounded-lg border border-synth-magenta text-synth-magenta cursor-pointer hover:bg-synth-magenta/10 transition-all"
+                              disabled={processingRedemptions[redemption.id]}
+                              onClick={() => handleCancelRedemption(redemption.id)}
+                              className="p-2 rounded-lg border border-synth-magenta text-synth-magenta cursor-pointer hover:bg-synth-magenta/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center min-w-[32px] min-h-[32px]"
                               title="Hủy, hoàn NP"
                             >
-                              <X className="w-4 h-4" />
+                              {processingRedemptions[redemption.id] ? (
+                                <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-synth-magenta border-t-transparent rounded-full"></span>
+                              ) : (
+                                <X className="w-4 h-4" />
+                              )}
                             </button>
                           </>
                         )

@@ -22,6 +22,43 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
   const [inviteEmail, setInviteEmail] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [processingIds, setProcessingIds] = useState<Record<string, boolean>>({});
+
+  const handleRespondInvite = async (linkId: string, accept: boolean) => {
+    if (processingIds[linkId]) return;
+    setProcessingIds(prev => ({ ...prev, [linkId]: true }));
+    try {
+      const ok = await respondInvite(linkId, accept);
+      if (ok) {
+        toast.success(accept ? 'Đã chấp nhận kết nối Ban Giám Hiệu!' : 'Đã từ chối kết nối.');
+        await fetchFamily();
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Thao tác thất bại.');
+    } finally {
+      setProcessingIds(prev => ({ ...prev, [linkId]: false }));
+    }
+  };
+
+  const handleLeaveFamily = async (linkId: string, confirmMsg: string, successMsg: string) => {
+    if (processingIds[linkId]) return;
+    if (window.confirm(confirmMsg)) {
+      setProcessingIds(prev => ({ ...prev, [linkId]: true }));
+      try {
+        const ok = await leaveFamily(linkId);
+        if (ok) {
+          toast.success(successMsg);
+          await fetchFamily();
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Thao tác thất bại.');
+      } finally {
+        setProcessingIds(prev => ({ ...prev, [linkId]: false }));
+      }
+    }
+  };
 
   const fetchFamily = useGameState(state => state.fetchFamily);
 
@@ -113,28 +150,26 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={async () => {
-                      const ok = await respondInvite(link.id, true);
-                      if (ok) {
-                        toast.success('Đã chấp nhận kết nối Ban Giám Hiệu!');
-                        await fetchFamily();
-                      }
-                    }}
-                    className="px-3 py-1.5 rounded bg-synth-cyan text-black font-bold text-[10px] uppercase cursor-pointer transition-colors hover:bg-synth-cyan/85"
+                    disabled={processingIds[link.id]}
+                    onClick={() => handleRespondInvite(link.id, true)}
+                    className="px-3 py-1.5 rounded bg-synth-cyan text-black font-bold text-[10px] uppercase cursor-pointer transition-colors hover:bg-synth-cyan/85 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[65px]"
                   >
-                    Đồng Ý
+                    {processingIds[link.id] ? (
+                      <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full"></span>
+                    ) : (
+                      'Đồng Ý'
+                    )}
                   </button>
                   <button
-                    onClick={async () => {
-                      const ok = await respondInvite(link.id, false);
-                      if (ok) {
-                        toast.info('Đã từ chối kết nối.');
-                        await fetchFamily();
-                      }
-                    }}
-                    className="px-3 py-1.5 rounded border border-red-500 text-red-400 font-bold text-[10px] uppercase cursor-pointer hover:bg-red-500/10 transition-colors"
+                    disabled={processingIds[link.id]}
+                    onClick={() => handleRespondInvite(link.id, false)}
+                    className="px-3 py-1.5 rounded border border-red-500 text-red-400 font-bold text-[10px] uppercase cursor-pointer hover:bg-red-500/10 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[65px]"
                   >
-                    Từ Chối
+                    {processingIds[link.id] ? (
+                      <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-red-400 border-t-transparent rounded-full"></span>
+                    ) : (
+                      'Từ Chối'
+                    )}
                   </button>
                 </div>
               </div>
@@ -201,18 +236,15 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
                   </div>
                 </div>
                 <button
-                  onClick={async () => {
-                    if (window.confirm('Bạn có chắc muốn hủy lời mời kết nối này không?')) {
-                      const ok = await leaveFamily(link.id);
-                      if (ok) {
-                        toast.success('Đã hủy lời mời kết nối.');
-                        await fetchFamily();
-                      }
-                    }
-                  }}
-                  className="px-3 py-1.5 rounded border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-xs uppercase cursor-pointer transition-colors"
+                  disabled={processingIds[link.id]}
+                  onClick={() => handleLeaveFamily(link.id, 'Bạn có chắc muốn hủy lời mời kết nối này không?', 'Đã hủy lời mời kết nối.')}
+                  className="px-3 py-1.5 rounded border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-xs uppercase cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[100px]"
                 >
-                  Hủy Yêu Cầu
+                  {processingIds[link.id] ? (
+                    <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-red-400 border-t-transparent rounded-full"></span>
+                  ) : (
+                    'Hủy Yêu Cầu'
+                  )}
                 </button>
               </div>
             ))}
@@ -254,18 +286,15 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
                   </div>
                 </div>
                 <button
-                  onClick={async () => {
-                    if (window.confirm('Bạn có chắc muốn hủy kết nối đồng hành với thành viên Ban Giám Hiệu này không?')) {
-                      const ok = await leaveFamily(link.id);
-                      if (ok) {
-                        toast.success('Đã hủy kết nối đồng hành.');
-                        await fetchFamily();
-                      }
-                    }
-                  }}
-                  className="px-3 py-1.5 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-xs uppercase cursor-pointer transition-colors"
+                  disabled={processingIds[link.id]}
+                  onClick={() => handleLeaveFamily(link.id, 'Bạn có chắc muốn hủy kết nối đồng hành với thành viên Ban Giám Hiệu này không?', 'Đã hủy kết nối đồng hành.')}
+                  className="px-3 py-1.5 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-xs uppercase cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[100px]"
                 >
-                  Hủy Kết Nối
+                  {processingIds[link.id] ? (
+                    <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-red-400 border-t-transparent rounded-full"></span>
+                  ) : (
+                    'Hủy Kết Nối'
+                  )}
                 </button>
               </div>
             ))}

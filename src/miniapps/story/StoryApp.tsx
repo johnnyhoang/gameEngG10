@@ -13,7 +13,7 @@ export interface StoryAppProps {
   questions?: any[];
 }
 
-export const StoryApp: React.FC<StoryAppProps> = ({  uiTheme, onReward,   questions = [] }) => {
+export const StoryApp: React.FC<StoryAppProps> = ({ uiTheme, onReward, onGameComplete, questions = [] }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
 
   const [storyStep, setStoryStep] = useState(0);
@@ -22,9 +22,10 @@ export const StoryApp: React.FC<StoryAppProps> = ({  uiTheme, onReward,   questi
   const [activeStoryQuest, setActiveStoryQuest] = useState<Question | null>(null);
 
   const initStoryQuest = (subject: 'math' | 'english' | 'literature') => {
-    const list = questions.filter(q => q.subject === subject && (q.type === 'multiple_choice' || q.type === 'mcq'));
-    const randomQ = list[Math.floor(Math.random() * list.length)] || null;
-    setActiveStoryQuest(randomQ);
+    const list = questions.filter(q => (q.subject || 'english') === subject);
+    if (list.length > 0) {
+      setActiveStoryQuest(list[Math.floor(Math.random() * list.length)]);
+    }
   };
 
   const handleStartStory = () => {
@@ -41,12 +42,22 @@ export const StoryApp: React.FC<StoryAppProps> = ({  uiTheme, onReward,   questi
       toast.success('Chuẩn, bạn qua ải này rồi.');
       if (storyStep === 1) { setStoryInventory(prev => [...prev, '🔑 Chìa Khóa Vàng']); setStoryStep(2); initStoryQuest('english'); }
       else if (storyStep === 2) { setStoryInventory(prev => [...prev, '🧭 La Bàn Cổ']); setStoryStep(3); initStoryQuest('literature'); }
-      else if (storyStep === 3) { setStoryInventory(prev => [...prev, '📜 Cuộn Sách Cổ']); setStoryStep(4); onReward(60, 50, 'Phiêu lưu tình huống', 'Giải thoát Heo Maikawaii thành công'); }
+      else if (storyStep === 3) { 
+        setStoryInventory(prev => [...prev, '📜 Cuộn Sách Cổ']); 
+        setStoryStep(4); 
+        onReward(60, 50, 'Phiêu lưu tình huống', 'Giải thoát Heo Maikawaii thành công'); 
+        onGameComplete?.({ correctAnswers: 3, timeSpent: 0, score: 100, passed: true });
+      }
     } else {
       toast.error('Lệch rồi, chỉnh lại đi.');
       const nextLives = storyLives - 1;
       setStoryLives(nextLives);
-      if (nextLives <= 0) { setStoryStep(5); } else { initStoryQuest(activeStoryQuest.subject as any); }
+      if (nextLives <= 0) { 
+        setStoryStep(5); 
+        onGameComplete?.({ correctAnswers: storyStep - 1, timeSpent: 0, score: Math.round(((storyStep - 1) / 3) * 100), passed: false });
+      } else { 
+        initStoryQuest(activeStoryQuest.subject as any); 
+      }
     }
   };
 

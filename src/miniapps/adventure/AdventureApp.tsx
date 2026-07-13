@@ -13,7 +13,7 @@ export interface AdventureAppProps {
   questions?: any[];
 }
 
-export const AdventureApp: React.FC<AdventureAppProps> = ({  uiTheme, onReward,   questions = [] }) => {
+export const AdventureApp: React.FC<AdventureAppProps> = ({  uiTheme, onReward, onGameComplete,   questions = [] }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
 
   const [boardPosition, setBoardPosition] = useState(0);
@@ -41,6 +41,7 @@ export const AdventureApp: React.FC<AdventureAppProps> = ({  uiTheme, onReward, 
           setBoardStatus('won');
           onReward(100, 80, 'Về đích Du khảo', 'Đạt vạch đích rương báu sơn trang');
           toast.success('Bạn đã clear xong bản đồ du khảo! 🏆');
+          onGameComplete?.({ correctAnswers: 10, timeSpent: 0, score: 100, passed: true });
         } else {
           setBoardStatus('answering');
           const mcqQuestions = questions.filter(q => q.type === 'multiple_choice' || q.type === 'mcq');

@@ -7,7 +7,7 @@ export interface MatchPairsAppProps {
   activeSectId?: string;
   uiTheme: UiThemeId;
   onReward: (coins: number, xp: number, type: string, detail: string) => void;
-  onGameComplete?: (result: { correctAnswers: number; timeSpent: number; score: number }) => void;
+  onGameComplete?: (result: { correctAnswers: number; timeSpent: number; score: number; passed: boolean }) => void;
 }
 
 interface MatchItem {
@@ -50,19 +50,10 @@ export const MatchPairsApp: React.FC<MatchPairsAppProps> = ({
 }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
 
-  const initialSubject = (activeSectId === 'math' || activeSectId === 'literature') ? activeSectId : 'english';
-  const [matchSubject, setMatchSubject] = useState<'english' | 'math' | 'literature'>(initialSubject);
+  const matchSubject = (activeSectId === 'math' || activeSectId === 'literature') ? activeSectId : 'english';
   const [matchCards, setMatchCards] = useState<MatchItem[]>([]);
   const [selectedCards, setSelectedCards] = useState<string[]>([]);
   const [matchStatus, setMatchStatus] = useState<'playing' | 'victory'>('playing');
-
-  useEffect(() => {
-    if (activeSectId === 'math' || activeSectId === 'literature') {
-      setMatchSubject(activeSectId);
-    } else {
-      setMatchSubject('english');
-    }
-  }, [activeSectId]);
 
   const initMatchGame = () => {
     let source = ENGLISH_PAIRS;
@@ -92,18 +83,17 @@ export const MatchPairsApp: React.FC<MatchPairsAppProps> = ({
       const card2 = matchCards.find(c => c.id === newSelected[1])!;
       if (card1.pairId === card2.pairId) {
         setTimeout(() => {
-          setMatchCards(prev => prev.map(c => c.pairId === card1.pairId ? { ...c, isMatched: true } : c));
+          const nextCards = matchCards.map(c => c.pairId === card1.pairId ? { ...c, isMatched: true } : c);
+          setMatchCards(nextCards);
           setSelectedCards([]);
           toast.success('Ghép khớp. 🎉');
-          setMatchCards(current => {
-            const allMatched = current.every(c => c.isMatched || c.pairId === card1.pairId);
-            if (allMatched) {
-              setMatchStatus('victory');
-              onReward(10, 20, 'Ghép cặp thành công', `Hoàn thành bảng ghép cặp chủ đề ${matchSubject}`);
-              onGameComplete?.({ correctAnswers: 5, timeSpent: 0, score: 100 });
-            }
-            return current;
-          });
+
+          const allMatched = nextCards.every(c => c.isMatched);
+          if (allMatched) {
+            setMatchStatus('victory');
+            onReward(10, 20, 'Ghép cặp thành công', `Hoàn thành bảng ghép cặp chủ đề ${matchSubject}`);
+            onGameComplete?.({ correctAnswers: 5, timeSpent: 0, score: 100, passed: true });
+          }
         }, 300);
       } else {
         setTimeout(() => { setSelectedCards([]); toast.error('Lệch cặp rồi, ghép lại đi!'); }, 800);
@@ -116,10 +106,8 @@ export const MatchPairsApp: React.FC<MatchPairsAppProps> = ({
       <div className="max-w-md mx-auto space-y-2 flex flex-col items-center">
         <h3 className={`font-orbitron font-black text-lg ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>🧩 Ghép Cặp Bài Trùng</h3>
         <p className="text-xs text-slate-400 leading-relaxed">Nối từ vựng với nghĩa, công thức với tên gọi để rèn luyện phản xạ siêu tốc.</p>
-        <div className="flex gap-1.5 bg-black/20 p-1 rounded-lg border border-white/5 mt-2">
-          {[{ id: 'english', label: 'Từ vựng 🔤' }, { id: 'math', label: 'Hình & Số 📐' }, { id: 'literature', label: 'Văn học 📖' }].map(opt => (
-            <button key={opt.id} onClick={() => setMatchSubject(opt.id as any)} className={`px-3 py-1 rounded-md text-[10px] font-bold font-orbitron uppercase cursor-pointer ${matchSubject === opt.id ? 'bg-synth-magenta text-white' : 'text-slate-400 hover:text-white'}`}>{opt.label}</button>
-          ))}
+        <div className="text-[10px] font-bold font-orbitron uppercase mt-2 px-3 py-1.5 rounded-lg bg-black/20 border border-white/5 inline-block text-slate-400">
+          Chủ đề: {matchSubject === 'math' ? 'Hình & Số 📐' : matchSubject === 'literature' ? 'Văn học 📖' : 'Từ vựng 🔤'}
         </div>
       </div>
 

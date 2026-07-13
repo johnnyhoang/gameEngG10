@@ -24,6 +24,7 @@ export interface StoreState {
   login: (user: UserProfile) => Promise<void>;
   logout: () => Promise<void>;
   renameProfile: (newName: string) => Promise<boolean>;
+  logoutState: 'idle' | 'processing' | 'success' | 'failed';
 
   // === PLAYER & MECHANICS SLICE ===
   player: PlayerProfile;

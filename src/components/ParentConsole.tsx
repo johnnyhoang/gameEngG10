@@ -378,10 +378,11 @@ export const ParentConsole: React.FC = () => {
                           <span className="text-[10px] text-synth-text-muted">{link.student_email}</span>
                         </div>
                         <button
+                          disabled={inspectLoading}
                           onClick={() => handleInspectStudent(link.student_id)}
-                          className="px-3 py-2 bg-synth-cyan text-black font-bold font-orbitron text-[10px] uppercase rounded-lg hover:synth-glow-cyan transition-all cursor-pointer w-full text-center"
+                          className="px-3 py-2 bg-synth-cyan text-black font-bold font-orbitron text-[10px] uppercase rounded-lg hover:synth-glow-cyan transition-all cursor-pointer w-full text-center disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          Xem Hoạt Động 👑
+                          {inspectLoading ? 'Đang tải...' : 'Xem Hoạt Động 👑'}
                         </button>
                       </div>
                     ))}

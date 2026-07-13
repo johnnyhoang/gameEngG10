@@ -2,6 +2,12 @@ import express from 'express';
 import { pool } from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
 import crypto from 'crypto';
+import {
+  trackQuestionOpened,
+  trackQuestionAnsweredCorrectly,
+  trackQuestionSkipped,
+  trackStudentQuestionPerformance
+} from '../helpers/questionStats.js';
 
 const router = express.Router();
 
@@ -358,10 +364,37 @@ router.post('/game/session/end', authMiddleware, async (req: any, res) => {
       [newLevel, newXp, badges, profileId]
     );
 
+    // Track question statistics for each question in this session
+    for (let i = 0; i < answers.length; i++) {
+      const originalAnswer = answers[i];
+      const computedAnswer = computedAnswers[i];
+
+      // Track question opened
+      await trackQuestionOpened(computedAnswer.questionId);
+
+      // Track if skipped
+      if (originalAnswer.isSkipped) {
+        await trackQuestionSkipped(computedAnswer.questionId);
+      }
+
+      // Track if answer is correct
+      if (computedAnswer.isCorrect) {
+        await trackQuestionAnsweredCorrectly(computedAnswer.questionId);
+      }
+
+      // Track per-student performance
+      await trackStudentQuestionPerformance(
+        profileId,
+        computedAnswer.questionId,
+        computedAnswer.isCorrect,
+        originalAnswer.isSkipped || false
+      );
+    }
+
     // Save session summary
     await client.query(
-      `UPDATE ge10_game_sessions 
-       SET status = $1, end_time = NOW(), xp_gained = $2, coins_gained = $3, answers_summary = $4 
+      `UPDATE ge10_game_sessions
+       SET status = $1, end_time = NOW(), xp_gained = $2, coins_gained = $3, answers_summary = $4
        WHERE id = $5`,
       [isDefeat ? 'defeat' : 'completed', totalXpGained, totalCoinsGained, JSON.stringify(computedAnswers), sessionId]
     );
@@ -396,6 +429,44 @@ router.post('/game/session/end', authMiddleware, async (req: any, res) => {
     res.status(500).json({ error: 'Failed to end game session.', details: error.message });
   } finally {
     client.release();
+  }
+});
+
+// POST /api/exploration/clear
+router.post('/exploration/clear', authMiddleware, async (req: any, res) => {
+  const accountId = req.user.sub;
+  const { profileId, pageId } = req.body;
+
+  if (!profileId || !pageId) {
+    return res.status(400).json({ error: 'Missing profileId or pageId.' });
+  }
+
+  try {
+    // Verify profile ownership
+    const check = await pool.query('SELECT id FROM ge10_users WHERE id = $1 AND account_id = $2', [profileId, accountId]);
+    if (check.rows.length === 0) return res.status(403).json({ error: 'Unauthorized profile' });
+
+    // Upsert exploration progress
+    const upsertRes = await pool.query(
+      `INSERT INTO ge10_exploration_progress (user_id, page_id, clear_count, last_cleared_at)
+       VALUES ($1, $2, 1, NOW())
+       ON CONFLICT (user_id, page_id) DO UPDATE SET
+         clear_count = ge10_exploration_progress.clear_count + 1,
+         last_cleared_at = NOW()
+       RETURNING clear_count, last_cleared_at`,
+      [profileId, pageId]
+    );
+
+    const row = upsertRes.rows[0];
+    res.json({
+      progress: {
+        clearCount: row.clear_count,
+        lastClearedAt: row.last_cleared_at
+      }
+    });
+  } catch (err: any) {
+    console.error('[POST /exploration/clear] Error:', err);
+    res.status(500).json({ error: 'Failed to clear exploration progress', details: err.message });
   }
 });
 

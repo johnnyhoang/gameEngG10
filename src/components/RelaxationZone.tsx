@@ -78,7 +78,11 @@ function renderGame(
     },
     onGameComplete: (results: any) => {
       console.log(`Hoàn thành game: ${game.title}`, results);
-      completeLevel3Page(game.pageId);
+      if (results?.passed) {
+        completeLevel3Page(game.pageId);
+      } else {
+        toast.error('Chưa đạt yêu cầu hoàn thành trò chơi này! Hãy thử lại.');
+      }
     }
   };
 

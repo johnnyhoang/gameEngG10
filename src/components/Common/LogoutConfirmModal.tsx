@@ -17,15 +17,25 @@ export const LogoutConfirmModal: React.FC<LogoutConfirmModalProps> = ({
   const uiTheme = useGameState(state => state.uiTheme);
   const currentUser = useGameState(state => state.currentUser);
   const isUnicorn = isLightTheme(uiTheme);
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [localLoggingOut, setLocalLoggingOut] = useState(false);
+  const logoutState = useGameState(state => state.logoutState);
+  const isLoggingOut = localLoggingOut || logoutState === 'processing';
 
   if (!isOpen) return null;
 
   const handleConfirm = async () => {
-    setIsLoggingOut(true);
-    // Give a small delay to let user read the farewell message
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    await onConfirm();
+    setLocalLoggingOut(true);
+    try {
+      // Give a small delay to let user read the farewell message
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      await onConfirm();
+    } catch (err) {
+      console.error('Error during logout execution:', err);
+      // Fallback: force immediate clean redirection to root path
+      window.location.replace('/');
+    } finally {
+      setLocalLoggingOut(false);
+    }
   };
 
   const isStudent = currentUser?.role === 'student';

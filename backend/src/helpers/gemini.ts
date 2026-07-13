@@ -25,7 +25,7 @@ export const callGeminiAPI = async (prompt: string, generationConfig: Record<str
   let lastError: Error | null = null;
   for (let i = 0; i < keys.length; i++) {
     try {
-      const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${keys[i]}`, {
+      const apiRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${keys[i]}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

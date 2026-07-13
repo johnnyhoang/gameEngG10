@@ -26,6 +26,7 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
   const [isError, setIsError] = useState(false);
   const [showWelcome, setShowWelcome] = useState(false);
   const [geometryMode, setGeometryMode] = useState<'2d' | '3d' | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const questions = useGameState(state => state.questions);
   const pageExplorationStates = useGameState(state => state.pageExplorationStates);
@@ -47,37 +48,42 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
     const text = question.prompt.toLowerCase();
     return text.includes('hình chóp') || text.includes('hình trụ') || text.includes('hình hộp') || text.includes('lăng trụ') || text.includes('tứ diện') || text.includes('mặt cầu');
   }, [question]);
-
   useEffect(() => {
     const handleOpen = async (e: Event) => {
       const customEvent = e as CustomEvent;
       const { pageId, onUnlock } = customEvent.detail;
       setPageId(pageId);
       setOnUnlockCallback(() => onUnlock);
+      setIsOpen(true);
+      setIsLoading(true);
       
       // Load question — ưu tiên câu bị ghim (pendingKeyQuestionId)
       const currentState = pageExplorationStates[pageId];
       let q: Question | undefined;
       
-      if (currentState?.pendingKeyQuestionId) {
-        q = questions.find(q => q.id === currentState.pendingKeyQuestionId);
+      try {
+        if (currentState?.pendingKeyQuestionId) {
+          q = questions.find(q => q.id === currentState.pendingKeyQuestionId);
+        }
+        
+        if (!q) {
+          // Dùng Core Knowledge-aware picker (CORE_SPECS §9.D)
+          const studentId = player?.id ?? 'guest';
+          const recentlyUsed = await getRecentlyUsedGatekeeperIds(studentId, pageId);
+          const picked = pickGatekeeperQuestion(pageId, activeSectId as SubjectId, questions, recentlyUsed);
+          q = picked ?? undefined;
+          if (picked) await recordGatekeeperUsage(studentId, pageId, picked.id);
+        }
+      } catch (err) {
+        console.error("Error loading gatekeeper question:", err);
+      } finally {
+        setQuestion(q || null);
+        setSelectedAnswer('');
+        setIsError(false);
+        setShowWelcome(false);
+        setGeometryMode(null);
+        setIsLoading(false);
       }
-      
-      if (!q) {
-        // Dùng Core Knowledge-aware picker (CORE_SPECS §9.D)
-        const studentId = player?.id ?? 'guest';
-        const recentlyUsed = await getRecentlyUsedGatekeeperIds(studentId, pageId);
-        const picked = pickGatekeeperQuestion(pageId, activeSectId as SubjectId, questions, recentlyUsed);
-        q = picked ?? undefined;
-        if (picked) await recordGatekeeperUsage(studentId, pageId, picked.id);
-      }
-
-      setQuestion(q || null);
-      setSelectedAnswer('');
-      setIsError(false);
-      setShowWelcome(false);
-      setGeometryMode(null);
-      setIsOpen(true);
     };
 
     window.addEventListener('FOG_CARD_CLICKED', handleOpen);
@@ -158,6 +164,19 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
   };
 
   if (!isOpen) return null;
+
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in">
+        <div className="bg-black/90 border border-synth-cyan/30 rounded-2xl p-8 max-w-md w-full relative shadow-[0_0_30px_rgba(0,240,255,0.15)] text-center animate-pulse">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-synth-cyan mx-auto mb-4"></div>
+          <p className="font-orbitron text-xs text-synth-cyan font-bold tracking-widest uppercase">
+            Đang tụ khí kích hoạt trận pháp...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   if (showWelcome) {
     return (

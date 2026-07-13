@@ -63,6 +63,9 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
   const [studentEnergyPercent, setStudentEnergyPercent] = useState(100);
   const [maxEnergyInput, setMaxEnergyInput] = useState(100);
   const [resetHoursInput, setResetHoursInput] = useState<2 | 3 | 5>(3);
+  const [isSettingEnergy, setIsSettingEnergy] = useState(false);
+  const [isSettingEnergyConfig, setIsSettingEnergyConfig] = useState(false);
+  const [resolvingReviewIds, setResolvingReviewIds] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (selectedStudentProfile?.player) {
@@ -172,13 +175,21 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
             <button
               onClick={async () => {
                 if (!selectedStudentProfile?.studentUser?.id) return;
-                await adminSetEnergy(selectedStudentProfile.studentUser.id, studentEnergyPercent);
-                toast.success(`Đã nạp năng lượng lên ${studentEnergyPercent}% thành công!`);
+                setIsSettingEnergy(true);
+                try {
+                  await adminSetEnergy(selectedStudentProfile.studentUser.id, studentEnergyPercent);
+                  toast.success(`Đã nạp năng lượng lên ${studentEnergyPercent}% thành công!`);
+                } catch (err) {
+                  console.error(err);
+                  toast.error('Nạp năng lượng thất bại.');
+                } finally {
+                  setIsSettingEnergy(false);
+                }
               }}
-              disabled={!canManageEnergy}
+              disabled={!canManageEnergy || isSettingEnergy}
               className="w-full py-2 bg-synth-cyan text-black font-bold rounded-lg hover:shadow-[0_0_12px_rgba(0,240,255,0.4)] hover:scale-[1.01] active:scale-[0.99] transition-all text-xs uppercase disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              Xác Nhận Nạp Năng Lượng ⚡
+              {isSettingEnergy ? 'Đang xử lý...' : 'Xác Nhận Nạp Năng Lượng ⚡'}
             </button>
           </div>
 
@@ -218,12 +229,21 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
             <button
               onClick={async () => {
                 if (!selectedStudentProfile?.studentUser?.id) return;
-                await adminSetEnergyConfig(selectedStudentProfile.studentUser.id, maxEnergyInput, resetHoursInput);
+                setIsSettingEnergyConfig(true);
+                try {
+                  await adminSetEnergyConfig(selectedStudentProfile.studentUser.id, maxEnergyInput, resetHoursInput);
+                  toast.success('Đã lưu cấu hình năng lượng riêng thành công!');
+                } catch (err) {
+                  console.error(err);
+                  toast.error('Không thể lưu cấu hình.');
+                } finally {
+                  setIsSettingEnergyConfig(false);
+                }
               }}
-              disabled={!canManageEnergy}
+              disabled={!canManageEnergy || isSettingEnergyConfig}
               className="w-full py-2 border border-synth-cyan/40 text-synth-cyan font-bold rounded-lg hover:bg-synth-cyan/10 transition-all text-xs uppercase disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              Lưu cấu hình Năng Lượng
+              {isSettingEnergyConfig ? 'Đang lưu...' : 'Lưu cấu hình Năng Lượng'}
             </button>
             {!canManageEnergy && (
               <p className="text-[9px] text-yellow-500/80 italic mt-2 leading-tight">
@@ -377,15 +397,25 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
                     <div className="flex justify-between items-center text-[10px] text-synth-text-muted">
                       <span>{new Date(review.created_at).toLocaleString('vi-VN')}</span>
                       <button
+                        disabled={resolvingReviewIds[review.id]}
                         onClick={async () => {
-                          const ok = await resolveSkipReview(review.id);
-                          if (ok) {
-                            toast.success('Đã xác nhận phản hồi bỏ qua.');
+                          if (resolvingReviewIds[review.id]) return;
+                          setResolvingReviewIds(prev => ({ ...prev, [review.id]: true }));
+                          try {
+                            const ok = await resolveSkipReview(review.id);
+                            if (ok) {
+                              toast.success('Đã xác nhận phản hồi bỏ qua.');
+                            }
+                          } catch (err) {
+                            console.error(err);
+                            toast.error('Không thể lưu xác nhận.');
+                          } finally {
+                            setResolvingReviewIds(prev => ({ ...prev, [review.id]: false }));
                           }
                         }}
-                        className="px-2 py-1 rounded bg-synth-green text-black font-black uppercase text-[8px] font-orbitron cursor-pointer transition-all"
+                        className="px-2 py-1 rounded bg-synth-green text-black font-black uppercase text-[8px] font-orbitron cursor-pointer transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                       >
-                        Đã Xem ✓
+                        {resolvingReviewIds[review.id] ? 'Đang duyệt...' : 'Đã Xem ✓'}
                       </button>
                     </div>
                   </div>

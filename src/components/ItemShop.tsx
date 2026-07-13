@@ -32,14 +32,17 @@ export const ItemShop: React.FC = () => {
     cost: number;
     actionDescription: string;
     onConfirm: () => void;
+    isLoading?: boolean;
   }>({
     isOpen: false,
     cost: 0,
     actionDescription: '',
     onConfirm: () => {},
+    isLoading: false,
   });
 
   const [classRewardsLoading, setClassRewardsLoading] = useState(true);
+  const [cancellingIds, setCancellingIds] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setClassRewardsLoading(true);
@@ -148,18 +151,36 @@ export const ItemShop: React.FC = () => {
       isOpen: true,
       cost: reward.costCoins,
       actionDescription: `đổi phần thưởng lớp học "${title}"`,
+      isLoading: false,
       onConfirm: async () => {
-        const ok = await redeemClassReward(rewardId);
-        if (ok) {
-          toast.success(`🎁 Đã gửi yêu cầu đổi "${title}"! Chờ giáo viên phát thưởng nhé.`);
+        setConfirmModal(prev => ({ ...prev, isLoading: true }));
+        try {
+          const ok = await redeemClassReward(rewardId);
+          if (ok) {
+            toast.success(`🎁 Đã gửi yêu cầu đổi "${title}"! Chờ giáo viên phát thưởng nhé.`);
+          }
+        } catch (err) {
+          console.error(err);
+          toast.error('Gửi yêu cầu đổi phúc lợi thất bại.');
+        } finally {
+          setConfirmModal(prev => ({ ...prev, isOpen: false, isLoading: false }));
         }
-        setConfirmModal(prev => ({ ...prev, isOpen: false }));
       }
     });
   };
 
   const handleCancelClassRedemption = async (redemptionId: string) => {
-    await cancelClassRedemption(redemptionId);
+    if (cancellingIds[redemptionId]) return;
+    setCancellingIds(prev => ({ ...prev, [redemptionId]: true }));
+    try {
+      await cancelClassRedemption(redemptionId);
+      toast.success('Đã rút lại yêu cầu đổi quà.');
+    } catch (err) {
+      console.error(err);
+      toast.error('Không thể rút lại yêu cầu.');
+    } finally {
+      setCancellingIds(prev => ({ ...prev, [redemptionId]: false }));
+    }
   };
 
   const hasStreakShield = player.badges?.includes('Streak Shield') || false;
@@ -378,9 +399,12 @@ export const ItemShop: React.FC = () => {
                           {alreadyPending ? (
                             <>
                               <span className="text-[10px] px-2 py-1 rounded font-orbitron font-bold text-synth-orange border border-synth-orange/30 bg-synth-orange/10 animate-pulse">Chờ Trao</span>
-                              <button onClick={(e) => { e.stopPropagation(); handleCancelClassRedemption(myPendingForThisReward[0].id); }}
-                                className="flex items-center gap-1 text-[10px] text-synth-text-muted hover:text-synth-magenta transition-colors cursor-pointer">
-                                <RotateCcw className="w-3 h-3" /> Rút lại
+                              <button 
+                                disabled={cancellingIds[myPendingForThisReward[0].id]}
+                                onClick={(e) => { e.stopPropagation(); handleCancelClassRedemption(myPendingForThisReward[0].id); }}
+                                className="flex items-center gap-1 text-[10px] text-synth-text-muted hover:text-synth-magenta transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                              >
+                                <RotateCcw className="w-3 h-3" /> {cancellingIds[myPendingForThisReward[0].id] ? 'Đang hủy...' : 'Rút lại'}
                               </button>
                             </>
                           ) : (
@@ -413,9 +437,13 @@ export const ItemShop: React.FC = () => {
                   <div className="flex items-center gap-2">
                     {getRedemptionStatusBadge(redemption.status)}
                     {redemption.status === 'pending' && (
-                      <button onClick={() => handleCancelClassRedemption(redemption.id)}
-                        className="text-[10px] text-synth-text-muted hover:text-synth-magenta transition-colors cursor-pointer" title="Rút lại">
-                        <RotateCcw className="w-3 h-3" />
+                      <button 
+                        disabled={cancellingIds[redemption.id]}
+                        onClick={() => handleCancelClassRedemption(redemption.id)}
+                        className="text-[10px] text-synth-text-muted hover:text-synth-magenta transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed" 
+                        title="Rút lại"
+                      >
+                        {cancellingIds[redemption.id] ? '...' : <RotateCcw className="w-3 h-3" />}
                       </button>
                     )}
                   </div>
@@ -440,6 +468,7 @@ export const ItemShop: React.FC = () => {
         actionDescription={confirmModal.actionDescription}
         onConfirm={confirmModal.onConfirm}
         onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
+        isLoading={confirmModal.isLoading}
       />
     </div>
   );

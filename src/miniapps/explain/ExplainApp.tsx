@@ -48,7 +48,7 @@ const getTopicFromSectId = (sectId?: string) => {
   return 'pythagoras';
 };
 
-export const ExplainApp: React.FC<ExplainAppProps> = ({ activeSectId, uiTheme, onReward }) => {
+export const ExplainApp: React.FC<ExplainAppProps> = ({ activeSectId, uiTheme, onReward, onGameComplete }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
 
   const [explainTopic, setExplainTopic] = useState<'pythagoras' | 'present_perfect' | 'song_poem'>(() => getTopicFromSectId(activeSectId));
@@ -80,6 +80,7 @@ export const ExplainApp: React.FC<ExplainAppProps> = ({ activeSectId, uiTheme, o
       setExplainPhase('won');
       onReward(15, 30, 'Giảng giải cho AI', `Giảng bài thành công chủ đề ${explainTopic}`);
       toast.success('Chuẩn xác. AI đã thông suốt bài này. (+15 NP, +30 XP)');
+      onGameComplete?.({ correctAnswers: 1, timeSpent: 0, score: 100, passed: true });
     } else {
       toast.error('Lệch rồi nhé. AI bắt ngược lại luôn, thử lại đi.');
     }

@@ -44,7 +44,7 @@ const getSubjectFromSectId = (sectId?: string) => {
   return 'math';
 };
 
-export const ReadingApp: React.FC<ReadingAppProps> = ({ activeSectId, uiTheme, onReward }) => {
+export const ReadingApp: React.FC<ReadingAppProps> = ({ activeSectId, uiTheme, onReward, onGameComplete }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
 
   const [readingSubject, setReadingSubject] = useState<'english' | 'math' | 'literature'>(() => getSubjectFromSectId(activeSectId));
@@ -83,9 +83,11 @@ export const ReadingApp: React.FC<ReadingAppProps> = ({ activeSectId, uiTheme, o
       setReadingResult('success');
       onReward(35, 30, 'Đọc hiểu sâu', `Hoàn thành thử thách đọc hiểu môn ${readingSubject}`);
       toast.success('Chuẩn, bạn bắt đúng từ khóa và chốt đúng ý cốt lõi! 🎉');
+      onGameComplete?.({ correctAnswers: 1, timeSpent: 0, score: 100, passed: true });
     } else {
       setReadingResult('fail');
       toast.error('Đáp án hoặc từ khóa tô sáng chưa chính xác rồi.');
+      onGameComplete?.({ correctAnswers: 0, timeSpent: 0, score: 0, passed: false });
     }
   };
 

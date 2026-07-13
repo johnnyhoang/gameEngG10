@@ -16,6 +16,7 @@ import { sound } from '../utils/sound';
 import { toast } from '../utils/toast';
 import { supabase } from '../utils/supabaseClient';
 import { gameService } from '../services/gameService';
+import type { ActivityResult } from '../types/activityResult';
 
 // Subcomponents
 import { PlayAreaHeader } from './PlayArea/PlayAreaHeader';
@@ -23,13 +24,14 @@ import { QuestionMCQ } from './PlayArea/QuestionMCQ';
 import { QuestionEssay } from './PlayArea/QuestionEssay';
 import { QuestionTextInput } from './PlayArea/QuestionTextInput';
 import { ExplanationBox } from './PlayArea/ExplanationBox';
-import { RunFinishedScreen } from './PlayArea/RunFinishedScreen';
+import { PostQuizReview } from './PlayArea/PostQuizReview';
+import { FinalResultScreen } from './PlayArea/FinalResultScreen';
 
 interface PlayAreaProps {
   mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'lesson' | 'survival';
   bossId?: string;
   lessonId?: string;
-  onFinish: (summary?: { accuracyRatio: number }) => void;
+  onFinish: (result: ActivityResult) => void;
 }
 
 export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFinish }) => {
@@ -59,10 +61,15 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const [rewardsEarned, setRewardsEarned] = useState({ coins: 0, xp: 0 });
   const [sessionAnswered, setSessionAnswered] = useState(0);
   const [sessionCorrect, setSessionCorrect] = useState(0);
-  
+  const [sessionStartTime] = useState(() => Date.now());
+
   // Bộ đếm lỗi NỘI BỘ của lượt chơi
   const [runMistakes, setRunMistakes] = useState(0);
   const [runFinished, setRunFinished] = useState(false);
+  const [timeoutOccurred, setTimeoutOccurred] = useState(false);
+  const [activityResult, setActivityResult] = useState<ActivityResult | null>(null);
+  // 'review' = PostQuizReview, 'result' = FinalResultScreen
+  const [runPhase, setRunPhase] = useState<'review' | 'result'>('review');
   const runEndHandledRef = useRef(false);
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -131,7 +138,18 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const handleEscape = () => {
     sound.playEscape();
     const accuracyRatio = sessionAnswered > 0 ? sessionCorrect / sessionAnswered : 0;
-    onFinish({ accuracyRatio });
+    const timeSpentSeconds = Math.round((Date.now() - sessionStartTime) / 1000);
+    const result: ActivityResult = {
+      status: 'abandoned',
+      score: sessionCorrect,
+      total: currentQuestions.length,
+      accuracyRatio,
+      timeSpentSeconds,
+      rewardsEarned,
+      isDefeat: false,
+      passed: false,
+    };
+    onFinish(result);
   };
 
   // Timer states
@@ -277,6 +295,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         setTimeLeft(prev => {
           if (prev <= 1) {
             clearInterval(timerRef.current!);
+            setTimeoutOccurred(true);
             setRunFinished(true);
             return 0;
           }
@@ -295,13 +314,50 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     runEndHandledRef.current = true;
 
     const isDefeat = runMistakes >= 3 && (mode === 'boss' || mode === 'survival');
-    
+    const accuracyRatio = sessionAnswered > 0 ? sessionCorrect / sessionAnswered : 0;
+    const timeSpentSeconds = Math.round((Date.now() - sessionStartTime) / 1000);
+
+    // ── Completion threshold per mode ──────────────────────────────────
+    // lesson : ≥70% AND no timeout
+    // boss   : no defeat AND no timeout (timer running out = fail)
+    // survival: no defeat
+    // others : ≥60% (relaxed practice threshold)
+    let passed: boolean;
+    let status: ActivityResult['status'];
+
+    if (timeoutOccurred) {
+      // Boss timed out → always fail; other modes without timers never reach here
+      passed = false;
+      status = 'timeout';
+    } else if (isDefeat) {
+      passed = false;
+      status = 'failed';
+    } else if (mode === 'lesson') {
+      passed = accuracyRatio >= 0.7;
+      status = passed ? 'completed' : 'failed';
+    } else if (mode === 'boss') {
+      passed = true; // reached here = no defeat, no timeout
+      status = 'completed';
+    } else if (mode === 'survival') {
+      passed = true; // reached here = no defeat
+      status = 'completed';
+    } else {
+      // grammar / reading / vocabulary / pronunciation / mixed / revenge
+      passed = accuracyRatio >= 0.6;
+      status = passed ? 'completed' : 'failed';
+    }
+
     const submitResults = async () => {
+      let finalCoins = rewardsEarned.coins;
+      let finalXp = rewardsEarned.xp;
+
       try {
         if (!sessionId) {
           // Fallback if session wasn't started online
           if (isDefeat) {
             applyDefeatPenalty(rewardsEarned.coins, rewardsEarned.xp);
+            finalCoins = Math.floor(rewardsEarned.coins / 2);
+            finalXp = Math.floor(rewardsEarned.xp / 2);
           } else if (mode === 'boss') {
             const bossBonusIndex = bossId === 'b-2024' || bossId === 'b-hk1' ? 0
               : bossId === 'b-2025' || bossId === 'b-hk2' ? 1
@@ -309,42 +365,44 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
               : undefined;
             completeBossVictory(bossBonusIndex);
           }
-          return;
-        }
+        } else {
+          const bossBonusIndex = bossId === 'b-2024' || bossId === 'b-hk1' ? 0
+            : bossId === 'b-2025' || bossId === 'b-hk2' ? 1
+            : bossId === 'b-2026' ? 2
+            : undefined;
 
-        const bossBonusIndex = bossId === 'b-2024' || bossId === 'b-hk1' ? 0
-          : bossId === 'b-2025' || bossId === 'b-hk2' ? 1
-          : bossId === 'b-2026' ? 2
-          : undefined;
-
-        const res = await gameService.endSession({
-          sessionId,
-          profileId: player.id,
-          answers: answersSubmitted,
-          isDefeat,
-          bossBonusIndex
-        });
-
-        if (res.success) {
-          // Sync server rewards back to client store
-          syncSessionResult({
-            newCoins: res.newCoins,
-            newXp: res.newXp,
-            newLevel: res.newLevel,
-            badges: res.badges
+          const res = await gameService.endSession({
+            sessionId,
+            profileId: player.id,
+            answers: answersSubmitted.map(ans => ({
+              questionId: ans.questionId,
+              typedAnswer: ans.typedAnswer,
+              selectedAnswer: ans.selectedAnswer,
+              scoreRatio: ans.scoreRatio,
+              isSkipped: ans.isSkipped || false
+            })),
+            isDefeat,
+            bossBonusIndex
           });
 
-          // Hiển thị phần thưởng thực tế nhận được từ server trên UI
-          setRewardsEarned({
-            coins: res.coinsGained,
-            xp: res.xpGained
-          });
+          if (res.success) {
+            syncSessionResult({
+              newCoins: res.newCoins,
+              newXp: res.newXp,
+              newLevel: res.newLevel,
+              badges: res.badges
+            });
+            finalCoins = res.coinsGained;
+            finalXp = res.xpGained;
+            setRewardsEarned({ coins: finalCoins, xp: finalXp });
+          }
         }
       } catch (err) {
         console.error('Failed to submit session result, run fallback:', err);
-        // Fallback local update if network failed
         if (isDefeat) {
           applyDefeatPenalty(rewardsEarned.coins, rewardsEarned.xp);
+          finalCoins = Math.floor(rewardsEarned.coins / 2);
+          finalXp = Math.floor(rewardsEarned.xp / 2);
         } else if (mode === 'boss') {
           const bossBonusIndex = bossId === 'b-2024' || bossId === 'b-hk1' ? 0
             : bossId === 'b-2025' || bossId === 'b-hk2' ? 1
@@ -353,10 +411,24 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           completeBossVictory(bossBonusIndex);
         }
       }
+
+      // Store final ActivityResult — render phases will consume this
+      setActivityResult({
+        status,
+        score: sessionCorrect,
+        total: currentQuestions.length,
+        accuracyRatio,
+        timeSpentSeconds,
+        rewardsEarned: { coins: finalCoins, xp: finalXp },
+        isDefeat,
+        passed,
+      });
+      // Start at the review phase so student can review answers first
+      setRunPhase('review');
     };
 
     submitResults();
-  }, [runFinished, runMistakes, mode, bossId, sessionId, player.id, answersSubmitted, rewardsEarned, applyDefeatPenalty, completeBossVictory, syncSessionResult]);
+  }, [runFinished, runMistakes, mode, bossId, sessionId, player.id, answersSubmitted, rewardsEarned, applyDefeatPenalty, completeBossVictory, syncSessionResult, sessionAnswered, sessionCorrect, sessionStartTime, timeoutOccurred, currentQuestions.length]);
 
   const activeQuestion = currentQuestions[currentIndex];
 
@@ -442,6 +514,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
 
     let isCorrect = false;
     let scoreRatio = 0;
+    let data: any = undefined;
+    let localAiWarningMessage = '';
     const cleanAnswer = (str: string) => str
       .trim()
       .toLowerCase()
@@ -483,6 +557,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       setAiWarningMessage('');
     } else if (isLiteratureRubric) {
       setIsAiGrading(true);
+      setLastRubricScore(null);
+      setLastRubricMissing([]);
       setAiFeedback('');
       setAiSuggestions([]);
       setAiWarningMessage('');
@@ -516,7 +592,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           throw new Error(`API error: ${res.status} ${errText}`);
         }
 
-        const data = await res.json();
+        data = await res.json();
         if (currentQuestionIdRef.current !== questionIdBeingGraded) return;
         if (data.success && data.result) {
           const { score, missingKeywords = [], feedback = '', suggestions = [] } = data.result;
@@ -532,7 +608,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       } catch (err: any) {
         if (currentQuestionIdRef.current !== questionIdBeingGraded) return;
         console.error('Lỗi khi gọi AI chấm bài, chuyển sang backup:', err);
-        setAiWarningMessage('Linh Sư phải chấm dự phòng. Kết quả vẫn ổn, nhưng nên coi như mốc tham chiếu.');
+        localAiWarningMessage = 'Linh Sư phải chấm dự phòng. Kết quả vẫn ổn, nhưng nên coi như mốc tham chiếu.';
+        setAiWarningMessage(localAiWarningMessage);
         const fallbackResult = runOldGradingBackup();
         isCorrect = fallbackResult.isCorrect;
         scoreRatio = fallbackResult.scoreRatio;
@@ -572,7 +649,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
 
         if (!res.ok) throw new Error(`API error: ${res.status}`);
 
-        const data = await res.json();
+        data = await res.json();
         if (currentQuestionIdRef.current !== questionIdBeingGraded) return;
         isCorrect = data.isCorrect;
         scoreRatio = isCorrect ? 1 : 0;
@@ -580,13 +657,11 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       } catch (err: any) {
         if (currentQuestionIdRef.current !== questionIdBeingGraded) return;
         console.error('Lỗi khi gọi AI chấm Toán tự luận, dùng backup:', err);
-        setAiWarningMessage('Linh Sư chấm Toán tự luận dự phòng (So khớp chuỗi).');
-        const answers = Array.isArray(activeQuestion.correctAnswer)
-          ? activeQuestion.correctAnswer
-          : [activeQuestion.correctAnswer];
-        const normalizedTyped = cleanAnswer(typedAnswer);
-        isCorrect = answers.some(ans => normalizedTyped === cleanAnswer(ans));
-        scoreRatio = isCorrect ? 1 : 0;
+        localAiWarningMessage = 'Linh Sư chấm Toán tự luận dự phòng (So khớp chuỗi).';
+        setAiWarningMessage(localAiWarningMessage);
+        const fallbackResult = runOldGradingBackup();
+        isCorrect = fallbackResult.isCorrect;
+        scoreRatio = fallbackResult.scoreRatio;
       } finally {
         if (currentQuestionIdRef.current === questionIdBeingGraded) {
           setIsAiGrading(false);
@@ -630,7 +705,14 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         questionId: activeQuestion.id,
         typedAnswer: activeQuestion.type !== 'mcq' ? typedAnswer : undefined,
         selectedAnswer: activeQuestion.type === 'mcq' ? selectedAnswer : undefined,
-        scoreRatio: scoreRatio
+        scoreRatio: scoreRatio,
+        isCorrect: isCorrect,
+        isSkipped: false,
+        aiFeedback: activeSectId === 'math' ? (data ? (data.explanation || '') : '') : (data ? (data.result?.feedback || '') : ''),
+        aiSuggestions: (data ? (activeSectId === 'math' ? [] : data.result?.suggestions) : []) || [],
+        lastRubricScore: (data ? (activeSectId === 'math' ? null : data.result?.score) : null) ?? null,
+        lastRubricMissing: (data ? (activeSectId === 'math' ? [] : data.result?.missingKeywords) : []) || [],
+        aiWarningMessage: localAiWarningMessage
       }
     ]);
 
@@ -670,6 +752,16 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     if (success) {
       toast.success('Đã gửi phản ánh tới Chủ Nhiệm. Câu hỏi này sẽ được gác lại.');
       sound.playNext();
+      
+      setAnswersSubmitted(prev => [
+        ...prev,
+        {
+          questionId: activeQuestion.id,
+          isSkipped: true,
+          isCorrect: false,
+          scoreRatio: 0
+        }
+      ]);
       
       setChecked(false);
       setSelectedAnswer('');
@@ -737,13 +829,40 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                   : 'Phụ bản bài học';
 
   // --- Early returns ---
-  if (runFinished) {
+  if (runFinished && activityResult) {
+    if (runPhase === 'review') {
+      return (
+        <PostQuizReview
+          mode={mode}
+          rewardsEarned={activityResult.rewardsEarned}
+          runMistakes={runMistakes}
+          currentQuestions={currentQuestions}
+          answersSubmitted={answersSubmitted}
+          activeSectId={activeSectId}
+          onEscape={() => setRunPhase('result')}
+        />
+      );
+    }
+    // runPhase === 'result'
     return (
-      <RunFinishedScreen
+      <FinalResultScreen
+        result={activityResult}
         mode={mode}
-        rewardsEarned={rewardsEarned}
-        runMistakes={runMistakes}
-        onEscape={handleEscape}
+        onFinish={() => onFinish(activityResult)}
+        onRetry={() => {
+          // Reset the whole run for a retry attempt
+          runEndHandledRef.current = false;
+          setRunFinished(false);
+          setTimeoutOccurred(false);
+          setActivityResult(null);
+          setRunPhase('review');
+          setRunMistakes(0);
+          setCurrentIndex(0);
+          setAnswersSubmitted([]);
+          setRewardsEarned({ coins: 0, xp: 0 });
+          setSessionAnswered(0);
+          setSessionCorrect(0);
+        }}
       />
     );
   }

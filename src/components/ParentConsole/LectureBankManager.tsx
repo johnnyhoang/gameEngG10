@@ -35,6 +35,7 @@ export const LectureBankManager: React.FC = () => {
   const [formTheory, setFormTheory] = useState('');
   const [formIsStandard, setFormIsStandard] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [deletingIds, setDeletingIds] = useState<Record<string, boolean>>({});
 
   // Lazy Load Paging
   const [visibleCount, setVisibleCount] = useState(10);
@@ -155,10 +156,12 @@ export const LectureBankManager: React.FC = () => {
   };
 
   const handleDeleteLesson = async (lessonId: string) => {
+    if (deletingIds[lessonId]) return;
     if (!window.confirm('Bạn có chắc chắn muốn xóa bài giảng này? Hành động này không thể hoàn tác.')) {
       return;
     }
 
+    setDeletingIds(prev => ({ ...prev, [lessonId]: true }));
     try {
       const session = await supabase.auth.getSession();
       const token = session.data.session?.access_token;
@@ -178,6 +181,8 @@ export const LectureBankManager: React.FC = () => {
     } catch (e) {
       console.error(e);
       toast.error('Lỗi khi xóa.');
+    } finally {
+      setDeletingIds(prev => ({ ...prev, [lessonId]: false }));
     }
   };
 
@@ -398,14 +403,19 @@ export const LectureBankManager: React.FC = () => {
                   </div>
                   <div className="flex gap-1">
                     <button
+                      disabled={deletingIds[lesson.id]}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleDeleteLesson(lesson.id);
                       }}
-                      className="p-1.5 rounded hover:bg-red-500 hover:text-black bg-red-500/10 border border-red-500/20 text-red-400 transition-colors cursor-pointer"
+                      className="p-1.5 rounded hover:bg-red-500 hover:text-black bg-red-500/10 border border-red-500/20 text-red-400 transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center min-w-[28px] min-h-[28px]"
                       title="Xóa bài giảng"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      {deletingIds[lesson.id] ? (
+                        <span className="animate-spin inline-block w-3 h-3 border-2 border-red-400 border-t-transparent rounded-full"></span>
+                      ) : (
+                        <Trash2 className="w-3.5 h-3.5" />
+                      )}
                     </button>
                   </div>
                 </div>

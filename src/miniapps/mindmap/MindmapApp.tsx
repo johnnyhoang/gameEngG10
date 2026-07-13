@@ -1,6 +1,7 @@
 import type { UiThemeId } from '../../types/game';
 import React, { useState } from 'react';
 import { HelpCircle } from 'lucide-react';
+import { toast } from '../../utils/toast';
 
 interface MindmapNode {
   id: string;
@@ -71,7 +72,7 @@ const getSubjectFromSectId = (sectId?: string) => {
   return 'math';
 };
 
-export const MindmapApp: React.FC<MindmapAppProps> = ({ activeSectId, uiTheme }) => {
+export const MindmapApp: React.FC<MindmapAppProps> = ({ activeSectId, uiTheme, onReward, onGameComplete }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
   const [selectedMapSubject, setSelectedMapSubject] = useState<'math' | 'english' | 'literature'>(() => getSubjectFromSectId(activeSectId));
   const [activeNodeDetails, setActiveNodeDetails] = useState<MindmapNode | null>(null);
@@ -115,24 +116,39 @@ export const MindmapApp: React.FC<MindmapAppProps> = ({ activeSectId, uiTheme })
       </div>
 
       <div className={`glass-panel rounded-2xl p-5 border flex flex-col justify-between ${isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-cyan/15'}`}>
-        {activeNodeDetails ? (
-          <div className="space-y-4">
-            <span className="text-[9px] font-bold tracking-wider text-synth-magenta font-orbitron uppercase border border-synth-magenta/30 px-2 py-0.5 rounded bg-synth-magenta/5">Lý Thuyết Rút Gọn</span>
-            <h4 className="font-orbitron font-bold text-sm text-white">{activeNodeDetails.label}</h4>
-            <p className="text-xs leading-relaxed text-slate-300 bg-white/5 p-3 rounded-xl border border-white/5">{activeNodeDetails.details}</p>
-            {activeNodeDetails.formula && (
-              <div className="space-y-1.5">
-                <span className="text-[9px] font-bold text-slate-400 font-orbitron uppercase">Cấu trúc / Công thức:</span>
-                <pre className="bg-[#050608] border border-synth-cyan/35 p-3 rounded-xl text-synth-cyan font-bold font-mono text-[10px] overflow-x-auto whitespace-pre-line">{activeNodeDetails.formula}</pre>
-              </div>
-            )}
-          </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center text-center py-12 text-slate-400 space-y-3 h-full">
-            <HelpCircle className="w-12 h-12 text-slate-500 animate-bounce" />
-            <p className="text-[11px]">Bấm chọn một nhánh bên trái để xem nhanh lý thuyết.</p>
-          </div>
-        )}
+        <div className="space-y-4">
+          {activeNodeDetails ? (
+            <div className="space-y-4">
+              <span className="text-[9px] font-bold tracking-wider text-synth-magenta font-orbitron uppercase border border-synth-magenta/30 px-2 py-0.5 rounded bg-synth-magenta/5">Lý Thuyết Rút Gọn</span>
+              <h4 className="font-orbitron font-bold text-sm text-white">{activeNodeDetails.label}</h4>
+              <p className="text-xs leading-relaxed text-slate-300 bg-white/5 p-3 rounded-xl border border-white/5">{activeNodeDetails.details}</p>
+              {activeNodeDetails.formula && (
+                <div className="space-y-1.5">
+                  <span className="text-[9px] font-bold text-slate-400 font-orbitron uppercase">Cấu trúc / Công thức:</span>
+                  <pre className="bg-[#050608] border border-synth-cyan/35 p-3 rounded-xl text-synth-cyan font-bold font-mono text-[10px] overflow-x-auto whitespace-pre-line">{activeNodeDetails.formula}</pre>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center text-center py-12 text-slate-400 space-y-3 h-full">
+              <HelpCircle className="w-12 h-12 text-slate-500 animate-bounce" />
+              <p className="text-[11px]">Bấm chọn một nhánh bên trái để xem nhanh lý thuyết.</p>
+            </div>
+          )}
+        </div>
+
+        <div className="border-t border-white/5 pt-4 mt-4 flex justify-end">
+          <button 
+            onClick={() => {
+              onReward(10, 15, 'Đọc sơ đồ tri thức', `Xem sơ đồ ôn tập môn ${selectedMapSubject}`);
+              onGameComplete?.({ correctAnswers: 1, timeSpent: 0, score: 100, passed: true });
+              toast.success('Đã hoàn thành ôn tập sơ đồ! +10 NP, +15 XP 🧠');
+            }}
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 text-center"
+          >
+            Đã xem xong sơ đồ 📋
+          </button>
+        </div>
       </div>
     </div>
   );

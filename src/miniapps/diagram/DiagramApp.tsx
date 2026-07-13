@@ -40,10 +40,12 @@ export interface DiagramAppProps {
   onGameStart?: () => void;
 }
 
-export const DiagramApp: React.FC<DiagramAppProps> = ({  uiTheme, onReward,   }) => {
+export const DiagramApp: React.FC<DiagramAppProps> = ({ activeSectId, uiTheme, onReward, onGameComplete }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
 
-  const [diagramSubject, setDiagramSubject] = useState<'math' | 'english' | 'literature'>('math');
+  const diagramSubject = (activeSectId === 'english' || activeSectId === 'math' || activeSectId === 'literature')
+    ? activeSectId
+    : 'math';
   const [selectedLabel, setSelectedLabel] = useState('');
   const [diagramSlots, setDiagramSlots] = useState<DiagramSlot[]>([]);
   const [diagramLabels, setDiagramLabels] = useState<string[]>([]);
@@ -73,6 +75,7 @@ export const DiagramApp: React.FC<DiagramAppProps> = ({  uiTheme, onReward,   })
       setDiagramStatus('won');
       onReward(30, 35, 'Ghép sơ đồ thành công', `Hoàn thành ghép sơ đồ môn ${diagramSubject}`);
       toast.success('Chuẩn xác, sơ đồ khớp rồi! 🎉');
+      onGameComplete?.({ correctAnswers: diagramSlots.length, timeSpent: 0, score: 100, passed: true });
     } else {
       toast.error('Có một số nhãn lắp sai vị trí rồi!');
     }
@@ -83,10 +86,8 @@ export const DiagramApp: React.FC<DiagramAppProps> = ({  uiTheme, onReward,   })
       <div className="max-w-md mx-auto space-y-2 flex flex-col items-center">
         <h3 className="font-orbitron font-black text-lg text-white uppercase">🧱 Lắp Ghép Sơ Đồ</h3>
         <p className="text-xs text-slate-400 leading-relaxed">Nhấp chọn một nhãn dán ở bể chứa, sau đó nhấp vào ô trống tương ứng để lắp ráp!</p>
-        <div className="flex gap-1.5 bg-black/20 p-1 rounded-lg border border-white/5 mt-2">
-          {[{ id: 'math', label: 'Tam giác vuông 📐' }, { id: 'english', label: 'Cấu trúc câu 🇬🇧' }, { id: 'literature', label: 'Thể loại tác phẩm ✍️' }].map(opt => (
-            <button key={opt.id} onClick={() => setDiagramSubject(opt.id as any)} className={`px-3 py-1 rounded-md text-[10px] font-bold font-orbitron uppercase cursor-pointer ${diagramSubject === opt.id ? 'bg-synth-cyan text-black' : 'text-slate-400 hover:text-white'}`}>{opt.label}</button>
-          ))}
+        <div className="text-[10px] font-bold font-orbitron uppercase mt-2 px-3 py-1.5 rounded-lg bg-black/20 border border-white/5 inline-block text-slate-400">
+          Chủ đề: {diagramSubject === 'math' ? 'Tam giác vuông 📐' : diagramSubject === 'english' ? 'Cấu trúc câu 🇬🇧' : 'Thể loại tác phẩm ✍️'}
         </div>
       </div>
 

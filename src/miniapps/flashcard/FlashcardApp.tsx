@@ -9,7 +9,7 @@ export interface FlashcardAppProps {
   activeSectId?: string;
   uiTheme: UiThemeId;
   onReward: (coins: number, xp: number, type: string, detail: string) => void;
-  onGameComplete?: (result: { correctAnswers: number; timeSpent: number; score: number }) => void;
+  onGameComplete?: (result: { correctAnswers: number; timeSpent: number; score: number; passed: boolean }) => void;
 }
 
 export const FlashcardApp: React.FC<FlashcardAppProps> = ({ 
@@ -57,7 +57,8 @@ export const FlashcardApp: React.FC<FlashcardAppProps> = ({
     toast.success('Ghi nhận rồi. +2 NP, +5 XP 🧠');
     
     if (nextCount === 5) {
-      onGameComplete?.({ correctAnswers: 5, timeSpent: 0, score: 100 });
+      const passed = nextCount >= 4;
+      onGameComplete?.({ correctAnswers: nextCount, timeSpent: 0, score: Math.round((nextCount / 5) * 100), passed });
       toast.success('Xuất sắc! Con đã hoàn thành Xong Thẻ Nhớ hôm nay! 🌟');
     }
     

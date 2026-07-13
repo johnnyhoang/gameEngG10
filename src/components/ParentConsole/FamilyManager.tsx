@@ -36,6 +36,52 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
   const [requestClassEmail, setRequestClassEmail] = useState('');
   const [isRequestingClass, setIsRequestingClass] = useState(false);
   const [isApplyingVicePrincipal, setIsApplyingVicePrincipal] = useState(false);
+  const [processingIds, setProcessingIds] = useState<Record<string, boolean>>({});
+  const [updatingPermsIds, setUpdatingPermsIds] = useState<Record<string, boolean>>({});
+
+  const handleRespondInvite = async (linkId: string, accept: boolean, successMsg: string) => {
+    if (processingIds[linkId]) return;
+    setProcessingIds(prev => ({ ...prev, [linkId]: true }));
+    try {
+      const ok = await respondInvite(linkId, accept);
+      if (ok) toast.success(successMsg);
+    } catch (err) {
+      console.error(err);
+      toast.error('Thao tác thất bại.');
+    } finally {
+      setProcessingIds(prev => ({ ...prev, [linkId]: false }));
+    }
+  };
+
+  const handleLeaveFamily = async (linkId: string, confirmMsg: string, successMsg: string) => {
+    if (processingIds[linkId]) return;
+    if (window.confirm(confirmMsg)) {
+      setProcessingIds(prev => ({ ...prev, [linkId]: true }));
+      try {
+        const ok = await leaveFamily(linkId);
+        if (ok) toast.success(successMsg);
+      } catch (err) {
+        console.error(err);
+        toast.error('Thao tác thất bại.');
+      } finally {
+        setProcessingIds(prev => ({ ...prev, [linkId]: false }));
+      }
+    }
+  };
+
+  const handleUpdatePermissions = async (spId: string, permissions: any, successMsg: string) => {
+    if (updatingPermsIds[spId]) return;
+    setUpdatingPermsIds(prev => ({ ...prev, [spId]: true }));
+    try {
+      await updateSecondaryPermissions(spId, permissions);
+      toast.success(successMsg);
+    } catch (err) {
+      console.error(err);
+      toast.error('Cập nhật quyền thất bại.');
+    } finally {
+      setUpdatingPermsIds(prev => ({ ...prev, [spId]: false }));
+    }
+  };
 
   const isPrimaryTeacher = currentUser?.role === 'parent';
   const isSecondaryTeacher = currentUser?.role === 'secondary_parent';
@@ -132,22 +178,26 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={async () => {
-                          const ok = await respondInvite(link.id, true);
-                          if (ok) toast.success('Đã nhận học sinh vào lớp!');
-                        }}
-                        className="px-3 py-1.5 rounded bg-synth-green text-black font-bold text-[10px] uppercase cursor-pointer"
+                        disabled={processingIds[link.id]}
+                        onClick={() => handleRespondInvite(link.id, true, 'Đã nhận học sinh vào lớp!')}
+                        className="px-3 py-1.5 rounded bg-synth-green text-black font-bold text-[10px] uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[50px]"
                       >
-                        Nhận
+                        {processingIds[link.id] ? (
+                          <span className="animate-spin inline-block w-3 h-3 border-2 border-black border-t-transparent rounded-full"></span>
+                        ) : (
+                          'Nhận'
+                        )}
                       </button>
                       <button
-                        onClick={async () => {
-                          const ok = await respondInvite(link.id, false);
-                          if (ok) toast.info('Đã từ chối yêu cầu.');
-                        }}
-                        className="px-3 py-1.5 rounded border border-red-500 text-red-400 font-bold text-[10px] uppercase cursor-pointer"
+                        disabled={processingIds[link.id]}
+                        onClick={() => handleRespondInvite(link.id, false, 'Đã từ chối yêu cầu.')}
+                        className="px-3 py-1.5 rounded border border-red-500 text-red-400 font-bold text-[10px] uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[60px]"
                       >
-                        Từ chối
+                        {processingIds[link.id] ? (
+                          <span className="animate-spin inline-block w-3 h-3 border-2 border-red-400 border-t-transparent rounded-full"></span>
+                        ) : (
+                          'Từ chối'
+                        )}
                       </button>
                     </div>
                   </div>
@@ -181,22 +231,26 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={async () => {
-                          const ok = await respondInvite(sp.id, true);
-                          if (ok) toast.success('Đã duyệt Phó Chủ Nhiệm!');
-                        }}
-                        className="px-3 py-1.5 rounded bg-synth-green text-black font-bold text-[10px] uppercase cursor-pointer"
+                        disabled={processingIds[sp.id]}
+                        onClick={() => handleRespondInvite(sp.id, true, 'Đã duyệt Phó Chủ Nhiệm!')}
+                        className="px-3 py-1.5 rounded bg-synth-green text-black font-bold text-[10px] uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[50px]"
                       >
-                        Duyệt
+                        {processingIds[sp.id] ? (
+                          <span className="animate-spin inline-block w-3 h-3 border-2 border-black border-t-transparent rounded-full"></span>
+                        ) : (
+                          'Duyệt'
+                        )}
                       </button>
                       <button
-                        onClick={async () => {
-                          const ok = await respondInvite(sp.id, false);
-                          if (ok) toast.info('Đã từ chối yêu cầu.');
-                        }}
-                        className="px-3 py-1.5 rounded border border-red-500 text-red-400 font-bold text-[10px] uppercase cursor-pointer"
+                        disabled={processingIds[sp.id]}
+                        onClick={() => handleRespondInvite(sp.id, false, 'Đã từ chối yêu cầu.')}
+                        className="px-3 py-1.5 rounded border border-red-500 text-red-400 font-bold text-[10px] uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[60px]"
                       >
-                        Từ chối
+                        {processingIds[sp.id] ? (
+                          <span className="animate-spin inline-block w-3 h-3 border-2 border-red-400 border-t-transparent rounded-full"></span>
+                        ) : (
+                          'Từ chối'
+                        )}
                       </button>
                     </div>
                   </div>
@@ -234,22 +288,26 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                 </div>
                 <div className="flex gap-2">
                   <button
-                    onClick={async () => {
-                      const ok = await respondInvite(link.id, true);
-                      if (ok) toast.success('Đã chấp nhận làm Phó Chủ Nhiệm!');
-                    }}
-                    className="px-3 py-1.5 rounded bg-synth-green text-black font-bold text-xs uppercase cursor-pointer"
+                    disabled={processingIds[link.id]}
+                    onClick={() => handleRespondInvite(link.id, true, 'Đã chấp nhận làm Phó Chủ Nhiệm!')}
+                    className="px-3 py-1.5 rounded bg-synth-green text-black font-bold text-xs uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[60px]"
                   >
-                    Đồng ý
+                    {processingIds[link.id] ? (
+                      <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full"></span>
+                    ) : (
+                      'Đồng ý'
+                    )}
                   </button>
                   <button
-                    onClick={async () => {
-                      const ok = await respondInvite(link.id, false);
-                      if (ok) toast.info('Đã từ chối lời mời');
-                    }}
-                    className="px-3 py-1.5 rounded border border-red-500 text-red-400 font-bold text-xs uppercase cursor-pointer"
+                    disabled={processingIds[link.id]}
+                    onClick={() => handleRespondInvite(link.id, false, 'Đã từ chối lời mời')}
+                    className="px-3 py-1.5 rounded border border-red-500 text-red-400 font-bold text-xs uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[70px]"
                   >
-                    Từ chối
+                    {processingIds[link.id] ? (
+                      <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-red-400 border-t-transparent rounded-full"></span>
+                    ) : (
+                      'Từ chối'
+                    )}
                   </button>
                 </div>
               </div>
@@ -408,15 +466,15 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                   </div>
                 </div>
                 <button
-                  onClick={async () => {
-                    if (window.confirm('Bạn có chắc muốn hủy đơn ứng cử Hiệu Phó này không?')) {
-                      const ok = await leaveFamily(vicePrincipalApplication.id);
-                      if (ok) toast.success('Đã hủy đơn ứng cử Hiệu Phó.');
-                    }
-                  }}
-                  className="px-2.5 py-1 rounded border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-[9px] uppercase cursor-pointer transition-colors"
+                  disabled={processingIds[vicePrincipalApplication.id]}
+                  onClick={() => handleLeaveFamily(vicePrincipalApplication.id, 'Bạn có chắc muốn hủy đơn ứng cử Hiệu Phó này không?', 'Đã hủy đơn ứng cử Hiệu Phó.')}
+                  className="px-2.5 py-1 rounded border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-[9px] uppercase cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[70px]"
                 >
-                  Hủy Đơn
+                  {processingIds[vicePrincipalApplication.id] ? (
+                    <span className="animate-spin inline-block w-3 h-3 border-2 border-red-400 border-t-transparent rounded-full"></span>
+                  ) : (
+                    'Hủy Đơn'
+                  )}
                 </button>
               </div>
             ) : (
@@ -450,15 +508,15 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                   <span className="text-[10px] text-slate-500">{link.student_email}</span>
                 </div>
                 <button
-                  onClick={async () => {
-                    if (window.confirm('Bạn có chắc muốn thu hồi lời mời này?')) {
-                      const ok = await leaveFamily(link.id);
-                      if (ok) toast.success('Đã thu hồi lời mời.');
-                    }
-                  }}
-                  className="px-2 py-1 text-[9px] text-red-400 hover:text-red-300 bg-red-500/10 rounded font-bold uppercase cursor-pointer"
+                  disabled={processingIds[link.id]}
+                  onClick={() => handleLeaveFamily(link.id, 'Bạn có chắc muốn thu hồi lời mời này?', 'Đã thu hồi lời mời.')}
+                  className="px-2 py-1 text-[9px] text-red-400 hover:text-red-300 bg-red-500/10 rounded font-bold uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[70px]"
                 >
-                  Thu Hồi
+                  {processingIds[link.id] ? (
+                    <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-red-400 border-t-transparent rounded-full"></span>
+                  ) : (
+                    'Thu Hồi'
+                  )}
                 </button>
               </div>
             ))}
@@ -471,15 +529,15 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                   <span className="text-[10px] text-slate-500">{sp.parent_email}</span>
                 </div>
                 <button
-                  onClick={async () => {
-                    if (window.confirm('Bạn có chắc muốn thu hồi lời mời này?')) {
-                      const ok = await leaveFamily(sp.id);
-                      if (ok) toast.success('Đã thu hồi lời mời.');
-                    }
-                  }}
-                  className="px-2 py-1 text-[9px] text-red-400 hover:text-red-300 bg-red-500/10 rounded font-bold uppercase cursor-pointer"
+                  disabled={processingIds[sp.id]}
+                  onClick={() => handleLeaveFamily(sp.id, 'Bạn có chắc muốn thu hồi lời mời này?', 'Đã thu hồi lời mời.')}
+                  className="px-2 py-1 text-[9px] text-red-400 hover:text-red-300 bg-red-500/10 rounded font-bold uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[70px]"
                 >
-                  Thu Hồi
+                  {processingIds[sp.id] ? (
+                    <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-red-400 border-t-transparent rounded-full"></span>
+                  ) : (
+                    'Thu Hồi'
+                  )}
                 </button>
               </div>
             ))}
@@ -530,47 +588,39 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                       <td className="py-3 px-3">
                         <div className="flex items-center gap-3">
                           <label className="flex items-center gap-1.5 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={perms.can_approve_rewards || false}
-                              onChange={async (e) => {
-                                await updateSecondaryPermissions(sp.id, {
-                                  can_approve_rewards: e.target.checked
-                                });
-                                toast.success('Đã cập nhật quyền duyệt quà');
-                              }}
-                              className="accent-synth-purple"
-                            />
-                            <span>Duyệt quà</span>
-                          </label>
-                          <label className="flex items-center gap-1.5 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={perms.can_create_missions || false}
-                              onChange={async (e) => {
-                                await updateSecondaryPermissions(sp.id, {
-                                  can_create_missions: e.target.checked
-                                });
-                                toast.success('Đã cập nhật quyền giao nhiệm vụ');
-                              }}
-                              className="accent-synth-purple"
-                            />
-                            <span>Giao nhiệm vụ</span>
-                          </label>
-                        </div>
-                      </td>
-                      <td className="py-3 px-3 text-right">
-                        <button
-                          onClick={async () => {
-                            if (window.confirm(`Bạn có chắc muốn mời Giáo viên phụ ${sp.parent_name || sp.parent_email} ra khỏi lớp không?`)) {
-                              const success = await leaveFamily(sp.id);
-                              if (success) toast.success('Đã xóa Giáo viên phụ khỏi lớp.');
-                            }
-                          }}
-                          className="px-2 py-1 text-[9px] border border-red-500/30 hover:border-red-500/60 bg-red-500/10 text-red-400 rounded uppercase font-bold cursor-pointer"
-                        >
-                          Hủy Đồng Hành
-                        </button>
+                          <input
+                            type="checkbox"
+                            checked={perms.can_approve_rewards || false}
+                            disabled={updatingPermsIds[sp.id]}
+                            onChange={(e) => handleUpdatePermissions(sp.id, { can_approve_rewards: e.target.checked }, 'Đã cập nhật quyền duyệt quà')}
+                            className="accent-synth-purple cursor-pointer disabled:cursor-wait"
+                          />
+                          <span>Duyệt quà</span>
+                        </label>
+                        <label className="flex items-center gap-1.5 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={perms.can_create_missions || false}
+                            disabled={updatingPermsIds[sp.id]}
+                            onChange={(e) => handleUpdatePermissions(sp.id, { can_create_missions: e.target.checked }, 'Đã cập nhật quyền giao nhiệm vụ')}
+                            className="accent-synth-purple cursor-pointer disabled:cursor-wait"
+                          />
+                          <span>Giao nhiệm vụ</span>
+                        </label>
+                      </div>
+                    </td>
+                    <td className="py-3 px-3 text-right">
+                      <button
+                        disabled={processingIds[sp.id]}
+                        onClick={() => handleLeaveFamily(sp.id, `Bạn có chắc muốn mời Giáo viên phụ ${sp.parent_name || sp.parent_email} ra khỏi lớp không?`, 'Đã xóa Giáo viên phụ khỏi lớp.')}
+                        className="px-2 py-1 text-[9px] border border-red-500/30 hover:border-red-500/60 bg-red-500/10 text-red-400 rounded uppercase font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[100px]"
+                      >
+                        {processingIds[sp.id] ? (
+                          <span className="animate-spin inline-block w-3 h-3 border-2 border-red-400 border-t-transparent rounded-full"></span>
+                        ) : (
+                          'Hủy Đồng Hành'
+                        )}
+                      </button>
                       </td>
                     </tr>
                   );
@@ -609,15 +659,15 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                   </div>
                 </div>
                 <button
-                  onClick={async () => {
-                    if (window.confirm('Bạn có chắc muốn xin dừng đồng hành với lớp này không?')) {
-                      const success = await leaveFamily(sp.id);
-                      if (success) toast.success('Đã rời lớp đồng hành.');
-                    }
-                  }}
-                  className="px-3 py-1.5 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-xs uppercase cursor-pointer transition-colors"
+                  disabled={processingIds[sp.id]}
+                  onClick={() => handleLeaveFamily(sp.id, 'Bạn có chắc muốn xin dừng đồng hành với lớp này không?', 'Đã rời lớp đồng hành.')}
+                  className="px-3 py-1.5 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-xs uppercase cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[110px]"
                 >
-                  Rừng Đồng Hành
+                  {processingIds[sp.id] ? (
+                    <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-red-400 border-t-transparent rounded-full"></span>
+                  ) : (
+                    'Dừng Đồng Hành'
+                  )}
                 </button>
               </div>
             ))}

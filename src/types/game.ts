@@ -140,6 +140,14 @@ export interface Question {
   isConfused?: boolean;
   skipReason?: 'quá khó' | 'quá dài' | 'quá khùng';
   skipSeverity?: number;
+  /** Số lần câu hỏi được mở/sử dụng */
+  timesOpened?: number;
+  /** Số lần trả lời đúng (toàn bộ học sinh) */
+  timesAnsweredCorrectly?: number;
+  /** Số lần bỏ qua câu hỏi */
+  timesSkipped?: number;
+  /** Lần cuối cùng câu hỏi được sử dụng */
+  lastOpenedAt?: string;
 }
 
 // ==================== CORE KNOWLEDGE TAXONOMY ====================
@@ -178,6 +186,7 @@ export interface QuestionMeta {
   diagramHint?: string;
   tags?: string[];
   isStandard?: boolean;
+  scienceTopic?: string;
 }
 
 export interface CategoryStat {
