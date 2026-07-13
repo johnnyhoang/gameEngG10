@@ -1,15 +1,25 @@
 import express from 'express';
 import { authMiddleware } from '../middleware/auth.js';
 import { callGeminiAPI, GeminiExhaustedError } from '../helpers/gemini.js';
-import { persistCustomQuestion } from '../helpers/questions.js';
 
 const router = express.Router();
 
 // POST /api/ai/ingest: Uses Gemini API to parse raw text into structured grade 10 questions (English or Math)
 router.post('/ai/ingest', authMiddleware, async (req: any, res) => {
   const userId = req.user.sub;
-  const { rawText, subject = 'english' } = req.body;
+  const { rawText, subject = 'english', topicCatalog = [] } = req.body;
   if (!rawText) return res.status(400).json({ error: 'Missing rawText.' });
+
+  const safeTopicCatalog = Array.isArray(topicCatalog)
+    ? topicCatalog
+        .filter((topic: any) => topic && typeof topic.id === 'string' && typeof topic.label === 'string')
+        .slice(0, 200)
+        .map((topic: any) => ({
+          id: topic.id.slice(0, 100),
+          label: topic.label.slice(0, 255),
+          examRelevance: ['high', 'medium', 'low'].includes(topic.examRelevance) ? topic.examRelevance : 'medium'
+        }))
+    : [];
 
   try {
     let prompt = '';
@@ -145,20 +155,33 @@ router.post('/ai/ingest', authMiddleware, async (req: any, res) => {
       ${rawText}`;
     }
 
-    const responseText = await callGeminiAPI(prompt, { responseMimeType: 'application/json' });
-    const questions = JSON.parse(responseText.trim());
+    const topicInstructions = safeTopicCatalog.length > 0
+      ? `\n\nQUY TẮC PHÂN LOẠI CHUYÊN ĐỀ:\n- Với mỗi câu, bắt buộc đề xuất "topicId" từ đúng danh sách JSON sau: ${JSON.stringify(safeTopicCatalog)}.\n- Thêm "suggestedExamRelevance": "high" | "medium" | "low" theo mức độ thường xuất hiện trong đề thi.\n- Không tự tạo lựa chọn A/B/C/D để biến câu tự luận thành trắc nghiệm. Chỉ giữ câu trắc nghiệm nguyên bản hoặc các dạng hệ thống biểu diễn trọn vẹn.\n- Bỏ qua câu vẽ đồ thị, câu chứng minh, câu tự luận không thể biểu diễn trọn vẹn và câu thiếu dữ kiện/đáp án.\n- Không tự sửa nội dung, đáp án hoặc nguồn của câu gốc.`
+      : '\n\nKhông tự biến câu tự luận thành trắc nghiệm. Bỏ qua câu không thể biểu diễn trọn vẹn hoặc thiếu dữ kiện/đáp án.';
 
-    // Save custom questions to PG custom_questions table
-    for (const q of questions) {
-      await persistCustomQuestion(userId, {
-        id: q.id || `ai-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        ...q,
-        source: q.source || (subject === 'math' ? 'AI Ingested Math' : subject === 'literature' ? 'AI Ingested Literature' : 'AI Ingested English'),
-        subject
-      });
+    const responseText = await callGeminiAPI(`${prompt}${topicInstructions}`, { responseMimeType: 'application/json' });
+    const parsedQuestions = JSON.parse(responseText.trim());
+    if (!Array.isArray(parsedQuestions)) {
+      return res.status(422).json({ error: 'AI response must be an array of questions.' });
     }
 
-    res.json({ success: true, questionsCount: questions.length, questions });
+    const allowedTopics = new Map(safeTopicCatalog.map((topic: any) => [topic.id, topic]));
+    const questions = parsedQuestions.map((question: any, index: number) => {
+      const proposedTopic = allowedTopics.get(question.topicId);
+      return {
+        ...question,
+        id: question.id || `ai-review-${Date.now()}-${index}`,
+        subject,
+        topicId: proposedTopic ? question.topicId : '',
+        suggestedExamRelevance: ['high', 'medium', 'low'].includes(question.suggestedExamRelevance)
+          ? question.suggestedExamRelevance
+          : proposedTopic?.examRelevance || 'medium',
+        source: question.source || (subject === 'math' ? 'AI Ingested Math' : subject === 'literature' ? 'AI Ingested Literature' : 'AI Ingested English')
+      };
+    });
+
+    // Chỉ trả đề xuất để Viện Trưởng review. Lưu DB diễn ra sau bước xác nhận ở frontend.
+    res.json({ success: true, questionsCount: questions.length, questions, requiresReview: true, requestedBy: userId });
   } catch (error: any) {
     console.error('Lỗi gọi Gemini AI Ingest:', error.message);
     if (error instanceof GeminiExhaustedError) {

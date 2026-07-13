@@ -1,7 +1,7 @@
 // @ts-nocheck
 import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
-import type { HandbookPage, GradeTier, SubjectId, UiThemeId } from '../../types/game';
+import type { HandbookPage, GradeTier, LearningContext, SubjectId, UiThemeId } from '../../types/game';
 import { eventBus } from '../../utils/EventBus';
 import { toast } from '../../utils/toast';
 import { DEFAULT_GRADE_TIER, getGradeTierConfig } from '../../types/game';
@@ -14,7 +14,7 @@ export const createUISlice: StateCreator<
   Pick<StoreState, 
     'isSectModalOpen' | 'currentSubject' | 'activeGradeTier' | 
     'uiTheme' | 'uiThemesByUser' | 'helpPageId' | 'handbookPages' |
-    'setSectModalOpen' | 'setSubject' | 'setGradeTier' | 'setUiTheme' | 
+    'setSectModalOpen' | 'setLearningContext' | 'setSubject' | 'setGradeTier' | 'setUiTheme' |
     'showHelp' | 'closeHelp' | 'initEventSubscriptions' | 'addHandbookPage'
   >
 > = (set, get) => ({
@@ -28,27 +28,31 @@ export const createUISlice: StateCreator<
 
   setSectModalOpen: (open) => set({ isSectModalOpen: open }),
 
-  setSubject: (subject) => {
+  setLearningContext: (context: LearningContext) => {
     set(state => {
-      const updatedPlayer = state.player ? { ...state.player, activeSubject: subject } : state.player;
-      return { currentSubject: subject, player: updatedPlayer } as any;
+      const updatedPlayer = state.player ? {
+        ...state.player,
+        activeSubject: context.subjectId,
+        activeGradeTier: context.gradeTier,
+      } : state.player;
+      return {
+        currentSubject: context.subjectId,
+        activeGradeTier: context.gradeTier,
+        player: updatedPlayer,
+      } as any;
     });
     get().syncWithServer?.();
   },
 
+  setSubject: (subject) => {
+    get().setLearningContext({ subjectId: subject, gradeTier: get().activeGradeTier });
+  },
+
   setGradeTier: (tier: GradeTier) => {
     const config = getGradeTierConfig(tier);
-    if (config.status !== 'active') {
-      toast.error(`${config.name} chưa khai mở!`);
-      return;
-    }
     if (get().activeGradeTier === tier) return;
-    set(state => {
-      const updatedPlayer = state.player ? { ...state.player, activeGradeTier: tier } : state.player;
-      return { activeGradeTier: tier, player: updatedPlayer } as any;
-    });
+    get().setLearningContext({ gradeTier: tier, subjectId: get().currentSubject });
     toast.success(`Đã bước vào ${config.name}`);
-    get().syncWithServer?.();
   },
 
   setUiTheme: (themeId) => {

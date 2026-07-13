@@ -8,7 +8,7 @@ interface RewardManagerProps {
   activeRewardCatalog: any[];
   activeRedemptions: any[];
   canApproveReward: boolean;
-  addParentReward: (title: string, costCoins: number, quantity: number) => void;
+  addParentReward: (title: string, costRuby: number, quantity: number) => void;
   deleteParentReward: (rewardId: string) => void;
   markRewardDelivered: (redemptionId: string) => void;
   cancelRedemption: (redemptionId: string) => void;
@@ -49,7 +49,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
     try {
       const ok = await deliverClassRedemption(redemptionId);
       if (ok) {
-        toast.success('Đã phát thưởng phúc lợi lớp học thành công! 🎁');
+        toast.success('Đã trao Quà Khuyến Học thành công! 🎁');
       }
     } catch (err) {
       console.error(err);
@@ -79,7 +79,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
 
   const handleCancelRedemption = async (redemptionId: string) => {
     if (processingRedemptions[redemptionId]) return;
-    if (window.confirm('Bạn có chắc muốn hủy đơn đổi quà này và hoàn lại NP cho học sinh?')) {
+    if (window.confirm('Bạn có chắc muốn hủy đơn đổi quà này và hoàn lại Ruby cho học sinh?')) {
       setProcessingRedemptions(prev => ({ ...prev, [redemptionId]: true }));
       try {
         if (viewingStudentId) {
@@ -87,7 +87,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
         } else {
           await cancelRedemption(redemptionId);
         }
-        toast.success('Đã hủy và hoàn NP thành công! 🪙');
+        toast.success('Đã hủy và hoàn Ruby thành công! 🪙');
       } catch (err) {
         console.error(err);
         toast.error('Hủy đơn đổi quà thất bại.');
@@ -135,18 +135,18 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
       <div className="flex items-center gap-2">
         <Award className="w-5 h-5 text-synth-orange" />
         <h3 className="font-orbitron font-bold text-sm text-synth-orange uppercase tracking-wider">
-          💰 Ngân Các — Quản lý phúc lợi &amp; Duyệt đổi quà
+          💰 Phòng Tài Vụ — Quản lý phúc lợi &amp; Duyệt đổi quà
         </h3>
       </div>
 
       {/* ═══════════════════════════════════════════════════════
-          SECTION 1: PHÚC LỢI LỚP HỌC (Luôn hiện với giáo viên)
+          SECTION 1: QUÀ KHUYẾN HỌC (Luôn hiện với Chủ Nhiệm)
           ═══════════════════════════════════════════════════════ */}
       <div className="space-y-5">
         <div className="flex items-center gap-2 border-b border-synth-orange/20 pb-2">
           <Users className="w-4 h-4 text-synth-orange" />
           <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider">
-            🏫 Phúc Lợi Lớp Học
+            🏫 Quà Khuyến Học
           </h4>
           <span className="text-[10px] text-synth-text-muted ml-1">
             — Tạo một lần, cả lớp thấy. Số lượng giảm khi học sinh đổi.
@@ -157,11 +157,11 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
           {/* Form tạo class reward */}
           <div className="glass-panel rounded-2xl border border-synth-orange/20 p-5 h-fit space-y-4">
             <h5 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider flex items-center gap-1.5">
-              <Plus className="w-3.5 h-3.5" /> Thêm Phúc Lợi Mới
+              <Plus className="w-3.5 h-3.5" /> Thêm Quà Khuyến Học Mới
             </h5>
             <form onSubmit={handleCreateClassReward} className="space-y-3">
               <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-synth-text-muted uppercase">Tên Phúc Lợi</label>
+                <label className="text-[10px] text-synth-text-muted uppercase">Tên Quà</label>
                 <input
                   type="text"
                   value={classTitle}
@@ -173,7 +173,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-synth-text-muted uppercase">Giá (NP)</label>
+                  <label className="text-[10px] text-synth-text-muted uppercase">Giá (Ruby)</label>
                   <input
                     type="number"
                     min={1}
@@ -203,11 +203,11 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                 disabled={!canApproveReward || isCreating}
                 className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-orange text-black hover:synth-glow-orange cursor-pointer transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isCreating ? 'Đang tạo...' : '+ Tạo Phúc Lợi Lớp'}
+                {isCreating ? 'Đang tạo...' : '+ Tạo Quà Khuyến Học Cho Lớp'}
               </button>
               {!canApproveReward && (
                 <p className="text-[9px] text-yellow-500/80 italic leading-tight">
-                  ⚠️ Bạn chưa được cấp quyền quản lý Phúc Lợi của lớp này.
+                  ⚠️ Bạn chưa được cấp quyền quản lý Quà Khuyến Học của lớp này.
                 </p>
               )}
             </form>
@@ -230,7 +230,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                           </span>
                           <div className="flex items-center gap-2 shrink-0">
                             <span className="text-[10px] font-orbitron text-synth-orange font-bold">
-                              {reward.costCoins} NP
+                              {reward.costRuby} Ruby
                             </span>
                             {canApproveReward && (
                               <button
@@ -308,7 +308,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                     </div>
                     <p className="text-[11px] text-synth-text-muted truncate">→ {red.rewardTitle}</p>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-orbitron text-synth-orange font-bold">{red.costCoins} NP</span>
+                      <span className="text-[10px] font-orbitron text-synth-orange font-bold">{red.costRuby} Ruby</span>
                       <span className="text-[10px] text-synth-text-muted">
                         {new Date(red.requestedAt).toLocaleDateString('vi-VN')}
                       </span>
@@ -359,7 +359,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
       <div className="space-y-4 pt-2 border-t border-white/5">
         <div className="flex items-center gap-2">
           <h4 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase tracking-wider">
-            👤 Phúc Lợi Cá Nhân
+            👤 Quà Khuyến Học Cá Nhân
           </h4>
           <span className="text-[10px] text-synth-text-muted/60">— Dành cho học sinh chưa vào lớp (orphan) hoặc thưởng đặc biệt</span>
         </div>
@@ -375,11 +375,11 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
             {/* Form tạo per-student reward */}
             <div className="glass-panel rounded-2xl border border-synth-text-muted/20 p-5 h-fit">
               <h5 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase tracking-wider mb-4 flex items-center gap-1.5">
-                <Plus className="w-3.5 h-3.5" /> Thêm Phúc Lợi Cho Học Sinh Này
+                <Plus className="w-3.5 h-3.5" /> Thêm Quà Khuyến Học Cho Sĩ Tử Này
               </h5>
               <form onSubmit={handleCreateOldReward} className="space-y-3">
                 <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-synth-text-muted uppercase">Tên Phúc Lợi</label>
+                  <label className="text-[10px] text-synth-text-muted uppercase">Tên Quà</label>
                   <input
                     type="text"
                     value={rewardTitle}
@@ -391,7 +391,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="flex flex-col gap-1">
-                    <label className="text-[10px] text-synth-text-muted uppercase">Giá (NP)</label>
+                    <label className="text-[10px] text-synth-text-muted uppercase">Giá (Ruby)</label>
                     <input type="number" value={rewardCost} onChange={e => setRewardCost(Number(e.target.value))}
                       disabled={!canApproveReward}
                       className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-cyan disabled:opacity-50"
@@ -410,7 +410,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                   disabled={!canApproveReward}
                   className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Tạo Phúc Lợi Cá Nhân
+                  Tạo Quà Khuyến Học Cá Nhân
                 </button>
               </form>
 
@@ -423,7 +423,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                         <span className="text-white truncate">{reward.title}</span>
                         <div className="flex items-center gap-2 shrink-0">
                           <span className="text-synth-cyan font-bold font-orbitron text-[10px]">
-                            {reward.costCoins} NP · Còn {reward.remainingQuantity}/{reward.quantity}
+                            {reward.costRuby} Ruby · Còn {reward.remainingQuantity}/{reward.quantity}
                           </span>
                           {canApproveReward && (
                             <button onClick={() => deleteParentReward(reward.id)} className="text-synth-magenta hover:opacity-70 cursor-pointer">
@@ -449,7 +449,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                     <div>
                       <h6 className="text-sm font-bold text-white">{redemption.rewardTitle}</h6>
                       <div className="flex items-center gap-3 text-xs mt-1">
-                        <span className="text-synth-orange font-bold font-orbitron">{redemption.costCoins} NP</span>
+                        <span className="text-synth-orange font-bold font-orbitron">{redemption.costRuby} Ruby</span>
                         <span className="text-synth-text-muted">{new Date(redemption.timestamp).toLocaleDateString('vi-VN')}</span>
                       </div>
                     </div>
@@ -475,7 +475,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                               disabled={processingRedemptions[redemption.id]}
                               onClick={() => handleCancelRedemption(redemption.id)}
                               className="p-2 rounded-lg border border-synth-magenta text-synth-magenta cursor-pointer hover:bg-synth-magenta/10 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center min-w-[32px] min-h-[32px]"
-                              title="Hủy, hoàn NP"
+                              title="Hủy, hoàn Ruby"
                             >
                               {processingRedemptions[redemption.id] ? (
                                 <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-synth-magenta border-t-transparent rounded-full"></span>

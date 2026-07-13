@@ -2,7 +2,7 @@ export const isAdmin = (role?: string) => role === 'truong_vien' || role === 'ph
 export const isSuperAdmin = (role?: string) => role === 'truong_vien' || role === 'pho_vien';
 export const isParentRole = (role?: string) => role === 'parent' || role === 'secondary_parent';
 
-export type WuxiaAction =
+export type PermissionAction =
   | 'VIEW_AUDIT_LOGS'
   | 'PROMOTE_TO_ADMIN'
   | 'PROMOTE_TO_USER'
@@ -30,7 +30,7 @@ export const canPromoteTo = (actorRole: string, targetRole: string): boolean => 
  */
 export const hasPermission = (
   role: string | undefined,
-  action: WuxiaAction,
+  action: PermissionAction,
   secondaryPermissions?: {
     can_approve_rewards?: boolean;
     can_create_missions?: boolean;
@@ -40,7 +40,7 @@ export const hasPermission = (
   if (!role) return false;
   if (secondaryPermissions) { /* bypass unused warning */ }
 
-  // Hiệu Trưởng có toàn quyền
+  // Viện Trưởng có toàn quyền
   if (role === 'truong_vien') return true;
 
   switch (action) {

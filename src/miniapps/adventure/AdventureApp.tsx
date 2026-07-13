@@ -7,7 +7,7 @@ import type { UiThemeId } from '../../types/game';
 export interface AdventureAppProps {
   activeSectId?: string;
   uiTheme: UiThemeId;
-  onReward: (coins: number, xp: number, type: string, detail: string) => void;
+  onReward: (ruby: number, xp: number, type: string, detail: string) => void;
   onGameComplete?: (result: any) => void;
   onGameStart?: () => void;
   questions?: any[];
@@ -56,7 +56,7 @@ export const AdventureApp: React.FC<AdventureAppProps> = ({  uiTheme, onReward, 
     if (!activeBoardQuestion) return;
     const correctAnsStr = Array.isArray(activeBoardQuestion.correctAnswer) ? activeBoardQuestion.correctAnswer[0] : activeBoardQuestion.correctAnswer;
     if (selectedOption.trim().toLowerCase() === correctAnsStr.trim().toLowerCase()) {
-      toast.success('Chuẩn xác, ô này an toàn. (+15 NP)');
+      toast.success('Chuẩn xác, ô này an toàn. (+15 Ruby)');
       onReward(15, 10, 'Đúng ô du khảo', 'Trả lời chính xác ô trivia trên bản đồ du khảo');
       setBoardStatus('idle');
     } else {
@@ -130,7 +130,7 @@ export const AdventureApp: React.FC<AdventureAppProps> = ({  uiTheme, onReward, 
         <div className="text-center py-6 space-y-4">
           <div className="text-5xl animate-bounce">🏆🎉🥇</div>
           <h4 className="font-orbitron font-black text-xl text-synth-green uppercase">Về Đích! Rương Báu Mở Ra!</h4>
-          <p className="text-xs text-slate-300">Phần thưởng: +100 NP, +80 XP</p>
+          <p className="text-xs text-slate-300">Phần thưởng: +100 Ruby, +80 XP</p>
           <button onClick={() => { setBoardPosition(0); setBoardStatus('idle'); setRolledNumber(0); }}
             className="px-6 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-orange text-black cursor-pointer hover:scale-105 transition-all">
             Khám Phá Lại 🔁

@@ -48,7 +48,7 @@ export interface ExplanationBoxProps {
 
 export interface RunFinishedScreenProps {
   mode: string;
-  rewardsEarned: { coins: number; xp: number };
+  rewardsEarned: { ruby: number; xp: number };
   runMistakes: number;
   onEscape: () => void;
 }

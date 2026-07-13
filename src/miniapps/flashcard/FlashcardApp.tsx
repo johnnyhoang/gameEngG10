@@ -7,14 +7,16 @@ import type { Question, SubjectId, UiThemeId } from '../../types/game';
 export interface FlashcardAppProps {
   questions: Question[];
   activeSectId?: string;
+  gradeTier: number;
   uiTheme: UiThemeId;
-  onReward: (coins: number, xp: number, type: string, detail: string) => void;
+  onReward: (ruby: number, xp: number, type: string, detail: string) => void;
   onGameComplete?: (result: { correctAnswers: number; timeSpent: number; score: number; passed: boolean }) => void;
 }
 
 export const FlashcardApp: React.FC<FlashcardAppProps> = ({ 
   questions, 
   activeSectId, 
+  gradeTier,
   uiTheme, 
   onReward,
   onGameComplete 
@@ -29,10 +31,12 @@ export const FlashcardApp: React.FC<FlashcardAppProps> = ({
   const targetSubject = (activeSectId || 'english') as SubjectId;
 
   useEffect(() => {
-    const filtered = questions.filter(q => (q.subject || 'english') === targetSubject);
+    const filtered = questions.filter(q =>
+      (q.subject || 'english') === targetSubject && (q.gradeTier ?? q.grade ?? 9) === gradeTier
+    );
     const shuffled = [...filtered].sort(() => 0.5 - Math.random()).slice(0, 15);
     setActiveFlashcards(shuffled);
-  }, [questions, targetSubject]);
+  }, [questions, targetSubject, gradeTier]);
 
   const handleFcNext = () => {
     if (fcIndex < activeFlashcards.length - 1) {
@@ -54,7 +58,7 @@ export const FlashcardApp: React.FC<FlashcardAppProps> = ({
     
     // Call the reward prop instead of global state
     onReward(2, 5, 'Thuộc thẻ nhớ', `Ghi nhớ câu hỏi: ${activeFlashcards[fcIndex].prompt.slice(0, 20)}...`);
-    toast.success('Ghi nhận rồi. +2 NP, +5 XP 🧠');
+    toast.success('Ghi nhận rồi. +2 Ruby, +5 XP 🧠');
     
     if (nextCount === 5) {
       const passed = nextCount >= 4;
@@ -140,7 +144,7 @@ export const FlashcardApp: React.FC<FlashcardAppProps> = ({
                 Thẻ Trước
               </button>
               <button onClick={handleFcRemembered} className={`px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer hover:scale-[1.03] transition-all flex items-center gap-1.5 ${isUnicorn ? 'bg-gradient-to-r from-emerald-400 to-green-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'bg-synth-green text-black shadow-[0_0_12px_rgba(57,255,20,0.25)]'}`}>
-                <Award className="w-4 h-4 text-black" /> Thuộc rồi (+2 NP, +5 XP)
+                <Award className="w-4 h-4 text-black" /> Thuộc rồi (+2 Ruby, +5 XP)
               </button>
               <button onClick={handleFcNext} className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider border cursor-pointer hover:scale-105 transition-all ${isUnicorn ? 'bg-white border-violet-200 text-violet-700' : 'bg-synth-gray/30 border-white/5 text-white'}`}>
                 Bỏ qua / Tiếp

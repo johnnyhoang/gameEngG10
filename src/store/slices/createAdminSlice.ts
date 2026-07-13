@@ -83,11 +83,11 @@ export const createAdminSlice: StateCreator<
             )
           }));
 
-          logActivity(get, set, 'parent_approve', 'Đã Trao Phần Thưởng', `Hiệu Trưởng xác nhận đã trao "${redemption.rewardTitle}" ngoài đời.`, 0, 0);
+          logActivity(get, set, 'parent_approve', 'Đã Trao Quà', `Người quản lý xác nhận đã trao "${redemption.rewardTitle}" ngoài đời.`, 0, 0);
         },
 
   cancelRedemption: (redemptionId) => {
-          // Hủy lượt đổi: hoàn NP cho thiếu hiệp + trả lại remainingQuantity cho catalog item.
+          // Hủy lượt đổi: hoàn Ruby cho Sĩ Tử + trả lại remainingQuantity cho catalog item.
           const state = get();
           const redemption = state.rewardRedemptions.find(r => r.id === redemptionId);
           if (!redemption || redemption.status !== 'pending') return;
@@ -95,21 +95,21 @@ export const createAdminSlice: StateCreator<
           set(prev => ({
             player: {
               ...prev.player,
-              coins: prev.player.coins + redemption.costCoins
+              ruby: prev.player.ruby + redemption.costRuby
             },
             rewards: prev.rewards.map(r => r.id === redemption.rewardId ? { ...r, remainingQuantity: r.remainingQuantity + 1 } : r),
             rewardRedemptions: prev.rewardRedemptions.filter(r => r.id !== redemptionId)
           }));
 
-          logActivity(get, set, 'parent_approve', 'Hiệu Trưởng hoàn trả Ngân Lượng', `Hủy lượt đổi "${redemption.rewardTitle}". Đã hoàn lại ${redemption.costCoins} NP`, redemption.costCoins, 0);
+          logActivity(get, set, 'parent_approve', 'Hoàn trả Ruby', `Hủy lượt đổi "${redemption.rewardTitle}". Đã hoàn lại ${redemption.costRuby} Ruby`, redemption.costRuby, 0);
         },
 
-  addParentReward: (title, costCoins, quantity) => {
+  addParentReward: (title, costRuby, quantity) => {
           const safeQuantity = Math.max(1, Math.round(quantity));
           const newReward: ParentReward = {
             id: `r-${Date.now()}`,
             title,
-            costCoins,
+            costRuby,
             quantity: safeQuantity,
             remainingQuantity: safeQuantity,
             timestamp: Date.now()
@@ -117,7 +117,7 @@ export const createAdminSlice: StateCreator<
           set((state: any) => ({
             rewards: [...state.rewards, newReward]
           }));
-          logActivity(get, set, 'parent_approve', 'Hiệu Trưởng thêm Phúc Lợi mới', `Phúc Lợi mới: "${title}" trị giá ${costCoins} NP, số lượng ${safeQuantity}`, 0, 0);
+          logActivity(get, set, 'parent_approve', 'Thêm Quà Khuyến Học', `Quà mới: "${title}" trị giá ${costRuby} Ruby, số lượng ${safeQuantity}`, 0, 0);
         },
 
   deleteParentReward: (rewardId) => {
@@ -162,7 +162,7 @@ export const createAdminSlice: StateCreator<
           set((state: any) => ({
             questions: state.questions.filter(q => q.id !== questionId)
           }));
-          logActivity(get, set, 'parent_approve', 'Xóa câu hỏi', `Hiệu Trưởng đã xóa câu hỏi mã số ${questionId}`, 0, 0);
+          logActivity(get, set, 'parent_approve', 'Xóa câu hỏi', `Viện Trưởng đã xóa câu hỏi mã số ${questionId}`, 0, 0);
           return true;
         },
 
@@ -186,7 +186,7 @@ export const createAdminSlice: StateCreator<
           set((state: any) => ({
             questions: [question, ...state.questions]
           }));
-          logActivity(get, set, 'parent_approve', 'Thêm câu hỏi mới', `Hiệu Trưởng đã tạo câu hỏi mới mã số ${id}`, 0, 0);
+          logActivity(get, set, 'parent_approve', 'Thêm câu hỏi mới', `Viện Trưởng đã tạo câu hỏi mới mã số ${id}`, 0, 0);
           return true;
         },
 
@@ -215,7 +215,7 @@ export const createAdminSlice: StateCreator<
           set((state: any) => ({
             questions: state.questions.map(q => q.id === questionId ? nextQuestion : q)
           }));
-          logActivity(get, set, 'parent_approve', 'Cập nhật câu hỏi', `Hiệu Trưởng đã cập nhật câu hỏi mã số ${questionId}`, 0, 0);
+          logActivity(get, set, 'parent_approve', 'Cập nhật câu hỏi', `Viện Trưởng đã cập nhật câu hỏi mã số ${questionId}`, 0, 0);
           return true;
         },
 
@@ -223,12 +223,6 @@ export const createAdminSlice: StateCreator<
     const state = get();
     const todayStr = new Date().toISOString().split('T')[0];
     
-    // Check local coins cap
-    if (state.player.coins < -100) {
-      toast.error('Số dư Ngân Lượng (NP) của con đã âm quá giới hạn (-100 NP). Con không thể tiếp tục Bỏ qua câu hỏi, hãy cố gắng giải đáp nhé!');
-      return false;
-    }
-
     // Check local skip limit (3/day)
     let skips = state.player.dailySkips || { date: todayStr, count: 0 };
     if (skips.date !== todayStr) {
@@ -242,20 +236,6 @@ export const createAdminSlice: StateCreator<
     try {
       if (!state.currentUser?.id) return false;
 
-      // Phiên dev-backdoor (mock-*) không có backend thật để ghi transaction — trừ NP tại chỗ.
-      const updatedCoins = state.currentUser.id.startsWith('mock-')
-        ? Math.max(0, state.player.coins - 10)
-        : await playerService.awardCoins(
-            state.currentUser.id,
-            -10,
-            'Bỏ qua câu hỏi (Skip)',
-            {
-              questionId: question.id,
-              questionPrompt: question.prompt,
-              reason: reason || 'Quá khó'
-            }
-          );
-
       // Đánh dấu câu hỏi bị ghim local
       const nextQuestion = { ...question, isConfused: true, skipReason: reason, skipSeverity: severity } as Question;
       const nextSkips = { date: todayStr, count: skips.count + 1 };
@@ -264,12 +244,11 @@ export const createAdminSlice: StateCreator<
         questions: state.questions.map(q => q.id === question.id ? nextQuestion : q),
         player: {
           ...state.player,
-          dailySkips: nextSkips,
-          coins: updatedCoins
+          dailySkips: nextSkips
         }
       }));
 
-      logActivity(get, set, 'exercise', 'Bỏ qua câu này', `Đã gác lại câu hỏi mã số ${question.id} (Lý do: ${reason || 'Không rõ'}). Môn Chủ trừ 10 NP.`, -10, 0);
+      logActivity(get, set, 'exercise', 'Miễn Phạt', `Đã gác lại câu hỏi mã số ${question.id} (Lý do: ${reason || 'Không rõ'}). Không trừ Ruby.`, 0, 0);
       return true;
     } catch (error) {
       console.error('Error flagging question:', error);
@@ -351,14 +330,14 @@ export const createAdminSlice: StateCreator<
             const clampedMax = Math.max(50, Math.min(300, Math.round(maxEnergy)));
             const ok = await adminService.adminSetEnergyConfig(studentUserId, clampedMax, resetHours);
             if (!ok) {
-              toast.error('Lỗi khi cập nhật cấu hình Chân Khí.');
+              toast.error('Lỗi khi cập nhật cấu hình Năng Lượng.');
               return;
             }
             await get().fetchStudentProfile(studentUserId);
-            toast.success(`Đã cập nhật Trần Chân Khí ${clampedMax} + giờ hồi ${resetHours}h cho con.`);
+            toast.success(`Đã cập nhật trần Năng Lượng ${clampedMax} và thời gian hồi ${resetHours} giờ cho Sĩ Tử.`);
           } catch (e) {
             console.error('Error updating student energy config:', e);
-            toast.error('Lỗi kết nối khi cập nhật cấu hình Chân Khí.');
+            toast.error('Lỗi kết nối khi cập nhật cấu hình Năng Lượng.');
           }
         },
 
@@ -382,7 +361,7 @@ export const createAdminSlice: StateCreator<
           }
         },
 
-  addParentQuest: (title, description, rewardNP) => {
+  addParentQuest: (title, description, rewardRuby) => {
           set((state: any) => ({
             parentQuests: [
               ...state.parentQuests,
@@ -390,7 +369,7 @@ export const createAdminSlice: StateCreator<
                 id: `pq-${Date.now()}`,
                 title,
                 description,
-                rewardNP,
+                rewardRuby,
                 status: 'pending',
                 timestamp: Date.now()
               }
@@ -413,12 +392,12 @@ export const createAdminSlice: StateCreator<
         },
 
   claimParentQuest: (questId) => {
-          let np = 0;
+          let rubyReward = 0;
           let qTitle = '';
           set((state: any) => {
             const quest = state.parentQuests.find(q => q.id === questId);
             if (!quest || quest.status !== 'completed') return {};
-            np = quest.rewardNP;
+            rubyReward = quest.rewardRuby;
             qTitle = quest.title;
             return {
               parentQuests: state.parentQuests.map(q =>
@@ -426,12 +405,12 @@ export const createAdminSlice: StateCreator<
               ),
               player: {
                 ...state.player,
-                coins: state.player.coins + np
+                ruby: state.player.ruby + rubyReward
               }
             };
           });
-          if (np > 0) {
-            logActivity(get, set, 'reward_claimed', 'Nhận thưởng nhiệm vụ', `Đã nhận thưởng: ${qTitle}`, np, 0);
+          if (rubyReward > 0) {
+            logActivity(get, set, 'reward_claimed', 'Nhận thưởng nhiệm vụ', `Đã nhận thưởng: ${qTitle}`, rubyReward, 0);
           }
         },
 

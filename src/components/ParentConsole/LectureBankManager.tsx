@@ -3,6 +3,7 @@ import { BookOpen, Plus, Trash2, Search, X, RefreshCw } from 'lucide-react';
 import { SUBJECTS_CONFIG } from '../../types/game';
 import { toast } from '../../utils/toast';
 import { supabase } from '../../utils/supabaseClient';
+import { useGameState } from '../../hooks/useGameState';
 
 interface Lesson {
   id: string;
@@ -11,6 +12,7 @@ interface Lesson {
   topic: string;
   title: string;
   theory: string;
+  grade_tier: number;
   is_standard?: boolean;
   created_at?: string;
 }
@@ -18,6 +20,7 @@ interface Lesson {
 const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
 
 export const LectureBankManager: React.FC = () => {
+  const activeGradeTier = useGameState(state => state.activeGradeTier);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -60,7 +63,7 @@ export const LectureBankManager: React.FC = () => {
       const token = session.data.session?.access_token;
       if (!token) return;
 
-      const res = await fetch(`${backendUrl}/api/admin/lessons`, {
+      const res = await fetch(`${backendUrl}/api/admin/lessons?gradeTier=${activeGradeTier}`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
@@ -79,7 +82,7 @@ export const LectureBankManager: React.FC = () => {
 
   useEffect(() => {
     fetchLessons();
-  }, []);
+  }, [activeGradeTier]);
 
   const handleOpenCreateModal = () => {
     setEditingLesson(null);
@@ -118,6 +121,7 @@ export const LectureBankManager: React.FC = () => {
 
       const payload = {
         subject: formSubject,
+        gradeTier: activeGradeTier,
         category: formCategory.trim(),
         topic: formTopic.trim(),
         title: formTitle.trim(),
@@ -190,15 +194,16 @@ export const LectureBankManager: React.FC = () => {
   const filteredLessons = useMemo(() => {
     return lessons.filter(l => {
       const matchSubject = selectedSubject === 'all' || l.subject === selectedSubject;
+      const matchGrade = l.grade_tier === activeGradeTier;
       const q = searchQuery.toLowerCase().trim();
       const matchQuery = !q || 
         l.title.toLowerCase().includes(q) || 
         l.topic.toLowerCase().includes(q) || 
         l.category.toLowerCase().includes(q) || 
         l.theory.toLowerCase().includes(q);
-      return matchSubject && matchQuery;
+      return matchGrade && matchSubject && matchQuery;
     });
-  }, [lessons, selectedSubject, searchQuery]);
+  }, [lessons, activeGradeTier, selectedSubject, searchQuery]);
 
   return (
     <div className="space-y-6">
@@ -209,7 +214,7 @@ export const LectureBankManager: React.FC = () => {
             📚 Tàng Kinh Các — Quản lý Ngân Hàng Bài Giảng
           </h3>
           <p className="text-xs text-slate-400 mt-1">
-            Soạn thảo, hiệu đính lý thuyết cho các chương mục luyện tập trong Hang Luyện Công.
+            Soạn thảo, hiệu đính lý thuyết cho các chương mục luyện tập trong Học Đường.
           </p>
         </div>
         <button
@@ -513,7 +518,7 @@ export const LectureBankManager: React.FC = () => {
                   required
                   value={formTheory}
                   onChange={(e) => setFormTheory(e.target.value)}
-                  placeholder="Nhập nội dung lý thuyết chi tiết để học sinh đọc học tại Hang Luyện Công..."
+                  placeholder="Nhập nội dung lý thuyết chi tiết để học sinh đọc học tại Học Đường..."
                   className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan h-44 resize-none font-mono leading-relaxed"
                 />
               </label>

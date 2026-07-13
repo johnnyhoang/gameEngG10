@@ -101,8 +101,8 @@ class SoundManager {
     }
   }
 
-  // 4. Coin/Purchase sound: classic Mario-like double-beep
-  public playCoin() {
+  // 4. Ruby/Purchase sound: classic Mario-like double-beep
+  public playRuby() {
     try {
       const ctx = this.init();
       if (!ctx) return;

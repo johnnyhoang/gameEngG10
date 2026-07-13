@@ -37,7 +37,7 @@ const EXPLAIN_TOPICS = {
 export interface ExplainAppProps {
   activeSectId?: string;
   uiTheme: UiThemeId;
-  onReward: (coins: number, xp: number, type: string, detail: string) => void;
+  onReward: (ruby: number, xp: number, type: string, detail: string) => void;
   onGameComplete?: (result: any) => void;
   onGameStart?: () => void;
 }
@@ -79,7 +79,7 @@ export const ExplainApp: React.FC<ExplainAppProps> = ({ activeSectId, uiTheme, o
     if (counterAnswer === aiCounterQuestion.ans) {
       setExplainPhase('won');
       onReward(15, 30, 'Giảng giải cho AI', `Giảng bài thành công chủ đề ${explainTopic}`);
-      toast.success('Chuẩn xác. AI đã thông suốt bài này. (+15 NP, +30 XP)');
+      toast.success('Chuẩn xác. AI đã thông suốt bài này. (+15 Ruby, +30 XP)');
       onGameComplete?.({ correctAnswers: 1, timeSpent: 0, score: 100, passed: true });
     } else {
       toast.error('Lệch rồi nhé. AI bắt ngược lại luôn, thử lại đi.');
@@ -149,7 +149,7 @@ export const ExplainApp: React.FC<ExplainAppProps> = ({ activeSectId, uiTheme, o
           <div className="py-12 space-y-4 text-center">
             <div className="text-5xl animate-bounce">🎓🦉🎖️</div>
             <h4 className="font-orbitron font-black text-lg text-synth-green uppercase">Bài Giảng Xuất Sắc</h4>
-            <p className="text-xs text-slate-300 max-w-md mx-auto">AI đã ngấm bài. Bạn nhận +15 NP, +30 XP nhờ kiểu học Feynman.</p>
+            <p className="text-xs text-slate-300 max-w-md mx-auto">AI đã ngấm bài. Bạn nhận +15 Ruby, +30 XP nhờ kiểu học Feynman.</p>
             <button onClick={restartExplainGame} className="px-6 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-purple text-black cursor-pointer hover:scale-105 transition-all">Dạy Bài Khác 🔁</button>
           </div>
         )}

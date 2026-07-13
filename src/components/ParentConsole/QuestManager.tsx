@@ -5,7 +5,7 @@ import { toast } from '../../utils/toast';
 interface QuestManagerProps {
   parentQuests: any[];
   canCreateMission: boolean;
-  addParentQuest: (title: string, description: string, rewardNP: number) => void;
+  addParentQuest: (title: string, description: string, rewardRuby: number) => void;
   completeParentQuest: (questId: string) => void;
   deleteParentQuest: (questId: string) => void;
 }
@@ -19,7 +19,7 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
 }) => {
   const [questTitle, setQuestTitle] = useState('');
   const [questDesc, setQuestDesc] = useState('');
-  const [questNP, setQuestNP] = useState(50);
+  const [questRuby, setQuestRuby] = useState(50);
 
   const handleCreateQuest = (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,11 +27,11 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
       toast.error('Vui lòng điền tiêu đề và mô tả nhiệm vụ!');
       return;
     }
-    addParentQuest(questTitle.trim(), questDesc.trim(), questNP);
+    addParentQuest(questTitle.trim(), questDesc.trim(), questRuby);
     toast.success('Giao nhiệm vụ chủ nhiệm giao thành công! 🎯');
     setQuestTitle('');
     setQuestDesc('');
-    setQuestNP(50);
+    setQuestRuby(50);
   };
 
   return (
@@ -75,13 +75,13 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
                 />
               </label>
               <label className="space-y-1.5 text-xs block">
-                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Phần thưởng (NP)</span>
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Phần thưởng (Ruby)</span>
                 <input
                   type="number"
                   min={10}
                   step={10}
-                  value={questNP}
-                  onChange={(e) => setQuestNP(Number(e.target.value) || 0)}
+                  value={questRuby}
+                  onChange={(e) => setQuestRuby(Number(e.target.value) || 0)}
                   className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
                 />
               </label>
@@ -119,7 +119,7 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
                     </div>
                     <p className="text-xs text-slate-400 mt-1">{quest.description}</p>
                     <div className="flex gap-4 mt-2 text-[10px] font-bold font-orbitron text-slate-300">
-                      <span>🎁 Thưởng: +{quest.rewardNP} NP</span>
+                      <span>🎁 Thưởng: +{quest.rewardRuby} Ruby</span>
                     </div>
                   </div>
                   <div className="flex gap-2">

@@ -4,7 +4,7 @@ import { Shield, Coins, Gift, Palette, RotateCcw } from 'lucide-react';
 import { toast } from '../utils/toast';
 import { UI_THEMES, isLightTheme } from '../theme/uiThemes';
 import { FogCard } from './FogCard';
-import { CoinConfirmModal } from './Common/CoinConfirmModal';
+import { RubyConfirmModal } from './Common/RubyConfirmModal';
 
 export const ItemShop: React.FC = () => {
   const player = useGameState(state => state.player);
@@ -52,8 +52,8 @@ export const ItemShop: React.FC = () => {
   }, []);
 
   const handleBuyTheme = (themeId: typeof UI_THEMES[number]['id']) => {
-    if (player.coins < THEME_UNLOCK_COST) {
-      toast.error(`Thiếu Điểm Thưởng (NP). Cần ${THEME_UNLOCK_COST} NP để mở khóa Giao diện này.`);
+    if (player.ruby < THEME_UNLOCK_COST) {
+      toast.error(`Thiếu Ruby. Cần ${THEME_UNLOCK_COST} Ruby để mở khóa Giao diện này.`);
       return;
     }
     const themeConfig = UI_THEMES.find(t => t.id === themeId);
@@ -76,8 +76,8 @@ export const ItemShop: React.FC = () => {
       toast.error('Khiên Bảo Vệ Chuỗi đã sẵn sàng rồi.');
       return;
     }
-    if (player.coins < 150) {
-      toast.error('Thiếu Điểm Thưởng (NP). Cần 150 NP để mua Khiên Bảo Vệ Chuỗi.');
+    if (player.ruby < 150) {
+      toast.error('Thiếu Ruby. Cần 150 Ruby để mua Khiên Bảo Vệ Chuỗi.');
       return;
     }
     setConfirmModal({
@@ -95,8 +95,8 @@ export const ItemShop: React.FC = () => {
   };
 
   const handleBuyHint = () => {
-    if (player.coins < 50) {
-      toast.error('Thiếu Điểm Thưởng (NP) để mua Thẻ Gợi Ý!');
+    if (player.ruby < 50) {
+      toast.error('Thiếu Ruby để mua Thẻ Gợi Ý!');
       return;
     }
     setConfirmModal({
@@ -119,18 +119,18 @@ export const ItemShop: React.FC = () => {
       toast.error('Phần thưởng đã hết số lượng!');
       return;
     }
-    if (player.coins < reward.costCoins) {
-      toast.error('Điểm Thưởng (NP) chưa đủ để đổi phần thưởng này!');
+    if (player.ruby < reward.costRuby) {
+      toast.error('Ruby chưa đủ để đổi phần thưởng này!');
       return;
     }
     setConfirmModal({
       isOpen: true,
-      cost: reward.costCoins,
+      cost: reward.costRuby,
       actionDescription: `đổi phần thưởng "${title}"`,
       onConfirm: () => {
         const success = redeemReward(id);
         if (success) {
-          toast.success(`🎁 Đã đổi "${title}"! Chờ Giáo Viên/Chủ Nhiệm trao quà ngoài đời nhé.`);
+          toast.success(`🎁 Đã đổi "${title}"! Chờ Chủ Nhiệm Chính trao quà ngoài đời nhé.`);
         }
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
       }
@@ -143,13 +143,13 @@ export const ItemShop: React.FC = () => {
       toast.error('Phúc lợi này đã hết số lượng!');
       return;
     }
-    if (player.coins < reward.costCoins) {
-      toast.error('Điểm Thưởng (NP) chưa đủ để đổi phúc lợi này!');
+    if (player.ruby < reward.costRuby) {
+      toast.error('Ruby chưa đủ để đổi phúc lợi này!');
       return;
     }
     setConfirmModal({
       isOpen: true,
-      cost: reward.costCoins,
+      cost: reward.costRuby,
       actionDescription: `đổi phần thưởng lớp học "${title}"`,
       isLoading: false,
       onConfirm: async () => {
@@ -209,13 +209,13 @@ export const ItemShop: React.FC = () => {
             🛒 Cửa Hàng Quà Tặng
           </h2>
           <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
-            Tiêu hao Điểm Thưởng (NP) tích lũy để đổi các vật phẩm học tập và đặc quyền giao diện.
+            Tiêu hao Ruby tích lũy để đổi các vật phẩm học tập và đặc quyền giao diện.
           </p>
         </div>
         <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-orbitron font-bold ${
           isUnicorn ? 'bg-white/80 border border-violet-200/40 text-violet-700' : 'bg-synth-blue border border-synth-orange/30'
         }`}>
-          <Coins className={`w-5 h-5 animate-pulse ${isUnicorn ? 'text-fuchsia-500 fill-fuchsia-500' : 'text-synth-orange fill-synth-orange'}`} /> {player.coins} NP
+          <Coins className={`w-5 h-5 animate-pulse ${isUnicorn ? 'text-fuchsia-500 fill-fuchsia-500' : 'text-synth-orange fill-synth-orange'}`} /> {player.ruby} Ruby
         </div>
       </div>
 
@@ -237,7 +237,7 @@ export const ItemShop: React.FC = () => {
                   </div>
                 </div>
                 <button onClick={(e) => { e.stopPropagation(); handleBuyShield(); }} disabled={hasStreakShield}
-                  className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shrink-0 ${isUnicorn ? 'bg-gradient-to-r from-cyan-300 to-violet-300 text-violet-900 shadow-md hover:brightness-105' : 'bg-synth-cyan text-black hover:shadow-[0_0_10px_rgba(0,240,255,0.4)]'}`}>150 NP</button>
+                  className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shrink-0 ${isUnicorn ? 'bg-gradient-to-r from-cyan-300 to-violet-300 text-violet-900 shadow-md hover:brightness-105' : 'bg-synth-cyan text-black hover:shadow-[0_0_10px_rgba(0,240,255,0.4)]'}`}>150 Ruby</button>
               </div>
             </FogCard>
           </div>
@@ -253,7 +253,7 @@ export const ItemShop: React.FC = () => {
                   </div>
                 </div>
                 <button onClick={(e) => { e.stopPropagation(); handleBuyHint(); }}
-                  className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${isUnicorn ? 'bg-gradient-to-r from-amber-300 to-orange-300 text-violet-900 shadow-md hover:brightness-105' : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.4)]'}`}>50 NP</button>
+                  className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${isUnicorn ? 'bg-gradient-to-r from-amber-300 to-orange-300 text-violet-900 shadow-md hover:brightness-105' : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.4)]'}`}>50 Ruby</button>
               </div>
             </FogCard>
           </div>
@@ -264,7 +264,7 @@ export const ItemShop: React.FC = () => {
       <div className={`rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'bg-violet-50/40 border-violet-200/40' : 'bg-synth-purple/5 border-synth-purple/10'}`}>
         <div className="space-y-0.5">
           <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
-            <Palette className="w-4 h-4" /> 👘 Kho Giao Diện (Phong Vị)
+            <Palette className="w-4 h-4" /> 👘 Kho Giao Diện (Phong Cách Học Đường)
           </h3>
           <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}`}>Mở khóa phong cách giao diện cá tính để cá nhân hóa không gian học tập của bạn.</p>
         </div>
@@ -290,7 +290,7 @@ export const ItemShop: React.FC = () => {
                         className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${isUnicorn ? 'bg-gradient-to-r from-violet-300 to-fuchsia-300 text-violet-900 shadow-md hover:brightness-105' : 'bg-synth-purple text-white hover:shadow-[0_0_10px_rgba(168,85,247,0.4)]'}`}>Mặc Ngay</button>
                     ) : (
                       <button onClick={(e) => { e.stopPropagation(); handleBuyTheme(theme.id); }}
-                        className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${isUnicorn ? 'bg-gradient-to-r from-cyan-300 to-violet-300 text-violet-900 shadow-md hover:brightness-105' : 'bg-synth-cyan text-black hover:shadow-[0_0_10px_rgba(0,240,255,0.4)]'}`}>🔒 {THEME_UNLOCK_COST} NP</button>
+                        className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${isUnicorn ? 'bg-gradient-to-r from-cyan-300 to-violet-300 text-violet-900 shadow-md hover:brightness-105' : 'bg-synth-cyan text-black hover:shadow-[0_0_10px_rgba(0,240,255,0.4)]'}`}>🔒 {THEME_UNLOCK_COST} Ruby</button>
                     )}
                   </div>
                 </FogCard>
@@ -305,11 +305,11 @@ export const ItemShop: React.FC = () => {
         <div className="space-y-0.5">
           <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-orange'}`}>
             <Gift className="w-4 h-4" />
-            {isOrphanStudent ? '🎁 Quầy Phúc Lợi Học Viện' : '🎁 Quầy Phúc Lợi Lớp Học'}
+            {isOrphanStudent ? '🎁 Quầy Quà Khuyến Học Toàn Viện' : '🎁 Quầy Quà Khuyến Học'}
           </h3>
           <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}`}>
             {isOrphanStudent
-              ? 'Đổi điểm tích lũy lấy các phần thưởng thực tế do Hiệu Trưởng thiết lập và phê duyệt.'
+              ? 'Đổi Ruby lấy Quà Khuyến Học do Viện Trưởng thiết lập và phê duyệt.'
               : 'Đổi điểm tích lũy lấy phần thưởng do giáo viên lớp bạn tạo. Số lượng có hạn — đổi sớm!'}
           </p>
         </div>
@@ -319,14 +319,14 @@ export const ItemShop: React.FC = () => {
           rewards.length === 0 ? (
             <div className={`rounded-2xl border border-dashed p-8 text-center ${isUnicorn ? 'border-violet-200/40 text-violet-600/60' : 'border-white/10 text-synth-text-muted'}`}>
               <Gift className="w-8 h-8 mx-auto mb-2 opacity-40" />
-              <p className="text-sm font-semibold">Chưa có Phúc Lợi nào được Hiệu Trưởng thiết lập.</p>
-              <p className="text-xs mt-1 opacity-70">Hiệu Trưởng vào Ngân Các → Phần thưởng để thêm mới.</p>
+              <p className="text-sm font-semibold">Chưa có Quà Khuyến Học nào được Viện Trưởng thiết lập.</p>
+              <p className="text-xs mt-1 opacity-70">Viện Trưởng vào Phòng Tài Vụ → Phần thưởng để thêm mới.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {rewards.map(reward => {
                 const isOutOfStock = reward.remainingQuantity <= 0;
-                const isAffordable = player.coins >= reward.costCoins;
+                const isAffordable = player.ruby >= reward.costRuby;
                 const canRedeem = !isOutOfStock && isAffordable;
                 return (
                   <div key={reward.id} className="relative">
@@ -338,7 +338,7 @@ export const ItemShop: React.FC = () => {
                           <div className="space-y-0.5 min-w-0">
                             <h4 className={`font-semibold text-sm truncate ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{reward.title}</h4>
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className={`text-[10px] font-bold font-orbitron ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-orange'}`}>{reward.costCoins} NP</span>
+                              <span className={`text-[10px] font-bold font-orbitron ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-orange'}`}>{reward.costRuby} Ruby</span>
                               <span className={`text-[10px] font-bold font-orbitron px-1 rounded border ${isOutOfStock ? 'text-red-400 border-red-400/30 bg-red-400/5' : 'text-synth-cyan border-synth-cyan/30 bg-synth-cyan/5'}`}>Còn {reward.remainingQuantity}/{reward.quantity}</span>
                             </div>
                           </div>
@@ -346,7 +346,7 @@ export const ItemShop: React.FC = () => {
                         <div className="flex items-center gap-2 ml-2 shrink-0">
                           <button onClick={(e) => { e.stopPropagation(); handleRedeem(reward.id, reward.title); }} disabled={!canRedeem}
                             className={`px-3.5 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed ${isUnicorn ? 'bg-gradient-to-r from-fuchsia-300 to-violet-300 text-violet-900 hover:brightness-105' : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.3)]'}`}>
-                            {isOutOfStock ? 'Hết Hàng' : 'Đổi Phúc Lợi'}
+                            {isOutOfStock ? 'Hết Hàng' : 'Đổi Quà'}
                           </button>
                         </div>
                       </div>
@@ -366,14 +366,14 @@ export const ItemShop: React.FC = () => {
           ) : classRewards.length === 0 ? (
             <div className={`rounded-2xl border border-dashed p-8 text-center ${isUnicorn ? 'border-violet-200/40 text-violet-600/60' : 'border-white/10 text-synth-text-muted'}`}>
               <Gift className="w-8 h-8 mx-auto mb-2 opacity-40" />
-              <p className="text-sm font-semibold">Chưa có Phúc Lợi nào từ giáo viên của bạn.</p>
-              <p className="text-xs mt-1 opacity-70">Giáo viên vào Ngân Các để tạo phần thưởng cho lớp.</p>
+              <p className="text-sm font-semibold">Chưa có Quà Khuyến Học nào từ giáo viên của bạn.</p>
+              <p className="text-xs mt-1 opacity-70">Giáo viên vào Phòng Tài Vụ để tạo phần thưởng cho lớp.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {classRewards.map(reward => {
                 const isOutOfStock = reward.remaining <= 0;
-                const isAffordable = player.coins >= reward.costCoins;
+                const isAffordable = player.ruby >= reward.costRuby;
                 const canRedeem = !isOutOfStock && isAffordable;
                 const myPendingForThisReward = classRewardRedemptions.filter(r => r.classRewardId === reward.id && r.status === 'pending');
                 const alreadyPending = myPendingForThisReward.length > 0;
@@ -388,7 +388,7 @@ export const ItemShop: React.FC = () => {
                             <h4 className={`font-semibold text-sm truncate ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{reward.title}</h4>
                             {reward.teacherName && <p className="text-[10px] text-synth-text-muted">từ {reward.teacherName}</p>}
                             <div className="flex items-center gap-2 flex-wrap">
-                              <span className={`text-[10px] font-bold font-orbitron ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-orange'}`}>{reward.costCoins} NP</span>
+                              <span className={`text-[10px] font-bold font-orbitron ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-orange'}`}>{reward.costRuby} Ruby</span>
                               <span className={`text-[10px] font-bold font-orbitron px-1 rounded border ${isOutOfStock ? 'text-red-400 border-red-400/30 bg-red-400/5' : 'text-synth-cyan border-synth-cyan/30 bg-synth-cyan/5'}`}>
                                 Còn {reward.remaining}/{reward.quantity}
                               </span>
@@ -410,7 +410,7 @@ export const ItemShop: React.FC = () => {
                           ) : (
                             <button onClick={(e) => { e.stopPropagation(); handleRedeemClass(reward.id, reward.title); }} disabled={!canRedeem}
                               className={`px-3.5 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed ${isUnicorn ? 'bg-gradient-to-r from-fuchsia-300 to-violet-300 text-violet-900 hover:brightness-105' : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.3)]'}`}>
-                              {isOutOfStock ? 'Hết Hàng' : !isAffordable ? 'Chưa đủ NP' : 'Đổi Phúc Lợi'}
+                              {isOutOfStock ? 'Hết Hàng' : !isAffordable ? 'Chưa đủ Ruby' : 'Đổi Quà'}
                             </button>
                           )}
                         </div>
@@ -462,7 +462,7 @@ export const ItemShop: React.FC = () => {
           </div>
         )}
       </div>
-      <CoinConfirmModal
+      <RubyConfirmModal
         isOpen={confirmModal.isOpen}
         cost={confirmModal.cost}
         actionDescription={confirmModal.actionDescription}

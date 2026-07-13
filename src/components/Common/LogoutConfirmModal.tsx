@@ -83,7 +83,7 @@ export const LogoutConfirmModal: React.FC<LogoutConfirmModalProps> = ({
             <div className="space-y-3 mb-6 px-2">
               <p className={`text-sm ${isUnicorn ? 'text-slate-600' : 'text-slate-300'}`}>
                 {isStudent
-                  ? 'Thiếu hiệp có chắc chắn muốn rời khỏi học viện rèn luyện hôm nay?'
+                  ? 'Sĩ Tử có chắc chắn muốn rời khỏi học viện rèn luyện hôm nay?'
                   : 'Bạn có chắc chắn muốn đăng xuất khỏi tài khoản của mình?'}
               </p>
             </div>
@@ -122,7 +122,7 @@ export const LogoutConfirmModal: React.FC<LogoutConfirmModalProps> = ({
                 Đang đăng xuất...
               </h4>
               <p className={`text-xs ${isUnicorn ? 'text-slate-500' : 'text-slate-400'} animate-pulse`}>
-                {isStudent ? 'Hẹn gặp lại thiếu hiệp tại học viện!' : 'Hẹn gặp lại bạn!'}
+                {isStudent ? 'Hẹn gặp lại Sĩ Tử tại học viện!' : 'Hẹn gặp lại bạn!'}
               </p>
             </div>
           </div>

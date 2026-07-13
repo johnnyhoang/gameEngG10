@@ -10,6 +10,7 @@ import { logActivity } from '../helpers';
 import { toast } from '../../utils/toast';
 import { authService } from '../../services/authService';
 import { DEFAULT_GRADE_TIER } from '../../types/game';
+import { normalizeRubyPayload } from '../../utils/rubyCompatibility';
 
 export const createAuthSlice: StateCreator<
   StoreState,
@@ -46,7 +47,7 @@ export const createAuthSlice: StateCreator<
 
   selectProfile: async (profileId: string) => {
     try {
-      const data = await authService.selectProfile(profileId);
+      const data = normalizeRubyPayload(await authService.selectProfile(profileId));
       const resolvedTheme = data.player?.uiTheme || (get().uiThemesByUser[profileId] || DEFAULT_UI_THEME) as any;
       const mergedQuestions = [...INITIAL_QUESTIONS];
       const idMap = new Map<string, number>();
@@ -78,8 +79,12 @@ export const createAuthSlice: StateCreator<
         challenges: data.challenges || INITIAL_CHALLENGES,
         dailyMission: data.dailyMission || null,
         lessonsProgress: data.lessonsProgress || {},
+        topics: data.topics || [],
+        activities: data.activities || [],
+        activityProgress: data.activityProgress || {},
         explorationProgress: data.explorationProgress || {},
         questions: mergedQuestions,
+        lessons: data.lessons || INITIAL_LESSONS,
         gameSettings: data.gameSettings || DEFAULT_GAME_SETTINGS,
         uiTheme: resolvedTheme,
         currentSubject: data.player?.activeSubject || 'english',
@@ -133,7 +138,7 @@ export const createAuthSlice: StateCreator<
           role: (user.role as any) || 'student',
           level: 1,
           xp: 0,
-          coins: 200,
+          ruby: 200,
           streak: 0,
           energy: 100,
           maxEnergy: 100,
@@ -173,7 +178,7 @@ export const createAuthSlice: StateCreator<
     // Real Supabase login
     try {
       await authService.syncUser();
-      const data = await authService.fetchCurrentProfile();
+      const data = normalizeRubyPayload(await authService.fetchCurrentProfile());
       const dbCustomQs = data.customQuestions || [];
       const resolvedTheme = data.player?.uiTheme || (get().uiThemesByUser[data.currentUser?.id || user.id] || DEFAULT_UI_THEME) as any;
 
@@ -211,7 +216,7 @@ export const createAuthSlice: StateCreator<
             role: (data.currentUser?.role || 'student') as any,
             level: 1,
             xp: 0,
-            coins: 200,
+            ruby: 200,
             streak: 0,
             energy: 100,
             maxEnergy: 100,
@@ -240,6 +245,9 @@ export const createAuthSlice: StateCreator<
           questions: mergedQuestions,
           lessons: data.lessons || INITIAL_LESSONS,
           lessonsProgress: data.lessonsProgress || {},
+          topics: data.topics || [],
+          activities: data.activities || [],
+          activityProgress: data.activityProgress || {},
           explorationProgress: data.explorationProgress || {}
         };
       });
@@ -259,7 +267,7 @@ export const createAuthSlice: StateCreator<
           role: updatedUser.role as any,
           level: 1,
           xp: 0,
-          coins: 200,
+          ruby: 200,
           streak: 0,
           energy: 100,
           maxEnergy: 100,
@@ -349,6 +357,9 @@ export const createAuthSlice: StateCreator<
           categoryStats: {},
           topicStats: {},
           lessonsProgress: {},
+          topics: [],
+          activities: [],
+          activityProgress: {},
           explorationProgress: {},
           pageExplorationStates: {},
           rewards: DEFAULT_REWARDS,
@@ -405,4 +416,3 @@ export const createAuthSlice: StateCreator<
     }
   },
 });
-

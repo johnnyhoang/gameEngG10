@@ -4,7 +4,7 @@ import { AdventureApp } from './AdventureApp';
 import type { MiniGameProps } from '../../types/minigame';
 
 export const AdventureGame: React.FC<MiniGameProps> = ({ activeSectId, onGameStart, onGameComplete }) => {
-  const awardCoinsAndXp = useGameState(state => state.awardCoinsAndXp);
+  const awardRubyAndXp = useGameState(state => state.awardRubyAndXp);
   const uiTheme = useGameState(state => state.uiTheme);
   const questions = useGameState(state => state.questions);
 
@@ -16,7 +16,7 @@ export const AdventureGame: React.FC<MiniGameProps> = ({ activeSectId, onGameSta
     <AdventureApp
       activeSectId={activeSectId}
       uiTheme={uiTheme}
-      onReward={awardCoinsAndXp}
+      onReward={awardRubyAndXp}
       onGameComplete={onGameComplete}
       onGameStart={onGameStart}
       questions={questions}

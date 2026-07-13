@@ -8,7 +8,7 @@ import { SUBJECTS_CONFIG, GRADE_TIERS, getStudentRankForLevel } from '../types/g
 import { toast } from '../utils/toast';
 import { GiangHoCamNang } from './GiangHoCamNang';
 import { ActivityLog } from './ActivityLog';
-import { CoinConfirmModal } from './Common/CoinConfirmModal';
+import { RubyConfirmModal } from './Common/RubyConfirmModal';
 
 interface ProfilePageProps {
   currentUser: UserProfile;
@@ -93,6 +93,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const buyTheme = useGameState(state => state.buyTheme);
   const activeGradeTier = useGameState(state => state.activeGradeTier);
   const setGradeTier = useGameState(state => state.setGradeTier);
+  const lessons = useGameState(state => state.lessons);
+  const questions = useGameState(state => state.questions);
 
   const [activeTab, setActiveTab] = useState<'identity' | 'themes' | 'logs'>('identity');
   const [isCamNangOpen, setIsCamNangOpen] = useState(false);
@@ -216,7 +218,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           }`}>
             <div className="flex items-center gap-2">
               <Sparkles className={`h-4 w-4 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-cyan'}`} />
-              <span className="font-semibold font-orbitron">Phong Vị đang dùng</span>
+              <span className="font-semibold font-orbitron">Phong Cách Học Đường đang dùng</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-lg">{activeTheme.iconSet[0]}</span>
@@ -246,7 +248,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 : 'bg-white/5 border border-white/5 text-slate-400 hover:text-white'
             }`}
           >
-            🎨 Cá Tính & Phong Vị
+            🎨 Cá Tính & Phong Cách Học Đường
           </button>
           <button
             onClick={() => setActiveTab('logs')}
@@ -279,8 +281,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   <span className="font-orbitron font-black text-synth-magenta text-base">{player.xp} XP</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Điểm Thưởng (NP)</span>
-                  <span className="font-orbitron font-black text-synth-orange text-base">{player.coins} NP</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Ruby</span>
+                  <span className="font-orbitron font-black text-synth-orange text-base">{player.ruby} Ruby</span>
                 </div>
                 <div>
                   <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Chuỗi học tập</span>
@@ -289,7 +291,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               </div>
             )}
 
-            {/* Tầng Thế Giới (Grade Tier — CORE_SPECS §1.4). Đây là NƠI DUY NHẤT được đổi tầng. */}
+            {/* Bậc Học (Grade Tier — CORE_SPECS §1.4). Đây là NƠI DUY NHẤT được đổi tầng. */}
             <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
               <div className="flex items-center justify-between mb-3">
                 <h4 className="text-xs font-black uppercase tracking-wider font-orbitron text-slate-300">
@@ -302,7 +304,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
                 {GRADE_TIERS.map(tierCfg => {
                   const isActive = tierCfg.tier === activeGradeTier;
-                  const isLocked = tierCfg.status !== 'active';
+                  const hasContent = lessons.some(lesson => (lesson.gradeTier ?? 9) === tierCfg.tier)
+                    || questions.some(question => (question.gradeTier ?? question.grade ?? 9) === tierCfg.tier);
+                  const isLocked = !hasContent;
                   return (
                     <button
                       key={tierCfg.tier}
@@ -326,7 +330,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 })}
               </div>
               <p className="mt-2 text-[10px] text-slate-500">
-                Mỗi tầng là một thế giới cô lập 100% (bản đồ, đấu trường, hang luyện công, cẩm nang...). Các tầng 🔒 sẽ khai mở sau.
+                Mỗi lớp là một ngữ cảnh nội dung độc lập. Lớp có dữ liệu sẽ tự mở; biểu tượng 🔒 nghĩa là chưa có nội dung.
               </p>
             </div>
 
@@ -391,15 +395,26 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pt-2">
                 {Object.values(SUBJECTS_CONFIG).map(sub => {
                   const isActive = activeSectId === sub.id;
+                  const hasContent = lessons.some(lesson =>
+                    lesson.subject === sub.id && (lesson.gradeTier ?? 9) === activeGradeTier
+                  ) || questions.some(question =>
+                    (question.subject ?? 'english') === sub.id
+                    && (question.gradeTier ?? question.grade ?? 9) === activeGradeTier
+                  );
                   return (
                     <button
                       key={sub.id}
                       onClick={() => {
-                        setActiveSectId(sub.id);
-                        toast.success(`Đã chọn môn học ${sub.name}! 📚`);
+                        if (hasContent) {
+                          setActiveSectId(sub.id);
+                          toast.success(`Đã chọn môn học ${sub.name}! 📚`);
+                        }
                       }}
+                      disabled={!hasContent}
                       className={`rounded-2xl border p-5 text-left transition-all duration-300 cursor-pointer group shadow-lg flex items-center justify-between ${
-                        isActive
+                        !hasContent
+                          ? 'border-white/5 bg-black/10 opacity-40 cursor-not-allowed'
+                          : isActive
                           ? 'border-synth-cyan bg-synth-cyan/15 shadow-[0_0_15px_rgba(0,240,255,0.2)] ring-1 ring-synth-cyan'
                           : 'border-white/5 bg-synth-gray/10 hover:border-white/10 hover:bg-synth-gray/20'
                       }`}
@@ -412,7 +427,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                             {sub.name}
                           </span>
                           <span className="block text-[10px] text-synth-text-muted mt-0.5">
-                            {sub.group === 'chuyen_sau' ? 'Môn thi Chuyên Sâu Lớp 10' : 'Môn học Cơ Bản Lớp 9'}
+                            {hasContent ? `Có nội dung cho Lớp ${activeGradeTier}` : `Chưa có nội dung Lớp ${activeGradeTier}`}
                           </span>
                         </div>
                       </div>
@@ -446,18 +461,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                       onSelectTheme(theme.id);
                       return;
                     }
-                    if (player.coins < THEME_UNLOCK_COST) {
-                      toast.error(`Không đủ NP. Cần ${THEME_UNLOCK_COST} NP để mở khóa Phong Vị này.`);
+                    if (player.ruby < THEME_UNLOCK_COST) {
+                      toast.error(`Không đủ Ruby. Cần ${THEME_UNLOCK_COST} Ruby để mở khóa Phong Cách Học Đường này.`);
                       return;
                     }
                     setConfirmModal({
                       isOpen: true,
                       cost: THEME_UNLOCK_COST,
-                      actionDescription: `mở khóa Phong Vị "${theme.name}"`,
+                      actionDescription: `mở khóa Phong Cách Học Đường "${theme.name}"`,
                       onConfirm: () => {
                         const bought = buyTheme(theme.id);
                         if (bought) {
-                          toast.success(`Đã mở khóa "${theme.name}" (-${THEME_UNLOCK_COST} NP)! Đang áp dụng...`);
+                          toast.success(`Đã mở khóa "${theme.name}" (-${THEME_UNLOCK_COST} Ruby)! Đang áp dụng...`);
                           onSelectTheme(theme.id);
                         }
                         setConfirmModal(prev => ({ ...prev, isOpen: false }));
@@ -483,7 +498,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
                   {!isActive && !isUnlocked && (
                     <div className="absolute left-4 top-4 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-sm bg-slate-800/90">
-                      🔒 {THEME_UNLOCK_COST} NP
+                      🔒 {THEME_UNLOCK_COST} Ruby
                     </div>
                   )}
 
@@ -539,7 +554,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               );
             })}
 
-            {/* Todo card for missing wuxia themes and features */}
+            {/* Todo card for future school themes and features */}
             <div className="relative overflow-hidden rounded-3xl border border-dashed border-stone-700/50 bg-stone-900/10 p-5 flex flex-col justify-between text-left h-[260px]">
               <div>
                 <div className="inline-block text-[9px] font-black bg-stone-800 text-stone-400 px-2 py-0.5 rounded-full mb-3 uppercase tracking-wider font-mono">
@@ -564,7 +579,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           </div>
         )}
       </div>
-      <CoinConfirmModal
+      <RubyConfirmModal
         isOpen={confirmModal.isOpen}
         cost={confirmModal.cost}
         actionDescription={confirmModal.actionDescription}
@@ -574,4 +589,3 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     </div>
   );
 };
-

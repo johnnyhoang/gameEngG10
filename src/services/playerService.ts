@@ -8,7 +8,7 @@ export const playerService = {
     return sessionRes.data.session?.access_token || null;
   },
 
-  awardCoins: async (profileId: string, coins: number, activityTitle: string, activityDetails: string | object): Promise<number> => {
+  awardRuby: async (profileId: string, ruby: number, activityTitle: string, activityDetails: string | object): Promise<number> => {
     const token = await playerService.getAccessToken();
     if (!token) throw new Error('No access token');
 
@@ -17,14 +17,14 @@ export const playerService = {
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
       body: JSON.stringify({
         profileId,
-        amount: coins,
+        amount: ruby,
         reason: activityTitle,
         details: activityDetails
       })
     });
     if (res.ok) {
       const data = await res.json();
-      return data.coins;
+      return data.ruby ?? data.coins;
     }
     throw new Error('Failed to record transaction');
   },

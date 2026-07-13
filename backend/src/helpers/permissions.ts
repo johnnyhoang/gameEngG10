@@ -1,6 +1,6 @@
 import { pool } from '../db.js';
 
-export type WuxiaAction =
+export type PermissionAction =
   | 'VIEW_AUDIT_LOGS'
   | 'PROMOTE_TO_ADMIN'
   | 'PROMOTE_TO_USER'
@@ -13,7 +13,7 @@ export type WuxiaAction =
 
 export const hasPermission = (
   role: string | undefined,
-  action: WuxiaAction,
+  action: PermissionAction,
   secondaryPermissions?: {
     can_approve_rewards?: boolean;
     can_create_missions?: boolean;
@@ -62,11 +62,11 @@ export const checkStudentManagementPermission = async (
   );
   if (actorCheck.rows.length === 0) return false;
 
-  let wuxiaAction: WuxiaAction;
-  if (action === 'approve_reward') wuxiaAction = 'APPROVE_REWARD';
-  else if (action === 'refill_energy') wuxiaAction = 'REFILL_ENERGY';
-  else if (action === 'set_energy_config') wuxiaAction = 'SET_ENERGY_CONFIG';
-  else wuxiaAction = 'VIEW_STUDENT_PROFILE';
+  let permissionAction: PermissionAction;
+  if (action === 'approve_reward') permissionAction = 'APPROVE_REWARD';
+  else if (action === 'refill_energy') permissionAction = 'REFILL_ENERGY';
+  else if (action === 'set_energy_config') permissionAction = 'SET_ENERGY_CONFIG';
+  else permissionAction = 'VIEW_STUDENT_PROFILE';
 
   // Duyệt qua tất cả các profile active của user xem có profile nào có đủ quyền thực hiện hành động này không
   for (const actorProfile of actorCheck.rows) {
@@ -74,7 +74,7 @@ export const checkStudentManagementPermission = async (
     const profileId = actorProfile.id;
 
     if (role === 'truong_vien' || role === 'pho_vien') {
-      if (hasPermission(role, wuxiaAction)) return true;
+      if (hasPermission(role, permissionAction)) return true;
     }
 
     if (role === 'parent') {
@@ -82,7 +82,7 @@ export const checkStudentManagementPermission = async (
         "SELECT id FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'primary' AND status = 'active'",
         [profileId, studentUserId]
       );
-      if (linkCheck.rows.length > 0 && hasPermission(role, wuxiaAction)) return true;
+      if (linkCheck.rows.length > 0 && hasPermission(role, permissionAction)) return true;
     }
 
     if (role === 'secondary_parent') {
@@ -92,7 +92,7 @@ export const checkStudentManagementPermission = async (
       );
       if (linkCheck.rows.length > 0) {
         const perms = linkCheck.rows[0].secondary_permissions || {};
-        if (hasPermission(role, wuxiaAction, perms)) return true;
+        if (hasPermission(role, permissionAction, perms)) return true;
       }
     }
   }

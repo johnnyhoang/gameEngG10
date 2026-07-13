@@ -18,7 +18,7 @@ export const GiangHoCamNang: React.FC<GiangHoCamNangProps> = ({
   const currentUser = useGameState(state => state.currentUser);
   const isAdminViewer = isSuperAdmin(currentUser?.role);
 
-  // Trang dành riêng cho Hiệu Trưởng chỉ hiện khi đang xem với vai trò Hiệu Trưởng.
+  // Trang dành riêng cho Viện Trưởng chỉ hiện khi đang xem với vai trò Viện Trưởng.
   const handbookPages = allHandbookPages.filter(p => p.audience !== 'admin' || isAdminViewer);
 
   // Group pages by category
@@ -89,7 +89,7 @@ export const GiangHoCamNang: React.FC<GiangHoCamNangProps> = ({
           <div className="flex items-center gap-2">
             <Feather className="w-4 h-4 text-handbook-title animate-pulse" />
             <span className="text-[11px] font-black uppercase tracking-widest text-handbook-title font-mono">
-              🏯 CẨM NANG BÍ LỤC • GIANG HỒ KỶ YẾU 📖
+              🏯 CẨM NANG HỌC ĐƯỜNG 📖
             </span>
           </div>
           <button

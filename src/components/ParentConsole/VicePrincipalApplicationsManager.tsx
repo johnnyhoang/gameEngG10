@@ -46,7 +46,7 @@ export const VicePrincipalApplicationsManager: React.FC<VicePrincipalApplication
         body: JSON.stringify({ applicationId, accept })
       });
       if (res.ok) {
-        toast.success(accept ? 'Đã thăng chức Hiệu Phó thành công!' : 'Đã từ chối đơn ứng cử.');
+        toast.success(accept ? 'Đã thăng chức Phó Viện Trưởng thành công!' : 'Đã từ chối đơn ứng cử.');
         fetchApps();
         // Reload page to refresh all active profiles
         window.location.reload();
@@ -66,7 +66,7 @@ export const VicePrincipalApplicationsManager: React.FC<VicePrincipalApplication
     <div className="glass-panel rounded-2xl border border-synth-magenta/30 p-5 space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-1.5">
-          🛡️ Duyệt Đơn Ứng Tuyển Hiệu Phó ({apps.length})
+          🛡️ Duyệt Đơn Ứng Tuyển Phó Viện Trưởng ({apps.length})
         </h3>
         <button
           onClick={fetchApps}
@@ -79,7 +79,7 @@ export const VicePrincipalApplicationsManager: React.FC<VicePrincipalApplication
 
       {apps.length === 0 ? (
         <p className="text-xs text-synth-text-muted italic py-4 text-center">
-          Không có đơn ứng cử Hiệu Phó nào đang chờ duyệt.
+          Không có đơn ứng cử Phó Viện Trưởng nào đang chờ duyệt.
         </p>
       ) : (
         <div className="space-y-3">

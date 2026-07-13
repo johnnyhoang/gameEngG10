@@ -65,13 +65,13 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
       const now = Date.now();
 
       // Cooldown chung: heo chỉ được TỰ xuất hiện tối đa 1 lần mỗi 30 PHÚT, bất kể lý do gì
-      // (yêu cầu Hiệu Trưởng 2026-07-10 — chống làm phiền). Cooldown persist qua localStorage.
+      // (yêu cầu Viện Trưởng 2026-07-10 — chống làm phiền). Cooldown persist qua localStorage.
       const THIRTY_MINUTES = 30 * 60 * 1000;
       if (now - lastAutoTrigger.current < THIRTY_MINUTES) {
         return;
       }
 
-      // Báo hết Chân Khí (SUB_SPEC_ENERGY §4): ưu tiên cao nhất, KHÔNG chờ "30 phút sau đăng nhập"
+      // Báo hết Năng Lượng (SUB_SPEC_ENERGY §4): ưu tiên cao nhất, KHÔNG chờ "30 phút sau đăng nhập"
       // như idle/hunger — con cần biết ngay lý do bị khóa hoạt động sinh điểm và giờ hồi lại.
       if (player.energy === 0 && player.energyDepletedAt) {
         setTriggerReason('energy-depleted');
@@ -154,7 +154,7 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
         </button>
       )}
 
-      {/* Cẩm Nang Bí Lục Floating Button */}
+      {/* Cẩm Nang Học Đường Floating Button */}
       {!isDungeonScreen && (
         <button
           onClick={() => showHelp('all')}
@@ -163,7 +163,7 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
               ? 'bg-gradient-to-r from-fuchsia-300 via-violet-300 to-cyan-200 border-2 border-violet-200 shadow-[0_0_14px_rgba(192,132,252,0.4)]'
               : 'bg-synth-gray border-2 border-synth-cyan shadow-[0_0_12px_rgba(0,240,255,0.4)]'
           }`}
-          title="Cẩm Nang Bí Lục & Trợ Giúp"
+          title="Cẩm Nang Học Đường & Trợ Giúp"
         >
           <span className="text-2xl lg:text-3xl inline-block">📖</span>
         </button>

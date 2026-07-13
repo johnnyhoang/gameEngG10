@@ -10,7 +10,7 @@ export const RunFinishedScreen: React.FC<RunFinishedScreenProps> = ({
 }) => {
   // Luật "Tẩu Hỏa Nhập Ma": sai đủ 3 câu trong lượt Sinh Tồn hoặc Boss đều tính là thất bại.
   const isDefeat = runMistakes >= 3 && (mode === 'boss' || mode === 'survival');
-  const displayedCoins = isDefeat ? Math.floor(rewardsEarned.coins / 2) : rewardsEarned.coins;
+  const displayedRuby = isDefeat ? Math.floor(rewardsEarned.ruby / 2) : rewardsEarned.ruby;
   const displayedXp = isDefeat ? Math.floor(rewardsEarned.xp / 2) : rewardsEarned.xp;
 
   return (
@@ -37,7 +37,7 @@ export const RunFinishedScreen: React.FC<RunFinishedScreenProps> = ({
       <div className="bg-synth-gray/40 rounded-xl p-5 border border-synth-cyan/20 grid grid-cols-2 gap-4">
         <div className="text-center font-orbitron">
           <span className="text-[10px] text-synth-text-muted uppercase">Nanite Vàng</span>
-          <p className="text-2xl font-black text-synth-orange">+{displayedCoins} NP</p>
+          <p className="text-2xl font-black text-synth-orange">+{displayedRuby} Ruby</p>
         </div>
         <div className="text-center font-orbitron">
           <span className="text-[10px] text-synth-text-muted uppercase">Điểm Kinh Nghiệm</span>
@@ -48,7 +48,7 @@ export const RunFinishedScreen: React.FC<RunFinishedScreenProps> = ({
       {/* Payout note */}
       {mode === 'boss' && !isDefeat && (
         <div className="bg-synth-magenta/10 border border-synth-magenta/30 rounded-lg p-3 text-xs text-synth-magenta">
-          🔥 Đánh bại Boss: +150 XP và bonus hoàn thành Ngân Lượng đã tự động cộng thêm!
+          🔥 Đánh bại Boss: +150 XP và bonus hoàn thành Ruby đã tự động cộng thêm!
         </div>
       )}
 

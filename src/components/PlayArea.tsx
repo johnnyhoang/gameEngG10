@@ -10,8 +10,8 @@ import { Scratchpad } from './Scratchpad';
 const BikiHinhHocPhang = lazy(() => import('./BikiHinhHocPhang').then(m => ({ default: m.BikiHinhHocPhang })));
 const Biki3DStudio = lazy(() => import('./Biki3DStudio').then(m => ({ default: m.Biki3DStudio })));
 import { ArrowRight, Award } from 'lucide-react';
-import { MonChuHoiToiDialog } from './MonChuHoiToiDialog';
-import { CoinConfirmModal } from './Common/CoinConfirmModal';
+import { MienPhatDialog } from './MienPhatDialog';
+import { RubyConfirmModal } from './Common/RubyConfirmModal';
 import { sound } from '../utils/sound';
 import { toast } from '../utils/toast';
 import { supabase } from '../utils/supabaseClient';
@@ -58,7 +58,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const [typedAnswer, setTypedAnswer] = useState<string>('');
   const [checked, setChecked] = useState(false);
   const [isLastCorrect, setIsLastCorrect] = useState(false);
-  const [rewardsEarned, setRewardsEarned] = useState({ coins: 0, xp: 0 });
+  const [rewardsEarned, setRewardsEarned] = useState({ ruby: 0, xp: 0 });
   const [sessionAnswered, setSessionAnswered] = useState(0);
   const [sessionCorrect, setSessionCorrect] = useState(0);
   const [sessionStartTime] = useState(() => Date.now());
@@ -182,7 +182,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           setCurrentQuestions(res.questions);
           setCurrentIndex(0);
           setAnswersSubmitted([]);
-          setRewardsEarned({ coins: 0, xp: 0 });
+          setRewardsEarned({ ruby: 0, xp: 0 });
           setSessionAnswered(0);
           setSessionCorrect(0);
           setRunFinished(false);
@@ -267,7 +267,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       setCurrentQuestions(pool.sort(() => Math.random() - 0.5));
       setCurrentIndex(0);
       setAnswersSubmitted([]);
-      setRewardsEarned({ coins: 0, xp: 0 });
+      setRewardsEarned({ ruby: 0, xp: 0 });
       setSessionAnswered(0);
       setSessionCorrect(0);
       setRunFinished(false);
@@ -348,15 +348,15 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     }
 
     const submitResults = async () => {
-      let finalCoins = rewardsEarned.coins;
+      let finalRuby = rewardsEarned.ruby;
       let finalXp = rewardsEarned.xp;
 
       try {
         if (!sessionId) {
           // Fallback if session wasn't started online
           if (isDefeat) {
-            applyDefeatPenalty(rewardsEarned.coins, rewardsEarned.xp);
-            finalCoins = Math.floor(rewardsEarned.coins / 2);
+            applyDefeatPenalty(rewardsEarned.ruby, rewardsEarned.xp);
+            finalRuby = Math.floor(rewardsEarned.ruby / 2);
             finalXp = Math.floor(rewardsEarned.xp / 2);
           } else if (mode === 'boss') {
             const bossBonusIndex = bossId === 'b-2024' || bossId === 'b-hk1' ? 0
@@ -387,21 +387,21 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
 
           if (res.success) {
             syncSessionResult({
-              newCoins: res.newCoins,
+              newRuby: res.newRuby,
               newXp: res.newXp,
               newLevel: res.newLevel,
               badges: res.badges
             });
-            finalCoins = res.coinsGained;
+            finalRuby = res.rubyGained;
             finalXp = res.xpGained;
-            setRewardsEarned({ coins: finalCoins, xp: finalXp });
+            setRewardsEarned({ ruby: finalRuby, xp: finalXp });
           }
         }
       } catch (err) {
         console.error('Failed to submit session result, run fallback:', err);
         if (isDefeat) {
-          applyDefeatPenalty(rewardsEarned.coins, rewardsEarned.xp);
-          finalCoins = Math.floor(rewardsEarned.coins / 2);
+          applyDefeatPenalty(rewardsEarned.ruby, rewardsEarned.xp);
+          finalRuby = Math.floor(rewardsEarned.ruby / 2);
           finalXp = Math.floor(rewardsEarned.xp / 2);
         } else if (mode === 'boss') {
           const bossBonusIndex = bossId === 'b-2024' || bossId === 'b-hk1' ? 0
@@ -419,7 +419,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         total: currentQuestions.length,
         accuracyRatio,
         timeSpentSeconds,
-        rewardsEarned: { coins: finalCoins, xp: finalXp },
+        rewardsEarned: { ruby: finalRuby, xp: finalXp },
         isDefeat,
         passed,
       });
@@ -434,18 +434,18 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
 
   const handleUseHint = () => {
     if (!activeQuestion || hintUsed) return;
-    if (player.coins < 50) {
-      toast.error('Không đủ NP để mua gợi ý. Cần 50 NP.');
+    if (player.ruby < 50) {
+      toast.error('Không đủ Ruby để mua gợi ý. Cần 50 Ruby.');
       return;
     }
     
     setConfirmModal({
       isOpen: true,
       cost: 50,
-      actionDescription: 'lĩnh Khai Ngộ Quyển trợ giúp trong câu hỏi này',
+      actionDescription: 'lĩnh Thẻ Nhắc Bài trợ giúp trong câu hỏi này',
       onConfirm: () => {
         buyHint();
-        sound.playCoin();
+        sound.playRuby();
         setHintUsed(true);
 
         const answerMode = activeQuestion.metadata?.answerMode;
@@ -608,7 +608,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       } catch (err: any) {
         if (currentQuestionIdRef.current !== questionIdBeingGraded) return;
         console.error('Lỗi khi gọi AI chấm bài, chuyển sang backup:', err);
-        localAiWarningMessage = 'Linh Sư phải chấm dự phòng. Kết quả vẫn ổn, nhưng nên coi như mốc tham chiếu.';
+        localAiWarningMessage = 'Trợ Giáo MIKA phải chấm dự phòng. Kết quả vẫn ổn, nhưng nên coi như mốc tham chiếu.';
         setAiWarningMessage(localAiWarningMessage);
         const fallbackResult = runOldGradingBackup();
         isCorrect = fallbackResult.isCorrect;
@@ -657,7 +657,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       } catch (err: any) {
         if (currentQuestionIdRef.current !== questionIdBeingGraded) return;
         console.error('Lỗi khi gọi AI chấm Toán tự luận, dùng backup:', err);
-        localAiWarningMessage = 'Linh Sư chấm Toán tự luận dự phòng (So khớp chuỗi).';
+        localAiWarningMessage = 'Trợ Giáo MIKA chấm Toán tự luận dự phòng (So khớp chuỗi).';
         setAiWarningMessage(localAiWarningMessage);
         const fallbackResult = runOldGradingBackup();
         isCorrect = fallbackResult.isCorrect;
@@ -724,7 +724,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       sound.playIncorrect();
     }
     setRewardsEarned(prev => ({
-      coins: prev.coins + outcome.coinsGained,
+      ruby: prev.ruby + outcome.rubyGained,
       xp: prev.xp + outcome.expGained
     }));
     setSessionAnswered(prev => prev + 1);
@@ -823,9 +823,9 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
             : mode === 'revenge'
               ? 'Phụ bản trả bài'
               : mode === 'boss'
-                ? 'Đấu trường Boss'
+                ? 'Trường Thi Boss'
                 : mode === 'survival'
-                  ? 'Đấu trường sinh tồn'
+                  ? 'Trường Thi sinh tồn'
                   : 'Phụ bản bài học';
 
   // --- Early returns ---
@@ -859,7 +859,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           setRunMistakes(0);
           setCurrentIndex(0);
           setAnswersSubmitted([]);
-          setRewardsEarned({ coins: 0, xp: 0 });
+          setRewardsEarned({ ruby: 0, xp: 0 });
           setSessionAnswered(0);
           setSessionCorrect(0);
         }}
@@ -1126,7 +1126,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
               {isAiGrading ? (
                 <>
                   <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full"></span>
-                  Linh Sư đang chấm...
+                  Trợ Giáo MIKA đang chấm...
                 </>
               ) : (
                 'Chốt Đáp Án'
@@ -1147,7 +1147,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
               disabled={hintUsed || isAiGrading}
               className="px-4 py-2.5 rounded-xl border border-synth-orange/40 hover:bg-synth-orange/5 text-synth-orange font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 text-center"
             >
-              Rút gợi ý (50 NP)
+              Rút gợi ý (50 Ruby)
             </button>
           )}
         </div>
@@ -1164,15 +1164,15 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
             const todayStr = new Date().toISOString().split('T')[0];
             const skipsCount = player.dailySkips?.date === todayStr ? (player.dailySkips.count || 0) : 0;
             const remainingSkips = Math.max(0, 3 - skipsCount);
-            const isBlocked = remainingSkips <= 0 || player.coins < -100;
+            const isBlocked = remainingSkips <= 0;
             return (
               <button
                 onClick={handleSkipConfused}
                 disabled={isBlocked || isAiGrading}
                 className="px-4 py-2.5 rounded-xl border border-red-500/40 hover:bg-red-500/10 text-red-400 font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 text-center flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
-                title={player.coins < -100 ? "Bị khóa vì số dư NP âm quá nhiều" : `Lượt bỏ qua hôm nay: ${remainingSkips}/3`}
+                title={`Lượt Miễn Phạt hôm nay: ${remainingSkips}/3`}
               >
-                Bỏ qua (Còn {remainingSkips}/3) 🧠
+                Miễn Phạt (Còn {remainingSkips}/3) 🧠
               </button>
             );
           })()}
@@ -1180,13 +1180,13 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       </div>
 
       {isSkipDialogOpen && (
-        <MonChuHoiToiDialog
+        <MienPhatDialog
           onConfirm={handleConfirmSkip}
           onCancel={() => setIsSkipDialogOpen(false)}
         />
       )}
 
-      <CoinConfirmModal
+      <RubyConfirmModal
         isOpen={confirmModal.isOpen}
         cost={confirmModal.cost}
         actionDescription={confirmModal.actionDescription}

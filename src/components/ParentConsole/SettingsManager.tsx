@@ -28,27 +28,27 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
   fetchAuditLogs
 }) => {
   // Cấu hình game settings
-  const [bossBonusEasy, setBossBonusEasy] = useState(gameSettings?.bossCompletionBonusNP?.[0] ?? 100);
-  const [bossBonusMedium, setBossBonusMedium] = useState(gameSettings?.bossCompletionBonusNP?.[1] ?? 150);
-  const [bossBonusHard, setBossBonusHard] = useState(gameSettings?.bossCompletionBonusNP?.[2] ?? 200);
+  const [bossBonusEasy, setBossBonusEasy] = useState(gameSettings?.bossCompletionBonusRuby?.[0] ?? 100);
+  const [bossBonusMedium, setBossBonusMedium] = useState(gameSettings?.bossCompletionBonusRuby?.[1] ?? 150);
+  const [bossBonusHard, setBossBonusHard] = useState(gameSettings?.bossCompletionBonusRuby?.[2] ?? 200);
   const [challengeCost1, setChallengeCost1] = useState(gameSettings?.challengeEnergyCosts?.[0] ?? 30);
   const [challengeCost2, setChallengeCost2] = useState(gameSettings?.challengeEnergyCosts?.[1] ?? 30);
   const [challengeCost3, setChallengeCost3] = useState(gameSettings?.challengeEnergyCosts?.[2] ?? 30);
   const [challengeCost4, setChallengeCost4] = useState(gameSettings?.challengeEnergyCosts?.[3] ?? 30);
   const [baseXPVal, setBaseXPVal] = useState(gameSettings?.baseXP ?? 15);
-  const [baseCoinsVal, setBaseCoinsVal] = useState(gameSettings?.baseCoins ?? 5);
+  const [baseRubyVal, setBaseRubyVal] = useState(gameSettings?.baseRuby ?? 5);
 
-  // Cẩm nang bí lục
-  const [hbCategory, setHbCategory] = useState('Dặn Dò của Hiệu Trưởng');
+  // Cẩm Nang Học Đường
+  const [hbCategory, setHbCategory] = useState('Dặn Dò của Viện Trưởng');
   const [hbTitle, setHbTitle] = useState('');
   const [hbContent, setHbContent] = useState('');
 
   const handleSaveSettings = async () => {
     await updateGameSettings({
-      bossCompletionBonusNP: [bossBonusEasy, bossBonusMedium, bossBonusHard],
+      bossCompletionBonusRuby: [bossBonusEasy, bossBonusMedium, bossBonusHard],
       challengeEnergyCosts: [challengeCost1, challengeCost2, challengeCost3, challengeCost4],
       baseXP: baseXPVal,
-      baseCoins: baseCoinsVal
+      baseRuby: baseRubyVal
     });
     toast.success('Đã lưu cấu hình hoạt động của game thành công!');
   };
@@ -119,7 +119,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
   const getStudentCoManagers = (studentId: string) => {
     const links = (adminLinks || []).filter(l => l.student_id === studentId);
     const managers = links.map(l => {
-      const roleName = l.parent_role === 'parent' ? 'Chủ Nhiệm' : 'Hỗ Trợ';
+      const roleName = l.parent_role === 'parent' ? 'Chủ Nhiệm Chính' : 'Chủ Nhiệm Phụ';
       return `${l.parent_name} (${roleName})`;
     });
     return managers.length > 0 ? managers.join(', ') : 'Chưa nhận lớp';
@@ -146,25 +146,25 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
       title: hbTitle,
       content: hbContent
     });
-    toast.success('Đã nạp thêm trang dặn dò thành công vào cẩm nang của môn sinh! ✍️');
+    toast.success('Đã nạp thêm trang dặn dò thành công vào cẩm nang của Sĩ Tử! ✍️');
     setHbTitle('');
     setHbContent('');
   };
 
   return (
     <div className="space-y-6">
-      {/* 1. Cấu hình game settings (Thiên Cơ Các — CORE_SPECS §2.1) */}
+      {/* 1. Cấu hình game settings (Phòng Học Vụ — CORE_SPECS §2.1) */}
       <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="w-4 h-4 text-synth-cyan" />
           <h3 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
-            ⚙️ Quy Tắc Hoạt Động — Thiết lập nạp Chân Khí & Bonus Boss
+            ⚙️ Quy Tắc Hoạt Động — Thiết lập nạp Năng Lượng & Bonus Khoa Thi
           </h3>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <label className="space-y-2 text-xs">
-            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Bonus Boss — Đề Dễ (NP)</span>
+            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Bonus Boss — Đề Dễ (Ruby)</span>
             <input
               type="number"
               min={0}
@@ -175,7 +175,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
             />
           </label>
           <label className="space-y-2 text-xs">
-            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Bonus Boss — Đề Trung Bình (NP)</span>
+            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Bonus Boss — Đề Trung Bình (Ruby)</span>
             <input
               type="number"
               min={0}
@@ -186,7 +186,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
             />
           </label>
           <label className="space-y-2 text-xs">
-            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Bonus Boss — Đề Khó (NP)</span>
+            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Bonus Boss — Đề Khó (Ruby)</span>
             <input
               type="number"
               min={0}
@@ -206,7 +206,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
             { label: 'Đảo 4', value: challengeCost4, setter: setChallengeCost4 }
           ].map(item => (
             <label key={item.label} className="space-y-2 text-xs">
-              <span className="block text-synth-text-muted font-bold uppercase tracking-wider">{item.label} cost (Chân khí)</span>
+              <span className="block text-synth-text-muted font-bold uppercase tracking-wider">{item.label} cost (Năng Lượng)</span>
               <input
                 type="number"
                 min={0}
@@ -232,13 +232,13 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
             />
           </label>
           <label className="space-y-2 text-xs">
-            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Điểm Coins cơ bản (NP) / Câu đúng</span>
+            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Ruby cơ bản (Ruby) / Câu đúng</span>
             <input
               type="number"
               min={1}
               step={1}
-              value={baseCoinsVal}
-              onChange={(e) => setBaseCoinsVal(Number(e.target.value) || 5)}
+              value={baseRubyVal}
+              onChange={(e) => setBaseRubyVal(Number(e.target.value) || 5)}
               className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
             />
           </label>
@@ -290,7 +290,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
                     required
                     value={hbTitle}
                     onChange={(e) => setHbTitle(e.target.value)}
-                    placeholder="Ví dụ: Quy tắc phân bổ NP, Nhắc nhở kỷ luật"
+                    placeholder="Ví dụ: Quy tắc phân bổ Ruby, Nhắc nhở kỷ luật"
                     className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-magenta text-xs"
                   />
                 </label>
@@ -336,8 +336,8 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
             <div className="flex gap-1 bg-black/40 p-1 rounded-lg border border-white/5 text-[10px] uppercase font-bold font-orbitron overflow-x-auto">
               {[
                 { key: 'students', label: `Học Sinh (${allStudents.length})` },
-                { key: 'primary_teachers', label: `Chủ Nhiệm (${primaryTeachers.length})` },
-                { key: 'secondary_teachers', label: `Phó Chủ Nhiệm / Hỗ Trợ (${secondaryTeachers.length})` },
+                { key: 'primary_teachers', label: `Chủ Nhiệm Chính (${primaryTeachers.length})` },
+                { key: 'secondary_teachers', label: `Chủ Nhiệm Phụ (${secondaryTeachers.length})` },
                 { key: 'admins', label: `Ban Giám Hiệu (${schoolAdmins.length})` }
               ].map(tab => (
                 <button
@@ -444,7 +444,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
                   <tr className="border-b border-white/10 text-slate-400 font-orbitron uppercase text-[9px] tracking-wider">
                     <th className="py-2.5 px-3">Tên Giáo Viên</th>
                     <th className="py-2.5 px-3">Email</th>
-                    <th className="py-2.5 px-3">Học Sinh Phụ Trách (Chủ Nhiệm)</th>
+                    <th className="py-2.5 px-3">Sĩ Tử Phụ Trách (Chủ Nhiệm Chính)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -482,7 +482,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
                   <tr className="border-b border-white/10 text-slate-400 font-orbitron uppercase text-[9px] tracking-wider">
                     <th className="py-2.5 px-3">Tên Người Hỗ Trợ</th>
                     <th className="py-2.5 px-3">Email</th>
-                    <th className="py-2.5 px-3">Học Sinh Hỗ Trợ (Phó Chủ Nhiệm)</th>
+                    <th className="py-2.5 px-3">Học Sinh Hỗ Trợ (Chủ Nhiệm Phụ)</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -546,7 +546,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
                           <span className={`px-1.5 py-0.5 rounded font-bold uppercase text-[9px] ${
                             admin.role === 'truong_vien' ? 'bg-synth-magenta/20 text-synth-magenta' : 'bg-synth-yellow/20 text-synth-yellow'
                           }`}>
-                            {admin.role === 'truong_vien' ? 'Hiệu Trưởng 👑' : 'Hiệu Phó 🛡️'}
+                            {admin.role === 'truong_vien' ? 'Viện Trưởng 👑' : 'Phó Viện Trưởng 🛡️'}
                           </span>
                         </td>
                       </tr>
@@ -560,12 +560,12 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
       </div>
 
 
-      {/* 4. Nhật Ký Quyết Nghị Hiệu Trưởng (Audit Logs) (Cả Hiệu Trưởng & Hiệu Phó xem được) */}
+      {/* 4. Nhật Ký Quyết Nghị Viện Trưởng (Audit Logs) (Cả Viện Trưởng & Phó Viện Trưởng xem được) */}
       {isAdmin(currentUser?.role) && (
         <div className="bg-synth-gray/10 rounded-xl p-4 border border-white/5 space-y-4">
           <div className="flex justify-between items-center">
             <h4 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-1.5">
-              <FileText className="w-4 h-4 text-synth-magenta" /> 📜 Nhật Ký Quyết Nghị Hiệu Trưởng (Audit Logs)
+              <FileText className="w-4 h-4 text-synth-magenta" /> 📜 Nhật Ký Quyết Nghị Viện Trưởng (Audit Logs)
             </h4>
             <button
               onClick={() => fetchAuditLogs()}
@@ -622,11 +622,11 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
                       if (log.action === 'approve_reward') {
                         detailText = `Xác nhận trao quà "${p.rewardTitle || 'Quà'}"`;
                       } else if (log.action === 'cancel_redemption') {
-                        detailText = `Hủy đổi "${p.rewardTitle || 'Quà'}", hoàn trả ${p.refundNP} NP`;
+                        detailText = `Hủy đổi "${p.rewardTitle || 'Quà'}", hoàn trả ${p.refundRuby} Ruby`;
                       } else if (log.action === 'refill_energy') {
-                        detailText = `Nạp đầy Chân Khí lên ${p.targetEnergy}%`;
+                        detailText = `Nạp đầy Năng Lượng lên ${p.targetEnergy}%`;
                       } else if (log.action === 'promote_user') {
-                        detailText = `Bổ nhiệm thân phận mới: ${p.targetRole === 'pho_vien' ? 'Hiệu Phó 🛡️' : p.targetRole === 'parent' ? 'Chủ Nhiệm' : 'Môn Sinh'}`;
+                        detailText = `Bổ nhiệm vai trò mới: ${p.targetRole === 'pho_vien' ? 'Phó Viện Trưởng 🛡️' : p.targetRole === 'parent' ? 'Chủ Nhiệm Chính' : 'Sĩ Tử'}`;
                       } else if (log.action === 'update_pin') {
                         detailText = 'Cập nhật mã PIN bảo mật cá nhân thành công';
                       } else if (log.action === 'invite_secondary_parent') {
@@ -655,7 +655,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
                           <span className={`text-[9px] font-black uppercase font-orbitron ${
                             log.actor_role === 'truong_vien' ? 'text-synth-magenta' : log.actor_role === 'pho_vien' ? 'text-synth-yellow' : 'text-synth-cyan'
                           }`}>
-                            {log.actor_role === 'truong_vien' ? 'Hiệu Trưởng' : log.actor_role === 'pho_vien' ? 'Hiệu Phó' : 'Chủ Nhiệm'}
+                            {log.actor_role === 'truong_vien' ? 'Viện Trưởng' : log.actor_role === 'pho_vien' ? 'Phó Viện Trưởng' : 'Chủ Nhiệm Chính'}
                           </span>
                         </td>
                         <td className="py-2 px-3">
@@ -685,10 +685,10 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
         </div>
       )}
 
-      {/* Duyệt đơn ứng cử Hiệu Phó */}
+      {/* Duyệt đơn ứng cử Phó Viện Trưởng */}
       <VicePrincipalApplicationsManager currentUser={currentUser} />
 
-      {/* Quản lý Role & Profile — chỉ Hiệu Trưởng */}
+      {/* Quản lý Role & Profile — chỉ Viện Trưởng */}
       <RoleManager currentUser={currentUser} />
     </div>
   );

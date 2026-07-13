@@ -14,7 +14,7 @@ function mapReward(r: any): ClassReward {
     teacherId: r.teacher_id,
     teacherName: r.teacher_name,
     title: r.title,
-    costCoins: r.cost_coins,
+    costRuby: r.cost_ruby ?? r.cost_coins,
     quantity: r.quantity,
     remaining: r.remaining,
     createdAt: r.created_at,
@@ -29,7 +29,7 @@ function mapRedemption(r: any): ClassRewardRedemption {
     studentName: r.student_name,
     studentAvatar: r.student_avatar,
     rewardTitle: r.reward_title,
-    costCoins: r.cost_coins,
+    costRuby: r.cost_ruby ?? r.cost_coins,
     status: r.status,
     requestedAt: r.requested_at,
     deliveredAt: r.delivered_at,
@@ -62,7 +62,7 @@ export const classRewardService = {
   /** Teacher tạo phần thưởng lớp */
   create: async (
     title: string,
-    costCoins: number,
+    costRuby: number,
     quantity: number
   ): Promise<{ success: boolean; error?: string }> => {
     const token = await getToken();
@@ -71,7 +71,7 @@ export const classRewardService = {
     const res = await fetch(`${backendUrl}/api/class-rewards`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ title, costCoins, quantity }),
+      body: JSON.stringify({ title, costRuby, quantity }),
     });
     if (res.ok) return { success: true };
     const err = await res.json();
@@ -109,7 +109,7 @@ export const classRewardService = {
     return { success: false, error: err.error };
   },
 
-  /** Student hủy yêu cầu đổi đang pending → hoàn coin */
+  /** Student hủy yêu cầu đổi đang pending → hoàn Ruby */
   cancelRedemption: async (redemptionId: string): Promise<boolean> => {
     const token = await getToken();
     if (!token) return false;

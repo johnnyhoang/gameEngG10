@@ -39,8 +39,8 @@ export const createClassRewardSlice: StateCreator<
     }
   },
 
-  createClassReward: async (title, costCoins, quantity) => {
-    const result = await classRewardService.create(title, costCoins, quantity);
+  createClassReward: async (title, costRuby, quantity) => {
+    const result = await classRewardService.create(title, costRuby, quantity);
     if (result.success) {
       toast.success(`🎁 Đã tạo phúc lợi "${title}" cho lớp!`);
       await get().fetchClassRewards();
@@ -68,12 +68,12 @@ export const createClassRewardSlice: StateCreator<
     if (result.success) {
       // Refresh to get updated remaining + new redemption record
       await get().fetchClassRewards();
-      // Also sync player coins from server
+      // Also sync player ruby from server
       await get().syncWithServer?.();
       return true;
     }
-    if (result.error === 'not_enough_coins') {
-      toast.error('Ngân lượng chưa đủ để đổi phúc lợi này!');
+    if (result.error === 'not_enough_ruby') {
+      toast.error('Ruby chưa đủ để đổi phúc lợi này!');
     } else if (result.error === 'out_of_stock') {
       toast.error('Phúc lợi này đã hết số lượng!');
     } else {
@@ -85,7 +85,7 @@ export const createClassRewardSlice: StateCreator<
   cancelClassRedemption: async (redemptionId) => {
     const ok = await classRewardService.cancelRedemption(redemptionId);
     if (ok) {
-      toast.success('Đã rút lại yêu cầu. Ngân lượng đã được hoàn trả.');
+      toast.success('Đã rút lại yêu cầu. Ruby đã được hoàn trả.');
       await get().fetchClassRewards();
       await get().syncWithServer?.();
       return true;

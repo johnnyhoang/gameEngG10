@@ -100,7 +100,7 @@ export const ParentConsole: React.FC = () => {
 
   const totalStudents = combinedStudentsForStats.length;
   const totalXP = combinedStudentsForStats.reduce((acc, s) => acc + (s.player?.xp || 0), 0);
-  const totalCoins = combinedStudentsForStats.reduce((acc, s) => acc + (s.player?.coins || 0), 0);
+  const totalRuby = combinedStudentsForStats.reduce((acc, s) => acc + (s.player?.ruby || 0), 0);
   const avgLevel = totalStudents > 0
     ? Math.round(combinedStudentsForStats.reduce((acc, s) => acc + (s.player?.level || 1), 0) / totalStudents)
     : 0;
@@ -167,11 +167,11 @@ export const ParentConsole: React.FC = () => {
 
   const consoleTitle = useMemo(() => {
     switch (currentUser?.role) {
-      case 'truong_vien': return 'Bảng Quản Trị Hiệu Trưởng 👑';
-      case 'pho_vien': return 'Bảng Quản Trị Hiệu Phó 🛡️';
-      case 'parent': return 'Bảng Quản Trị Chủ Nhiệm 📋';
-      case 'secondary_parent': return 'Bảng Quản Trị Phó Chủ Nhiệm 🤝';
-      default: return 'Bảng Quản Trị Học Viện 🏛️';
+      case 'truong_vien': return 'Phòng Điều Hành 👑';
+      case 'pho_vien': return 'Phòng Điều Hành — Phó Viện Trưởng 🛡️';
+      case 'parent': return 'Phòng Điều Hành — Chủ Nhiệm Chính 📋';
+      case 'secondary_parent': return 'Phòng Điều Hành — Chủ Nhiệm Phụ 🤝';
+      default: return 'Phòng Điều Hành Học Viện 🏛️';
     }
   }, [currentUser?.role]);
 
@@ -300,7 +300,7 @@ export const ParentConsole: React.FC = () => {
                   ⚙️ BAN ĐIỀU HÀNH — TRUNG TÂM QUẢN TRỊ HỌC VIỆN
                 </h3>
                 <p className="text-xs text-synth-text-muted leading-relaxed max-w-4xl">
-                  Chào mừng bạn đến với Ban Điều Hành! Đây là trung tâm điều hành và quản trị của học viện. Tại đây, bạn có thể theo dõi danh sách học sinh, thiết lập liên kết gia đình/trường học, điều chỉnh quy tắc nhận thưởng (NP), biên soạn cẩm nang học tập, và xem lịch sử hoạt động.
+                  Chào mừng bạn đến với Ban Điều Hành! Đây là trung tâm điều hành và quản trị của học viện. Tại đây, bạn có thể theo dõi danh sách học sinh, thiết lập liên kết gia đình/trường học, điều chỉnh quy tắc nhận thưởng (Ruby), biên soạn cẩm nang học tập, và xem lịch sử hoạt động.
                 </p>
               </div>
             </div>
@@ -320,12 +320,12 @@ export const ParentConsole: React.FC = () => {
                 <span className="text-2xl font-black text-synth-green font-orbitron mt-1">{totalXP.toLocaleString()}</span>
               </div>
               <div className="glass-panel border border-white/5 rounded-2xl p-4 flex flex-col justify-between hover:border-synth-orange/30 transition-all duration-300 group bg-white/3">
-                <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-orange transition-colors">💰 Tổng Ngân Sách (NP)</span>
-                <span className="text-2xl font-black text-synth-orange font-orbitron mt-1">{totalCoins.toLocaleString()}</span>
+                <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-orange transition-colors">💰 Tổng Ngân Sách (Ruby)</span>
+                <span className="text-2xl font-black text-synth-orange font-orbitron mt-1">{totalRuby.toLocaleString()}</span>
               </div>
             </div>
 
-            {/* Sub-Tab Control inside Thiên Cơ Các */}
+            {/* Sub-Tab Control inside Phòng Học Vụ */}
             <div className="flex gap-2 border-b border-white/5 pb-3">
               <button
                 onClick={() => setThienCoSubTab('dashboard')}
@@ -366,8 +366,8 @@ export const ParentConsole: React.FC = () => {
                           <div className="flex flex-wrap items-center gap-2 mb-1">
                             <span className="font-bold text-white text-sm block">{link.student_name || link.student_email || 'Học sinh'}</span>
                             {link.link_type === 'primary' ? (
-                              <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded bg-synth-cyan/20 border border-synth-cyan/40 text-synth-cyan" title="Bạn là Chủ nhiệm chính của lớp này">
-                                Chủ nhiệm chính
+                              <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded bg-synth-cyan/20 border border-synth-cyan/40 text-synth-cyan" title="Bạn là Chủ Nhiệm Chính của lớp này">
+                                Chủ Nhiệm Chính
                               </span>
                             ) : (
                               <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta" title="Bạn là Chủ nhiệm phụ hỗ trợ lớp này">
@@ -495,7 +495,7 @@ export const ParentConsole: React.FC = () => {
           }`}
         >
           <span className="text-base">👤</span>
-          <span>Thân Phận</span>
+          <span>Hồ Sơ Sĩ Tử</span>
         </button>
 
         <button
@@ -536,7 +536,7 @@ export const ParentConsole: React.FC = () => {
             onClick={() => {
               setViewingStudentId(null);
               setActiveTab('thien_co_cac');
-              toast.success('Đã quay lại danh sách môn sinh');
+              toast.success('Đã quay lại danh sách Sĩ Tử');
             }}
             className="flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider text-red-400 hover:text-red-300 transition-colors cursor-pointer"
           >

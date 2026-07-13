@@ -2,7 +2,7 @@
  * Gatekeeper Utilities — CORE_SPECS §2.8.7 & §9.D
  *
  * Logic chọn câu hỏi kiểm soát cổng (Người Gác Cổng) khi Thiếu Hiệp muốn vào
- * khu vực mờ sương trong Hang Luyện Công (Page Cấp 2).
+ * khu vực mờ sương trong Học Đường (Page Cấp 2).
  */
 
 import type { Question, SubjectId } from '../types/game';
@@ -56,7 +56,7 @@ export interface GatekeeperCoverageStats {
 
 /**
  * Thống kê số câu hỏi đủ điều kiện Gác Cổng theo từng môn phái (và theo Hầm
- * nguyên tố) — dùng cho màn thống kê phía Giáo viên/Hiệu trưởng (Vạn Quyển Các).
+ * nguyên tố) — dùng cho màn thống kê phía Giáo viên/Hiệu trưởng (Kho Đề Thi).
  */
 export function getGatekeeperCoverageStats(
   allQuestions: Question[]
@@ -99,17 +99,17 @@ const FALLBACK_GATEKEEPER_QUESTION: Question = {
   source: 'Gatekeeper fallback tạm thời'
 };
 
-/** Bảng ánh xạ pageId (Page Cấp 2 trong Hang Luyện Công) → Hầm nguyên tố */
+/** Bảng ánh xạ pageId (Page Cấp 2 trong Học Đường) → Hầm nguyên tố */
 export const PAGE_TO_HAM_MAP: Record<string, HamNguyenTo> = {
-  // === Hang Luyện Công — Tiếng Anh ===
+  // === Học Đường — Tiếng Anh ===
   'hang-eng-hoa': 'hoa',        // Hỏa Hầm (Pronunciation, Stress, Vocabulary, Communication)
   'hang-eng-thach': 'thach',    // Thạch Hầm (Tenses, Passive, Relative, Word Form)
   'hang-eng-bang': 'bang',      // Băng Hầm (Conditional, Reported, Reading, Rewrite)
-  // === Hang Luyện Công — Toán ===
+  // === Học Đường — Toán ===
   'hang-math-hoa': 'hoa',       // Hỏa Hầm (Statistics, Probability, Real-world percent)
   'hang-math-thach': 'thach',   // Thạch Hầm (Inequality, Radicals, Rational Expressions)
   'hang-math-bang': 'bang',     // Băng Hầm (Quadratic, Circle Geometry, System)
-  // === Hang Luyện Công — Văn ===
+  // === Học Đường — Văn ===
   'hang-lit-hoa': 'hoa',        // Hỏa Hầm (Rhetoric, Genre, Work knowledge)
   'hang-lit-thach': 'thach',    // Thạch Hầm (Word class, Sentence, Cohesion)
   'hang-lit-bang': 'bang',      // Băng Hầm (Reading, Essay writing)

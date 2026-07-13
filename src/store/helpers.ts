@@ -8,7 +8,7 @@ export const logActivity = (
   activityType: HistoryLog['activityType'],
   title: string,
   detail: string,
-  coins = 0,
+  ruby = 0,
   xp = 0
 ) => {
   const newLog: HistoryLog = {
@@ -17,9 +17,10 @@ export const logActivity = (
     activityType,
     title,
     detail,
-    coinsChanged: coins,
+    rubyChanged: ruby,
     xpChanged: xp,
-    subject: get().currentSubject
+    subject: get().currentSubject,
+    gradeTier: get().activeGradeTier
   };
   set((state: any) => ({
     logs: [newLog, ...state.logs].slice(0, 200)
@@ -43,8 +44,8 @@ export const checkLevelUp = (
     while (xp >= level * 200) {
       xp -= level * 200;
       level += 1;
-      // Lên cấp thường không tự thưởng NP (chỉ mốc danh hiệu mới thưởng đột biến — CORE_SPECS §7.3);
-      // log chỉ ghi nhận sự kiện, không claim số Coin không thực sự được cộng.
+      // Lên cấp thường không tự thưởng Ruby (chỉ mốc danh hiệu mới thưởng đột biến — CORE_SPECS §7.3);
+      // log chỉ ghi nhận sự kiện, không claim số Ruby không thực sự được cộng.
       logActivity(get, set, 'exercise', 'Thăng cấp!', `Bạn vừa chạm Level ${level}.`, 0, 0);
       eventBus.publish('PET_GROWTH', { levelUp: true });
     }
@@ -64,7 +65,7 @@ export const checkLevelUp = (
         get, set,
         'challenge',
         'Thăng cấp danh hiệu!',
-        `Chúc mừng Thiếu hiệp đã thăng cấp danh hiệu lên ${newRank.icon} ${newRank.name}! Nhận thêm +100 Coin và +${rankUpBonusXp} XP.`,
+        `Chúc mừng Sĩ Tử đã thăng cấp danh hiệu lên ${newRank.icon} ${newRank.name}! Nhận thêm +100 Ruby và +${rankUpBonusXp} XP.`,
         100,
         rankUpBonusXp
       );

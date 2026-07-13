@@ -7,8 +7,8 @@ interface RewardFormModalProps {
   onClose: () => void;
   canApproveReward: boolean;
   isClassRewardMode: boolean; // true = Phúc lợi lớp, false = Quà tặng gia đình
-  createClassReward?: (title: string, costCoins: number, quantity: number) => Promise<boolean>;
-  addParentReward?: (title: string, costCoins: number, quantity: number) => void;
+  createClassReward?: (title: string, costRuby: number, quantity: number) => Promise<boolean>;
+  addParentReward?: (title: string, costRuby: number, quantity: number) => void;
 }
 
 export const RewardFormModal: React.FC<RewardFormModalProps> = ({
@@ -41,7 +41,7 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({
     if (isClassRewardMode && createClassReward) {
       const ok = await createClassReward(rewardTitle.trim(), rewardCost, rewardQuantity);
       if (ok) {
-        toast.success('Đã tạo Phúc Lợi Lớp Học mới thành công! 🏫');
+        toast.success('Đã tạo Quà Khuyến Học mới thành công! 🏫');
         setRewardTitle('');
         setRewardCost(200);
         setRewardQuantity(5);
@@ -64,7 +64,7 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({
         {/* Modal Header */}
         <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
           <h4 className="font-orbitron font-bold text-sm text-synth-orange uppercase tracking-wider flex items-center gap-1.5">
-            <Award className="w-4 h-4" /> {isClassRewardMode ? 'Thêm Phúc Lợi Lớp Học Mới 🏫' : 'Thêm Phần Quà Gia Đình Mới 🎁'}
+            <Award className="w-4 h-4" /> {isClassRewardMode ? 'Thêm Quà Khuyến Học Mới 🏫' : 'Thêm Phần Quà Gia Đình Mới 🎁'}
           </h4>
           <button
             onClick={onClose}
@@ -96,7 +96,7 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({
 
               <div className="grid grid-cols-2 gap-3">
                 <label className="space-y-1.5 text-xs block">
-                  <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Chi phí (NP)</span>
+                  <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Chi phí (Ruby)</span>
                   <input
                     type="number"
                     min={10}
@@ -133,7 +133,7 @@ export const RewardFormModal: React.FC<RewardFormModalProps> = ({
                   disabled={isSaving}
                   className="px-5 py-2 bg-synth-orange text-black rounded-lg hover:synth-glow-orange transition-all font-orbitron font-bold text-[10px] tracking-wider uppercase cursor-pointer disabled:opacity-50"
                 >
-                  {isSaving ? 'Đang lưu...' : 'Thêm Phần Thưởng 🎁'}
+                  {isSaving ? 'Đang lưu...' : 'Thêm Quà Khuyến Học 🎁'}
                 </button>
               </div>
             </>

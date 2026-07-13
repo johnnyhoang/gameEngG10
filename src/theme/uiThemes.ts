@@ -16,7 +16,7 @@ export interface UiThemeConfig {
 export const UI_THEMES: UiThemeConfig[] = [
   {
     id: 'current',
-    name: 'Phong Vị Nguyệt Dạ 🌙',
+    name: 'Phong Cách Học Đường Nguyệt Dạ 🌙',
     shortName: 'Nguyệt Dạ',
     tagline: 'Bản sắc bóng đêm huyền bí',
     description: 'Giữ chất cyber neon tối huyền bí, độ tương phản cao giúp tăng sự tập trung.',
@@ -27,7 +27,7 @@ export const UI_THEMES: UiThemeConfig[] = [
   },
   {
     id: 'cute-pink-pastel',
-    name: 'Phong Vị Đào Hoa 🌸',
+    name: 'Phong Cách Học Đường Đào Hoa 🌸',
     shortName: 'Đào Hoa',
     tagline: 'Bản sắc đào hoa ngọt ngào',
     description: 'Tông màu hồng đào, tím pastel nhẹ nhàng và kem sữa êm ái.',
@@ -39,7 +39,7 @@ export const UI_THEMES: UiThemeConfig[] = [
   },
   {
     id: 'space-adventure',
-    name: 'Phong Vị Tinh Không ⭐',
+    name: 'Phong Cách Học Đường Tinh Không ⭐',
     shortName: 'Tinh Không',
     tagline: 'Bản sắc tinh tú ngân hà',
     description: 'Tông xanh tím vũ trụ sâu thẳm rõ chữ, khơi gợi đam mê du hành khám phá.',
@@ -50,7 +50,7 @@ export const UI_THEMES: UiThemeConfig[] = [
   },
   {
     id: 'fantasy-forest',
-    name: 'Phong Vị Trúc Lâm 🎋',
+    name: 'Phong Cách Học Đường Trúc Lâm 🎋',
     shortName: 'Trúc Lâm',
     tagline: 'Bản sắc tre xanh mát mắt',
     description: 'Tông tre trúc xanh tươi thanh tịnh, đem lại cảm giác tự nhiên yên bình.',
@@ -61,7 +61,7 @@ export const UI_THEMES: UiThemeConfig[] = [
   },
   {
     id: 'pixel-arcade',
-    name: 'Phong Vị Thu Phong 🍁',
+    name: 'Phong Cách Học Đường Thu Phong 🍁',
     shortName: 'Thu Phong',
     tagline: 'Bản sắc mùa thu hoài cổ',
     description: 'Màu cam đất hoài niệm, tạo tiết tấu luyện chữ và học tập vững chãi.',
@@ -72,7 +72,7 @@ export const UI_THEMES: UiThemeConfig[] = [
   },
   {
     id: 'unicorn-dream',
-    name: 'Phong Vị Tuyết Sơn ❄️',
+    name: 'Phong Cách Học Đường Tuyết Sơn ❄️',
     shortName: 'Tuyết Sơn',
     tagline: 'Bản sắc tuyết phủ tinh khiết',
     description: 'Màu trắng tuyết và lam ngọc lấp lánh như sương mai, trong trẻo và thanh khiết.',

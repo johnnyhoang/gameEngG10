@@ -33,7 +33,7 @@ const READING_DATA = {
 export interface ReadingAppProps {
   activeSectId?: string;
   uiTheme: UiThemeId;
-  onReward: (coins: number, xp: number, type: string, detail: string) => void;
+  onReward: (ruby: number, xp: number, type: string, detail: string) => void;
   onGameComplete?: (result: any) => void;
   onGameStart?: () => void;
 }
@@ -143,7 +143,7 @@ export const ReadingApp: React.FC<ReadingAppProps> = ({ activeSectId, uiTheme, o
         </ul>
         {readingResult && (
           <div className={`mt-4 p-3 rounded-xl border text-xs font-bold ${readingResult === 'success' ? 'bg-synth-green/10 border-synth-green/30 text-synth-green' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
-            {readingResult === 'success' ? '✅ Xuất sắc! +35 NP, +30 XP' : '❌ Chưa đúng. Thử lại nhé!'}
+            {readingResult === 'success' ? '✅ Xuất sắc! +35 Ruby, +30 XP' : '❌ Chưa đúng. Thử lại nhé!'}
           </div>
         )}
       </div>

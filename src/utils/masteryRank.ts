@@ -1,4 +1,4 @@
-import type { SubjectId, CategoryStat } from '../types/game';
+import type { SubjectId, CategoryStat, GradeTier } from '../types/game';
 import { CORE_KNOWLEDGE_TOPICS } from '../data/coreKnowledge';
 
 // Đẳng Cấp Môn Phái — nguồn định nghĩa DUY NHẤT (CORE_SPECS §7.4). Dùng chung giữa UI hiển thị
@@ -35,23 +35,32 @@ export function getMasteryRankByOrder(order: number): SectMasteryRank {
 
 export interface SubjectMasteryInput {
   subjectId: SubjectId;
-  questions: { subject?: SubjectId; category: string }[];
+  gradeTier: GradeTier;
+  questions: { subject?: SubjectId; grade?: number; gradeTier?: number; category: string }[];
   categoryStats: Record<string, CategoryStat>;
-  lessons: { subject: SubjectId; id: string }[];
+  lessons: { subject: SubjectId; gradeTier?: GradeTier; id: string }[];
   lessonsProgress: Record<string, boolean>;
 }
 
 // Công thức CORE_SPECS §7.4.2: 50% bài học hoàn thành + 50% tỉ lệ câu đúng (mẫu số = tổng
-// minQuestions của Core Knowledge topics thuộc môn, để Hiệu Trưởng import thêm câu không ăn gian tỉ lệ).
-export function computeSubjectMasteryRatio({ subjectId, questions, categoryStats, lessons, lessonsProgress }: SubjectMasteryInput): number {
-  const subjectCategories = Array.from(new Set(questions.filter(q => q.subject === subjectId).map(q => q.category)));
+// minQuestions của Core Knowledge topics thuộc môn, để Viện Trưởng import thêm câu không ăn gian tỉ lệ).
+export function computeSubjectMasteryRatio({ subjectId, gradeTier, questions, categoryStats, lessons, lessonsProgress }: SubjectMasteryInput): number {
+  const contextQuestions = questions.filter(q =>
+    q.subject === subjectId && (q.gradeTier ?? q.grade ?? 9) === gradeTier
+  );
+  const contextLessons = lessons.filter(l =>
+    l.subject === subjectId && (l.gradeTier ?? 9) === gradeTier
+  );
+  const subjectCategories = Array.from(new Set(contextQuestions.map(q => q.category)));
   const correctCount = subjectCategories.reduce((sum, cat) => sum + (categoryStats[cat]?.totalCorrect || 0), 0);
 
-  const topics = CORE_KNOWLEDGE_TOPICS.filter(t => t.subjectId === subjectId);
-  const totalQuestions = topics.reduce((sum, t) => sum + t.minQuestions, 0) || questions.filter(q => q.subject === subjectId).length || 1;
+  const topics = CORE_KNOWLEDGE_TOPICS.filter(t =>
+    t.subjectId === subjectId && (t.gradeTier ?? 9) === gradeTier
+  );
+  const totalQuestions = topics.reduce((sum, t) => sum + t.minQuestions, 0) || contextQuestions.length || 1;
 
-  const totalLessons = lessons.filter(l => l.subject === subjectId).length;
-  const completedLessons = lessons.filter(l => l.subject === subjectId && lessonsProgress[l.id]).length;
+  const totalLessons = contextLessons.length;
+  const completedLessons = contextLessons.filter(l => lessonsProgress[l.id]).length;
 
   const lessonRatio = totalLessons > 0 ? (completedLessons / totalLessons) : 0;
   const questionRatio = totalQuestions > 0 ? (correctCount / totalQuestions) : 0;

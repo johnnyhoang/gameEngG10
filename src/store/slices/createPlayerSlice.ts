@@ -19,7 +19,7 @@ export const createPlayerSlice: StateCreator<
   [],
   [],
   Pick<StoreState, 
-    'player' | 'pet' | 'questions' | 'lessons' | 'lessonsProgress' | 'explorationProgress' | 'pageExplorationStates' | 'categoryStats' | 'rewards' | 'rewardRedemptions' | 'challenges' | 'dailyMission' | 'logs' | 'activeCombo' | 'maxCombo' | 'lastSyncTime' | 'profiles' | 'petStates' | 'categoryStatsAll' | 'answerQuestion' | 'useEnergy' | 'addEnergy' | 'tickEnergyRegen' | 'ratchetMasteryRank' | 'buyStreakShield' | 'buyHint' | 'buyTheme' | 'redeemReward' | 'feedPet' | 'spinWheel' | 'openMysteryBox' | 'masterLesson' | 'applyDefeatPenalty' | 'completeBossVictory' | 'completeLevel3Page' | 'updatePendingKeyQuestion' | 'awardCoinsAndXp' | 'clearExploration' | 'resetProgress' | 'checkDailyReset' | 'getAdaptiveQuestion' | 'getQuestionByWeight' | 'syncSessionResult' | 'syncWithServer' | 'pullServerState'
+    'player' | 'pet' | 'questions' | 'lessons' | 'lessonsProgress' | 'explorationProgress' | 'pageExplorationStates' | 'categoryStats' | 'rewards' | 'rewardRedemptions' | 'challenges' | 'dailyMission' | 'logs' | 'activeCombo' | 'maxCombo' | 'lastSyncTime' | 'profiles' | 'petStates' | 'categoryStatsAll' | 'answerQuestion' | 'useEnergy' | 'addEnergy' | 'tickEnergyRegen' | 'ratchetMasteryRank' | 'buyStreakShield' | 'buyHint' | 'buyTheme' | 'redeemReward' | 'feedPet' | 'spinWheel' | 'openMysteryBox' | 'masterLesson' | 'applyDefeatPenalty' | 'completeBossVictory' | 'completeLevel3Page' | 'updatePendingKeyQuestion' | 'awardRubyAndXp' | 'clearExploration' | 'resetProgress' | 'checkDailyReset' | 'getAdaptiveQuestion' | 'getQuestionByWeight' | 'syncSessionResult' | 'syncWithServer' | 'pullServerState'
   >
 > = (set, get) => ({
   player: INITIAL_PLAYER,
@@ -31,6 +31,9 @@ export const createPlayerSlice: StateCreator<
   lessons: INITIAL_LESSONS,
 
   lessonsProgress: {},
+  topics: [],
+  activities: [],
+  activityProgress: {},
 
   explorationProgress: {},
 
@@ -63,7 +66,7 @@ export const createPlayerSlice: StateCreator<
   answerQuestion: (questionId, isCorrect, _timeSpent, gameMode, scoreRatio = isCorrect ? 1 : 0) => {
           const state = get();
           const question = state.questions.find(q => q.id === questionId);
-          if (!question) return { isCorrect: false, expGained: 0, coinsGained: 0, comboMultiplier: 1, scoreRatio: 0 };
+          if (!question) return { isCorrect: false, expGained: 0, rubyGained: 0, comboMultiplier: 1, scoreRatio: 0 };
 
           // 1. Update rolling category stats
           const category = question.topicId || question.category;
@@ -94,7 +97,7 @@ export const createPlayerSlice: StateCreator<
 
           // 2. Calculate rewards
           let expGained = 0;
-          let coinsGained = 0;
+          let rubyGained = 0;
           let newCombo = state.activeCombo;
           let comboMultiplier = 1.0;
 
@@ -108,28 +111,28 @@ export const createPlayerSlice: StateCreator<
 
             // Base scores adjusted by difficulty
             const baseXP = state.gameSettings.baseXP ?? 15;
-            const baseCoins = state.gameSettings.baseCoins ?? 5;
+            const baseRuby = state.gameSettings.baseRuby ?? 5;
             const difficultyMultiplier = 1 + (question.difficulty - 1) * 0.1; // e.g. diff 10 gives 1.9x
 
             expGained = Math.round(baseXP * difficultyMultiplier * comboMultiplier * performanceScore);
-            coinsGained = Math.round(baseCoins * difficultyMultiplier * comboMultiplier * performanceScore);
+            rubyGained = Math.round(baseRuby * difficultyMultiplier * comboMultiplier * performanceScore);
 
-            // Apply streak multiplier to coins and XP
+            // Apply streak multiplier to ruby and XP
             const streakBonus = 1 + Math.min(1.0, state.player.streak * 0.1); // Max 2.0x (10 days streak)
             expGained = Math.round(expGained * streakBonus);
-            coinsGained = Math.round(coinsGained * streakBonus);
+            rubyGained = Math.round(rubyGained * streakBonus);
 
             // Apply 1.5x bonus for survival mode challenge
             if (gameMode === 'survival') {
               expGained = Math.round(expGained * 1.5);
-              coinsGained = Math.round(coinsGained * 1.5);
+              rubyGained = Math.round(rubyGained * 1.5);
             } else if (gameMode === 'boss') {
-              // Quyết đấu Boss (CORE_SPECS §3.A): nhân đôi XP cho mọi câu trả lời đúng trong trận.
+              // Khoa Thi (CORE_SPECS §3.A): nhân đôi XP cho mọi câu trả lời đúng trong trận.
               expGained = Math.round(expGained * 2);
             }
           } else {
             newCombo = 0; // Combo resets
-            // Sinh tồn/Boss: bộ đếm 3 lần sai là state NỘI BỘ của lượt chơi trong PlayArea —
+            // Khảo Thí Liên Hoàn/Boss: bộ đếm 3 lần sai là state NỘI BỘ của lượt chơi trong PlayArea —
             // hệ thống Tim sinh mệnh toàn cục đã bị xóa bỏ (CORE_SPECS §2.1).
           }
 
@@ -158,7 +161,7 @@ export const createPlayerSlice: StateCreator<
               ...state.player,
               xp: levelCheck.xp,
               level: levelCheck.level,
-              coins: state.player.coins + coinsGained + (levelCheck.badgesChanged ? 100 : 0),
+              ruby: state.player.ruby + rubyGained + (levelCheck.badgesChanged ? 100 : 0),
               badges: levelCheck.badges,
               lastActive: new Date().toISOString()
             }
@@ -168,6 +171,7 @@ export const createPlayerSlice: StateCreator<
           const answeredSubject = question.subject || 'english';
           const masteryRatio = computeSubjectMasteryRatio({
             subjectId: answeredSubject,
+            gradeTier: state.activeGradeTier,
             questions: state.questions,
             categoryStats: updatedStats,
             lessons: state.lessons,
@@ -180,16 +184,16 @@ export const createPlayerSlice: StateCreator<
             logActivity(get, set, 
               'exercise',
               'Câu trả lời CHƯA ĐẠT',
-              `Đúng một phần dạng [${question.category}] - Đạt ${Math.round(performanceScore * 10)}/10 theo rubric. Nhận +${coinsGained} NP / +${expGained} XP.`,
-              coinsGained,
+              `Đúng một phần dạng [${question.category}] - Đạt ${Math.round(performanceScore * 10)}/10 theo rubric. Nhận +${rubyGained} Ruby / +${expGained} XP.`,
+              rubyGained,
               expGained
             );
           } else if (isCorrect) {
             logActivity(get, set, 
               'exercise', 
               'Câu trả lời ĐÚNG', 
-              `Đúng dạng [${question.category}] - Nhận +${coinsGained} NP / +${expGained} XP. Combo: ${newCombo}x`, 
-              coinsGained, 
+              `Đúng dạng [${question.category}] - Nhận +${rubyGained} Ruby / +${expGained} XP. Combo: ${newCombo}x`,
+              rubyGained,
               expGained
             );
           } else {
@@ -212,7 +216,7 @@ export const createPlayerSlice: StateCreator<
             scoreRatio: performanceScore
           });
 
-          return { isCorrect: effectiveCorrect, expGained, coinsGained, comboMultiplier, scoreRatio: performanceScore };
+          return { isCorrect: effectiveCorrect, expGained, rubyGained, comboMultiplier, scoreRatio: performanceScore };
         },
 
   useEnergy: (amount) => {
@@ -263,13 +267,13 @@ export const createPlayerSlice: StateCreator<
                 energyDepletedAt: null
               }
             });
-            logActivity(get, set, 'energy_refill', 'Hồi đầy Chân Khí', `Đã nghỉ đủ ${resetHours ?? 3} giờ, Chân Khí hồi đầy trở lại.`);
+            logActivity(get, set, 'energy_refill', 'Hồi đầy Năng Lượng', `Đã nghỉ đủ ${resetHours ?? 3} giờ, Năng Lượng đã hồi đầy.`);
           }
         },
 
   ratchetMasteryRank: (subjectId, ratio) => {
           // Luật Bất Thoái (CORE_SPECS §7.4.4): Đẳng Cấp Môn Phái đã đạt không bao giờ tự tụt,
-          // kể cả khi Hiệu Trưởng import thêm câu hỏi/bài học làm mẫu số tăng và tỉ lệ % thô giảm.
+          // kể cả khi Viện Trưởng import thêm câu hỏi/bài học làm mẫu số tăng và tỉ lệ % thô giảm.
           const state = get();
           const newOrder = getMasteryRankByRatio(ratio).order;
           const currentMax = state.player.maxAchievedMasteryRank?.[subjectId] ?? 0;
@@ -288,7 +292,7 @@ export const createPlayerSlice: StateCreator<
   buyStreakShield: () => {
           const state = get();
           const cost = 150;
-          if (state.player.coins < cost) return false;
+          if (state.player.ruby < cost) return false;
 
           const hasShieldBadge = state.player.badges.includes('Streak Shield');
           if (hasShieldBadge) return false; // Max 1 shield owned
@@ -296,28 +300,28 @@ export const createPlayerSlice: StateCreator<
           set({
             player: {
               ...state.player,
-              coins: state.player.coins - cost,
+              ruby: state.player.ruby - cost,
               badges: [...state.player.badges, 'Streak Shield']
             }
           });
 
-          logActivity(get, set, 'shop', 'Lĩnh Hộ Tâm Phù', 'Đã nhận 1 Hộ Tâm Phù bảo vệ Chuỗi Tu Luyện', -cost, 0);
+          logActivity(get, set, 'shop', 'Lĩnh Thẻ Chuyên Cần', 'Đã nhận 1 Thẻ Chuyên Cần bảo vệ Chuỗi Tu Luyện', -cost, 0);
           return true;
         },
 
   buyHint: () => {
           const state = get();
           const cost = 50;
-          if (state.player.coins < cost) return false;
+          if (state.player.ruby < cost) return false;
 
           set({
             player: {
               ...state.player,
-              coins: state.player.coins - cost
+              ruby: state.player.ruby - cost
             }
           });
 
-          logActivity(get, set, 'shop', 'Khai Ngộ Quyển', 'Dùng 50 NP lĩnh Khai Ngộ Quyển hỗ trợ trong bài làm.', -cost, 0);
+          logActivity(get, set, 'shop', 'Thẻ Nhắc Bài', 'Dùng 50 Ruby lĩnh Thẻ Nhắc Bài hỗ trợ trong bài làm.', -cost, 0);
           return true;
         },
 
@@ -325,32 +329,32 @@ export const createPlayerSlice: StateCreator<
           const state = get();
           const unlocked = state.player.unlockedThemes || [FREE_UI_THEME];
           if (themeId === FREE_UI_THEME || unlocked.includes(themeId)) return false;
-          if (state.player.coins < THEME_UNLOCK_COST) return false;
+          if (state.player.ruby < THEME_UNLOCK_COST) return false;
 
           set({
             player: {
               ...state.player,
-              coins: state.player.coins - THEME_UNLOCK_COST,
+              ruby: state.player.ruby - THEME_UNLOCK_COST,
               unlockedThemes: [...unlocked, themeId]
             }
           });
 
           const themeConfig = UI_THEMES.find(t => t.id === themeId);
-          logActivity(get, set, 'shop', 'Mở khóa Phong Vị', `Đã lĩnh ngộ Phong Vị "${themeConfig?.name || themeId}" mới.`, -THEME_UNLOCK_COST, 0);
+          logActivity(get, set, 'shop', 'Mở khóa Phong Cách Học Đường', `Đã lĩnh ngộ Phong Cách Học Đường "${themeConfig?.name || themeId}" mới.`, -THEME_UNLOCK_COST, 0);
           return true;
         },
 
   redeemReward: (rewardId) => {
-          // Đổi Phần Thưởng Thực Tế (CORE_SPECS §3.2): hành động CHỦ Ý — bắt buộc đủ NP, không cho âm.
+          // Đổi Danh Mục Quà Khuyến Học (CORE_SPECS §3.2): hành động CHỦ Ý — bắt buộc đủ Ruby, không cho âm.
           const state = get();
           const reward = state.rewards.find(r => r.id === rewardId);
-          if (!reward || reward.remainingQuantity <= 0 || state.player.coins < reward.costCoins) return false;
+          if (!reward || reward.remainingQuantity <= 0 || state.player.ruby < reward.costRuby) return false;
 
           const redemption: RewardRedemption = {
             id: `rr-${Date.now()}`,
             rewardId: reward.id,
             rewardTitle: reward.title,
-            costCoins: reward.costCoins,
+            costRuby: reward.costRuby,
             status: 'pending',
             timestamp: Date.now()
           };
@@ -358,13 +362,13 @@ export const createPlayerSlice: StateCreator<
           set(prev => ({
             player: {
               ...prev.player,
-              coins: prev.player.coins - reward.costCoins
+              ruby: prev.player.ruby - reward.costRuby
             },
             rewards: prev.rewards.map(r => r.id === rewardId ? { ...r, remainingQuantity: r.remainingQuantity - 1 } : r),
             rewardRedemptions: [redemption, ...prev.rewardRedemptions]
           }));
 
-          logActivity(get, set, 'shop', 'Đổi Phần Thưởng Thực Tế', `Đã đổi "${reward.title}" — chờ Hiệu Trưởng trao quà ngoài đời`, -reward.costCoins, 0);
+          logActivity(get, set, 'shop', 'Đổi Quà Khuyến Học', `Đã đổi "${reward.title}" — chờ người quản lý trao quà ngoài đời`, -reward.costRuby, 0);
           get().syncWithServer();
           return true;
         },
@@ -373,12 +377,12 @@ export const createPlayerSlice: StateCreator<
           const state = get();
           if (state.pet.mood === 'happy' && state.pet.energy >= 100) return false;
 
-          // Luật "Lực Bất Tòng Tâm" (CORE_SPECS §3.B): cho Pet ăn tốn 10 NP và 5 XP của Thiếu Hiệp.
-          const coinsCost = 10;
+          // Luật "Lực Bất Tòng Tâm" (CORE_SPECS §3.B): cho Pet ăn tốn 10 Ruby và 5 XP của Thiếu Hiệp.
+          const rubyCost = 10;
           const xpCost = 5;
-          if (state.player.coins < coinsCost) return false;
+          if (state.player.ruby < rubyCost) return false;
 
-          // Vì tiêu hao trực tiếp XP, Thiếu hiệp chấp nhận tụt Level tạm thời nếu dồn quá nhiều tài nguyên chăm Pet.
+          // Vì tiêu hao trực tiếp XP, Sĩ Tử chấp nhận tụt Level tạm thời nếu dồn quá nhiều tài nguyên chăm Pet.
           let newLevel = state.player.level;
           let newXp = state.player.xp - xpCost;
           while (newXp < 0 && newLevel > 1) {
@@ -391,7 +395,7 @@ export const createPlayerSlice: StateCreator<
           set({
             player: {
               ...state.player,
-              coins: state.player.coins - coinsCost,
+              ruby: state.player.ruby - rubyCost,
               xp: newXp,
               level: newLevel
             },
@@ -407,9 +411,9 @@ export const createPlayerSlice: StateCreator<
             'pet_interact',
             didDeLevel ? 'Cho thú nuôi ăn (tụt cấp tạm thời)' : 'Cho thú nuôi ăn',
             didDeLevel
-              ? `Pet của con rất vui mừng, nhưng dồn quá nhiều tài nguyên khiến con tạm tụt xuống Level ${newLevel}. Quay lại Hang Luyện Công cày XP để lên cấp lại nhé!`
+              ? `Pet của con rất vui mừng, nhưng dồn quá nhiều tài nguyên khiến con tạm tụt xuống Level ${newLevel}. Quay lại Học Đường cày XP để lên cấp lại nhé!`
               : 'Pet của con rất vui mừng và đầy năng lượng!',
-            -coinsCost,
+            -rubyCost,
             -xpCost
           );
           get().syncWithServer();
@@ -418,21 +422,21 @@ export const createPlayerSlice: StateCreator<
 
   spinWheel: () => {
           const state = get();
-          // App không quản lý tiền (CORE_SPECS §3.2) — mọi phần thưởng quy hết về NP/Chân Khí.
+          // App không quản lý tiền (CORE_SPECS §3.2) — mọi phần thưởng quy về Ruby/Năng Lượng.
           const rewardsOptions = [
-            { type: 'coins', amount: 50, message: 'Nhận thêm +50 NP!' },
-            { type: 'coins', amount: 100, message: 'Nhận thêm +100 NP!' },
+            { type: 'ruby', amount: 50, message: 'Nhận thêm +50 Ruby!' },
+            { type: 'ruby', amount: 100, message: 'Nhận thêm +100 Ruby!' },
             { type: 'energy', amount: 30, message: 'Hồi phục +30 Năng lượng!' },
-            { type: 'coins', amount: 200, message: 'May mắn nhận +200 NP!' },
-            { type: 'coins', amount: 300, message: 'Siêu cấp may mắn nhận +300 NP!' },
+            { type: 'ruby', amount: 200, message: 'May mắn nhận +200 Ruby!' },
+            { type: 'ruby', amount: 300, message: 'Siêu cấp may mắn nhận +300 Ruby!' },
             { type: 'nothing', amount: 0, message: 'Trượt tay lần này, gỡ ở lần sau.' }
           ];
 
           const resultIndex = Math.floor(Math.random() * rewardsOptions.length);
           const spin = rewardsOptions[resultIndex];
 
-          if (spin.type === 'coins') {
-            set({ player: { ...state.player, coins: state.player.coins + spin.amount } });
+          if (spin.type === 'ruby') {
+            set({ player: { ...state.player, ruby: state.player.ruby + spin.amount } });
             logActivity(get, set, 'box_open', 'Vòng Quay May Mắn', spin.message, spin.amount, 0);
           } else if (spin.type === 'energy') {
             get().addEnergy(spin.amount);
@@ -445,9 +449,9 @@ export const createPlayerSlice: StateCreator<
   openMysteryBox: () => {
           const state = get();
           const boxRewards = [
-            { type: 'coins', amount: 100, message: 'Nhận ngay +100 NP!' },
-            { type: 'coins', amount: 200, message: 'Nhận ngay +200 NP!' },
-            { type: 'coins', amount: 150, message: 'Nhận gói +150 NP!' },
+            { type: 'ruby', amount: 100, message: 'Nhận ngay +100 Ruby!' },
+            { type: 'ruby', amount: 200, message: 'Nhận ngay +200 Ruby!' },
+            { type: 'ruby', amount: 150, message: 'Nhận gói +150 Ruby!' },
             { type: 'shield', amount: 1, message: 'Nhận được 1 Khiên bảo vệ Streak!' },
             { type: 'empty', amount: 0, message: 'Rương trống rỗng, chúc con may mắn lần sau!' }
           ];
@@ -455,8 +459,8 @@ export const createPlayerSlice: StateCreator<
           const index = Math.floor(Math.random() * boxRewards.length);
           const reward = boxRewards[index];
 
-          if (reward.type === 'coins') {
-            set({ player: { ...state.player, coins: state.player.coins + reward.amount } });
+          if (reward.type === 'ruby') {
+            set({ player: { ...state.player, ruby: state.player.ruby + reward.amount } });
             logActivity(get, set, 'box_open', 'Mở Hòm Bí Mật', reward.message, reward.amount, 0);
           } else if (reward.type === 'shield') {
             const hasShield = state.player.badges.includes('Streak Shield');
@@ -468,6 +472,20 @@ export const createPlayerSlice: StateCreator<
 
           return { rewardType: reward.type, amount: reward.amount, message: reward.message };
         },
+
+  updateActivityProgress: async (activityId: string, status: 'locked' | 'available' | 'completed', completedAt: string | null = null) => {
+    set((state: any) => {
+      const updatedProgress = {
+        ...state.activityProgress,
+        [activityId]: {
+          status,
+          completedAt: completedAt || (status === 'completed' ? new Date().toISOString() : state.activityProgress[activityId]?.completedAt || null)
+        }
+      };
+      return { activityProgress: updatedProgress };
+    });
+    await get().syncWithServer();
+  },
 
   masterLesson: async (lessonId, accuracyRatio) => {
           const state = get();
@@ -484,23 +502,31 @@ export const createPlayerSlice: StateCreator<
           get().completeLevel3Page(lessonId);
 
           const expGained = 50;
-          // Rương Báu Ải (CORE_SPECS §3.A): đạt độ chính xác từ 90% trở lên khi hoàn thành ải mới nhận thêm +20 NP.
+          // Rương Báu Ải (CORE_SPECS §3.A): đạt độ chính xác từ 90% trở lên khi hoàn thành ải mới nhận thêm +20 Ruby.
           const hitTreasureChest = (accuracyRatio ?? 0) >= 0.9;
-          const coinsGained = hitTreasureChest ? 20 : 0;
+          const rubyGained = hitTreasureChest ? 20 : 0;
 
           const updatedXP = state.player.xp + expGained;
           const levelCheck = checkLevelUp(get, set, updatedXP, state.player.level);
 
+          const actId = `act-lesson-${lessonId}`;
           set({
             lessonsProgress: {
               ...state.lessonsProgress,
               [lessonId]: true
             },
+            activityProgress: {
+              ...state.activityProgress,
+              [actId]: {
+                status: 'completed',
+                completedAt: new Date().toISOString()
+              }
+            },
             player: {
               ...state.player,
               xp: levelCheck.xp,
               level: levelCheck.level,
-              coins: state.player.coins + coinsGained + (levelCheck.badgesChanged ? 100 : 0),
+              ruby: state.player.ruby + rubyGained + (levelCheck.badgesChanged ? 100 : 0),
               badges: levelCheck.badges
             }
           });
@@ -509,6 +535,7 @@ export const createPlayerSlice: StateCreator<
           const updatedLessonsProgress = { ...state.lessonsProgress, [lessonId]: true };
           const lessonMasteryRatio = computeSubjectMasteryRatio({
             subjectId: lesson.subject,
+            gradeTier: state.activeGradeTier,
             questions: state.questions,
             categoryStats: state.categoryStats,
             lessons: state.lessons,
@@ -522,21 +549,21 @@ export const createPlayerSlice: StateCreator<
             hitTreasureChest
               ? `Đã qua ải chuyên đề: ${lesson.title}. Độ chính xác ≥90% mở thêm Rương Báu Ải!`
               : `Đã qua ải chuyên đề: ${lesson.title}.`,
-            coinsGained,
+            rubyGained,
             expGained
           );
           get().syncWithServer();
         },
 
-  applyDefeatPenalty: (coinsEarnedInRun, xpEarnedInRun) => {
+  applyDefeatPenalty: (rubyEarnedInRun, xpEarnedInRun) => {
           const state = get();
-          const coinsClawback = Math.floor(Math.max(0, coinsEarnedInRun) / 2);
+          const rubyClawback = Math.floor(Math.max(0, rubyEarnedInRun) / 2);
           const xpClawback = Math.floor(Math.max(0, xpEarnedInRun) / 2);
 
           set({
             player: {
               ...state.player,
-              coins: Math.max(0, state.player.coins - coinsClawback),
+              ruby: Math.max(0, state.player.ruby - rubyClawback),
               xp: Math.max(0, state.player.xp - xpClawback)
             },
             pet: {
@@ -546,12 +573,12 @@ export const createPlayerSlice: StateCreator<
             }
           });
 
-          if (coinsClawback > 0 || xpClawback > 0) {
+          if (rubyClawback > 0 || xpClawback > 0) {
             logActivity(get, set,
               'exercise',
               'Tẩu Hỏa Nhập Ma!',
               'Sai đủ 3 câu giữa trận, chỉ giữ được 50% chiến lợi phẩm thu được. Pet buồn thiu vì thấy con thất bại.',
-              -coinsClawback,
+              -rubyClawback,
               -xpClawback
             );
           }
@@ -560,14 +587,14 @@ export const createPlayerSlice: StateCreator<
   completeBossVictory: (bonusIndex?: number) => {
           const state = get();
           const bonusXP = 150;
-          // Bonus Điểm khi hạ Boss — quảng bá trên Boss Card, do Chủ Viện/Hiệu Phó cấu hình (CORE_SPECS §2.1).
+          // Bonus Điểm khi hạ Boss — quảng bá trên Boss Card, do Chủ Viện/Phó Viện Trưởng cấu hình (CORE_SPECS §2.1).
           // Thay hoàn toàn thưởng tiền mặt cũ; Boss không bao giờ thưởng tiền.
-          const npBonusOptions = state.gameSettings.bossCompletionBonusNP ?? [100, 150, 200];
+          const rubyBonusOptions = state.gameSettings.bossCompletionBonusRuby ?? [100, 150, 200];
           // Dùng đúng bonusIndex của Boss vừa đánh để khớp số đã quảng bá trên Boss Card;
           // không xác định được thì chọn ngẫu nhiên (tương thích ngược).
-          const npBonus = (bonusIndex !== undefined && npBonusOptions[bonusIndex] !== undefined)
-            ? npBonusOptions[bonusIndex]
-            : npBonusOptions[Math.floor(Math.random() * npBonusOptions.length)];
+          const rubyBonus = (bonusIndex !== undefined && rubyBonusOptions[bonusIndex] !== undefined)
+            ? rubyBonusOptions[bonusIndex]
+            : rubyBonusOptions[Math.floor(Math.random() * rubyBonusOptions.length)];
 
           const updatedXP = state.player.xp + bonusXP;
           const levelCheck = checkLevelUp(get, set, updatedXP, state.player.level);
@@ -578,14 +605,14 @@ export const createPlayerSlice: StateCreator<
               xp: levelCheck.xp,
               level: levelCheck.level,
               badges: levelCheck.badges,
-              coins: state.player.coins + npBonus + (levelCheck.badgesChanged ? 100 : 0)
+              ruby: state.player.ruby + rubyBonus + (levelCheck.badgesChanged ? 100 : 0)
             }
           });
           logActivity(get, set,
             'boss',
             'Hạ Gục Boss! 🔥',
-            `Đánh bại Boss xuất sắc! Nhận thêm +${bonusXP} XP và bonus hoàn thành +${npBonus} NP.`,
-            npBonus,
+            `Đánh bại Boss xuất sắc! Nhận thêm +${bonusXP} XP và bonus hoàn thành +${rubyBonus} Ruby.`,
+            rubyBonus,
             bonusXP
           );
         },
@@ -645,31 +672,31 @@ export const createPlayerSlice: StateCreator<
           });
         },
 
-  awardCoinsAndXp: async (coins, xp, activityTitle, activityDetails) => {
+  awardRubyAndXp: async (ruby, xp, activityTitle, activityDetails) => {
           const state = get();
           
           // Local optimistic update
           set({
             player: {
               ...state.player,
-              coins: Math.max(0, state.player.coins + coins),
+              ruby: Math.max(0, state.player.ruby + ruby),
               xp: state.player.xp + xp
             }
           });
           
-          // Send transaction to Ledger backend if coins != 0 — bỏ qua với phiên dev-backdoor
+          // Send transaction to Ledger backend if ruby != 0 — bỏ qua với phiên dev-backdoor
           // (mock-*), vì các phiên này không có session Supabase/backend thật để đồng bộ.
-          if (coins !== 0 && state.currentUser?.id && !state.currentUser.id.startsWith('mock-')) {
+          if (ruby !== 0 && state.currentUser?.id && !state.currentUser.id.startsWith('mock-')) {
             try {
-              const updatedCoins = await playerService.awardCoins(state.currentUser.id, coins, activityTitle, activityDetails);
-              // Sync exact coins from DB back
-              set((s) => ({ player: { ...s.player, coins: updatedCoins } }));
+              const updatedRuby = await playerService.awardRuby(state.currentUser.id, ruby, activityTitle, activityDetails);
+              // Sync exact ruby from DB back
+              set((s) => ({ player: { ...s.player, ruby: updatedRuby } }));
             } catch (e) {
-              console.error('Failed to write to Ledger NP:', e);
+              console.error('Failed to write to Ledger Ruby:', e);
             }
           }
 
-          logActivity(get, set, 'box_open', activityTitle, activityDetails, coins, xp);
+          logActivity(get, set, 'box_open', activityTitle, activityDetails, ruby, xp);
         },
 
   clearExploration: async (pageId: string) => {
@@ -741,7 +768,7 @@ export const createPlayerSlice: StateCreator<
             logActivity(get, set, 
               'exercise',
               'Duy trì Streak học tập!',
-              `Chuỗi học tăng lên ${newStreak} ngày!${streakBonus > 0 ? ` Thưởng chuỗi +${streakBonus} NP.` : ''}`,
+              `Chuỗi học tăng lên ${newStreak} ngày!${streakBonus > 0 ? ` Thưởng chuỗi +${streakBonus} Ruby.` : ''}`,
               streakBonus,
               0
             );
@@ -759,7 +786,7 @@ export const createPlayerSlice: StateCreator<
             } else {
               streakBroken = true;
               newStreak = 0;
-              // Mất chuỗi CHỈ reset về 0 — KHÔNG trừ NP (bãi bỏ phạt -50 NP cũ).
+              // Mất chuỗi CHỈ reset về 0 — KHÔNG trừ Ruby (bãi bỏ phạt -50 Ruby cũ).
               eventBus.publish('STREAK_RESET', { brokenDays: diffDays });
             }
           }
@@ -784,7 +811,7 @@ export const createPlayerSlice: StateCreator<
             player: {
               ...state.player,
               streak: newStreak,
-              coins: state.player.coins + streakBonus,
+              ruby: state.player.ruby + streakBonus,
               // Qua ngày mới (00:00) luôn hồi đầy bất kể trạng thái (SUB_SPEC_ENERGY §5).
               energy: state.player.maxEnergy ?? 100,
               energyDepletedAt: null,
@@ -924,7 +951,7 @@ export const createPlayerSlice: StateCreator<
           set((state: any) => ({
             player: {
               ...state.player,
-              coins: data.newCoins !== undefined ? data.newCoins : state.player.coins,
+              ruby: data.newRuby !== undefined ? data.newRuby : state.player.ruby,
               xp: data.newXp !== undefined ? data.newXp : state.player.xp,
               level: data.newLevel !== undefined ? data.newLevel : state.player.level,
               badges: data.badges !== undefined ? data.badges : state.player.badges
@@ -947,6 +974,7 @@ export const createPlayerSlice: StateCreator<
         challenges: state.challenges,
         dailyMission: state.dailyMission,
         lessonsProgress: state.lessonsProgress,
+        activityProgress: state.activityProgress,
         lastSyncTime: state.lastSyncTime
       };
 
@@ -978,6 +1006,9 @@ export const createPlayerSlice: StateCreator<
         challenges: serverData.challenges || state.challenges,
         dailyMission: serverData.dailyMission || state.dailyMission,
         lessonsProgress: serverData.lessonsProgress || state.lessonsProgress,
+        topics: serverData.topics || state.topics,
+        activities: serverData.activities || state.activities,
+        activityProgress: serverData.activityProgress || state.activityProgress,
         explorationProgress: serverData.explorationProgress || state.explorationProgress
       };
     });

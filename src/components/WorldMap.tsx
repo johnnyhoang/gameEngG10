@@ -1,7 +1,6 @@
 import { useMemo, useEffect, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { toast } from '../utils/toast';
-import { INITIAL_LESSONS } from '../data/lessons';
 import {
   Sword, Mountain, Palmtree, Store, PawPrint, BrainCircuit, ArrowRight,
   Flame, Zap, Star, Gift
@@ -25,14 +24,14 @@ interface WorldMapProps {
   onStartLessonPractice?: (lessonId: string) => void;
 }
 
-// Worldmap hub (CORE_SPECS §2.1): 5 module chính ngang hàng cho Môn Sinh —
-// Đấu Trường, Hang Luyện Công, Sơn Trang Thư Giãn, Bách Hóa Phường, Sân Thú Nuôi.
+// Worldmap hub (CORE_SPECS §2.1): 5 module chính ngang hàng cho Sĩ Tử —
+// Trường Thi, Học Đường, Công Viên Thư Giãn, Shop Học Cụ, Sân Thú Nuôi.
 export function WorldMap({
   onOpenArena, onOpenHang, onOpenRelax, onOpenShop, onOpenPet,
   onOpenMysteryBox, onSpinWheel, onStudyLesson, onStartLessonPractice
 }: WorldMapProps) {
   const dailyMission = useGameState(state => state.dailyMission);
-  const { activeSectId, setActiveSectId } = useSect();
+  const { activeSectId, activeGradeTier, setActiveSectId } = useSect();
   const uiTheme = useGameState(state => state.uiTheme);
   const categoryStats = useGameState(state => state.categoryStats);
   const lessonsProgress = useGameState(state => state.lessonsProgress);
@@ -40,7 +39,7 @@ export function WorldMap({
   const syncWithServer = useGameState(state => state.syncWithServer);
   const player = useGameState(state => state.player);
   const currentUser = useGameState(state => state.currentUser);
-
+  const lessons = useGameState(state => state.lessons);
   useEffect(() => {
     syncWithServer();
   }, [syncWithServer]);
@@ -75,7 +74,9 @@ export function WorldMap({
   };
 
   const pageExplorationStates = useGameState(state => state.pageExplorationStates || {});
-  const subjectLessons = INITIAL_LESSONS.filter(l => l.subject === activeSectId);
+  const subjectLessons = lessons.filter(l =>
+    l.subject === activeSectId && (l.gradeTier ?? 9) === activeGradeTier
+  );
   const completedLessons = subjectLessons.filter(l => lessonsProgress[l.id]).length;
 
   // Daily mission progress
@@ -83,7 +84,7 @@ export function WorldMap({
 
   const weakData = useMemo(() => {
     const subjectPageStates = Object.values(pageExplorationStates).filter(state => 
-      state.pageId.startsWith(`hang-${activeSectId}-`)
+      state.pageId.startsWith(`hang-${activeGradeTier}-${activeSectId}-`)
     );
 
     const sortedPages = [...subjectPageStates].sort((a, b) => {
@@ -93,7 +94,9 @@ export function WorldMap({
     });
 
     const preferredHam = sortedPages.length > 0 ? getHamForPage(sortedPages[0].pageId) : null;
-    const subjectTopics = CORE_KNOWLEDGE_TOPICS.filter(t => t.subjectId === activeSectId);
+    const subjectTopics = CORE_KNOWLEDGE_TOPICS.filter(t =>
+      t.subjectId === activeSectId && (t.gradeTier ?? 9) === activeGradeTier
+    );
     
     const topicAccuracies = subjectTopics.map(t => {
       const stat = categoryStats[t.id] || categoryStats[t.label];
@@ -120,7 +123,7 @@ export function WorldMap({
     if (!matchingLesson) return null;
 
     return { lesson: matchingLesson, accuracy: weakTopicItem.accuracy };
-  }, [pageExplorationStates, categoryStats, activeSectId, subjectLessons]);
+  }, [pageExplorationStates, categoryStats, activeSectId, activeGradeTier, subjectLessons]);
 
   const weakLesson = weakData?.lesson ?? null;
   const weakAccuracy = weakData?.accuracy ?? 0;
@@ -200,7 +203,7 @@ export function WorldMap({
               </div>
               <div className="flex items-center gap-1 text-synth-orange">
                 <span>🪙</span>
-                <span>{player.coins} NP</span>
+                <span>{player.ruby} Ruby</span>
               </div>
             </div>
           </div>
@@ -221,7 +224,7 @@ export function WorldMap({
               <div className="flex items-center gap-2">
                 <span className={`w-2 h-2 rounded-full ${isMissionComplete ? 'bg-emerald-400' : 'bg-synth-magenta animate-ping'}`} />
                 <h2 className={`font-orbitron font-black text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-                  📋 Bảng Cáo Thị (Daily Quest)
+                  📋 Bảng Bài Tập (Daily Quest)
                 </h2>
               </div>
 
@@ -251,7 +254,7 @@ export function WorldMap({
                 </div>
               ) : (
                 <p className={`text-[11px] leading-relaxed ${isUnicorn ? 'text-violet-600/80' : 'text-slate-400'}`}>
-                  Chưa nhận được nhiệm vụ hôm nay. Vào ải/đấu trường để nhận nhiệm vụ!
+                  Chưa nhận được nhiệm vụ hôm nay. Vào bài học hoặc Trường Thi để nhận nhiệm vụ!
                 </p>
               )}
 
@@ -391,14 +394,14 @@ export function WorldMap({
                   </div>
                   <p className="text-[10px] text-slate-400 leading-relaxed">{quest.description}</p>
                   <div className="flex gap-3 text-[9px] font-bold font-orbitron text-synth-cyan">
-                    <span>🎁 +{quest.rewardNP} NP</span>
+                    <span>🎁 +{quest.rewardRuby} Ruby</span>
                   </div>
                 </div>
                 {quest.status === 'completed' && (
                   <button
                     onClick={() => {
                       claimParentQuest(quest.id);
-                      toast.success(`Nhận thưởng thành công: +${quest.rewardNP} NP! 🥳`);
+                      toast.success(`Nhận thưởng thành công: +${quest.rewardRuby} Ruby! 🥳`);
                     }}
                     className="px-3 py-1.5 rounded-lg bg-synth-magenta text-white font-orbitron font-bold text-[9px] uppercase tracking-wider cursor-pointer hover:synth-glow-magenta shadow-md"
                   >
@@ -446,7 +449,7 @@ export function WorldMap({
 
         {/* 3 primary study zone cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Đấu Trường — PRIMARY, nổi nhất */}
+          {/* Trường Thi — PRIMARY, nổi nhất */}
           <button
             onClick={onOpenArena}
             className="glass-panel glass-panel-hover rounded-2xl border border-synth-magenta/30 bg-gradient-to-br from-synth-magenta/15 via-synth-purple/10 to-transparent p-5 flex flex-col justify-between gap-4 text-left cursor-pointer transition-all duration-300 hover:border-synth-magenta/50 hover:shadow-[0_0_20px_rgba(255,0,127,0.15)] group"
@@ -463,18 +466,18 @@ export function WorldMap({
                 </div>
               </div>
               <div>
-                <h3 className="font-orbitron font-black text-base text-white uppercase tracking-wide">⚡ Đấu Trường</h3>
+                <h3 className="font-orbitron font-black text-base text-white uppercase tracking-wide">⚡ Trường Thi</h3>
                 <p className="text-xs text-slate-300 leading-relaxed mt-1.5">
                   4 ải chiến đấu: <strong className="text-synth-magenta">Mixed</strong>, <strong className="text-synth-purple">Sinh Tồn</strong>, <strong className="text-synth-cyan">Boss</strong> và <strong className="text-synth-orange">Truy Tìm Lỗi Sai</strong>. Luyện phản xạ thi cử như thật.
                 </p>
               </div>
             </div>
             <div className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-synth-magenta group-hover:gap-3 transition-all">
-              Vào Đấu Trường <ArrowRight className="w-3.5 h-3.5" />
+              Vào Trường Thi <ArrowRight className="w-3.5 h-3.5" />
             </div>
           </button>
 
-          {/* Hang Luyện Công */}
+          {/* Học Đường */}
           <button
             onClick={onOpenHang}
             className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/25 bg-gradient-to-br from-synth-cyan/12 via-synth-purple/8 to-transparent p-5 flex flex-col justify-between gap-4 text-left cursor-pointer transition-all duration-300 hover:border-synth-cyan/45 hover:shadow-[0_0_20px_rgba(0,240,255,0.12)] group"
@@ -489,7 +492,7 @@ export function WorldMap({
                 </span>
               </div>
               <div>
-                <h3 className="font-orbitron font-black text-base text-white uppercase tracking-wide">📚 Hang Luyện Công</h3>
+                <h3 className="font-orbitron font-black text-base text-white uppercase tracking-wide">📚 Học Đường</h3>
                 <p className="text-xs text-slate-300 leading-relaxed mt-1.5">
                   Tự học theo chuyên đề, sổ tay lỗi sai và Mật Thất tương tác 3D. Nắm lý thuyết trước, chiến sau.
                 </p>
@@ -537,8 +540,8 @@ export function WorldMap({
               <Store className="w-5 h-5" />
             </div>
             <div className="flex-1 min-w-0">
-              <h4 className="font-orbitron font-black text-xs text-white uppercase tracking-wide">🏮 Bách Hóa Phường</h4>
-              <p className="text-[10px] text-slate-400 mt-0.5 leading-relaxed">Đổi NP lấy vật phẩm, Hộ Tâm Phù và Phúc Lợi Lớp Học.</p>
+              <h4 className="font-orbitron font-black text-xs text-white uppercase tracking-wide">🏮 Shop Học Cụ</h4>
+              <p className="text-[10px] text-slate-400 mt-0.5 leading-relaxed">Đổi Ruby lấy vật phẩm, Thẻ Chuyên Cần và Quà Khuyến Học.</p>
             </div>
             <ArrowRight className="w-4 h-4 text-synth-orange/50 group-hover:text-synth-orange shrink-0 transition-colors" />
           </button>

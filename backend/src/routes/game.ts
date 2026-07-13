@@ -46,8 +46,8 @@ router.post('/game/session/start', authMiddleware, async (req: any, res) => {
   const accountId = req.user.sub;
   const { profileId, sessionType, subject, gradeTier, bossId, lessonId, failedQuestionIds = [] } = req.body;
 
-  if (!profileId || !sessionType || !subject) {
-    return res.status(400).json({ error: 'Missing profileId, sessionType, or subject.' });
+  if (!profileId || !sessionType || !subject || ![6, 7, 8, 9, 10, 11, 12].includes(Number(gradeTier))) {
+    return res.status(400).json({ error: 'Missing or invalid profileId, sessionType, subject, or gradeTier.' });
   }
 
   try {
@@ -61,8 +61,8 @@ router.post('/game/session/start', authMiddleware, async (req: any, res) => {
        WHERE (user_id = $1 
           OR user_id IS NULL 
           OR user_id IN (SELECT id FROM ge10_users WHERE role IN ('truong_vien', 'pho_vien')))
-         AND subject = $2`,
-      [profileId, subject]
+         AND subject = $2 AND grade_tier = $3`,
+      [profileId, subject, gradeTier]
     );
 
     let questions = qRes.rows.map((row: any) => ({
@@ -80,13 +80,8 @@ router.post('/game/session/start', authMiddleware, async (req: any, res) => {
       imageUrl: row.image_url,
       metadata: row.metadata || undefined,
       isConfused: row.is_confused,
-      gradeTier: row.metadata?.gradeTier || 9
+      gradeTier: row.grade_tier
     }));
-
-    // Filter by gradeTier if applicable
-    if (gradeTier) {
-      questions = questions.filter(q => q.gradeTier === gradeTier);
-    }
 
     let poolSelected: typeof questions = [];
     const count = sessionType === 'boss' ? 5 : sessionType === 'survival' ? 15 : 10;
@@ -124,9 +119,9 @@ router.post('/game/session/start', authMiddleware, async (req: any, res) => {
     // Save game session to DB
     await pool.query(
       `INSERT INTO ge10_game_sessions 
-       (id, user_id, session_type, subject, difficulty_tier, questions_pool, status)
-       VALUES ($1, $2, $3, $4, $5, $6, 'active')`,
-      [sessionId, profileId, sessionType, subject, gradeTier || '9', questionsPoolIds]
+       (id, user_id, session_type, subject, grade_tier, difficulty_tier, questions_pool, status)
+       VALUES ($1, $2, $3, $4, $5, NULL, $6, 'active')`,
+      [sessionId, profileId, sessionType, subject, gradeTier, questionsPoolIds]
     );
 
     res.json({
@@ -178,11 +173,11 @@ router.post('/game/session/end', authMiddleware, async (req: any, res) => {
     // Get base settings from settings
     const baseSettingsRes = await client.query(`SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'game_settings'`); // placeholder
     const baseXP = 15;
-    const baseCoins = 5;
+    const baseRuby = 5;
 
     // Fetch player profile info
     const profileRes = await client.query(
-      `SELECT level, xp, coins, streak, badges FROM ge10_player_profiles WHERE user_id = $1`,
+      `SELECT level, xp, ruby, streak, badges FROM ge10_player_profiles WHERE user_id = $1`,
       [profileId]
     );
     if (profileRes.rows.length === 0) {
@@ -201,7 +196,7 @@ router.post('/game/session/end', authMiddleware, async (req: any, res) => {
 
     // Calculate score
     let totalXpGained = 0;
-    let totalCoinsGained = 0;
+    let totalRubyGained = 0;
     let activeCombo = 0;
     let correctCount = 0;
 
@@ -240,7 +235,7 @@ router.post('/game/session/end', authMiddleware, async (req: any, res) => {
       }
 
       let expGained = 0;
-      let coinsGained = 0;
+      let rubyGained = 0;
 
       if (scoreRatio > 0) {
         let comboMultiplier = 1.0;
@@ -253,79 +248,80 @@ router.post('/game/session/end', authMiddleware, async (req: any, res) => {
         const streakBonus = 1 + Math.min(1.0, (player.streak || 0) * 0.1);
 
         expGained = Math.round(baseXP * difficultyMultiplier * comboMultiplier * scoreRatio * streakBonus);
-        coinsGained = Math.round(baseCoins * difficultyMultiplier * comboMultiplier * scoreRatio * streakBonus);
+        rubyGained = Math.round(baseRuby * difficultyMultiplier * comboMultiplier * scoreRatio * streakBonus);
 
         if (session.session_type === 'survival') {
           expGained = Math.round(expGained * 1.5);
-          coinsGained = Math.round(coinsGained * 1.5);
+          rubyGained = Math.round(rubyGained * 1.5);
         } else if (session.session_type === 'boss') {
           expGained = Math.round(expGained * 2);
-          coinsGained = 0; // Boss does not award base coins
+          rubyGained = 0; // Boss does not award base ruby
         }
       }
 
       totalXpGained += expGained;
-      totalCoinsGained += coinsGained;
+      totalRubyGained += rubyGained;
 
       return {
         questionId: ans.questionId,
         isCorrect,
         scoreRatio,
         xpGained: expGained,
-        coinsGained: coinsGained
+        rubyGained: rubyGained,
+        coinsGained: rubyGained
       };
     });
 
     // If victory Boss, award completion bonus
     if (!isDefeat && session.session_type === 'boss') {
       const bonusXP = 150;
-      const bossCompletionBonusNP = [100, 150, 200];
-      const npBonus = (bossBonusIndex !== undefined && bossCompletionBonusNP[bossBonusIndex] !== undefined)
-        ? bossCompletionBonusNP[bossBonusIndex]
+      const bossCompletionBonusRuby = [100, 150, 200];
+      const rubyBonus = (bossBonusIndex !== undefined && bossCompletionBonusRuby[bossBonusIndex] !== undefined)
+        ? bossCompletionBonusRuby[bossBonusIndex]
         : 150;
       totalXpGained += bonusXP;
-      totalCoinsGained += npBonus;
+      totalRubyGained += rubyBonus;
     }
 
     // Apply defeat penalty if applicable
     if (isDefeat) {
       totalXpGained = Math.floor(totalXpGained / 2);
-      totalCoinsGained = Math.floor(totalCoinsGained / 2);
+      totalRubyGained = Math.floor(totalRubyGained / 2);
     }
 
-    // Daily NP Cap implementation: limit daily NP earned to 300
-    // Check daily NP earned so far
+    // Daily Ruby Cap implementation: limit daily Ruby earned to 300
+    // Check daily Ruby earned so far
     const todayStr = new Date().toISOString().split('T')[0];
     const checkCapRes = await client.query(
-      `SELECT daily_np_earned, last_np_earned_date FROM ge10_player_profiles WHERE user_id = $1`,
+      `SELECT daily_ruby_earned, last_ruby_earned_date FROM ge10_player_profiles WHERE user_id = $1`,
       [profileId]
     );
-    let dailyNpEarned = 0;
+    let dailyRubyEarned = 0;
     if (checkCapRes.rows.length > 0) {
       const pData = checkCapRes.rows[0];
-      if (pData.last_np_earned_date === todayStr) {
-        dailyNpEarned = pData.daily_np_earned || 0;
+      if (pData.last_ruby_earned_date === todayStr) {
+        dailyRubyEarned = pData.daily_ruby_earned || 0;
       }
     }
 
-    if (totalCoinsGained > 0) {
-      const remainingCap = Math.max(0, 300 - dailyNpEarned);
-      if (totalCoinsGained > remainingCap) {
-        totalCoinsGained = remainingCap;
+    if (totalRubyGained > 0) {
+      const remainingCap = Math.max(0, 300 - dailyRubyEarned);
+      if (totalRubyGained > remainingCap) {
+        totalRubyGained = remainingCap;
       }
-      dailyNpEarned += totalCoinsGained;
+      dailyRubyEarned += totalRubyGained;
     }
 
-    // Process Ledger transaction for NP
-    const newCoinsAmount = Math.max(0, player.coins + totalCoinsGained);
+    // Process Ledger transaction for Ruby
+    const newRubyAmount = Math.max(0, player.ruby + totalRubyGained);
     await client.query(
       `UPDATE ge10_player_profiles 
-       SET coins = $1, 
-           daily_np_earned = $2, 
-           last_np_earned_date = $3,
+       SET ruby = $1,
+           daily_ruby_earned = $2,
+           last_ruby_earned_date = $3,
            server_updated_at = NOW() 
        WHERE user_id = $4`,
-      [newCoinsAmount, dailyNpEarned, todayStr, profileId]
+      [newRubyAmount, dailyRubyEarned, todayStr, profileId]
     );
 
     // Process Level Up calculations
@@ -339,7 +335,7 @@ router.post('/game/session/end', authMiddleware, async (req: any, res) => {
       newLevel += 1;
     }
 
-    // Check wuxia rank up
+    // Check student rank up
     const oldRank = getStudentRankForLevel(player.level || 1);
     const newRank = getStudentRankForLevel(newLevel);
     if (newRank.id !== oldRank.id) {
@@ -394,9 +390,9 @@ router.post('/game/session/end', authMiddleware, async (req: any, res) => {
     // Save session summary
     await client.query(
       `UPDATE ge10_game_sessions
-       SET status = $1, end_time = NOW(), xp_gained = $2, coins_gained = $3, answers_summary = $4
+       SET status = $1, end_time = NOW(), xp_gained = $2, ruby_gained = $3, answers_summary = $4
        WHERE id = $5`,
-      [isDefeat ? 'defeat' : 'completed', totalXpGained, totalCoinsGained, JSON.stringify(computedAnswers), sessionId]
+      [isDefeat ? 'defeat' : 'completed', totalXpGained, totalRubyGained, JSON.stringify(computedAnswers), sessionId]
     );
 
     // Write activity log to history logs
@@ -407,19 +403,21 @@ router.post('/game/session/end', authMiddleware, async (req: any, res) => {
       : `Đã hoàn thành ải [${session.session_type}] môn [${session.subject}]. Đúng ${correctCount}/${answers.length} câu.`;
     
     await client.query(
-      `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, coins_changed, xp_changed)
+      `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, ruby_changed, xp_changed)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
-      [logId, profileId, Date.now(), 'exercise', logTitle, logDetail, totalCoinsGained, totalXpGained]
+      [logId, profileId, Date.now(), 'exercise', logTitle, logDetail, totalRubyGained, totalXpGained]
     );
 
     await client.query('COMMIT');
     res.json({
       success: true,
       xpGained: totalXpGained,
-      coinsGained: totalCoinsGained,
+      rubyGained: totalRubyGained,
+      coinsGained: totalRubyGained,
       newLevel,
       newXp,
-      newCoins: newCoinsAmount,
+      newRuby: newRubyAmount,
+      newCoins: newRubyAmount,
       badges,
       badgesChanged
     });

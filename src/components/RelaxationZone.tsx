@@ -6,7 +6,7 @@ import { FogCard, getFogStatus } from './FogCard';
 import { Level3Overlay } from './Level3Overlay';
 import { toast } from '../utils/toast';
 
-// Chân Khí tiêu hao mỗi ván mini-game Sơn Trang có sinh điểm (SUB_SPEC_ENERGY §3).
+// Năng Lượng tiêu hao mỗi ván mini-game Công Viên Thư Giãn có sinh điểm (SUB_SPEC_ENERGY §3).
 const MINIGAME_ENERGY_COST = 10;
 
 // Game components
@@ -19,12 +19,13 @@ import { StepBuilderGame } from '../miniapps/step-builder';
 import { ReadingGame } from '../miniapps/reading';
 import { ExplainGame } from '../miniapps/explain';
 import { DiagramGame } from '../miniapps/diagram';
+import { EnglishSkillDistrictGame } from '../miniapps/english-skill-districts';
 
 interface RelaxationZoneProps {
   onBack: () => void;
 }
 
-type GameId = 'flashcards' | 'match' | 'mindmap' | 'story' | 'adventure' | 'stepbuilder' | 'reading' | 'explain' | 'dragdiagram';
+type GameId = 'flashcards' | 'match' | 'mindmap' | 'story' | 'adventure' | 'stepbuilder' | 'reading' | 'explain' | 'dragdiagram' | 'phrase-valley' | 'conversation-town' | 'writing-pavilion' | 'listening-lake';
 
 interface GameCard {
   id: GameId;
@@ -34,26 +35,33 @@ interface GameCard {
   reward: string;
   color: string; // tailwind accent
   pageId: string;
-  /** Ván có sinh điểm (NP/XP) mới tốn Chân Khí — "Không điểm" thì miễn phí (SUB_SPEC_ENERGY §1+3). Mặc định true. */
+  /** Ván có sinh điểm (Ruby/XP) mới tốn Năng Lượng — "Không điểm" thì miễn phí (SUB_SPEC_ENERGY §1+3). Mặc định true. */
   costsEnergy?: boolean;
 }
 
 const CANH_HOA_VIEN: GameCard[] = [
-  { id: 'flashcards', icon: '🎴', title: 'Xưởng Thẻ Nhớ', desc: 'Active Recall lật mặt — ghi nhớ nhanh câu hỏi bằng SRS', reward: '+2 NP, +5 XP / thẻ', color: 'synth-cyan', pageId: 'relax-flashcards' },
-  { id: 'match', icon: '🔗', title: 'Ghép Cặp', desc: 'Nối từ vựng với nghĩa, công thức với tên gọi', reward: '+10 NP, +20 XP', color: 'synth-magenta', pageId: 'relax-match' },
+  { id: 'flashcards', icon: '🎴', title: 'Xưởng Thẻ Nhớ', desc: 'Active Recall lật mặt — ghi nhớ nhanh câu hỏi bằng SRS', reward: '+2 Ruby, +5 XP / thẻ', color: 'synth-cyan', pageId: 'relax-flashcards' },
+  { id: 'match', icon: '🔗', title: 'Ghép Cặp', desc: 'Nối từ vựng với nghĩa, công thức với tên gọi', reward: '+10 Ruby, +20 XP', color: 'synth-magenta', pageId: 'relax-match' },
   { id: 'mindmap', icon: '🗺️', title: 'Sơ Đồ Ôn Tập', desc: 'Tóm tắt kiến thức theo sơ đồ tư duy trực quan', reward: 'Không điểm — luyện trí nhớ', color: 'synth-cyan', pageId: 'relax-mindmap', costsEnergy: false },
 ];
 
 const CANH_NUI_RUNG: GameCard[] = [
-  { id: 'adventure', icon: '🧭', title: 'Du Khảo Kỳ Thú', desc: 'Tung xúc xắc di chuyển trên bản đồ trivia', reward: '+100 NP, +80 XP khi về đích', color: 'synth-orange', pageId: 'relax-adventure' },
-  { id: 'stepbuilder', icon: '🧩', title: 'Trình Tự Giải', desc: 'Sắp xếp đúng thứ tự các bước giải toán, ngữ pháp', reward: '+30 NP, +25 XP', color: 'synth-cyan', pageId: 'relax-stepbuilder' },
-  { id: 'reading', icon: '📖', title: 'Đọc Hiểu Sâu', desc: 'Tô sáng từ khóa & tìm ý chính đoạn văn', reward: '+35 NP, +30 XP', color: 'synth-cyan', pageId: 'relax-reading' },
+  { id: 'adventure', icon: '🧭', title: 'Du Khảo Kỳ Thú', desc: 'Tung xúc xắc di chuyển trên bản đồ trivia', reward: '+100 Ruby, +80 XP khi về đích', color: 'synth-orange', pageId: 'relax-adventure' },
+  { id: 'stepbuilder', icon: '🧩', title: 'Trình Tự Giải', desc: 'Sắp xếp đúng thứ tự các bước giải toán, ngữ pháp', reward: '+30 Ruby, +25 XP', color: 'synth-cyan', pageId: 'relax-stepbuilder' },
+  { id: 'reading', icon: '📖', title: 'Đọc Hiểu Sâu', desc: 'Tô sáng từ khóa & tìm ý chính đoạn văn', reward: '+35 Ruby, +30 XP', color: 'synth-cyan', pageId: 'relax-reading' },
 ];
 
 const CANH_THAC_HO: GameCard[] = [
-  { id: 'story', icon: '🎭', title: 'Tình Huống RPG', desc: 'Phiêu lưu giải cứu Heo Maikawaii qua 3 ải tri thức', reward: '+60 NP, +50 XP', color: 'synth-purple', pageId: 'relax-story' },
-  { id: 'explain', icon: '✍️', title: 'Giảng Cho AI', desc: 'Đóng vai giáo viên dạy AI — Phương pháp Feynman', reward: '+15 NP, +30 XP', color: 'synth-purple', pageId: 'relax-explain' },
-  { id: 'dragdiagram', icon: '🧱', title: 'Ghép Sơ Đồ', desc: 'Lắp ghép nhãn dán vào sơ đồ kiến thức', reward: '+30 NP, +35 XP', color: 'synth-cyan', pageId: 'relax-dragdiagram' },
+  { id: 'story', icon: '🎭', title: 'Tình Huống RPG', desc: 'Phiêu lưu giải cứu Heo Maikawaii qua 3 ải tri thức', reward: '+60 Ruby, +50 XP', color: 'synth-purple', pageId: 'relax-story' },
+  { id: 'explain', icon: '✍️', title: 'Giảng Cho AI', desc: 'Đóng vai giáo viên dạy AI — Phương pháp Feynman', reward: '+15 Ruby, +30 XP', color: 'synth-purple', pageId: 'relax-explain' },
+  { id: 'dragdiagram', icon: '🧱', title: 'Ghép Sơ Đồ', desc: 'Lắp ghép nhãn dán vào sơ đồ kiến thức', reward: '+30 Ruby, +35 XP', color: 'synth-cyan', pageId: 'relax-dragdiagram' },
+];
+
+const ENGLISH_SKILL_DISTRICTS: GameCard[] = [
+  { id: 'phrase-valley', icon: '🏞️', title: 'Phrase Valley', desc: 'Practise collocations and phrasal verbs in context', reward: '+25 Ruby, +30 XP', color: 'synth-green', pageId: 'relax-phrase-valley' },
+  { id: 'conversation-town', icon: '🏘️', title: 'Conversation Town', desc: 'Choose natural responses for everyday situations', reward: '+25 Ruby, +30 XP', color: 'synth-orange', pageId: 'relax-conversation-town' },
+  { id: 'writing-pavilion', icon: '📝', title: 'Writing Pavilion', desc: 'Build accurate sentences with clear answer rubrics', reward: '+35 Ruby, +40 XP', color: 'synth-magenta', pageId: 'relax-writing-pavilion' },
+  { id: 'listening-lake', icon: '🌊', title: 'Listening Lake', desc: 'Listen for key details and main ideas', reward: '+35 Ruby, +40 XP', color: 'synth-cyan', pageId: 'relax-listening-lake' },
 ];
 
 function renderGame(
@@ -61,16 +69,19 @@ function renderGame(
   explorationStates: any,
   currentUser: any,
   currentSubject: string,
+  gradeTier: number,
   completeLevel3Page: (pageId: string) => void
 ) {
   const isEasy = game.id === 'flashcards' || game.id === 'match';
   const req = isEasy ? 2 : 3;
-  const status = getFogStatus(game.pageId, explorationStates, req, 7);
+  const contextualPageId = `${gradeTier}-${currentSubject}-${game.pageId}`;
+  const status = getFogStatus(contextualPageId, explorationStates, req, 7);
   const lockedStatus = status === 'shadowed';
 
   const props = {
     currentStudentId: currentUser?.id || 'mock-student',
     activeSectId: currentSubject,
+    gradeTier,
     difficulty: (isEasy ? 'easy' : 'hard') as 'easy' | 'hard',
     lockedStatus,
     onGameStart: () => {
@@ -79,7 +90,7 @@ function renderGame(
     onGameComplete: (results: any) => {
       console.log(`Hoàn thành game: ${game.title}`, results);
       if (results?.passed) {
-        completeLevel3Page(game.pageId);
+        completeLevel3Page(contextualPageId);
       } else {
         toast.error('Chưa đạt yêu cầu hoàn thành trò chơi này! Hãy thử lại.');
       }
@@ -96,6 +107,10 @@ function renderGame(
     case 'reading': return <ReadingGame {...props} />;
     case 'explain': return <ExplainGame {...props} />;
     case 'dragdiagram': return <DiagramGame {...props} />;
+    case 'phrase-valley': return <EnglishSkillDistrictGame {...props} mode="phrase-valley" />;
+    case 'conversation-town': return <EnglishSkillDistrictGame {...props} mode="conversation-town" />;
+    case 'writing-pavilion': return <EnglishSkillDistrictGame {...props} mode="writing-pavilion" />;
+    case 'listening-lake': return <EnglishSkillDistrictGame {...props} mode="listening-lake" />;
   }
 }
 
@@ -133,7 +148,7 @@ const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onO
             onOpenLevel3={() => onOpenGame(game)}
           >
             <div
-              title={isLocked ? `Cần ${MINIGAME_ENERGY_COST} Chân Khí để chơi — hãy nghỉ chờ hồi hoặc đọc Cẩm Nang.` : undefined}
+              title={isLocked ? `Cần ${MINIGAME_ENERGY_COST} Năng Lượng để chơi — hãy nghỉ chờ hồi hoặc đọc Cẩm Nang.` : undefined}
               className={`rounded-xl border border-white/10 bg-black/40 p-4 flex flex-col gap-3 transition-all duration-200 h-full group ${
                 isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-white/20'
               }`}
@@ -154,7 +169,7 @@ const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onO
                 </span>
               </div>
               <div className="w-full py-2 rounded-lg bg-gradient-to-r from-synth-cyan/20 to-synth-purple/20 border border-synth-cyan/20 text-center text-[10px] font-bold font-orbitron uppercase text-synth-cyan group-hover:from-synth-cyan/30 group-hover:to-synth-purple/30 transition-all">
-                {isLocked ? 'Hết Chân Khí' : 'Vào Chơi →'}
+                {isLocked ? 'Hết Năng Lượng' : 'Vào Chơi →'}
               </div>
             </div>
           </FogCard>
@@ -172,7 +187,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   const isUnicorn = isLightTheme(uiTheme);
 
   const currentUser = useGameState(state => state.currentUser);
-  const { activeSectId } = useSect();
+  const { activeSectId, activeGradeTier } = useSect();
   const pageExplorationStates = useGameState(state => state.pageExplorationStates || {});
   const completeLevel3Page = useGameState(state => state.completeLevel3Page);
   const player = useGameState(state => state.player);
@@ -183,7 +198,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   const handleOpenGame = (game: GameCard) => {
     if (game.costsEnergy !== false) {
       if (player.energy < MINIGAME_ENERGY_COST) {
-        toast.error('Hết năng lượng rồi. Nghỉ một nhịp hoặc đọc Cẩm Nang trong lúc chờ hồi Chân Khí.');
+        toast.error('Hết Năng Lượng rồi. Nghỉ một nhịp hoặc đọc Cẩm Nang trong lúc chờ hồi.');
         return;
       }
       consumeEnergy(MINIGAME_ENERGY_COST);
@@ -209,7 +224,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
           <div className="flex items-center gap-2 mt-2">
             <Sparkles className={`w-6 h-6 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-magenta animate-pulse'}`} />
             <h1 className={`font-orbitron font-black text-2xl uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-              Sơn Trang Thư Giãn
+              Công Viên Thư Giãn
             </h1>
           </div>
           <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
@@ -260,6 +275,20 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
           bgClass={isUnicorn ? 'bg-blue-50/40' : 'bg-blue-500/5'}
           borderClass={isUnicorn ? 'border-blue-200/40' : 'border-blue-500/15'}
         />
+
+        {activeSectId === 'english' && (
+          <CanhSection
+            icon="🇬🇧"
+            label="English Skill Districts"
+            desc="English-only practice spaces for phrases, conversation, writing and listening"
+            games={ENGLISH_SKILL_DISTRICTS}
+            onOpenGame={handleOpenGame}
+            lowEnergy={player.energy < MINIGAME_ENERGY_COST}
+            isUnicorn={isUnicorn}
+            bgClass={isUnicorn ? 'bg-violet-50/40' : 'bg-violet-500/5'}
+            borderClass={isUnicorn ? 'border-violet-200/40' : 'border-violet-500/15'}
+          />
+        )}
       </div>
 
       {/* Level 3 Overlay — game modal */}
@@ -269,7 +298,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
           onClose={() => setActiveGame(null)}
           title={`${activeGame.icon} ${activeGame.title.toUpperCase()}`}
         >
-          {renderGame(activeGame, pageExplorationStates, currentUser, activeSectId, completeLevel3Page)}
+          {renderGame(activeGame, pageExplorationStates, currentUser, activeSectId, activeGradeTier, completeLevel3Page)}
         </Level3Overlay>
       )}
     </div>

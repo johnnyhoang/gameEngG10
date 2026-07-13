@@ -3,11 +3,11 @@ import { pool } from '../db.js';
 import { authMiddleware } from '../middleware/auth.js';
 import { ensureDefaultRewards } from '../helpers/questions.js';
 import {
-  loadBossCompletionBonusNP,
+  loadBossCompletionBonusRuby,
   loadChallengeEnergyCosts,
   loadMaxEnergy,
   loadBaseXP,
-  loadBaseCoins
+  loadBaseRuby
 } from '../helpers/gameSettings.js';
 
 const router = express.Router();
@@ -150,7 +150,7 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
     const statsRes = await pool.query('SELECT * FROM ge10_category_stats WHERE user_id = $1', [userId]);
     // 5. Fetch logs (last 200)
     const logsRes = await pool.query('SELECT * FROM ge10_history_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 200', [userId]);
-    // 6. Fetch reward catalog (Phần Thưởng Thực Tế — CORE_SPECS §3.2)
+    // 6. Fetch reward catalog (Danh Mục Quà Khuyến Học — CORE_SPECS §3.2)
     await ensureDefaultRewards(userId);
     const rewardsRes = await pool.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
     // 6b. Fetch lượt đổi quà (RewardRedemption)
@@ -186,11 +186,27 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
       };
     });
 
-    const bossCompletionBonusNP = await loadBossCompletionBonusNP();
+    // 13. Fetch Topics (data-driven Phase 2)
+    const topicsRes = await pool.query('SELECT * FROM ge10_topics ORDER BY sort_order ASC');
+
+    // 14. Fetch Activities (data-driven Phase 3)
+    const activitiesRes = await pool.query('SELECT * FROM ge10_activities ORDER BY sort_order ASC');
+
+    // 15. Fetch Activity Progress (data-driven Phase 3)
+    const activityProgressRes = await pool.query('SELECT * FROM ge10_user_activity_progress WHERE user_id = $1', [userId]);
+    const activityProgress: Record<string, { status: string, completedAt: string | null }> = {};
+    activityProgressRes.rows.forEach((row: any) => {
+      activityProgress[row.activity_id] = {
+        status: row.status,
+        completedAt: row.completed_at ? new Date(row.completed_at).toISOString() : null
+      };
+    });
+
+    const bossCompletionBonusRuby = await loadBossCompletionBonusRuby();
     const challengeEnergyCosts = await loadChallengeEnergyCosts();
     const maxEnergy = await loadMaxEnergy();
     const baseXP = await loadBaseXP();
-    const baseCoins = await loadBaseCoins();
+    const baseRuby = await loadBaseRuby();
 
     // Format category stats array into record mapping
     const categoryStats: any = {};
@@ -210,7 +226,8 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
       activityType: row.activity_type,
       title: row.title,
       detail: row.detail,
-      coinsChanged: row.coins_changed,
+      rubyChanged: row.ruby_changed,
+      coinsChanged: row.ruby_changed, // legacy API alias
       xpChanged: row.xp_changed,
       walletChanged: row.wallet_changed
     }));
@@ -219,7 +236,8 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
     const rewards = rewardsRes.rows.map((row: any) => ({
       id: row.id,
       title: row.title,
-      costCoins: row.cost_coins,
+      costRuby: row.cost_ruby,
+      costCoins: row.cost_ruby, // legacy API alias
       quantity: row.quantity,
       remainingQuantity: row.remaining_quantity,
       timestamp: Number(row.timestamp)
@@ -230,7 +248,8 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
       id: row.id,
       rewardId: row.reward_id,
       rewardTitle: row.reward_title,
-      costCoins: row.cost_coins,
+      costRuby: row.cost_ruby,
+      costCoins: row.cost_ruby, // legacy API alias
       status: row.status,
       timestamp: Number(row.timestamp),
       deliveredAt: row.delivered_at ? Number(row.delivered_at) : undefined
@@ -255,6 +274,7 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
       difficulty: row.difficulty,
       source: row.source,
       subject: row.subject,
+      gradeTier: row.grade_tier,
       imageUrl: row.image_url,
       lessonId: row.lesson_id,
       isConfused: row.is_confused,
@@ -275,7 +295,8 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
         role: userRow.role || 'student',
         level: playerRes.rows[0].level,
         xp: playerRes.rows[0].xp,
-        coins: playerRes.rows[0].coins,
+        ruby: playerRes.rows[0].ruby,
+        coins: playerRes.rows[0].ruby, // legacy API alias
         streak: playerRes.rows[0].streak,
         energy: playerRes.rows[0].energy,
         hearts: playerRes.rows[0].hearts,
@@ -301,23 +322,54 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
       challenges,
       dailyMission,
       gameSettings: {
-        bossCompletionBonusNP,
+        bossCompletionBonusRuby,
+        bossCompletionBonusNP: bossCompletionBonusRuby,
         challengeEnergyCosts,
         maxEnergy,
         baseXP,
-        baseCoins
+        baseRuby,
+        baseCoins: baseRuby
       },
       customQuestions,
       lessons: lessonsRes.rows.map((row: any) => ({
         id: row.id,
         subject: row.subject,
+        gradeTier: row.grade_tier,
         topic: row.topic,
         title: row.title,
         theory: row.theory,
-        category: row.category
+        category: row.category,
+        examples: row.examples || [],
+        practicePoints: row.practice_points || [],
+        difficulty: row.difficulty
       })),
       lessonsProgress,
-      explorationProgress
+      explorationProgress,
+      topics: topicsRes.rows.map((row: any) => ({
+        id: row.id,
+        subject: row.subject,
+        gradeTier: row.grade_tier,
+        name: row.name,
+        description: row.description,
+        sortOrder: row.sort_order,
+        unlockRule: row.unlock_rule,
+        completionRule: row.completion_rule,
+        rewardNP: row.reward_np
+      })),
+      activities: activitiesRes.rows.map((row: any) => ({
+        id: row.id,
+        topicId: row.topic_id,
+        subject: row.subject,
+        gradeTier: row.grade_tier,
+        activityType: row.activity_type,
+        title: row.title,
+        config: row.config,
+        sortOrder: row.sort_order,
+        unlockRule: row.unlock_rule,
+        rewardNP: row.reward_np,
+        rewardXP: row.reward_xp
+      })),
+      activityProgress
     });
   } catch (error) {
     console.error('Error fetching profile stats:', error);
@@ -333,7 +385,36 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
   // Verify ownership
   const check = await pool.query('SELECT id FROM ge10_users WHERE id = $1 AND account_id = $2', [userId, accountId]);
   if (check.rowCount === 0) return res.status(403).json({ error: 'Unauthorized' });
-  const { player, pet, categoryStats, logs, rewards, rewardRedemptions, challenges, dailyMission, lessonsProgress } = req.body;
+  const {
+    player: rawPlayer,
+    pet,
+    categoryStats,
+    logs: rawLogs,
+    rewards: rawRewards,
+    rewardRedemptions: rawRewardRedemptions,
+    challenges: rawChallenges,
+    dailyMission,
+    lessonsProgress
+  } = req.body;
+  const player = rawPlayer ? { ...rawPlayer, ruby: rawPlayer.ruby ?? rawPlayer.coins ?? 0 } : null;
+  const logs = Array.isArray(rawLogs)
+    ? rawLogs.map((log: any) => ({ ...log, rubyChanged: log.rubyChanged ?? log.coinsChanged ?? 0 }))
+    : rawLogs;
+  const rewards = Array.isArray(rawRewards)
+    ? rawRewards.map((reward: any) => ({ ...reward, costRuby: reward.costRuby ?? reward.costCoins }))
+    : rawRewards;
+  const rewardRedemptions = Array.isArray(rawRewardRedemptions)
+    ? rawRewardRedemptions.map((redemption: any) => ({
+        ...redemption,
+        costRuby: redemption.costRuby ?? redemption.costCoins
+      }))
+    : rawRewardRedemptions;
+  const challenges = Array.isArray(rawChallenges)
+    ? rawChallenges.map((challenge: any) => ({
+        ...challenge,
+        rewardRuby: challenge.rewardRuby ?? challenge.rewardCoins ?? 0
+      }))
+    : rawChallenges;
 
   const client = await pool.connect();
   try {
@@ -375,8 +456,16 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
           const missionRes = await client.query('SELECT * FROM ge10_daily_missions WHERE user_id = $1', [userId]);
           const progressRes = await client.query('SELECT * FROM ge10_user_lessons_progress WHERE user_id = $1', [userId]);
           const explorationRes = await client.query('SELECT * FROM ge10_exploration_progress WHERE user_id = $1', [userId]);
+          const activityProgressRes = await client.query('SELECT * FROM ge10_user_activity_progress WHERE user_id = $1', [userId]);
 
           const lessonsProgress: Record<string, boolean> = {};
+          const activityProgress: Record<string, any> = {};
+          activityProgressRes.rows.forEach((row: any) => {
+            activityProgress[row.activity_id] = {
+              status: row.status,
+              completedAt: row.completed_at ? new Date(row.completed_at).toISOString() : null
+            };
+          });
           progressRes.rows.forEach((row: any) => {
             lessonsProgress[row.lesson_id] = row.completed;
           });
@@ -407,7 +496,8 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
                 id: dbProfile.user_id,
                 level: dbProfile.level,
                 xp: dbProfile.xp,
-                coins: dbProfile.coins,
+                ruby: dbProfile.ruby,
+                coins: dbProfile.ruby, // legacy API alias
                 streak: dbProfile.streak,
                 energy: dbProfile.energy,
                 maxEnergy: dbProfile.max_energy,
@@ -437,14 +527,16 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
                 activityType: row.activity_type,
                 title: row.title,
                 detail: row.detail,
-                coinsChanged: row.coins_changed,
+                rubyChanged: row.ruby_changed,
+                coinsChanged: row.ruby_changed,
                 xpChanged: row.xp_changed,
                 walletChanged: row.wallet_changed
               })),
               rewards: rewardsRes.rows.map((row: any) => ({
                 id: row.id,
                 title: row.title,
-                costCoins: row.cost_coins,
+                costRuby: row.cost_ruby,
+                costCoins: row.cost_ruby,
                 quantity: row.quantity,
                 remainingQuantity: row.remaining_quantity,
                 timestamp: Number(row.timestamp)
@@ -453,7 +545,8 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
                 id: row.id,
                 rewardId: row.reward_id,
                 rewardTitle: row.reward_title,
-                costCoins: row.cost_coins,
+                costRuby: row.cost_ruby,
+                costCoins: row.cost_ruby,
                 status: row.status,
                 timestamp: Number(row.timestamp),
                 deliveredAt: row.delivered_at ? Number(row.delivered_at) : null
@@ -461,7 +554,8 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
               challenges: challengesRes.rows[0]?.challenges_json || null,
               dailyMission: missionRes.rows[0]?.mission_json || null,
               lessonsProgress,
-              explorationProgress
+              explorationProgress,
+              activityProgress
             }
           });
         }
@@ -470,12 +564,12 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
       // maxEnergy/resetHours KHÔNG nằm trong sync này — đó là cấu hình do chủ nhiệm chỉnh riêng
       // qua /api/admin/set-energy-config, con tự sync không được phép ghi đè (SUB_SPEC_ENERGY §2).
       await client.query(
-        `INSERT INTO ge10_player_profiles (user_id, level, xp, coins, streak, energy, energy_depleted_at, hearts, last_active, badges, max_achieved_mastery_rank, ui_theme, active_subject, active_grade_tier, server_updated_at)
+        `INSERT INTO ge10_player_profiles (user_id, level, xp, ruby, streak, energy, energy_depleted_at, hearts, last_active, badges, max_achieved_mastery_rank, ui_theme, active_subject, active_grade_tier, server_updated_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, NOW())
          ON CONFLICT (user_id) DO UPDATE SET
            level = EXCLUDED.level,
            xp = EXCLUDED.xp,
-           coins = EXCLUDED.coins,
+           ruby = EXCLUDED.ruby,
            streak = EXCLUDED.streak,
            energy = EXCLUDED.energy,
            energy_depleted_at = EXCLUDED.energy_depleted_at,
@@ -491,7 +585,7 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
           userId,
           player.level,
           player.xp,
-          player.coins,
+          player.ruby,
           player.streak,
           mergedEnergy,
           mergedEnergyDepletedAt,
@@ -561,10 +655,10 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
       logs.forEach((log, index) => {
         const offset = index * 9;
         placeholders.push(`($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8}, $${offset + 9})`);
-        values.push(log.id, userId, log.timestamp, log.activityType, log.title, log.detail, log.coinsChanged, log.xpChanged, log.walletChanged);
+        values.push(log.id, userId, log.timestamp, log.activityType, log.title, log.detail, log.rubyChanged, log.xpChanged, log.walletChanged);
       });
       await client.query(
-        `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, coins_changed, xp_changed, wallet_changed)
+        `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, ruby_changed, xp_changed, wallet_changed)
          VALUES ${placeholders.join(', ')}
          ON CONFLICT (id) DO NOTHING`,
         values
@@ -578,14 +672,14 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
       rewards.forEach((r, index) => {
         const offset = index * 7;
         placeholders.push(`($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7})`);
-        values.push(r.id, userId, r.title, r.costCoins, r.quantity, r.remainingQuantity, r.timestamp);
+        values.push(r.id, userId, r.title, r.costRuby, r.quantity, r.remainingQuantity, r.timestamp);
       });
       await client.query(
-        `INSERT INTO ge10_parent_rewards (id, user_id, title, cost_coins, quantity, remaining_quantity, timestamp)
+        `INSERT INTO ge10_parent_rewards (id, user_id, title, cost_ruby, quantity, remaining_quantity, timestamp)
          VALUES ${placeholders.join(', ')}
          ON CONFLICT (id) DO UPDATE SET
            title = EXCLUDED.title,
-           cost_coins = EXCLUDED.cost_coins,
+           cost_ruby = EXCLUDED.cost_ruby,
            quantity = EXCLUDED.quantity,
            remaining_quantity = EXCLUDED.remaining_quantity`,
         values
@@ -599,10 +693,10 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
       rewardRedemptions.forEach((rr, index) => {
         const offset = index * 8;
         placeholders.push(`($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8})`);
-        values.push(rr.id, userId, rr.rewardId, rr.rewardTitle, rr.costCoins, rr.status, rr.timestamp, rr.deliveredAt || null);
+        values.push(rr.id, userId, rr.rewardId, rr.rewardTitle, rr.costRuby, rr.status, rr.timestamp, rr.deliveredAt || null);
       });
       await client.query(
-        `INSERT INTO ge10_reward_redemptions (id, user_id, reward_id, reward_title, cost_coins, status, timestamp, delivered_at)
+        `INSERT INTO ge10_reward_redemptions (id, user_id, reward_id, reward_title, cost_ruby, status, timestamp, delivered_at)
          VALUES ${placeholders.join(', ')}
          ON CONFLICT (id) DO UPDATE SET
            status = EXCLUDED.status,
@@ -650,6 +744,28 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
            ON CONFLICT (user_id, lesson_id) DO UPDATE SET
              completed = EXCLUDED.completed,
              completed_at = NOW()`,
+          values
+        );
+      }
+    }
+
+    // 9. Sync activity progress (Batch INSERT)
+    if (req.body.activityProgress && Object.keys(req.body.activityProgress).length > 0) {
+      const activityEntries = Object.entries(req.body.activityProgress);
+      if (activityEntries.length > 0) {
+        const values: any[] = [];
+        const placeholders: string[] = [];
+        activityEntries.forEach(([actId, data], index) => {
+          const offset = index * 4;
+          placeholders.push(`($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}::timestamptz)`);
+          values.push(userId, actId, (data as any).status || 'available', (data as any).completedAt || null);
+        });
+        await client.query(
+          `INSERT INTO ge10_user_activity_progress (user_id, activity_id, status, completed_at)
+           VALUES ${placeholders.join(', ')}
+           ON CONFLICT (user_id, activity_id) DO UPDATE SET
+             status = EXCLUDED.status,
+             completed_at = EXCLUDED.completed_at`,
           values
         );
       }

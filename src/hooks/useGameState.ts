@@ -11,5 +11,5 @@ export { INITIAL_QUESTIONS } from '../data/questions';
 export { INITIAL_LESSONS } from '../data/lessons';
 export { ALL_HANDBOOK_PAGES, INITIAL_HANDBOOK_PAGES } from '../data/handbookPages';
 export { UI_THEMES, DEFAULT_UI_THEME } from '../theme/uiThemes';
-// Tầng Thế Giới (CORE_SPECS §1.4) — nguồn duy nhất là types/game (mặc định Tầng 9)
+// Bậc Học (CORE_SPECS §1.4) — nguồn duy nhất là types/game (mặc định Tầng 9)
 export { DEFAULT_GRADE_TIER, GRADE_TIERS, getGradeTierConfig } from '../types/game';

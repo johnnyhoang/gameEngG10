@@ -92,7 +92,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
 
   const handleApplyVicePrincipal = async () => {
     if (!applyVicePrincipal) return;
-    if (window.confirm('Bạn có chắc muốn ứng tuyển làm Hiệu Phó của trường không?')) {
+    if (window.confirm('Bạn có chắc muốn ứng tuyển làm Phó Viện Trưởng của trường không?')) {
       setIsApplyingVicePrincipal(true);
       try {
         const res = await applyVicePrincipal();
@@ -146,7 +146,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
             🏫 Quản Lý Lớp Học & Đội Ngũ Chủ Nhiệm
           </h3>
           <p className="text-xs text-slate-400 mt-1">
-            Vai trò hiện tại: <span className="font-bold text-synth-magenta uppercase font-orbitron">{isPrimaryTeacher ? 'Chủ nhiệm chính' : 'Phó chủ nhiệm'}</span>
+            Vai trò hiện tại: <span className="font-bold text-synth-magenta uppercase font-orbitron">{isPrimaryTeacher ? 'Chủ Nhiệm Chính' : 'Phó chủ nhiệm'}</span>
           </p>
         </div>
       </div>
@@ -232,7 +232,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                     <div className="flex gap-2">
                       <button
                         disabled={processingIds[sp.id]}
-                        onClick={() => handleRespondInvite(sp.id, true, 'Đã duyệt Phó Chủ Nhiệm!')}
+                        onClick={() => handleRespondInvite(sp.id, true, 'Đã duyệt Chủ Nhiệm Phụ!')}
                         className="px-3 py-1.5 rounded bg-synth-green text-black font-bold text-[10px] uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[50px]"
                       >
                         {processingIds[sp.id] ? (
@@ -268,7 +268,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
              📩 Lời Mời Đồng Hành Từ Giáo Viên Chính
           </h4>
           <p className="text-xs text-slate-300">
-            Bạn được mời làm Giáo viên phụ (Phó Chủ Nhiệm) quản lý chung cho lớp học sau:
+            Bạn được mời làm Giáo viên phụ (Chủ Nhiệm Phụ) quản lý chung cho lớp học sau:
           </p>
           <div className="space-y-2">
             {familyLinks.filter(l => l.status === 'pending_parent' && l.link_type === 'secondary').map(link => (
@@ -289,7 +289,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                 <div className="flex gap-2">
                   <button
                     disabled={processingIds[link.id]}
-                    onClick={() => handleRespondInvite(link.id, true, 'Đã chấp nhận làm Phó Chủ Nhiệm!')}
+                    onClick={() => handleRespondInvite(link.id, true, 'Đã chấp nhận làm Chủ Nhiệm Phụ!')}
                     className="px-3 py-1.5 rounded bg-synth-green text-black font-bold text-xs uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[60px]"
                   >
                     {processingIds[link.id] ? (
@@ -345,10 +345,10 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                       toast.success('Đã gửi lời mời thành công!');
                       setInviteStudentEmail('');
                     } else if (result.conflictCode === 'STUDENT_HAS_PRIMARY') {
-                      if (window.confirm(`${result.error}\n\nBạn có muốn gửi lời mời làm Phó Chủ Nhiệm để cùng quản lý không?`)) {
+                      if (window.confirm(`${result.error}\n\nBạn có muốn gửi lời mời làm Chủ Nhiệm Phụ để cùng quản lý không?`)) {
                         const secRes = await sendInvite(inviteStudentEmail.trim(), true);
                         if (secRes.success) {
-                          toast.success('Đã gửi lời mời làm Phó Chủ Nhiệm thành công!');
+                          toast.success('Đã gửi lời mời làm Chủ Nhiệm Phụ thành công!');
                           setInviteStudentEmail('');
                         } else {
                           toast.error(secRes.error || 'Thao tác thất bại.');
@@ -374,7 +374,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
           <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-3 flex flex-col justify-between">
             <div>
               <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">Mời Giáo Viên Phụ Đồng Hành</h4>
-              <p className="text-[10px] text-slate-400 mt-1">Mời đồng nghiệp làm Phó Chủ Nhiệm cùng quản lý và hỗ trợ học sinh trong lớp.</p>
+              <p className="text-[10px] text-slate-400 mt-1">Mời đồng nghiệp làm Chủ Nhiệm Phụ cùng quản lý và hỗ trợ học sinh trong lớp.</p>
             </div>
             <div className="space-y-2">
               <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Mời Giáo Viên Phụ Đồng Hành</span>
@@ -412,7 +412,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
         <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-3 flex flex-col justify-between">
           <div>
             <h4 className="font-orbitron font-bold text-xs text-synth-purple uppercase tracking-wider">Xin Đồng Hành Lớp Khác</h4>
-            <p className="text-[10px] text-slate-400 mt-1">Xin làm Phó Chủ Nhiệm hỗ trợ quản lý học sinh cho lớp của đồng nghiệp. Nhập email của họ.</p>
+            <p className="text-[10px] text-slate-400 mt-1">Xin làm Chủ Nhiệm Phụ hỗ trợ quản lý học sinh cho lớp của đồng nghiệp. Nhập email của họ.</p>
           </div>
           <div className="space-y-2">
             <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Email Giáo Viên Chính</span>
@@ -447,14 +447,14 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
           </div>
         </div>
 
-        {/* Card 4: Ứng Tuyển Làm Hiệu Phó Trường Học */}
+        {/* Card 4: Ứng Tuyển Làm Phó Viện Trưởng Trường Học */}
         {(isPrimaryTeacher || isSecondaryTeacher) && (
           <div className="rounded-2xl border border-synth-magenta/20 bg-synth-magenta/5 p-4 space-y-3 flex flex-col justify-between">
             <div>
               <h4 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-2">
-                🛡️ Ứng Tuyển Làm Hiệu Phó Trường Học
+                🛡️ Ứng Tuyển Làm Phó Viện Trưởng Trường Học
               </h4>
-              <p className="text-[10px] text-slate-400 mt-1">Ứng tuyển làm Hiệu Phó trường học để hỗ trợ Ban Giám Hiệu quản lý toàn diện.</p>
+              <p className="text-[10px] text-slate-400 mt-1">Ứng tuyển làm Phó Viện Trưởng trường học để hỗ trợ Ban Giám Hiệu quản lý toàn diện.</p>
             </div>
             {vicePrincipalApplication ? (
               <div className="flex items-center justify-between p-2 rounded-xl bg-black/40 border border-white/5">
@@ -467,7 +467,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                 </div>
                 <button
                   disabled={processingIds[vicePrincipalApplication.id]}
-                  onClick={() => handleLeaveFamily(vicePrincipalApplication.id, 'Bạn có chắc muốn hủy đơn ứng cử Hiệu Phó này không?', 'Đã hủy đơn ứng cử Hiệu Phó.')}
+                  onClick={() => handleLeaveFamily(vicePrincipalApplication.id, 'Bạn có chắc muốn hủy đơn ứng cử Phó Viện Trưởng này không?', 'Đã hủy đơn ứng cử Phó Viện Trưởng.')}
                   className="px-2.5 py-1 rounded border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-[9px] uppercase cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[70px]"
                 >
                   {processingIds[vicePrincipalApplication.id] ? (
@@ -550,7 +550,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
         <div className="rounded-2xl border border-synth-purple/20 bg-synth-purple/5 p-4 space-y-4">
           <div>
             <h4 className="font-orbitron font-bold text-xs text-synth-purple uppercase tracking-wider flex items-center gap-2">
-              👥 Đội Ngũ Giáo Viên Phụ (Phó Chủ Nhiệm)
+              👥 Đội Ngũ Giáo Viên Phụ (Chủ Nhiệm Phụ)
             </h4>
             <p className="text-[11px] text-slate-300 mt-1">Các giáo viên phụ này có quyền truy cập, theo dõi báo cáo và hỗ trợ lớp của bạn.</p>
           </div>
@@ -636,7 +636,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
         <div className="rounded-2xl border border-synth-cyan/20 bg-synth-cyan/5 p-4 space-y-4">
           <div>
             <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-2">
-              🏛️ Lớp Học Đang Đồng Hành (Phó Chủ Nhiệm)
+              🏛️ Lớp Học Đang Đồng Hành (Chủ Nhiệm Phụ)
             </h4>
             <p className="text-[11px] text-slate-300 mt-1">Bạn đang hỗ trợ quản lý học sinh cho các giáo viên chính sau:</p>
           </div>

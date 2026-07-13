@@ -19,8 +19,8 @@ const MODE_LABEL: Record<string, string> = {
   pronunciation: 'Pronunciation Peak',
   mixed: 'Phụ bản hỗn hợp',
   revenge: 'Phụ bản trả bài',
-  boss: 'Đấu trường Boss',
-  survival: 'Đấu trường sinh tồn',
+  boss: 'Trường Thi Boss',
+  survival: 'Trường Thi sinh tồn',
 };
 
 const MIN_ACCURACY: Record<string, number> = {
@@ -152,9 +152,9 @@ export const FinalResultScreen: React.FC<FinalResultScreenProps> = ({
           }`}>
             <Coins className="w-6 h-6 text-synth-orange shrink-0" />
             <div>
-              <p className="text-[9px] text-slate-400 font-orbitron uppercase">Ngọc Phiếu NP</p>
+              <p className="text-[9px] text-slate-400 font-orbitron uppercase">Ruby</p>
               <p className="font-orbitron font-black text-xl text-synth-orange">
-                {rewardsEarned.coins > 0 ? `+${rewardsEarned.coins}` : '0'}
+                {rewardsEarned.ruby > 0 ? `+${rewardsEarned.ruby}` : '0'}
               </p>
             </div>
           </div>

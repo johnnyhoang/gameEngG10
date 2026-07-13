@@ -1,11 +1,16 @@
 # Golden Rules — GameEngG10
 
-## 1. Cách làm việc
+## 1. Quy trình bắt buộc — ưu tiên cao nhất
 
-- Hoàn thành yêu cầu đang làm dở trước khi nhận việc mới; cuối mỗi lượt tự kiểm tra todo, artifact và file còn dang dở.
+- Mọi discussion/ý tưởng chỉ trở thành yêu cầu sau khi người dùng và AI đã phân tích, thống nhất. Khi đã thống nhất, phải cập nhật `CORE_SPECS.md` hoặc `SUB_SPEC_*.md` liên quan trước khi sửa code.
+- Từ spec đã duyệt, phải ghi backlog chi tiết vào `TODO.md`: mục tiêu, phạm vi, dependency, file/layer dự kiến sửa, impact/rủi ro, migration/compatibility và acceptance criteria.
+- Phải trình backlog để người dùng xác nhận. Chỉ triển khai sau khi được xác nhận; làm tuần tự từ task ảnh hưởng kiến trúc/contract/dữ liệu lớn nhất đến các task consumer liên quan cho đến khi hoàn tất.
+- Hoàn thành yêu cầu và todo đang làm dở trước khi nhận việc mới; cuối mỗi lượt tự kiểm tra artifact, file và acceptance criteria còn thiếu.
+- Tuyệt đối không tự xóa function hoặc feature khi chưa được người dùng đồng ý, kể cả code đang không được gọi. Nếu phát hiện feature/function bị ẩn, disable, feature-flag off hoặc không còn entry point, phải báo rõ để người dùng quyết định có enable lại hay không.
+- AI phải phản hồi bằng tiếng Việt, ngắn gọn nhưng đủ thông tin kỹ thuật và sản phẩm để Senior Developer và Product Owner cùng hiểu.
 - Bám đúng phạm vi yêu cầu. Ưu tiên bản sửa nhỏ, rõ, production-ready; không overengineer, không tạo abstraction hoặc code demo/placeholder khi chưa được yêu cầu.
 - Luôn đọc code, schema, route và spec hiện tại trước khi sửa; không suy đoán kiến trúc từ tên file hoặc lịch sử cũ.
-- Giữ nguyên thay đổi không liên quan trong worktree. Xóa code chết, trùng hoặc không còn consumer khi việc đang làm khiến chúng thực sự dư thừa.
+- Giữ nguyên thay đổi không liên quan trong worktree. Chỉ đề xuất xóa code chết/trùng/không còn consumer trong backlog và chờ xác nhận.
 - Tìm và sửa root cause. Không che lỗi bằng fallback im lặng, dữ liệu giả hoặc UI chỉ xử lý triệu chứng.
 
 ## 2. Tính nhất quán hệ thống
@@ -17,8 +22,10 @@
 - Một Google account có thể có nhiều profile, nhưng mỗi profile là một danh tính và tiến trình độc lập. Thu hồi quyền bằng `is_active = false`; không xóa profile/lịch sử trừ khi có yêu cầu nghiệp vụ rõ ràng và luồng xóa được kiểm soát.
 - Phân quyền phải được chặn ở backend; ẩn nút trên UI không phải authorization. Tuân thủ ma trận quyền hiện hành trong `SUB_SPEC_FAMILY_ROLE.md`.
 
-## 3. Trải nghiệm sản phẩm
+## 3. Ngôn ngữ và trải nghiệm sản phẩm
 
+- Mọi tên gọi, khái niệm, hành động, display text và message phải thuộc cùng một thế giới học tập lấy cảm hứng từ trường học, học phủ và văn hóa giáo dục truyền thống Việt Nam; không trộn tùy tiện hệ thuật ngữ khác.
+- `SUB_SPEC_TERMINOLOGY.md` là nguồn chuẩn cho tên tiếng Việt, tên tiếng Anh, code/technical term, định nghĩa, ý nghĩa và công dụng. Thuật ngữ mới phải được định nghĩa tại đây trước khi đưa vào spec, code hoặc UI.
 - Học sinh là người dùng trung tâm: luồng phải có hướng dẫn, dễ hiểu và không dồn công cụ phức tạp vào dashboard. Công cụ học tập phức tạp dùng page riêng và có trợ giúp `?` theo ngữ cảnh.
 - Heo Maikawaii là linh vật/nhân vật đồng hành duy nhất; không thêm nhân vật hoặc biểu tượng gác cổng cạnh tranh vai trò này.
 - UI phải dùng theme tokens trong `src/index.css`; không hardcode màu làm vỡ theme. Giữ phong cách mềm mại, trong trẻo, có phép màu nhưng không quá trẻ con.

@@ -235,7 +235,7 @@ router.post('/family/invite', authMiddleware, async (req: any, res) => {
         [senderProfileId]
       );
       if (existCheck.rowCount && existCheck.rowCount > 0) {
-        return res.status(400).json({ error: 'Bạn đã có Chủ Nhiệm chính hoặc đang có lời mời kết nối chờ duyệt.' });
+        return res.status(400).json({ error: 'Bạn đã có Chủ Nhiệm Chính hoặc đang có lời mời kết nối chờ duyệt.' });
       }
 
       studentId = senderProfileId;
@@ -271,7 +271,7 @@ router.post('/family/invite', authMiddleware, async (req: any, res) => {
           const primaryParentName = existCheck.rows[0].parent_name || 'Chủ Nhiệm khác';
           return res.status(409).json({
             code: 'STUDENT_HAS_PRIMARY',
-            error: `Học sinh này đã có Chủ Nhiệm chính là "${primaryParentName}". Bạn có muốn kết nối làm Phó Chủ Nhiệm không?`,
+            error: `Học sinh này đã có Chủ Nhiệm Chính là "${primaryParentName}". Bạn có muốn kết nối làm Chủ Nhiệm Phụ không?`,
             primaryParentName
           });
         }
@@ -617,14 +617,14 @@ router.post('/family/leave', authMiddleware, async (req: any, res) => {
     if (linkCheck.rowCount === 0) return res.status(404).json({ error: 'Link not found' });
     const link = linkCheck.rows[0];
 
-    // Hủy yêu cầu ứng tuyển Hiệu Phó
+    // Hủy yêu cầu ứng tuyển Phó Viện Trưởng
     if (link.link_type === 'vice_principal') {
       if (link.parent_id !== profileId) {
         return res.status(403).json({ error: 'Unauthorized' });
       }
       await pool.query('DELETE FROM ge10_family_links WHERE id = $1', [linkId]);
       await logAuditEvent(profileId, 'cancel_vice_principal_request', null, { linkId });
-      return res.json({ success: true, message: 'Đã hủy yêu cầu ứng tuyển Hiệu Phó.' });
+      return res.json({ success: true, message: 'Đã hủy yêu cầu ứng tuyển Phó Viện Trưởng.' });
     }
 
     // Hủy / Xóa kết nối Ban Giám Hiệu
@@ -752,7 +752,7 @@ router.post('/family/apply-vice-principal', authMiddleware, async (req: any, res
     }
     const role = check.rows[0].role;
     if (role !== 'parent' && role !== 'secondary_parent') {
-      return res.status(400).json({ error: 'Chỉ Giáo viên (Chủ nhiệm) mới có thể gửi đơn xin làm Hiệu Phó.' });
+      return res.status(400).json({ error: 'Chỉ Giáo viên (Chủ nhiệm) mới có thể gửi đơn xin làm Phó Viện Trưởng.' });
     }
 
     // 2. Check if they already have a pho_vien profile
@@ -761,7 +761,7 @@ router.post('/family/apply-vice-principal', authMiddleware, async (req: any, res
       [accountId]
     );
     if (pvCheck.rowCount && pvCheck.rowCount > 0 && pvCheck.rows[0].is_active) {
-      return res.status(400).json({ error: 'Tài khoản của bạn đã được cấp quyền Hiệu Phó rồi!' });
+      return res.status(400).json({ error: 'Tài khoản của bạn đã được cấp quyền Phó Viện Trưởng rồi!' });
     }
 
     // 3. Check if they already applied
@@ -770,7 +770,7 @@ router.post('/family/apply-vice-principal', authMiddleware, async (req: any, res
       [profileId]
     );
     if (appliedCheck.rowCount && appliedCheck.rowCount > 0) {
-      return res.status(400).json({ error: 'Yêu cầu ứng tuyển Hiệu Phó của bạn đã tồn tại và đang chờ duyệt!' });
+      return res.status(400).json({ error: 'Yêu cầu ứng tuyển Phó Viện Trưởng của bạn đã tồn tại và đang chờ duyệt!' });
     }
 
     // 4. Create the application
@@ -782,14 +782,14 @@ router.post('/family/apply-vice-principal', authMiddleware, async (req: any, res
     );
 
     await logAuditEvent(profileId, 'apply_vice_principal', null, { linkId });
-    res.json({ success: true, message: 'Đã gửi yêu cầu ứng tuyển Hiệu Phó thành công!' });
+    res.json({ success: true, message: 'Đã gửi yêu cầu ứng tuyển Phó Viện Trưởng thành công!' });
   } catch (error: any) {
     console.error('Error applying for vice principal:', error);
-    res.status(500).json({ error: 'Không thể gửi yêu cầu ứng tuyển Hiệu Phó.', details: error.message });
+    res.status(500).json({ error: 'Không thể gửi yêu cầu ứng tuyển Phó Viện Trưởng.', details: error.message });
   }
 });
 
-// POST /api/family/invite-admin-connection: Gửi yêu cầu kết nối Ban Giám Hiệu (Hiệu Trưởng / Hiệu Phó)
+// POST /api/family/invite-admin-connection: Gửi yêu cầu kết nối Ban Giám Hiệu (Viện Trưởng / Phó Viện Trưởng)
 router.post('/family/invite-admin-connection', authMiddleware, async (req: any, res) => {
   const accountId = req.user.sub;
   const { senderProfileId, targetEmail } = req.body;
@@ -814,7 +814,7 @@ router.post('/family/invite-admin-connection', authMiddleware, async (req: any, 
       [targetEmail.trim()]
     );
     if (targetCheck.rowCount === 0) {
-      return res.status(404).json({ error: 'Không tìm thấy tài khoản Hiệu Trưởng hoặc Hiệu Phó với email này.' });
+      return res.status(404).json({ error: 'Không tìm thấy tài khoản Viện Trưởng hoặc Phó Viện Trưởng với email này.' });
     }
     const targetProfileId = targetCheck.rows[0].id;
 

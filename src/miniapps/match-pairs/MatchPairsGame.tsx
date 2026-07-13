@@ -4,7 +4,7 @@ import { MatchPairsApp } from './MatchPairsApp';
 import type { MiniGameProps } from '../../types/minigame';
 
 export const MatchPairsGame: React.FC<MiniGameProps> = ({ activeSectId, onGameStart, onGameComplete }) => {
-  const awardCoinsAndXp = useGameState(state => state.awardCoinsAndXp);
+  const awardRubyAndXp = useGameState(state => state.awardRubyAndXp);
   const uiTheme = useGameState(state => state.uiTheme);
 
   useEffect(() => {
@@ -15,7 +15,7 @@ export const MatchPairsGame: React.FC<MiniGameProps> = ({ activeSectId, onGameSt
     <MatchPairsApp
       activeSectId={activeSectId}
       uiTheme={uiTheme}
-      onReward={awardCoinsAndXp}
+      onReward={awardRubyAndXp}
       onGameComplete={onGameComplete}
     />
   );

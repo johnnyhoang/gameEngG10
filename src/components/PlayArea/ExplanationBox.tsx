@@ -61,7 +61,7 @@ export const ExplanationBox: React.FC<ExplanationBoxProps> = ({
 
         {aiFeedback && (
           <div className="text-theme-text-highlight/95 space-y-1 mt-2">
-            <p className="font-bold uppercase tracking-wider text-[10px] text-theme-text-info">Linh Sư luận giải</p>
+            <p className="font-bold uppercase tracking-wider text-[10px] text-theme-text-info">Trợ Giáo MIKA luận giải</p>
             <p className="text-theme-text-highlight/90 italic leading-relaxed bg-synth-gray/25 p-2 rounded-lg">{aiFeedback}</p>
           </div>
         )}

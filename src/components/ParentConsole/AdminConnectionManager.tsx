@@ -110,7 +110,7 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
           </h3>
           <p className="text-xs text-slate-400 mt-1">
             Vai trò hiện tại: <span className="font-bold text-synth-magenta uppercase font-orbitron">
-              {currentUser?.role === 'truong_vien' ? 'Hiệu Trưởng 👑' : 'Hiệu Phó 🛡️'}
+              {currentUser?.role === 'truong_vien' ? 'Viện Trưởng 👑' : 'Phó Viện Trưởng 🛡️'}
             </span> — Quản trị viên quản lý toàn diện lớp học và học sinh.
           </p>
         </div>
@@ -143,7 +143,7 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
                   )}
                   <div>
                     <span className="text-xs text-white font-bold block">
-                      {link.peer_name} <span className="text-[9px] text-synth-magenta px-1 rounded bg-synth-magenta/15 font-orbitron">{link.peer_role === 'truong_vien' ? 'Hiệu Trưởng 👑' : 'Hiệu Phó 🛡️'}</span>
+                      {link.peer_name} <span className="text-[9px] text-synth-magenta px-1 rounded bg-synth-magenta/15 font-orbitron">{link.peer_role === 'truong_vien' ? 'Viện Trưởng 👑' : 'Phó Viện Trưởng 🛡️'}</span>
                     </span>
                     <span className="text-[10px] text-slate-400 font-sans">{link.peer_email}</span>
                   </div>
@@ -185,14 +185,14 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
             <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-2">
               ✉️ Lời Mời Đồng Hành Ban Giám Hiệu
             </h4>
-            <p className="text-[11px] text-slate-400 mt-1">Kết nối với các Hiệu Trưởng hoặc Hiệu Phó khác để cùng song hành trong học viện.</p>
+            <p className="text-[11px] text-slate-400 mt-1">Kết nối với các Viện Trưởng hoặc Phó Viện Trưởng khác để cùng song hành trong học viện.</p>
           </div>
 
           <div className="flex flex-col sm:flex-row gap-2.5 items-end sm:items-center">
             <div className="w-full flex-1">
               <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Mời Qua Tài Khoản</span>
               <SearchSuggest
-                placeholder="Tìm Hiệu Trưởng / Hiệu Phó theo tên hoặc email..."
+                placeholder="Tìm Viện Trưởng / Phó Viện Trưởng theo tên hoặc email..."
                 roleFilter="admin_board"
                 value={inviteEmail}
                 onChange={setInviteEmail}
@@ -230,7 +230,7 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
                   )}
                   <div>
                     <span className="text-xs text-white font-bold block">
-                      {link.peer_name} <span className="text-[9px] text-slate-400 px-1 rounded bg-white/10 font-orbitron">{link.peer_role === 'truong_vien' ? 'Hiệu Trưởng 👑' : 'Hiệu Phó 🛡️'}</span>
+                      {link.peer_name} <span className="text-[9px] text-slate-400 px-1 rounded bg-white/10 font-orbitron">{link.peer_role === 'truong_vien' ? 'Viện Trưởng 👑' : 'Phó Viện Trưởng 🛡️'}</span>
                     </span>
                     <span className="text-[10px] text-slate-400 font-sans">{link.peer_email}</span>
                   </div>
@@ -281,7 +281,7 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
                     </span>
                     <span className="text-[10px] text-slate-400 block">{link.peer_email}</span>
                     <span className="inline-block text-[9px] font-bold text-synth-magenta uppercase tracking-wider font-orbitron mt-0.5">
-                      {link.peer_role === 'truong_vien' ? 'Hiệu Trưởng 👑' : 'Hiệu Phó 🛡️'}
+                      {link.peer_role === 'truong_vien' ? 'Viện Trưởng 👑' : 'Phó Viện Trưởng 🛡️'}
                     </span>
                   </div>
                 </div>

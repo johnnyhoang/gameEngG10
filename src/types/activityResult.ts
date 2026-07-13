@@ -28,8 +28,8 @@ export interface ActivityResult {
   /** Seconds elapsed during the activity */
   timeSpentSeconds: number;
 
-  /** Coins and XP actually awarded for this run */
-  rewardsEarned: { coins: number; xp: number };
+  /** Ruby and XP actually awarded for this run */
+  rewardsEarned: { ruby: number; xp: number };
 
   /**
    * True when ≥ 3 mistakes occurred in boss/survival mode.

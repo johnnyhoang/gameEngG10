@@ -6,7 +6,7 @@ import type { UiThemeId } from '../../types/game';
 export interface MatchPairsAppProps {
   activeSectId?: string;
   uiTheme: UiThemeId;
-  onReward: (coins: number, xp: number, type: string, detail: string) => void;
+  onReward: (ruby: number, xp: number, type: string, detail: string) => void;
   onGameComplete?: (result: { correctAnswers: number; timeSpent: number; score: number; passed: boolean }) => void;
 }
 
@@ -131,7 +131,7 @@ export const MatchPairsApp: React.FC<MatchPairsAppProps> = ({
         <div className="py-10 space-y-4 max-w-md mx-auto">
           <div className="text-4xl animate-bounce">🎉🥇🏆</div>
           <h4 className="font-orbitron font-black text-xl text-synth-green uppercase">Hoàn Thành Tuyệt Đối</h4>
-          <p className="text-xs text-slate-300">Ghép xong toàn bộ cặp liên kết. Thưởng: +10 NP, +20 XP</p>
+          <p className="text-xs text-slate-300">Ghép xong toàn bộ cặp liên kết. Thưởng: +10 Ruby, +20 XP</p>
           <button onClick={initMatchGame} className="px-6 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-magenta text-white cursor-pointer hover:scale-105 transition-all">Chơi Lại Bảng Mới 🔄</button>
         </div>
       )}

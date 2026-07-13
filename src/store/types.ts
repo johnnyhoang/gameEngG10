@@ -2,7 +2,7 @@ import type {
   UserProfile, PlayerProfile, Question, CategoryStat, PetState, ParentReward, RewardRedemption,
   ClassReward, ClassRewardRedemption,
   Challenge, DailyMission, HistoryLog,
-  HandbookPage, ParentQuest, GradeTier, SubjectId, UiThemeId, GameSettings, FamilyLink,
+  HandbookPage, ParentQuest, GradeTier, SubjectId, UiThemeId, GameSettings, FamilyLink, LearningContext,
   PageExplorationState, ExplorationProgress
 } from '../types/game';
 
@@ -32,6 +32,10 @@ export interface StoreState {
   questions: Question[];
   lessons: Lesson[];
   lessonsProgress: Record<string, boolean>;
+  topics: any[];
+  activities: any[];
+  activityProgress: Record<string, { status: string; completedAt: string | null }>;
+  updateActivityProgress: (activityId: string, status: 'locked' | 'available' | 'completed', completedAt?: string | null) => Promise<void>;
   explorationProgress: Record<string, ExplorationProgress>;
   pageExplorationStates: Record<string, PageExplorationState>;
   categoryStats: Record<string, CategoryStat>;
@@ -61,34 +65,34 @@ export interface StoreState {
     timeSpentSeconds: number,
     gameMode: 'practice' | 'survival' | 'boss' | 'infinite',
     scoreRatio?: number
-  ) => { isCorrect: boolean; expGained: number; coinsGained: number; comboMultiplier: number; scoreRatio: number };
+  ) => { isCorrect: boolean; expGained: number; rubyGained: number; comboMultiplier: number; scoreRatio: number };
   useEnergy: (amount: number) => boolean;
   addEnergy: (amount: number) => void;
-  /** Tự hồi ĐẦY Chân Khí nếu đã cạn 0 đủ lâu (>= resetHours) — gọi định kỳ từ TopHUD + lúc khởi động app (SUB_SPEC_ENERGY §5, Phương án A). */
+  /** Tự hồi ĐẦY Năng Lượng nếu đã cạn 0 đủ lâu (>= resetHours) — gọi định kỳ từ TopHUD + lúc khởi động app (SUB_SPEC_ENERGY §5, Phương án A). */
   tickEnergyRegen: () => void;
   /** Luật Bất Thoái (CORE_SPECS §7.4.4): nâng maxAchievedMasteryRank[subjectId] nếu ratio hiện tại quy ra rank cao hơn — không bao giờ hạ. */
   ratchetMasteryRank: (subjectId: SubjectId, ratio: number) => void;
   buyStreakShield: () => boolean;
   buyHint: () => boolean;
   buyTheme: (themeId: UiThemeId) => boolean;
-  /** Đổi một Phần Thưởng Thực Tế: trừ NP + giảm remainingQuantity + tạo RewardRedemption 'pending'. */
+  /** Đổi một Danh Mục Quà Khuyến Học: trừ Ruby + giảm remainingQuantity + tạo RewardRedemption 'pending'. */
   redeemReward: (rewardId: string) => boolean;
   feedPet: () => boolean;
   spinWheel: () => { rewardType: string; amount: number; message: string };
   openMysteryBox: () => { rewardType: string; amount: number; message: string };
   masterLesson: (lessonId: string, accuracyRatio?: number) => Promise<void>;
-  applyDefeatPenalty: (coinsEarnedInRun: number, xpEarnedInRun: number) => void;
-  /** bonusIndex khớp với chỉ số [dễ,trung bình,khó] trong gameSettings.bossCompletionBonusNP — để bonus thực nhận khớp đúng số đã quảng bá trên Boss Card. Bỏ trống thì chọn ngẫu nhiên (tương thích ngược). */
+  applyDefeatPenalty: (rubyEarnedInRun: number, xpEarnedInRun: number) => void;
+  /** bonusIndex khớp với chỉ số [dễ,trung bình,khó] trong gameSettings.bossCompletionBonusRuby — để bonus thực nhận khớp đúng số đã quảng bá trên Boss Card. Bỏ trống thì chọn ngẫu nhiên (tương thích ngược). */
   completeBossVictory: (bonusIndex?: number) => void;
   completeLevel3Page: (pageId: string) => void;
   updatePendingKeyQuestion: (pageId: string, questionId: string | null) => void;
-  awardCoinsAndXp: (coins: number, xp: number, activityTitle: string, activityDetails: string) => Promise<void>;
+  awardRubyAndXp: (ruby: number, xp: number, activityTitle: string, activityDetails: string) => Promise<void>;
   clearExploration: (pageId: string) => Promise<void>;
   resetProgress: () => void;
   checkDailyReset: () => void;
   getAdaptiveQuestion: (category: string) => Question | null;
   getQuestionByWeight: (mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed') => Question | null;
-  syncSessionResult: (data: { newCoins: number; newXp: number; newLevel: number; badges: string[] }) => void;
+  syncSessionResult: (data: { newRuby: number; newXp: number; newLevel: number; badges: string[] }) => void;
   syncWithServer: () => Promise<void>;
   pullServerState: (serverData: any) => void;
 
@@ -107,14 +111,14 @@ export interface StoreState {
   resolveSkipReview: (reviewId: string) => Promise<boolean>;
   /** Chủ nhiệm xác nhận đã trao quà ngoài đời cho lượt đổi này (thay "duyệt" cũ). */
   markRewardDelivered: (redemptionId: string) => void;
-  /** Hủy lượt đổi: hoàn NP + trả lại remainingQuantity cho catalog item (thay "từ chối" cũ). */
+  /** Hủy lượt đổi: hoàn Ruby + trả lại remainingQuantity cho catalog item (thay "từ chối" cũ). */
   cancelRedemption: (redemptionId: string) => void;
-  addParentReward: (title: string, costCoins: number, quantity: number) => void;
+  addParentReward: (title: string, costRuby: number, quantity: number) => void;
   deleteParentReward: (rewardId: string) => void;
 
-  // === CLASS REWARDS (Phúc Lợi Lớp Học) ===
+  // === CLASS REWARDS (Quà Khuyến Học) ===
   fetchClassRewards: () => Promise<void>;
-  createClassReward: (title: string, costCoins: number, quantity: number) => Promise<boolean>;
+  createClassReward: (title: string, costRuby: number, quantity: number) => Promise<boolean>;
   deleteClassReward: (rewardId: string) => Promise<boolean>;
   redeemClassReward: (rewardId: string) => Promise<boolean>;
   cancelClassRedemption: (redemptionId: string) => Promise<boolean>;
@@ -130,15 +134,15 @@ export interface StoreState {
   adminMarkRewardDelivered: (studentUserId: string, redemptionId: string) => Promise<void>;
   adminCancelRedemption: (studentUserId: string, redemptionId: string) => Promise<void>;
   adminSetEnergy: (studentUserId: string, energyPercent: number) => Promise<void>;
-  /** Chủ nhiệm chỉnh Trần Chân Khí + giờ hồi RIÊNG cho con này (SUB_SPEC_ENERGY §2). maxEnergy 50-300, resetHours ∈ {2,3,5}. */
+  /** Chủ nhiệm chỉnh Trần Năng Lượng + giờ hồi RIÊNG cho con này (SUB_SPEC_ENERGY §2). maxEnergy 50-300, resetHours ∈ {2,3,5}. */
   adminSetEnergyConfig: (studentUserId: string, maxEnergy: number, resetHours: 2 | 3 | 5) => Promise<void>;
   updateGameSettings: (payload: {
-    bossCompletionBonusNP?: [number, number, number];
+    bossCompletionBonusRuby?: [number, number, number];
     challengeEnergyCosts?: [number, number, number, number];
     baseXP?: number;
-    baseCoins?: number;
+    baseRuby?: number;
   }) => Promise<void>;
-  addParentQuest: (title: string, description: string, rewardNP: number) => void;
+  addParentQuest: (title: string, description: string, rewardRuby: number) => void;
   completeParentQuest: (questId: string) => void;
   deleteParentQuest: (questId: string) => void;
   claimParentQuest: (questId: string) => void;
@@ -169,6 +173,7 @@ export interface StoreState {
 
   addHandbookPage: (page: Omit<HandbookPage, 'id'>) => void;
   setSectModalOpen: (open: boolean) => void;
+  setLearningContext: (context: LearningContext) => void;
   setSubject: (subject: SubjectId) => void;
   setGradeTier: (tier: GradeTier) => void;
   setUiTheme: (themeId: UiThemeId) => void;

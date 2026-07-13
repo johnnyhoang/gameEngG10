@@ -19,12 +19,12 @@ export const SonTrangThuGian: React.FC = () => {
         <h2 className={`text-2xl font-black font-orbitron uppercase tracking-widest mb-4 ${
           isUnicorn ? 'text-violet-800' : 'text-synth-cyan drop-shadow-[0_0_10px_rgba(0,240,255,0.5)]'
         }`}>
-          Sơn Trang Thư Giãn
+          Công Viên Thư Giãn
         </h2>
         <p className={`max-w-xl mx-auto text-sm leading-relaxed font-semibold ${
           isUnicorn ? 'text-violet-600/80' : 'text-slate-300'
         }`}>
-          Nơi đây phong cảnh hữu tình, mây trắng vờn quanh đỉnh núi, thác nước róc rách tuôn chảy. Thiếu hiệp có thể dạo bước ngắm cảnh, hoặc đắm mình vào các kỳ cục trí tuệ (mini-games) để mài dũa tư duy mà không lo áp lực thi cử.
+          Nơi đây phong cảnh hữu tình, mây trắng vờn quanh đỉnh núi, thác nước róc rách tuôn chảy. Sĩ Tử có thể dạo bước ngắm cảnh, hoặc đắm mình vào các kỳ cục trí tuệ (mini-games) để mài dũa tư duy mà không lo áp lực thi cử.
         </p>
         
         <div className="mt-8 inline-block px-6 py-3 rounded-full border border-dashed border-white/30 bg-white/5 text-xs font-bold uppercase tracking-wider text-slate-400">

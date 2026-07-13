@@ -10,8 +10,8 @@ const DEV_AVATAR = 'data:image/svg+xml;utf8,' + encodeURIComponent(
 );
 
 const DEV_BACKDOOR_ROLES = [
-  { role: 'student', label: 'Môn Sinh (Học sinh)', id: 'mock-dev-student', name: 'Dev Môn Sinh' },
-  { role: 'pho_vien', label: 'Phó Viện (Phó hiệu trưởng)', id: 'mock-dev-pho-vien', name: 'Dev Phó Viện' },
+  { role: 'student', label: 'Sĩ Tử (Học sinh)', id: 'mock-dev-student', name: 'Dev Sĩ Tử' },
+  { role: 'pho_vien', label: 'Phó Viện Trưởng', id: 'mock-dev-pho-vien', name: 'Dev Phó Viện Trưởng' },
   { role: 'truong_vien', label: 'Viện Chủ (Phụ huynh/Admin)', id: 'mock-dev-truong-vien', name: 'Dev Viện Chủ' },
 ] as const;
 
@@ -75,12 +75,12 @@ export const GoogleLoginScreen: React.FC = () => {
             MIKAWAII
           </h1>
           <p className="text-xs text-synth-cyan font-bold uppercase tracking-widest font-orbitron">
-            Đấu trường học thuật
+            Trường Thi học thuật
           </p>
         </div>
 
         <p className="text-xs text-synth-text-muted leading-relaxed">
-          MIKAWAII là hệ sinh thái ôn thi Tuyển sinh lớp 10 toàn diện, tích hợp các Môn phái chuyên sâu (Toán, Tiếng Anh, Ngữ Văn) cùng các Môn tu học cơ bản. Tại đây, đệ tử bước vào Đấu trường Arena, cày ải Hang Luyện Công, mở khóa Mật Thất Bí Kíp 3D, tích lũy Ngọc Phiếu (NP) để đổi lấy các phần quà thực tế từ Giáo viên và Phụ huynh. Đăng nhập ngay để lưu giữ tiến trình, thăng tiến Cấp độ và bứt phá điểm số mỗi ngày!
+          MIKAWAII là hệ sinh thái ôn thi Tuyển sinh lớp 10 toàn diện, tích hợp các Môn phái chuyên sâu (Toán, Tiếng Anh, Ngữ Văn) cùng các Môn tu học cơ bản. Tại đây, đệ tử bước vào Trường Thi Arena, cày ải Học Đường, mở khóa Mật Thất Bí Kíp 3D, tích lũy Ruby để đổi lấy các phần quà thực tế từ Giáo viên và Phụ huynh. Đăng nhập ngay để lưu giữ tiến trình, thăng tiến Cấp độ và bứt phá điểm số mỗi ngày!
         </p>
 
         {/* Active Google Button */}

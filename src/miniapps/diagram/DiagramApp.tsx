@@ -35,7 +35,7 @@ const DIAGRAM_DATA = {
 export interface DiagramAppProps {
   activeSectId?: string;
   uiTheme: UiThemeId;
-  onReward: (coins: number, xp: number, type: string, detail: string) => void;
+  onReward: (ruby: number, xp: number, type: string, detail: string) => void;
   onGameComplete?: (result: any) => void;
   onGameStart?: () => void;
 }
@@ -133,7 +133,7 @@ export const DiagramApp: React.FC<DiagramAppProps> = ({ activeSectId, uiTheme, o
         <div className="py-10 space-y-4 max-w-md mx-auto">
           <div className="text-4xl animate-bounce">🧱🏆🎉</div>
           <h4 className="font-orbitron font-black text-xl text-synth-green uppercase">Ghép Sơ Đồ Thành Công</h4>
-          <p className="text-xs text-slate-300">Phần thưởng: +30 NP, +35 XP</p>
+          <p className="text-xs text-slate-300">Phần thưởng: +30 Ruby, +35 XP</p>
           <button onClick={initDiagramGame} className="px-6 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-cyan text-black cursor-pointer hover:scale-105 transition-all">Ghép Bảng Sơ Đồ Mới 🔁</button>
         </div>
       )}

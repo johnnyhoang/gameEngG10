@@ -91,7 +91,7 @@ export const ProfileSelectionScreen: React.FC = () => {
     },
     {
       key: 'parent',
-      label: 'Chủ Nhiệm 📋',
+      label: 'Chủ Nhiệm Chính 📋',
       icon: <Users className="w-8 h-8 text-synth-orange" />,
       colorClass: 'border-synth-orange/30 hover:border-synth-orange hover:bg-synth-orange/5 text-synth-orange shadow-[0_0_15px_rgba(255,159,28,0.05)]',
       exists: !!existingParent,
@@ -103,11 +103,11 @@ export const ProfileSelectionScreen: React.FC = () => {
     },
   ];
 
-  // Chỉ thêm card Hiệu Phó nếu có profile tương ứng hoạt động
+  // Chỉ thêm card Phó Viện Trưởng nếu có profile tương ứng hoạt động
   if (existingHieuPho) {
     roleCards.push({
       key: 'pho_vien',
-      label: 'Hiệu Phó 🛡️',
+      label: 'Phó Viện Trưởng 🛡️',
       icon: <Shield className="w-8 h-8 text-purple-400" />,
       colorClass: 'border-purple-400/30 hover:border-purple-400 hover:bg-purple-400/5 text-purple-400 shadow-[0_0_15px_rgba(192,132,252,0.05)]',
       exists: true,
@@ -119,11 +119,11 @@ export const ProfileSelectionScreen: React.FC = () => {
     });
   }
 
-  // Chỉ thêm card Hiệu Trưởng nếu có profile tương ứng hoạt động
+  // Chỉ thêm card Viện Trưởng nếu có profile tương ứng hoạt động
   if (existingHieuTruong) {
     roleCards.push({
       key: 'truong_vien',
-      label: 'Hiệu Trưởng 👑',
+      label: 'Viện Trưởng 👑',
       icon: <Crown className="w-8 h-8 text-synth-magenta" />,
       colorClass: 'border-synth-magenta/30 hover:border-synth-magenta hover:bg-synth-magenta/5 text-synth-magenta shadow-[0_0_15px_rgba(255,0,127,0.05)]',
       exists: true,
@@ -163,7 +163,7 @@ export const ProfileSelectionScreen: React.FC = () => {
 
         <div className="space-y-2">
           <h2 className="font-orbitron text-2xl font-black uppercase tracking-wider text-synth-cyan">
-            Chọn Thân Phận Đăng Nhập
+            Chọn Hồ Sơ Sĩ Tử Đăng Nhập
           </h2>
           <p className="text-xs text-slate-400">
             Chọn vai trò bên dưới để tham gia học viện. Hồ sơ chưa có sẽ tự động khởi tạo.

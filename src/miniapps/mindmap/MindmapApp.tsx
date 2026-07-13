@@ -61,7 +61,7 @@ const MINDMAP_DATA: Record<'math' | 'english' | 'literature', MindmapNode> = {
 export interface MindmapAppProps {
   activeSectId?: string;
   uiTheme: UiThemeId;
-  onReward: (coins: number, xp: number, type: string, detail: string) => void;
+  onReward: (ruby: number, xp: number, type: string, detail: string) => void;
   onGameComplete?: (result: any) => void;
   onGameStart?: () => void;
 }
@@ -142,7 +142,7 @@ export const MindmapApp: React.FC<MindmapAppProps> = ({ activeSectId, uiTheme, o
             onClick={() => {
               onReward(10, 15, 'Đọc sơ đồ tri thức', `Xem sơ đồ ôn tập môn ${selectedMapSubject}`);
               onGameComplete?.({ correctAnswers: 1, timeSpent: 0, score: 100, passed: true });
-              toast.success('Đã hoàn thành ôn tập sơ đồ! +10 NP, +15 XP 🧠');
+              toast.success('Đã hoàn thành ôn tập sơ đồ! +10 Ruby, +15 XP 🧠');
             }}
             className="w-full sm:w-auto px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 text-center"
           >

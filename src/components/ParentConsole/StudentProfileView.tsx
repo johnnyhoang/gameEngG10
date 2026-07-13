@@ -23,13 +23,13 @@ interface StudentProfileViewProps {
   // Reward props
   activeRewardCatalog: any[];
   activeRedemptions: any[];
-  addParentReward: (title: string, costCoins: number, quantity: number) => void;
+  addParentReward: (title: string, costRuby: number, quantity: number) => void;
   deleteParentReward: (rewardId: string) => void;
   markRewardDelivered: (redemptionId: string) => void;
   cancelRedemption: (redemptionId: string) => void;
   // Quest props
   parentQuests: any[];
-  addParentQuest: (title: string, description: string, rewardNP: number) => void;
+  addParentQuest: (title: string, description: string, rewardRuby: number) => void;
   completeParentQuest: (questId: string) => void;
   deleteParentQuest: (questId: string) => void;
 }
@@ -58,7 +58,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
   completeParentQuest,
   deleteParentQuest
 }) => {
-  // Chân Khí v2 (SUB_SPEC_ENERGY §2): maxEnergy/resetHours là cấu hình RIÊNG của con này, không còn đọc gameSettings global.
+  // Năng Lượng v2 (SUB_SPEC_ENERGY §2): maxEnergy/resetHours là cấu hình RIÊNG của con này, không còn đọc gameSettings global.
   const maxE = selectedStudentProfile?.player?.maxEnergy ?? 100;
   const [studentEnergyPercent, setStudentEnergyPercent] = useState(100);
   const [maxEnergyInput, setMaxEnergyInput] = useState(100);
@@ -110,9 +110,9 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
             <span className="font-orbitron font-black text-synth-magenta text-sm">LV.{player?.level || 1}</span>
           </div>
           <div className="bg-white/3 border border-white/5 rounded-2xl px-4 py-2.5 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
-            <span className="block text-[9px] uppercase text-synth-text-muted">Điểm Thưởng (NP)</span>
-            <span className={`font-orbitron font-black text-sm ${(player?.coins || 0) < 0 ? 'text-red-400' : 'text-synth-orange'}`}>
-              {player?.coins || 0} NP
+            <span className="block text-[9px] uppercase text-synth-text-muted">Ruby</span>
+            <span className={`font-orbitron font-black text-sm ${(player?.ruby || 0) < 0 ? 'text-red-400' : 'text-synth-orange'}`}>
+              {player?.ruby || 0} Ruby
             </span>
           </div>
           <div className="bg-white/3 border border-white/5 rounded-2xl px-4 py-2.5 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
@@ -328,7 +328,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
         </div>
       </div>
 
-      {/* 4. Quản Lý Phúc Lợi & Duyệt Đổi Quà (Nằm trong Học Tịch) */}
+      {/* 4. Quản Lý Quà Khuyến Học & Duyệt Đổi Quà (Nằm trong Học Tịch) */}
       <div className="glass-panel rounded-2xl border border-white/5 p-5">
         <RewardManager
           viewingStudentId={studentUser?.id}
@@ -455,9 +455,9 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
                         {log.xpAwarded > 0 ? '+' : ''}{log.xpAwarded} XP
                       </span>
                     )}
-                    {log.coinsAwarded !== 0 && (
-                      <span className={log.coinsAwarded > 0 ? 'text-synth-orange' : 'text-red-400'}>
-                        {log.coinsAwarded > 0 ? '+' : ''}{log.coinsAwarded} NP
+                    {log.rubyAwarded !== 0 && (
+                      <span className={log.rubyAwarded > 0 ? 'text-synth-orange' : 'text-red-400'}>
+                        {log.rubyAwarded > 0 ? '+' : ''}{log.rubyAwarded} Ruby
                       </span>
                     )}
                   </div>

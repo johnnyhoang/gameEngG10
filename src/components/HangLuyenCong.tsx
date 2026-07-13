@@ -49,19 +49,19 @@ type HangSubjectId = SubjectId;
 const MAT_THAT_CARDS = [
   {
     id: 'biki3d',
-    title: 'Mật thất 3D',
+    title: 'Xưởng Toán Hình 3D',
     description: 'Dựng hình không gian, xoay 360°, chọn góc nhìn và đọc lời giải từng bước.',
     icon: <Move3D className="w-5 h-5" />
   },
   {
     id: 'bikiplane',
-    title: 'Mật thất Hình học phẳng',
+    title: 'Xưởng Toán Hình',
     description: 'Dựng tam giác, đường tròn, đường cao, trung tuyến và các dấu hiệu chứng minh.',
     icon: <Layers3 className="w-5 h-5" />
   },
   {
     id: 'bikigraph',
-    title: 'Mật thất Đồ thị hàm số',
+    title: 'Xưởng Toán Đồ Thị',
     description: 'Slider hệ số, đỉnh parabol, giao điểm và trục đối xứng theo thời gian thực.',
     icon: <LineChart className="w-5 h-5" />
   }
@@ -319,7 +319,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   onOpenMatThatGraph,
   onStartLessonPractice
 }) => {
-  const { activeSectId } = useSect();
+  const { activeSectId, activeGradeTier } = useSect();
   const questions = useGameState(state => state.questions);
   const lessons = useGameState(state => state.lessons);
   const lessonsProgress = useGameState(state => state.lessonsProgress);
@@ -339,12 +339,17 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   const selectedSubject: HangSubjectId = activeSectId as HangSubjectId;
 
   const subjectQuestions = useMemo(() => {
-    return questions.filter(q => (q.subject || 'english') === selectedSubject);
-  }, [questions, selectedSubject]);
+    return questions.filter(q =>
+      (q.subject || 'english') === selectedSubject
+      && (q.gradeTier ?? q.grade ?? 9) === activeGradeTier
+    );
+  }, [questions, selectedSubject, activeGradeTier]);
 
   const subjectLessons = useMemo(() => {
-    return lessons.filter(l => l.subject === selectedSubject);
-  }, [lessons, selectedSubject]);
+    return lessons.filter(l =>
+      l.subject === selectedSubject && (l.gradeTier ?? 9) === activeGradeTier
+    );
+  }, [lessons, selectedSubject, activeGradeTier]);
 
   const sampleQuestions = useMemo(() => {
     const allowedCategories: Record<string, string[]> = {
@@ -426,12 +431,12 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
         {/* Column Left: Main Content (Interactive Chambers & Elemental Dungeons & Samples) */}
         <div className="space-y-6">
           
-          {/* Interactive Chambers (Mật thất tương tác) - Only for Math, cleaner style */}
+          {/* Kho Nền Tảng tương tác - chỉ dành cho Toán */}
           {selectedSubject === 'math' && (
             <div className="glass-panel rounded-2xl border border-white/10 p-5 bg-black/20">
               <h2 className="font-orbitron font-black text-xs text-synth-cyan uppercase tracking-wider mb-3 flex items-center gap-2">
                 <Target className="w-4 h-4 text-synth-cyan" />
-                Mật thất tương tác trực quan
+                Kho Nền Tảng tương tác trực quan
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {MAT_THAT_CARDS.map(card => {

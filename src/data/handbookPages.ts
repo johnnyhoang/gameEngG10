@@ -1,4 +1,4 @@
-// Cẩm Nang Bí Lục — toàn bộ trang mặc định (12 trang gốc + các trang Trợ Giúp hợp nhất).
+// Cẩm Nang Học Đường — toàn bộ trang mặc định (12 trang gốc + các trang Trợ Giúp hợp nhất).
 // Tách ra từ useGameState monolith khi store chuyển sang kiến trúc slices (CORE_SPECS §2.7).
 import type { HandbookPage } from '../types/game';
 
@@ -7,55 +7,55 @@ export const INITIAL_HANDBOOK_PAGES: HandbookPage[] = [
     id: 'hb-1',
     category: 'Võ Học & Tinh Tấn',
     title: 'Tu Vi & Kinh Nghiệm (XP)',
-    content: 'Tu vi (XP) đo lường trình độ võ học của Thiếu hiệp trên giang hồ. Khi làm đúng mỗi câu hỏi thường ở Hang Luyện Công, con sẽ tích lũy được +15 XP.'
+    content: 'Tu vi (XP) đo lường trình độ kiến thức của Sĩ Tử trên học đường. Khi làm đúng mỗi câu hỏi thường ở Học Đường, con sẽ tích lũy được +15 XP.'
   },
   {
     id: 'hb-2',
     category: 'Võ Học & Tinh Tấn',
     title: 'Vượt Ải & Diệt Boss',
-    content: 'Lĩnh ngộ thành công mỗi chuyên đề võ học sẽ giúp con nhận thêm +50 XP. Quyết đấu thắng Boss nhận +150 XP và được nhân đôi điểm XP câu đúng trong trận.'
+    content: 'Lĩnh ngộ thành công mỗi chuyên đề kiến thức sẽ giúp con nhận thêm +50 XP. Quyết đấu thắng Boss nhận +150 XP và được nhân đôi điểm XP câu đúng trong trận.'
   },
   {
     id: 'hb-3',
     category: 'Võ Học & Tinh Tấn',
     title: 'Luật Lực Bất Tòng Tâm',
-    content: 'Cho Heo Maikawaii ăn tăng cấp sẽ tiêu tốn 30 XP và 50 Ngân Lượng của con. Điều này có thể khiến con bị tụt cấp độ tạm thời để tập trung nuôi dưỡng pet.'
+    content: 'Cho Heo Maikawaii ăn tăng cấp sẽ tiêu tốn 30 XP và 50 Ruby của con. Điều này có thể khiến con bị tụt cấp độ tạm thời để tập trung nuôi dưỡng pet.'
   },
   {
     id: 'hb-4',
     category: 'Võ Học & Tinh Tấn',
-    title: 'Quy Tắc Thưởng Ngân Lượng',
-    content: 'Ngân Lượng (NP) là tiền tệ để con mua sắm chân khí đan, mạng hồi phục, khiên bảo vệ trong shop. Làm đúng câu hỏi Đấu trường sẽ thưởng cho con +5 NP.'
+    title: 'Quy Tắc Thưởng Ruby',
+    content: 'Ruby là đơn vị tích lũy để con đổi học cụ và quà khuyến học trong Shop Học Cụ. Làm đúng câu hỏi Trường Thi sẽ thưởng cho con +5 Ruby.'
   },
   {
     id: 'hb-5',
     category: 'Võ Học & Tinh Tấn',
     title: 'Luật Liên Hoàn Kích (Combo)',
-    content: 'Làm đúng liên tiếp từ 3 câu trở lên sẽ nhận hệ số nhân Ngân Lượng cực lớn x1.2, x1.5, x2.0. Chỉ cần làm sai một câu, chuỗi liên hoàn kích sẽ bị reset.'
+    content: 'Làm đúng liên tiếp từ 3 câu trở lên sẽ nhận hệ số nhân Ruby cực lớn x1.2, x1.5, x2.0. Chỉ cần làm sai một câu, chuỗi liên hoàn kích sẽ bị reset.'
   },
   {
     id: 'hb-6',
-    category: 'Đấu Trường Kỳ Ngộ',
-    title: 'Chân Khí Học Tập',
-    content: 'Chân khí (Energy) là năng lượng cần thiết để xuất chiêu làm bài tập ở Đấu trường. Mỗi lượt luyện tập thường tiêu hao 30 Chân khí của thiếu hiệp.'
+    category: 'Trường Thi Kỳ Ngộ',
+    title: 'Năng Lượng Học Tập',
+    content: 'Năng Lượng (Energy) là tài nguyên cần thiết để làm bài tập ở Trường Thi. Mỗi lượt luyện tập thường tiêu hao 30 Năng Lượng của Sĩ Tử.'
   },
   {
     id: 'hb-7',
-    category: 'Đấu Trường Kỳ Ngộ',
-    title: 'Luật Chân Khí Tán Thất',
-    content: 'Mỗi trận quyết đấu Boss tiêu hao 100 Chân khí và được trừ ngay khi vào trận. Nếu con bỏ cuộc giữa chừng, lượng chân khí này sẽ tiêu tán hoàn toàn.'
+    category: 'Trường Thi Kỳ Ngộ',
+    title: 'Luật Tiêu Hao Năng Lượng',
+    content: 'Mỗi Khoa Thi tiêu hao 100 Năng Lượng và được trừ ngay khi vào lượt thi. Nếu con bỏ cuộc giữa chừng, lượng Năng Lượng này không được hoàn lại.'
   },
   {
     id: 'hb-8',
-    category: 'Đấu Trường Kỳ Ngộ',
-    title: 'Sinh Mệnh & Tim Đấu Trường',
-    content: 'Thiếu hiệp có tối đa 3 Tim sinh mệnh trong mỗi lượt đấu sinh tử ở Đấu trường. Mỗi câu làm sai sẽ bị phạt khấu trừ 1 Tim sinh mệnh của con.'
+    category: 'Trường Thi Kỳ Ngộ',
+    title: 'Sinh Mệnh & Tim Trường Thi',
+    content: 'Sĩ Tử có tối đa 3 Tim sinh mệnh trong mỗi lượt đấu sinh tử ở Trường Thi. Mỗi câu làm sai sẽ bị phạt khấu trừ 1 Tim sinh mệnh của con.'
   },
   {
     id: 'hb-9',
-    category: 'Đấu Trường Kỳ Ngộ',
+    category: 'Trường Thi Kỳ Ngộ',
     title: 'Luật Tẩu Hỏa Nhập Ma',
-    content: 'Hết Tim giữa trận đấu sẽ thất bại và bị khấu hao 50% số Ngân Lượng và XP kiếm được. Đồng thời Heo Maikawaii sẽ buồn bã giảm 5 điểm vui vẻ.'
+    content: 'Hết Tim giữa trận đấu sẽ thất bại và bị khấu hao 50% số Ruby và XP kiếm được. Đồng thời Heo Maikawaii sẽ buồn bã giảm 5 điểm vui vẻ.'
   },
   {
     id: 'hb-10',
@@ -67,17 +67,17 @@ export const INITIAL_HANDBOOK_PAGES: HandbookPage[] = [
     id: 'hb-11',
     category: 'Giang Hồ Quy Tắc',
     title: 'Luật Chuỗi Tinh Tấn',
-    content: 'Giữ chuỗi càng lâu thưởng càng lớn: ngày 2 được +10 NP, ngày 3 +20 NP, từ ngày 4 mỗi ngày +30 NP. Bỏ quá 24 giờ không học thì chuỗi reset về 0 (không bị trừ điểm) và phải leo lại từ đầu.'
+    content: 'Giữ chuỗi càng lâu thưởng càng lớn: ngày 2 được +10 Ruby, ngày 3 +20 Ruby, từ ngày 4 mỗi ngày +30 Ruby. Bỏ quá 24 giờ không học thì chuỗi reset về 0 (không bị trừ điểm) và phải leo lại từ đầu.'
   },
   {
     id: 'hb-12',
     category: 'Giang Hồ Quy Tắc',
-    title: 'Kỳ Ngộ Giang Hồ',
-    content: 'Khi luyện công hoặc đăng nhập, con có 5% cơ hội gặp Kỳ Ngộ nhận miễn phí +100 Chân khí, hoặc gặp Khảo Hạch bất ngờ từ Linh Sư.'
+    title: 'Thử Thách Bất Ngờ',
+    content: 'Khi ôn luyện hoặc đăng nhập, con có 5% cơ hội gặp Thử Thách Bất Ngờ để nhận +100 Năng Lượng hoặc một bài kiểm tra từ Trợ Giáo MIKA.'
   }
 ];
 
-// Cốt lõi Cẩm Nang Bí Lục là help/guide — mọi điểm chạm "?" trong app đều mở thẳng 1 trang ở đây
+// Cốt lõi Cẩm Nang Học Đường là help/guide — mọi điểm chạm "?" trong app đều mở thẳng 1 trang ở đây
 // (thay vì một modal help riêng biệt), mỗi trang có id `help-<topic>` khớp với tham số truyền vào showHelp(topic).
 const HELP_HANDBOOK_PAGES: HandbookPage[] = [
   {
@@ -89,12 +89,12 @@ const HELP_HANDBOOK_PAGES: HandbookPage[] = [
     ]
   },
   {
-    id: 'help-energy', category: 'Trợ Giúp Nhanh', title: 'Chân Khí (Energy)', content: '', audience: 'student',
+    id: 'help-energy', category: 'Trợ Giúp Nhanh', title: 'Năng Lượng (Energy)', content: '', audience: 'student',
     bullets: [
-      '• Chân Khí hồi đầy mỗi ngày lúc 0h.',
-      '• Mỗi lượt luyện thường tốn 30 Chân Khí.',
-      '• Quyết đấu Boss tốn 100 Chân Khí, trừ ngay khi vào trận.',
-      '• Cạn Chân Khí thì nghỉ nhịp, đừng cố kéo liều.'
+      '• Năng Lượng hồi đầy mỗi ngày lúc 0h.',
+      '• Mỗi lượt luyện thường tốn 30 Năng Lượng.',
+      '• Khoa Thi tốn 100 Năng Lượng, trừ ngay khi bắt đầu.',
+      '• Cạn Năng Lượng thì nghỉ một nhịp và chờ hồi.'
     ]
   },
   {
@@ -107,27 +107,27 @@ const HELP_HANDBOOK_PAGES: HandbookPage[] = [
     ]
   },
   {
-    id: 'help-nanite', category: 'Trợ Giúp Nhanh', title: 'Ngân Lượng (NP)', content: '', audience: 'student',
+    id: 'help-nanite', category: 'Trợ Giúp Nhanh', title: 'Ruby', content: '', audience: 'student',
     bullets: [
-      '• NP là tiền tệ trong game, trả công cho câu đúng.',
-      '• NP dùng để mua Khai Ngộ Quyển, Hộ Tâm Phù, Hồi Nguyên Đan, Phong Vị và đổi quà.',
-      '• Kiếm NP đều tay thì chơi mượt hơn nhiều.'
+      '• Ruby là tiền tệ trong game, trả công cho câu đúng.',
+      '• Ruby dùng để mua Thẻ Nhắc Bài, Thẻ Chuyên Cần, Hồi Nguyên Đan, Phong Cách Học Đường và đổi quà.',
+      '• Kiếm Ruby đều tay thì chơi mượt hơn nhiều.'
     ]
   },
   {
-    id: 'help-wallet', category: 'Trợ Giúp Nhanh', title: 'Phúc Lợi Lớp Học', content: '', audience: 'student',
+    id: 'help-wallet', category: 'Trợ Giúp Nhanh', title: 'Quà Khuyến Học', content: '', audience: 'student',
     bullets: [
-      '• Đây là phần thưởng thật do Hiệu Trưởng tự tạo, có số lượng giới hạn — đổi sớm để không bị hết.',
-      '• Đổi xong sẽ trừ NP ngay và chờ Hiệu Trưởng trao quà thật ngoài đời.',
-      '• Khi Hiệu Trưởng bấm "Đã Trao" thì yêu cầu hoàn tất.'
+      '• Đây là phần thưởng thật do Chủ Nhiệm Chính hoặc Viện Trưởng tạo, có số lượng giới hạn — đổi sớm để không bị hết.',
+      '• Đổi xong sẽ trừ Ruby ngay và chờ người quản lý trao quà thật ngoài đời.',
+      '• Khi người quản lý bấm "Đã Trao" thì yêu cầu hoàn tất.'
     ]
   },
   {
     id: 'help-adult', category: 'Trợ Giúp Nhanh', title: 'Heo Maikawaii', content: '', audience: 'student',
     bullets: [
       '• Heo Maikawaii lớn lên theo tiến trình tu luyện của con.',
-      '• Cho Heo Maikawaii ăn chỉ tốn 10 NP và 5 XP mỗi lần — cho ăn thoải mái nhé!',
-      '• Hết NP thì Heo tự về chuồng ngủ, cày thêm NP ở Hang Luyện Công rồi cho ăn tiếp.',
+      '• Cho Heo Maikawaii ăn chỉ tốn 10 Ruby và 5 XP mỗi lần — cho ăn thoải mái nhé!',
+      '• Hết Ruby thì Heo tự về chuồng ngủ, cày thêm Ruby ở Học Đường rồi cho ăn tiếp.',
       '• Muốn Heo Maikawaii khôn lớn, con phải học đều chứ không được bỏ ải.'
     ]
   },
@@ -142,9 +142,9 @@ const HELP_HANDBOOK_PAGES: HandbookPage[] = [
   {
     id: 'help-streak', category: 'Trợ Giúp Nhanh', title: 'Chuỗi học tập', content: '', audience: 'student',
     bullets: [
-      '• Học đều thì chuỗi tăng — ngày 2 thưởng +10 NP, ngày 3 +20 NP, ngày 4 trở đi +30 NP/ngày.',
+      '• Học đều thì chuỗi tăng — ngày 2 thưởng +10 Ruby, ngày 3 +20 Ruby, ngày 4 trở đi +30 Ruby/ngày.',
       '• Bỏ quá 24h không học là chuỗi gãy, quay về 0 (không bị trừ điểm).',
-      '• Có Hộ Tâm Phù thì còn cứu được, nhưng đừng ỷ lại.'
+      '• Có Thẻ Chuyên Cần thì còn cứu được, nhưng đừng ỷ lại.'
     ]
   },
   {
@@ -156,12 +156,12 @@ const HELP_HANDBOOK_PAGES: HandbookPage[] = [
     ]
   },
   {
-    id: 'help-parent-console', category: 'Trợ Giúp Quản Trị', title: 'Bảng quản trị', content: '', audience: 'admin',
+    id: 'help-parent-console', category: 'Trợ Giúp Quản Trị', title: 'Phòng Điều Hành', content: '', audience: 'admin',
     bullets: [
-      '• Chính Điện: quản lý tài khoản thiếu hiệp và cấp quyền toàn viện.',
-      '• Vạn Quyển Các: lọc ngân hàng câu hỏi theo môn, dạng và thang chấm.',
-      '• Ngân Các: duyệt đổi quà, cấu hình chân khí và định mức NP/XP.',
-      '• Thân Phận: xem hồ sơ chi tiết từng thiếu hiệp.'
+      '• Sổ Danh Bộ: quản lý tài khoản Sĩ Tử và cấp quyền toàn viện.',
+      '• Kho Đề Thi: lọc ngân hàng câu hỏi theo môn, dạng và thang chấm.',
+      '• Phòng Tài Vụ: duyệt đổi quà, cấu hình Năng Lượng và định mức Ruby/XP.',
+      '• Hồ Sơ Sĩ Tử: xem hồ sơ chi tiết từng Sĩ Tử.'
     ]
   },
   {

@@ -1,48 +1,31 @@
 import React, { useState } from 'react';
-import { useGameState } from '../hooks/useGameState';
-import { ShieldAlert, AlertOctagon } from 'lucide-react';
+import { ShieldCheck } from 'lucide-react';
 
-interface MonChuHoiToiDialogProps {
+interface MienPhatDialogProps {
   onConfirm: (reason: 'quá khó' | 'quá dài' | 'quá khùng', severity: number) => void;
   onCancel: () => void;
 }
 
-export const MonChuHoiToiDialog: React.FC<MonChuHoiToiDialogProps> = ({ onConfirm, onCancel }) => {
+export const MienPhatDialog: React.FC<MienPhatDialogProps> = ({ onConfirm, onCancel }) => {
   const [reason, setReason] = useState<'quá khó' | 'quá dài' | 'quá khùng' | null>(null);
   const [severity, setSeverity] = useState<number>(3);
   
-  const coins = useGameState(state => state.player.coins);
-  const isBlocked = coins < 10;
-
   return (
     <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
       <div className="glass-panel border-red-500/50 bg-slate-900/90 rounded-2xl p-6 max-w-md w-full shadow-[0_0_30px_rgba(239,68,68,0.2)]">
         <div className="flex flex-col items-center mb-6">
           <div className="w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mb-4 border border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.4)] animate-pulse">
-            {isBlocked ? <AlertOctagon className="w-8 h-8 text-red-500" /> : <ShieldAlert className="w-8 h-8 text-red-500" />}
+            <ShieldCheck className="w-8 h-8 text-red-500" />
           </div>
           <h2 className="text-xl font-black font-orbitron text-red-500 uppercase tracking-wider text-center">
-            Chủ Nhiệm Nhắc Nhở
+            Miễn Phạt
           </h2>
           <p className="text-xs text-red-400 font-semibold uppercase tracking-widest mt-1">
-            Chi phí bỏ qua: 10 NP (Ví của bạn: {coins} NP)
+            Không trừ Ruby · Tối đa 3 lượt mỗi ngày
           </p>
         </div>
 
-        {isBlocked ? (
-          <div className="text-center space-y-4">
-            <p className="text-slate-300 font-serif italic text-sm border-l-4 border-red-500 pl-4 py-2 bg-red-500/10 rounded-r text-left">
-              "Bạn chưa tích lũy đủ Điểm NP (cần ít nhất 10 NP) để bỏ qua thử thách này. Con đường học tập không có lối tắt cho người thiếu kiên trì. Hãy nỗ lực tự đối mặt và trả lời câu hỏi!"
-            </p>
-            <button
-              onClick={onCancel}
-              className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-orbitron font-bold uppercase tracking-wider shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-colors cursor-pointer"
-            >
-              Quay lại tự giải quyết
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-5">
+        <div className="space-y-5">
             <p className="text-slate-300 font-serif italic text-sm border-l-4 border-red-500 pl-4 py-2 bg-red-500/10 rounded-r text-left">
               "Tại sao bạn muốn bỏ qua thử thách này? Hãy chọn lý do để hệ thống gửi phản hồi tới Chủ nhiệm!"
             </p>
@@ -100,11 +83,10 @@ export const MonChuHoiToiDialog: React.FC<MonChuHoiToiDialogProps> = ({ onConfir
                 disabled={!reason}
                 className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 disabled:bg-slate-800 disabled:text-slate-600 disabled:border-slate-800 disabled:cursor-not-allowed text-white font-bold uppercase text-xs tracking-wider transition-colors shadow-[0_0_15px_rgba(239,68,68,0.3)] cursor-pointer"
               >
-                Xác nhận Bỏ qua
+                Xác nhận Miễn Phạt
               </button>
             </div>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );

@@ -29,7 +29,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
 
   const isStudent = currentUser?.role === 'student';
 
-  // Tick Chân Khí đều đặn để mở khóa đúng giờ hồi mà không cần reload trang (SUB_SPEC_ENERGY §5).
+  // Tick Năng Lượng đều đặn để mở khóa đúng giờ hồi mà không cần reload trang (SUB_SPEC_ENERGY §5).
   useEffect(() => {
     const id = setInterval(() => tickEnergyRegen(), 30000);
     return () => clearInterval(id);
@@ -69,14 +69,14 @@ export const TopHUD: React.FC<TopHUDProps> = ({
           MIKAWAII
         </span>
 
-        {/* Cụm 1: Thẻ định danh — avatar + tên + rank/vai trò + thanh EXP + Chân Khí, gộp làm 1 box duy nhất */}
+        {/* Cụm 1: Thẻ định danh — avatar + tên + rank/vai trò + thanh EXP + Năng Lượng, gộp làm 1 box duy nhất */}
         <div className={`${groupBoxClass} order-1 md:order-none w-full sm:w-auto`}>
           {currentUser && (
             <img
               src={currentUser.avatar}
               alt={currentUser.name}
               className="w-8 h-8 rounded-full border border-synth-cyan/40 shrink-0 cursor-pointer hover:border-synth-magenta transition-colors"
-              title={`${currentUser.name} (${currentUser.email}) - Nhấp để Đổi Thân Phận`}
+              title={`${currentUser.name} (${currentUser.email}) - Nhấp để Đổi Hồ Sơ Sĩ Tử`}
               onClick={() => {
                 useGameState.setState({ currentUser: null });
                 localStorage.removeItem('ge10_selected_profile_id');
@@ -103,9 +103,9 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                   currentUser?.role === 'parent' ? 'bg-synth-orange/30 text-synth-orange border border-synth-orange/20' :
                   'bg-pink-500/30 text-pink-400 border border-pink-500/20'
                 }`}>
-                  {currentUser?.role === 'truong_vien' ? 'Hiệu Trưởng 👑' :
-                   currentUser?.role === 'pho_vien' ? 'Hiệu Phó 🛡️' :
-                   currentUser?.role === 'parent' ? 'Chủ Nhiệm 📋' : 'Chủ Nhiệm Phụ 📋'}
+                  {currentUser?.role === 'truong_vien' ? 'Viện Trưởng 👑' :
+                   currentUser?.role === 'pho_vien' ? 'Phó Viện Trưởng 🛡️' :
+                   currentUser?.role === 'parent' ? 'Chủ Nhiệm Chính 📋' : 'Chủ Nhiệm Phụ 📋'}
                 </span>
               )}
             </div>
@@ -137,12 +137,12 @@ export const TopHUD: React.FC<TopHUDProps> = ({
           )}
         </div>
 
-        {/* Cụm 2: Dải tài nguyên — Điểm Thưởng + Chuỗi (Chỉ dành cho học sinh) */}
+        {/* Cụm 2: Dải tài nguyên — Ruby + Chuỗi (chỉ dành cho học sinh) */}
         {isStudent && (
           <div className={`${groupBoxClass} order-2 md:order-none w-full sm:w-auto justify-between sm:justify-start overflow-x-auto`}>
-            <div className={statItemClass} onClick={() => showHelp('nanite')} title={player.coins < 0 ? 'Điểm NP đang ÂM — trả nợ bằng cách rèn luyện thêm!' : 'Điểm Thưởng (NP) — Nhấp để xem hướng dẫn'}>
-              <Coins className={`w-4 h-4 shrink-0 ${player.coins < 0 ? 'text-red-400 fill-red-400' : 'text-synth-orange fill-synth-orange'}`} />
-              <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${player.coins < 0 ? 'text-red-400' : 'text-white'}`}>{player.coins}</span>
+            <div className={statItemClass} onClick={() => showHelp('nanite')} title={player.ruby < 0 ? 'Ruby đang ÂM — trả nợ bằng cách rèn luyện thêm!' : 'Ruby — Nhấp để xem hướng dẫn'}>
+              <Coins className={`w-4 h-4 shrink-0 ${player.ruby < 0 ? 'text-red-400 fill-red-400' : 'text-synth-orange fill-synth-orange'}`} />
+              <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${player.ruby < 0 ? 'text-red-400' : 'text-white'}`}>{player.ruby}</span>
             </div>
 
             <div className="w-px h-8 bg-white/10 shrink-0" />
@@ -159,7 +159,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
           </div>
         )}
 
-        {/* Cụm 3: Điều hướng nhanh + Thân Phận + Thoái Ẩn */}
+        {/* Cụm 3: Điều hướng nhanh + Hồ Sơ Sĩ Tử + Thoái Ẩn */}
         <div className="flex items-center gap-2 order-3 md:order-none ml-auto">
           {isStudent && (
             <>

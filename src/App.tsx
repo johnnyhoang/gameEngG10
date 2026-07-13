@@ -141,13 +141,13 @@ function App() {
 
     // Run daily resets
     checkDailyReset();
-    // Hồi Chân Khí ngay nếu đã cạn đủ resetHours trong lúc app đóng (SUB_SPEC_ENERGY §5).
+    // Hồi Năng Lượng ngay nếu đã cạn đủ resetHours trong lúc app đóng (SUB_SPEC_ENERGY §5).
     tickEnergyRegen();
 
     // Subscribe to Event Bus listeners
     const unsub = initEventSubscriptions();
 
-    // Check reset every 5 minutes (đồng thời tick Chân Khí để mở khóa đúng giờ hồi)
+    // Check reset every 5 minutes (đồng thời tick Năng Lượng để mở khóa đúng giờ hồi)
     const interval = setInterval(() => {
       checkDailyReset();
       tickEnergyRegen();
@@ -381,7 +381,10 @@ function App() {
                 // Find first uncompleted lesson of selected subject, or default to first
                 const lessonsList = useGameState.getState().lessons;
                 const progress = useGameState.getState().lessonsProgress;
-                const subLessons = lessonsList.filter(l => l.subject === activeSectId);
+                const gradeTier = useGameState.getState().activeGradeTier;
+                const subLessons = lessonsList.filter(l =>
+                  l.subject === activeSectId && (l.gradeTier ?? 9) === gradeTier
+                );
                 const uncompleted = subLessons.find(l => !progress[l.id]);
                 const targetLesson = uncompleted || subLessons[0];
                 if (targetLesson) {
@@ -414,7 +417,7 @@ function App() {
           {screen === 'hang-3d' && (
             <HangMatThatPage
               kind="3d"
-              title="Mật thất 3D"
+              title="Xưởng Toán Hình 3D"
               subtitle="Không gian riêng cho hình học không gian lớp 9: dựng hình, xoay 360°, chọn góc nhìn và phân tích từng bước mà không bị bó hẹp trong layout chung."
               onBack={() => setScreen('hang')}
               onSwitchTo3D={() => setScreen('hang-3d')}
@@ -428,7 +431,7 @@ function App() {
           {screen === 'hang-plane' && (
             <HangMatThatPage
               kind="plane"
-              title="Mật thất Hình học phẳng"
+              title="Xưởng Toán Hình"
               subtitle="Không gian riêng cho tam giác, tứ giác, đường tròn và các đường phụ. Board rộng hơn để kéo thả, nối cạnh, dựng đường cao và đọc lời giải rõ ràng."
               onBack={() => setScreen('hang')}
               onSwitchTo3D={() => setScreen('hang-3d')}
@@ -442,7 +445,7 @@ function App() {
           {screen === 'hang-graph' && (
             <HangMatThatPage
               kind="graph"
-              title="Mật thất Đồ thị hàm số"
+              title="Xưởng Toán Đồ Thị"
               subtitle="Không gian riêng cho bậc nhất và bậc hai, slider hệ số, giao điểm, đỉnh và trục đối xứng. AI sẽ phân tích đề và điều khiển đồ thị theo lệnh."
               onBack={() => setScreen('hang')}
               onSwitchTo3D={() => setScreen('hang-3d')}
@@ -508,7 +511,7 @@ function App() {
         </div>
       )}
 
-      {/* Mọi "?" trong app đều mở thẳng trang tương ứng trong Cẩm Nang Bí Lục — cốt lõi Cẩm Nang là help/guide (CORE_SPECS §2.7) */}
+      {/* Mọi "?" trong app đều mở thẳng trang tương ứng trong Cẩm Nang Học Đường — cốt lõi Cẩm Nang là help/guide (CORE_SPECS §2.7) */}
       {helpPageId && (
         <GiangHoCamNang
           isOpen={true}
@@ -577,7 +580,7 @@ function App() {
       {/* Footer */}
       <footer className="py-6 border-t border-synth-gray/30 text-center space-y-2">
         <div className="text-[10px] text-synth-text-muted font-semibold tracking-wider uppercase font-orbitron">
-          © 2026 MIKAWAII ENGLISH GRADE 10. ALL RIGHTS RESERVED. RUNNING_LOCAL_LOCALFORAGE_INDEXEDDB.
+          © 2026 MIKAWAII HỌC ĐƯỜNG. ALL RIGHTS RESERVED. RUNNING_LOCAL_LOCALFORAGE_INDEXEDDB.
         </div>
         <div className="text-[10px] text-slate-400 font-semibold tracking-wider uppercase font-orbitron">
           Version {APP_VERSION} · Push {APP_PUSH_TIME}

@@ -235,7 +235,7 @@ export const LessonStudyView: React.FC<LessonStudyViewProps> = ({
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-xs text-white font-orbitron font-bold uppercase tracking-wider hover:bg-white/10 transition-colors cursor-pointer"
         >
           <ChevronLeft className="w-4 h-4" />
-          Hang Luyện Công
+          Học Đường
         </button>
 
         {isCompleted && (

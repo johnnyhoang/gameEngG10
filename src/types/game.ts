@@ -1,6 +1,6 @@
 export type QuestionType = 'mcq' | 'multiple_choice' | 'text_input' | 'matching' | 'wordform' | 'rewrite' | 'cloze' | 'reading' | 'short-answer' | 'proof' | 'multi-part';
 export type ChallengeType = 'daily' | 'weekly' | 'achievement' | 'one-time';
-/** Trạng thái một lượt đổi quà (RewardRedemption) — CORE_SPECS §3.2. 'pending' = đã trừ NP, chờ chủ nhiệm trao; 'delivered' = chủ nhiệm đã bấm "Đã Trao". */
+/** Trạng thái một lượt đổi quà (RewardRedemption) — CORE_SPECS §3.2. 'pending' = đã trừ Ruby, chờ chủ nhiệm trao; 'delivered' = chủ nhiệm đã bấm "Đã Trao". */
 export type RewardStatus = 'pending' | 'delivered' | 'cancelled';
 export type PetStage = 'egg' | 'baby' | 'adult' | 'legend';
 export type PetMood = 'happy' | 'neutral' | 'sad' | 'sleeping';
@@ -32,7 +32,7 @@ export interface ExplorationProgress {
   lastClearedAt: string;
 }
 
-export interface CoinLedger {
+export interface RubyLedger {
   id: string;
   userId: string;
   amount: number;
@@ -52,11 +52,11 @@ export const PET_STAGE_LABELS: Record<PetStage, string> = {
 export type UiThemeId = 'current' | 'cute-pink-pastel' | 'space-adventure' | 'fantasy-forest' | 'pixel-arcade' | 'unicorn-dream';
 
 export interface GameSettings {
-  /** Bonus Điểm (NP) khi hạ Boss — quảng bá ngay trên Boss Card, do Chủ Viện/Hiệu Phó đặt (CORE_SPECS §2.1). Thay thế hoàn toàn tiền thưởng VND cũ. */
-  bossCompletionBonusNP: [number, number, number];
+  /** Bonus Điểm (Ruby) khi hạ Boss — quảng bá ngay trên Boss Card, do Chủ Viện/Phó Viện Trưởng đặt (CORE_SPECS §2.1). Thay thế hoàn toàn tiền thưởng VND cũ. */
+  bossCompletionBonusRuby: [number, number, number];
   challengeEnergyCosts: [number, number, number, number];
   baseXP?: number;
-  baseCoins?: number;
+  baseRuby?: number;
   updatedAt: number;
 }
 
@@ -93,26 +93,26 @@ export interface PlayerProfile {
   role: 'student' | 'parent' | 'secondary_parent' | 'pho_vien' | 'truong_vien';
   level: number;
   xp: number;
-  coins: number;
+  ruby: number;
   streak: number;
   energy: number; // 0 - maxEnergy
-  /** Trần Chân Khí riêng của con này — do chủ nhiệm cấu hình tại Ngân Các (SUB_SPEC_ENERGY §2). Mặc định 100, phạm vi 50-300. */
+  /** Trần Năng Lượng riêng của con này — do chủ nhiệm cấu hình tại Phòng Tài Vụ (SUB_SPEC_ENERGY §2). Mặc định 100, phạm vi 50-300. */
   maxEnergy: number;
-  /** Số giờ để hồi ĐẦY Chân Khí sau khi cạn về 0 — chủ nhiệm chọn 1 trong {2,3,5} (SUB_SPEC_ENERGY §2). */
+  /** Số giờ để hồi ĐẦY Năng Lượng sau khi cạn về 0 — chủ nhiệm chọn 1 trong {2,3,5} (SUB_SPEC_ENERGY §2). */
   resetHours: 2 | 3 | 5;
-  /** Mốc thời gian (ms) Chân Khí chạm 0 — null nếu chưa cạn/đã hồi. Dùng để tính giờ hồi đầy (SUB_SPEC_ENERGY §5, Phương án A). */
+  /** Mốc thời gian (ms) Năng Lượng chạm 0 — null nếu chưa cạn/đã hồi. Dùng để tính giờ hồi đầy (SUB_SPEC_ENERGY §5, Phương án A). */
   energyDepletedAt: number | null;
   /** @deprecated Hệ thống Tim sinh mệnh đã bị xóa (CORE_SPECS §2.1) — field giữ lại optional để không vỡ localStorage cũ. */
   hearts?: number;
   lastActive: string; // ISO String date
   badges: string[];
-  /** Phong Vị (theme giao diện) đã mở khóa bằng NP tại Bách Hóa Phường (CORE_SPECS §2.4). 'current' luôn miễn phí mặc định. */
+  /** Phong Cách Học Đường (theme giao diện) đã mở khóa bằng Ruby tại Shop Học Cụ (CORE_SPECS §2.4). 'current' luôn miễn phí mặc định. */
   unlockedThemes?: UiThemeId[];
   /** Phong vị giao diện đang dùng của profile này */
   uiTheme?: UiThemeId;
-  /** Track daily skips for Môn Chủ Hỏi Tội */
+  /** Track daily skips for Giám Học Hỏi Tội */
   dailySkips?: { date: string, count: number };
-  /** Luật Bất Thoái (CORE_SPECS §7.4.4): Đẳng Cấp Môn Phái cao nhất từng đạt theo từng môn (lưu `order` trong SECT_MASTERY_RANKS) — không bao giờ tụt kể cả khi Hiệu Trưởng import thêm câu hỏi/bài học làm tỉ lệ % thô giảm. */
+  /** Luật Bất Thoái (CORE_SPECS §7.4.4): Đẳng Cấp Môn Phái cao nhất từng đạt theo từng môn (lưu `order` trong SECT_MASTERY_RANKS) — không bao giờ tụt kể cả khi Viện Trưởng import thêm câu hỏi/bài học làm tỉ lệ % thô giảm. */
   maxAchievedMasteryRank?: Partial<Record<SubjectId, number>>;
   /** Môn học đang chọn tu học (Sect) */
   activeSubject?: SubjectId;
@@ -133,8 +133,10 @@ export interface Question {
   difficulty: number; // 1 to 10 scale
   source: string; // e.g. "HCMC 2024 Exam", "Specialized 2025 Mock"
   subject?: SubjectId;
-  /** Tầng Thế Giới của câu hỏi (CORE_SPECS §1.4). Bỏ trống = Tầng 9 (toàn bộ nội dung hiện hành). */
-  gradeTier?: number;
+  /** Grade level: 8, 9, 10, 11, 12. Supports filtering by grade. */
+  grade?: number;
+  /** Bậc Học của câu hỏi (CORE_SPECS §1.4). Bỏ trống = Tầng 9 (toàn bộ nội dung hiện hành). */
+  gradeTier?: GradeTier;
   imageUrl?: string;
   metadata?: QuestionMeta;
   isConfused?: boolean;
@@ -158,6 +160,7 @@ export type ExamRelevance = 'high' | 'medium' | 'low';
 export interface CoreKnowledgeTopic {
   id: string;                       // kebab-case unique ID, e.g. "eng-tenses", "math-quadratic"
   subjectId: SubjectId;
+  gradeTier?: GradeTier;
   group: 'chuyen_sau' | 'co_ban';
   label: string;                    // tên hiển thị tiếng Việt
   labelEN: string;                  // tên kỹ thuật tiếng Anh
@@ -165,7 +168,7 @@ export interface CoreKnowledgeTopic {
   examRelevance: ExamRelevance;     // mức độ xuất hiện trong đề tuyển sinh / HK
   minQuestions: number;             // số câu tối thiểu cần có trong DB để mở khu vực
   questionTypes: QuestionType[];    // dạng câu hỏi được phép
-  description: string;              // mô tả cho Hiệu Trưởng khi import
+  description: string;              // mô tả cho Viện Trưởng khi import
 }
 
 
@@ -208,30 +211,30 @@ export interface PetState {
 }
 
 /**
- * Phần Thưởng Thực Tế (Reward Catalog) — CORE_SPECS §3.2.
- * Do chủ nhiệm tự tạo, định giá bằng NP, có SỐ LƯỢNG GIỚI HẠN. App không quản lý tiền —
+ * Danh Mục Quà Khuyến Học (Reward Catalog) — CORE_SPECS §3.2.
+ * Do chủ nhiệm tự tạo, định giá bằng Ruby, có SỐ LƯỢNG GIỚI HẠN. App không quản lý tiền —
  * đây chỉ là một catalog item, không phải một lượt đổi (xem RewardRedemption bên dưới).
  */
 export interface ParentReward {
   id: string;
   title: string;
-  /** Giá NP cho một lượt đổi. */
-  costCoins: number;
+  /** Giá Ruby cho một lượt đổi. */
+  costRuby: number;
   /** Tổng số lượng chủ nhiệm tạo ra ban đầu. */
   quantity: number;
-  /** Số lượng còn lại có thể đổi — giảm mỗi khi thiếu hiệp đổi, hết thì ẩn/disable. */
+  /** Số lượng còn lại có thể đổi — giảm mỗi khi Sĩ Tử đổi, hết thì ẩn/disable. */
   remainingQuantity: number;
   timestamp: number;
 }
 
-/** Một lượt đổi quà cụ thể — trừ NP ngay, chờ chủ nhiệm xác nhận "Đã Trao" ngoài đời (CORE_SPECS §3.2). */
+/** Một lượt đổi quà cụ thể — trừ Ruby ngay, chờ chủ nhiệm xác nhận "Đã Trao" ngoài đời (CORE_SPECS §3.2). */
 export interface RewardRedemption {
   id: string;
   rewardId: string;
   /** Snapshot tên quà tại thời điểm đổi — vẫn hiển thị đúng dù sau này quà gốc bị sửa/xóa. */
   rewardTitle: string;
-  /** Snapshot giá NP đã trả — dùng để hoàn tiền nếu hủy. */
-  costCoins: number;
+  /** Snapshot giá Ruby đã trả — dùng để hoàn tiền nếu hủy. */
+  costRuby: number;
   status: RewardStatus;
   timestamp: number;
   /** Thời điểm chủ nhiệm bấm "Đã Trao". */
@@ -244,7 +247,7 @@ export interface ClassReward {
   teacherId: string;
   teacherName?: string;
   title: string;
-  costCoins: number;
+  costRuby: number;
   quantity: number;
   remaining: number;
   createdAt: number;
@@ -258,7 +261,7 @@ export interface ClassRewardRedemption {
   studentName?: string;
   studentAvatar?: string;
   rewardTitle: string;
-  costCoins: number;
+  costRuby: number;
   status: RewardStatus;
   requestedAt: number;
   deliveredAt?: number;
@@ -270,10 +273,11 @@ export interface HistoryLog {
   activityType: 'exercise' | 'challenge' | 'boss' | 'shop' | 'streak_penalty' | 'parent_approve' | 'pet_interact' | 'energy_refill' | 'box_open' | 'reward_claimed';
   title: string;
   detail: string;
-  coinsChanged: number;
+  rubyChanged: number;
   xpChanged: number;
   /** Môn phái đang hoạt động tại thời điểm ghi log — dùng để cô lập nhật ký theo Sect Isolation Principle (CORE_SPECS §1.3) */
   subject?: SubjectId;
+  gradeTier?: GradeTier;
 }
 
 export interface Challenge {
@@ -283,7 +287,7 @@ export interface Challenge {
   description: string;
   targetCount: number;
   currentCount: number;
-  rewardCoins: number;
+  rewardRuby: number;
   rewardXP: number;
   completed: boolean;
   category?: string; // If restricted to a specific category
@@ -296,9 +300,9 @@ export interface HandbookPage {
   content: string;
   /** Danh sách gạch đầu dòng — dùng cho các trang tra cứu nhanh (thay cho content dạng đoạn văn). */
   bullets?: string[];
-  /** Đối tượng xem trang: 'admin' chỉ hiện khi duyệt Cẩm Nang với vai trò Hiệu Trưởng. Bỏ trống = ai cũng xem được. */
+  /** Đối tượng xem trang: 'admin' chỉ hiện khi duyệt Cẩm Nang với vai trò Viện Trưởng. Bỏ trống = ai cũng xem được. */
   audience?: 'student' | 'admin';
-  /** Tầng Thế Giới của trang cẩm nang (CORE_SPECS §1.4). Bỏ trống = dùng chung mọi tầng. */
+  /** Bậc Học của trang cẩm nang (CORE_SPECS §1.4). Bỏ trống = dùng chung mọi tầng. */
   gradeTier?: number;
 }
 
@@ -321,7 +325,7 @@ export interface ParentQuest {
   id: string;
   title: string;
   description: string;
-  rewardNP: number;
+  rewardRuby: number;
   status: 'pending' | 'completed' | 'claimed';
   timestamp: number;
 }
@@ -333,8 +337,8 @@ export interface GameEvent {
   payload: any;
 }
 
-// ==================== GRADE TIER (Tầng Thế Giới — CORE_SPECS §1.4) ====================
-/** Mỗi lớp học là một Tầng Thế Giới giang hồ cô lập 100% (Tầng → Môn Phái → Nội dung). */
+// ==================== GRADE TIER (Bậc Học — CORE_SPECS §1.4) ====================
+/** Mỗi lớp học là một Bậc Học học đường cô lập 100% (Tầng → Môn Phái → Nội dung). */
 export type GradeTier = 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
 export const DEFAULT_GRADE_TIER: GradeTier = 9;
@@ -343,15 +347,15 @@ export interface GradeTierConfig {
   tier: GradeTier;
   name: string;
   icon: string;
-  /** 'active' = tầng đang vận hành; 'coming_soon' = chưa khai mở (khóa trong UI chuyển tầng). */
+  /** Nhãn mô tả mặc định; khả dụng thực tế phải được suy ra từ nội dung hiện có. */
   status: 'active' | 'coming_soon';
   description: string;
 }
 
 export const GRADE_TIERS: GradeTierConfig[] = [
-  { tier: 6, name: 'Tầng Lớp 6', icon: '🏯', status: 'coming_soon', description: 'Nhập môn giang hồ — sắp khai mở.' },
+  { tier: 6, name: 'Tầng Lớp 6', icon: '🏯', status: 'coming_soon', description: 'Nhập môn học đường — sắp khai mở.' },
   { tier: 7, name: 'Tầng Lớp 7', icon: '⛩️', status: 'coming_soon', description: 'Rèn gân cốt — sắp khai mở.' },
-  { tier: 8, name: 'Tầng Lớp 8', icon: '🏔️', status: 'coming_soon', description: 'Luyện nội công — sắp khai mở.' },
+  { tier: 8, name: 'Tầng Lớp 8', icon: '🏔️', status: 'active', description: 'Luyện nội công.' },
   { tier: 9, name: 'Tầng Lớp 9', icon: '🗼', status: 'active', description: '9 môn phái: 3 Yêu Cầu Cao (bám tuyển sinh 10) + 6 Yêu Cầu Cơ Bản.' },
   { tier: 10, name: 'Tầng Lớp 10', icon: '🌋', status: 'coming_soon', description: 'Thượng tầng THPT — sắp khai mở.' },
   { tier: 11, name: 'Tầng Lớp 11', icon: '🌌', status: 'coming_soon', description: 'Thượng tầng THPT — sắp khai mở.' },
@@ -373,6 +377,25 @@ export type SubjectId =
   | 'technology' 
   | 'informatics' 
   | 'arts';
+
+export interface LearningContext {
+  gradeTier: GradeTier;
+  subjectId: SubjectId;
+}
+
+/** Canonical content shape after legacy grade/subject normalization. */
+export type CanonicalQuestion = Omit<Question, 'grade' | 'gradeTier' | 'subject'> & {
+  gradeTier: GradeTier;
+  subject: SubjectId;
+};
+
+export function normalizeQuestionContext(question: Question): CanonicalQuestion {
+  return {
+    ...question,
+    gradeTier: (question.gradeTier ?? question.grade ?? DEFAULT_GRADE_TIER) as GradeTier,
+    subject: question.subject ?? 'english',
+  };
+}
 
 export interface SubjectConfig {
   id: SubjectId;
@@ -406,12 +429,12 @@ export interface StudentRank {
 }
 
 export const STUDENT_RANKS: StudentRank[] = [
-  { id: 'tan-de-tu', name: 'Tân Đệ Tử', icon: '🌱', minLevel: 1, description: 'Mới nhập môn võ học học viện, làm quen với các khái niệm căn bản.' },
+  { id: 'tan-de-tu', name: 'Tân Đệ Tử', icon: '🌱', minLevel: 1, description: 'Mới nhập môn kiến thức học viện, làm quen với các khái niệm căn bản.' },
   { id: 'de-tu', name: 'Đệ Tử', icon: '🥋', minLevel: 5, description: 'Đã bắt đầu tu học kiến thức chuyên sâu của các môn phái.' },
-  { id: 'thieu-hiep', name: 'Môn Sinh', icon: '⚔️', minLevel: 15, description: 'Có nền tảng vững vàng, đã tự mình vượt qua nhiều thử thách.' },
+  { id: 'thieu-hiep', name: 'Sĩ Tử', icon: '⚔️', minLevel: 15, description: 'Có nền tảng vững vàng, đã tự mình vượt qua nhiều thử thách.' },
   { id: 'cao-thu', name: 'Cao Thủ', icon: '⭐', minLevel: 30, description: 'Đạt được những thành tích nổi bật và độ chính xác cao khi giải bài.' },
-  { id: 'dai-hiep', name: 'Đại Hiệp', icon: '🐉', minLevel: 50, description: 'Võ công thượng thừa, nằm trong danh sách các môn sinh đứng đầu môn phái.' },
-  { id: 'tong-su', name: 'Tông Sư', icon: '👑', minLevel: 80, description: 'Đỉnh phong võ học, danh hiệu cao nhất chỉ dành cho rất ít người xuất chúng.' }
+  { id: 'dai-hiep', name: 'Đại Hiệp', icon: '🐉', minLevel: 50, description: 'Võ công thượng thừa, nằm trong danh sách các Sĩ Tử đứng đầu môn phái.' },
+  { id: 'tong-su', name: 'Tông Sư', icon: '👑', minLevel: 80, description: 'Đỉnh phong kiến thức, danh hiệu cao nhất chỉ dành cho rất ít người xuất chúng.' }
 ];
 
 export function getStudentRankForLevel(level: number): StudentRank {

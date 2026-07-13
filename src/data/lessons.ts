@@ -1,8 +1,13 @@
-import type { SubjectId } from '../types/game';
+import type { GradeTier, SubjectId } from '../types/game';
 
 export interface Lesson {
   id: string;
   subject: SubjectId;
+  /** Legacy content without this field is normalized to grade 9 at the registry boundary. */
+  gradeTier?: GradeTier;
+  examples?: string[];
+  practicePoints?: string[];
+  difficulty?: number;
   topic: string;
   title: string;
   theory: string;
@@ -10,7 +15,7 @@ export interface Lesson {
   is_standard?: boolean;
 }
 
-export const INITIAL_LESSONS: Lesson[] = [
+const GRADE9_LESSONS: Lesson[] = [
   // 1. English Lessons
   {
     id: 'eng-tenses',
@@ -2955,4 +2960,8 @@ Gửi cho bạn bè, người thân, hoặc những người ngang hàng có m�
 - Câu hỏi Yes/No: Lên giọng ở cuối câu.
 - Câu hỏi Wh-: Xuống giọng ở cuối câu.`
   }
+];
+
+export const INITIAL_LESSONS: Lesson[] = [
+  ...GRADE9_LESSONS.map(lesson => ({ ...lesson, gradeTier: 9 as const })),
 ];

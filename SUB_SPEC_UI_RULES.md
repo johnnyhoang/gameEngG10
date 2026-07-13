@@ -4,7 +4,7 @@ Tài liệu này gom các quy tắc **luôn phải tuân theo** khi phát triể
 
 ## 1. Nguyên tắc Theme Token (không hardcode màu phá theme)
 - Toàn bộ màu sắc nền/chữ/viền chính phải dùng biến CSS theme sẵn có (`--color-synth-cyan`, `--color-synth-bg`, `--color-synth-card`, v.v. định nghĩa tại `src/index.css`), **không hardcode** mã màu cố định (đặc biệt là đen tuyền `#000`/`black`) cho các lớp phủ, badge, hoặc trạng thái quan trọng.
-- Lý do: Bách Hóa Phường cho phép đổi Phong Vị (Đào Hoa, Trúc Lâm, Tinh Không, Tuyết Sơn...) — các biến này tự đổi giá trị theo theme đang chọn (ví dụ `--color-synth-cyan` là cyan ở theme mặc định nhưng là hồng ở theme sáng/pastel). Hardcode màu sẽ làm giao diện lệch tông ở một số theme.
+- Lý do: Shop Học Cụ cho phép đổi Phong Cách Học Đường (Đào Hoa, Trúc Lâm, Tinh Không, Tuyết Sơn...) — các biến này tự đổi giá trị theo theme đang chọn (ví dụ `--color-synth-cyan` là cyan ở theme mặc định nhưng là hồng ở theme sáng/pastel). Hardcode màu sẽ làm giao diện lệch tông ở một số theme.
 
 ## 2. Quy tắc Trạng Thái Khóa / Mờ Sương (Fog Card)
 Áp dụng cho mọi box đại diện cho khu vực/nội dung **chưa khám phá** (Fog of War — xem CORE_SPECS §2.8.7), triển khai chuẩn tại **[FogCard.tsx](./src/components/FogCard.tsx)**:
@@ -13,10 +13,10 @@ Tài liệu này gom các quy tắc **luôn phải tuân theo** khi phát triể
 - **Không dùng icon ổ khóa (🔒 / `Lock` từ lucide-react)** cho trạng thái mờ sương. Icon ổ khóa gợi cảm giác trừng phạt/cấm đoán, không phù hợp tông trải nghiệm học tập vui vẻ.
 - **Chữ hiển thị phải theo ngữ cảnh trang** (prop `label` của `FogCard`), không dùng chung một câu cứng nhắc cho mọi nơi:
   - Mặc định (không truyền `label`): **"Khu vực chưa khám phá"**.
-  - Đấu Trường (thử thách/ải luyện): **"Thử thách chưa trải nghiệm"**.
-  - Hang Luyện Công (bài học): **"Bài học chưa trải nghiệm"**.
-  - Sơn Trang Thư Giãn (mini-game): **"Trò chơi chưa trải nghiệm"**.
-  - Bách Hóa Phường → Phong Vị (theme/trang phục giao diện): **"Trang phục chưa trải nghiệm"**.
+  - Trường Thi (thử thách/ải luyện): **"Thử thách chưa trải nghiệm"**.
+  - Học Đường (bài học): **"Bài học chưa trải nghiệm"**.
+  - Công Viên Thư Giãn (mini-game): **"Trò chơi chưa trải nghiệm"**.
+  - Shop Học Cụ → Phong Cách Học Đường (theme/trang phục giao diện): **"Trang phục chưa trải nghiệm"**.
   - Khi thêm loại Page mới có Fog Card, đặt tên nhãn theo mẫu **"[Loại nội dung] chưa trải nghiệm"**, không tự bịa câu ngoài mẫu này.
 - **Bỏ hoàn toàn dòng phụ kiểu "Cần giải mã để tiến vào"** hay bất kỳ biến thể nào dùng từ "giải mã" — cơ chế mở khóa thật sự (câu hỏi Gác Cổng của Heo Maikawaii) đã tự giải thích qua tương tác, không cần nhắc lại bằng chữ.
 

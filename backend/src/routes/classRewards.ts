@@ -111,9 +111,10 @@ router.post('/class-rewards', authMiddleware, async (req: any, res) => {
   const accountId = req.user?.sub;
   if (!accountId) return res.status(401).json({ error: 'Unauthorized' });
 
-  const { title, costCoins, quantity } = req.body;
-  if (!title?.trim() || !costCoins || !quantity || costCoins <= 0 || quantity <= 0) {
-    return res.status(400).json({ error: 'Missing or invalid fields: title, costCoins, quantity' });
+  const { title, quantity } = req.body;
+  const costRuby = req.body.costRuby ?? req.body.costCoins;
+  if (!title?.trim() || !costRuby || !quantity || costRuby <= 0 || quantity <= 0) {
+    return res.status(400).json({ error: 'Missing or invalid fields: title, costRuby, quantity' });
   }
 
   try {
@@ -129,9 +130,9 @@ router.post('/class-rewards', authMiddleware, async (req: any, res) => {
     const now = Date.now();
 
     await pool.query(
-      `INSERT INTO ge10_class_rewards (id, teacher_id, title, cost_coins, quantity, remaining, created_at)
+      `INSERT INTO ge10_class_rewards (id, teacher_id, title, cost_ruby, quantity, remaining, created_at)
        VALUES ($1, $2, $3, $4, $5, $5, $6)`,
-      [id, profileId, title.trim(), costCoins, quantity, now]
+      [id, profileId, title.trim(), costRuby, quantity, now]
     );
 
     return res.json({ success: true, id, createdAt: now });
@@ -170,7 +171,7 @@ router.delete('/class-rewards/:id', authMiddleware, async (req: any, res) => {
 });
 
 // ─────────────────────────────────────────────
-// POST /api/class-rewards/:id/redeem — Student redeems (deduct coins, remaining--, create pending redemption)
+// POST /api/class-rewards/:id/redeem — Student redeems (deduct ruby, remaining--, create pending redemption)
 // ─────────────────────────────────────────────
 router.post('/class-rewards/:id/redeem', authMiddleware, async (req: any, res) => {
   const accountId = req.user?.sub;
@@ -196,24 +197,24 @@ router.post('/class-rewards/:id/redeem', authMiddleware, async (req: any, res) =
       return res.status(403).json({ error: 'Not in this class' });
     }
 
-    // Check coins
+    // Check ruby
     const playerRes = await pool.query(
-      'SELECT coins FROM ge10_player_profiles WHERE user_id = $1',
+      'SELECT ruby FROM ge10_player_profiles WHERE user_id = $1',
       [profileId]
     );
     const player = playerRes.rows[0];
     if (!player) return res.status(404).json({ error: 'Player profile not found' });
-    if (player.coins < reward.cost_coins) {
-      return res.status(400).json({ error: 'not_enough_coins' });
+    if (player.ruby < reward.cost_ruby) {
+      return res.status(400).json({ error: 'not_enough_ruby' });
     }
 
     // Atomic transaction
     await pool.query('BEGIN');
     try {
-      // Deduct coins
+      // Deduct ruby
       await pool.query(
-        'UPDATE ge10_player_profiles SET coins = coins - $1 WHERE user_id = $2',
-        [reward.cost_coins, profileId]
+        'UPDATE ge10_player_profiles SET ruby = ruby - $1 WHERE user_id = $2',
+        [reward.cost_ruby, profileId]
       );
 
       // Decrement remaining (race-condition safe)
@@ -230,9 +231,9 @@ router.post('/class-rewards/:id/redeem', authMiddleware, async (req: any, res) =
       const redemptionId = crypto.randomUUID();
       await pool.query(
         `INSERT INTO ge10_class_reward_redemptions
-           (id, class_reward_id, student_id, reward_title, cost_coins, status, requested_at)
+           (id, class_reward_id, student_id, reward_title, cost_ruby, status, requested_at)
          VALUES ($1, $2, $3, $4, $5, 'pending', $6)`,
-        [redemptionId, rewardId, profileId, reward.title, reward.cost_coins, Date.now()]
+        [redemptionId, rewardId, profileId, reward.title, reward.cost_ruby, Date.now()]
       );
 
       await pool.query('COMMIT');
@@ -249,7 +250,7 @@ router.post('/class-rewards/:id/redeem', authMiddleware, async (req: any, res) =
 
 // ─────────────────────────────────────────────
 // DELETE /api/class-rewards/redemptions/:id — Student cancels a pending redemption
-// Refunds coins + increments remaining
+// Refunds ruby + increments remaining
 // ─────────────────────────────────────────────
 router.delete('/class-rewards/redemptions/:id', authMiddleware, async (req: any, res) => {
   const accountId = req.user?.sub;
@@ -272,10 +273,10 @@ router.delete('/class-rewards/redemptions/:id', authMiddleware, async (req: any,
 
     await pool.query('BEGIN');
     try {
-      // Refund coins
+      // Refund ruby
       await pool.query(
-        'UPDATE ge10_player_profiles SET coins = coins + $1 WHERE user_id = $2',
-        [redemption.cost_coins, profileId]
+        'UPDATE ge10_player_profiles SET ruby = ruby + $1 WHERE user_id = $2',
+        [redemption.cost_ruby, profileId]
       );
       // Restore remaining
       await pool.query(

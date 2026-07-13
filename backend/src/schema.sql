@@ -38,14 +38,17 @@ CREATE TABLE IF NOT EXISTS ge10_player_profiles (
     user_id VARCHAR(255) PRIMARY KEY REFERENCES ge10_users(id) ON DELETE CASCADE,
     level INTEGER DEFAULT 1,
     xp INTEGER DEFAULT 0,
-    coins INTEGER DEFAULT 200,
+    ruby INTEGER NOT NULL DEFAULT 200,
+    coins INTEGER DEFAULT 200, -- legacy compatibility; remove only after all clients migrate
     streak INTEGER DEFAULT 0,
     energy INTEGER DEFAULT 1000,
     hearts INTEGER DEFAULT 3,
     last_active VARCHAR(100) DEFAULT '',
     badges TEXT[] DEFAULT '{}'::TEXT[],
-    daily_np_earned INTEGER DEFAULT 0,
-    last_np_earned_date VARCHAR(10) DEFAULT '',
+    daily_ruby_earned INTEGER NOT NULL DEFAULT 0,
+    last_ruby_earned_date VARCHAR(10) NOT NULL DEFAULT '',
+    daily_np_earned INTEGER DEFAULT 0, -- legacy compatibility
+    last_np_earned_date VARCHAR(10) DEFAULT '', -- legacy compatibility
     daily_skips JSONB DEFAULT '{"date": "", "count": 0}'::jsonb,
     ui_theme VARCHAR(50) DEFAULT 'current',
     active_subject VARCHAR(50) NOT NULL DEFAULT 'english',
@@ -60,8 +63,8 @@ ALTER TABLE ge10_player_profiles DROP COLUMN IF EXISTS wallet_vnd;
 ALTER TABLE ge10_player_profiles ADD COLUMN IF NOT EXISTS active_subject VARCHAR(50) NOT NULL DEFAULT 'english';
 ALTER TABLE ge10_player_profiles ADD COLUMN IF NOT EXISTS active_grade_tier INTEGER NOT NULL DEFAULT 9;
 
--- Chân Khí v2 (SUB_SPEC_ENERGY.md) — maxEnergy/resetHours là cấu hình RIÊNG từng con,
--- không còn dùng ge10_game_settings global nữa (mỗi con một mức do chủ nhiệm chỉnh ở Ngân Các).
+-- Năng Lượng v2 (SUB_SPEC_ENERGY.md) — maxEnergy/resetHours là cấu hình RIÊNG từng con,
+-- không còn dùng ge10_game_settings global nữa (mỗi con một mức do chủ nhiệm chỉnh ở Phòng Tài Vụ).
 ALTER TABLE ge10_player_profiles ALTER COLUMN energy SET DEFAULT 100;
 ALTER TABLE ge10_player_profiles ADD COLUMN IF NOT EXISTS max_energy INTEGER NOT NULL DEFAULT 100;
 ALTER TABLE ge10_player_profiles ADD COLUMN IF NOT EXISTS reset_hours INTEGER NOT NULL DEFAULT 3;
@@ -106,18 +109,20 @@ CREATE TABLE IF NOT EXISTS ge10_history_logs (
     activity_type VARCHAR(100) NOT NULL,
     title VARCHAR(255) NOT NULL,
     detail TEXT,
-    coins_changed INTEGER DEFAULT 0,
+    ruby_changed INTEGER DEFAULT 0,
+    coins_changed INTEGER DEFAULT 0, -- legacy compatibility
     xp_changed INTEGER DEFAULT 0,
     wallet_changed INTEGER DEFAULT 0
 );
 
--- Phần Thưởng Thực Tế (Reward Catalog) — CORE_SPECS §3.2. Do chủ nhiệm tự tạo, định giá NP,
+-- Danh Mục Quà Khuyến Học (Reward Catalog) — CORE_SPECS §3.2. Do chủ nhiệm tự tạo, định giá Ruby,
 -- có số lượng giới hạn. Đây CHỈ là catalog item — một lượt đổi cụ thể nằm ở ge10_reward_redemptions.
 CREATE TABLE IF NOT EXISTS ge10_parent_rewards (
     id VARCHAR(255) PRIMARY KEY,
     user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
-    cost_coins INTEGER NOT NULL,
+    cost_ruby INTEGER NOT NULL,
+    cost_coins INTEGER, -- legacy compatibility
     quantity INTEGER NOT NULL DEFAULT 1,
     remaining_quantity INTEGER NOT NULL DEFAULT 1,
     timestamp BIGINT NOT NULL
@@ -129,13 +134,14 @@ ALTER TABLE ge10_parent_rewards DROP COLUMN IF EXISTS status;
 ALTER TABLE ge10_parent_rewards ADD COLUMN IF NOT EXISTS quantity INTEGER NOT NULL DEFAULT 1;
 ALTER TABLE ge10_parent_rewards ADD COLUMN IF NOT EXISTS remaining_quantity INTEGER NOT NULL DEFAULT 1;
 
--- Một lượt đổi quà cụ thể — trừ NP ngay, chờ chủ nhiệm xác nhận "Đã Trao" ngoài đời (CORE_SPECS §3.2).
+-- Một lượt đổi quà cụ thể — trừ Ruby ngay, chờ chủ nhiệm xác nhận "Đã Trao" ngoài đời (CORE_SPECS §3.2).
 CREATE TABLE IF NOT EXISTS ge10_reward_redemptions (
     id VARCHAR(255) PRIMARY KEY,
     user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
     reward_id VARCHAR(255) REFERENCES ge10_parent_rewards(id) ON DELETE SET NULL,
     reward_title VARCHAR(255) NOT NULL,
-    cost_coins INTEGER NOT NULL,
+    cost_ruby INTEGER NOT NULL,
+    cost_coins INTEGER, -- legacy compatibility
     status VARCHAR(50) DEFAULT 'pending',
     timestamp BIGINT NOT NULL,
     delivered_at BIGINT
@@ -161,12 +167,14 @@ CREATE TABLE IF NOT EXISTS ge10_game_settings (
     setting_json JSONB NOT NULL
 );
 
--- Bonus Điểm (NP) khi hạ Boss — thay hoàn toàn thưởng VND cũ (CORE_SPECS §2.1). Boss không thưởng tiền.
+-- Bonus Ruby khi hoàn thành Khoa Thi — Boss không thưởng tiền.
 INSERT INTO ge10_game_settings (setting_key, setting_json)
-VALUES (
-    'boss_completion_bonus_np',
-    '{"easy": 100, "medium": 150, "hard": 200}'::jsonb
-)
+SELECT
+    'boss_completion_bonus_ruby',
+    COALESCE(
+      (SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'boss_completion_bonus_np'),
+      '{"easy": 100, "medium": 150, "hard": 200}'::jsonb
+    )
 ON CONFLICT (setting_key) DO NOTHING;
 DELETE FROM ge10_game_settings WHERE setting_key = 'boss_bounties_vnd';
 
@@ -190,6 +198,7 @@ CREATE TABLE IF NOT EXISTS ge10_custom_questions (
     difficulty INTEGER DEFAULT 5,
     source VARCHAR(255),
     subject VARCHAR(50) DEFAULT 'english',
+    grade_tier INTEGER NOT NULL DEFAULT 9,
     image_url TEXT,
     metadata JSONB DEFAULT '{}'::jsonb,
     is_confused BOOLEAN DEFAULT FALSE
@@ -232,10 +241,14 @@ UPDATE ge10_users SET role = 'truong_vien' WHERE email = 'hoang.hoa@gmail.com';
 CREATE TABLE IF NOT EXISTS ge10_lessons (
     id VARCHAR(255) PRIMARY KEY,
     subject VARCHAR(50) NOT NULL,
+    grade_tier INTEGER NOT NULL DEFAULT 9,
     topic VARCHAR(255) NOT NULL,
     title VARCHAR(255) NOT NULL,
     theory TEXT NOT NULL,
     category VARCHAR(100) NOT NULL,
+    examples JSONB NOT NULL DEFAULT '[]'::jsonb,
+    practice_points JSONB NOT NULL DEFAULT '[]'::jsonb,
+    difficulty INTEGER NOT NULL DEFAULT 5,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -259,14 +272,13 @@ CREATE TABLE IF NOT EXISTS ge10_exploration_progress (
     PRIMARY KEY (user_id, area_id)
 );
 
--- Ledger NP Transaction (Stored Procedure) to avoid negative coins and race conditions
-CREATE OR REPLACE FUNCTION ge10_process_np_transaction(p_user_id VARCHAR, p_amount INTEGER)
+-- Ruby ledger transaction: row lock prevents overspending and race conditions.
+CREATE OR REPLACE FUNCTION ge10_process_ruby_transaction(p_user_id VARCHAR, p_amount INTEGER)
 RETURNS BOOLEAN AS $$
 DECLARE
-    current_coins INTEGER;
+    current_ruby INTEGER;
 BEGIN
-    -- Lock the row for update to prevent race conditions
-    SELECT coins INTO current_coins 
+    SELECT ruby INTO current_ruby
     FROM ge10_player_profiles 
     WHERE user_id = p_user_id 
     FOR UPDATE;
@@ -275,12 +287,12 @@ BEGIN
         RETURN FALSE;
     END IF;
 
-    IF current_coins + p_amount < 0 THEN
-        RETURN FALSE; -- Insufficient funds
+    IF current_ruby + p_amount < 0 THEN
+        RETURN FALSE;
     END IF;
 
     UPDATE ge10_player_profiles
-    SET coins = coins + p_amount, server_updated_at = NOW()
+    SET ruby = ruby + p_amount, server_updated_at = NOW()
     WHERE user_id = p_user_id;
 
     RETURN TRUE;
@@ -336,6 +348,7 @@ CREATE TABLE IF NOT EXISTS ge10_game_sessions (
     user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
     session_type VARCHAR(50) NOT NULL,
     subject VARCHAR(50) NOT NULL,
+    grade_tier INTEGER NOT NULL DEFAULT 9,
     difficulty_tier VARCHAR(50),
     questions_pool VARCHAR(255)[] NOT NULL,
     start_time TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
@@ -343,7 +356,85 @@ CREATE TABLE IF NOT EXISTS ge10_game_sessions (
     status VARCHAR(20) DEFAULT 'active',
     answers_summary JSONB DEFAULT '[]'::jsonb,
     xp_gained INTEGER DEFAULT 0,
-    coins_gained INTEGER DEFAULT 0,
+    ruby_gained INTEGER DEFAULT 0,
+    coins_gained INTEGER DEFAULT 0, -- legacy compatibility
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- ==================== GRADE SUPPORT (Generic for Grades 8, 9, 10, 11, 12) ====================
+
+-- Generic Grade Lesson Progress Tracking
+CREATE TABLE IF NOT EXISTS ge10_grade_lesson_progress (
+    user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
+    grade_tier INTEGER NOT NULL,
+    subject VARCHAR(50) NOT NULL,
+    lesson_id VARCHAR(255) NOT NULL,
+    completed BOOLEAN DEFAULT FALSE,
+    completed_at TIMESTAMP WITH TIME ZONE,
+    PRIMARY KEY (user_id, grade_tier, subject, lesson_id)
+);
+
+-- Generic Grade Quiz Results & Statistics
+CREATE TABLE IF NOT EXISTS ge10_grade_quiz_results (
+    id SERIAL PRIMARY KEY,
+    user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
+    grade_tier INTEGER NOT NULL,
+    subject VARCHAR(50) NOT NULL,
+    lesson_id VARCHAR(255) NOT NULL,
+    score INTEGER NOT NULL,
+    total INTEGER NOT NULL,
+    accuracy FLOAT DEFAULT 0,
+    completed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for Grade performance (optimized for multi-grade queries)
+CREATE INDEX IF NOT EXISTS idx_grade_lesson_progress_user ON ge10_grade_lesson_progress(user_id);
+CREATE INDEX IF NOT EXISTS idx_grade_lesson_progress_grade ON ge10_grade_lesson_progress(grade_tier);
+CREATE INDEX IF NOT EXISTS idx_grade_lesson_progress_composite ON ge10_grade_lesson_progress(user_id, grade_tier);
+CREATE INDEX IF NOT EXISTS idx_grade_quiz_results_user ON ge10_grade_quiz_results(user_id);
+CREATE INDEX IF NOT EXISTS idx_grade_quiz_results_grade ON ge10_grade_quiz_results(grade_tier);
+CREATE INDEX IF NOT EXISTS idx_grade_quiz_results_lesson ON ge10_grade_quiz_results(lesson_id);
+CREATE INDEX IF NOT EXISTS idx_grade_quiz_results_composite ON ge10_grade_quiz_results(user_id, grade_tier);
+CREATE INDEX IF NOT EXISTS idx_grade_quiz_results_completed ON ge10_grade_quiz_results(completed_at);
+
+-- Phase 2: Topics table
+CREATE TABLE IF NOT EXISTS ge10_topics (
+    id VARCHAR(100) PRIMARY KEY,
+    subject VARCHAR(50) NOT NULL,
+    grade_tier INTEGER NOT NULL DEFAULT 9,
+    name VARCHAR(255) NOT NULL,
+    description TEXT,
+    sort_order INTEGER DEFAULT 0,
+    unlock_rule JSONB DEFAULT '{}'::jsonb,
+    completion_rule JSONB DEFAULT '{}'::jsonb,
+    reward_np INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Link lessons to topics (column added to ge10_lessons)
+ALTER TABLE ge10_lessons ADD COLUMN IF NOT EXISTS topic_id VARCHAR(100) REFERENCES ge10_topics(id) ON DELETE SET NULL;
+
+-- Phase 3: Activities table
+CREATE TABLE IF NOT EXISTS ge10_activities (
+    id VARCHAR(255) PRIMARY KEY,
+    topic_id VARCHAR(100) REFERENCES ge10_topics(id) ON DELETE CASCADE,
+    subject VARCHAR(50) NOT NULL DEFAULT 'english',
+    grade_tier INTEGER NOT NULL DEFAULT 9,
+    activity_type VARCHAR(50) NOT NULL, -- 'lesson', 'boss', 'quiz', 'gatekeeper'
+    title VARCHAR(255) NOT NULL,
+    config JSONB DEFAULT '{}'::jsonb, -- e.g. { "lesson_id": "eng-tenses", "boss_tag": "2024", "mode": "grammar" }
+    sort_order INTEGER DEFAULT 0,
+    unlock_rule JSONB DEFAULT '{}'::jsonb,
+    reward_np INTEGER DEFAULT 0,
+    reward_xp INTEGER DEFAULT 0,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- User Activity Progress
+CREATE TABLE IF NOT EXISTS ge10_user_activity_progress (
+    user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
+    activity_id VARCHAR(255) REFERENCES ge10_activities(id) ON DELETE CASCADE,
+    status VARCHAR(20) DEFAULT 'available', -- 'locked', 'available', 'completed'
+    completed_at TIMESTAMP WITH TIME ZONE,
+    PRIMARY KEY (user_id, activity_id)
+);

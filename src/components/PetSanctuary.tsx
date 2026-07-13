@@ -15,28 +15,28 @@ const PET_STAGE_LABELS: Record<PetStage, string> = {
 
 const STAGE_MEMORIES: Record<PetStage, { story: string; photoConcept: string }> = {
   egg: {
-    story: "Mầm Nấm sương mai ngậm mưa bông rơi rụng trên thảm lá khô. Đây là ngày đầu tiên môn sinh đặt chân đến Sân Thú, truyền chân khí ấm áp đánh thức Heo Maikawaii khỏi giấc ngủ ngàn năm.",
-    photoConcept: "Ảnh chụp ngày đầu nhập môn: Thiếu hiệp chạm tay vào mầm nấm 🍄"
+    story: "Mầm Nấm sương mai ngậm mưa bông rơi rụng trên thảm lá khô. Đây là ngày đầu tiên Sĩ Tử đặt chân đến Sân Thú, truyền Năng Lượng ấm áp đánh thức Heo Maikawaii khỏi giấc ngủ ngàn năm.",
+    photoConcept: "Ảnh chụp ngày đầu nhập môn: Sĩ Tử chạm tay vào mầm nấm 🍄"
   },
   baby: {
-    story: "Cây nấm múp míp nứt vỡ ra chú heo hồng hào, nhỏ xíu xiu. Kỷ niệm những miếng bánh khô chia đôi bên bếp lửa học viện, những câu thoại ngây ngô và tiếng cười khúc khích khi được môn sinh thọc lét nhột tai.",
-    photoConcept: "Ảnh chụp chung đầu tiên: Thiếu hiệp ôm heo con múp míp ngủ gục bên lò sưởi 🔥"
+    story: "Cây nấm múp míp nứt vỡ ra chú heo hồng hào, nhỏ xíu xiu. Kỷ niệm những miếng bánh khô chia đôi bên bếp lửa học viện, những câu thoại ngây ngô và tiếng cười khúc khích khi được Sĩ Tử thọc lét nhột tai.",
+    photoConcept: "Ảnh chụp chung đầu tiên: Sĩ Tử ôm heo con múp míp ngủ gục bên lò sưởi 🔥"
   },
   adult: {
-    story: "Heo con oai phong khoác băng trán đỏ, đeo kiếm gỗ sau lưng bôn tẩu giang hồ cùng môn sinh. Tấm hình chụp chung tại Đấu Trường đầy kiêu hãnh: Heo luôn giương kiếm đỡ bụi cỏ gai, đồng hành qua hàng trăm đề thi thử thách.",
-    photoConcept: "Ảnh chụp nơi Đấu Trường: Thiếu hiệp làm bài, Heo giương kiếm gỗ bảo vệ ⚔️"
+    story: "Heo con oai phong khoác băng trán đỏ, đeo kiếm gỗ sau lưng bôn tẩu học đường cùng Sĩ Tử. Tấm hình chụp chung tại Trường Thi đầy kiêu hãnh: Heo luôn giương kiếm đỡ bụi cỏ gai, đồng hành qua hàng trăm đề thi thử thách.",
+    photoConcept: "Ảnh chụp nơi Trường Thi: Sĩ Tử làm bài, Heo giương kiếm gỗ bảo vệ ⚔️"
   },
   legend: {
-    story: "Cảnh giới đỉnh phong! Thần Heo đắc đạo, cưỡi mây vàng Cân Đẩu Vân, đầu đội vòng kim cô lấp lánh hào quang. Khoảnh khắc cả hai cùng nhau ngắm giang hồ rộng lớn, chuẩn bị cho kỳ thi tuyển sinh lớp 10 vĩ đại.",
-    photoConcept: "Ảnh chụp đỉnh vinh quang: Thiếu hiệp cùng Thần Heo ngắm mây ngàn từ đỉnh Tuyết Sơn 👑"
+    story: "Cảnh giới đỉnh phong! Thần Heo đắc đạo, cưỡi mây vàng Cân Đẩu Vân, đầu đội vòng kim cô lấp lánh hào quang. Khoảnh khắc cả hai cùng nhau ngắm học đường rộng lớn, chuẩn bị cho kỳ thi tuyển sinh lớp 10 vĩ đại.",
+    photoConcept: "Ảnh chụp đỉnh vinh quang: Sĩ Tử cùng Thần Heo ngắm mây ngàn từ đỉnh Tuyết Sơn 👑"
   }
 };
 
 import { isLightTheme } from '../theme/uiThemes';
-import { CoinConfirmModal } from './Common/CoinConfirmModal';
+import { RubyConfirmModal } from './Common/RubyConfirmModal';
 
 interface PetSanctuaryProps {
-  /** 'sidebar' = widget đồng hành thu gọn (mặc định); 'full' = module Sân Thú Nuôi đầy đủ, gồm Album Kỷ Niệm. */
+  /** 'sidebar' = widget đồng hành thu gọn (mặc định); 'full' = module Sân Thú Nuôi đầy đủ, gồm Nhật Ký MIKA. */
   variant?: 'sidebar' | 'full';
   onInteract?: () => void;
   triggerReason?: 'login' | 'manual' | 'idle' | 'hunger' | 'energy-depleted';
@@ -52,7 +52,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
 
   const [interacting, setInteracting] = useState(false);
   const [tickled, setTickled] = useState(false);
-  const [speech, setSpeech] = useState('Ủn ỉn... chào môn sinh! Hôm nay ta cùng tinh tấn học tập nhé! 🌸');
+  const [speech, setSpeech] = useState('Ủn ỉn... chào Sĩ Tử! Hôm nay ta cùng tinh tấn học tập nhé! 🌸');
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     cost: number;
@@ -73,10 +73,10 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
   const handleFeed = () => {
     if (pet.mood === 'happy' && pet.energy >= 100) return;
 
-    if (player.coins < 10) {
+    if (player.ruby < 10) {
       setTickled(true);
       setInteracting(true);
-      setSpeech('Ủn ỉn... hết Ngân Lượng rồi nên Heo tự về chuồng ngủ thôi! Cày thêm NP rồi cho Heo ăn lại nhé! 😴🐷');
+      setSpeech('Ủn ỉn... hết Ruby rồi nên Heo tự về chuồng ngủ thôi! Cày thêm Ruby rồi cho Heo ăn lại nhé! 😴🐷');
       onInteract?.();
       setTimeout(() => {
         setTickled(false);
@@ -88,12 +88,12 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
     setConfirmModal({
       isOpen: true,
       cost: 10,
-      actionDescription: 'cho Pet ăn (tiêu hao 10 NP & 5 XP)',
+      actionDescription: 'cho Pet ăn (tiêu hao 10 Ruby & 5 XP)',
       onConfirm: () => {
         const success = feedPet();
         if (success) {
           setInteracting(true);
-          setSpeech('Chao ôi... ngon quá! Ngon múp míp luôn á! Cảm ơn môn sinh! 🍖🐷 (-10 NP)');
+          setSpeech('Chao ôi... ngon quá! Ngon múp míp luôn á! Cảm ơn Sĩ Tử! 🍖🐷 (-10 Ruby)');
           onInteract?.();
           setTimeout(() => {
             setInteracting(false);
@@ -115,35 +115,35 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
       act.title === 'Câu trả lời ĐÚNG'
     ).length;
 
-    // Calculate coins gained today
-    const todayCoins = logs.reduce((sum: number, act: HistoryLog) => {
-      if (new Date(act.timestamp).toDateString() === todayStr && act.coinsChanged > 0) {
-        return sum + act.coinsChanged;
+    // Calculate ruby gained today
+    const todayRuby = logs.reduce((sum: number, act: HistoryLog) => {
+      if (new Date(act.timestamp).toDateString() === todayStr && act.rubyChanged > 0) {
+        return sum + act.rubyChanged;
       }
       return sum;
     }, 0);
 
     const speechOptions = [
       // Study Reminders
-      "Hôm nay môn sinh đã ôn luyện chuyên đề nào ở Hang Luyện Công chưa? Ôn ngay kẻo lười nhé! 📐",
-      "Chân khí của môn sinh đang dồi dào, mau vào Hang luyện vài chiêu thức thôi nào! ⚔️",
+      "Hôm nay Sĩ Tử đã ôn luyện chuyên đề nào ở Học Đường chưa? Ôn ngay kẻo lười nhé! 📐",
+      "Năng Lượng của Sĩ Tử đang dồi dào, mau vào Học Đường ôn luyện thôi nào! 📖",
       "Nhớ duy trì Streak học tập đều đặn nhé! Đứt chuỗi Heo Maikawaii sẽ buồn ngủ lắm đó! 😴",
-      "Mỗi ngày một chút tinh tấn, võ học của nàng sẽ đạt cảnh giới Xuất Chúng! 🏆",
-      "Đấu trường đang rộn rã trống trận, ta vào tỷ thí một trận xem tài trí ra sao đi! 🏟️",
+      "Mỗi ngày một chút tinh tấn, kiến thức của nàng sẽ đạt cảnh giới Xuất Chúng! 🏆",
+      "Trường Thi đang rộn rã trống trận, ta vào tỷ thí một trận xem tài trí ra sao đi! 🏟️",
       "Năng lượng học tập dồi dào sẽ giúp ta tiến hóa múp míp và xinh đẹp hơn nữa! 🍄"
     ];
 
     // Add praises if student has accomplished tasks today
     if (todayCorrect > 0) {
-      speechOptions.push(`Oa! Hôm nay môn sinh đã trả lời đúng ${todayCorrect} câu hỏi rồi! Giỏi quá đi! Ta tặng một nụ hôn heo! 💋`);
+      speechOptions.push(`Oa! Hôm nay Sĩ Tử đã trả lời đúng ${todayCorrect} câu hỏi rồi! Giỏi quá đi! Ta tặng một nụ hôn heo! 💋`);
       speechOptions.push("Ta thấy hôm nay nàng làm bài xuất sắc cực kỳ, đúng là tài trí phi phàm! 🌟");
     } else {
-      speechOptions.push("Hôm nay nàng chưa làm đúng câu nào sao? Vào Hang Luyện Công cày chút Ngân Lượng thôi!");
+      speechOptions.push("Hôm nay nàng chưa làm đúng câu nào sao? Vào Học Đường cày chút Ruby thôi!");
       speechOptions.push("Ủn ỉn... Heo đói kiến thức rồi, nàng làm vài câu đúng cho heo xem đi! 📖");
     }
 
-    if (todayCoins > 0) {
-      speechOptions.push(`Ta thấy hôm nay nàng thu hoạch được tận ${todayCoins} Ngân Lượng, đúng là phú hộ võ lâm tương lai! 💰`);
+    if (todayRuby > 0) {
+      speechOptions.push(`Ta thấy hôm nay nàng thu hoạch được tận ${todayRuby} Ruby, đúng là phú hộ võ lâm tương lai! 💰`);
     }
 
     return speechOptions[Math.floor(Math.random() * speechOptions.length)];
@@ -153,7 +153,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
     if (pet.stage === 'egg') {
       setInteracting(true);
       const eggQuotes = [
-        "Mầm nấm Heo Maikawaii đang hấp thụ chân khí để nứt vỏ... 🍄",
+        "Mầm nấm Heo Maikawaii đang hấp thụ Năng Lượng để nứt vỏ... 🍄",
         "Có tiếng động nhè nhẹ từ trong mầm nấm xinh đẹp! 🥚",
         "Đám mây bông đang tạo mưa lá khô để nấm mau lớn... ☁️",
         "Ủn ỉn... hình như ta sắp chui ra rồi đấy! 🐽"
@@ -188,7 +188,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
   useEffect(() => {
     if (triggerReason) {
       if (triggerReason === 'login') {
-        setSpeech('Chào ngày mới, môn sinh! ☀️ Hôm nay ta cùng tinh tấn học tập nhé! 🌸');
+        setSpeech('Chào ngày mới, Sĩ Tử! ☀️ Hôm nay ta cùng tinh tấn học tập nhé! 🌸');
       } else if (triggerReason === 'idle') {
         setSpeech('Dậy học tiếp thôi nàng ơi, sao ngồi im thin thít thế! Heo buồn ngủ lắm đó! 😴📚');
       } else if (triggerReason === 'hunger') {
@@ -197,7 +197,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
         const timeStr = player.energyDepletedAt
           ? new Date(player.energyDepletedAt + (player.resetHours ?? 3) * 60 * 60 * 1000).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
           : '—';
-        setSpeech(`Hết Chân Khí rồi, nghỉ ngơi thôi! Hẹn gặp lại nàng lúc ${timeStr} nhé. Trong lúc chờ, đọc Cẩm Nang hoặc thọc lét Heo cũng được tính công đấy! 📖🐷`);
+        setSpeech(`Hết Năng Lượng rồi, nghỉ ngơi thôi! Hẹn gặp lại lúc ${timeStr} nhé. Trong lúc chờ, con có thể đọc Cẩm Nang Học Đường hoặc ghé thăm MIKA. 📖🐷`);
       }
     }
   }, [triggerReason, player.energyDepletedAt, player.resetHours]);
@@ -593,7 +593,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
               <div className={`w-px h-4 ${isUnicorn ? 'bg-violet-200/50' : 'bg-white/10'}`} />
 
               {/* Energy */}
-              <div className="flex items-center gap-1.5" title="Chân khí">
+              <div className="flex items-center gap-1.5" title="Năng Lượng">
                 <span className="text-sm">⚡</span>
                 <span>{pet.energy}</span>
               </div>
@@ -609,7 +609,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
                   : 'bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-border-cyan shadow-[0_0_10px_rgba(0,240,255,0.2)] hover:scale-[1.02] active:scale-[0.98]'
               }`}
             >
-              {interacting ? 'Đang Cho Ăn... 🍖' : `Cho ${pet.name} Ăn 🍖 (-10 NP)`}
+              {interacting ? 'Đang Cho Ăn... 🍖' : `Cho ${pet.name} Ăn 🍖 (-10 Ruby)`}
             </button>
           </div>
         </div>
@@ -622,7 +622,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
             <div className={`glass-panel rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'border-violet-200/35' : 'border-synth-cyan/15'} w-full`}>
               <div className="flex items-center justify-between gap-3">
                 <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
-                  📔 Album Kỷ Niệm
+                  📔 Nhật Ký MIKA
                 </h3>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   {albumIndex + 1}/{PET_STAGE_ORDER.length}
@@ -721,7 +721,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
           );
         })()}
       </div>
-      <CoinConfirmModal
+      <RubyConfirmModal
         isOpen={confirmModal.isOpen}
         cost={confirmModal.cost}
         actionDescription={confirmModal.actionDescription}

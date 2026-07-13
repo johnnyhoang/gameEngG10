@@ -32,7 +32,7 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
   const pageExplorationStates = useGameState(state => state.pageExplorationStates);
   const updatePendingKeyQuestion = useGameState(state => state.updatePendingKeyQuestion);
   const player = useGameState(state => state.player);
-  const awardCoinsAndXp = useGameState(state => state.awardCoinsAndXp);
+  const awardRubyAndXp = useGameState(state => state.awardRubyAndXp);
   const { activeSectId } = useSect();
 
   const isGeometry2D = React.useMemo(() => {
@@ -149,16 +149,16 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
 
     if (isCorrect) {
       if (pageId) updatePendingKeyQuestion(pageId, null);
-      awardCoinsAndXp(10, 0, 'Giải mã cổng sương mù đúng', `Trả lời đúng câu hỏi Gatekeeper tại ${pageId}`);
-      toast.success('Trả lời chính xác! +10 NP 🎉');
+      awardRubyAndXp(10, 0, 'Giải mã cổng sương mù đúng', `Trả lời đúng câu hỏi Gatekeeper tại ${pageId}`);
+      toast.success('Trả lời chính xác! +10 Ruby 🎉');
       setIsError(false);
       setShowWelcome(true);
     } else {
       // Giữ nguyên câu hỏi để con làm lại tới khi đúng — không đổi sang câu khác
       // (CORE_SPECS §9.5: Retry-Same-Question).
       setIsError(true);
-      awardCoinsAndXp(-5, 0, 'Giải mã cổng sương mù sai', `Trả lời sai câu hỏi Gatekeeper tại ${pageId}`);
-      toast.error('Nhầm rồi môn sinh! Bị phạt -5 NP. Hãy thử lại câu này nhé! 🐷');
+      awardRubyAndXp(-5, 0, 'Giải mã cổng sương mù sai', `Trả lời sai câu hỏi Gatekeeper tại ${pageId}`);
+      toast.error('Nhầm rồi Sĩ Tử! Bị phạt -5 Ruby. Hãy thử lại câu này nhé! 🐷');
       setSelectedAnswer('');
     }
   };

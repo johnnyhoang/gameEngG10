@@ -1,11 +1,11 @@
 import { pool } from '../db.js';
 
-export const DEFAULT_BOSS_COMPLETION_BONUS_NP: [number, number, number] = [100, 150, 200];
+export const DEFAULT_BOSS_COMPLETION_BONUS_RUBY: [number, number, number] = [100, 150, 200];
 export const DEFAULT_CHALLENGE_ENERGY_COSTS: [number, number, number, number] = [10, 10, 15, 10];
 
-export const loadBossCompletionBonusNP = async (): Promise<[number, number, number]> => {
+export const loadBossCompletionBonusRuby = async (): Promise<[number, number, number]> => {
   const res = await pool.query(
-    "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'boss_completion_bonus_np'"
+    "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'boss_completion_bonus_ruby'"
   );
   const raw = res.rows[0]?.setting_json;
   const values = [
@@ -18,7 +18,7 @@ export const loadBossCompletionBonusNP = async (): Promise<[number, number, numb
     return [values[0], values[1], values[2]];
   }
 
-  return DEFAULT_BOSS_COMPLETION_BONUS_NP;
+  return DEFAULT_BOSS_COMPLETION_BONUS_RUBY;
 };
 
 export const loadChallengeEnergyCosts = async (): Promise<[number, number, number, number]> => {
@@ -58,9 +58,9 @@ export const loadBaseXP = async (): Promise<number> => {
   return (Number.isFinite(value) && value > 0) ? value : 15;
 };
 
-export const loadBaseCoins = async (): Promise<number> => {
+export const loadBaseRuby = async (): Promise<number> => {
   const res = await pool.query(
-    "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'base_coins'"
+    "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'base_ruby'"
   );
   const raw = res.rows[0]?.setting_json;
   const value = Number(raw?.['value']);
@@ -85,21 +85,21 @@ export const saveBaseXP = async (baseXP: number) => {
   );
 };
 
-export const saveBaseCoins = async (baseCoins: number) => {
+export const saveBaseRuby = async (baseRuby: number) => {
   await pool.query(
     `INSERT INTO ge10_game_settings (setting_key, setting_json)
-     VALUES ('base_coins', $1::jsonb)
+     VALUES ('base_ruby', $1::jsonb)
      ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
-    [JSON.stringify({ value: baseCoins })]
+    [JSON.stringify({ value: baseRuby })]
   );
 };
 
-export const saveBossCompletionBonusNP = async (bossCompletionBonusNP: [number, number, number]) => {
+export const saveBossCompletionBonusRuby = async (bossCompletionBonusRuby: [number, number, number]) => {
   await pool.query(
     `INSERT INTO ge10_game_settings (setting_key, setting_json)
-     VALUES ('boss_completion_bonus_np', $1::jsonb)
+     VALUES ('boss_completion_bonus_ruby', $1::jsonb)
      ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
-    [JSON.stringify({ easy: bossCompletionBonusNP[0], medium: bossCompletionBonusNP[1], hard: bossCompletionBonusNP[2] })]
+    [JSON.stringify({ easy: bossCompletionBonusRuby[0], medium: bossCompletionBonusRuby[1], hard: bossCompletionBonusRuby[2] })]
   );
 };
 

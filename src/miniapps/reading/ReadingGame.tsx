@@ -4,7 +4,7 @@ import { ReadingApp } from './ReadingApp';
 import type { MiniGameProps } from '../../types/minigame';
 
 export const ReadingGame: React.FC<MiniGameProps> = ({ activeSectId, onGameStart, onGameComplete }) => {
-  const awardCoinsAndXp = useGameState(state => state.awardCoinsAndXp);
+  const awardRubyAndXp = useGameState(state => state.awardRubyAndXp);
   const uiTheme = useGameState(state => state.uiTheme);
 
   useEffect(() => {
@@ -15,7 +15,7 @@ export const ReadingGame: React.FC<MiniGameProps> = ({ activeSectId, onGameStart
     <ReadingApp
       activeSectId={activeSectId}
       uiTheme={uiTheme}
-      onReward={awardCoinsAndXp}
+      onReward={awardRubyAndXp}
       onGameComplete={onGameComplete}
       onGameStart={onGameStart}
     />

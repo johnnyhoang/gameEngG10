@@ -1,9 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useGameState, DEFAULT_GAME_SETTINGS } from '../hooks/useGameState';
-import { INITIAL_LESSONS } from '../data/lessons';
-import { HANG_TRACKS } from '../data/hangLuyenCong';
 import { useSect } from '../contexts/SectContext';
-import { SUBJECTS_CONFIG } from '../types/game';
+import { DEFAULT_GRADE_TIER, SUBJECTS_CONFIG } from '../types/game';
 import type { SubjectId } from '../types/game';
 import {
   Compass, Sword, ShieldAlert, Star, Zap, BookOpen,
@@ -26,14 +24,17 @@ interface ArenaProps {
 export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: ArenaProps) {
   const player = useGameState(state => state.player);
   const consumeEnergy = useGameState(state => state.useEnergy);
-  const { activeSectId } = useSect();
-  // Bonus Điểm (NP) khi hạ Boss — quảng bá ngay trên Boss Card (CORE_SPECS §2.1). Boss không thưởng tiền.
-  const bossCompletionBonusNP = useGameState(state => state.gameSettings?.bossCompletionBonusNP ?? DEFAULT_GAME_SETTINGS.bossCompletionBonusNP);
+  const { activeSectId, activeGradeTier } = useSect();
+  // Bonus Điểm (Ruby) khi hạ Boss — quảng bá ngay trên Boss Card (CORE_SPECS §2.1). Boss không thưởng tiền.
+  const bossCompletionBonusRuby = useGameState(state => state.gameSettings?.bossCompletionBonusRuby ?? DEFAULT_GAME_SETTINGS.bossCompletionBonusRuby);
   const challengeEnergyCosts = useGameState(state => state.gameSettings?.challengeEnergyCosts ?? DEFAULT_GAME_SETTINGS.challengeEnergyCosts);
   const uiTheme = useGameState(state => state.uiTheme);
   const categoryStats = useGameState(state => state.categoryStats);
   const lessonsProgress = useGameState(state => state.lessonsProgress);
   const questions = useGameState(state => state.questions);
+  const lessons = useGameState(state => state.lessons);
+  const topics = useGameState(state => state.topics);
+  const activities = useGameState(state => state.activities);
   const isUnicorn = isLightTheme(uiTheme);
 
   const [topicOpen, setTopicOpen] = useState(false);
@@ -42,8 +43,11 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
   const isChuyenSau = activeSubjectConfig.group === 'chuyen_sau';
 
   const subjectQuestionCount = useMemo(
-    () => questions.filter(q => (q.subject || 'english') === activeSectId).length,
-    [questions, activeSectId]
+    () => questions.filter(q =>
+      (q.subject || 'english') === activeSectId
+      && (q.gradeTier ?? q.grade ?? DEFAULT_GRADE_TIER) === activeGradeTier
+    ).length,
+    [questions, activeSectId, activeGradeTier]
   );
 
   const handleLaunchZone = (
@@ -52,7 +56,7 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
     bossId?: string
   ) => {
     if (subjectQuestionCount === 0) {
-      toast.error(`Hiệu Trưởng chưa nạp đề cho môn ${activeSubjectConfig.name}, thử chọn môn khác hoặc quay lại sau.`);
+      toast.error(`Viện Trưởng chưa nạp đề cho môn ${activeSubjectConfig.name}, thử chọn môn khác hoặc quay lại sau.`);
       return;
     }
     if (player.energy < energyCost) {
@@ -63,159 +67,59 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
     onStartPlay(mode, bossId);
   };
 
-  const subjectLessons = INITIAL_LESSONS.filter(l => l.subject === activeSectId);
+  const subjectLessons = lessons.filter(l =>
+    l.subject === activeSectId && (l.gradeTier ?? DEFAULT_GRADE_TIER) === activeGradeTier
+  );
 
-  // Quyết Đấu Boss tốn -100 Chân Khí; nếu maxEnergy riêng của con < 100 thì tốn = maxEnergy,
+  // Quyết Đấu Boss tốn -100 Năng Lượng; nếu maxEnergy riêng của con < 100 thì tốn = maxEnergy,
   // để con vẫn luôn đánh được 1 lượt Boss khi đầy bình dù chủ nhiệm siết trần thấp (SUB_SPEC_ENERGY §3).
   const bossEnergyCost = Math.min(100, player.maxEnergy ?? 100);
 
-  const bosses = activeSectId === 'math' ? [
-    { id: 'b-2024', name: 'Đại Ca Toán HCMC 2024', tag: '2024', energy: bossEnergyCost },
-    { id: 'b-2025', name: 'Cự Long Toán HCMC 2025', tag: '2025', energy: bossEnergyCost },
-    { id: 'b-2026', name: 'Cổ Long Toán HCMC 2026 (Mock)', tag: '2026', energy: bossEnergyCost }
-  ] : activeSectId === 'literature' ? [
-    { id: 'b-2024', name: 'Đại Ca Văn HCMC 2024', tag: '2024', energy: bossEnergyCost },
-    { id: 'b-2025', name: 'Cự Long Văn HCMC 2025', tag: '2025', energy: bossEnergyCost },
-    { id: 'b-2026', name: 'Cổ Long Văn HCMC 2026 (Mock)', tag: '2026', energy: bossEnergyCost }
-  ] : activeSectId === 'english' ? [
-    { id: 'b-2024', name: 'Đại Ca HCMC 2024', tag: '2024', energy: bossEnergyCost },
-    { id: 'b-2025', name: 'Cự Long HCMC 2025', tag: '2025', energy: bossEnergyCost },
-    { id: 'b-2026', name: 'Cổ Long HCMC 2026 (Mock)', tag: '2026', energy: bossEnergyCost }
-  ] : [
-    { id: 'b-hk1', name: `Khảo Hạch ${activeSubjectConfig.name} - Học Kỳ 1`, tag: 'HK1', energy: bossEnergyCost },
-    { id: 'b-hk2', name: `Khảo Hạch ${activeSubjectConfig.name} - Học Kỳ 2`, tag: 'HK2', energy: bossEnergyCost }
-  ];
+  const subjectTopicIds = useMemo(() => {
+    return topics.filter(t =>
+      t.subject === activeSectId && (t.gradeTier ?? DEFAULT_GRADE_TIER) === activeGradeTier
+    ).map(t => t.id);
+  }, [topics, activeSectId, activeGradeTier]);
+
+  const bosses = useMemo(() => {
+    const bossActs = activities.filter(a =>
+      a.activityType === 'boss'
+      && (a.gradeTier ?? DEFAULT_GRADE_TIER) === activeGradeTier
+      && subjectTopicIds.includes(a.topicId)
+    );
+    if (bossActs.length === 0) {
+      // Fallback in case no activities loaded yet
+      return [
+        { id: 'b-2024', name: `Đại Ca - ${activeSubjectConfig.name} 2024`, tag: '2024', energy: bossEnergyCost },
+        { id: 'b-2025', name: `Cự Long - ${activeSubjectConfig.name} 2025`, tag: '2025', energy: bossEnergyCost }
+      ];
+    }
+    return bossActs.map(a => ({
+      id: a.config?.boss_id || a.id,
+      name: a.title,
+      tag: a.config?.boss_tag || 'Boss',
+      energy: a.config?.energy || bossEnergyCost
+    }));
+  }, [activities, subjectTopicIds, bossEnergyCost, activeSubjectConfig, activeGradeTier]);
 
   const completedLessons = subjectLessons.filter(l => lessonsProgress[l.id]).length;
   const progressPct = subjectLessons.length > 0
     ? Math.round((completedLessons / subjectLessons.length) * 100)
     : 0;
 
-  // Build free practice cards list based on subject
+  // Build free practice cards list based on subject activities
   const rankedCards = useMemo(() => {
-    if (activeSectId === 'english') {
+    const quizActs = activities.filter(a =>
+      a.activityType === 'quiz'
+      && (a.gradeTier ?? DEFAULT_GRADE_TIER) === activeGradeTier
+      && subjectTopicIds.includes(a.topicId)
+    );
+    if (quizActs.length === 0) {
+      // Fallback
       return [
         {
           id: 'grammar',
-          title: 'Grammar Cave',
-          subtitle: 'Ngữ pháp cốt lõi',
-          description: 'Bám thì, bị động, mệnh đề quan hệ và viết lại câu ở tốc độ đề thi.',
-          icon: <BookOpen className="w-8 h-8 text-synth-cyan" />,
-          mode: 'grammar' as const,
-          reward: 'Ưu tiên grammar + rewrite'
-        },
-        {
-          id: 'vocabulary',
-          title: 'Vocabulary Castle',
-          subtitle: 'Từ vựng và word form',
-          description: 'Luyện bám nghĩa, collocation và ngữ cảnh, tách riêng vocabulary.',
-          icon: <BookMarked className="w-8 h-8 text-synth-cyan" />,
-          mode: 'vocabulary' as const,
-          reward: 'Ưu tiên vocabulary + word form'
-        },
-        {
-          id: 'reading',
-          title: 'Reading Forest',
-          subtitle: 'Đọc hiểu và cloze',
-          description: 'Đi xuyên qua passage, scan keyword, nối ý và xử lý câu đọc hiểu.',
-          icon: <Compass className="w-8 h-8 text-synth-cyan" />,
-          mode: 'reading' as const,
-          reward: 'Ưu tiên reading + cloze'
-        },
-        {
-          id: 'pronunciation',
-          title: 'Pronunciation Peak',
-          subtitle: 'Phát âm và stress',
-          description: 'Bắt đuôi -ed/-s, trọng âm và minimal pairs trong một đường leo riêng.',
-          icon: <Volume2 className="w-8 h-8 text-synth-cyan" />,
-          mode: 'pronunciation' as const,
-          reward: 'Ưu tiên pronunciation + stress'
-        }
-      ];
-    } else if (activeSectId === 'math') {
-      return [
-        {
-          id: 'math-quad',
-          title: HANG_TRACKS.math[0].title,
-          subtitle: 'Phương trình bậc hai',
-          description: HANG_TRACKS.math[0].summary,
-          icon: <BookOpen className="w-8 h-8 text-synth-cyan" />,
-          mode: 'grammar' as const,
-          reward: HANG_TRACKS.math[0].focus.join(' · ')
-        },
-        {
-          id: 'math-real',
-          title: HANG_TRACKS.math[1].title,
-          subtitle: 'Bài toán thực tế',
-          description: HANG_TRACKS.math[1].summary,
-          icon: <Star className="w-8 h-8 text-synth-cyan" />,
-          mode: 'vocabulary' as const,
-          reward: HANG_TRACKS.math[1].focus.join(' · ')
-        },
-        {
-          id: 'math-plane',
-          title: HANG_TRACKS.math[2].title,
-          subtitle: 'Hình học phẳng',
-          description: HANG_TRACKS.math[2].summary,
-          icon: <Compass className="w-8 h-8 text-synth-cyan" />,
-          mode: 'reading' as const,
-          reward: HANG_TRACKS.math[2].focus.join(' · ')
-        },
-        {
-          id: 'math-solid',
-          title: HANG_TRACKS.math[3].title,
-          subtitle: 'Hình học không gian',
-          description: HANG_TRACKS.math[3].summary,
-          icon: <ShieldAlert className="w-8 h-8 text-synth-cyan" />,
-          mode: 'mixed' as const,
-          reward: HANG_TRACKS.math[3].focus.join(' · ')
-        }
-      ];
-    } else if (activeSectId === 'literature') {
-      return [
-        {
-          id: 'lit-read',
-          title: HANG_TRACKS.literature[0].title,
-          subtitle: 'Đọc hiểu văn bản',
-          description: HANG_TRACKS.literature[0].summary,
-          icon: <BookOpen className="w-8 h-8 text-synth-cyan" />,
-          mode: 'grammar' as const,
-          reward: HANG_TRACKS.literature[0].focus.join(' · ')
-        },
-        {
-          id: 'lit-vn',
-          title: HANG_TRACKS.literature[1].title,
-          subtitle: 'Tiếng Việt',
-          description: HANG_TRACKS.literature[1].summary,
-          icon: <BookMarked className="w-8 h-8 text-synth-cyan" />,
-          mode: 'reading' as const,
-          reward: HANG_TRACKS.literature[1].focus.join(' · ')
-        },
-        {
-          id: 'lit-essay',
-          title: HANG_TRACKS.literature[2].title,
-          subtitle: 'Viết đoạn và bài nghị luận',
-          description: HANG_TRACKS.literature[2].summary,
-          icon: <Compass className="w-8 h-8 text-synth-cyan" />,
-          mode: 'vocabulary' as const,
-          reward: HANG_TRACKS.literature[2].focus.join(' · ')
-        },
-        {
-          id: 'lit-lit',
-          title: HANG_TRACKS.literature[3].title,
-          subtitle: 'Nghị luận văn học',
-          description: HANG_TRACKS.literature[3].summary,
-          icon: <Volume2 className="w-8 h-8 text-synth-cyan" />,
-          mode: 'mixed' as const,
-          reward: HANG_TRACKS.literature[3].focus.join(' · ')
-        }
-      ];
-    } else {
-      // Basic subjects
-      return [
-        {
-          id: 'basic-mixed',
-          title: `Mixed Practice - ${activeSubjectConfig.name}`,
+          title: 'Mixed Practice',
           subtitle: 'Luyện tập ngẫu nhiên',
           description: `Rèn luyện toàn bộ trọng tâm môn ${activeSubjectConfig.name}.`,
           icon: <BookOpen className="w-8 h-8 text-synth-cyan" />,
@@ -224,7 +128,30 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
         }
       ];
     }
-  }, [activeSectId, activeSubjectConfig]);
+    return quizActs.map(a => {
+      const mode = a.config?.mode || 'mixed';
+      let icon = <Star className="w-8 h-8 text-synth-cyan" />;
+      if (a.id.includes('grammar') || a.id.includes('quad') || a.id.includes('read')) {
+        icon = <BookOpen className="w-8 h-8 text-synth-cyan" />;
+      } else if (a.id.includes('vocabulary') || a.id.includes('essay')) {
+        icon = <BookMarked className="w-8 h-8 text-synth-cyan" />;
+      } else if (a.id.includes('reading') || a.id.includes('vn') || a.id.includes('plane')) {
+        icon = <Compass className="w-8 h-8 text-synth-cyan" />;
+      } else if (a.id.includes('pronunciation') || a.id.includes('lit')) {
+        icon = <Volume2 className="w-8 h-8 text-synth-cyan" />;
+      }
+
+      return {
+        id: a.config?.mode || a.id,
+        title: a.title,
+        subtitle: 'Luyện tập chuyên đề',
+        description: a.config?.reward || 'Rèn luyện phản xạ nhanh với các dạng bài tập.',
+        icon,
+        mode: mode as any,
+        reward: a.config?.reward || 'Đầy đủ nội dung'
+      };
+    });
+  }, [activities, subjectTopicIds, activeSubjectConfig, activeGradeTier]);
 
   return (
     <div className="space-y-6">
@@ -232,22 +159,22 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
       <div className="flex items-center justify-between gap-3">
         <h2 className={`font-orbitron text-lg font-black uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
           <Sword className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-magenta'}`} />
-          🏛️ Đấu Trường - {activeSubjectConfig.name}
+          🏛️ Trường Thi - {activeSubjectConfig.name}
         </h2>
       </div>
 
       {subjectQuestionCount === 0 && (
         <div className="glass-panel rounded-2xl border border-dashed border-white/15 bg-white/5 p-4 text-xs text-slate-300">
-          Hiệu Trưởng chưa nạp đề cho môn {activeSubjectConfig.name}. Các ải bên dưới sẽ tạm chưa mở được — quay lại sau khi có đề.
+          Viện Trưởng chưa nạp đề cho môn {activeSubjectConfig.name}. Các ải bên dưới sẽ tạm chưa mở được — quay lại sau khi có đề.
         </div>
       )}
 
-      {/* CẢNH 1: ĐẤU TRƯỜNG XẾP HẠNG (Level 2 Section) */}
+      {/* CẢNH 1: TRƯỜNG THI XẾP HẠNG (Level 2 Section) */}
       <div className={`rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'bg-pink-50/40 border-pink-200/40' : 'bg-synth-magenta/5 border-synth-magenta/10'}`}>
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <h3 className={`font-orbitron font-black text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-              🏅 Đấu Trường Xếp Hạng
+              🏅 Trường Thi Xếp Hạng
             </h3>
             <p className="text-[10px] text-slate-400">Rèn luyện phản xạ và tốc độ theo các kỹ năng/dạng bài chuyên sâu</p>
           </div>
@@ -310,7 +237,7 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
                 <div className="space-y-1 min-w-0">
                   <h4 className="font-orbitron font-bold text-sm text-white">🌀 Luyện tập ngẫu nhiên</h4>
                   <p className="text-xs text-slate-400 leading-relaxed">10 câu hỏi ngẫu nhiên từ toàn bộ chuyên đề, ưu tiên câu yếu.</p>
-                  <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">Phần thưởng: <span className="text-white">+15 XP / +5 NP</span></div>
+                  <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">Phần thưởng: <span className="text-white">+15 XP / +5 Ruby</span></div>
                 </div>
               </div>
             </FogCard>
@@ -397,7 +324,7 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
                   <div className="border-t border-synth-gray/50 pt-3 mt-3 flex justify-between items-center text-xs font-semibold">
                     <span className={isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}>Bonus hoàn thành:</span>
                     <span className={`font-orbitron font-bold flex items-center gap-1 ${isUnicorn ? 'text-violet-700' : 'text-synth-green'}`}>
-                      +{bossCompletionBonusNP[index] ?? [100, 150, 200][index]} NP
+                      +{bossCompletionBonusRuby[index] ?? [100, 150, 200][index]} Ruby
                     </span>
                   </div>
                 </div>
@@ -437,13 +364,13 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
                 </div>
                 <div className="space-y-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="font-orbitron font-black text-sm text-red-400">⚔️ Đấu Trường Sinh Tồn</h4>
+                    <h4 className="font-orbitron font-black text-sm text-red-400">⚔️ Trường Thi Sinh Tồn</h4>
                   </div>
                   <p className="text-xs text-slate-300 leading-relaxed">
                     15 câu hỏi hỗn hợp liên tục – trả lời sai mất 1 mạng <Heart className="inline w-3 h-3 text-red-400 fill-red-400" />. Chỉ có 3 mạng, trả lời đúng liên tiếp nhận thưởng cấp số nhân!
                   </p>
                   <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
-                    Phần thưởng: <span className="text-red-300">+1.5× XP & NP mỗi câu đúng / Combo multiplier</span>
+                    Phần thưởng: <span className="text-red-300">+1.5× XP & Ruby mỗi câu đúng / Combo multiplier</span>
                   </div>
                 </div>
               </div>

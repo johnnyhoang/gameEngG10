@@ -8,6 +8,8 @@ import { LITERATURE_EXAM_BLUEPRINT, LITERATURE_TASK_LABELS } from '../../data/li
 import { toast } from '../../utils/toast';
 import { supabase } from '../../utils/supabaseClient';
 import { isGatekeeperEligible, getGatekeeperCoverageStats } from '../../utils/gatekeeper';
+import { CORE_KNOWLEDGE_TOPICS } from '../../data/coreKnowledge';
+import { useGameState } from '../../hooks/useGameState';
 
 import { QuestionFormModal } from './Modals/QuestionFormModal';
 
@@ -67,6 +69,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
   addQuestion,
   importQuestions
 }) => {
+  const activeGradeTier = useGameState(state => state.activeGradeTier);
   const [selectedSect, setSelectedSect] = useState<SubjectId | null>(null);
   const [questionQuery, setQuestionQuery] = useState('');
   const [subjectFilter, setSubjectFilter] = useState<'all' | 'english' | 'math' | 'literature'>('all');
@@ -104,28 +107,74 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
   // AI Ingest state
   const [rawText, setRawText] = useState('');
   const [isIngesting, setIsIngesting] = useState(false);
+  const [pendingAiQuestions, setPendingAiQuestions] = useState<any[]>([]);
+  const [isConfirmingAiImport, setIsConfirmingAiImport] = useState(false);
   const [deletingIds, setDeletingIds] = useState<Record<string, boolean>>({});
+  const contextQuestions = useMemo(
+    () => questions.filter(question => (question.gradeTier ?? question.grade ?? 9) === activeGradeTier),
+    [questions, activeGradeTier]
+  );
 
   // Filters logic
   const filteredQuestions = useMemo(() => {
-    return questions.filter(q => {
+    return contextQuestions.filter(q => {
       const matchSect = selectedSect ? q.subject === selectedSect : true;
+      const matchGrade = (q.gradeTier ?? q.grade ?? 9) === activeGradeTier;
       const matchSub = subjectFilter === 'all' ? true : q.subject === subjectFilter;
       const matchType = questionTypeFilter === 'all' ? true : q.type === questionTypeFilter;
       const matchPart = examPartFilter === 'all' ? true : q.metadata?.examPart === examPartFilter;
-      const matchTopic = topicFilter === 'all' ? true : q.category === topicFilter;
+      const matchTopic = topicFilter === 'all' ? true : q.topicId === topicFilter;
       const matchConfused = confusedFilter === 'all' ? true : q.isConfused === true;
       const matchGatekeeper = gatekeeperFilter === 'all' ? true : gatekeeperFilter === 'eligible' ? isGatekeeperEligible(q) : !isGatekeeperEligible(q);
 
       const qText = `${q.prompt} ${q.category} ${q.source || ''} ${q.id}`.toLowerCase();
       const matchQuery = qText.includes(questionQuery.toLowerCase());
 
-      return matchSect && matchSub && matchType && matchPart && matchTopic && matchConfused && matchGatekeeper && matchQuery;
+      return matchGrade && matchSect && matchSub && matchType && matchPart && matchTopic && matchConfused && matchGatekeeper && matchQuery;
     });
-  }, [questions, selectedSect, subjectFilter, questionTypeFilter, examPartFilter, topicFilter, confusedFilter, gatekeeperFilter, questionQuery]);
+  }, [contextQuestions, activeGradeTier, selectedSect, subjectFilter, questionTypeFilter, examPartFilter, topicFilter, confusedFilter, gatekeeperFilter, questionQuery]);
 
   // Thống kê Gác Cổng theo môn phái + Hầm nguyên tố (CORE_SPECS §9.5) — dành cho Giáo viên/Hiệu trưởng.
-  const gatekeeperStats = useMemo(() => getGatekeeperCoverageStats(questions), [questions]);
+  const gatekeeperStats = useMemo(() => getGatekeeperCoverageStats(contextQuestions), [contextQuestions]);
+
+  const coreCoverage = useMemo(() => {
+    if (!selectedSect) return null;
+    const topics = CORE_KNOWLEDGE_TOPICS.filter(topic =>
+      topic.subjectId === selectedSect && (topic.gradeTier ?? 9) === activeGradeTier
+    );
+    const counts = contextQuestions.reduce<Record<string, number>>((acc, question) => {
+      if (question.subject === selectedSect && question.topicId) {
+        acc[question.topicId] = (acc[question.topicId] || 0) + 1;
+      }
+      return acc;
+    }, {});
+    const items = topics.map(topic => ({
+      ...topic,
+      count: counts[topic.id] || 0,
+      ratio: topic.minQuestions > 0 ? (counts[topic.id] || 0) / topic.minQuestions : 1,
+    }));
+    const current = items.reduce((sum, item) => sum + Math.min(item.count, item.minQuestions), 0);
+    const required = items.reduce((sum, item) => sum + item.minQuestions, 0);
+    const byHam = (['hoa', 'bang', 'thach'] as const).map(ham => {
+      const hamItems = items.filter(item => item.hamNguyenTo === ham);
+      const hamCurrent = hamItems.reduce((sum, item) => sum + Math.min(item.count, item.minQuestions), 0);
+      const hamRequired = hamItems.reduce((sum, item) => sum + item.minQuestions, 0);
+      return {
+        ham,
+        current: hamCurrent,
+        required: hamRequired,
+        percent: hamRequired > 0 ? Math.round((hamCurrent / hamRequired) * 100) : 100,
+      };
+    });
+    return {
+      items,
+      highPriorityGaps: items.filter(item => item.examRelevance === 'high' && item.count < item.minQuestions),
+      current,
+      required,
+      percent: required > 0 ? Math.round((current / required) * 100) : 100,
+      byHam,
+    };
+  }, [contextQuestions, selectedSect, activeGradeTier]);
 
 
   // Counts helpers
@@ -146,7 +195,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
 
   const topicCounts = useMemo(() => {
     return questions.reduce((acc: Record<string, number>, q) => {
-      const key = q.category?.trim() || 'Chưa phân loại';
+      const key = q.topicId?.trim() || 'untagged';
       acc[key] = (acc[key] || 0) + 1;
       return acc;
     }, {});
@@ -165,12 +214,11 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
   }, [questions]);
 
   const topicLabelMap = useMemo(() => {
-    return questions.reduce((acc: Record<string, string>, q) => {
-      const key = q.category?.trim() || 'Chưa phân loại';
-      if (!acc[key]) acc[key] = getTopicLabel(q);
-      return acc;
-    }, {});
-  }, [questions]);
+    return Object.fromEntries([
+      ['untagged', 'Chưa gắn chuyên đề'],
+      ...CORE_KNOWLEDGE_TOPICS.map(topic => [topic.id, topic.label]),
+    ]);
+  }, []);
 
   // Handle Edit/Save
   const startEdit = (q: Question) => {
@@ -202,7 +250,9 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
         body: JSON.stringify({
           rawText: rawText.trim(),
           subject: selectedSect,
-          lessonId: `ai-ingest-${Date.now()}`
+          topicCatalog: CORE_KNOWLEDGE_TOPICS
+            .filter(topic => topic.subjectId === selectedSect)
+            .map(topic => ({ id: topic.id, label: topic.label, examRelevance: topic.examRelevance }))
         })
       });
 
@@ -211,10 +261,9 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
       }
 
       const data = await res.json();
-      if (data.success && data.questions && importQuestions) {
-        await importQuestions(data.questions);
-        toast.success(`Đã tự động Ingest & lưu thành công ${data.questions.length} câu hỏi! 🎇`);
-        setRawText('');
+      if (data.success && Array.isArray(data.questions)) {
+        setPendingAiQuestions(data.questions);
+        toast.success(`AI đã đề xuất ${data.questions.length} câu. Vui lòng rà chuyên đề trước khi lưu.`);
       } else {
         toast.error('Lỗi định dạng response từ AI.');
       }
@@ -223,6 +272,30 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
       toast.error('Có lỗi xảy ra khi gọi AI Ingest đề thi.');
     } finally {
       setIsIngesting(false);
+    }
+  };
+
+  const confirmAiImport = async () => {
+    if (!importQuestions || pendingAiQuestions.length === 0) return;
+    const missingTopic = pendingAiQuestions.find(question => !question.topicId);
+    if (missingTopic) {
+      toast.error('Mỗi câu hỏi phải được chọn một chuyên đề trước khi lưu.');
+      return;
+    }
+    setIsConfirmingAiImport(true);
+    try {
+      await importQuestions(
+        pendingAiQuestions.map(question => ({ ...question, gradeTier: activeGradeTier })),
+        `ai-ingest-${Date.now()}`
+      );
+      toast.success(`Đã lưu ${pendingAiQuestions.length} câu hỏi sau khi review.`);
+      setPendingAiQuestions([]);
+      setRawText('');
+    } catch (error) {
+      console.error(error);
+      toast.error('Không thể lưu danh sách câu hỏi đã review.');
+    } finally {
+      setIsConfirmingAiImport(false);
     }
   };
 
@@ -252,10 +325,10 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
               <Database className="w-8 h-8 text-synth-cyan" />
             </div>
             <h2 className="font-orbitron font-black text-xl text-white uppercase tracking-wider flex items-center justify-center gap-2">
-              📚 VẠN QUYỂN CÁC (KHO TRI THỨC & KHẢO HẠCH)
+              📚 KHO ĐỀ THI
             </h2>
             <p className="text-xs text-synth-text-muted">
-              Kính xin Hiệu Trưởng lựa chọn Môn phái cần thiết lập giáo án và khảo hạch để tiếp tục.
+              Kính xin Viện Trưởng lựa chọn Môn phái cần thiết lập giáo án và khảo hạch để tiếp tục.
             </p>
           </div>
 
@@ -327,6 +400,85 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
             </div>
           </div>
 
+          {/* Coverage chuyên đề cốt lõi — CORE_SPECS §9.6 */}
+          {coreCoverage && (
+            <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-4">
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <span className="text-[10px] uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">
+                    Độ phủ chuyên đề cốt lõi — {SUBJECTS_CONFIG[selectedSect].name}
+                  </span>
+                  <p className="text-[10px] text-synth-text-muted mt-1">
+                    {coreCoverage.current.toLocaleString()} / {coreCoverage.required.toLocaleString()} câu theo định mức
+                  </p>
+                </div>
+                <span className="text-lg font-orbitron font-black text-synth-cyan">{coreCoverage.percent}%</span>
+              </div>
+              <div className="h-2.5 rounded-full bg-black/30 overflow-hidden border border-white/5">
+                <div
+                  className="h-full bg-gradient-to-r from-synth-cyan to-synth-green transition-all"
+                  style={{ width: `${Math.min(coreCoverage.percent, 100)}%` }}
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {coreCoverage.byHam.map(item => {
+                  const label = item.ham === 'hoa' ? '🔥 Hỏa Hầm' : item.ham === 'bang' ? '❄️ Băng Hầm' : '🪨 Thạch Hầm';
+                  return (
+                    <div key={item.ham} className="rounded-xl border border-white/5 bg-white/5 p-3 space-y-2">
+                      <div className="flex items-center justify-between text-[10px] font-bold">
+                        <span className="text-synth-text-muted">{label}</span>
+                        <span className="text-white">{item.percent}%</span>
+                      </div>
+                      <div className="h-1.5 rounded-full bg-black/30 overflow-hidden">
+                        <div className="h-full bg-synth-cyan" style={{ width: `${Math.min(item.percent, 100)}%` }} />
+                      </div>
+                      <span className="block text-[9px] text-synth-text-muted">{item.current} / {item.required} câu</span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {coreCoverage.highPriorityGaps.length > 0 ? (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-red-400">
+                    <AlertTriangle className="w-3.5 h-3.5" />
+                    {coreCoverage.highPriorityGaps.length} chuyên đề ưu tiên cao đang thiếu câu
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
+                    {coreCoverage.highPriorityGaps.map(item => {
+                      const severity = item.ratio < 0.5 ? 'red' : 'yellow';
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            setTopicFilter(item.id);
+                            document.getElementById('question-bank-tools')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }}
+                          className={`rounded-xl border p-3 text-left cursor-pointer transition-colors ${
+                            severity === 'red'
+                              ? 'border-red-500/30 bg-red-500/5 hover:bg-red-500/10'
+                              : 'border-yellow-500/30 bg-yellow-500/5 hover:bg-yellow-500/10'
+                          }`}
+                          title="Lọc ngân hàng theo chuyên đề này"
+                        >
+                          <span className="block text-[10px] font-bold text-white line-clamp-2">{item.label}</span>
+                          <span className={`block mt-1 text-[10px] font-orbitron font-black ${severity === 'red' ? 'text-red-400' : 'text-yellow-400'}`}>
+                            {item.count} / {item.minQuestions} câu
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-synth-green">
+                  <ShieldCheck className="w-3.5 h-3.5" /> Đủ định mức cho mọi chuyên đề ưu tiên cao
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Thống kê Gác Cổng (CORE_SPECS §9.5) — số câu đủ điều kiện theo Hầm nguyên tố */}
           <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
             <div className="flex items-center justify-between">
@@ -363,7 +515,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
             </div>
           </div>
 
-          <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5">
+          <div id="question-bank-tools" className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5 scroll-mt-24">
             <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-4">
               <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
                 <Database className="w-4 h-4" /> Ngân hàng câu hỏi hiện có
@@ -484,7 +636,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                   </h5>
                 </div>
                 <p className="text-[10px] text-synth-text-muted leading-relaxed">
-                  Dán đề thi của bạn vào ô dưới đây (hỗ trợ đề thi trắc nghiệm tiếng Việt/tiếng Anh thô). AI của Thiên Cơ Các sẽ tự động nhận diện câu hỏi, lựa chọn, đáp án, và đề xuất lời giải thích chi tiết.
+                  Dán đề thi của bạn vào ô dưới đây (hỗ trợ đề thi trắc nghiệm tiếng Việt/tiếng Anh thô). AI của Phòng Học Vụ sẽ tự động nhận diện câu hỏi, lựa chọn, đáp án, và đề xuất lời giải thích chi tiết.
                 </p>
 
                 <form onSubmit={handleAiIngest} className="space-y-3">
@@ -502,6 +654,67 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                     {isIngesting ? 'AI đang phân tích...' : 'Ingest Đề Thi 🎇'}
                   </button>
                 </form>
+
+                {pendingAiQuestions.length > 0 && (
+                  <div className="rounded-xl border border-synth-orange/30 bg-synth-orange/5 p-4 space-y-3">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <div>
+                        <h6 className="text-[11px] font-orbitron font-black uppercase text-synth-orange">
+                          Hàng chờ review — {pendingAiQuestions.length} câu
+                        </h6>
+                        <p className="text-[10px] text-synth-text-muted mt-1">
+                          Kiểm tra nội dung, đáp án và chuyên đề. Chưa có câu nào được lưu vào Kho Đề Thi.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setPendingAiQuestions([])}
+                        className="text-[9px] px-2.5 py-1.5 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 cursor-pointer uppercase font-bold"
+                      >
+                        Hủy đề xuất
+                      </button>
+                    </div>
+
+                    <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+                      {pendingAiQuestions.map((question, index) => (
+                        <div key={question.id || index} className="rounded-lg border border-white/10 bg-black/20 p-3 space-y-2">
+                          <p className="text-[11px] text-white leading-relaxed line-clamp-3">
+                            <strong>Câu {index + 1}:</strong> {question.prompt}
+                          </p>
+                          <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-2 sm:items-end">
+                            <label className="space-y-1 text-[9px] uppercase font-bold text-synth-text-muted">
+                              Chuyên đề đề xuất
+                              <select
+                                value={question.topicId || ''}
+                                onChange={event => setPendingAiQuestions(current => current.map((item, itemIndex) => (
+                                  itemIndex === index ? { ...item, topicId: event.target.value } : item
+                                )))}
+                                className="w-full p-2 rounded-lg border border-white/10 bg-synth-gray/30 text-white text-[10px] outline-none focus:border-synth-orange"
+                              >
+                                <option value="">Chọn chuyên đề...</option>
+                                {CORE_KNOWLEDGE_TOPICS.filter(topic => topic.subjectId === selectedSect).map(topic => (
+                                  <option key={topic.id} value={topic.id}>{topic.label}</option>
+                                ))}
+                              </select>
+                            </label>
+                            <span className="px-2 py-1.5 rounded-lg border border-white/10 text-[9px] uppercase font-bold text-synth-text-muted">
+                              Ưu tiên: {question.suggestedExamRelevance || 'medium'}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={confirmAiImport}
+                      disabled={isConfirmingAiImport || pendingAiQuestions.some(question => !question.topicId)}
+                      className="w-full py-2.5 rounded-lg bg-synth-green text-black font-orbitron font-black text-[10px] uppercase cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      {isConfirmingAiImport ? 'Đang lưu...' : `Xác nhận và lưu ${pendingAiQuestions.length} câu`}
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Row 3: List of Questions (Full Width) */}
@@ -516,6 +729,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                 >
                   {filteredQuestions.length > 0 ? (
                     filteredQuestions.slice(0, visibleCount).map(q => {
+                      const coreTopic = q.topicId ? CORE_KNOWLEDGE_TOPICS.find(topic => topic.id === q.topicId) : undefined;
                       return (
                         <div 
                           key={q.id} 
@@ -560,8 +774,13 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                                   {QUESTION_TYPE_LABELS[q.type] || q.type}
                                 </span>
                                 <span className="text-[9px] px-1.5 py-0.5 rounded bg-synth-magenta/15 text-synth-magenta font-bold uppercase font-orbitron">
-                                  {getTopicLabel(q)}
+                                  {coreTopic?.label || getTopicLabel(q)}
                                 </span>
+                                {coreTopic && (
+                                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-white/5 text-synth-text-muted font-bold uppercase border border-white/10">
+                                    {coreTopic.hamNguyenTo === 'hoa' ? '🔥 Hỏa Hầm' : coreTopic.hamNguyenTo === 'bang' ? '❄️ Băng Hầm' : '🪨 Thạch Hầm'}
+                                  </span>
+                                )}
                                 <span className="text-[9px] px-1.5 py-0.5 rounded bg-synth-green/15 text-synth-green font-bold uppercase font-orbitron">
                                   Độ khó: {q.difficulty}/10
                                 </span>
@@ -618,6 +837,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
         isAddingNew={isAddingNew}
         editingQuestion={editingQuestion}
         selectedSect={selectedSect}
+        gradeTier={activeGradeTier}
         addQuestion={addQuestion}
         updateQuestion={updateQuestion}
       />

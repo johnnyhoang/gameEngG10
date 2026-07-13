@@ -9,7 +9,9 @@ import type { SubjectId } from '../types/game';
 export const GlobalSectModal: React.FC = () => {
   const isSectModalOpen = useGameState(state => state.isSectModalOpen);
   const setSectModalOpen = useGameState(state => state.setSectModalOpen);
-  const { activeSectId, setActiveSectId } = useSect();
+  const { activeSectId, activeGradeTier, setActiveSectId } = useSect();
+  const lessons = useGameState(state => state.lessons);
+  const questions = useGameState(state => state.questions);
   const uiTheme = useGameState(state => state.uiTheme);
   const isUnicorn = isLightTheme(uiTheme);
 
@@ -23,6 +25,13 @@ export const GlobalSectModal: React.FC = () => {
     setActiveSectId(id);
     setSectModalOpen(false);
   };
+
+  const hasContent = (subjectId: SubjectId) => lessons.some(lesson =>
+    lesson.subject === subjectId && (lesson.gradeTier ?? 9) === activeGradeTier
+  ) || questions.some(question =>
+    (question.subject ?? 'english') === subjectId
+    && (question.gradeTier ?? question.grade ?? 9) === activeGradeTier
+  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -38,7 +47,7 @@ export const GlobalSectModal: React.FC = () => {
               Chọn Môn Phái (Sect Selection)
             </h2>
             <p className={`text-[10px] uppercase font-bold tracking-widest font-orbitron ${isUnicorn ? 'text-violet-600/70' : 'text-synth-cyan'}`}>
-              Chọn môn học để tập trung tu học
+              Chọn môn học cho Lớp {activeGradeTier}
             </p>
           </div>
           <button 
@@ -56,18 +65,22 @@ export const GlobalSectModal: React.FC = () => {
         {/* Chuyên Sâu */}
         <div className="space-y-3">
           <h3 className="text-xs font-black font-orbitron uppercase tracking-widest text-synth-orange">
-            🔥 Môn Phái Ôn Thi Chuyên Sâu (Lớp 10)
+            🔥 Môn Học Chuyên Sâu
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {chuyenSau.map(s => {
               const active = s.id === activeSectId;
+              const available = hasContent(s.id);
               return (
                 <button
                   key={s.id}
-                  onClick={() => handleSelect(s.id)}
+                  onClick={() => available && handleSelect(s.id)}
+                  disabled={!available}
                   style={{ borderColor: active ? s.color : 'rgba(255,255,255,0.1)' }}
                   className={`flex items-center justify-between p-4 rounded-xl border text-left cursor-pointer transition-all duration-300 ${
-                    active 
+                    !available
+                      ? 'bg-black/10 opacity-40 cursor-not-allowed'
+                      : active
                       ? 'bg-white/5 shadow-[0_0_12px_rgba(255,255,255,0.1)]' 
                       : 'bg-black/20 hover:border-white/20'
                   }`}
@@ -86,18 +99,22 @@ export const GlobalSectModal: React.FC = () => {
         {/* Cơ Bản */}
         <div className="space-y-3">
           <h3 className="text-xs font-black font-orbitron uppercase tracking-widest text-synth-cyan">
-            ❄️ Môn Phái Kiến Thức Lớp 9 Cơ Bản
+            ❄️ Môn Học Cơ Bản
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {coBan.map(s => {
               const active = s.id === activeSectId;
+              const available = hasContent(s.id);
               return (
                 <button
                   key={s.id}
-                  onClick={() => handleSelect(s.id)}
+                  onClick={() => available && handleSelect(s.id)}
+                  disabled={!available}
                   style={{ borderColor: active ? s.color : 'rgba(255,255,255,0.1)' }}
                   className={`flex items-center justify-between p-4 rounded-xl border text-left cursor-pointer transition-all duration-300 ${
-                    active 
+                    !available
+                      ? 'bg-black/10 opacity-40 cursor-not-allowed'
+                      : active
                       ? 'bg-white/5 shadow-[0_0_12px_rgba(255,255,255,0.1)]' 
                       : 'bg-black/20 hover:border-white/20'
                   }`}

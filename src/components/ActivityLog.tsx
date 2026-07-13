@@ -6,7 +6,7 @@ import { isLightTheme } from '../theme/uiThemes';
 
 export const ActivityLog: React.FC = () => {
   const logs = useGameState(state => state.logs);
-  const { activeSectId } = useSect();
+  const { activeSectId, activeGradeTier } = useSect();
   const uiTheme = useGameState(state => state.uiTheme);
   const currentUser = useGameState(state => state.currentUser);
   const isUnicorn = isLightTheme(uiTheme);
@@ -19,14 +19,17 @@ export const ActivityLog: React.FC = () => {
   const sectLogs = useMemo(
     () => {
       if (currentUser?.role !== 'student') return logs;
-      return logs.filter(log => !log.subject || log.subject === activeSectId);
+      return logs.filter(log =>
+        (!log.subject || log.subject === activeSectId)
+        && (log.gradeTier === undefined || log.gradeTier === activeGradeTier)
+      );
     },
-    [logs, activeSectId, currentUser?.role]
+    [logs, activeSectId, activeGradeTier, currentUser?.role]
   );
 
   useEffect(() => {
     setVisibleCount(15);
-  }, [sectLogs.length, activeSectId]);
+  }, [sectLogs.length, activeSectId, activeGradeTier]);
 
   const visibleLogs = useMemo(() => sectLogs.slice(0, visibleCount), [sectLogs, visibleCount]);
 
@@ -104,13 +107,13 @@ export const ActivityLog: React.FC = () => {
                   </p>
                   
                   {/* Reward indicator */}
-                  {(log.coinsChanged !== 0 || log.xpChanged !== 0) && (
+                  {(log.rubyChanged !== 0 || log.xpChanged !== 0) && (
                     <div className="flex gap-2 mt-1.5 text-[9px] font-orbitron font-bold">
-                      {log.coinsChanged > 0 && (
-                        <span className="text-synth-orange">+{log.coinsChanged} NP</span>
+                      {log.rubyChanged > 0 && (
+                        <span className="text-synth-orange">+{log.rubyChanged} Ruby</span>
                       )}
-                      {log.coinsChanged < 0 && (
-                        <span className="text-red-400">{log.coinsChanged} NP</span>
+                      {log.rubyChanged < 0 && (
+                        <span className="text-red-400">{log.rubyChanged} Ruby</span>
                       )}
                       {log.xpChanged > 0 && (
                         <span className="text-synth-cyan">+{log.xpChanged} XP</span>

@@ -4,10 +4,10 @@ import { authMiddleware } from '../middleware/auth.js';
 import { checkStudentManagementPermission, logAuditEvent } from '../helpers/permissions.js';
 import { ensureDefaultRewards } from '../helpers/questions.js';
 import {
-  saveBossCompletionBonusNP,
+  saveBossCompletionBonusRuby,
   saveChallengeEnergyCosts,
   saveBaseXP,
-  saveBaseCoins
+  saveBaseRuby
 } from '../helpers/gameSettings.js';
 
 const router = express.Router();
@@ -40,7 +40,7 @@ router.get('/admin/users', authMiddleware, async (req: any, res) => {
       // 1. Admin: Lấy toàn bộ học viên và cán bộ trong viện
       const usersRes = await pool.query(`
         SELECT u.id, u.name, u.email, u.avatar_url, u.role,
-               p.level, p.xp, p.coins, p.streak, p.energy, p.max_energy, p.reset_hours
+               p.level, p.xp, p.ruby, p.streak, p.energy, p.max_energy, p.reset_hours
         FROM ge10_users u
         LEFT JOIN ge10_player_profiles p ON u.id = p.user_id
         WHERE u.is_active = TRUE
@@ -62,7 +62,7 @@ router.get('/admin/users', authMiddleware, async (req: any, res) => {
       // 2. Giáo viên: Chỉ lấy thông tin liên quan đến lớp của mình
       const studentsRes = await pool.query(`
         SELECT DISTINCT u.id, u.name, u.email, u.avatar_url, u.role,
-               p.level, p.xp, p.coins, p.streak, p.energy, p.max_energy, p.reset_hours
+               p.level, p.xp, p.ruby, p.streak, p.energy, p.max_energy, p.reset_hours
         FROM ge10_users u
         JOIN ge10_family_links l ON u.id = l.student_id
         LEFT JOIN ge10_player_profiles p ON u.id = p.user_id
@@ -95,7 +95,7 @@ router.get('/admin/users', authMiddleware, async (req: any, res) => {
 
         relatedUsers.push(...coTeachersRes.rows);
 
-        // Lấy thêm Ban Giám Hiệu (Hiệu Trưởng/Hiệu Phó) để giáo viên liên hệ
+        // Lấy thêm Ban Giám Hiệu (Viện Trưởng/Phó Viện Trưởng) để giáo viên liên hệ
         const adminsRes = await pool.query(`
           SELECT u.id, u.name, u.email, u.avatar_url, u.role
           FROM ge10_users u
@@ -206,11 +206,11 @@ router.post('/api/admin/update-user-role', authMiddleware, async (req: any, res)
         const newProfileId = `u-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         
         // Chuẩn hóa tên (Xóa hậu tố cũ nếu có và thêm hậu tố vai trò mới)
-        const cleanName = baseInfo.name.replace(/\s*\(Hiệu Trưởng\)|\s*\(Hiệu Phó\)|\s*\(Chủ Nhiệm\)|\s*\(Học Sinh\)/g, '');
+        const cleanName = baseInfo.name.replace(/\s*\((?:Hiệu Trưởng|Hiệu Phó|Viện Trưởng|Phó Viện Trưởng|Chủ Nhiệm|Chủ Nhiệm Chính|Học Sinh|Sĩ Tử)\)/g, '');
         let roleSuffix = '';
-        if (roleKey === 'truong_vien') roleSuffix = 'Hiệu Trưởng';
-        else if (roleKey === 'pho_vien') roleSuffix = 'Hiệu Phó';
-        else if (roleKey === 'parent') roleSuffix = 'Chủ Nhiệm';
+        if (roleKey === 'truong_vien') roleSuffix = 'Viện Trưởng';
+        else if (roleKey === 'pho_vien') roleSuffix = 'Phó Viện Trưởng';
+        else if (roleKey === 'parent') roleSuffix = 'Chủ Nhiệm Chính';
         else if (roleKey === 'student') roleSuffix = 'Học Sinh';
         
         const finalName = roleSuffix ? `${cleanName} (${roleSuffix})` : cleanName;
@@ -240,7 +240,7 @@ router.post('/api/admin/update-user-role', authMiddleware, async (req: any, res)
   }
 });
 
-// GET /api/admin/vice-principal-applications: Lấy tất cả yêu cầu ứng tuyển Hiệu Phó đang chờ duyệt (Chỉ dành cho Hiệu Trưởng)
+// GET /api/admin/vice-principal-applications: Lấy tất cả yêu cầu ứng tuyển Phó Viện Trưởng đang chờ duyệt (Chỉ dành cho Viện Trưởng)
 router.get('/admin/vice-principal-applications', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
@@ -249,7 +249,7 @@ router.get('/admin/vice-principal-applications', authMiddleware, async (req: any
       [adminId]
     );
     if (adminCheck.rowCount === 0) {
-      return res.status(403).json({ error: 'Forbidden: Chỉ Ban Giám Hiệu mới có quyền duyệt đơn ứng tuyển Hiệu Phó.' });
+      return res.status(403).json({ error: 'Forbidden: Chỉ Ban Giám Hiệu mới có quyền duyệt đơn ứng tuyển Phó Viện Trưởng.' });
     }
 
     const appsRes = await pool.query(`
@@ -267,7 +267,7 @@ router.get('/admin/vice-principal-applications', authMiddleware, async (req: any
   }
 });
 
-// POST /api/admin/respond-vice-principal: Duyệt hoặc từ chối yêu cầu ứng tuyển Hiệu Phó (Chỉ dành cho Hiệu Trưởng)
+// POST /api/admin/respond-vice-principal: Duyệt hoặc từ chối yêu cầu ứng tuyển Phó Viện Trưởng (Chỉ dành cho Viện Trưởng)
 router.post('/api/admin/respond-vice-principal', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
@@ -307,7 +307,7 @@ router.post('/api/admin/respond-vice-principal', authMiddleware, async (req: any
     const targetAccountId = teacherInfo.account_id;
 
     if (accept) {
-      // 3. Kích hoạt hoặc Tạo mới profile pho_vien (Hiệu Phó) cho tài khoản này
+      // 3. Kích hoạt hoặc Tạo mới profile pho_vien (Phó Viện Trưởng) cho tài khoản này
       const profileCheck = await pool.query(
         "SELECT id FROM ge10_users WHERE account_id = $1 AND role = 'pho_vien'",
         [targetAccountId]
@@ -317,10 +317,10 @@ router.post('/api/admin/respond-vice-principal', authMiddleware, async (req: any
         // Đã từng có profile -> Kích hoạt lại
         await pool.query("UPDATE ge10_users SET is_active = TRUE WHERE id = $1", [profileCheck.rows[0].id]);
       } else {
-        // Chưa có profile -> Tạo mới profile Hiệu Phó
+        // Chưa có profile -> Tạo mới profile Phó Viện Trưởng
         const newProfileId = `u-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        const cleanName = teacherInfo.name.replace(/\s*\(Hiệu Trưởng\)|\s*\(Hiệu Phó\)|\s*\(Chủ Nhiệm\)|\s*\(Học Sinh\)/g, '');
-        const finalName = `${cleanName} (Hiệu Phó)`;
+        const cleanName = teacherInfo.name.replace(/\s*\((?:Hiệu Trưởng|Hiệu Phó|Viện Trưởng|Phó Viện Trưởng|Chủ Nhiệm|Chủ Nhiệm Chính|Học Sinh|Sĩ Tử)\)/g, '');
+        const finalName = `${cleanName} (Phó Viện Trưởng)`;
 
         await pool.query(
           `INSERT INTO ge10_users (id, account_id, name, email, avatar_url, role, is_active)
@@ -342,7 +342,7 @@ router.post('/api/admin/respond-vice-principal', authMiddleware, async (req: any
       await logAuditEvent(teacherProfileId, 'reject_vice_principal_request', null, { applicationId });
     }
 
-    res.json({ success: true, message: accept ? 'Đã duyệt thăng cấp Hiệu Phó thành công!' : 'Đã từ chối đơn ứng tuyển.' });
+    res.json({ success: true, message: accept ? 'Đã duyệt thăng cấp Phó Viện Trưởng thành công!' : 'Đã từ chối đơn ứng tuyển.' });
   } catch (error: any) {
     console.error('Error responding to VP application:', error);
     res.status(500).json({ error: 'Failed to process application.', details: error.message });
@@ -404,15 +404,15 @@ router.post('/admin/deliver-reward', authMiddleware, async (req: any, res) => {
 
       const logId = `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       await client.query(
-        `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, coins_changed, xp_changed)
+        `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, ruby_changed, xp_changed)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
         [
           logId,
           studentUserId,
           Date.now(),
           'parent_approve',
-          'Đã Trao Phần Thưởng',
-          `Hiệu Trưởng xác nhận đã trao "${reward_title}" ngoài đời.`,
+          'Đã Trao Quà',
+          `Viện Trưởng xác nhận đã trao "${reward_title}" ngoài đời.`,
           0,
           0
         ]
@@ -432,7 +432,7 @@ router.post('/admin/deliver-reward', authMiddleware, async (req: any, res) => {
   }
 });
 
-// POST /api/admin/cancel-redemption: Cancels a student's pending redemption, refunding NP and restocking quantity
+// POST /api/admin/cancel-redemption: Cancels a student's pending redemption, refunding Ruby and restocking quantity
 router.post('/admin/cancel-redemption', authMiddleware, async (req: any, res) => {
   const adminId = req.user.sub;
   try {
@@ -447,13 +447,13 @@ router.post('/admin/cancel-redemption', authMiddleware, async (req: any, res) =>
     }
 
     const redemptionRes = await pool.query(
-      'SELECT reward_id, reward_title, cost_coins FROM ge10_reward_redemptions WHERE id = $1 AND user_id = $2 AND status = \'pending\'',
+      'SELECT reward_id, reward_title, cost_ruby FROM ge10_reward_redemptions WHERE id = $1 AND user_id = $2 AND status = \'pending\'',
       [redemptionId, studentUserId]
     );
     if (redemptionRes.rowCount === 0) {
       return res.status(404).json({ error: 'Pending redemption not found.' });
     }
-    const { reward_id, reward_title, cost_coins } = redemptionRes.rows[0];
+    const { reward_id, reward_title, cost_ruby } = redemptionRes.rows[0];
 
     const client = await pool.connect();
     try {
@@ -461,10 +461,10 @@ router.post('/admin/cancel-redemption', authMiddleware, async (req: any, res) =>
 
       await client.query('DELETE FROM ge10_reward_redemptions WHERE id = $1 AND user_id = $2', [redemptionId, studentUserId]);
 
-      // Hoàn NP — được phép âm/dương tùy tình huống, không kẹp đáy (CORE_SPECS §3.1).
+      // Hoàn Ruby — được phép âm/dương tùy tình huống, không kẹp đáy (CORE_SPECS §3.1).
       await client.query(
-        'UPDATE ge10_player_profiles SET coins = coins + $1 WHERE user_id = $2',
-        [cost_coins, studentUserId]
+        'UPDATE ge10_player_profiles SET ruby = ruby + $1 WHERE user_id = $2',
+        [cost_ruby, studentUserId]
       );
 
       if (reward_id) {
@@ -476,16 +476,16 @@ router.post('/admin/cancel-redemption', authMiddleware, async (req: any, res) =>
 
       const logId = `log-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       await client.query(
-        `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, coins_changed, xp_changed)
+        `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, ruby_changed, xp_changed)
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
         [
           logId,
           studentUserId,
           Date.now(),
           'parent_approve',
-          'Hiệu Trưởng hoàn trả Ngân Lượng',
-          `Hủy lượt đổi "${reward_title}". Đã hoàn lại ${cost_coins} NP`,
-          cost_coins,
+          'Viện Trưởng hoàn trả Ruby',
+          `Hủy lượt đổi "${reward_title}". Đã hoàn lại ${cost_ruby} Ruby`,
+          cost_ruby,
           0
         ]
       );
@@ -542,7 +542,7 @@ router.post('/admin/refill-energy', authMiddleware, async (req: any, res: any) =
     // Log the energy refill log
     const logId = `log-refill-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     await pool.query(
-      `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, coins_changed, xp_changed, wallet_changed)
+      `INSERT INTO ge10_history_logs (id, user_id, timestamp, activity_type, title, detail, ruby_changed, xp_changed, wallet_changed)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
       [
         logId,
@@ -564,7 +564,7 @@ router.post('/admin/refill-energy', authMiddleware, async (req: any, res: any) =
   }
 });
 
-// POST /api/admin/set-energy-config: Chủ nhiệm chỉnh Trần Chân Khí + giờ hồi RIÊNG cho 1 con (SUB_SPEC_ENERGY §2).
+// POST /api/admin/set-energy-config: Chủ nhiệm chỉnh Trần Năng Lượng + giờ hồi RIÊNG cho 1 con (SUB_SPEC_ENERGY §2).
 router.post('/admin/set-energy-config', authMiddleware, async (req: any, res: any) => {
   const adminId = req.user.sub;
   try {
@@ -617,18 +617,22 @@ router.put('/admin/game-settings', authMiddleware, async (req: any, res: any) =>
       return res.status(403).json({ error: 'Forbidden: Admin access only.' });
     }
 
-    const { bossCompletionBonusNP, challengeEnergyCosts, baseXP, baseCoins } = req.body || {};
+    const bossCompletionBonusRuby = req.body?.bossCompletionBonusRuby ?? req.body?.bossCompletionBonusNP;
+    const challengeEnergyCosts = req.body?.challengeEnergyCosts;
+    const baseXP = req.body?.baseXP;
+    const baseRuby = req.body?.baseRuby ?? req.body?.baseCoins;
     const response: any = { success: true };
 
-    if (bossCompletionBonusNP !== undefined) {
-      if (!Array.isArray(bossCompletionBonusNP) || bossCompletionBonusNP.length !== 3) {
-        return res.status(400).json({ error: 'Invalid parameters: bossCompletionBonusNP must contain 3 values.' });
+    if (bossCompletionBonusRuby !== undefined) {
+      if (!Array.isArray(bossCompletionBonusRuby) || bossCompletionBonusRuby.length !== 3) {
+        return res.status(400).json({ error: 'Invalid parameters: bossCompletionBonusRuby must contain 3 values.' });
       }
-      const normalizedBonus = bossCompletionBonusNP.map((value: any) => Math.max(0, Math.round(Number(value)))) as [number, number, number];
+      const normalizedBonus = bossCompletionBonusRuby.map((value: any) => Math.max(0, Math.round(Number(value)))) as [number, number, number];
       if (normalizedBonus.some(v => !Number.isFinite(v))) {
         return res.status(400).json({ error: 'Invalid boss completion bonus values.' });
       }
-      await saveBossCompletionBonusNP(normalizedBonus);
+      await saveBossCompletionBonusRuby(normalizedBonus);
+      response.bossCompletionBonusRuby = normalizedBonus;
       response.bossCompletionBonusNP = normalizedBonus;
     }
 
@@ -653,12 +657,13 @@ router.put('/admin/game-settings', authMiddleware, async (req: any, res: any) =>
       response.baseXP = val;
     }
 
-    if (baseCoins !== undefined) {
-      const val = Math.max(1, Math.round(Number(baseCoins)));
+    if (baseRuby !== undefined) {
+      const val = Math.max(1, Math.round(Number(baseRuby)));
       if (!Number.isFinite(val)) {
-        return res.status(400).json({ error: 'Invalid baseCoins value.' });
+        return res.status(400).json({ error: 'Invalid baseRuby value.' });
       }
-      await saveBaseCoins(val);
+      await saveBaseRuby(val);
+      response.baseRuby = val;
       response.baseCoins = val;
     }
 
@@ -713,7 +718,7 @@ router.get('/admin/student-profile', authMiddleware, async (req: any, res) => {
       activityType: row.activity_type,
       title: row.title,
       detail: row.detail,
-      coinsChanged: row.coins_changed,
+      rubyChanged: row.ruby_changed,
       xpChanged: row.xp_changed,
       walletChanged: row.wallet_changed
     }));
@@ -721,7 +726,7 @@ router.get('/admin/student-profile', authMiddleware, async (req: any, res) => {
     const rewards = rewardsRes.rows.map((row: any) => ({
       id: row.id,
       title: row.title,
-      costCoins: row.cost_coins,
+      costRuby: row.cost_ruby,
       quantity: row.quantity,
       remainingQuantity: row.remaining_quantity,
       timestamp: Number(row.timestamp)
@@ -731,7 +736,7 @@ router.get('/admin/student-profile', authMiddleware, async (req: any, res) => {
       id: row.id,
       rewardId: row.reward_id,
       rewardTitle: row.reward_title,
-      costCoins: row.cost_coins,
+      costRuby: row.cost_ruby,
       status: row.status,
       timestamp: Number(row.timestamp),
       deliveredAt: row.delivered_at ? Number(row.delivered_at) : undefined
@@ -745,7 +750,7 @@ router.get('/admin/student-profile', authMiddleware, async (req: any, res) => {
         role: userRow.role,
         level: playerRes.rows[0].level,
         xp: playerRes.rows[0].xp,
-        coins: playerRes.rows[0].coins,
+        ruby: playerRes.rows[0].ruby,
         streak: playerRes.rows[0].streak,
         energy: playerRes.rows[0].energy,
         hearts: playerRes.rows[0].hearts,
@@ -775,6 +780,8 @@ router.get('/admin/student-profile', authMiddleware, async (req: any, res) => {
 // GET /api/admin/lessons
 router.get('/admin/lessons', authMiddleware, async (req: any, res) => {
   const accountId = req.user.sub;
+  const gradeTier = Number(req.query.gradeTier);
+  if (![6, 7, 8, 9, 10, 11, 12].includes(gradeTier)) return res.status(400).json({ error: 'gradeTier is required.' });
   try {
     const check = await pool.query(
       "SELECT id FROM ge10_users WHERE account_id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien')",
@@ -783,7 +790,7 @@ router.get('/admin/lessons', authMiddleware, async (req: any, res) => {
     if (check.rowCount === 0) {
       return res.status(403).json({ error: 'Forbidden: Bạn không có quyền truy cập.' });
     }
-    const lessonsRes = await pool.query('SELECT * FROM ge10_lessons ORDER BY created_at DESC');
+    const lessonsRes = await pool.query('SELECT * FROM ge10_lessons WHERE grade_tier = $1 ORDER BY created_at DESC', [gradeTier]);
     res.json(lessonsRes.rows);
   } catch (error: any) {
     console.error('Error fetching lessons:', error);
@@ -794,9 +801,9 @@ router.get('/admin/lessons', authMiddleware, async (req: any, res) => {
 // POST /api/admin/lessons
 router.post('/admin/lessons', authMiddleware, async (req: any, res) => {
   const accountId = req.user.sub;
-  const { subject, category, topic, title, theory, is_standard } = req.body;
+  const { subject, gradeTier, category, topic, title, theory, is_standard } = req.body;
 
-  if (!subject || !category || !topic || !title || theory === undefined) {
+  if (!subject || ![6, 7, 8, 9, 10, 11, 12].includes(Number(gradeTier)) || !category || !topic || !title || theory === undefined) {
     return res.status(400).json({ error: 'Missing required parameters.' });
   }
 
@@ -812,9 +819,9 @@ router.post('/admin/lessons', authMiddleware, async (req: any, res) => {
 
     const lessonId = `les-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     await pool.query(
-      `INSERT INTO ge10_lessons (id, subject, category, topic, title, theory, is_standard)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [lessonId, subject, category, topic, title, theory, is_standard || false]
+      `INSERT INTO ge10_lessons (id, subject, grade_tier, category, topic, title, theory, is_standard)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      [lessonId, subject, gradeTier, category, topic, title, theory, is_standard || false]
     );
 
     await logAuditEvent(actorProfileId, 'create_lesson', lessonId, { subject, category, title });
@@ -829,9 +836,9 @@ router.post('/admin/lessons', authMiddleware, async (req: any, res) => {
 router.put('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) => {
   const accountId = req.user.sub;
   const { lessonId } = req.params;
-  const { subject, category, topic, title, theory, is_standard } = req.body;
+  const { subject, gradeTier, category, topic, title, theory, is_standard } = req.body;
 
-  if (!subject || !category || !topic || !title || theory === undefined) {
+  if (!subject || ![6, 7, 8, 9, 10, 11, 12].includes(Number(gradeTier)) || !category || !topic || !title || theory === undefined) {
     return res.status(400).json({ error: 'Missing required parameters.' });
   }
 
@@ -847,9 +854,9 @@ router.put('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) => 
 
     const updateRes = await pool.query(
       `UPDATE ge10_lessons 
-       SET subject = $1, category = $2, topic = $3, title = $4, theory = $5, is_standard = $6
-       WHERE id = $7`,
-      [subject, category, topic, title, theory, is_standard !== undefined ? is_standard : false, lessonId]
+       SET subject = $1, grade_tier = $2, category = $3, topic = $4, title = $5, theory = $6, is_standard = $7
+       WHERE id = $8`,
+      [subject, gradeTier, category, topic, title, theory, is_standard !== undefined ? is_standard : false, lessonId]
     );
 
     if (updateRes.rowCount === 0) {

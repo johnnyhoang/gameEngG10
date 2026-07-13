@@ -3,7 +3,7 @@ import { Coins, X } from 'lucide-react';
 import { useGameState } from '../../hooks/useGameState';
 import { isLightTheme } from '../../theme/uiThemes';
 
-interface CoinConfirmModalProps {
+interface RubyConfirmModalProps {
   isOpen: boolean;
   onConfirm: () => void;
   onCancel: () => void;
@@ -12,7 +12,7 @@ interface CoinConfirmModalProps {
   isLoading?: boolean;
 }
 
-export const CoinConfirmModal: React.FC<CoinConfirmModalProps> = ({
+export const RubyConfirmModal: React.FC<RubyConfirmModalProps> = ({
   isOpen,
   onConfirm,
   onCancel,
@@ -45,7 +45,7 @@ export const CoinConfirmModal: React.FC<CoinConfirmModalProps> = ({
           <X className="w-4 h-4" />
         </button>
 
-        {/* Floating Coin Icon */}
+        {/* Floating Ruby Icon */}
         <div className="flex justify-center mb-4 mt-2">
           <div
             className={`w-16 h-16 rounded-full flex items-center justify-center border animate-bounce shadow-md ${
@@ -66,7 +66,7 @@ export const CoinConfirmModal: React.FC<CoinConfirmModalProps> = ({
         {/* Dialog Content */}
         <div className="space-y-3 mb-6 px-2">
           <p className={`text-sm font-serif italic ${isUnicorn ? 'text-slate-600' : 'text-slate-300'}`}>
-            "Môn sinh có đồng ý tiêu tốn <span className="font-bold text-synth-orange font-orbitron">{cost} NP</span> để {actionDescription} không?"
+            "Sĩ Tử có đồng ý tiêu tốn <span className="font-bold text-synth-orange font-orbitron">{cost} Ruby</span> để {actionDescription} không?"
           </p>
         </div>
 

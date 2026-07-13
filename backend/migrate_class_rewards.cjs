@@ -15,7 +15,8 @@ async function migrate() {
         id           VARCHAR(255) PRIMARY KEY,
         teacher_id   VARCHAR(255) NOT NULL REFERENCES ge10_users(id) ON DELETE CASCADE,
         title        VARCHAR(500) NOT NULL,
-        cost_coins   INTEGER NOT NULL DEFAULT 200,
+        cost_ruby    INTEGER NOT NULL DEFAULT 200,
+        cost_coins   INTEGER,
         quantity     INTEGER NOT NULL DEFAULT 5,
         remaining    INTEGER NOT NULL DEFAULT 5,
         created_at   BIGINT NOT NULL
@@ -28,7 +29,8 @@ async function migrate() {
         class_reward_id VARCHAR(255) NOT NULL REFERENCES ge10_class_rewards(id) ON DELETE CASCADE,
         student_id      VARCHAR(255) NOT NULL REFERENCES ge10_users(id) ON DELETE CASCADE,
         reward_title    VARCHAR(500) NOT NULL,
-        cost_coins      INTEGER NOT NULL,
+        cost_ruby       INTEGER NOT NULL,
+        cost_coins      INTEGER,
         status          VARCHAR(50) NOT NULL DEFAULT 'pending',
         requested_at    BIGINT NOT NULL,
         delivered_at    BIGINT

@@ -26,17 +26,17 @@ const KIND_META: Record<MatThatKind, {
   accent: string;
 }> = {
   '3d': {
-    label: 'Mật thất 3D',
+    label: 'Xưởng Toán Hình 3D',
     icon: <Move3D className="w-4 h-4" />,
     accent: 'from-synth-cyan/25 to-synth-purple/10'
   },
   plane: {
-    label: 'Mật thất Hình học phẳng',
+    label: 'Xưởng Toán Hình',
     icon: <Layers3 className="w-4 h-4" />,
     accent: 'from-synth-green/25 to-synth-cyan/10'
   },
   graph: {
-    label: 'Mật thất Đồ thị hàm số',
+    label: 'Xưởng Toán Đồ Thị',
     icon: <LineChart className="w-4 h-4" />,
     accent: 'from-synth-magenta/25 to-synth-orange/10'
   }
@@ -57,18 +57,18 @@ export function HangMatThatPage({
 
   const guide = useMemo<Record<MatThatKind, { title: string; subtitle: string; sections: GuideSection[] }>>(() => ({
     '3d': {
-      title: 'Sách hướng dẫn Mật thất 3D',
+      title: 'Sách hướng dẫn Xưởng Toán Hình 3D',
       subtitle: 'Cách dùng từng khu vực và ý nghĩa của từng điều khiển trong hình học không gian.',
       sections: [
         {
-          title: '1. Mật thất 3D dùng để làm gì',
+          title: '1. Xưởng Toán Hình 3D dùng để làm gì',
           body: 'Đây là không gian dựng và phân tích hình học không gian lớp 9. Mục tiêu là biến đề bài thành mô hình 3D rõ ràng để học sinh nhìn ra hình chóp, lăng trụ, tứ diện, hình hộp và các quan hệ vuông góc, song song, đường cao, mặt phẳng.'
         },
         {
           title: '2. Ý nghĩa từng khu vực',
           bullets: [
-            'Tiêu đề trên cùng: cho biết đây là Mật thất 3D, đồng thời cho phép chuyển sang mật thất phẳng hoặc đồ thị hàm số.',
-            'Nút quay lại: trở về Hang Luyện Công mà không mất ngữ cảnh của bài học.',
+            'Tiêu đề trên cùng: cho biết đây là Xưởng Toán Hình 3D, đồng thời cho phép chuyển sang mật thất phẳng hoặc đồ thị hàm số.',
+            'Nút quay lại: trở về Học Đường mà không mất ngữ cảnh của bài học.',
             'Bảng vẽ lớn: nơi hiển thị mô hình 3D, có thể xoay, zoom và pan để quan sát hình.',
             'Ô đề bài: nơi dán nguyên văn đề bài để AI đọc và dựng hình đúng theo giả thiết.',
             'Ô lệnh: nhập thao tác như vẽ đường cao, nối đỉnh với cạnh, tạo mặt phẳng, đánh dấu song song hoặc vuông góc.',
@@ -92,12 +92,12 @@ export function HangMatThatPage({
       ]
     },
     plane: {
-      title: 'Sách hướng dẫn Mật thất Hình học phẳng',
+      title: 'Sách hướng dẫn Xưởng Toán Hình',
       subtitle: 'Cách dùng board hình học phẳng, ý nghĩa các điểm, đường phụ và thao tác dựng hình.',
       sections: [
         {
-          title: '1. Mật thất hình học phẳng để làm gì',
-          body: 'Mật thất này dành cho tam giác, tứ giác, đường tròn và các yếu tố phụ trong bài hình học phẳng lớp 9. Nó giúp học sinh nhìn ra cấu trúc hình, dựng đường cao, trung tuyến, song song, vuông góc, đánh dấu góc và các yếu tố chứng minh.'
+          title: '1. Xưởng Toán Hình để làm gì',
+          body: 'Xưởng này dành cho tam giác, tứ giác, đường tròn và các yếu tố phụ trong bài hình học phẳng lớp 9. Công cụ giúp Sĩ Tử nhìn ra cấu trúc hình, dựng đường cao, trung tuyến, song song, vuông góc, đánh dấu góc và các yếu tố chứng minh.'
         },
         {
           title: '2. Ý nghĩa từng khu vực',
@@ -127,12 +127,12 @@ export function HangMatThatPage({
       ]
     },
     graph: {
-      title: 'Sách hướng dẫn Mật thất Đồ thị hàm số',
+      title: 'Sách hướng dẫn Xưởng Toán Đồ Thị',
       subtitle: 'Cách dùng bảng tọa độ, slider hệ số và các điểm đặc biệt trong đồ thị hàm số.',
       sections: [
         {
-          title: '1. Mật thất đồ thị hàm số để làm gì',
-          body: 'Mật thất này dùng để vẽ và quan sát hàm số bậc nhất, bậc hai trong chương trình lớp 9. Mục tiêu là nhìn ra tác động của từng hệ số, xác định giao điểm, đỉnh, trục đối xứng và so sánh hai đồ thị.'
+          title: '1. Xưởng Toán Đồ Thị để làm gì',
+          body: 'Xưởng này dùng để vẽ và quan sát hàm số bậc nhất, bậc hai trong chương trình lớp 9. Mục tiêu là nhìn ra tác động của từng hệ số, xác định giao điểm, đỉnh, trục đối xứng và so sánh hai đồ thị.'
         },
         {
           title: '2. Ý nghĩa từng khu vực',
@@ -186,7 +186,7 @@ export function HangMatThatPage({
                 className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-white/10 bg-white/5 text-white font-orbitron font-bold text-xs uppercase tracking-wider hover:bg-white/10 transition-colors cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Quay lại Hang Luyện Công
+                Quay lại Học Đường
               </button>
               <button
                 onClick={() => setGuideOpen(true)}

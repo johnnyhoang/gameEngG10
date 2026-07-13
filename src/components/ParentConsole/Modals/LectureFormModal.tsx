@@ -157,7 +157,7 @@ export const LectureFormModal: React.FC<LectureFormModalProps> = ({
               required
               value={formTheory}
               onChange={(e) => setFormTheory(e.target.value)}
-              placeholder="Nhập nội dung lý thuyết chi tiết để học sinh đọc học tại Hang Luyện Công..."
+              placeholder="Nhập nội dung lý thuyết chi tiết để học sinh đọc học tại Học Đường..."
               className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan h-44 resize-none font-mono leading-relaxed"
             />
           </label>

@@ -50,7 +50,7 @@ export const LevelUpCelebration: React.FC = () => {
               {celebration.rank.description}
             </p>
             <p className="text-[10px] font-bold uppercase tracking-wider text-synth-cyan">
-              Level {celebration.toLevel} · +100 NP · +100 XP
+              Level {celebration.toLevel} · +100 Ruby · +100 XP
             </p>
           </>
         ) : (

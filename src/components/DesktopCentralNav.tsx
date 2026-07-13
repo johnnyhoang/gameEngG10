@@ -18,7 +18,7 @@ export const DesktopCentralNav: React.FC<DesktopCentralNavProps> = ({ currentScr
   const activeSubjectConfig = SUBJECTS_CONFIG[activeSectId as SubjectId];
 
   const gates = [
-    { id: 'arena', icon: '⚡', label: 'Đấu Trường' },
+    { id: 'arena', icon: '⚡', label: 'Trường Thi' },
     { id: 'hang', icon: '📚', label: 'Hang Luyện' },
     { id: 'relax', icon: '🦄', label: 'Sơn Trang' }
   ];

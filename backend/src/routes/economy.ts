@@ -4,7 +4,7 @@ import { authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// POST /api/economy/transaction: Record a coin transaction for a profile
+// POST /api/economy/transaction: Record a Ruby transaction for a profile
 router.post('/economy/transaction', authMiddleware, async (req: any, res) => {
   try {
     const accountId = req.user?.sub;
@@ -22,13 +22,13 @@ router.post('/economy/transaction', authMiddleware, async (req: any, res) => {
     const check = await pool.query('SELECT id FROM ge10_users WHERE id = $1 AND account_id = $2', [profileId, accountId]);
     if (check.rowCount === 0) return res.status(403).json({ error: 'Unauthorized' });
 
-    // Update coins in player profile
+    // Update ruby in player profile
     const result = await pool.query(
-      `UPDATE ge10_player_profiles SET coins = GREATEST(0, coins + $1) WHERE user_id = $2 RETURNING coins`,
+      `UPDATE ge10_player_profiles SET ruby = GREATEST(0, ruby + $1) WHERE user_id = $2 RETURNING ruby`,
       [amount, profileId]
     );
-    const newCoins = result.rows[0]?.coins ?? 0;
-    res.json({ success: true, coins: newCoins, reason, details });
+    const newRuby = result.rows[0]?.ruby ?? 0;
+    res.json({ success: true, ruby: newRuby, coins: newRuby, reason, details });
   } catch (error: any) {
     console.error('Error processing economy transaction:', error?.message || error);
     res.status(500).json({ error: 'Failed to process transaction.', details: error?.message });

@@ -6,7 +6,7 @@ interface QuestFormModalProps {
   isOpen: boolean;
   onClose: () => void;
   canCreateMission: boolean;
-  addParentQuest: (title: string, description: string, rewardNP: number) => void;
+  addParentQuest: (title: string, description: string, rewardRuby: number) => void;
 }
 
 export const QuestFormModal: React.FC<QuestFormModalProps> = ({
@@ -17,7 +17,7 @@ export const QuestFormModal: React.FC<QuestFormModalProps> = ({
 }) => {
   const [questTitle, setQuestTitle] = useState('');
   const [questDesc, setQuestDesc] = useState('');
-  const [questNP, setQuestNP] = useState(50);
+  const [questRuby, setQuestRuby] = useState(50);
   const [isSaving, setIsSaving] = useState(false);
 
   if (!isOpen) return null;
@@ -29,11 +29,11 @@ export const QuestFormModal: React.FC<QuestFormModalProps> = ({
       return;
     }
     setIsSaving(true);
-    addParentQuest(questTitle.trim(), questDesc.trim(), questNP);
+    addParentQuest(questTitle.trim(), questDesc.trim(), questRuby);
     toast.success('Giao nhiệm vụ chủ nhiệm giao thành công! 🎯');
     setQuestTitle('');
     setQuestDesc('');
-    setQuestNP(50);
+    setQuestRuby(50);
     setIsSaving(false);
     onClose();
   };
@@ -84,13 +84,13 @@ export const QuestFormModal: React.FC<QuestFormModalProps> = ({
                 />
               </label>
               <label className="space-y-1.5 text-xs block">
-                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Phần thưởng (NP)</span>
+                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Phần thưởng (Ruby)</span>
                 <input
                   type="number"
                   min={10}
                   step={10}
-                  value={questNP}
-                  onChange={(e) => setQuestNP(Number(e.target.value) || 0)}
+                  value={questRuby}
+                  onChange={(e) => setQuestRuby(Number(e.target.value) || 0)}
                   className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
                 />
               </label>

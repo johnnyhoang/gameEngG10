@@ -31,7 +31,7 @@ export async function adaptLegacyProfiles() {
         const pId = legacyProfile.id;
         const pRole = legacyProfile.role;
 
-        const cleanName = legacyProfile.name.replace(/\s*\(Hiệu Trưởng\)|\s*\(Hiệu Phó\)|\s*\(Chủ Nhiệm\)|\s*\(Học Sinh\)/g, '');
+        const cleanName = legacyProfile.name.replace(/\s*\((?:Hiệu Trưởng|Hiệu Phó|Viện Trưởng|Phó Viện Trưởng|Chủ Nhiệm|Chủ Nhiệm Chính|Học Sinh|Sĩ Tử)\)/g, '');
 
         if (pRole === 'student') {
           // Bắt đầu kiểm tra xem profile "Học Sinh" này có chứa liên kết lớp (Chủ nhiệm) cũ hay không
@@ -43,9 +43,9 @@ export async function adaptLegacyProfiles() {
           if (familyCheck.rows[0].count > 0) {
             console.log(`[Adaptation] Phát hiện tài khoản ${legacyProfile.email} có vai trò Học Sinh nhưng chứa dữ liệu Chủ Nhiệm (Family Links). Tiến hành phân tách...`);
             
-            // Tạo thêm profile Chủ Nhiệm
+            // Tạo thêm profile Chủ Nhiệm Chính
             const newParentId = `prof-parent-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
-            const finalParentName = `${cleanName} (Chủ Nhiệm)`;
+            const finalParentName = `${cleanName} (Chủ Nhiệm Chính)`;
 
             await client.query(
               `INSERT INTO ge10_users (id, account_id, name, email, avatar_url, role, is_active)
@@ -53,14 +53,14 @@ export async function adaptLegacyProfiles() {
               [newParentId, accountId, finalParentName, legacyProfile.email, legacyProfile.avatar_url]
             );
 
-            // Chuyển toàn bộ dữ liệu quản lý lớp/phần thưởng sang profile Chủ Nhiệm mới
+            // Chuyển toàn bộ dữ liệu quản lý lớp/phần thưởng sang profile Chủ Nhiệm Chính mới
             await client.query('UPDATE ge10_family_links SET parent_id = $1 WHERE parent_id = $2', [newParentId, pId]);
             await client.query('UPDATE ge10_parent_rewards SET user_id = $1 WHERE user_id = $2', [newParentId, pId]);
             
             // Chuẩn hóa lại tên của profile Học Sinh cũ
             await client.query('UPDATE ge10_users SET name = $1 WHERE id = $2', [`${cleanName} (Học Sinh)`, pId]);
 
-            console.log(`[Adaptation] Đã tạo profile Chủ Nhiệm mới (${newParentId}) và chuyển liên kết lớp từ profile Học Sinh (${pId}) sang.`);
+            console.log(`[Adaptation] Đã tạo profile Chủ Nhiệm Chính mới (${newParentId}) và chuyển liên kết lớp từ profile Học Sinh (${pId}) sang.`);
           }
         } 
         else if (pRole === 'parent') {
@@ -100,7 +100,7 @@ export async function adaptLegacyProfiles() {
             await client.query('INSERT INTO ge10_pet_states (user_id) VALUES ($1) ON CONFLICT DO NOTHING', [pId]);
 
             // Chuẩn hóa lại tên của profile Chủ Nhiệm cũ
-            await client.query('UPDATE ge10_users SET name = $1 WHERE id = $2', [`${cleanName} (Chủ Nhiệm)`, pId]);
+            await client.query('UPDATE ge10_users SET name = $1 WHERE id = $2', [`${cleanName} (Chủ Nhiệm Chính)`, pId]);
 
             console.log(`[Adaptation] Đã tạo profile Học Sinh mới (${newStudentId}) và chuyển toàn bộ dữ liệu game từ profile Chủ Nhiệm (${pId}) sang.`);
           }

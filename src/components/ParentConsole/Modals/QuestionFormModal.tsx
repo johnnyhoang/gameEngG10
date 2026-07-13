@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import type { Question, SubjectId } from '../../../types/game';
+import type { GradeTier, Question, SubjectId } from '../../../types/game';
 import { SUBJECTS_CONFIG } from '../../../types/game';
 import { CORE_KNOWLEDGE_TOPICS } from '../../../data/coreKnowledge';
 import { toast } from '../../../utils/toast';
@@ -11,6 +11,7 @@ interface QuestionFormModalProps {
   isAddingNew: boolean;
   editingQuestion: Question | null;
   selectedSect: SubjectId | null;
+  gradeTier: GradeTier;
   addQuestion: (question: Partial<Question>) => Promise<boolean>;
   updateQuestion: (id: string, question: Partial<Question>) => Promise<boolean>;
 }
@@ -35,6 +36,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
   isAddingNew,
   editingQuestion,
   selectedSect,
+  gradeTier,
   addQuestion,
   updateQuestion
 }) => {
@@ -107,6 +109,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
       source: editSource,
       imageUrl: editImageUrl || undefined,
       subject: editSubject,
+      gradeTier,
       metadata: {
         ...(editingQuestion?.metadata || {}),
         isStandard: forceStandard ? true : (editingQuestion?.metadata?.isStandard || false)
@@ -149,6 +152,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
       source: editSource,
       imageUrl: editImageUrl || undefined,
       subject: editSubject,
+      gradeTier,
       metadata: {
         ...(editingQuestion.metadata || {}),
         isStandard: false

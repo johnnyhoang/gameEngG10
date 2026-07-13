@@ -9,6 +9,7 @@ import { createPlayerSlice } from './slices/createPlayerSlice';
 import { createAdminSlice } from './slices/createAdminSlice';
 import { createClassRewardSlice } from './slices/createClassRewardSlice';
 import { ALL_HANDBOOK_PAGES } from '../data/handbookPages';
+import { normalizePersistedRubyState } from '../utils/rubyCompatibility';
 
 export const useGameState = create<StoreState>()(
   persist(
@@ -43,7 +44,8 @@ export const useGameState = create<StoreState>()(
         recentlyPlayedQuestionIds: state.recentlyPlayedQuestionIds,
       }),
       merge: (persistedState: any, currentState: any) => {
-        const merged = { ...currentState, ...(persistedState as object) } as any;
+        const migratedState = normalizePersistedRubyState(persistedState);
+        const merged = { ...currentState, ...(migratedState as object) } as any;
         const persistedPages = merged.handbookPages || [];
         const existingIds = new Set(persistedPages.map((p: any) => p.id));
         const missingDefaults = ALL_HANDBOOK_PAGES.filter(p => !existingIds.has(p.id));

@@ -8,13 +8,18 @@ const router = express.Router();
 // GET /api/questions/custom: Loads default or custom questions for this user
 router.get('/questions/custom', authMiddleware, async (req: any, res) => {
   const userId = req.user.sub;
+  const gradeTier = Number(req.query.gradeTier);
+  const subject = typeof req.query.subject === 'string' ? req.query.subject : '';
+  if (![6, 7, 8, 9, 10, 11, 12].includes(gradeTier) || !subject) {
+    return res.status(400).json({ error: 'gradeTier and subject are required.' });
+  }
   try {
     const qRes = await pool.query(
       `SELECT * FROM ge10_custom_questions
-       WHERE user_id = $1
-          OR user_id IS NULL
-          OR user_id IN (SELECT id FROM ge10_users WHERE role IN ('truong_vien', 'pho_vien'))`,
-      [userId]
+       WHERE grade_tier = $2 AND subject = $3 AND (
+          user_id = $1 OR user_id IS NULL
+          OR user_id IN (SELECT id FROM ge10_users WHERE role IN ('truong_vien', 'pho_vien')))`,
+      [userId, gradeTier, subject]
     );
     res.json(qRes.rows.map((row: any) => ({
       id: row.id,
@@ -28,6 +33,7 @@ router.get('/questions/custom', authMiddleware, async (req: any, res) => {
       difficulty: row.difficulty,
       source: row.source,
       subject: row.subject,
+      gradeTier: row.grade_tier,
       imageUrl: row.image_url,
       metadata: row.metadata || undefined,
       isConfused: row.is_confused,

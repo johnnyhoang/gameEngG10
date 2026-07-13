@@ -1737,6 +1737,7 @@ Yêu cầu: Phân tích vẻ đẹp của tình cảm bà cháu và nỗi nhớ 
 
 export const INITIAL_QUESTIONS: Question[] = (RAW_INITIAL_QUESTIONS.map(q => ({
   ...q,
+  gradeTier: q.gradeTier || q.grade || 9,
   topicId: q.topicId || inferTopicId(q.category, q.subject)
 })) as Question[]).concat(
   SCIENCE_GATEKEEPER_QUESTIONS,

@@ -36,7 +36,7 @@ const TITLES: Record<string, string> = {
 export interface StepBuilderAppProps {
   activeSectId?: string;
   uiTheme: UiThemeId;
-  onReward: (coins: number, xp: number, type: string, detail: string) => void;
+  onReward: (ruby: number, xp: number, type: string, detail: string) => void;
   onGameComplete?: (result: { correctAnswers: number; timeSpent: number; score: number; passed: boolean }) => void;
   onGameStart?: () => void;
 }
@@ -113,7 +113,7 @@ export const StepBuilderApp: React.FC<StepBuilderAppProps> = ({ activeSectId, ui
         <div className="text-center py-10 space-y-4">
           <div className="text-5xl animate-bounce">🎉🧩✅</div>
           <h4 className="font-orbitron font-black text-xl text-synth-green uppercase">Trình Tự Hoàn Hảo!</h4>
-          <p className="text-xs text-slate-300">Phần thưởng: +30 NP, +25 XP</p>
+          <p className="text-xs text-slate-300">Phần thưởng: +30 Ruby, +25 XP</p>
           <button onClick={initStepGame} className="px-6 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-cyan text-black cursor-pointer hover:scale-105 transition-all">
             Thử Chủ Đề Khác 🔁
           </button>

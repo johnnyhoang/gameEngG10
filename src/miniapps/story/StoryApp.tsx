@@ -6,14 +6,15 @@ import type { UiThemeId } from '../../types/game';
 
 export interface StoryAppProps {
   activeSectId?: string;
+  gradeTier: number;
   uiTheme: UiThemeId;
-  onReward: (coins: number, xp: number, type: string, detail: string) => void;
+  onReward: (ruby: number, xp: number, type: string, detail: string) => void;
   onGameComplete?: (result: any) => void;
   onGameStart?: () => void;
   questions?: any[];
 }
 
-export const StoryApp: React.FC<StoryAppProps> = ({ uiTheme, onReward, onGameComplete, questions = [] }) => {
+export const StoryApp: React.FC<StoryAppProps> = ({ uiTheme, gradeTier, onReward, onGameComplete, questions = [] }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
 
   const [storyStep, setStoryStep] = useState(0);
@@ -22,7 +23,9 @@ export const StoryApp: React.FC<StoryAppProps> = ({ uiTheme, onReward, onGameCom
   const [activeStoryQuest, setActiveStoryQuest] = useState<Question | null>(null);
 
   const initStoryQuest = (subject: 'math' | 'english' | 'literature') => {
-    const list = questions.filter(q => (q.subject || 'english') === subject);
+    const list = questions.filter(q =>
+      (q.subject || 'english') === subject && (q.gradeTier ?? q.grade ?? 9) === gradeTier
+    );
     if (list.length > 0) {
       setActiveStoryQuest(list[Math.floor(Math.random() * list.length)]);
     }
@@ -123,7 +126,7 @@ export const StoryApp: React.FC<StoryAppProps> = ({ uiTheme, onReward, onGameCom
           <div className="text-5xl animate-bounce">🎉🐷👑</div>
           <h4 className="font-orbitron font-black text-xl text-synth-green uppercase">Heo Maikawaii Được Giải Phóng!</h4>
           <div className="flex gap-2 flex-wrap justify-center">{storyInventory.map((item, i) => <span key={i} className="text-sm">{item}</span>)}</div>
-          <p className="text-xs text-slate-300">Phần thưởng: +60 NP, +50 XP</p>
+          <p className="text-xs text-slate-300">Phần thưởng: +60 Ruby, +50 XP</p>
           <button onClick={() => setStoryStep(0)} className="px-6 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-purple text-black cursor-pointer hover:scale-105 transition-all">Chơi Lại Hành Trình 🔁</button>
         </div>
       )}

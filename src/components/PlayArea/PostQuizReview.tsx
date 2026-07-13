@@ -10,7 +10,7 @@ import { isLightTheme } from '../../theme/uiThemes';
 
 export interface PostQuizReviewProps {
   mode: string;
-  rewardsEarned: { coins: number; xp: number };
+  rewardsEarned: { ruby: number; xp: number };
   runMistakes: number;
   currentQuestions: Question[];
   answersSubmitted: any[];
@@ -34,7 +34,7 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
 
   // Determine defeat condition
   const isDefeat = runMistakes >= 3 && (mode === 'boss' || mode === 'survival');
-  const displayedCoins = isDefeat ? Math.floor(rewardsEarned.coins / 2) : rewardsEarned.coins;
+  const displayedRuby = isDefeat ? Math.floor(rewardsEarned.ruby / 2) : rewardsEarned.ruby;
   const displayedXp = isDefeat ? Math.floor(rewardsEarned.xp / 2) : rewardsEarned.xp;
 
   // Process all questions into review records
@@ -86,7 +86,7 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
             <p className="text-xs text-synth-text-muted">
               {isDefeat
                 ? 'Đệ tử đã phạm đủ 3 lỗi sai. Chỉ giữ lại 50% nanite tích lũy.'
-                : 'Môn sinh đã vượt qua toàn bộ thử thách xuất sắc! Hãy xem lại phân tích đáp án bên dưới.'}
+                : 'Sĩ Tử đã vượt qua toàn bộ thử thách xuất sắc! Hãy xem lại phân tích đáp án bên dưới.'}
             </p>
           </div>
 
@@ -95,8 +95,8 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
             isUnicorn ? 'bg-violet-50/50 border-violet-100' : 'bg-white/5 border-white/5'
           }`}>
             <div className="text-center font-orbitron">
-              <span className="text-[10px] text-synth-text-muted uppercase font-bold tracking-widest">Ngọc Phiếu NP</span>
-              <p className="text-2xl font-black text-synth-orange">+{displayedCoins} NP</p>
+              <span className="text-[10px] text-synth-text-muted uppercase font-bold tracking-widest">Ruby</span>
+              <p className="text-2xl font-black text-synth-orange">+{displayedRuby} Ruby</p>
             </div>
             <div className="text-center font-orbitron">
               <span className="text-[10px] text-synth-text-muted uppercase font-bold tracking-widest">Kinh Nghiệm XP</span>
@@ -377,7 +377,7 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
               <h5 className="font-orbitron font-bold uppercase text-white tracking-wide text-[10px]">
                 Câu hỏi bị bỏ qua
               </h5>
-              <p>Môn sinh đã bỏ qua câu hỏi này hoặc hết thời gian làm bài trước khi gửi kết quả.</p>
+              <p>Sĩ Tử đã bỏ qua câu hỏi này hoặc hết thời gian làm bài trước khi gửi kết quả.</p>
               <p className="text-emerald-400 font-semibold pt-1">
                 Đáp án đúng cần điền: {reviewItem.correctAnswer}
               </p>
