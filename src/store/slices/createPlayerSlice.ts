@@ -245,6 +245,7 @@ export const createPlayerSlice: StateCreator<
             }
           });
           logActivity(get, set, 'energy_refill', 'Tiêu hao năng lượng', `Tiêu tốn ${amount} năng lượng khởi hành phụ bản.`);
+          toast.info(`⚡ Tiêu hao -${amount} Năng lượng!`);
           return true;
         },
 
@@ -261,6 +262,7 @@ export const createPlayerSlice: StateCreator<
               }
             };
           });
+          toast.success(`⚡ Hồi phục +${amount} Năng lượng!`);
         },
 
   tickEnergyRegen: () => {
@@ -279,6 +281,7 @@ export const createPlayerSlice: StateCreator<
               }
             });
             logActivity(get, set, 'energy_refill', 'Hồi đầy Năng Lượng', `Đã nghỉ đủ ${resetHours ?? 3} giờ, Năng Lượng đã hồi đầy.`);
+            toast.success('⚡ Năng Lượng đã được hồi đầy! Sẵn sàng học tập! 🌟');
           }
         },
 
@@ -455,6 +458,11 @@ export const createPlayerSlice: StateCreator<
             entityType: 'pet',
             entityId: 'maikawaii',
           });
+          if (didDeLevel) {
+            toast.success(`🐷 Heo Maikawaii đã ăn no! Con bị tiêu hao 10 Ruby 💎 và 5 XP ✨ (Tạm tụt cấp xuống Level ${newLevel} ⚠️).`);
+          } else {
+            toast.success(`🐷 Heo Maikawaii đã ăn no! Con tiêu hao 10 Ruby 💎 và 5 XP ✨.`);
+          }
           return true;
         },
 
@@ -476,9 +484,12 @@ export const createPlayerSlice: StateCreator<
           if (spin.type === 'ruby') {
             set({ player: { ...state.player, ruby: state.player.ruby + spin.amount } });
             logActivity(get, set, 'box_open', 'Vòng Quay May Mắn', spin.message, spin.amount, 0);
+            toast.success(`🎡 Vòng Quay May Mắn: Nhận +${spin.amount} Ruby! 💎`);
           } else if (spin.type === 'energy') {
             get().addEnergy(spin.amount);
             logActivity(get, set, 'box_open', 'Vòng Quay May Mắn', spin.message, 0, 0);
+          } else {
+            toast.info(`🎡 Vòng Quay May Mắn: ${spin.message}`);
           }
 
           return { rewardType: spin.type, amount: spin.amount, message: spin.message };
@@ -500,12 +511,17 @@ export const createPlayerSlice: StateCreator<
           if (reward.type === 'ruby') {
             set({ player: { ...state.player, ruby: state.player.ruby + reward.amount } });
             logActivity(get, set, 'box_open', 'Mở Hòm Bí Mật', reward.message, reward.amount, 0);
+            toast.success(`🎁 Hòm Bí Mật: Nhận +${reward.amount} Ruby! 💎`);
           } else if (reward.type === 'shield') {
             const hasShield = state.player.badges.includes('Streak Shield');
             if (!hasShield) {
               set({ player: { ...state.player, badges: [...state.player.badges, 'Streak Shield'] } });
             }
             logActivity(get, set, 'box_open', 'Mở Hòm Bí Mật', reward.message, 0, 0);
+            toast.success(`🎁 Hòm Bí Mật: Nhận được 1 Khiên Chuyên Cần bảo vệ Streak! 🛡️`);
+          } else {
+            logActivity(get, set, 'box_open', 'Mở Hòm Bí Mật', reward.message, 0, 0);
+            toast.info(`🎁 Hòm Bí Mật: ${reward.message}`);
           }
 
           return { rewardType: reward.type, amount: reward.amount, message: reward.message };
@@ -603,6 +619,11 @@ export const createPlayerSlice: StateCreator<
             rubyGained,
             expGained
           );
+          let lessonMsg = `📖 Lĩnh hội bài học thành công: +${expGained} XP ✨`;
+          if (rubyGained > 0) {
+            lessonMsg += ` và +${rubyGained} Ruby 💎 (Rương Báu Ải)`;
+          }
+          toast.success(lessonMsg);
           get().syncWithServer();
         },
 
@@ -633,6 +654,7 @@ export const createPlayerSlice: StateCreator<
               -xpClawback
             );
           }
+          toast.error(`💀 Thất bại giữa trận! Con bị tước đi 50% chiến lợi phẩm: -${rubyClawback} Ruby 💎 và -${xpClawback} XP ✨. Thú cưng buồn bã 🐷.`);
         },
 
   completeBossVictory: (bonusIndex?: number) => {
@@ -675,6 +697,7 @@ export const createPlayerSlice: StateCreator<
             entityType: 'boss',
             entityId: bonusIndex === undefined ? 'unknown' : String(bonusIndex),
           });
+          toast.success(`🔥 Đại Thắng Boss! Nhận ngay +${rubyBonus} Ruby 💎 và +${bonusXP} XP ✨! 🎉`);
         },
 
   completeLevel3Page: (pageId) => {
@@ -730,6 +753,12 @@ export const createPlayerSlice: StateCreator<
           }
 
           logActivity(get, set, 'box_open', activityTitle, activityDetails, ruby, xp);
+          if (ruby > 0 || xp > 0) {
+            let rewardMsg = '🎉 Lĩnh ngộ thành công:';
+            if (ruby > 0) rewardMsg += ` +${ruby} Ruby 💎`;
+            if (xp > 0) rewardMsg += ` +${xp} XP ✨`;
+            toast.success(rewardMsg);
+          }
         },
 
   clearExploration: async (pageId: string) => {

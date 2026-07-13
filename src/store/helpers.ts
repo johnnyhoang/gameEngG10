@@ -2,6 +2,7 @@ import type { HistoryLog } from '../types/game';
 import { getStudentRankForLevel } from '../types/game';
 import { eventBus } from '../utils/EventBus';
 import { recordMissionEvent } from '../services/missionLedgerService';
+import { toast } from '../utils/toast';
 
 export const logActivity = (
   get: any,
@@ -48,6 +49,7 @@ export const checkLevelUp = (
       // Lên cấp thường không tự thưởng Ruby (chỉ mốc danh hiệu mới thưởng đột biến — CORE_SPECS §7.3);
       // log chỉ ghi nhận sự kiện, không claim số Ruby không thực sự được cộng.
       logActivity(get, set, 'exercise', 'Thăng cấp!', `Bạn vừa chạm Level ${level}.`, 0, 0);
+      toast.success(`🎉 Chúc mừng Sĩ Tử thăng cấp lên Cấp ${level}! ✨`);
       eventBus.publish('PET_GROWTH', { levelUp: true });
     }
   };
@@ -70,6 +72,7 @@ export const checkLevelUp = (
         100,
         rankUpBonusXp
       );
+      toast.success(`🏆 Tuyệt vời! Sĩ Tử thăng danh hiệu lên: ${newRank.icon} ${newRank.name}! 🎉 (+100 Ruby 💎)`);
     }
   }
 

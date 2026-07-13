@@ -11,6 +11,7 @@ import {
   type RiddleMode,
 } from './riddleEngine';
 import { recordMissionEvent } from '../../services/missionLedgerService';
+import { toast } from '../../utils/toast';
 
 const MODE_CONFIG: Record<RiddleMode, { title: string; description: string; count: number; seconds: number | null }> = {
   'ruby-riddle': {
@@ -146,6 +147,8 @@ export function RiddleGames() {
         MODE_CONFIG[mode].title,
         `Trả lời đúng câu ${activeQuestion.id} trong ${MODE_CONFIG[mode].title}.`
       );
+    } else {
+      toast.error('Nhầm rồi Sĩ Tử! Hãy thử sức ở câu sau nhé! 🐷');
     }
   };
 

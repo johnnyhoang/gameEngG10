@@ -604,6 +604,24 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
   - *Kết quả:* Idempotency lesson theo ngày Bangkok; hai mode phân biệt bằng metadata; evaluator map letter sang option index; Fog event được hoãn đến khi có completion contract; backend validation/row lock/retry đã bổ sung.
 
 - [x] **RA2 — Full release gate**
+
+# Bổ sung Toast Thông Báo cho mọi sự kiện thay đổi Dữ Liệu Sĩ Tử (2026-07-13)
+
+- [x] **TS1 — Tích hợp Toast thay đổi tài nguyên và năng lượng trong Player Slice**
+  - *Mục tiêu:* Cộng/trừ Ruby, XP, Năng lượng, quay số, mở hòm, thắng boss, cho thú nuôi ăn, và qua ải đều có Toast báo.
+  - *Phải sửa:* `src/store/slices/createPlayerSlice.ts`.
+  - *Acceptance:* Đúng nội dung, loại Toast phù hợp.
+
+- [x] **TS2 — Tích hợp Toast thăng cấp trong Helpers**
+  - *Mục tiêu:* Thăng cấp và thăng danh hiệu có Toast.
+  - *Phải sửa:* `src/store/helpers.ts`.
+  - *Acceptance:* Báo thăng cấp chính xác.
+
+- [x] **TS3 — Tích hợp Toast báo sai trong Riddle Games**
+  - *Mục tiêu:* Báo lỗi/nhắc nhở khi trả lời sai câu đố Riddle.
+  - *Phải sửa:* `src/miniapps/riddle/RiddleGames.tsx`.
+  - *Acceptance:* Trả lời sai có Toast báo sai.
+
   - *Phải làm:* FE production build, BE TypeScript build, lint, diff whitespace và static scan contract cũ.
   - *Kết quả:* FE/BE build pass; lint không error (chỉ warning cũ); `git diff --check` sạch; không còn runtime DailyMission/Gatekeeper contract.
 
