@@ -156,8 +156,10 @@ app.use('/api', gameRouter);
 app.use('/api', classRewardsRouter);
 app.use('/api', learningContextRouter);
 
-app.listen(PORT, () => {
-  console.log(`CyberEnglish API Server booting on port ${PORT}...`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`CyberEnglish API Server booting on port ${PORT}...`);
+  });
+}
 
 export default app;
