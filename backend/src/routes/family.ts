@@ -1,38 +1,35 @@
 import express from 'express';
 import crypto from 'crypto';
 import { pool } from '../db.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { activeProfileMiddleware, authMiddleware } from '../middleware/auth.js';
 import { logAuditEvent, checkStudentManagementPermission } from '../helpers/permissions.js';
 import { ensureDefaultClassRewards } from '../helpers/questions.js';
 
 const router = express.Router();
+router.use(authMiddleware, activeProfileMiddleware, (req: any, res, next) => {
+  const claimedActorId = req.body?.senderProfileId ?? req.body?.profileId ?? req.query?.profileId ?? req.params?.profileId;
+  if (claimedActorId && claimedActorId !== req.profile.id) {
+    return res.status(403).json({ error: 'Claimed actor does not match active profile.' });
+  }
+  next();
+});
 
 // GET /api/users/search
 router.get('/users/search', authMiddleware, async (req: any, res) => {
-  const { q, role, profileId } = req.query;
+  const { q, role } = req.query;
   if (!q || typeof q !== 'string' || !q.trim()) return res.json([]);
   try {
-    const accountId = req.user?.sub;
-    if (!accountId) return res.status(401).json({ error: 'Unauthorized: missing accountId' });
-
-    let callerProfileId = profileId;
-    if (!callerProfileId) {
-      const check = await pool.query(
-        "SELECT id FROM ge10_users WHERE account_id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien') LIMIT 1",
-        [accountId]
-      );
-      callerProfileId = check.rows[0]?.id;
-    }
+    const callerProfileId = req.profile.id;
 
     const searchTerm = `%${q.trim()}%`;
     let queryText = `
       SELECT id, name, email, avatar_url, role 
       FROM ge10_users 
       WHERE is_active = TRUE 
-        AND account_id <> $1
+        AND id <> $1
         AND (LOWER(name) LIKE LOWER($2) OR LOWER(email) LIKE LOWER($2))
     `;
-    const params: any[] = [accountId, searchTerm];
+    const params: any[] = [callerProfileId, searchTerm];
 
     if (role) {
       if (role === 'parent' || role === 'secondary_parent') {
@@ -95,12 +92,11 @@ router.get('/users/search', authMiddleware, async (req: any, res) => {
 // GET /api/family/:profileId
 // Fetch the family status, members, and pending invitations for a specific profile
 router.get('/family/:profileId', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
   const profileId = req.params.profileId;
   
   try {
     // 1. Verify ownership
-    const check = await pool.query('SELECT id, role FROM ge10_users WHERE id = $1 AND account_id = $2', [profileId, accountId]);
+    const check = await pool.query('SELECT id, role FROM ge10_users WHERE id = $1 AND is_active = TRUE', [profileId]);
     if (check.rowCount === 0) return res.status(403).json({ error: 'Unauthorized' });
     const myRole = check.rows[0].role;
 
@@ -179,7 +175,6 @@ router.get('/family/:profileId', authMiddleware, async (req: any, res) => {
 
 // POST /api/family/invite
 router.post('/family/invite', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
   const { senderProfileId, targetEmail, connectAsSecondary } = req.body;
 
   if (!senderProfileId || !targetEmail) {
@@ -189,8 +184,8 @@ router.post('/family/invite', authMiddleware, async (req: any, res) => {
   try {
     // 1. Verify sender profile and active account
     const senderRes = await pool.query(
-      'SELECT id, role, name, email, avatar_url FROM ge10_users WHERE id = $1 AND account_id = $2 AND is_active = TRUE',
-      [senderProfileId, accountId]
+      'SELECT id, role, name, email, avatar_url FROM ge10_users WHERE id = $1 AND is_active = TRUE',
+      [senderProfileId]
     );
     if (senderRes.rowCount === 0) {
       return res.status(403).json({ error: 'Unauthorized sender.' });
@@ -312,7 +307,6 @@ router.post('/family/invite', authMiddleware, async (req: any, res) => {
 
 // POST /api/family/invite-secondary: Primary parent invites a secondary parent
 router.post('/family/invite-secondary', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
   const { senderProfileId, targetEmail } = req.body;
 
   if (!senderProfileId || !targetEmail) {
@@ -322,8 +316,8 @@ router.post('/family/invite-secondary', authMiddleware, async (req: any, res) =>
   try {
     // 1. Verify sender is active primary parent
     const senderCheck = await pool.query(
-      'SELECT id, role FROM ge10_users WHERE id = $1 AND account_id = $2 AND is_active = TRUE',
-      [senderProfileId, accountId]
+      'SELECT id, role FROM ge10_users WHERE id = $1 AND is_active = TRUE',
+      [senderProfileId]
     );
     if (senderCheck.rowCount === 0 || senderCheck.rows[0].role !== 'parent') {
       return res.status(403).json({ error: 'Forbidden: Only active primary parent can invite secondary parent.' });
@@ -382,7 +376,6 @@ router.post('/family/invite-secondary', authMiddleware, async (req: any, res) =>
 
 // POST /api/family/invite-secondary-request: Secondary parent requests to join a class
 router.post('/family/invite-secondary-request', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
   const { senderProfileId, targetEmail } = req.body; // targetEmail is primary parent's email
 
   if (!senderProfileId || !targetEmail) {
@@ -392,8 +385,8 @@ router.post('/family/invite-secondary-request', authMiddleware, async (req: any,
   try {
     // 1. Verify sender is active parent profile
     const senderCheck = await pool.query(
-      'SELECT id, role FROM ge10_users WHERE id = $1 AND account_id = $2 AND is_active = TRUE',
-      [senderProfileId, accountId]
+      'SELECT id, role FROM ge10_users WHERE id = $1 AND is_active = TRUE',
+      [senderProfileId]
     );
     if (senderCheck.rowCount === 0 || (senderCheck.rows[0].role !== 'parent' && senderCheck.rows[0].role !== 'secondary_parent')) {
       return res.status(403).json({ error: 'Forbidden: Only active parents can request.' });
@@ -452,7 +445,6 @@ router.post('/family/invite-secondary-request', authMiddleware, async (req: any,
 
 // PATCH /api/family/secondary-permissions
 router.patch('/family/secondary-permissions', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
   const { senderProfileId, linkId, permissions } = req.body;
 
   if (!senderProfileId || !linkId || !permissions) {
@@ -473,7 +465,7 @@ router.patch('/family/secondary-permissions', authMiddleware, async (req: any, r
       "SELECT id FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'primary' AND status = 'active'",
       [senderProfileId, link.student_id]
     );
-    const senderCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1 AND account_id = $2', [senderProfileId, accountId]);
+    const senderCheck = await pool.query('SELECT role FROM ge10_users WHERE id = $1 AND is_active = TRUE', [senderProfileId]);
 
     if (primaryCheck.rowCount === 0 || senderCheck.rowCount === 0 || senderCheck.rows[0].role !== 'parent') {
       return res.status(403).json({ error: 'Forbidden: Only the primary parent can configure permissions.' });
@@ -500,11 +492,10 @@ router.patch('/family/secondary-permissions', authMiddleware, async (req: any, r
 
 // POST /api/family/respond
 router.post('/family/respond', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
   const { profileId, linkId, accept } = req.body;
 
   try {
-    const check = await pool.query('SELECT id, role FROM ge10_users WHERE id = $1 AND account_id = $2', [profileId, accountId]);
+    const check = await pool.query('SELECT id, role FROM ge10_users WHERE id = $1 AND is_active = TRUE', [profileId]);
     if (check.rowCount === 0) return res.status(403).json({ error: 'Unauthorized' });
 
     const linkCheck = await pool.query('SELECT * FROM ge10_family_links WHERE id = $1', [linkId]);
@@ -606,11 +597,10 @@ router.post('/family/respond', authMiddleware, async (req: any, res) => {
 
 // POST /api/family/leave
 router.post('/family/leave', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
   const { profileId, linkId } = req.body;
 
   try {
-    const check = await pool.query('SELECT id, role FROM ge10_users WHERE id = $1 AND account_id = $2', [profileId, accountId]);
+    const check = await pool.query('SELECT id, role FROM ge10_users WHERE id = $1 AND is_active = TRUE', [profileId]);
     if (check.rowCount === 0) return res.status(403).json({ error: 'Unauthorized' });
 
     const linkCheck = await pool.query('SELECT * FROM ge10_family_links WHERE id = $1', [linkId]);
@@ -681,7 +671,7 @@ router.post('/family/leave', authMiddleware, async (req: any, res) => {
 
 // GET /api/family/skip-reviews/:studentId: Fetches pending skip reviews for a student
 router.get('/family/skip-reviews/:studentId', authMiddleware, async (req: any, res) => {
-  const parentId = req.user.sub;
+  const parentId = req.profile.id;
   const { studentId } = req.params;
 
   try {
@@ -704,7 +694,7 @@ router.get('/family/skip-reviews/:studentId', authMiddleware, async (req: any, r
 
 // POST /api/family/skip-reviews/resolve: Marks a skip review as resolved (closed loop)
 router.post('/family/skip-reviews/resolve', authMiddleware, async (req: any, res) => {
-  const parentId = req.user.sub;
+  const parentId = req.profile.id;
   const { reviewId } = req.body;
 
   if (!reviewId) {
@@ -744,8 +734,8 @@ router.post('/family/apply-vice-principal', authMiddleware, async (req: any, res
   try {
     // 1. Verify ownership
     const check = await pool.query(
-      'SELECT role, is_active FROM ge10_users WHERE id = $1 AND account_id = $2',
-      [profileId, accountId]
+      'SELECT role, is_active FROM ge10_users WHERE id = $1',
+      [profileId]
     );
     if (check.rowCount === 0) {
       return res.status(403).json({ error: 'Unauthorized: Profile not owned by user.' });
@@ -791,7 +781,6 @@ router.post('/family/apply-vice-principal', authMiddleware, async (req: any, res
 
 // POST /api/family/invite-admin-connection: Gửi yêu cầu kết nối Ban Giám Hiệu (Viện Trưởng / Phó Viện Trưởng)
 router.post('/family/invite-admin-connection', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
   const { senderProfileId, targetEmail } = req.body;
 
   if (!senderProfileId || !targetEmail) {
@@ -801,8 +790,8 @@ router.post('/family/invite-admin-connection', authMiddleware, async (req: any, 
   try {
     // 1. Verify sender is active admin profile (truong_vien or pho_vien)
     const senderCheck = await pool.query(
-      "SELECT id, role FROM ge10_users WHERE id = $1 AND account_id = $2 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
-      [senderProfileId, accountId]
+      "SELECT id, role FROM ge10_users WHERE id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
+      [senderProfileId]
     );
     if (senderCheck.rowCount === 0) {
       return res.status(403).json({ error: 'Forbidden: Chỉ Ban Giám Hiệu mới có thể kết nối với nhau.' });

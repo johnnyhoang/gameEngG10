@@ -51,14 +51,14 @@ export const hasPermission = (
 };
 
 export const checkStudentManagementPermission = async (
-  actorAccountId: string,
+  actorProfileId: string,
   studentUserId: string,
   action: 'approve_reward' | 'refill_energy' | 'set_energy_config' | 'view_profile'
 ) => {
-  // Tìm tất cả các profile ĐANG HOẠT ĐỘNG của tài khoản Google này
+  // Authorization is evaluated only for the active profile, never sibling profiles.
   const actorCheck = await pool.query(
-    'SELECT id, role FROM ge10_users WHERE account_id = $1 AND is_active = TRUE',
-    [actorAccountId]
+    'SELECT id, role FROM ge10_users WHERE id = $1 AND is_active = TRUE',
+    [actorProfileId]
   );
   if (actorCheck.rows.length === 0) return false;
 
@@ -68,7 +68,6 @@ export const checkStudentManagementPermission = async (
   else if (action === 'set_energy_config') permissionAction = 'SET_ENERGY_CONFIG';
   else permissionAction = 'VIEW_STUDENT_PROFILE';
 
-  // Duyệt qua tất cả các profile active của user xem có profile nào có đủ quyền thực hiện hành động này không
   for (const actorProfile of actorCheck.rows) {
     const role = actorProfile.role;
     const profileId = actorProfile.id;

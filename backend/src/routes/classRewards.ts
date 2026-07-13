@@ -1,18 +1,14 @@
 import express from 'express';
 import crypto from 'crypto';
 import { pool } from '../db.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { activeProfileMiddleware, authMiddleware } from '../middleware/auth.js';
 
 import { ensureDefaultClassRewards } from '../helpers/questions.js';
 
 const router = express.Router();
+router.use(authMiddleware, activeProfileMiddleware);
 
 const TEACHER_ROLES = ['parent', 'secondary_parent', 'truong_vien', 'pho_vien'];
-
-async function getProfileId(accountId: string): Promise<string | null> {
-  const res = await pool.query('SELECT id FROM ge10_users WHERE account_id = $1', [accountId]);
-  return res.rows[0]?.id || null;
-}
 
 async function getUserRole(profileId: string): Promise<string | null> {
   const res = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [profileId]);
@@ -25,13 +21,10 @@ async function getUserRole(profileId: string): Promise<string | null> {
 // Student in class → class rewards from their teachers + their own redemptions
 // Student orphan → { rewards: [], redemptions: [], isOrphan: true }
 // ─────────────────────────────────────────────
-router.get('/class-rewards', authMiddleware, async (req: any, res) => {
-  const accountId = req.user?.sub;
-  if (!accountId) return res.status(401).json({ error: 'Unauthorized' });
+router.get('/class-rewards', async (req: any, res) => {
 
   try {
-    const profileId = await getProfileId(accountId);
-    if (!profileId) return res.status(404).json({ error: 'Profile not found' });
+    const profileId = req.profile.id;
 
     const role = await getUserRole(profileId);
     const isTeacher = TEACHER_ROLES.includes(role || '');
@@ -107,9 +100,7 @@ router.get('/class-rewards', authMiddleware, async (req: any, res) => {
 // ─────────────────────────────────────────────
 // POST /api/class-rewards — Teacher creates a class reward
 // ─────────────────────────────────────────────
-router.post('/class-rewards', authMiddleware, async (req: any, res) => {
-  const accountId = req.user?.sub;
-  if (!accountId) return res.status(401).json({ error: 'Unauthorized' });
+router.post('/class-rewards', async (req: any, res) => {
 
   const { title, quantity } = req.body;
   const costRuby = req.body.costRuby ?? req.body.costCoins;
@@ -118,8 +109,7 @@ router.post('/class-rewards', authMiddleware, async (req: any, res) => {
   }
 
   try {
-    const profileId = await getProfileId(accountId);
-    if (!profileId) return res.status(404).json({ error: 'Profile not found' });
+    const profileId = req.profile.id;
 
     const role = await getUserRole(profileId);
     if (!TEACHER_ROLES.includes(role || '')) {
@@ -145,14 +135,11 @@ router.post('/class-rewards', authMiddleware, async (req: any, res) => {
 // ─────────────────────────────────────────────
 // DELETE /api/class-rewards/:id — Teacher deletes a class reward
 // ─────────────────────────────────────────────
-router.delete('/class-rewards/:id', authMiddleware, async (req: any, res) => {
-  const accountId = req.user?.sub;
+router.delete('/class-rewards/:id', async (req: any, res) => {
   const rewardId = req.params.id;
-  if (!accountId) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const profileId = await getProfileId(accountId);
-    if (!profileId) return res.status(404).json({ error: 'Profile not found' });
+    const profileId = req.profile.id;
 
     const check = await pool.query(
       'SELECT id FROM ge10_class_rewards WHERE id = $1 AND teacher_id = $2',
@@ -173,14 +160,11 @@ router.delete('/class-rewards/:id', authMiddleware, async (req: any, res) => {
 // ─────────────────────────────────────────────
 // POST /api/class-rewards/:id/redeem — Student redeems (deduct ruby, remaining--, create pending redemption)
 // ─────────────────────────────────────────────
-router.post('/class-rewards/:id/redeem', authMiddleware, async (req: any, res) => {
-  const accountId = req.user?.sub;
+router.post('/class-rewards/:id/redeem', async (req: any, res) => {
   const rewardId = req.params.id;
-  if (!accountId) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const profileId = await getProfileId(accountId);
-    if (!profileId) return res.status(404).json({ error: 'Profile not found' });
+    const profileId = req.profile.id;
 
     // Fetch reward
     const rewardRes = await pool.query('SELECT * FROM ge10_class_rewards WHERE id = $1', [rewardId]);
@@ -252,14 +236,11 @@ router.post('/class-rewards/:id/redeem', authMiddleware, async (req: any, res) =
 // DELETE /api/class-rewards/redemptions/:id — Student cancels a pending redemption
 // Refunds ruby + increments remaining
 // ─────────────────────────────────────────────
-router.delete('/class-rewards/redemptions/:id', authMiddleware, async (req: any, res) => {
-  const accountId = req.user?.sub;
+router.delete('/class-rewards/redemptions/:id', async (req: any, res) => {
   const redemptionId = req.params.id;
-  if (!accountId) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const profileId = await getProfileId(accountId);
-    if (!profileId) return res.status(404).json({ error: 'Profile not found' });
+    const profileId = req.profile.id;
 
     const redemptionRes = await pool.query(
       `SELECT r.*, cr.id AS reward_fk
@@ -304,14 +285,11 @@ router.delete('/class-rewards/redemptions/:id', authMiddleware, async (req: any,
 // ─────────────────────────────────────────────
 // PATCH /api/class-rewards/redemptions/:id/deliver — Teacher marks as delivered
 // ─────────────────────────────────────────────
-router.patch('/class-rewards/redemptions/:id/deliver', authMiddleware, async (req: any, res) => {
-  const accountId = req.user?.sub;
+router.patch('/class-rewards/redemptions/:id/deliver', async (req: any, res) => {
   const redemptionId = req.params.id;
-  if (!accountId) return res.status(401).json({ error: 'Unauthorized' });
 
   try {
-    const profileId = await getProfileId(accountId);
-    if (!profileId) return res.status(404).json({ error: 'Profile not found' });
+    const profileId = req.profile.id;
 
     // Verify teacher owns the reward and redemption is pending
     const check = await pool.query(

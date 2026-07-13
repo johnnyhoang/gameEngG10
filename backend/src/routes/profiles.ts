@@ -1,6 +1,6 @@
 import express from 'express';
 import { pool } from '../db.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { activeProfileMiddleware, authMiddleware } from '../middleware/auth.js';
 import { ensureDefaultRewards } from '../helpers/questions.js';
 import {
   loadBossCompletionBonusRuby,
@@ -378,9 +378,11 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
 });
 
 // POST /api/profile/:id/sync: Receives Zustand state and synchronizes it to Supabase PostgreSQL
-router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
+router.post('/profile/:id/sync', authMiddleware, activeProfileMiddleware, async (req: any, res) => {
   const accountId = req.user.sub;
   const userId = req.params.id;
+
+  if (userId !== req.profile.id) return res.status(403).json({ error: 'Profile ID does not match active profile.' });
   
   // Verify ownership
   const check = await pool.query('SELECT id FROM ge10_users WHERE id = $1 AND account_id = $2', [userId, accountId]);
@@ -791,7 +793,7 @@ router.post('/profile/:id/sync', authMiddleware, async (req: any, res) => {
 });
 
 // PATCH /api/profiles/rename
-router.patch('/profiles/rename', authMiddleware, async (req: any, res) => {
+router.patch('/profiles/rename', authMiddleware, activeProfileMiddleware, async (req: any, res) => {
   const accountId = req.user?.sub;
   const { profileId, newName } = req.body;
 
@@ -799,6 +801,7 @@ router.patch('/profiles/rename', authMiddleware, async (req: any, res) => {
   if (!profileId || !newName?.trim()) {
     return res.status(400).json({ error: 'Missing profileId or newName' });
   }
+  if (profileId !== req.profile.id) return res.status(403).json({ error: 'Profile ID does not match active profile.' });
 
   try {
     const check = await pool.query(

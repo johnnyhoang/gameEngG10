@@ -47,6 +47,35 @@ export const createAuthSlice: StateCreator<
 
   selectProfile: async (profileId: string) => {
     try {
+      // Clear every profile-scoped value before loading the next profile.
+      // Account/session/profile-list state intentionally remains available.
+      set({
+        currentUser: null,
+        player: INITIAL_PLAYER,
+        pet: INITIAL_PET,
+        categoryStats: {},
+        topicStats: {},
+        lessonsProgress: {},
+        topics: [],
+        activities: [],
+        activityProgress: {},
+        explorationProgress: {},
+        pageExplorationStates: {},
+        rewards: DEFAULT_REWARDS,
+        rewardRedemptions: [],
+        classRewards: [],
+        classRewardRedemptions: [],
+        challenges: INITIAL_CHALLENGES,
+        dailyMission: null,
+        logs: [],
+        activeCombo: 0,
+        maxCombo: 0,
+        failedQuestionIds: [],
+        recentlyPlayedQuestionIds: [],
+        selectedStudentProfile: null,
+        questions: [...INITIAL_QUESTIONS],
+        lessons: [...INITIAL_LESSONS]
+      });
       const data = normalizeRubyPayload(await authService.selectProfile(profileId));
       const resolvedTheme = data.player?.uiTheme || (get().uiThemesByUser[profileId] || DEFAULT_UI_THEME) as any;
       const mergedQuestions = [...INITIAL_QUESTIONS];
@@ -76,6 +105,7 @@ export const createAuthSlice: StateCreator<
         pet: data.pet || INITIAL_PET,
         categoryStats: data.categoryStats || {},
         rewards: data.rewards || DEFAULT_REWARDS,
+        rewardRedemptions: data.rewardRedemptions || [],
         challenges: data.challenges || INITIAL_CHALLENGES,
         dailyMission: data.dailyMission || null,
         lessonsProgress: data.lessonsProgress || {},
@@ -83,6 +113,7 @@ export const createAuthSlice: StateCreator<
         activities: data.activities || [],
         activityProgress: data.activityProgress || {},
         explorationProgress: data.explorationProgress || {},
+        logs: data.logs || [],
         questions: mergedQuestions,
         lessons: data.lessons || INITIAL_LESSONS,
         gameSettings: data.gameSettings || DEFAULT_GAME_SETTINGS,
@@ -127,7 +158,7 @@ export const createAuthSlice: StateCreator<
     // Mốc "vừa đăng nhập" để Heo chờ đủ 30 phút mới xuất hiện (PetStableOverlay).
     // Phải ghi lại MỖI lần login, không chỉ lần đầu — nếu không, học viên đăng
     // xuất rồi đăng nhập lại sau khi mốc cũ đã quá 30 phút sẽ thấy Heo xuất hiện ngay.
-    localStorage.setItem('ge10_login_time', Date.now().toString());
+    localStorage.setItem(`ge10_login_time:${user.id}`, Date.now().toString());
 
     if (user.id.startsWith('mock-')) {
       set((state: any) => {

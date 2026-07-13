@@ -1,8 +1,9 @@
 import express from 'express';
 import { pool } from '../db.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { activeProfileMiddleware, authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
+router.use(authMiddleware, activeProfileMiddleware);
 const SUPPORTED_GRADES = new Set([6, 7, 8, 9, 10, 11, 12]);
 
 function parseContext(input: Record<string, unknown>) {
@@ -13,7 +14,7 @@ function parseContext(input: Record<string, unknown>) {
   return { gradeTier, subjectId };
 }
 
-router.get('/content/lessons', authMiddleware, async (req, res) => {
+router.get('/content/lessons', async (req, res) => {
   const context = parseContext(req.query);
   if (!context) return res.status(400).json({ error: 'gradeTier and subject are required.' });
   const result = await pool.query(
@@ -24,10 +25,10 @@ router.get('/content/lessons', authMiddleware, async (req, res) => {
   return res.json({ success: true, learningContext: context, lessons: result.rows });
 });
 
-router.get('/content/questions', authMiddleware, async (req: any, res) => {
+router.get('/content/questions', async (req: any, res) => {
   const context = parseContext(req.query);
   if (!context) return res.status(400).json({ error: 'gradeTier and subject are required.' });
-  const userId = req.user.sub;
+  const userId = req.profile.id;
   const result = await pool.query(
     `SELECT id, type, category, topic_id AS "topicId", prompt, options,
             correct_answer AS "correctAnswer", explanation, difficulty, source,
@@ -42,7 +43,7 @@ router.get('/content/questions', authMiddleware, async (req: any, res) => {
   return res.json({ success: true, learningContext: context, questions: result.rows });
 });
 
-router.get('/learning-progress', authMiddleware, async (req: any, res) => {
+router.get('/learning-progress', async (req: any, res) => {
   const context = parseContext(req.query);
   if (!context) return res.status(400).json({ error: 'gradeTier and subject are required.' });
   const [progress, results] = await Promise.all([
@@ -50,19 +51,19 @@ router.get('/learning-progress', authMiddleware, async (req: any, res) => {
       `SELECT lesson_id, completed, completed_at FROM ge10_grade_lesson_progress
        WHERE user_id = $1 AND grade_tier = $2 AND subject = $3
        ORDER BY completed_at DESC NULLS LAST`,
-      [req.user.sub, context.gradeTier, context.subjectId]
+      [req.profile.id, context.gradeTier, context.subjectId]
     ),
     pool.query(
       `SELECT lesson_id, score, total, accuracy, completed_at FROM ge10_grade_quiz_results
        WHERE user_id = $1 AND grade_tier = $2 AND subject = $3
        ORDER BY completed_at DESC LIMIT 50`,
-      [req.user.sub, context.gradeTier, context.subjectId]
+      [req.profile.id, context.gradeTier, context.subjectId]
     )
   ]);
   return res.json({ success: true, learningContext: context, progress: progress.rows, recentResults: results.rows });
 });
 
-router.get('/quizzes/random', authMiddleware, async (req: any, res) => {
+router.get('/quizzes/random', async (req: any, res) => {
   const context = parseContext(req.query);
   if (!context) return res.status(400).json({ error: 'gradeTier and subject are required.' });
   const requestedCount = Math.min(Math.max(Number(req.query.count) || 10, 1), 50);
@@ -74,12 +75,12 @@ router.get('/quizzes/random', authMiddleware, async (req: any, res) => {
        AND (user_id = $3 OR user_id IS NULL OR user_id IN
          (SELECT id FROM ge10_users WHERE role IN ('truong_vien', 'pho_vien')))
      ORDER BY random() LIMIT $4`,
-    [context.gradeTier, context.subjectId, req.user.sub, requestedCount]
+    [context.gradeTier, context.subjectId, req.profile.id, requestedCount]
   );
   return res.json({ success: true, learningContext: context, count: result.rows.length, questions: result.rows });
 });
 
-router.post('/quizzes/submit', authMiddleware, async (req: any, res) => {
+router.post('/quizzes/submit', async (req: any, res) => {
   const context = parseContext(req.body ?? {});
   const { lessonId, answers } = req.body ?? {};
   if (!context || !lessonId || !Array.isArray(answers) || answers.length === 0) {
@@ -108,7 +109,7 @@ router.post('/quizzes/submit', authMiddleware, async (req: any, res) => {
       `INSERT INTO ge10_grade_quiz_results
        (user_id, grade_tier, subject, lesson_id, score, total, accuracy)
        VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [req.user.sub, context.gradeTier, context.subjectId, lessonId, correctCount, answers.length, accuracy]
+      [req.profile.id, context.gradeTier, context.subjectId, lessonId, correctCount, answers.length, accuracy]
     );
     await client.query(
       `INSERT INTO ge10_grade_lesson_progress
@@ -117,7 +118,7 @@ router.post('/quizzes/submit', authMiddleware, async (req: any, res) => {
        ON CONFLICT (user_id, grade_tier, subject, lesson_id) DO UPDATE SET
          completed = ge10_grade_lesson_progress.completed OR EXCLUDED.completed,
          completed_at = CASE WHEN EXCLUDED.completed THEN NOW() ELSE ge10_grade_lesson_progress.completed_at END`,
-      [req.user.sub, context.gradeTier, context.subjectId, lessonId, accuracy >= 70]
+      [req.profile.id, context.gradeTier, context.subjectId, lessonId, accuracy >= 70]
     );
     await client.query('COMMIT');
   } catch (error) {

@@ -204,7 +204,7 @@ export async function getRecentlyUsedGatekeeperIds(studentId: string, pageId: st
     if (!token) return [];
 
     const res = await fetch(`${backendUrl}/api/gatekeeper-history?studentId=${studentId}&pageId=${pageId}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}`, 'X-Profile-Id': studentId }
     });
     if (!res.ok) throw new Error('Network response was not ok');
     const data: GatekeeperHistoryEntry[] = await res.json();
@@ -235,7 +235,8 @@ export async function recordGatekeeperUsage(studentId: string, pageId: string, q
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${token}`
+        Authorization: `Bearer ${token}`,
+        'X-Profile-Id': studentId
       },
       body: JSON.stringify({ studentId, pageId, questionId })
     });

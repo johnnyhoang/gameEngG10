@@ -423,7 +423,8 @@ export function BikiHinhHocPhang({ problemText = '' }: BikiHinhHocPhangProps) {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+          'X-Profile-Id': localStorage.getItem('ge10_selected_profile_id') || ''
         },
         body: JSON.stringify({ problemText: text })
       });

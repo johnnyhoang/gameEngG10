@@ -1,6 +1,6 @@
 import express from 'express';
 import { pool } from '../db.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { activeProfileMiddleware, authMiddleware } from '../middleware/auth.js';
 import crypto from 'crypto';
 import {
   trackQuestionOpened,
@@ -10,6 +10,7 @@ import {
 } from '../helpers/questionStats.js';
 
 const router = express.Router();
+router.use(authMiddleware, activeProfileMiddleware);
 
 export const STUDENT_RANKS = [
   { id: 'tan-de-tu', name: 'Tân Đệ Tử', icon: '🌱', minLevel: 1 },
@@ -42,8 +43,7 @@ const cleanAnswer = (str: string) => {
 };
 
 // POST /api/game/session/start
-router.post('/game/session/start', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
+router.post('/game/session/start', async (req: any, res) => {
   const { profileId, sessionType, subject, gradeTier, bossId, lessonId, failedQuestionIds = [] } = req.body;
 
   if (!profileId || !sessionType || !subject || ![6, 7, 8, 9, 10, 11, 12].includes(Number(gradeTier))) {
@@ -51,9 +51,7 @@ router.post('/game/session/start', authMiddleware, async (req: any, res) => {
   }
 
   try {
-    // Verify profile ownership
-    const check = await pool.query('SELECT id FROM ge10_users WHERE id = $1 AND account_id = $2', [profileId, accountId]);
-    if (check.rows.length === 0) return res.status(403).json({ error: 'Unauthorized profile' });
+    if (profileId !== req.profile.id) return res.status(403).json({ error: 'Profile ID does not match active profile.' });
 
     // Load custom/system questions
     const qRes = await pool.query(
@@ -136,8 +134,7 @@ router.post('/game/session/start', authMiddleware, async (req: any, res) => {
 });
 
 // POST /api/game/session/end
-router.post('/game/session/end', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
+router.post('/game/session/end', async (req: any, res) => {
   const { sessionId, profileId, answers = [], isDefeat = false, bossBonusIndex } = req.body;
 
   if (!sessionId || !profileId) {
@@ -147,6 +144,11 @@ router.post('/game/session/end', authMiddleware, async (req: any, res) => {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
+
+    if (profileId !== req.profile.id) {
+      await client.query('ROLLBACK');
+      return res.status(403).json({ error: 'Profile ID does not match active profile.' });
+    }
 
     // SELECT and LOCK the session row
     const sessionRes = await client.query(
@@ -431,8 +433,7 @@ router.post('/game/session/end', authMiddleware, async (req: any, res) => {
 });
 
 // POST /api/exploration/clear
-router.post('/exploration/clear', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
+router.post('/exploration/clear', async (req: any, res) => {
   const { profileId, pageId } = req.body;
 
   if (!profileId || !pageId) {
@@ -440,9 +441,7 @@ router.post('/exploration/clear', authMiddleware, async (req: any, res) => {
   }
 
   try {
-    // Verify profile ownership
-    const check = await pool.query('SELECT id FROM ge10_users WHERE id = $1 AND account_id = $2', [profileId, accountId]);
-    if (check.rows.length === 0) return res.status(403).json({ error: 'Unauthorized profile' });
+    if (profileId !== req.profile.id) return res.status(403).json({ error: 'Profile ID does not match active profile.' });
 
     // Upsert exploration progress
     const upsertRes = await pool.query(

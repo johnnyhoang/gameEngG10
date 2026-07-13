@@ -1,4 +1,5 @@
 import { supabase } from '../utils/supabaseClient';
+import { activeProfileHeaders } from './profileHeaders';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
 
@@ -108,7 +109,8 @@ export const authService = {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        ...activeProfileHeaders(profileId)
       },
       body: JSON.stringify({ profileId, newName })
     });

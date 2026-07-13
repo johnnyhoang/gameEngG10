@@ -38,13 +38,15 @@ API canonical dùng route tổng quát:
 - `GET /api/content/lessons/:lessonId?gradeTier=&subjectId=`
 - `GET /api/content/questions?gradeTier=&subjectId=&topicId=&difficulty=`
 - `GET /api/quizzes/random?gradeTier=&subjectId=&count=`
-- `POST /api/quizzes/submit` với body bắt buộc chứa `profileId`, `gradeTier`, `subjectId`, `lessonId`, `answers`.
-- `GET /api/progress?profileId=&gradeTier=&subjectId=`
+- `POST /api/quizzes/submit` với body bắt buộc chứa `gradeTier`, `subjectId`, `lessonId`, `answers`.
+- `GET /api/learning-progress?gradeTier=&subjectId=`
+
+Mọi route trên nhận profile đang hoạt động qua header canonical `X-Profile-Id`; không nhận identity của người gọi từ body/query.
 
 Mọi endpoint phải:
 
 - Validate `gradeTier` và `subjectId` theo domain enum.
-- Xác minh `profileId` thuộc account JWT trước khi đọc/ghi.
+- Xác minh `X-Profile-Id` thuộc account JWT, đang active và dùng profile context đã xác minh trước khi đọc/ghi.
 - Lọc cả grade lẫn subject tại query/data source; không tin metadata do client gửi khi chấm đáp án.
 - Không tạo route theo từng lớp; mọi endpoint nhận `gradeTier` như thuộc tính context.
 

@@ -202,7 +202,7 @@ export function Biki3DStudio({ problemText }: Biki3DStudioProps) {
       const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
       const res = await fetch(`${backendUrl}/api/ai/geometry-3d`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, 'X-Profile-Id': localStorage.getItem('ge10_selected_profile_id') || '' },
         body: JSON.stringify({ problemText: text, subjectHint: 'math', shapeHint: shape })
       });
 

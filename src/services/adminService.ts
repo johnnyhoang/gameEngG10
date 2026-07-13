@@ -1,4 +1,5 @@
 import { supabase } from '../utils/supabaseClient';
+import { activeProfileHeaders } from './profileHeaders';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
 
@@ -13,7 +14,7 @@ export const adminService = {
     if (!token) return [];
 
     const res = await fetch(`${backendUrl}/api/admin/audit-logs`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders() }
     });
     if (res.ok) {
       return await res.json();
@@ -26,7 +27,7 @@ export const adminService = {
     if (!token) return [];
 
     const res = await fetch(`${backendUrl}/api/family/skip-reviews/${studentId}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders() }
     });
     if (res.ok) {
       return await res.json();
@@ -40,7 +41,7 @@ export const adminService = {
 
     const res = await fetch(`${backendUrl}/api/family/skip-reviews/resolve`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
       body: JSON.stringify({ reviewId })
     });
     return res.ok;
@@ -52,7 +53,7 @@ export const adminService = {
 
     const res = await fetch(`${backendUrl}/api/questions/custom/${questionId}`, {
       method: 'DELETE',
-      headers: { 'Authorization': `Bearer ${token}` }
+      headers: { 'Authorization': `Bearer ${token}`, ...activeProfileHeaders() }
     });
     return res.ok;
   },
@@ -65,7 +66,8 @@ export const adminService = {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${token}`,
+        ...activeProfileHeaders()
       },
       body: JSON.stringify(questionData)
     });
@@ -81,7 +83,7 @@ export const adminService = {
       : `${backendUrl}/api/admin/users`;
 
     const res = await fetch(url, {
-      headers: { 'Authorization': 'Bearer ' + token }
+      headers: { 'Authorization': 'Bearer ' + token, ...activeProfileHeaders(profileId) }
     });
     if (res.ok) {
       return await res.json();
@@ -97,7 +99,8 @@ export const adminService = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
+        'Authorization': 'Bearer ' + token,
+        ...activeProfileHeaders()
       },
       body: JSON.stringify({ targetUserId, newRole })
     });
@@ -109,7 +112,7 @@ export const adminService = {
     if (!token) return null;
 
     const res = await fetch(`${backendUrl}/api/admin/student-profile?studentUserId=${studentUserId}`, {
-      headers: { 'Authorization': 'Bearer ' + token }
+      headers: { 'Authorization': 'Bearer ' + token, ...activeProfileHeaders() }
     });
     if (res.ok) {
       return await res.json();
@@ -125,7 +128,8 @@ export const adminService = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
+        'Authorization': 'Bearer ' + token,
+        ...activeProfileHeaders()
       },
       body: JSON.stringify({ studentUserId, redemptionId })
     });
@@ -140,7 +144,8 @@ export const adminService = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
+        'Authorization': 'Bearer ' + token,
+        ...activeProfileHeaders()
       },
       body: JSON.stringify({ studentUserId, redemptionId })
     });
@@ -155,7 +160,8 @@ export const adminService = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
+        'Authorization': 'Bearer ' + token,
+        ...activeProfileHeaders()
       },
       body: JSON.stringify({ studentUserId, energyPercent })
     });
@@ -170,7 +176,8 @@ export const adminService = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
+        'Authorization': 'Bearer ' + token,
+        ...activeProfileHeaders()
       },
       body: JSON.stringify({ studentUserId, maxEnergy, resetHours })
     });
@@ -185,7 +192,8 @@ export const adminService = {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token
+        'Authorization': 'Bearer ' + token,
+        ...activeProfileHeaders()
       },
       body: JSON.stringify(payload)
     });
@@ -197,7 +205,7 @@ export const adminService = {
     if (!token) return [];
 
     const res = await fetch(`${backendUrl}/api/admin/vice-principal-applications`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders() }
     });
     if (res.ok) {
       return await res.json();
@@ -211,7 +219,7 @@ export const adminService = {
 
     const res = await fetch(`${backendUrl}/api/admin/respond-vice-principal`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
       body: JSON.stringify({ applicationId, accept })
     });
     return res.ok;

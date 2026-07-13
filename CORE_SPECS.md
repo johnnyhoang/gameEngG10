@@ -12,7 +12,7 @@ Tài liệu đặc tả này định hình ý tưởng cốt lõi, kiến trúc 
 *   **Chủ Nhiệm Chính:** Đồng hành, quản lý và khích lệ bằng cách liên kết kết quả học tập trong ứng dụng với Quà Khuyến Học ngoài đời.
 
 ### 1.2 Mô hình Phân Quyền Vai Trò & Đa Hồ Sơ (Multi-Profile)
-Chi tiết về định nghĩa các Role (Học sinh, Chủ nhiệm Chính/Phụ, Phó Viện Trưởng, Viện Trưởng), cơ chế Đa Hồ Sơ (Multi-Profile trên 1 Account Google) và kết nối thành Lớp Chủ Nhiệm, vui lòng xem tại **[SUB_SPEC_FAMILY_ROLE.md](./SUB_SPEC_FAMILY_ROLE.md)**.
+Chi tiết về định nghĩa Role và Lớp Chủ Nhiệm xem **[SUB_SPEC_FAMILY_ROLE.md](./SUB_SPEC_FAMILY_ROLE.md)**; contract xác thực, phân quyền và cô lập profile xem **[SUB_SPEC_AUTH_PROFILE.md](./SUB_SPEC_AUTH_PROFILE.md)**.
 Nguyên tắc cốt lõi: Một tài khoản Google có thể tạo nhiều hồ sơ biệt lập (Học Sinh hoặc Chủ Nhiệm). Tại một thời điểm chỉ đăng nhập vào một hồ sơ duy nhất. Khi chuyển đổi hồ sơ/vai trò, giao diện sẽ thay đổi hoàn toàn và danh tính tự động ẩn khỏi bảng xếp hạng nhóm không liên quan để tránh gian lận. Toàn bộ tiến trình cũ vẫn được bảo lưu độc lập.
 
 ---

@@ -70,6 +70,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
   importQuestions
 }) => {
   const activeGradeTier = useGameState(state => state.activeGradeTier);
+  const currentProfileId = useGameState(state => state.currentUser?.id);
   const [selectedSect, setSelectedSect] = useState<SubjectId | null>(null);
   const [questionQuery, setQuestionQuery] = useState('');
   const [subjectFilter, setSubjectFilter] = useState<'all' | 'english' | 'math' | 'literature'>('all');
@@ -245,7 +246,8 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
+          'X-Profile-Id': currentProfileId || ''
         },
         body: JSON.stringify({
           rawText: rawText.trim(),

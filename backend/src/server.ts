@@ -18,7 +18,6 @@ import gatekeeperRouter from './routes/gatekeeper.js';
 import gameRouter from './routes/game.js';
 import classRewardsRouter from './routes/classRewards.js';
 import learningContextRouter from './routes/learningContext.js';
-import { adaptLegacyProfiles } from './helpers/profileAdapter.js';
 import { ensureDefaultClassRewards } from './helpers/questions.js';
 import { seedTopicsAndActivities } from './helpers/seedTopicsAndActivities.js';
 
@@ -72,6 +71,12 @@ const initDB = async () => {
     } else {
       throw new Error(`Missing required Data API hardening migration: ${dataApiHardeningPath}`);
     }
+    const profileIdentityPath = path.join(__dirname, '..', 'migrations', '20260713_isolate_profile_identity.sql');
+    if (fs.existsSync(profileIdentityPath)) {
+      await pool.query(fs.readFileSync(profileIdentityPath, 'utf8'));
+    } else {
+      throw new Error(`Missing required profile identity migration: ${profileIdentityPath}`);
+    }
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS subject VARCHAR(50) DEFAULT 'english';`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS image_url TEXT;`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;`);
@@ -110,9 +115,6 @@ const initDB = async () => {
 
     console.log('Database initialized and lessons seeded successfully.');
     
-    // Tự động thích ứng và phân tách các profile cũ chứa dữ liệu chéo
-    await adaptLegacyProfiles();
-
     // Migration: Seed default classroom rewards for all existing active teachers
     console.log('=== Khởi chạy migration Quà Khuyến Học cho Chủ Nhiệm ===');
     const teachersRes = await pool.query(

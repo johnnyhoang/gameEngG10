@@ -323,18 +323,21 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   const questions = useGameState(state => state.questions);
   const lessons = useGameState(state => state.lessons);
   const lessonsProgress = useGameState(state => state.lessonsProgress);
+  const currentUser = useGameState(state => state.currentUser);
 
   const [noteText, setNoteText] = useState('');
   const [overlayLessonId, setOverlayLessonId] = useState<string | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('gameengg10-hang-notes');
-    if (saved) setNoteText(saved);
-  }, []);
+    if (!currentUser?.id) return;
+    const saved = localStorage.getItem(`gameengg10-hang-notes:${currentUser.id}`);
+    setNoteText(saved || '');
+  }, [currentUser?.id]);
 
   useEffect(() => {
-    localStorage.setItem('gameengg10-hang-notes', noteText);
-  }, [noteText]);
+    if (!currentUser?.id) return;
+    localStorage.setItem(`gameengg10-hang-notes:${currentUser.id}`, noteText);
+  }, [currentUser?.id, noteText]);
 
   const selectedSubject: HangSubjectId = activeSectId as HangSubjectId;
 

@@ -1,26 +1,19 @@
 import express from 'express';
 import { pool } from '../db.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { activeProfileMiddleware, authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
+router.use(authMiddleware, activeProfileMiddleware);
 
 // POST /api/economy/transaction: Record a Ruby transaction for a profile
-router.post('/economy/transaction', authMiddleware, async (req: any, res) => {
+router.post('/economy/transaction', async (req: any, res) => {
   try {
-    const accountId = req.user?.sub;
-    if (!accountId) {
-      console.error('No accountId in req.user');
-      return res.status(401).json({ error: 'Unauthorized: missing accountId' });
-    }
-
     const { profileId, amount, reason, details } = req.body;
     if (!profileId || amount === undefined) {
       return res.status(400).json({ error: 'Missing profileId or amount.' });
     }
 
-    // Verify profile ownership
-    const check = await pool.query('SELECT id FROM ge10_users WHERE id = $1 AND account_id = $2', [profileId, accountId]);
-    if (check.rowCount === 0) return res.status(403).json({ error: 'Unauthorized' });
+    if (profileId !== req.profile.id) return res.status(403).json({ error: 'Profile ID does not match active profile.' });
 
     // Update ruby in player profile
     const result = await pool.query(

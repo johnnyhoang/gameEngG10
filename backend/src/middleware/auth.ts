@@ -26,3 +26,36 @@ export const authMiddleware = async (req: any, res: any, next: any) => {
     return res.status(401).json({ error: 'Unauthorized: Invalid token.' });
   }
 };
+
+export const activeProfileMiddleware = async (req: any, res: any, next: any) => {
+  const accountId = req.user?.sub;
+  const profileId = req.get('X-Profile-Id');
+  if (!accountId) return res.status(401).json({ error: 'Unauthorized: missing account identity.' });
+  if (!profileId) return res.status(400).json({ error: 'X-Profile-Id header is required.' });
+
+  try {
+    const { pool } = await import('../db.js');
+    const result = await pool.query(
+      `SELECT id, account_id, role, is_active
+       FROM ge10_users
+       WHERE id = $1 AND account_id = $2 AND is_active = TRUE`,
+      [profileId, accountId]
+    );
+    if (result.rowCount === 0) {
+      return res.status(403).json({ error: 'Active profile is invalid, inactive, or not owned by this account.' });
+    }
+    req.accountId = accountId;
+    req.profile = result.rows[0];
+    next();
+  } catch (error) {
+    console.error('Active Profile Resolution Error:', error);
+    return res.status(500).json({ error: 'Failed to resolve active profile.' });
+  }
+};
+
+export const requireProfileRoles = (...roles: string[]) => (req: any, res: any, next: any) => {
+  if (!req.profile || !roles.includes(req.profile.role)) {
+    return res.status(403).json({ error: 'Forbidden for the active profile.' });
+  }
+  next();
+};

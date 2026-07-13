@@ -19,7 +19,7 @@ export const VicePrincipalApplicationsManager: React.FC<VicePrincipalApplication
     try {
       const token = await authService.getAccessToken();
       const res = await fetch('/api/admin/vice-principal-applications', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}`, 'X-Profile-Id': currentUser.id }
       });
       if (res.ok) {
         const data = await res.json();
@@ -30,7 +30,7 @@ export const VicePrincipalApplicationsManager: React.FC<VicePrincipalApplication
     } finally {
       setLoading(false);
     }
-  }, [currentUser?.role]);
+  }, [currentUser?.id, currentUser?.role]);
 
   useEffect(() => {
     fetchApps();
@@ -42,7 +42,7 @@ export const VicePrincipalApplicationsManager: React.FC<VicePrincipalApplication
       const token = await authService.getAccessToken();
       const res = await fetch('/api/admin/respond-vice-principal', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, 'X-Profile-Id': currentUser.id },
         body: JSON.stringify({ applicationId, accept })
       });
       if (res.ok) {

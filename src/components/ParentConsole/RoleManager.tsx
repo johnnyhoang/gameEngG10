@@ -26,7 +26,7 @@ export const RoleManager: React.FC<RoleManagerProps> = ({ currentUser }) => {
     try {
       const token = await authService.getAccessToken();
       const res = await fetch('/api/admin/users-all', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}`, 'X-Profile-Id': currentUser.id }
       });
       if (res.ok) {
         const data = await res.json();
@@ -39,7 +39,7 @@ export const RoleManager: React.FC<RoleManagerProps> = ({ currentUser }) => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [currentUser?.id]);
 
   useEffect(() => {
     if (isSuperAdmin(currentUser?.role)) fetchAllUsers();
@@ -83,7 +83,7 @@ export const RoleManager: React.FC<RoleManagerProps> = ({ currentUser }) => {
 
       const res = await fetch('/api/admin/update-user-role', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, 'X-Profile-Id': currentUser.id },
         body: JSON.stringify({
           targetAccountId: account.account_id,
           roleKey,

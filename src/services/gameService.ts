@@ -1,4 +1,5 @@
 import { supabase } from '../utils/supabaseClient';
+import { activeProfileHeaders } from './profileHeaders';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
 
@@ -37,7 +38,7 @@ export const gameService = {
 
     const res = await fetch(`${backendUrl}/api/game/session/start`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders(params.profileId) },
       body: JSON.stringify(params)
     });
     if (res.ok) {
@@ -52,7 +53,7 @@ export const gameService = {
 
     const res = await fetch(`${backendUrl}/api/game/session/end`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders(params.profileId) },
       body: JSON.stringify(params)
     });
     if (res.ok) {

@@ -21,11 +21,11 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
   const lastActiveTime = useRef(Date.now());
   
   // Shared cooldown across ALL auto-triggers (including across page reloads)
-  const lastAutoTrigger = useRef<number>(Number(localStorage.getItem('ge10_last_pet_interaction') || 0));
+  const lastAutoTrigger = useRef<number>(0);
 
   const setLastAutoTrigger = (time: number) => {
     lastAutoTrigger.current = time;
-    localStorage.setItem('ge10_last_pet_interaction', time.toString());
+    if (currentUser?.id) localStorage.setItem(`ge10_last_pet_interaction:${currentUser.id}`, time.toString());
   };
 
   // Global triggers
@@ -33,7 +33,8 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
     if (!currentUser || isAdmin(currentUser.role)) return;
 
     // Initialize login time on first mount
-    const loginTimeKey = 'ge10_login_time';
+    const loginTimeKey = `ge10_login_time:${currentUser.id}`;
+    lastAutoTrigger.current = Number(localStorage.getItem(`ge10_last_pet_interaction:${currentUser.id}`) || 0);
     const existingLoginTime = localStorage.getItem(loginTimeKey);
     if (!existingLoginTime) {
       localStorage.setItem(loginTimeKey, Date.now().toString());
@@ -81,7 +82,7 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
       }
 
       // Pet first appears 30 minutes after login (not immediately)
-      const loginTime = Number(localStorage.getItem('ge10_login_time') || now);
+      const loginTime = Number(localStorage.getItem(loginTimeKey) || now);
       const timeSinceLogin = now - loginTime;
       if (timeSinceLogin < THIRTY_MINUTES) {
         return;

@@ -1,12 +1,13 @@
 import express from 'express';
-import { authMiddleware } from '../middleware/auth.js';
+import { activeProfileMiddleware, authMiddleware, requireProfileRoles } from '../middleware/auth.js';
 import { callGeminiAPI, GeminiExhaustedError } from '../helpers/gemini.js';
 
 const router = express.Router();
+router.use(authMiddleware, activeProfileMiddleware);
 
 // POST /api/ai/ingest: Uses Gemini API to parse raw text into structured grade 10 questions (English or Math)
-router.post('/ai/ingest', authMiddleware, async (req: any, res) => {
-  const userId = req.user.sub;
+router.post('/ai/ingest', requireProfileRoles('truong_vien', 'pho_vien'), async (req: any, res) => {
+  const userId = req.profile.id;
   const { rawText, subject = 'english', topicCatalog = [] } = req.body;
   if (!rawText) return res.status(400).json({ error: 'Missing rawText.' });
 

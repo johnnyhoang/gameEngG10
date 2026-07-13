@@ -1,4 +1,5 @@
 import { supabase } from '../utils/supabaseClient';
+import { activeProfileHeaders } from './profileHeaders';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
 
@@ -14,7 +15,7 @@ export const playerService = {
 
     const res = await fetch(`${backendUrl}/api/economy/transaction`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders(profileId) },
       body: JSON.stringify({
         profileId,
         amount: ruby,
@@ -35,7 +36,7 @@ export const playerService = {
 
     const res = await fetch(`${backendUrl}/api/exploration/clear`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders(profileId) },
       body: JSON.stringify({
         profileId,
         pageId
@@ -54,7 +55,7 @@ export const playerService = {
 
     const res = await fetch(`${backendUrl}/api/profile/${profileId}/sync`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders(profileId) },
       body: JSON.stringify(payload)
     });
     if (res.ok) {

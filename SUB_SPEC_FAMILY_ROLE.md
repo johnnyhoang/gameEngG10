@@ -3,6 +3,8 @@
 
 Tài liệu này xác định các vai trò (Role) trong hệ thống GameEngG10, cấu trúc Lớp Chủ Nhiệm, quyền hạn và cách thức kết nối giữa các vai trò theo kiến trúc Đa Hồ Sơ (Multi-Profile).
 
+Contract xác thực, active-profile context và cô lập dữ liệu được định nghĩa tại [SUB_SPEC_AUTH_PROFILE.md](./SUB_SPEC_AUTH_PROFILE.md). Ma trận quyền trong tài liệu này luôn được đánh giá theo **profile đang active**, không theo toàn bộ account Google.
+
 ---
 
 ## 1. Kiến Trúc Đa Hồ Sơ (Multi-Profile Architecture)
@@ -24,6 +26,7 @@ Mỗi tài khoản Google (Google Account) đăng nhập vào ứng dụng khôn
 
 - **Tự Tạo Hồ Sơ Thường:** Người dùng có thể tự tạo hồ sơ **Học Sinh** hoặc **Chủ Nhiệm** bất kỳ lúc nào.
 - **Biệt Lập Tuyệt Đối:** Mỗi hồ sơ là một tiến trình game và quyền hạn hoàn toàn tách biệt. Hai hồ sơ cùng tài khoản Google hoạt động song song mà không ảnh hưởng lẫn nhau.
+- **Account Không Tham Gia Nghiệp Vụ:** Hành vi không được thay đổi theo việc account đang có một hay nhiều profile. Hai profile cùng account được xét quyền, quan hệ, tiến trình và tương tác giống hai profile thuộc hai account khác nhau; `account_id` chỉ nối profile với phiên xác thực.
 - **Chuyển Đổi Linh Hoạt (Switch Role):** Khi đăng nhập, màn hình chọn hồ sơ **luôn hiển thị các profile đang `is_active = true`** của tài khoản đó. Điều này cho phép người dùng (kể cả có quyền Viện Trưởng/Phó Viện Trưởng) có thể tự do lựa chọn hoặc tạo mới hồ sơ Học Sinh / Chủ Nhiệm khi cần thiết.
 - **Hồ Sơ Quản Trị Được Tạo Động:** Khi Viện Trưởng chỉ định ai đó làm Phó Viện Trưởng/Viện Trưởng, hệ thống **tự động INSERT một profile mới** với vai trò đó gắn vào `account_id` của người được chỉ định. Khi bị thu hồi, profile đó bị **vô hiệu hóa** (`is_active = false`) — không bị xóa — và có thể được reactivate bởi Viện Trưởng bất cứ lúc nào.
 

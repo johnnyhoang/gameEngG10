@@ -1,13 +1,14 @@
 import express from 'express';
 import { pool } from '../db.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { activeProfileMiddleware, authMiddleware, requireProfileRoles } from '../middleware/auth.js';
 import { persistCustomQuestion } from '../helpers/questions.js';
 
 const router = express.Router();
+router.use(authMiddleware, activeProfileMiddleware);
 
 // GET /api/questions/custom: Loads default or custom questions for this user
-router.get('/questions/custom', authMiddleware, async (req: any, res) => {
-  const userId = req.user.sub;
+router.get('/questions/custom', async (req: any, res) => {
+  const userId = req.profile.id;
   const gradeTier = Number(req.query.gradeTier);
   const subject = typeof req.query.subject === 'string' ? req.query.subject : '';
   if (![6, 7, 8, 9, 10, 11, 12].includes(gradeTier) || !subject) {
@@ -49,8 +50,8 @@ router.get('/questions/custom', authMiddleware, async (req: any, res) => {
 });
 
 // POST /api/questions/confused: Flags any question as confused/not understood
-router.post('/questions/confused', authMiddleware, async (req: any, res) => {
-  const userId = req.user.sub;
+router.post('/questions/confused', async (req: any, res) => {
+  const userId = req.profile.id;
   const question = req.body;
   try {
     await persistCustomQuestion(userId, { ...question, isConfused: true });
@@ -62,8 +63,8 @@ router.post('/questions/confused', authMiddleware, async (req: any, res) => {
 });
 
 // PUT /api/questions/custom/:questionId: Updates a custom question owned by the signed-in user
-router.put('/questions/custom/:questionId', authMiddleware, async (req: any, res) => {
-  const userId = req.user.sub;
+router.put('/questions/custom/:questionId', requireProfileRoles('parent', 'secondary_parent', 'truong_vien', 'pho_vien'), async (req: any, res) => {
+  const userId = req.profile.id;
   const { questionId } = req.params;
   try {
     const exists = await pool.query('SELECT id FROM ge10_custom_questions WHERE id = $1 AND user_id = $2', [questionId, userId]);
@@ -85,8 +86,8 @@ router.put('/questions/custom/:questionId', authMiddleware, async (req: any, res
 });
 
 // DELETE /api/questions/custom/:questionId: Deletes a custom question owned by the signed-in user
-router.delete('/questions/custom/:questionId', authMiddleware, async (req: any, res) => {
-  const userId = req.user.sub;
+router.delete('/questions/custom/:questionId', requireProfileRoles('parent', 'secondary_parent', 'truong_vien', 'pho_vien'), async (req: any, res) => {
+  const userId = req.profile.id;
   const { questionId } = req.params;
   try {
     const result = await pool.query('DELETE FROM ge10_custom_questions WHERE id = $1 AND user_id = $2', [questionId, userId]);
@@ -101,8 +102,8 @@ router.delete('/questions/custom/:questionId', authMiddleware, async (req: any, 
 });
 
 // GET /api/questions/stats: Gets question statistics (admin only)
-router.get('/questions/stats', authMiddleware, async (req: any, res) => {
-  const userId = req.user.sub;
+router.get('/questions/stats', requireProfileRoles('truong_vien', 'pho_vien'), async (req: any, res) => {
+  const userId = req.profile.id;
   try {
     // Check if user is admin
     const userRes = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [userId]);
@@ -155,8 +156,8 @@ router.get('/questions/stats', authMiddleware, async (req: any, res) => {
 });
 
 // GET /api/questions/stats/student/:studentId: Gets specific student's question performance
-router.get('/questions/stats/student/:studentId', authMiddleware, async (req: any, res) => {
-  const userId = req.user.sub;
+router.get('/questions/stats/student/:studentId', async (req: any, res) => {
+  const userId = req.profile.id;
   const { studentId } = req.params;
   try {
     // Check if user is parent/teacher or student viewing own stats

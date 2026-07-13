@@ -1,6 +1,6 @@
 import express from 'express';
 import { pool } from '../db.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { activeProfileMiddleware, authMiddleware } from '../middleware/auth.js';
 import { checkStudentManagementPermission, logAuditEvent } from '../helpers/permissions.js';
 import { ensureDefaultRewards } from '../helpers/questions.js';
 import {
@@ -11,30 +11,13 @@ import {
 } from '../helpers/gameSettings.js';
 
 const router = express.Router();
+router.use(authMiddleware, activeProfileMiddleware);
 
 // GET /api/admin/users: Lists active users and links (academy-wide for admins, class-specific for teachers)
 router.get('/admin/users', authMiddleware, async (req: any, res) => {
-  const adminId = req.user.sub;
-  const profileId = req.query.profileId;
   try {
-    let check;
-    if (profileId) {
-      check = await pool.query(
-        "SELECT id, role FROM ge10_users WHERE id = $1 AND account_id = $2 AND is_active = TRUE",
-        [profileId, adminId]
-      );
-    } else {
-      check = await pool.query(
-        "SELECT id, role FROM ge10_users WHERE account_id = $1 AND is_active = TRUE ORDER BY (role IN ('truong_vien', 'pho_vien', 'parent', 'secondary_parent')) DESC LIMIT 1",
-        [adminId]
-      );
-    }
-    if ((check.rowCount ?? 0) === 0) {
-      return res.status(403).json({ error: 'Forbidden: Bạn không có quyền truy cập.' });
-    }
-    const caller = check.rows[0];
-    const callerProfileId = caller.id;
-    const callerRole = caller.role;
+    const callerProfileId = req.profile.id;
+    const callerRole = req.profile.role;
 
     if (callerRole === 'truong_vien' || callerRole === 'pho_vien') {
       // 1. Admin: Lấy toàn bộ học viên và cán bộ trong viện
@@ -141,10 +124,10 @@ router.get('/admin/users', authMiddleware, async (req: any, res) => {
 
 // GET /api/admin/users-all: Lists ALL profiles (kể cả inactive) gộp theo account_id — dùng cho RoleManager
 router.get('/admin/users-all', authMiddleware, async (req: any, res) => {
-  const adminId = req.user.sub;
+  const adminId = req.profile.id;
   try {
     const adminCheck = await pool.query(
-      "SELECT role FROM ge10_users WHERE account_id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
+      "SELECT role FROM ge10_users WHERE id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
       [adminId]
     );
     if (adminCheck.rowCount === 0) {
@@ -165,10 +148,10 @@ router.get('/admin/users-all', authMiddleware, async (req: any, res) => {
 
 // POST /api/admin/update-user-role: Bật/Tắt (active/deactivate/create) bất kỳ role nào trong 4 role của tài khoản
 router.post('/api/admin/update-user-role', authMiddleware, async (req: any, res) => {
-  const adminId = req.user.sub;
+  const adminId = req.profile.id;
   try {
     const adminCheck = await pool.query(
-      "SELECT role FROM ge10_users WHERE account_id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
+      "SELECT role FROM ge10_users WHERE id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
       [adminId]
     );
     if (adminCheck.rowCount === 0) {
@@ -242,10 +225,10 @@ router.post('/api/admin/update-user-role', authMiddleware, async (req: any, res)
 
 // GET /api/admin/vice-principal-applications: Lấy tất cả yêu cầu ứng tuyển Phó Viện Trưởng đang chờ duyệt (Chỉ dành cho Viện Trưởng)
 router.get('/admin/vice-principal-applications', authMiddleware, async (req: any, res) => {
-  const adminId = req.user.sub;
+  const adminId = req.profile.id;
   try {
     const adminCheck = await pool.query(
-      "SELECT role FROM ge10_users WHERE account_id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
+      "SELECT role FROM ge10_users WHERE id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
       [adminId]
     );
     if (adminCheck.rowCount === 0) {
@@ -269,10 +252,10 @@ router.get('/admin/vice-principal-applications', authMiddleware, async (req: any
 
 // POST /api/admin/respond-vice-principal: Duyệt hoặc từ chối yêu cầu ứng tuyển Phó Viện Trưởng (Chỉ dành cho Viện Trưởng)
 router.post('/api/admin/respond-vice-principal', authMiddleware, async (req: any, res) => {
-  const adminId = req.user.sub;
+  const adminId = req.profile.id;
   try {
     const adminCheck = await pool.query(
-      "SELECT role FROM ge10_users WHERE account_id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
+      "SELECT role FROM ge10_users WHERE id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
       [adminId]
     );
     if (adminCheck.rowCount === 0) {
@@ -351,10 +334,10 @@ router.post('/api/admin/respond-vice-principal', authMiddleware, async (req: any
 
 // GET /api/admin/audit-logs: Fetches all admin/parent audit logs (only for truong_vien)
 router.get('/admin/audit-logs', authMiddleware, async (req: any, res) => {
-  const adminId = req.user.sub;
+  const adminId = req.profile.id;
   try {
     const adminCheck = await pool.query(
-      "SELECT role FROM ge10_users WHERE account_id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
+      "SELECT role FROM ge10_users WHERE id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
       [adminId]
     );
     if (adminCheck.rowCount === 0) {
@@ -371,7 +354,7 @@ router.get('/admin/audit-logs', authMiddleware, async (req: any, res) => {
 
 // POST /api/admin/deliver-reward: Confirms a student's pending redemption has been handed over in real life
 router.post('/admin/deliver-reward', authMiddleware, async (req: any, res) => {
-  const adminId = req.user.sub;
+  const adminId = req.profile.id;
   try {
     const { studentUserId, redemptionId } = req.body;
     if (!studentUserId || !redemptionId) {
@@ -434,7 +417,7 @@ router.post('/admin/deliver-reward', authMiddleware, async (req: any, res) => {
 
 // POST /api/admin/cancel-redemption: Cancels a student's pending redemption, refunding Ruby and restocking quantity
 router.post('/admin/cancel-redemption', authMiddleware, async (req: any, res) => {
-  const adminId = req.user.sub;
+  const adminId = req.profile.id;
   try {
     const { studentUserId, redemptionId } = req.body;
     if (!studentUserId || !redemptionId) {
@@ -506,7 +489,7 @@ router.post('/admin/cancel-redemption', authMiddleware, async (req: any, res) =>
 
 // POST /api/admin/refill-energy: Sets a student's energy to a percentage of the max when parent clicks "⚡ Nạp Năng Lượng"
 router.post('/admin/refill-energy', authMiddleware, async (req: any, res: any) => {
-  const adminId = req.user.sub;
+  const adminId = req.profile.id;
   try {
     const { studentUserId } = req.body;
     if (!studentUserId) {
@@ -566,7 +549,7 @@ router.post('/admin/refill-energy', authMiddleware, async (req: any, res: any) =
 
 // POST /api/admin/set-energy-config: Chủ nhiệm chỉnh Trần Năng Lượng + giờ hồi RIÊNG cho 1 con (SUB_SPEC_ENERGY §2).
 router.post('/admin/set-energy-config', authMiddleware, async (req: any, res: any) => {
-  const adminId = req.user.sub;
+  const adminId = req.profile.id;
   try {
     const { studentUserId, maxEnergy, resetHours } = req.body || {};
     if (!studentUserId) {
@@ -607,10 +590,10 @@ router.post('/admin/set-energy-config', authMiddleware, async (req: any, res: an
 
 // PUT /api/admin/game-settings: Updates global game configuration parameters
 router.put('/admin/game-settings', authMiddleware, async (req: any, res: any) => {
-  const adminId = req.user.sub;
+  const adminId = req.profile.id;
   try {
     const adminCheck = await pool.query(
-      'SELECT role FROM ge10_users WHERE account_id = $1 AND role IN (\'truong_vien\', \'pho_vien\') AND is_active = TRUE',
+      'SELECT role FROM ge10_users WHERE id = $1 AND role IN (\'truong_vien\', \'pho_vien\') AND is_active = TRUE',
       [adminId]
     );
     if (adminCheck.rowCount === 0) {
@@ -676,7 +659,7 @@ router.put('/admin/game-settings', authMiddleware, async (req: any, res: any) =>
 
 // GET /api/admin/student-profile: Retrieves another student's profile statistics, logs, and pet state
 router.get('/admin/student-profile', authMiddleware, async (req: any, res) => {
-  const adminId = req.user.sub;
+  const adminId = req.profile.id;
   try {
     const { studentUserId } = req.query;
     if (!studentUserId) {
@@ -779,12 +762,12 @@ router.get('/admin/student-profile', authMiddleware, async (req: any, res) => {
 
 // GET /api/admin/lessons
 router.get('/admin/lessons', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
+  const accountId = req.profile.id;
   const gradeTier = Number(req.query.gradeTier);
   if (![6, 7, 8, 9, 10, 11, 12].includes(gradeTier)) return res.status(400).json({ error: 'gradeTier is required.' });
   try {
     const check = await pool.query(
-      "SELECT id FROM ge10_users WHERE account_id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien')",
+      "SELECT id FROM ge10_users WHERE id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien')",
       [accountId]
     );
     if (check.rowCount === 0) {
@@ -800,7 +783,7 @@ router.get('/admin/lessons', authMiddleware, async (req: any, res) => {
 
 // POST /api/admin/lessons
 router.post('/admin/lessons', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
+  const accountId = req.profile.id;
   const { subject, gradeTier, category, topic, title, theory, is_standard } = req.body;
 
   if (!subject || ![6, 7, 8, 9, 10, 11, 12].includes(Number(gradeTier)) || !category || !topic || !title || theory === undefined) {
@@ -809,7 +792,7 @@ router.post('/admin/lessons', authMiddleware, async (req: any, res) => {
 
   try {
     const check = await pool.query(
-      "SELECT id, role FROM ge10_users WHERE account_id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien') LIMIT 1",
+      "SELECT id, role FROM ge10_users WHERE id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien') LIMIT 1",
       [accountId]
     );
     if (check.rowCount === 0) {
@@ -834,7 +817,7 @@ router.post('/admin/lessons', authMiddleware, async (req: any, res) => {
 
 // PUT /api/admin/lessons/:lessonId
 router.put('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
+  const accountId = req.profile.id;
   const { lessonId } = req.params;
   const { subject, gradeTier, category, topic, title, theory, is_standard } = req.body;
 
@@ -844,7 +827,7 @@ router.put('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) => 
 
   try {
     const check = await pool.query(
-      "SELECT id, role FROM ge10_users WHERE account_id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien') LIMIT 1",
+      "SELECT id, role FROM ge10_users WHERE id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien') LIMIT 1",
       [accountId]
     );
     if (check.rowCount === 0) {
@@ -873,12 +856,12 @@ router.put('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) => 
 
 // DELETE /api/admin/lessons/:lessonId
 router.delete('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
+  const accountId = req.profile.id;
   const { lessonId } = req.params;
 
   try {
     const check = await pool.query(
-      "SELECT id, role FROM ge10_users WHERE account_id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien') LIMIT 1",
+      "SELECT id, role FROM ge10_users WHERE id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien') LIMIT 1",
       [accountId]
     );
     if (check.rowCount === 0) {

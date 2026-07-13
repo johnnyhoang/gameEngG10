@@ -1,21 +1,18 @@
 import express from 'express';
 import { pool } from '../db.js';
-import { authMiddleware } from '../middleware/auth.js';
+import { activeProfileMiddleware, authMiddleware } from '../middleware/auth.js';
 import { checkStudentManagementPermission } from '../helpers/permissions.js';
 
 const router = express.Router();
+router.use(authMiddleware, activeProfileMiddleware);
 
 // GET /api/gatekeeper-history
-router.get('/gatekeeper-history', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
+router.get('/gatekeeper-history', async (req: any, res) => {
   const studentId = req.query.studentId as string;
   const pageId = req.query.pageId as string;
   if (!studentId) return res.status(400).json({ error: 'Missing studentId' });
   try {
-    // 1. Verify ownership/permission
-    const callerRes = await pool.query('SELECT id FROM ge10_users WHERE account_id = $1', [accountId]);
-    if (callerRes.rowCount === 0) return res.status(403).json({ error: 'Unauthorized' });
-    const callerId = callerRes.rows[0].id;
+    const callerId = req.profile.id;
 
     if (callerId !== studentId) {
       const hasPermission = await checkStudentManagementPermission(callerId, studentId, 'view_profile');
@@ -42,17 +39,13 @@ router.get('/gatekeeper-history', authMiddleware, async (req: any, res) => {
 });
 
 // POST /api/gatekeeper-history
-router.post('/gatekeeper-history', authMiddleware, async (req: any, res) => {
-  const accountId = req.user.sub;
+router.post('/gatekeeper-history', async (req: any, res) => {
   const { studentId, pageId, questionId } = req.body;
   if (!studentId || !pageId || !questionId) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
   try {
-    // 1. Verify ownership/permission
-    const callerRes = await pool.query('SELECT id FROM ge10_users WHERE account_id = $1', [accountId]);
-    if (callerRes.rowCount === 0) return res.status(403).json({ error: 'Unauthorized' });
-    const callerId = callerRes.rows[0].id;
+    const callerId = req.profile.id;
 
     if (callerId !== studentId) {
       const hasPermission = await checkStudentManagementPermission(callerId, studentId, 'approve_reward');

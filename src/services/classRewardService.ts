@@ -1,5 +1,6 @@
 import { supabase } from '../utils/supabaseClient';
 import type { ClassReward, ClassRewardRedemption } from '../types/game';
+import { activeProfileHeaders } from './profileHeaders';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
 
@@ -47,7 +48,7 @@ export const classRewardService = {
     if (!token) return { rewards: [], redemptions: [], isOrphan: false };
 
     const res = await fetch(`${backendUrl}/api/class-rewards`, {
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
     });
     if (!res.ok) return { rewards: [], redemptions: [], isOrphan: false };
 
@@ -70,7 +71,7 @@ export const classRewardService = {
 
     const res = await fetch(`${backendUrl}/api/class-rewards`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
       body: JSON.stringify({ title, costRuby, quantity }),
     });
     if (res.ok) return { success: true };
@@ -85,7 +86,7 @@ export const classRewardService = {
 
     const res = await fetch(`${backendUrl}/api/class-rewards/${rewardId}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
     });
     return res.ok;
   },
@@ -99,7 +100,7 @@ export const classRewardService = {
 
     const res = await fetch(`${backendUrl}/api/class-rewards/${rewardId}/redeem`, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
     });
     if (res.ok) {
       const data = await res.json();
@@ -116,7 +117,7 @@ export const classRewardService = {
 
     const res = await fetch(`${backendUrl}/api/class-rewards/redemptions/${redemptionId}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
     });
     return res.ok;
   },
@@ -128,7 +129,7 @@ export const classRewardService = {
 
     const res = await fetch(`${backendUrl}/api/class-rewards/redemptions/${redemptionId}/deliver`, {
       method: 'PATCH',
-      headers: { Authorization: `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
     });
     return res.ok;
   },

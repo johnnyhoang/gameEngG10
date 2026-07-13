@@ -1,4 +1,5 @@
 import { supabase } from '../utils/supabaseClient';
+import { activeProfileHeaders } from './profileHeaders';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
 
@@ -13,7 +14,7 @@ export const familyService = {
     if (!token) throw new Error('No access token');
 
     const res = await fetch(`${backendUrl}/api/family/${profileId}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders(profileId) }
     });
     if (res.ok) {
       const data = await res.json();
@@ -31,7 +32,7 @@ export const familyService = {
 
     const res = await fetch(`${backendUrl}/api/family/invite`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders(senderProfileId) },
       body: JSON.stringify({ senderProfileId, targetEmail, connectAsSecondary })
     });
     if (res.ok) return { success: true };
@@ -45,7 +46,7 @@ export const familyService = {
 
     const res = await fetch(`${backendUrl}/api/family/invite-secondary`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders(senderProfileId) },
       body: JSON.stringify({ senderProfileId, targetEmail })
     });
     if (res.ok) return true;
@@ -60,7 +61,7 @@ export const familyService = {
 
     const res = await fetch(`${backendUrl}/api/family/invite-secondary-request`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
       body: JSON.stringify({ senderProfileId, targetEmail })
     });
     if (res.ok) return { success: true };
@@ -79,7 +80,7 @@ export const familyService = {
 
     const res = await fetch(url.toString(), {
       method: 'GET',
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders(profileId) }
     });
     if (res.ok) return res.json();
     return [];
@@ -91,7 +92,7 @@ export const familyService = {
 
     const res = await fetch(`${backendUrl}/api/family/secondary-permissions`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
       body: JSON.stringify({ senderProfileId, linkId, permissions })
     });
     if (res.ok) return true;
@@ -106,7 +107,7 @@ export const familyService = {
 
     const res = await fetch(`${backendUrl}/api/family/respond`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders(profileId) },
       body: JSON.stringify({ profileId, linkId, accept })
     });
     return res.ok;
@@ -118,7 +119,7 @@ export const familyService = {
 
     const res = await fetch(`${backendUrl}/api/family/leave`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders(profileId) },
       body: JSON.stringify({ profileId, linkId })
     });
     return res.ok;
@@ -130,7 +131,7 @@ export const familyService = {
 
     const res = await fetch(`${backendUrl}/api/family/apply-vice-principal`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders(profileId) },
       body: JSON.stringify({ profileId })
     });
     if (res.ok) return { success: true };
@@ -144,7 +145,7 @@ export const familyService = {
 
     const res = await fetch(`${backendUrl}/api/family/invite-admin-connection`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
       body: JSON.stringify({ senderProfileId, targetEmail })
     });
     if (res.ok) return { success: true };

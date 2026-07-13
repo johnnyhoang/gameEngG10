@@ -366,3 +366,51 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
   - Trợ Giáo MIKA (WorldMap banner — §2.8, Bảng Bài Tập) gợi ý ôn lại các chuyên đề có `examRelevance = 'high'` + accuracy thấp nhất.
   - Ưu tiên chuyên đề thuộc `hamNguyenTo` của khu vực có `lastExploredAt` lâu nhất (§2.8.5).
   - *Phạm vi:* AI recommendation engine + WorldMap UI banner
+# Backlog đang thực hiện — AuthN/AuthZ và cô lập đa hồ sơ (đã duyệt 2026-07-13)
+
+- [x] **A1 — Active-profile security context (kiến trúc, ưu tiên cao nhất)**
+  - *Mục tiêu:* Tách JWT account identity khỏi application profile identity.
+  - *Phải sửa:* auth middleware/helper, route registration và API contract `X-Profile-Id`.
+  - *Impact:* Toàn bộ backend route nghiệp vụ; thay đổi contract request sau khi chọn profile.
+  - *Rủi ro:* Route hệ thống chọn/tạo profile bị chặn nhầm; client cũ thiếu header.
+  - *Acceptance:* Active/inactive/foreign profile được phân biệt đúng; `req.user.sub` không còn được dùng làm profile ID.
+
+- [x] **A2 — Authorization theo active profile và quan hệ target**
+  - *Dependency:* A1.
+  - *Phải sửa:* admin, family, class reward, questions, AI, game, economy, learning context, gatekeeper.
+  - *Impact:* Role admin/parent không còn kế thừa qua các profile cùng Google account.
+  - *Rủi ro:* Sai permission có thể khóa nhầm luồng Chủ Nhiệm hoặc mở IDOR.
+  - *Acceptance:* Negative tests chéo profile/account; mutation target kiểm tra ownership/relationship trong transaction.
+
+- [x] **A3 — Cô lập frontend state và cache**
+  - *Dependency:* A1.
+  - *Phải sửa:* services/API headers, auth/profile switch, Zustand persistence, localStorage profile-scoped.
+  - *Impact:* Refresh, đổi profile, notes, pet cooldown và gameplay state.
+  - *Rủi ro:* Mất cache cục bộ legacy; flash dữ liệu profile trước.
+  - *Acceptance:* Đổi qua lại hai profile không rò state; request luôn mang active profile ID.
+
+- [x] **A4 — Audit/migration dữ liệu sai identity**
+  - *Dependency:* A1-A2.
+  - *Phải sửa:* migration/index SQL và báo cáo các record thiếu profile identity tường minh.
+  - *Impact:* Progress, quiz, custom questions và dữ liệu profile-scoped production.
+  - *Rủi ro:* Mọi suy luận từ account — kể cả account đang có một profile — đều tạo ownership không bền vững.
+  - *Acceptance:* Không migrate theo `account_id` hoặc số lượng profile; chỉ dùng profile identity/quan hệ nghiệp vụ tường minh; kiểm tra FK đạt.
+  - *Kết quả:* FK audit 25 cột; không có phép chuyển account→profile. Các UUID trùng account hiện là ID profile học sinh hợp lệ nên record tiếp tục thuộc chính profile đó. Đã thêm partial index phân giải active profile trên production.
+
+- [x] **A5 — Verification và đồng bộ tài liệu**
+  - *Dependency:* A1-A4.
+  - *Phải làm:* backend/frontend build, lint, integration security tests, DB postflight/RLS, cập nhật trạng thái backlog.
+  - *Acceptance:* Không còn đường dùng account ID làm profile ID; toàn bộ test/build đạt; docs và code đồng bộ.
+  - *Kết quả:* Frontend/backend build đạt; lint không lỗi; DB postflight 30/30 bảng RLS, 0 grant anon/authenticated; kiểm tra chéo account trả 0 profile.
+
+- [x] **A6 — Loại bỏ runtime migration suy luận theo account**
+  - *Mục tiêu:* Không để startup tự tạo profile hoặc chuyển dữ liệu chỉ vì account hiện có một profile.
+  - *Phải sửa:* Gỡ `adaptLegacyProfiles()` khỏi `initDB`; giữ source adapter legacy chưa xóa để tuân thủ quy tắc không tự xóa function; đăng ký migration index active-profile vào startup migration chain.
+  - *Impact:* Backend startup không còn âm thầm đổi ownership hoặc sinh profile theo heuristic.
+  - *Acceptance:* Không có runtime call tới adapter; mọi migration ownership sau này cần profile identity tường minh và migration được duyệt riêng.
+
+- [x] **A7 — Loại account khỏi business authorization/query**
+  - *Mục tiêu:* Sau active-profile middleware, roster và family workflow chỉ dùng profile/relationship.
+  - *Phải sửa:* Bỏ fallback chọn profile theo account, bỏ ownership query lặp lại bằng account, không loại toàn bộ sibling profile khỏi tìm kiếm.
+  - *Impact:* Profile cùng account có thể tương tác như các profile độc lập; quyền không đổi khi tạo thêm profile.
+  - *Acceptance:* `account_id` trong route nghiệp vụ chỉ còn ở thao tác quản lý/provision danh sách profile của account hoặc boundary xác thực.
