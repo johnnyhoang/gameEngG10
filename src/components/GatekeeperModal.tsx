@@ -92,13 +92,53 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
   const handleAnswerSubmit = () => {
     if (!question) return;
 
+    // Helper to clean answers
+    const cleanStr = (str: string) => (str || '')
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '')
+      .replace(/[–−]/g, '-')
+      .replace(/[×·]/g, '*')
+      .replace(/[₁]/g, '1')
+      .replace(/[₂]/g, '2')
+      .replace(/[₃]/g, '3')
+      .replace(/[₄]/g, '4')
+      .replace(/[₅]/g, '5')
+      .replace(/[₆]/g, '6')
+      .replace(/[₇]/g, '7')
+      .replace(/[₈]/g, '8')
+      .replace(/[₉]/g, '9')
+      .replace(/[₀]/g, '0');
+
+    const isMCOptionMatch = (selected: string, correct: string) => {
+      const selClean = cleanStr(selected);
+      const corClean = cleanStr(correct);
+      if (selClean === corClean) return true;
+
+      // Check if selected option starts with a letter like A. B. C. D. or A) B) C) D)
+      const optionLetterMatch = selected.match(/^([A-D])\s*[\.\):]/i);
+      if (optionLetterMatch) {
+        const letter = optionLetterMatch[1].toLowerCase();
+        if (corClean === letter) return true;
+
+        // Check if correct answer is the content after the letter
+        const contentAfter = selected.substring(optionLetterMatch[0].length).trim();
+        if (cleanStr(contentAfter) === corClean) return true;
+      }
+      return false;
+    };
+
+    const correctAnswers = Array.isArray(question.correctAnswer)
+      ? question.correctAnswer
+      : [question.correctAnswer];
+
     let isCorrect = false;
+
     if (question.type === 'multiple_choice' || question.type === 'mcq') {
-      isCorrect = selectedAnswer === question.correctAnswer;
+      isCorrect = correctAnswers.some(ans => isMCOptionMatch(selectedAnswer, ans));
     } else {
-      const correctAnswers = Array.isArray(question.correctAnswer) ? question.correctAnswer : [question.correctAnswer];
-      const match = correctAnswers.find(ans => selectedAnswer.trim().toLowerCase() === (ans || '').trim().toLowerCase());
-      isCorrect = !!match;
+      const selClean = cleanStr(selectedAnswer);
+      isCorrect = correctAnswers.some(ans => cleanStr(ans) === selClean);
     }
 
     if (isCorrect) {
