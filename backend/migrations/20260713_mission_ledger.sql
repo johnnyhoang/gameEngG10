@@ -94,7 +94,6 @@ ON CONFLICT (mission_key) DO UPDATE SET
   feature_key = EXCLUDED.feature_key,
   version = EXCLUDED.version,
   is_active = EXCLUDED.is_active,
-  feature_key = EXCLUDED.feature_key,
   display_order = EXCLUDED.display_order,
   updated_at = NOW();
 

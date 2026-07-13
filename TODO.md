@@ -606,3 +606,8 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
 - [x] **RA2 — Full release gate**
   - *Phải làm:* FE production build, BE TypeScript build, lint, diff whitespace và static scan contract cũ.
   - *Kết quả:* FE/BE build pass; lint không error (chỉ warning cũ); `git diff --check` sạch; không còn runtime DailyMission/Gatekeeper contract.
+
+- [x] **RA3 — Entry tạm cho Hòm Bí Mật**
+  - *Mục tiêu:* Giữ feature `openMysteryBox` có dấu vết rõ trên UI nhưng không mở lại reward client-side thiếu chống nhận lặp.
+  - *Phải sửa:* Thêm thẻ disabled trong Sổ Tu Học, ghi rõ đang hoàn thiện; không gọi action và không thay đổi Ruby/XP.
+  - *Acceptance:* Sĩ Tử thấy Hòm Bí Mật trong Tiến Độ Tu Học; không thể click nhận thưởng; build pass.

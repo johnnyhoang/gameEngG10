@@ -80,6 +80,16 @@ export function LearningLedger({ compact = false }: LearningLedgerProps) {
                     <p>Kinh nghiệm <strong className="text-white">{player.xp} XP</strong></p>
                     <p>Chuỗi học <strong className="text-white">{player.streak} ngày</strong></p>
                   </div>
+                  <div className="mt-3 rounded-lg border border-dashed border-synth-orange/30 bg-synth-orange/5 p-2.5" aria-disabled="true">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg" aria-hidden="true">🎁</span>
+                      <div>
+                        <p className="text-[10px] font-bold text-synth-orange">Hòm Bí Mật</p>
+                        <p className="text-[9px] text-slate-400">Đang hoàn thiện cơ chế nhận thưởng an toàn.</p>
+                      </div>
+                      <span className="ml-auto rounded-full bg-white/5 px-2 py-0.5 text-[8px] font-bold uppercase text-slate-500">Sắp mở</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             )}

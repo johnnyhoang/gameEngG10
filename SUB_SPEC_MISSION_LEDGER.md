@@ -41,3 +41,4 @@ Daily pool gồm: hoàn thành bài; trả lời/đúng số câu; đạt accura
 - Panel có loading, empty và error rõ ràng; lỗi sync không được hiển thị hoàn thành giả.
 - Khi làm bài, chỉ giữ summary nhỏ; panel không che nội dung câu hỏi.
 - Completion không tự mở modal gây gián đoạn; dùng toast và cập nhật badge/progress.
+- **Hòm Bí Mật** hiện giữ entry tạm dạng disabled trong Tiến Độ Tu Học để không thất lạc feature. Entry không gọi `openMysteryBox()` cho đến khi có contract claim backend chống nhận lặp và reward ledger được duyệt.
