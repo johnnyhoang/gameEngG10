@@ -171,40 +171,14 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
 
       {/* Overlay Modal */}
       {isOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-fade-in">
-          <div className="w-full max-w-sm">
-            {/* Custom greeting based on trigger reason */}
-            {triggerReason === 'login' && (
-              <div className="text-center mb-4 font-orbitron font-bold text-synth-cyan animate-bounce drop-shadow-md">
-                Chào ngày mới, môn sinh! 🐷
-              </div>
-            )}
-            {triggerReason === 'idle' && (
-              <div className="text-center mb-4 font-orbitron font-bold text-synth-magenta animate-bounce drop-shadow-md">
-                Dậy học tiếp thôi, sao ngồi im thế! 📚
-              </div>
-            )}
-            {triggerReason === 'hunger' && (
-              <div className="text-center mb-4 font-orbitron font-bold text-red-400 animate-wiggle drop-shadow-md">
-                Heo đói rã ruột rồi, cho ăn đi! 🍖
-              </div>
-            )}
-            {triggerReason === 'energy-depleted' && (
-              <div className="text-center mb-4 font-orbitron font-bold text-red-400 animate-wiggle drop-shadow-md">
-                Hết Chân Khí rồi, nghỉ ngơi thôi! Hẹn con quay lại lúc{' '}
-                {player.energyDepletedAt
-                  ? new Date(player.energyDepletedAt + (player.resetHours ?? 3) * 60 * 60 * 1000).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
-                  : '—'}{' '}
-                nhé. Trong lúc chờ, con đọc Cẩm Nang hoặc chăm heo cũng được tính công đấy! 📖🐷
-              </div>
-            )}
-
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-md animate-fade-in">
+          <div className="w-full max-w-sm flex flex-col items-center justify-center">
             <Suspense fallback={<div className="flex items-center justify-center h-32"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-synth-cyan"></div></div>}>
-              <PetSanctuary variant="sidebar" onInteract={handleInteract} />
+              <PetSanctuary variant="sidebar" triggerReason={triggerReason} onInteract={handleInteract} />
             </Suspense>
             
-            <div className="text-center mt-4 text-[11px] font-semibold text-slate-300 drop-shadow">
-              *Hãy tương tác (Thọt lét hoặc Cho ăn) để cất heo về chuồng
+            <div className="text-center mt-3 text-[10px] font-bold tracking-wider text-slate-400/80 uppercase">
+              * Tương tác (cho ăn/thọc lét) để cất heo *
             </div>
           </div>
         </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
-import { Activity, ChevronLeft, ChevronRight, Lock } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Lock } from 'lucide-react';
 import type { HistoryLog, PetStage } from '../types/game';
 import { FogCard } from './FogCard';
 
@@ -39,13 +39,13 @@ interface PetSanctuaryProps {
   /** 'sidebar' = widget đồng hành thu gọn (mặc định); 'full' = module Sân Thú Nuôi đầy đủ, gồm Album Kỷ Niệm. */
   variant?: 'sidebar' | 'full';
   onInteract?: () => void;
+  triggerReason?: 'login' | 'manual' | 'idle' | 'hunger' | 'energy-depleted';
 }
 
-export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar', onInteract }) => {
+export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar', onInteract, triggerReason }) => {
   const isFull = variant === 'full';
   const pet = useGameState(state => state.pet);
   const feedPet = useGameState(state => state.feedPet);
-  const showHelp = useGameState(state => state.showHelp);
   const uiTheme = useGameState(state => state.uiTheme);
   const logs = useGameState(state => state.logs || []);
   const player = useGameState(state => state.player);
@@ -184,6 +184,23 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
       setInteracting(false);
     }, 2000);
   };
+
+  useEffect(() => {
+    if (triggerReason) {
+      if (triggerReason === 'login') {
+        setSpeech('Chào ngày mới, môn sinh! ☀️ Hôm nay ta cùng tinh tấn học tập nhé! 🌸');
+      } else if (triggerReason === 'idle') {
+        setSpeech('Dậy học tiếp thôi nàng ơi, sao ngồi im thin thít thế! Heo buồn ngủ lắm đó! 😴📚');
+      } else if (triggerReason === 'hunger') {
+        setSpeech('Heo đói rã ruột rồi nè! Hãy cho Heo ăn bánh để Heo có sức đồng hành nhé! 🍖🐷');
+      } else if (triggerReason === 'energy-depleted') {
+        const timeStr = player.energyDepletedAt
+          ? new Date(player.energyDepletedAt + (player.resetHours ?? 3) * 60 * 60 * 1000).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+          : '—';
+        setSpeech(`Hết Chân Khí rồi, nghỉ ngơi thôi! Hẹn gặp lại nàng lúc ${timeStr} nhé. Trong lúc chờ, đọc Cẩm Nang hoặc thọc lét Heo cũng được tính công đấy! 📖🐷`);
+      }
+    }
+  }, [triggerReason, player.energyDepletedAt, player.resetHours]);
 
   useEffect(() => {
     // Periodically update speech bubble with reminders/praises (every 20 seconds)
@@ -485,124 +502,117 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
 
       <div className={isFull ? "grid grid-cols-1 lg:grid-cols-2 gap-6 items-start" : "contents"}>
         {/* CẢNH 1: CHUỒNG CHĂM SÓC (Stable) */}
-        <div className={`glass-panel rounded-2xl border p-5 flex flex-col ${isFull ? 'w-full' : 'h-full'} ${
-          isUnicorn ? 'border-violet-200/35 bg-gradient-to-b from-white/90 via-fuchsia-50/80 to-cyan-50/70' : 'border-synth-cyan/15'
-        }`}>
-      {/* CSS Styles for floating/wiggling animations */}
-      <style dangerouslySetInnerHTML={{__html: `
-        @keyframes float {
-          0% { transform: translateY(0px); }
-          50% { transform: translateY(-8px); }
-          100% { transform: translateY(0px); }
-        }
-        @keyframes wiggle {
-          0%, 100% { transform: rotate(0deg) scale(1); }
-          25% { transform: rotate(-6deg) scale(1.06); }
-          75% { transform: rotate(6deg) scale(1.06); }
-        }
-        .animate-float {
-          animation: float 3.5s ease-in-out infinite;
-        }
-        .animate-wiggle {
-          animation: wiggle 0.35s ease-in-out infinite;
-        }
-      `}} />
+        <div className={`flex flex-col items-center justify-center p-4 relative ${isFull ? 'w-full' : 'h-full animate-float'}`}>
+          {/* CSS Styles for floating/wiggling animations */}
+          <style dangerouslySetInnerHTML={{__html: `
+            @keyframes float {
+              0% { transform: translateY(0px); }
+              50% { transform: translateY(-8px); }
+              100% { transform: translateY(0px); }
+            }
+            @keyframes wiggle {
+              0%, 100% { transform: rotate(0deg) scale(1); }
+              25% { transform: rotate(-6deg) scale(1.06); }
+              75% { transform: rotate(6deg) scale(1.06); }
+            }
+            .animate-float {
+              animation: float 3.5s ease-in-out infinite;
+            }
+            .animate-wiggle {
+              animation: wiggle 0.35s ease-in-out infinite;
+            }
+          `}} />
 
-      <div className={`flex items-center justify-between mb-4 pb-3 ${isUnicorn ? 'border-b border-violet-200/35' : 'border-b border-synth-gray'}`}>
-        <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-1.5 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
-          <Activity className="w-4 h-4" /> {isUnicorn ? 'Linh Thú Các' : 'Sân Nuôi Thú'}
-          <button
-            onClick={() => showHelp('adult')}
-            className={`w-4 h-4 rounded-full text-[9px] font-black flex items-center justify-center cursor-pointer transition-colors ${
+          {/* Speech Bubble (Primary Communication Channel) */}
+          <div className="relative w-full max-w-xs mb-3 z-10 select-none">
+            <div className={`border rounded-2xl px-4 py-3 text-xs leading-relaxed relative ${
+              isUnicorn 
+                ? 'border-violet-100 bg-white/95 text-violet-800 shadow-[0_4px_16px_rgba(192,132,252,0.12)]' 
+                : 'border-synth-magenta/30 bg-synth-bg/95 text-slate-200 shadow-[0_4px_16px_rgba(255,0,127,0.15)]'
+            }`}>
+              <div className="font-serif italic text-center font-medium">{speech}</div>
+              {/* Arrow */}
+              <div className={`absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 border-r border-b ${
+                isUnicorn 
+                  ? 'bg-white border-violet-100' 
+                  : 'bg-synth-bg border-synth-magenta/30'
+              }`} />
+            </div>
+          </div>
+
+          {/* Floating Pet character (Visual Focus) */}
+          <div className="relative my-2 select-none cursor-pointer transform hover:scale-105 active:scale-95 transition-transform duration-200 flex flex-col items-center">
+            {renderPetAvatar()}
+            
+            {/* Small nameplate */}
+            <div className="mt-1">
+              <span className={`font-orbitron font-extrabold text-[10px] tracking-wider uppercase px-2.5 py-0.5 rounded-full ${
+                isUnicorn
+                  ? 'bg-violet-100/80 text-violet-800'
+                  : 'bg-synth-magenta/20 text-synth-magenta border border-synth-magenta/30'
+              }`}>
+                {pet.name} ({getStageTitle(pet.stage)})
+              </span>
+            </div>
+          </div>
+
+          {/* Compact HUD Status Bar & Action Panel */}
+          <div className="w-full max-w-sm flex flex-col items-center gap-3 mt-3">
+            <div className={`w-full rounded-2xl px-4 py-2.5 flex items-center justify-between gap-3 border text-[11px] font-bold ${
               isUnicorn
-                ? 'bg-fuchsia-200/50 border border-violet-200/60 text-violet-700 hover:bg-fuchsia-200/80'
-                : 'bg-synth-cyan/20 border border-synth-cyan/40 text-synth-cyan hover:bg-synth-cyan/40'
-            }`}
-            title="Xem hướng dẫn thú nuôi"
-          >
-            ?
-          </button>
-        </h3>
-        <span className={`text-xs font-semibold px-2 py-0.5 rounded font-orbitron ${
-          isUnicorn
-            ? 'bg-fuchsia-100/80 text-fuchsia-700 border border-violet-200/40'
-            : 'bg-synth-magenta/15 text-synth-magenta border border-synth-magenta/30'
-        }`}>
-          CẤP.{pet.level}
-        </span>
-      </div>
+                ? 'bg-white/80 border-violet-100/50 text-violet-800 shadow-sm'
+                : 'bg-synth-gray/50 border-white/5 text-slate-300'
+            }`}>
+              {/* Level */}
+              <div className="flex items-center gap-1.5" title="Cấp độ">
+                <span className="text-sm">👑</span>
+                <span className="font-orbitron">LV.{pet.level}</span>
+              </div>
 
-      {/* Speech Bubble */}
-      <div className="relative mb-2 mt-1 z-10">
-        <div className={`glass-panel border rounded-xl p-3 text-xs leading-relaxed relative ${
-          isUnicorn 
-            ? 'border-violet-200/40 bg-white/95 text-violet-800 shadow-[0_4px_12px_rgba(192,132,252,0.15)]' 
-            : 'border-synth-magenta/30 bg-synth-gray/90 text-white shadow-[0_4px_12px_rgba(255,0,127,0.15)]'
-        }`}>
-          <div className="font-serif italic font-semibold text-center">{speech}</div>
-          {/* Arrow */}
-          <div className={`absolute bottom-[-6px] left-1/2 -translate-x-1/2 w-3 h-3 rotate-45 border-r border-b ${
-            isUnicorn ? 'bg-white border-violet-200/40' : 'bg-synth-gray/90 border-synth-magenta/30'
-          }`} />
-        </div>
-      </div>
+              <div className={`w-px h-4 ${isUnicorn ? 'bg-violet-200/50' : 'bg-white/10'}`} />
 
-      {/* Pet graphic */}
-      <div className="flex-1 flex flex-col justify-center py-4 relative">
-        {renderPetAvatar()}
-        
-        <div className="text-center mt-4">
-          <h4 className={`font-orbitron font-bold text-base mb-1 ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-            {pet.name}
-          </h4>
-          <p className={`text-[10px] mb-2 font-semibold uppercase tracking-wider ${isUnicorn ? 'text-violet-600/80' : 'text-synth-text-muted'}`}>
-            {getStageTitle(pet.stage)}
-          </p>
-        </div>
-      </div>
+              {/* Growth */}
+              <div className="flex items-center gap-2 flex-1 max-w-[120px]" title="Độ trưởng thành">
+                <span className="text-sm">📈</span>
+                <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden relative">
+                  <div
+                    className={`h-full rounded-full transition-all duration-300 ${isUnicorn ? 'bg-gradient-to-r from-fuchsia-500 to-violet-500' : 'bg-synth-cyan shadow-[0_0_6px_#00f0ff]'}`}
+                    style={{ width: `${Math.min(100, (pet.exp / (pet.level * 150)) * 100)}%` }}
+                  />
+                </div>
+                <span className="text-[10px] font-mono">{Math.round(Math.min(100, (pet.exp / (pet.level * 150)) * 100))}%</span>
+              </div>
 
-      {/* Pet Stats & Actions */}
-      <div className="space-y-4 border-t border-synth-gray pt-4">
-        {/* EXP Bar */}
-        <div>
-          <div className="flex justify-between text-[11px] font-semibold mb-1">
-            <span className={isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}>Độ Mũm Mĩm (Độ Trưởng Thành)</span>
-            <span className={`${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'} font-orbitron`}>{pet.exp}/{pet.level * 150}</span>
-          </div>
-          <div className="w-full h-1.5 bg-synth-gray rounded-full overflow-hidden">
-            <div 
-              className={`h-full transition-all duration-300 ${isUnicorn ? 'unicorn-rainbow-strip shadow-[0_0_8px_rgba(192,132,252,0.25)]' : 'bg-synth-cyan shadow-[0_0_8px_#00f0ff]'}`}
-              style={{ width: `${Math.min(100, (pet.exp / (pet.level * 150)) * 100)}%` }}
-            />
+              <div className={`w-px h-4 ${isUnicorn ? 'bg-violet-200/50' : 'bg-white/10'}`} />
+
+              {/* Mood */}
+              <div className="flex items-center gap-1.5" title="Tâm trạng">
+                <span>{getMoodEmoji(pet.mood)}</span>
+              </div>
+
+              <div className={`w-px h-4 ${isUnicorn ? 'bg-violet-200/50' : 'bg-white/10'}`} />
+
+              {/* Energy */}
+              <div className="flex items-center gap-1.5" title="Chân khí">
+                <span className="text-sm">⚡</span>
+                <span>{pet.energy}</span>
+              </div>
+            </div>
+
+            {/* Action button */}
+            <button
+              onClick={handleFeed}
+              disabled={interacting}
+              className={`w-full py-2.5 rounded-full font-orbitron font-bold text-xs uppercase tracking-wider transition-all duration-300 disabled:opacity-50 cursor-pointer ${
+                isUnicorn
+                  ? 'bg-gradient-to-r from-fuchsia-400 to-violet-500 text-white shadow-md hover:brightness-105 hover:scale-[1.02] active:scale-[0.98]'
+                  : 'bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-border-cyan shadow-[0_0_10px_rgba(0,240,255,0.2)] hover:scale-[1.02] active:scale-[0.98]'
+              }`}
+            >
+              {interacting ? 'Đang Cho Ăn... 🍖' : `Cho ${pet.name} Ăn 🍖 (-10 NP)`}
+            </button>
           </div>
         </div>
-
-        {/* Info Grid */}
-        <div className="grid grid-cols-2 gap-2 text-[11px] font-semibold">
-          <div className={`rounded-lg p-2 flex flex-col border ${isUnicorn ? 'bg-white/70 border-violet-200/30' : 'bg-synth-gray/40 border border-white/5'}`}>
-            <span className={`text-[9px] uppercase ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}`}>Trạng Thái</span>
-            <span className="text-white mt-0.5">{getMoodEmoji(pet.mood)}</span>
-          </div>
-          <div className={`rounded-lg p-2 flex flex-col border ${isUnicorn ? 'bg-white/70 border-violet-200/30' : 'bg-synth-gray/40 border border-white/5'}`}>
-            <span className={`text-[9px] uppercase ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}`}>Chân Khí Pet</span>
-            <span className="text-white mt-0.5">{pet.energy}/100</span>
-          </div>
-        </div>
-
-        {/* Interact Actions */}
-        <button
-          onClick={handleFeed}
-          disabled={interacting}
-          className={`w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-50 ${
-            isUnicorn
-              ? 'bg-gradient-to-r from-fuchsia-300 via-violet-300 to-cyan-200 text-violet-900 shadow-[0_0_14px_rgba(192,132,252,0.25)] hover:brightness-105'
-              : 'bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-border-cyan shadow-[0_0_12px_rgba(0,240,255,0.2)]'
-          }`}
-        >
-          {interacting ? 'Đang Cho Ăn Heo... 🍖' : `Cho ${pet.name} Ăn 🍖 (-10 NP)`}
-        </button>
-      </div>
-    </div>
 
         {/* CẢNH 2: TÀNG THƯ KỶ NIỆM (Album) */}
         {isFull && (() => {
