@@ -463,3 +463,38 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
   - *Phải làm:* Frontend/backend build, lint/test, static unused scan, migration pre/postflight và cập nhật backlog/spec.
   - *Acceptance:* Không còn feature ẩn ngoài gating đã định nghĩa; code/docs đồng bộ; không có lỗi do thay đổi.
   - *Kết quả:* FE build, BE build đạt; lint không có error. Static scan chỉ còn serverless entrypoint `backend/api/index.ts` và các exported helper/type không phải feature; entrypoint được giữ vì có thể là deployment contract.
+
+# Backlog kiến trúc Mô-đun Chuyên Môn (đã duyệt 2026-07-13)
+
+- [x] **SM1 — Contract và registry build-time**
+  - *Mục tiêu:* Một nguồn đăng ký type-safe cho tool/activity/mini-game/renderer/hint/assessment theo môn.
+  - *Impact:* App shell và feature visibility; thay `subjectCapabilities` ad-hoc.
+  - *Rủi ro:* Circular dependency hoặc manifest import UI lõi.
+  - *Acceptance:* Registry read-only; module không sở hữu shell/store/auth; query sai môn trả rỗng.
+  - *Kết quả:* Registry type-safe kiểm tra duplicate subject/contribution khi khởi tạo; query tool/activity/mini-game/presentation/metadata/hint/assessment/utility đều read-only.
+
+- [x] **SM2 — Manifest Tiếng Anh và Toán**
+  - *Dependency:* SM1.
+  - *Phải làm:* Đăng ký bốn English-only mini-game và ba Xưởng Toán; consumer lấy visibility từ registry.
+  - *Acceptance:* Matrix môn × contribution đúng; đổi khỏi môn Toán không giữ screen Xưởng.
+  - *Kết quả:* Công viên Thư Giãn và Học Đường lọc contribution theo manifest; App guard screen Xưởng dùng registry.
+
+- [x] **SM3 — Module Ngữ Văn**
+  - *Dependency:* SM1.
+  - *Phải làm:* Tách presentation ngữ liệu, hint, blueprint metadata và assessment API client khỏi `PlayArea`; đăng ký qua manifest Văn.
+  - *Impact:* Trường Thi, review/giải thích và AI grading.
+  - *Rủi ro:* Sai điều kiện nhận diện bài viết hoặc làm mất fallback chấm cục bộ.
+  - *Acceptance:* Đọc hiểu giữ layout tách; bài viết giữ rubric/feedback/fallback; core không chứa nhánh feature Văn tương ứng.
+  - *Kết quả:* Presentation, metadata labels, hint, assessment matcher/client và backend grader đã chuyển vào module Văn; PlayArea/Review/Explanation gọi contribution chung.
+
+- [x] **SM4 — Activity ID Văn canonical**
+  - *Dependency:* SM3.
+  - *Phải làm:* Dùng ID nghiệp vụ cho bốn activity Văn; giữ `legacyMode` chỉ để compatibility data cũ.
+  - *Acceptance:* Không dùng `grammar/reading/vocabulary` làm danh tính activity Văn mới; seed và frontend mapping thống nhất.
+  - *Kết quả:* Bốn ID canonical đã đồng bộ source và DB thật; `legacyMode` chỉ phân giải caller cũ. Postflight xác nhận đủ bốn config.
+
+- [x] **SM5 — Verification và đồng bộ docs**
+  - *Dependency:* SM1-SM4.
+  - *Phải làm:* FE/BE build, lint, static scan, diff audit và cập nhật trạng thái backlog.
+  - *Acceptance:* Không đổi hành vi người dùng ngoài tên/ID kỹ thuật đã chuẩn hóa; docs/code đồng bộ.
+  - *Kết quả:* FE build và BE build đạt; lint không có error; contract matrix 7/7 đạt; DB postflight đủ bốn activity canonical. Static scan chỉ còn entrypoint serverless và exported helper/type đã biết, không phát sinh feature ẩn mới.

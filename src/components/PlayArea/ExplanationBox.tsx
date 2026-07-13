@@ -1,6 +1,8 @@
 import React from 'react';
 import { Check, X } from 'lucide-react';
 import type { ExplanationBoxProps } from './types';
+import { getAssessmentProvider } from '../../subject-modules/registry';
+import type { SubjectId } from '../../types/game';
 
 export const ExplanationBox: React.FC<ExplanationBoxProps> = ({
   activeSectId,
@@ -12,7 +14,7 @@ export const ExplanationBox: React.FC<ExplanationBoxProps> = ({
   aiFeedback,
   aiSuggestions
 }) => {
-  const isWriting = activeSectId === 'literature' && activeQuestion.category === 'literature-writing';
+  const isWriting = Boolean(getAssessmentProvider(activeSectId as SubjectId, activeQuestion));
 
   return (
     <div className={`p-4 rounded-xl border flex gap-3 text-xs leading-relaxed ${

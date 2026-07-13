@@ -40,6 +40,7 @@ Toàn bộ thế giới giang hồ được phân tầng theo **lớp học (gra
 *   **Cô lập 100% theo Bậc Học:** Khi Sĩ Tử ở một Bậc Học, toàn bộ các trang (bản đồ, Trường Thi, Học Đường, Công Viên Thư Giãn, Shop Học Cụ, Cẩm Nang Học Đường, Kho Đề Thi, khám phá và bảng xếp hạng) chỉ hiển thị dữ liệu của bậc đó. Cô lập Bậc Học đứng **trên** cô lập Môn Phái (§1.3): *Bậc Học → Môn Phái → Nội dung*.
 
 *   **Một app, mọi Bậc Học và Môn học:** Grade và subject chỉ là hai thuộc tính của `LearningContext`; không xây component, hook, route, type hoặc bảng riêng theo từng grade/môn. Chọn context nào thì toàn bộ app phục vụ context đó bằng cùng implementation. Contract chi tiết và kế hoạch compatibility xem **[SUB_SPEC_LEARNING_CONTEXT.md](./SUB_SPEC_LEARNING_CONTEXT.md)**.
+*   **Mô-đun Chuyên Môn (Subject Module):** Mỗi môn có thể đóng góp công cụ, hoạt động, mini-game, renderer câu hỏi, bộ đánh giá và metadata riêng qua registry build-time. App shell chỉ cung cấp các điểm gắn ổn định, không hardcode nhánh theo môn và không để module chuyên môn làm tràn thiết kế lõi. Kiến trúc chi tiết xem **[ARCHITECTURE_SPEC_SUBJECT_MODULES.md](./ARCHITECTURE_SPEC_SUBJECT_MODULES.md)**.
 *   **Chuyển tầng duy nhất tại Hồ Sơ Sĩ Tử:** Thiếu hiệp chỉ có thể **nâng/hạ tầng** của mình trong trang Hồ Sơ Sĩ Tử (khác với đổi Môn Phái vốn có modal toàn cục §1.3). Tiến trình của mỗi tầng được bảo lưu riêng khi rời tầng và khôi phục khi quay lại.
 *   **Cơ cấu Tầng Lớp 9:** giữ nguyên 9 môn phái — 3 môn **Yêu Cầu Cao** (Toán, Văn, Anh — bám tuyển sinh 10) + 6 môn **Yêu Cầu Cơ Bản** (§1.3).
 

@@ -5,7 +5,7 @@ import type { Question } from '../types/game';
 import { INITIAL_LESSONS } from '../data/lessons';
 import { ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../data/englishExamBlueprint';
 import { MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
-import { LITERATURE_TASK_LABELS, LITERATURE_TEXT_GENRE_LABELS } from '../data/literatureExamBlueprint';
+import { getAssessmentProvider, getQuestionPresentation, getSubjectHint } from '../subject-modules/registry';
 import { Scratchpad } from './Scratchpad';
 const BikiHinhHocPhang = lazy(() => import('./BikiHinhHocPhang').then(m => ({ default: m.BikiHinhHocPhang })));
 const Biki3DStudio = lazy(() => import('./Biki3DStudio').then(m => ({ default: m.Biki3DStudio })));
@@ -452,8 +452,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         const mathTopic = activeQuestion.metadata?.mathTopic;
         const englishTask = activeQuestion.metadata?.englishTask;
         const englishSkill = activeQuestion.metadata?.englishSkill;
-        const literatureTask = activeQuestion.metadata?.literatureTask;
-        const textGenre = activeQuestion.metadata?.textGenre;
+        const subjectHint = getSubjectHint(activeSectId, activeQuestion, mode);
 
         if (activeQuestion.type === 'mcq' && activeQuestion.options) {
           const correctOpt = Array.isArray(activeQuestion.correctAnswer)
@@ -482,13 +481,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           } else {
             setRevealedHint(`Gợi ý${skillLabel ? ` (${skillLabel})` : ''}: Tập trung vào dạng ${taskLabel.toLowerCase()} và quy tắc ngữ pháp liên quan.`);
           }
-        } else if (activeSectId === 'literature' && literatureTask === 'social-essay') {
-          const steps = activeQuestion.metadata?.solutionSteps || [];
-          setRevealedHint(`Gợi ý: Bám bố cục nghị luận, dựng dàn ý rõ ràng${steps[0] ? `, bắt đầu từ "${steps[0]}"` : ''}.`);
-        } else if (activeSectId === 'literature' && literatureTask) {
-          const genreLabel = textGenre ? LITERATURE_TEXT_GENRE_LABELS[textGenre] || textGenre : '';
-          const taskLabel = LITERATURE_TASK_LABELS[literatureTask] || literatureTask;
-          setRevealedHint(`Gợi ý${genreLabel ? ` (${genreLabel})` : ''}: Tập trung vào ý ${taskLabel.toLowerCase()} và nêu đúng chi tiết trọng tâm.`);
+        } else if (subjectHint) {
+          setRevealedHint(subjectHint);
         } else if (answerMode === 'proof' || activeQuestion.type === 'proof') {
           setRevealedHint('Gợi ý: Đi từ giả thiết, dựng hình hoặc biến đổi trung gian rồi mới chốt.');
         } else if (answerMode === 'multi-part' || activeQuestion.type === 'multi-part') {
@@ -542,7 +536,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       return { isCorrect: computedIsCorrect, scoreRatio: computedScoreRatio };
     };
 
-    const isLiteratureRubric = activeSectId === 'literature' && activeQuestion.category === 'literature-writing';
+    const assessmentProvider = getAssessmentProvider(activeSectId, activeQuestion);
 
     if (activeQuestion.type === 'mcq') {
       const correctAnsStr = Array.isArray(activeQuestion.correctAnswer)
@@ -555,7 +549,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       setAiFeedback('');
       setAiSuggestions([]);
       setAiWarningMessage('');
-    } else if (isLiteratureRubric) {
+    } else if (assessmentProvider) {
       setIsAiGrading(true);
       setLastRubricScore(null);
       setLastRubricMissing([]);
@@ -569,43 +563,22 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         if (!token) throw new Error('No auth token available');
 
         const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-        const answers = Array.isArray(activeQuestion.correctAnswer)
-          ? activeQuestion.correctAnswer
-          : [activeQuestion.correctAnswer];
-        
-        const res = await fetch(`${backendUrl}/api/ai/grade-literature`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'X-Profile-Id': localStorage.getItem('ge10_selected_profile_id') || ''
-          },
-          body: JSON.stringify({
-            promptText: activeQuestion.prompt,
-            essay: typedAnswer,
-            keywords: answers,
-            rubric: activeQuestion.metadata?.solutionSteps || []
-          })
+        const assessmentResult = await assessmentProvider.assess({
+          question: activeQuestion,
+          answer: typedAnswer,
+          token,
+          profileId: localStorage.getItem('ge10_selected_profile_id') || '',
+          backendUrl,
         });
-
-        if (!res.ok) {
-          const errText = await res.text().catch(() => '');
-          throw new Error(`API error: ${res.status} ${errText}`);
-        }
-
-        data = await res.json();
+        data = { result: assessmentResult };
         if (currentQuestionIdRef.current !== questionIdBeingGraded) return;
-        if (data.success && data.result) {
-          const { score, missingKeywords = [], feedback = '', suggestions = [] } = data.result;
-          scoreRatio = score / 10;
-          isCorrect = scoreRatio >= 0.6;
-          setLastRubricScore(score);
-          setLastRubricMissing(missingKeywords);
-          setAiFeedback(feedback);
-          setAiSuggestions(suggestions);
-        } else {
-          throw new Error('Invalid response structure');
-        }
+        const { score, missingKeywords, feedback, suggestions } = assessmentResult;
+        scoreRatio = score / 10;
+        isCorrect = scoreRatio >= 0.6;
+        setLastRubricScore(score);
+        setLastRubricMissing(missingKeywords);
+        setAiFeedback(feedback);
+        setAiSuggestions(suggestions);
       } catch (err: any) {
         if (currentQuestionIdRef.current !== questionIdBeingGraded) return;
         console.error('Lỗi khi gọi AI chấm bài, chuyển sang backup:', err);
@@ -895,13 +868,10 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     return <div className="text-center py-10 font-orbitron text-theme-text-info">Đang rút câu vào ải...</div>;
   }
 
-  const isLitSplit = activeSectId === 'literature' && activeQuestion.prompt.includes('\n\n');
-  const passageText = isLitSplit 
-    ? activeQuestion.prompt.split('\n\n').slice(0, -1).join('\n\n')
-    : '';
-  const questionText = isLitSplit 
-    ? activeQuestion.prompt.split('\n\n').slice(-1)[0]
-    : activeQuestion.prompt;
+  const questionPresentation = getQuestionPresentation(activeSectId, activeQuestion);
+  const isSplitPassage = questionPresentation.splitPassage;
+  const passageText = questionPresentation.passageText;
+  const questionText = questionPresentation.questionText;
 
   const isGeometry = activeQuestion.subject === 'math' && (
     (activeQuestion.category || '').toLowerCase().includes('geometry') ||
@@ -941,7 +911,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         />
       );
     }
-    if (activeSectId === 'literature' && activeQuestion.category === 'literature-writing') {
+    if (getAssessmentProvider(activeSectId, activeQuestion)) {
       return (
         <QuestionEssay
           typedAnswer={typedAnswer}
@@ -990,7 +960,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       </div>
 
       {/* Content Area */}
-      {isLitSplit ? (
+      {isSplitPassage ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
           {/* Passage Column */}
           <div className="glass-panel border border-synth-orange/30 p-4 rounded-xl space-y-2 bg-synth-orange/5 max-h-[220px] md:max-h-[350px] overflow-y-auto shadow-[0_0_15px_rgba(255,165,0,0.05)]">

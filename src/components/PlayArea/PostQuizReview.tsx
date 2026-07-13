@@ -7,6 +7,8 @@ import { QuestionTextInput } from './QuestionTextInput';
 import { ExplanationBox } from './ExplanationBox';
 import { useGameState } from '../../hooks/useGameState';
 import { isLightTheme } from '../../theme/uiThemes';
+import { getAssessmentProvider } from '../../subject-modules/registry';
+import type { SubjectId } from '../../types/game';
 
 export interface PostQuizReviewProps {
   mode: string;
@@ -211,7 +213,7 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
   const reviewItem = reviewData[selectedReviewIndex];
   const q = reviewItem.question;
   const isMcq = q.type === 'mcq';
-  const isEssay = activeSectId === 'literature' && q.category === 'literature-writing';
+  const isEssay = Boolean(getAssessmentProvider(activeSectId as SubjectId, q));
   const isTextInput = q.type === 'short-answer' || q.type === 'text_input';
 
   return (

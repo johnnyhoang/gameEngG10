@@ -61,6 +61,11 @@ Quy trình thêm hoặc đổi thuật ngữ:
 | **Thẻ Chuyên Cần** 🛡️ | Attendance Protection Card | `badges`, `buyStreakShield` | Item/action | Bảo vệ chuỗi học tập khi bỏ lỡ một ngày. | APPROVED |
 | **Bậc Học** 🗼 | Grade Tier | `gradeTier` | Context | Lớp học hiện hành và ranh giới cô lập dữ liệu cao nhất. | APPROVED |
 | **Ngữ Cảnh Học Tập** | Learning Context | `LearningContext`, `gradeTier`, `subjectId` | Technical/product concept | Cặp Bậc Học và Môn học đang được chọn; toàn bộ app dùng cặp này để lọc nội dung, tiến trình và capability bằng implementation chung. | PROVISIONAL |
+| **Mô-đun Chuyên Môn** | Subject Module | `SubjectModule` | Architecture/module | Gói build-time thuộc một môn, đóng góp feature chuyên môn vào các điểm gắn chuẩn của app mà không sở hữu app shell. | APPROVED |
+| **Công Cụ Chuyên Môn** | Subject Tool | `SubjectToolContribution`, `subject-tool` | Tool contribution | Công cụ tương tác chuyên sâu của một môn, ví dụ các Xưởng Toán. | APPROVED |
+| **Hoạt Động Chuyên Môn** | Subject Activity | `SubjectActivityContribution`, `subject-activity` | Activity contribution | Luồng luyện tập có nghiệp vụ riêng của môn, ví dụ Đọc hiểu hoặc Viết nghị luận Văn. | APPROVED |
+| **Bộ Đánh Giá Chuyên Môn** | Assessment Provider | `AssessmentProviderContribution`, `assessment-provider` | Service contribution | Bộ nhận diện và chấm một dạng bài đặc thù, ví dụ chấm bài Văn theo rubric. | APPROVED |
+| **Bộ Hiển Thị Câu Hỏi Chuyên Môn** | Question Renderer | `QuestionRendererContribution`, `question-renderer` | UI contribution | Quy tắc trình bày câu hỏi đặc thù như tách ngữ liệu đọc hiểu khỏi yêu cầu trả lời. | APPROVED |
 | **Danh Mục Quà Khuyến Học** 🎁 | Learning Reward Catalog | `parentReward`, `rewardQuantity`, `markRewardDelivered` | Feature | Danh mục quà ngoài đời do người quản lý tạo, định lượng và xác nhận trao. | APPROVED |
 | **Phút Đèn Sách** ⏱️ | Learning Minutes | `learningMinutes`, `estimatedMinutes` | Metric | Tổng thời gian học, chỉ số North Star. | APPROVED |
 | **Bảng Bài Tập** 📜 | Assigned Learning Tasks | `parentQuest` | Feature | Nhiệm vụ học tập do người quản lý giao cho Sĩ Tử. | APPROVED |

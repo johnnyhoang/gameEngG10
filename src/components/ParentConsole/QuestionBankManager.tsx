@@ -4,7 +4,7 @@ import type { Question, SubjectId } from '../../types/game';
 import { SUBJECTS_CONFIG } from '../../types/game';
 import { ENGLISH_EXAM_BLUEPRINT, ENGLISH_TASK_LABELS } from '../../data/englishExamBlueprint';
 import { MATH_EXAM_BLUEPRINT, MATH_TOPIC_LABELS } from '../../data/mathExamBlueprint';
-import { LITERATURE_EXAM_BLUEPRINT, LITERATURE_TASK_LABELS } from '../../data/literatureExamBlueprint';
+import { getSubjectQuestionMetadata } from '../../subject-modules/registry';
 import { toast } from '../../utils/toast';
 import { supabase } from '../../utils/supabaseClient';
 import { isGatekeeperEligible, getGatekeeperCoverageStats } from '../../utils/gatekeeper';
@@ -37,26 +37,24 @@ const QUESTION_TYPE_LABELS: Record<Question['type'], string> = {
 
 const ENGLISH_PART_LABELS = Object.fromEntries(ENGLISH_EXAM_BLUEPRINT.map(part => [part.part, part.title])) as Record<string, string>;
 const MATH_PART_LABELS = Object.fromEntries(MATH_EXAM_BLUEPRINT.map(part => [part.part, part.title])) as Record<string, string>;
-const LITERATURE_PART_LABELS = Object.fromEntries(LITERATURE_EXAM_BLUEPRINT.map(part => [part.part, part.title])) as Record<string, string>;
 
 const humanizeKey = (value: string) => value.replace(/-/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase());
 
 const getExamPartLabel = (question: Question) => {
   const part = question.metadata?.examPart?.trim();
   if (!part) return 'Chưa gắn part';
+  const moduleLabel = getSubjectQuestionMetadata(question.subject as SubjectId)?.getExamPartLabel(question);
+  if (moduleLabel) return moduleLabel;
   if (question.subject === 'math') return MATH_PART_LABELS[part] ? `${part} - ${MATH_PART_LABELS[part]}` : part;
-  if (question.subject === 'literature') return LITERATURE_PART_LABELS[part] ? `${part} - ${LITERATURE_PART_LABELS[part]}` : part;
   return ENGLISH_PART_LABELS[part] ? `${part} - ${ENGLISH_PART_LABELS[part]}` : part;
 };
 
 const getTopicLabel = (question: Question) => {
+  const moduleLabel = getSubjectQuestionMetadata(question.subject as SubjectId)?.getTopicLabel(question);
+  if (moduleLabel) return moduleLabel;
   if (question.subject === 'math') {
     const topic = question.metadata?.mathTopic || question.category;
     return MATH_TOPIC_LABELS[topic as keyof typeof MATH_TOPIC_LABELS] || humanizeKey(topic || 'Chưa phân loại');
-  }
-  if (question.subject === 'literature') {
-    const topic = question.metadata?.literatureTask || question.category;
-    return LITERATURE_TASK_LABELS[topic as keyof typeof LITERATURE_TASK_LABELS] || humanizeKey(topic || 'Chưa phân loại');
   }
   const topic = question.metadata?.englishTask || question.category;
   return ENGLISH_TASK_LABELS[topic as keyof typeof ENGLISH_TASK_LABELS] || humanizeKey(topic || 'Chưa phân loại');

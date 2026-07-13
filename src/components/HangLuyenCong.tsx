@@ -23,7 +23,7 @@ import type { Lesson } from '../data/lessons';
 import { FogCard } from './FogCard';
 import { Level3Overlay } from './Level3Overlay';
 import { LessonStudyView } from './LessonStudyView';
-import { hasSubjectCapability } from '../config/subjectCapabilities';
+import { getSubjectActivities, getSubjectToolIds } from '../subject-modules/registry';
 
 const getElementalDungeon = (lesson: Lesson): 'fire' | 'ice' | 'stone' => {
   const t = (lesson.topic || '').toLowerCase();
@@ -341,6 +341,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   }, [currentUser?.id, noteText]);
 
   const selectedSubject: HangSubjectId = activeSectId as HangSubjectId;
+  const subjectToolIds = getSubjectToolIds(selectedSubject);
 
   const subjectQuestions = useMemo(() => {
     return questions.filter(q =>
@@ -359,10 +360,10 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
     const allowedCategories: Record<string, string[]> = {
       english: ['grammar', 'passive-voice', 'relative-clauses', 'tenses', 'rewrite', 'reading', 'cloze', 'vocabulary', 'wordform', 'pronunciation', 'stress'],
       math: ['parabol-line', 'viet-relation', 'real-equations', 'real-geometry', 'real-finance', 'plane-geometry'],
-      literature: ['literature-vietnamese', 'literature-reading-poetry', 'literature-reading-prose', 'literature-reading-argument', 'literature-writing']
     };
 
-    const targetCategories = allowedCategories[selectedSubject] || Array.from(new Set(
+    const moduleCategories = getSubjectActivities(selectedSubject).flatMap(activity => activity.categories);
+    const targetCategories = moduleCategories.length > 0 ? [...new Set(moduleCategories)] : allowedCategories[selectedSubject] || Array.from(new Set(
       subjectQuestions.map(q => q.category)
     )).filter(Boolean);
 
@@ -436,14 +437,14 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
         <div className="space-y-6">
           
           {/* Kho Nền Tảng tương tác - chỉ dành cho Toán */}
-          {hasSubjectCapability(selectedSubject, 'math-foundation-studios') && (
+          {subjectToolIds.length > 0 && (
             <div className="glass-panel rounded-2xl border border-white/10 p-5 bg-black/20">
               <h2 className="font-orbitron font-black text-xs text-synth-cyan uppercase tracking-wider mb-3 flex items-center gap-2">
                 <Target className="w-4 h-4 text-synth-cyan" />
                 Kho Nền Tảng tương tác trực quan
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {MAT_THAT_CARDS.map(card => {
+                {MAT_THAT_CARDS.filter(card => subjectToolIds.includes(card.id)).map(card => {
                   const onOpen = card.id === 'biki3d'
                     ? onOpenMatThat3D
                     : card.id === 'bikiplane'

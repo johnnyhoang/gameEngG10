@@ -13,6 +13,7 @@ import { eventBus } from '../../utils/EventBus';
 import { toast } from '../../utils/toast';
 import { computeSubjectMasteryRatio, getMasteryRankByRatio } from '../../utils/masteryRank';
 import { playerService } from '../../services/playerService';
+import { getSubjectActivities } from '../../subject-modules/registry';
 
 export const createPlayerSlice: StateCreator<
   StoreState,
@@ -885,16 +886,13 @@ export const createPlayerSlice: StateCreator<
             } else {
               categoriesPool.push('parabol-line', 'viet-relation', 'linear-function', 'growth-modeling', 'percentage-discount', 'volume-displacement', 'shopping-discount', 'real-equations', 'real-geometry', 'real-finance', 'plane-geometry', 'tangent-geometry');
             }
-          } else if (state.currentSubject === 'literature') {
-            if (mode === 'grammar') {
-              categoriesPool.push('literature-vietnamese');
-            } else if (mode === 'reading') {
-              categoriesPool.push('literature-reading-poetry', 'literature-reading-prose', 'literature-reading-argument');
-            } else if (mode === 'vocabulary') {
-              categoriesPool.push('literature-writing');
-            } else {
-              categoriesPool.push('literature-vietnamese', 'literature-reading-poetry', 'literature-reading-prose', 'literature-reading-argument', 'literature-writing');
-            }
+          } else if (getSubjectActivities(state.currentSubject).length > 0) {
+            const activities = getSubjectActivities(state.currentSubject);
+            const activity = activities.find(item => item.id === mode || item.legacyMode === mode);
+            const categories = mode === 'mixed'
+              ? activities.flatMap(item => item.categories)
+              : activity?.categories ?? [];
+            categoriesPool.push(...new Set(categories));
           } else if (state.currentSubject === 'english') {
             if (mode === 'grammar') {
               categoriesPool.push('grammar', 'passive-voice', 'relative-clauses', 'tenses', 'rewrite');

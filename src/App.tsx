@@ -15,7 +15,7 @@ import { GatekeeperModal } from './components/GatekeeperModal';
 import { ProfileSelectionScreen } from './components/ProfileSelectionScreen';
 import { GlobalSectModal } from './components/GlobalSectModal';
 import { LogoutConfirmModal } from './components/Common/LogoutConfirmModal';
-import { hasSubjectCapability } from './config/subjectCapabilities';
+import { getSubjectToolIds } from './subject-modules/registry';
 
 // Helper decorator to encapsulate Suspense for each lazy component individually, avoiding app-wide unmount loops
 const withSuspense = <P extends object>(
@@ -72,7 +72,7 @@ function App() {
 
   useEffect(() => {
     const mathOnlyScreens = new Set(['hang-3d', 'hang-plane', 'hang-graph']);
-    if (!hasSubjectCapability(activeSectId, 'math-foundation-studios') && mathOnlyScreens.has(screen)) {
+    if (getSubjectToolIds(activeSectId).length === 0 && mathOnlyScreens.has(screen)) {
       setScreen('hang');
     }
   }, [activeSectId, screen]);

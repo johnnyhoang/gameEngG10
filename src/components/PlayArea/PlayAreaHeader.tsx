@@ -3,7 +3,8 @@ import { Volume2, VolumeX, Flame } from 'lucide-react';
 import type { PlayAreaHeaderProps } from './types';
 import { ENGLISH_ANSWER_MODE_LABELS, ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../../data/englishExamBlueprint';
 import { MATH_ANSWER_MODE_LABELS } from '../../data/mathExamBlueprint';
-import { LITERATURE_ANSWER_MODE_LABELS, LITERATURE_TASK_LABELS, LITERATURE_TEXT_GENRE_LABELS } from '../../data/literatureExamBlueprint';
+import { getQuestionPresentation, hasSubjectUtility } from '../../subject-modules/registry';
+import type { SubjectId } from '../../types/game';
 
 export const PlayAreaHeader: React.FC<PlayAreaHeaderProps> = ({
   modeLabel,
@@ -18,6 +19,8 @@ export const PlayAreaHeader: React.FC<PlayAreaHeaderProps> = ({
   onShowScratchpad,
   formatTime
 }) => {
+  const subjectId = activeSectId as SubjectId;
+  const modulePresentation = getQuestionPresentation(subjectId, activeQuestion);
   return (
     <div className="flex justify-between items-center border-b border-synth-gray pb-4">
       <div className="flex flex-col">
@@ -30,11 +33,9 @@ export const PlayAreaHeader: React.FC<PlayAreaHeaderProps> = ({
               {activeQuestion.metadata.examPart}
             </span>
           )}
-          {activeQuestion.metadata?.answerMode && (
+          {activeQuestion.metadata?.answerMode && activeQuestion.subject !== 'literature' && (
             <span className="text-[10px] px-2 py-0.5 rounded-full bg-synth-cyan/15 border border-synth-cyan/30 text-synth-cyan font-orbitron font-bold uppercase tracking-wider">
-              {(activeQuestion.subject === 'literature'
-                ? LITERATURE_ANSWER_MODE_LABELS
-                : activeQuestion.subject === 'english'
+              {(activeQuestion.subject === 'english'
                 ? ENGLISH_ANSWER_MODE_LABELS
                 : MATH_ANSWER_MODE_LABELS)[activeQuestion.metadata.answerMode] || activeQuestion.metadata.answerMode}
             </span>
@@ -54,16 +55,17 @@ export const PlayAreaHeader: React.FC<PlayAreaHeaderProps> = ({
               {ENGLISH_SKILL_LABELS[activeQuestion.metadata.englishSkill] || activeQuestion.metadata.englishSkill}
             </span>
           )}
-          {activeQuestion.metadata?.literatureTask && activeSectId === 'literature' && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-synth-orange/15 border border-synth-orange/30 text-synth-orange font-orbitron font-bold uppercase tracking-wider">
-              {LITERATURE_TASK_LABELS[activeQuestion.metadata.literatureTask] || activeQuestion.metadata.literatureTask}
+          {modulePresentation.metadataLabels?.map((label, index) => (
+            <span key={`${label.value}-${index}`} className={`text-[10px] px-2 py-0.5 rounded-full border font-orbitron font-bold uppercase tracking-wider ${
+              label.tone === 'accent'
+                ? 'bg-synth-orange/15 border-synth-orange/30 text-synth-orange'
+                : label.tone === 'primary'
+                  ? 'bg-synth-cyan/15 border-synth-cyan/30 text-synth-cyan'
+                  : 'bg-white/5 border-white/10 text-white'
+            }`}>
+              {label.value}
             </span>
-          )}
-          {activeQuestion.metadata?.textGenre && activeSectId === 'literature' && (
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 border border-white/10 text-white font-orbitron font-bold uppercase tracking-wider">
-              {LITERATURE_TEXT_GENRE_LABELS[activeQuestion.metadata.textGenre] || activeQuestion.metadata.textGenre}
-            </span>
-          )}
+          ))}
         </div>
         <span className="text-sm font-semibold text-white">
           Câu {currentIndex + 1}/{totalQuestions}
@@ -84,7 +86,7 @@ export const PlayAreaHeader: React.FC<PlayAreaHeaderProps> = ({
         </button>
 
         {/* Bảng Nháp button */}
-        {(activeSectId === 'math' || activeSectId === 'literature') && (
+        {hasSubjectUtility(subjectId, 'scratchpad') && (
           <button
             onClick={onShowScratchpad}
             className="px-2.5 py-1 rounded bg-synth-magenta/20 border border-synth-magenta/40 hover:bg-synth-magenta/40 text-[10px] text-synth-magenta font-bold cursor-pointer transition-colors font-orbitron"

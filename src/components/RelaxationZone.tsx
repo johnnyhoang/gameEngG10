@@ -5,7 +5,7 @@ import { useGameState } from '../hooks/useGameState';
 import { FogCard, getFogStatus } from './FogCard';
 import { Level3Overlay } from './Level3Overlay';
 import { toast } from '../utils/toast';
-import { hasSubjectCapability } from '../config/subjectCapabilities';
+import { getSubjectMiniGameIds } from '../subject-modules/registry';
 
 // Năng Lượng tiêu hao mỗi ván mini-game Công Viên Thư Giãn có sinh điểm (SUB_SPEC_ENERGY §3).
 const MINIGAME_ENERGY_COST = 10;
@@ -195,6 +195,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
   const consumeEnergy = useGameState(state => state.useEnergy);
 
   const [activeGame, setActiveGame] = useState<GameCard | null>(null);
+  const subjectMiniGameIds = getSubjectMiniGameIds(activeSectId);
 
   const handleOpenGame = (game: GameCard) => {
     if (game.costsEnergy !== false) {
@@ -277,12 +278,12 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
           borderClass={isUnicorn ? 'border-blue-200/40' : 'border-blue-500/15'}
         />
 
-        {hasSubjectCapability(activeSectId, 'english-skill-districts') && (
+        {subjectMiniGameIds.length > 0 && (
           <CanhSection
             icon="🇬🇧"
             label="English Skill Districts"
             desc="English-only practice spaces for phrases, conversation, writing and listening"
-            games={ENGLISH_SKILL_DISTRICTS}
+            games={ENGLISH_SKILL_DISTRICTS.filter(game => subjectMiniGameIds.includes(game.id))}
             onOpenGame={handleOpenGame}
             lowEnergy={player.energy < MINIGAME_ENERGY_COST}
             isUnicorn={isUnicorn}

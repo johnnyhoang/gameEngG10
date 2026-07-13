@@ -161,10 +161,10 @@ export async function seedTopicsAndActivities(pool: Pool) {
     { id: 'act-quiz-math-solid', topic_id: 'math-solid', title: 'Hình học không gian', config: { mode: 'mixed', reward: 'Hình trụ · Hình nón · Hình cầu · Công thức thể tích' } },
 
     // Literature
-    { id: 'act-quiz-lit-read', topic_id: 'lit-reading', title: 'Đọc hiểu văn bản', config: { mode: 'grammar', reward: 'Ý nghĩa nhan đề · Biện pháp tu từ · Hình ảnh biểu tượng · Thông điệp tác phẩm' } },
-    { id: 'act-quiz-lit-vn', topic_id: 'lit-vietnamese', title: 'Tiếng Việt', config: { mode: 'reading', reward: 'Từ loại · Câu ghép · Phép nối · Biện pháp tu từ' } },
-    { id: 'act-quiz-lit-essay', topic_id: 'lit-essay', title: 'Viết đoạn và bài nghị luận', config: { mode: 'vocabulary', reward: 'Mở đoạn · Luận điểm · Dẫn chứng · Kết đoạn' } },
-    { id: 'act-quiz-lit-lit', topic_id: 'lit-analysis', title: 'Nghị luận văn học', config: { mode: 'mixed', reward: 'Dàn ý · Dẫn thơ · Phân tích chi tiết · Giọng điệu nghệ thuật' } },
+    { id: 'act-quiz-lit-read', topic_id: 'lit-reading', title: 'Đọc hiểu văn bản', config: { activityId: 'literature-reading', legacyMode: 'reading', reward: 'Ý nghĩa nhan đề · Biện pháp tu từ · Hình ảnh biểu tượng · Thông điệp tác phẩm' } },
+    { id: 'act-quiz-lit-vn', topic_id: 'lit-vietnamese', title: 'Tiếng Việt', config: { activityId: 'literature-vietnamese', legacyMode: 'grammar', reward: 'Từ loại · Câu ghép · Phép nối · Biện pháp tu từ' } },
+    { id: 'act-quiz-lit-essay', topic_id: 'lit-essay', title: 'Viết đoạn và bài nghị luận', config: { activityId: 'literature-social-essay', legacyMode: 'vocabulary', reward: 'Mở đoạn · Luận điểm · Dẫn chứng · Kết đoạn' } },
+    { id: 'act-quiz-lit-lit', topic_id: 'lit-analysis', title: 'Nghị luận văn học', config: { activityId: 'literature-literary-essay', legacyMode: 'mixed', reward: 'Dàn ý · Dẫn thơ · Phân tích chi tiết · Giọng điệu nghệ thuật' } },
 
     // Science
     { id: 'act-quiz-sci-phys', topic_id: 'sci-physics', title: 'Vật lý Luyện tập', config: { mode: 'mixed', reward: 'Điện trở · Định luật Ôm · Thấu kính hội tụ' } },

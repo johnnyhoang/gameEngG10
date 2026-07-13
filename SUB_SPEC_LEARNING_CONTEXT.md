@@ -29,6 +29,8 @@ item.gradeTier === context.gradeTier && item.subjectId === context.subjectId
 - Page/component chỉ nhận `LearningContext` hoặc đọc selector chuẩn; không tự đặt default grade/subject cục bộ.
 - Danh sách Bậc Học/Môn học khả dụng được suy ra từ content/capability registry hoặc cấu hình admin, không hardcode `active/coming_soon` trong component.
 - Feature chuyên môn phải khai báo capability theo môn và chỉ xuất hiện khi context hiện tại khớp. Tiếng Anh có `Phrase Valley`, `Conversation Town`, `Writing Pavilion`, `Listening Lake`; Toán có `Xưởng Toán Hình 3D`, `Xưởng Toán Hình`, `Xưởng Toán Đồ Thị`. Không tạo app shell riêng cho môn.
+- Mọi capability chuyên môn phải được cung cấp qua `SubjectModule` manifest; component lõi không tự kiểm tra `subjectId === ...` để quyết định feature, renderer hoặc bộ chấm.
+- Ngữ Văn cung cấp blueprint/metadata đề Văn, renderer ngữ liệu đọc hiểu, gợi ý theo dạng bài và assessment provider chấm bài viết theo rubric.
 - Grade/môn không có dữ liệu hoặc capability không xuất hiện trong selector/navigation; không duy trì danh sách `active/coming_soon` hardcode.
 
 ## 3. Backend/API
@@ -70,5 +72,6 @@ Mọi endpoint phải:
 - Không có fallback chéo grade/subject hoặc default `9/english` im lặng tại consumer.
 - Thêm một grade mới chỉ cần nạp content/config; không tạo component/hook/route/type mới.
 - Thêm một subject mới chỉ cần nạp config/content/capability; app shell không đổi.
+- Thêm, gỡ hoặc phát triển độc lập một feature chuyên môn chỉ sửa module sở hữu và registry; không thêm nhánh môn mới vào `PlayArea`, navigation hoặc mini-game hub.
 - Refresh/login giữ đúng context theo profile; chuyển context không làm rò state/cache/progress.
 - Contract tests bao phủ ít nhất hai grade × ba subject và negative test chống truy cập chéo profile/context.
