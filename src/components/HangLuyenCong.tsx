@@ -328,6 +328,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
 
   const [noteText, setNoteText] = useState('');
   const [overlayLessonId, setOverlayLessonId] = useState<string | null>(null);
+  const [visibleLessonCounts, setVisibleLessonCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     if (!currentUser?.id) return;
@@ -355,6 +356,28 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
       l.subject === selectedSubject && (l.gradeTier ?? 9) === activeGradeTier
     );
   }, [lessons, selectedSubject, activeGradeTier]);
+
+  useEffect(() => {
+    setVisibleLessonCounts({ fire: 6, ice: 6, stone: 6 });
+  }, [selectedSubject, activeGradeTier]);
+
+  useEffect(() => {
+    const sentinels = document.querySelectorAll<HTMLElement>('[data-lesson-load-more]');
+    if (sentinels.length === 0) return;
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        const category = (entry.target as HTMLElement).dataset.lessonLoadMore;
+        if (!category) return;
+        setVisibleLessonCounts(current => ({
+          ...current,
+          [category]: (current[category] ?? 6) + 6
+        }));
+      });
+    }, { rootMargin: '120px 0px' });
+    sentinels.forEach(sentinel => observer.observe(sentinel));
+    return () => observer.disconnect();
+  }, [visibleLessonCounts, subjectLessons]);
 
   const sampleQuestions = useMemo(() => {
     const allowedCategories: Record<string, string[]> = {
@@ -479,7 +502,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
           )}
 
           {/* Elemental Dungeons List */}
-          <div className="glass-panel rounded-2xl border border-white/10 p-5 space-y-4">
+          <div className="glass-panel rounded-2xl border border-white/10 p-3 space-y-3">
             <div>
               <h2 className="font-orbitron font-black text-sm text-white uppercase tracking-wider">
                 {track.lessonTitle}
@@ -489,7 +512,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
               </p>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-3">
               {[
                 { id: 'fire', label: '🔥 Hỏa Hầm', desc: 'Phản xạ nhanh, ghi nhớ ngắn hạn', bg: 'bg-orange-500/[0.02] border-orange-500/15 text-orange-400' },
                 { id: 'ice', label: '❄️ Băng Hầm', desc: 'Suy luận logic sâu, điềm tĩnh', bg: 'bg-cyan-500/[0.02] border-cyan-500/15 text-synth-cyan' },
@@ -499,8 +522,8 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                 if (dungeonLessons.length === 0) return null;
 
                 return (
-                  <div key={dungeon.id} className={`rounded-xl border p-4 ${dungeon.bg}`}>
-                    <div className="mb-3 flex justify-between items-center border-b border-white/5 pb-2">
+                  <div key={dungeon.id} className={`rounded-xl border p-2.5 ${dungeon.bg}`}>
+                    <div className="mb-2 flex justify-between items-center border-b border-white/5 pb-1.5">
                       <div>
                         <h3 className="font-orbitron font-black text-xs uppercase tracking-wider text-white">{dungeon.label}</h3>
                         <p className="text-[9px] text-slate-400 tracking-wider mt-0.5">{dungeon.desc}</p>
@@ -508,8 +531,8 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                       <span className="text-[10px] text-slate-400 font-orbitron">{dungeonLessons.length} Chuyên đề</span>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {dungeonLessons.map(lesson => {
+                    <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-2">
+                      {dungeonLessons.slice(0, visibleLessonCounts[dungeon.id] ?? 6).map(lesson => {
                         const isCompleted = lessonsProgress[lesson.id] || false;
                         return (
                           <div key={lesson.id} className="relative h-full w-full">
@@ -520,10 +543,10 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                               label="Bài học chưa trải nghiệm"
                               onOpenLevel3={() => setOverlayLessonId(lesson.id)}
                             >
-                              <div className={`rounded-xl border p-4 flex flex-col justify-between gap-4 transition-all duration-200 h-full bg-black/40 ${
+                              <div className={`rounded-lg border p-2.5 flex flex-col justify-between gap-2 transition-all duration-200 h-full bg-black/40 ${
                                 isCompleted ? 'border-synth-cyan/20' : 'border-white/5 hover:border-white/20'
                               }`}>
-                                <div className="space-y-2">
+                                <div className="space-y-1.5">
                                   <div className="flex items-center justify-between gap-2">
                                     <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[8px] font-bold text-slate-400 uppercase tracking-wider">
                                       {lesson.topic}
@@ -541,7 +564,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                                   <h3 className="font-orbitron font-bold uppercase text-xs text-white tracking-wide leading-snug">
                                     {lesson.title}
                                   </h3>
-                                  <p className="text-[11px] text-slate-400 line-clamp-2 leading-relaxed">
+                                  <p className="text-[10px] text-slate-400 line-clamp-1 leading-snug">
                                     {lesson.theory.replace(/[#*`>]/g, '').trim()}
                                   </p>
                                 </div>
@@ -551,14 +574,14 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                                     e.stopPropagation();
                                     onStudyLesson(lesson.id);
                                   }}
-                                  className={`w-full inline-flex items-center justify-center gap-2 px-3 py-2 rounded-lg font-orbitron font-bold text-[10px] uppercase tracking-wider transition-all duration-300 cursor-pointer ${
+                                  className={`self-start inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-md font-orbitron font-bold text-[8px] uppercase tracking-wide transition-all duration-300 cursor-pointer ${
                                     isCompleted 
                                       ? 'border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
                                       : 'bg-gradient-to-r from-synth-cyan to-synth-purple text-black shadow-[0_0_10px_rgba(0,240,255,0.2)] hover:scale-[1.01]'
                                   }`}
                                 >
-                                  {isCompleted ? 'Học lại bài 🎓' : 'Học bài ngay 📖'}
-                                  <ArrowRight className="w-3.5 h-3.5" />
+                                  {isCompleted ? 'Học lại' : 'Học bài'}
+                                  <ArrowRight className="w-3 h-3" />
                                 </button>
                               </div>
                             </FogCard>
@@ -566,6 +589,13 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                         );
                       })}
                     </div>
+                    {(visibleLessonCounts[dungeon.id] ?? 6) < dungeonLessons.length && (
+                      <div
+                        data-lesson-load-more={dungeon.id}
+                        className="h-1 w-full"
+                        aria-hidden="true"
+                      />
+                    )}
                   </div>
                 );
               })}

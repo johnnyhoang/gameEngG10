@@ -354,8 +354,6 @@ function App() {
           {screen === 'arena' && (
             <Arena
               onStartPlay={handleStartPlay}
-              onStudyLesson={handleStudyLessonFromMap}
-              onStartLessonPractice={handleStartLessonPracticeFromMap}
             />
           )}
 

@@ -155,11 +155,6 @@ export const createAuthSlice: StateCreator<
   },
 
   login: async (user) => {
-    // Mốc "vừa đăng nhập" để Heo chờ đủ 30 phút mới xuất hiện (PetStableOverlay).
-    // Phải ghi lại MỖI lần login, không chỉ lần đầu — nếu không, học viên đăng
-    // xuất rồi đăng nhập lại sau khi mốc cũ đã quá 30 phút sẽ thấy Heo xuất hiện ngay.
-    localStorage.setItem(`ge10_login_time:${user.id}`, Date.now().toString());
-
     if (user.id.startsWith('mock-')) {
       set((state: any) => {
         const resolvedTheme = state.uiThemesByUser[user.id] || DEFAULT_UI_THEME;
@@ -351,7 +346,6 @@ export const createAuthSlice: StateCreator<
     try {
       // 1. Clear all credentials from localStorage & sessionStorage immediately & synchronously
       try {
-        localStorage.removeItem('ge10_login_time');
         localStorage.removeItem('ge10_selected_profile_id');
 
         const keysToRemove: string[] = [];

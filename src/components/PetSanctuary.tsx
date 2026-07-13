@@ -5,6 +5,7 @@ import type { HistoryLog, PetStage } from '../types/game';
 import { FogCard } from './FogCard';
 
 const PET_STAGE_ORDER: PetStage[] = ['egg', 'baby', 'adult', 'legend'];
+const PET_NAME = 'Heo Maikawaii';
 
 const PET_STAGE_LABELS: Record<PetStage, string> = {
   egg: 'Mầm Nấm Sương Mai',
@@ -52,6 +53,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
 
   const [interacting, setInteracting] = useState(false);
   const [tickled, setTickled] = useState(false);
+  const [rubySpent, setRubySpent] = useState<{ amount: number; key: number } | null>(null);
   const [speech, setSpeech] = useState('Ủn ỉn... chào Sĩ Tử! Hôm nay ta cùng tinh tấn học tập nhé! 🌸');
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -93,6 +95,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
         const success = feedPet();
         if (success) {
           setInteracting(true);
+          setRubySpent({ amount: 10, key: Date.now() });
           setSpeech('Chao ôi... ngon quá! Ngon múp míp luôn á! Cảm ơn Sĩ Tử! 🍖🐷 (-10 Ruby)');
           onInteract?.();
           setTimeout(() => {
@@ -190,7 +193,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
       if (triggerReason === 'login') {
         setSpeech('Chào ngày mới, Sĩ Tử! ☀️ Hôm nay ta cùng tinh tấn học tập nhé! 🌸');
       } else if (triggerReason === 'idle') {
-        setSpeech('Dậy học tiếp thôi nàng ơi, sao ngồi im thin thít thế! Heo buồn ngủ lắm đó! 😴📚');
+        setSpeech('Nếu hôm nay Sĩ Tử bận hoặc mệt thì nghỉ ngơi đi nhé. Heo sẽ đưa Sĩ Tử rời viện nếu không chọn học tiếp. 🐷🌙');
       } else if (triggerReason === 'hunger') {
         setSpeech('Heo đói rã ruột rồi nè! Hãy cho Heo ăn bánh để Heo có sức đồng hành nhé! 🍖🐷');
       } else if (triggerReason === 'energy-depleted') {
@@ -236,7 +239,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
       return (
         <div 
           onClick={onClick}
-          className={`relative w-40 h-40 mx-auto flex flex-col justify-center items-center rounded-3xl ${glowClass} cursor-pointer`}
+          className={`relative w-48 h-48 mx-auto flex flex-col justify-center items-center rounded-3xl ${glowClass} cursor-pointer`}
         >
           <svg width="150" height="150" viewBox="0 0 200 200" className="w-full h-full">
             {/* Cotton Cloud */}
@@ -278,7 +281,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
       return (
         <div 
           onClick={onClick}
-          className={`relative w-40 h-40 mx-auto flex items-center justify-center rounded-full transition-all duration-200 ${glowClass} cursor-pointer ${
+          className={`relative w-48 h-48 mx-auto flex items-center justify-center rounded-full transition-all duration-200 ${glowClass} cursor-pointer ${
             isInteracting ? 'scale-105' : 'hover:scale-[1.02]'
           } ${isTickled ? 'animate-wiggle' : 'animate-float'}`}
         >
@@ -344,7 +347,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
       return (
         <div 
           onClick={onClick}
-          className={`relative w-40 h-40 mx-auto flex items-center justify-center rounded-full transition-all duration-200 ${glowClass} cursor-pointer ${
+          className={`relative w-48 h-48 mx-auto flex items-center justify-center rounded-full transition-all duration-200 ${glowClass} cursor-pointer ${
             isInteracting ? 'scale-105' : 'hover:scale-[1.02]'
           } ${isTickled ? 'animate-wiggle' : 'animate-float'}`}
         >
@@ -417,7 +420,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
     return (
       <div 
         onClick={onClick}
-        className={`relative w-40 h-40 mx-auto flex items-center justify-center rounded-full transition-all duration-200 ${glowClass} cursor-pointer ${
+        className={`relative w-48 h-48 mx-auto flex items-center justify-center rounded-full transition-all duration-200 ${glowClass} cursor-pointer ${
           isInteracting ? 'scale-105' : 'hover:scale-[1.02]'
         } ${isTickled ? 'animate-wiggle' : 'animate-float'}`}
       >
@@ -515,17 +518,26 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
               25% { transform: rotate(-6deg) scale(1.06); }
               75% { transform: rotate(6deg) scale(1.06); }
             }
+            @keyframes ruby-spent {
+              0% { opacity: 0; transform: translate(-50%, 0) scale(0.65); }
+              20% { opacity: 1; }
+              75% { opacity: 1; transform: translate(-50%, -42px) scale(1.45); }
+              100% { opacity: 0; transform: translate(-50%, -58px) scale(1.65); }
+            }
             .animate-float {
               animation: float 3.5s ease-in-out infinite;
             }
             .animate-wiggle {
               animation: wiggle 0.35s ease-in-out infinite;
             }
+            .animate-ruby-spent {
+              animation: ruby-spent 1.35s ease-out forwards;
+            }
           `}} />
 
           {/* Speech Bubble (Primary Communication Channel) */}
           <div className="relative w-full max-w-xs mb-3 z-10 select-none">
-            <div className={`border rounded-2xl px-4 py-3 text-xs leading-relaxed relative ${
+            <div className={`border rounded-[2rem] px-5 py-3 text-xs leading-relaxed relative ${
               isUnicorn 
                 ? 'border-violet-100 bg-white/95 text-violet-800 shadow-[0_4px_16px_rgba(192,132,252,0.12)]' 
                 : 'border-synth-magenta/30 bg-synth-bg/95 text-slate-200 shadow-[0_4px_16px_rgba(255,0,127,0.15)]'
@@ -543,26 +555,41 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
           {/* Floating Pet character (Visual Focus) */}
           <div className="relative my-2 select-none cursor-pointer transform hover:scale-105 active:scale-95 transition-transform duration-200 flex flex-col items-center">
             {renderPetAvatar()}
-            
-            {/* Small nameplate */}
-            <div className="mt-1">
-              <span className={`font-orbitron font-extrabold text-[10px] tracking-wider uppercase px-2.5 py-0.5 rounded-full ${
-                isUnicorn
-                  ? 'bg-violet-100/80 text-violet-800'
-                  : 'bg-synth-magenta/20 text-synth-magenta border border-synth-magenta/30'
-              }`}>
-                {pet.name} ({getStageTitle(pet.stage)})
+            {rubySpent && (
+              <span
+                key={rubySpent.key}
+                className="pointer-events-none absolute bottom-2 left-1/2 z-20 -translate-x-1/2 whitespace-nowrap font-orbitron font-black text-red-500 drop-shadow-[0_2px_4px_rgba(255,255,255,0.9)] animate-ruby-spent"
+                onAnimationEnd={() => setRubySpent(null)}
+              >
+                -{rubySpent.amount} Ruby
               </span>
-            </div>
+            )}
           </div>
 
           {/* Compact HUD Status Bar & Action Panel */}
-          <div className="w-full max-w-sm flex flex-col items-center gap-3 mt-3">
-            <div className={`w-full rounded-2xl px-4 py-2.5 flex items-center justify-between gap-3 border text-[11px] font-bold ${
+          <div className="w-full max-w-sm flex flex-col items-center gap-2 mt-2">
+            {/* Action button */}
+            <button
+              onClick={handleFeed}
+              disabled={interacting}
+              className={`w-auto min-w-36 px-5 py-1.5 rounded-full font-orbitron font-bold text-[9px] uppercase tracking-wide transition-all duration-300 disabled:opacity-50 cursor-pointer ${
+                isUnicorn
+                  ? 'bg-gradient-to-r from-fuchsia-400 to-violet-500 text-white shadow-md hover:brightness-105 hover:scale-[1.02] active:scale-[0.98]'
+                  : 'bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-border-cyan shadow-[0_0_10px_rgba(0,240,255,0.2)] hover:scale-[1.02] active:scale-[0.98]'
+              }`}
+            >
+              {interacting ? 'Đang cho ăn...' : 'Cho ăn (-10 Ruby)'}
+            </button>
+
+            <div className={`w-full rounded-2xl px-4 py-2.5 border text-[11px] font-bold ${
               isUnicorn
                 ? 'bg-white/80 border-violet-100/50 text-violet-800 shadow-sm'
                 : 'bg-synth-gray/50 border-white/5 text-slate-300'
             }`}>
+              <div className="mb-2 text-center font-orbitron text-[10px] font-extrabold uppercase tracking-wider">
+                {PET_NAME} ({getStageTitle(pet.stage)})
+              </div>
+              <div className="flex items-center justify-between gap-3">
               {/* Level */}
               <div className="flex items-center gap-1.5" title="Cấp độ">
                 <span className="text-sm">👑</span>
@@ -597,20 +624,8 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
                 <span className="text-sm">⚡</span>
                 <span>{pet.energy}</span>
               </div>
+              </div>
             </div>
-
-            {/* Action button */}
-            <button
-              onClick={handleFeed}
-              disabled={interacting}
-              className={`w-full py-2.5 rounded-full font-orbitron font-bold text-xs uppercase tracking-wider transition-all duration-300 disabled:opacity-50 cursor-pointer ${
-                isUnicorn
-                  ? 'bg-gradient-to-r from-fuchsia-400 to-violet-500 text-white shadow-md hover:brightness-105 hover:scale-[1.02] active:scale-[0.98]'
-                  : 'bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-border-cyan shadow-[0_0_10px_rgba(0,240,255,0.2)] hover:scale-[1.02] active:scale-[0.98]'
-              }`}
-            >
-              {interacting ? 'Đang Cho Ăn... 🍖' : `Cho ${pet.name} Ăn 🍖 (-10 Ruby)`}
-            </button>
           </div>
         </div>
 

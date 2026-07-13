@@ -1,11 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useGameState, DEFAULT_GAME_SETTINGS } from '../hooks/useGameState';
 import { useSect } from '../contexts/SectContext';
 import { DEFAULT_GRADE_TIER, SUBJECTS_CONFIG } from '../types/game';
 import type { SubjectId } from '../types/game';
 import {
   Compass, Sword, ShieldAlert, Star, Zap, BookOpen,
-  ChevronDown, ChevronUp, Skull, Swords, BookMarked, Heart, Volume2
+  Skull, BookMarked, Heart, Volume2
 } from 'lucide-react';
 import { toast } from '../utils/toast';
 import { FogCard } from './FogCard';
@@ -17,11 +17,9 @@ interface ArenaProps {
     mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'survival',
     bossId?: string
   ) => void;
-  onStudyLesson?: (lessonId: string) => void;
-  onStartLessonPractice?: (lessonId: string) => void;
 }
 
-export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: ArenaProps) {
+export function Arena({ onStartPlay }: ArenaProps) {
   const player = useGameState(state => state.player);
   const consumeEnergy = useGameState(state => state.useEnergy);
   const { activeSectId, activeGradeTier } = useSect();
@@ -29,15 +27,10 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
   const bossCompletionBonusRuby = useGameState(state => state.gameSettings?.bossCompletionBonusRuby ?? DEFAULT_GAME_SETTINGS.bossCompletionBonusRuby);
   const challengeEnergyCosts = useGameState(state => state.gameSettings?.challengeEnergyCosts ?? DEFAULT_GAME_SETTINGS.challengeEnergyCosts);
   const uiTheme = useGameState(state => state.uiTheme);
-  const categoryStats = useGameState(state => state.categoryStats);
-  const lessonsProgress = useGameState(state => state.lessonsProgress);
   const questions = useGameState(state => state.questions);
-  const lessons = useGameState(state => state.lessons);
   const topics = useGameState(state => state.topics);
   const activities = useGameState(state => state.activities);
   const isUnicorn = isLightTheme(uiTheme);
-
-  const [topicOpen, setTopicOpen] = useState(false);
 
   const activeSubjectConfig = SUBJECTS_CONFIG[activeSectId as SubjectId];
   const isChuyenSau = activeSubjectConfig.group === 'chuyen_sau';
@@ -66,10 +59,6 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
     consumeEnergy(energyCost);
     onStartPlay(mode, bossId);
   };
-
-  const subjectLessons = lessons.filter(l =>
-    l.subject === activeSectId && (l.gradeTier ?? DEFAULT_GRADE_TIER) === activeGradeTier
-  );
 
   // Quyết Đấu Boss tốn -100 Năng Lượng; nếu maxEnergy riêng của con < 100 thì tốn = maxEnergy,
   // để con vẫn luôn đánh được 1 lượt Boss khi đầy bình dù chủ nhiệm siết trần thấp (SUB_SPEC_ENERGY §3).
@@ -101,11 +90,6 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
       energy: a.config?.energy || bossEnergyCost
     }));
   }, [activities, subjectTopicIds, bossEnergyCost, activeSubjectConfig, activeGradeTier]);
-
-  const completedLessons = subjectLessons.filter(l => lessonsProgress[l.id]).length;
-  const progressPct = subjectLessons.length > 0
-    ? Math.round((completedLessons / subjectLessons.length) * 100)
-    : 0;
 
   // Build free practice cards list based on subject activities
   const rankedCards = useMemo(() => {
@@ -379,114 +363,6 @@ export function Arena({ onStartPlay, onStudyLesson, onStartLessonPractice }: Are
         </div>
       )}
 
-      {/* ─── HẦM NGỤC CHUYÊN ĐỀ ─── */}
-      <div className="glass-panel rounded-2xl border border-white/10 overflow-hidden">
-        <button
-          onClick={() => setTopicOpen(prev => !prev)}
-          className="w-full flex items-center justify-between gap-4 px-5 py-4 hover:bg-white/5 transition-colors cursor-pointer"
-        >
-          <div className="flex items-center gap-3">
-            <BookMarked className={`w-5 h-5 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-purple'}`} />
-            <div className="text-left">
-              <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-700' : 'text-white'}`}>
-                Hầm Ngục Chuyên Đề
-              </h3>
-              <p className="text-[10px] text-slate-400 mt-0.5">
-                Luyện sâu từng chuyên đề · {completedLessons}/{subjectLessons.length} đã lĩnh ngộ
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden md:flex items-center gap-2">
-              <div className="w-24 h-1.5 rounded-full bg-white/10 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-gradient-to-r from-synth-cyan to-synth-purple transition-all duration-500"
-                  style={{ width: `${progressPct}%` }}
-                />
-              </div>
-              <span className="text-[10px] font-bold text-slate-400">{progressPct}%</span>
-            </div>
-            {topicOpen
-              ? <ChevronUp className="w-4 h-4 text-slate-400" />
-              : <ChevronDown className="w-4 h-4 text-slate-400" />
-            }
-          </div>
-        </button>
-
-        {topicOpen && (
-          <div className="border-t border-white/10 p-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-            {subjectLessons.length === 0 && (
-              <div className="col-span-2 text-center text-slate-400 text-sm py-4">
-                Môn này chưa có chuyên đề.
-              </div>
-            )}
-            {subjectLessons.map(lesson => {
-              const isCompleted = lessonsProgress[lesson.id] || false;
-              const stat = categoryStats[lesson.category];
-              const accuracy = stat && stat.totalAnswered > 0
-                ? Math.round((stat.totalCorrect / stat.totalAnswered) * 100)
-                : null;
-
-              return (
-                <div
-                  key={lesson.id}
-                  className={`rounded-xl border p-4 flex flex-col gap-3 transition-all duration-200 ${
-                    isCompleted
-                      ? 'border-synth-cyan/20 bg-synth-cyan/5'
-                      : 'border-white/10 bg-white/4 hover:border-white/20'
-                  }`}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="space-y-1 min-w-0">
-                      <span className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold text-slate-400 uppercase tracking-wider">
-                        {lesson.topic}
-                      </span>
-                      <h4 className="font-orbitron font-black uppercase text-xs text-white tracking-wide leading-snug">
-                        {lesson.title}
-                      </h4>
-                    </div>
-                    <div className="shrink-0 text-right">
-                      {isCompleted ? (
-                        <span className="text-[9px] font-bold text-synth-cyan font-orbitron uppercase">Qua ải 🌟</span>
-                      ) : (
-                        <span className="text-[9px] font-semibold text-slate-400 uppercase">Chưa xong ⏳</span>
-                      )}
-                      {accuracy !== null && (
-                        <div className={`text-[9px] font-bold mt-0.5 ${accuracy >= 70 ? 'text-green-400' : accuracy >= 50 ? 'text-yellow-400' : 'text-red-400'}`}>
-                          {accuracy}% chính xác
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="flex gap-2 mt-auto">
-                    {onStudyLesson && (
-                      <button
-                        onClick={e => { e.stopPropagation(); onStudyLesson(lesson.id); }}
-                        className="flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg border border-white/10 bg-white/5 text-white text-[10px] font-bold uppercase tracking-wider hover:bg-white/10 transition-colors cursor-pointer"
-                      >
-                        <BookOpen className="w-3 h-3" /> Lý thuyết
-                      </button>
-                    )}
-                    {onStartLessonPractice && (
-                      <button
-                        onClick={e => { e.stopPropagation(); onStartLessonPractice(lesson.id); }}
-                        className={`flex-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-all cursor-pointer ${
-                          isCompleted
-                            ? 'border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
-                            : 'bg-gradient-to-r from-synth-cyan to-synth-purple text-black shadow-[0_0_10px_rgba(0,240,255,0.2)] hover:scale-[1.02]'
-                        }`}
-                      >
-                        <Swords className="w-3 h-3" /> Luyện tập
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
     </div>
   );
 }

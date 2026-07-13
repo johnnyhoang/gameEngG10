@@ -223,41 +223,36 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="bg-black/90 border border-slate-700 rounded-2xl max-w-lg w-full relative shadow-2xl animate-in fade-in duration-200">
+      <div className="bg-black/90 border border-slate-700 rounded-2xl max-w-sm w-full relative shadow-2xl animate-in fade-in duration-200">
         <button 
           onClick={handleClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-white transition-colors"
+          className="absolute top-3 right-3 text-slate-400 hover:text-white transition-colors"
         >
-          <X className="w-6 h-6" />
+          <X className="w-5 h-5" />
         </button>
 
-        <div className="p-6">
-          <div className="flex items-center gap-3 mb-6 pb-6 border-b border-white/10">
-            <div className="p-2.5 rounded-xl bg-purple-500/10 text-3xl">
+        <div className="p-4">
+          <div className="flex items-center gap-2.5 mb-4 pr-7 pb-3 border-b border-white/10">
+            <div className="p-2 rounded-xl bg-purple-500/10 text-2xl">
               🐷
             </div>
-            <div>
-              <h2 className="font-orbitron font-bold text-base text-white tracking-wide uppercase">
-                Heo Maikawaii Gác Cổng
-              </h2>
-              <p className="text-[10px] text-slate-400">
-                Hãy giúp Heo giải đáp thử thách trắc nghiệm này để xua tan sương mù nhé!
-              </p>
-            </div>
+            <p className="text-xs font-semibold text-slate-300">
+              Giải đố, Heo mới cho vào!
+            </p>
           </div>
 
           {question ? (
-            <div className="space-y-6">
-              <div className="text-lg text-slate-200 leading-relaxed font-medium">
+            <div className="space-y-4">
+              <div className="text-base text-slate-200 leading-snug font-medium">
                 {question.prompt}
               </div>
 
               {(isGeometry2D || isGeometry3D) && (
-                <div className="flex gap-3">
+                <div className="flex gap-2">
                   {isGeometry2D && (
                     <button
                       onClick={() => setGeometryMode('2d')}
-                      className="px-4 py-2 rounded-xl bg-synth-cyan/10 border border-synth-cyan/30 text-synth-cyan hover:bg-synth-cyan/20 transition-colors text-sm font-bold flex items-center gap-2"
+                      className="px-3 py-1.5 rounded-lg bg-synth-cyan/10 border border-synth-cyan/30 text-synth-cyan hover:bg-synth-cyan/20 transition-colors text-xs font-bold flex items-center gap-1.5"
                     >
                       <Brain className="w-4 h-4" /> Vẽ Hình 2D
                     </button>
@@ -265,7 +260,7 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
                   {isGeometry3D && (
                     <button
                       onClick={() => setGeometryMode('3d')}
-                      className="px-4 py-2 rounded-xl bg-synth-purple/10 border border-synth-purple/30 text-synth-purple hover:bg-synth-purple/20 transition-colors text-sm font-bold flex items-center gap-2"
+                      className="px-3 py-1.5 rounded-lg bg-synth-purple/10 border border-synth-purple/30 text-synth-purple hover:bg-synth-purple/20 transition-colors text-xs font-bold flex items-center gap-1.5"
                     >
                       <Brain className="w-4 h-4" /> Vẽ Hình 3D
                     </button>
@@ -281,7 +276,7 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
               )}
 
               {(question.type === 'multiple_choice' || question.type === 'mcq') && question.options ? (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {question.options.map((opt, idx) => (
                     <button
                       key={idx}
@@ -289,7 +284,7 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
                         setSelectedAnswer(opt);
                         setIsError(false);
                       }}
-                      className={`w-full p-4 rounded-xl text-left transition-all duration-200 border ${
+                      className={`w-full px-3 py-2 rounded-lg text-left text-sm leading-tight transition-all duration-200 border ${
                         selectedAnswer === opt
                           ? 'bg-synth-cyan/10 border-synth-cyan text-white shadow-[0_0_15px_rgba(0,240,255,0.1)]'
                           : 'bg-white/5 border-white/10 text-slate-300 hover:bg-white/10'
@@ -308,20 +303,20 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
                     setIsError(false);
                   }}
                   placeholder="Nhập đáp án của bạn..."
-                  className="w-full bg-black/50 border border-white/20 rounded-xl px-4 py-4 text-white focus:outline-none focus:border-synth-cyan focus:ring-1 focus:ring-synth-cyan"
+                  className="w-full bg-black/50 border border-white/20 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-synth-cyan focus:ring-1 focus:ring-synth-cyan"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') handleAnswerSubmit();
                   }}
                 />
               )}
 
-              <div className="pt-4 flex justify-end">
+              <div className="pt-1 flex justify-end">
                 <button
                   onClick={handleAnswerSubmit}
                   disabled={!selectedAnswer}
-                  className="px-8 py-3 rounded-xl bg-white text-black font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-synth-cyan transition-colors"
+                  className="px-5 py-2 rounded-lg bg-white text-black text-sm font-bold disabled:opacity-50 disabled:cursor-not-allowed hover:bg-synth-cyan transition-colors"
                 >
-                  Giải Mã
+                  Giải đố
                 </button>
               </div>
             </div>

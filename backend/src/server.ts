@@ -83,6 +83,12 @@ const initDB = async () => {
     } else {
       throw new Error(`Missing required profile PIN cleanup migration: ${removeProfilePinPath}`);
     }
+    const normalizePetNamePath = path.join(__dirname, '..', 'migrations', '20260713_normalize_legacy_pet_name.sql');
+    if (fs.existsSync(normalizePetNamePath)) {
+      await pool.query(fs.readFileSync(normalizePetNamePath, 'utf8'));
+    } else {
+      throw new Error(`Missing required pet name normalization migration: ${normalizePetNamePath}`);
+    }
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS subject VARCHAR(50) DEFAULT 'english';`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS image_url TEXT;`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;`);

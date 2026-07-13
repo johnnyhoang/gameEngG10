@@ -10,111 +10,65 @@ interface PetStableOverlayProps {
 export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScreen }) => {
   const currentUser = useGameState(state => state.currentUser);
   const pet = useGameState(state => state.pet);
-  const player = useGameState(state => state.player);
   const uiTheme = useGameState(state => state.uiTheme);
   const showHelp = useGameState(state => state.showHelp);
+  const logout = useGameState(state => state.logout);
+  const logoutState = useGameState(state => state.logoutState);
 
   const [isOpen, setIsOpen] = useState(false);
   const [triggerReason, setTriggerReason] = useState<'login' | 'manual' | 'idle' | 'hunger' | 'energy-depleted'>('manual');
+  const [logoutCountdown, setLogoutCountdown] = useState(10);
   
   // Track idle time
   const lastActiveTime = useRef(Date.now());
   
-  // Shared cooldown across ALL auto-triggers (including across page reloads)
-  const lastAutoTrigger = useRef<number>(0);
-
-  const setLastAutoTrigger = (time: number) => {
-    lastAutoTrigger.current = time;
-    if (currentUser?.id) localStorage.setItem(`ge10_last_pet_interaction:${currentUser.id}`, time.toString());
-  };
-
-  // Global triggers
+  // Heo không tự xuất hiện theo thời gian đăng nhập, cơn đói hoặc Năng Lượng.
+  // Auto-trigger duy nhất là 10 phút không có bất kỳ tương tác nào.
   useEffect(() => {
     if (!currentUser || isAdmin(currentUser.role)) return;
 
-    // Initialize login time on first mount
-    const loginTimeKey = `ge10_login_time:${currentUser.id}`;
-    lastAutoTrigger.current = Number(localStorage.getItem(`ge10_last_pet_interaction:${currentUser.id}`) || 0);
-    const existingLoginTime = localStorage.getItem(loginTimeKey);
-    if (!existingLoginTime) {
-      localStorage.setItem(loginTimeKey, Date.now().toString());
-    }
+    lastActiveTime.current = Date.now();
 
     const handleActivity = () => {
+      if (isOpen) return;
       lastActiveTime.current = Date.now();
     };
 
-    window.addEventListener('mousemove', handleActivity);
+    window.addEventListener('pointermove', handleActivity);
+    window.addEventListener('pointerdown', handleActivity);
     window.addEventListener('keydown', handleActivity);
-    window.addEventListener('click', handleActivity);
     window.addEventListener('scroll', handleActivity);
+    window.addEventListener('touchstart', handleActivity);
 
     const interval = setInterval(() => {
-      if (isOpen || isDungeonScreen) {
-        // Postpone triggers if overlay is already open or student is in dungeon
-        lastActiveTime.current = Date.now();
-        return;
-      }
-
-      // Check if any other modal is open
-      const hasOtherModal = document.querySelectorAll('.fixed.inset-0').length > 0;
-      if (hasOtherModal) {
-        // Postpone trigger but DON'T reset lastActiveTime, so it will trigger as soon as modals are closed
-        return;
-      }
-
+      if (isOpen) return;
       const now = Date.now();
-
-      // Cooldown chung: heo chỉ được TỰ xuất hiện tối đa 1 lần mỗi 30 PHÚT, bất kể lý do gì
-      // (yêu cầu Viện Trưởng 2026-07-10 — chống làm phiền). Cooldown persist qua localStorage.
-      const THIRTY_MINUTES = 30 * 60 * 1000;
-      if (now - lastAutoTrigger.current < THIRTY_MINUTES) {
-        return;
-      }
-
-      // Báo hết Năng Lượng (SUB_SPEC_ENERGY §4): ưu tiên cao nhất, KHÔNG chờ "30 phút sau đăng nhập"
-      // như idle/hunger — con cần biết ngay lý do bị khóa hoạt động sinh điểm và giờ hồi lại.
-      if (player.energy === 0 && player.energyDepletedAt) {
-        setTriggerReason('energy-depleted');
-        setIsOpen(true);
-        setLastAutoTrigger(now);
-        return;
-      }
-
-      // Pet first appears 30 minutes after login (not immediately)
-      const loginTime = Number(localStorage.getItem(loginTimeKey) || now);
-      const timeSinceLogin = now - loginTime;
-      if (timeSinceLogin < THIRTY_MINUTES) {
-        return;
-      }
-
-      const idleTime = now - lastActiveTime.current;
-
-      // 10 mins idle = 10 * 60 * 1000 = 600000
-      if (idleTime > 600000) {
+      if (now - lastActiveTime.current >= 10 * 60 * 1000) {
         setTriggerReason('idle');
+        setLogoutCountdown(10);
         setIsOpen(true);
-        setLastAutoTrigger(now);
-      } else {
-        // Hunger check (trigger ngủ 22h-5h đã bị xóa theo CORE_SPECS §2.5)
-        const lastFedTime = new Date(pet.lastFed).getTime();
-        const twelveHours = 12 * 60 * 60 * 1000;
-        if (now - lastFedTime > twelveHours) {
-          setTriggerReason('hunger');
-          setIsOpen(true);
-          setLastAutoTrigger(now);
-        }
       }
-    }, 10000); // Check every 10 seconds
+    }, 1000);
 
     return () => {
-      window.removeEventListener('mousemove', handleActivity);
+      window.removeEventListener('pointermove', handleActivity);
+      window.removeEventListener('pointerdown', handleActivity);
       window.removeEventListener('keydown', handleActivity);
-      window.removeEventListener('click', handleActivity);
       window.removeEventListener('scroll', handleActivity);
+      window.removeEventListener('touchstart', handleActivity);
       clearInterval(interval);
     };
-  }, [currentUser, isOpen, isDungeonScreen, pet.lastFed, player.energy, player.energyDepletedAt]);
+  }, [currentUser, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen || triggerReason !== 'idle') return;
+    if (logoutCountdown <= 0) {
+      void logout();
+      return;
+    }
+    const timer = window.setTimeout(() => setLogoutCountdown(value => value - 1), 1000);
+    return () => window.clearTimeout(timer);
+  }, [isOpen, triggerReason, logoutCountdown, logout]);
 
   const handleManualSummon = () => {
     if (isDungeonScreen) return;
@@ -126,10 +80,14 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
     // Only way to close is by interacting. We wait 2s to show the speech bubble reaction.
     setTimeout(() => {
       setIsOpen(false);
-      const now = Date.now();
-      lastActiveTime.current = now; // reset idle timer
-      setLastAutoTrigger(now); // snooze all auto-triggers, whatever the reason was
+      lastActiveTime.current = Date.now();
     }, 2000);
+  };
+
+  const handleContinueLearning = () => {
+    lastActiveTime.current = Date.now();
+    setIsOpen(false);
+    setLogoutCountdown(10);
   };
 
   if (!currentUser || isAdmin(currentUser.role)) return null;
@@ -175,12 +133,35 @@ export const PetStableOverlay: React.FC<PetStableOverlayProps> = ({ isDungeonScr
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/65 backdrop-blur-md animate-fade-in">
           <div className="w-full max-w-sm flex flex-col items-center justify-center">
             <Suspense fallback={<div className="flex items-center justify-center h-32"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-synth-cyan"></div></div>}>
-              <PetSanctuary variant="sidebar" triggerReason={triggerReason} onInteract={handleInteract} />
+              <PetSanctuary
+                variant="sidebar"
+                triggerReason={triggerReason}
+                onInteract={triggerReason === 'idle' ? undefined : handleInteract}
+              />
             </Suspense>
-            
-            <div className="text-center mt-3 text-[10px] font-bold tracking-wider text-slate-400/80 uppercase">
-              * Tương tác (cho ăn/thọc lét) để cất heo *
-            </div>
+
+            {triggerReason === 'idle' ? (
+              <div className="w-full mt-3 space-y-2">
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={handleContinueLearning}
+                    className="rounded-xl bg-synth-cyan px-3 py-2.5 font-orbitron text-xs font-black uppercase text-slate-950 hover:brightness-110"
+                  >
+                    Học tiếp
+                  </button>
+                  <button
+                    onClick={() => void logout()}
+                    disabled={logoutState === 'processing'}
+                    className="rounded-xl border border-red-400/50 bg-red-500/15 px-3 py-2.5 font-orbitron text-xs font-black uppercase text-red-300 hover:bg-red-500/25 disabled:opacity-50"
+                  >
+                    {logoutState === 'processing' ? 'Đang rời viện...' : 'Rời viện'}
+                  </button>
+                </div>
+                <p className="text-center text-xs font-bold text-amber-300">
+                  Tự động rời viện sau {logoutCountdown} giây nếu không lựa chọn.
+                </p>
+              </div>
+            ) : null}
           </div>
         </div>
       )}

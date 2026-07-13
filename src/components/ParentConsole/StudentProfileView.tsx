@@ -269,7 +269,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
               <div className="grid grid-cols-2 gap-x-4 gap-y-3 flex-1 text-xs">
                 <div>
                   <span className="block text-[9px] uppercase text-slate-400 font-bold">Tên thú cưng</span>
-                  <span className="font-bold text-white text-sm">{pet.name}</span>
+                  <span className="font-bold text-white text-sm">Heo Maikawaii</span>
                 </div>
                 <div>
                   <span className="block text-[9px] uppercase text-slate-400 font-bold">Cấp độ</span>
