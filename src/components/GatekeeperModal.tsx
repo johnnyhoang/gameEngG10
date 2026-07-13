@@ -33,7 +33,7 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
   const updatePendingKeyQuestion = useGameState(state => state.updatePendingKeyQuestion);
   const player = useGameState(state => state.player);
   const awardRubyAndXp = useGameState(state => state.awardRubyAndXp);
-  const { activeSectId } = useSect();
+  const { activeSectId, activeGradeTier } = useSect();
 
   const isGeometry2D = React.useMemo(() => {
     if (!question) return false;
@@ -70,7 +70,7 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
           // Dùng Core Knowledge-aware picker (CORE_SPECS §9.D)
           const studentId = player?.id ?? 'guest';
           const recentlyUsed = await getRecentlyUsedGatekeeperIds(studentId, pageId);
-          const picked = pickGatekeeperQuestion(pageId, activeSectId as SubjectId, questions, recentlyUsed);
+          const picked = pickGatekeeperQuestion(pageId, activeSectId as SubjectId, activeGradeTier, questions, recentlyUsed);
           q = picked ?? undefined;
           if (picked) await recordGatekeeperUsage(studentId, pageId, picked.id);
         }
@@ -88,7 +88,7 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
 
     window.addEventListener('FOG_CARD_CLICKED', handleOpen);
     return () => window.removeEventListener('FOG_CARD_CLICKED', handleOpen);
-  }, [questions, activeSectId, pageExplorationStates, player]);
+  }, [questions, activeSectId, activeGradeTier, pageExplorationStates, player]);
 
 
   const handleClose = () => {
@@ -326,8 +326,10 @@ export const GatekeeperModal: React.FC<GatekeeperModalProps> = () => {
               </div>
             </div>
           ) : (
-            <div className="text-center py-12 text-slate-400">
-              Không tìm thấy câu hỏi gác cổng.
+            <div className="text-center py-12 space-y-3">
+              <AlertCircle className="w-10 h-10 mx-auto text-amber-400" />
+              <p className="font-orbitron text-sm font-bold text-amber-300">Chưa có câu hỏi kiểm tra phù hợp</p>
+              <p className="text-xs text-slate-400">Học vụ cần bổ sung câu hỏi đúng lớp, môn học và khu vực này.</p>
             </div>
           )}
         </div>

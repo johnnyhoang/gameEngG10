@@ -28,7 +28,8 @@ item.gradeTier === context.gradeTier && item.subjectId === context.subjectId
 
 - Page/component chỉ nhận `LearningContext` hoặc đọc selector chuẩn; không tự đặt default grade/subject cục bộ.
 - Danh sách Bậc Học/Môn học khả dụng được suy ra từ content/capability registry hoặc cấu hình admin, không hardcode `active/coming_soon` trong component.
-- Feature chuyên môn như `Phrase Valley` khai báo capability `subjects: ['english']`; không tạo app shell riêng cho môn.
+- Feature chuyên môn phải khai báo capability theo môn và chỉ xuất hiện khi context hiện tại khớp. Tiếng Anh có `Phrase Valley`, `Conversation Town`, `Writing Pavilion`, `Listening Lake`; Toán có `Xưởng Toán Hình 3D`, `Xưởng Toán Hình`, `Xưởng Toán Đồ Thị`. Không tạo app shell riêng cho môn.
+- Grade/môn không có dữ liệu hoặc capability không xuất hiện trong selector/navigation; không duy trì danh sách `active/coming_soon` hardcode.
 
 ## 3. Backend/API
 

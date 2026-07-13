@@ -77,6 +77,12 @@ const initDB = async () => {
     } else {
       throw new Error(`Missing required profile identity migration: ${profileIdentityPath}`);
     }
+    const removeProfilePinPath = path.join(__dirname, '..', 'migrations', '20260713_remove_profile_pin.sql');
+    if (fs.existsSync(removeProfilePinPath)) {
+      await pool.query(fs.readFileSync(removeProfilePinPath, 'utf8'));
+    } else {
+      throw new Error(`Missing required profile PIN cleanup migration: ${removeProfilePinPath}`);
+    }
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS subject VARCHAR(50) DEFAULT 'english';`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS image_url TEXT;`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;`);

@@ -302,26 +302,23 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 </span>
               </div>
               <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
-                {GRADE_TIERS.map(tierCfg => {
+                {GRADE_TIERS.filter(tierCfg =>
+                  lessons.some(lesson => (lesson.gradeTier ?? 9) === tierCfg.tier)
+                  || questions.some(question => (question.gradeTier ?? question.grade ?? 9) === tierCfg.tier)
+                ).map(tierCfg => {
                   const isActive = tierCfg.tier === activeGradeTier;
-                  const hasContent = lessons.some(lesson => (lesson.gradeTier ?? 9) === tierCfg.tier)
-                    || questions.some(question => (question.gradeTier ?? question.grade ?? 9) === tierCfg.tier);
-                  const isLocked = !hasContent;
                   return (
                     <button
                       key={tierCfg.tier}
-                      onClick={() => !isLocked && setGradeTier(tierCfg.tier)}
-                      disabled={isLocked}
-                      title={isLocked ? `${tierCfg.name} — Sắp khai mở` : tierCfg.description}
+                      onClick={() => setGradeTier(tierCfg.tier)}
+                      title={tierCfg.description}
                       className={`flex flex-col items-center gap-1 rounded-xl border px-2 py-2.5 text-center transition-all ${
                         isActive
                           ? 'border-synth-cyan bg-synth-cyan/15 shadow-[0_0_10px_rgba(0,240,255,0.35)] cursor-default'
-                          : isLocked
-                            ? 'border-white/5 bg-white/[0.02] opacity-45 cursor-not-allowed'
-                            : 'border-white/10 bg-white/5 hover:border-synth-cyan/50 cursor-pointer'
+                          : 'border-white/10 bg-white/5 hover:border-synth-cyan/50 cursor-pointer'
                       }`}
                     >
-                      <span className="text-lg leading-none">{isLocked ? '🔒' : tierCfg.icon}</span>
+                      <span className="text-lg leading-none">{tierCfg.icon}</span>
                       <span className={`text-[10px] font-bold font-orbitron ${isActive ? 'text-synth-cyan' : 'text-slate-400'}`}>
                         Lớp {tierCfg.tier}
                       </span>
@@ -330,7 +327,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 })}
               </div>
               <p className="mt-2 text-[10px] text-slate-500">
-                Mỗi lớp là một ngữ cảnh nội dung độc lập. Lớp có dữ liệu sẽ tự mở; biểu tượng 🔒 nghĩa là chưa có nội dung.
+                Mỗi lớp là một ngữ cảnh nội dung độc lập. Danh sách chỉ hiển thị những lớp đã có dữ liệu.
               </p>
             </div>
 
@@ -393,28 +390,23 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pt-2">
-                {Object.values(SUBJECTS_CONFIG).map(sub => {
-                  const isActive = activeSectId === sub.id;
-                  const hasContent = lessons.some(lesson =>
-                    lesson.subject === sub.id && (lesson.gradeTier ?? 9) === activeGradeTier
-                  ) || questions.some(question =>
+                {Object.values(SUBJECTS_CONFIG).filter(sub =>
+                  lessons.some(lesson => lesson.subject === sub.id && (lesson.gradeTier ?? 9) === activeGradeTier)
+                  || questions.some(question =>
                     (question.subject ?? 'english') === sub.id
                     && (question.gradeTier ?? question.grade ?? 9) === activeGradeTier
-                  );
+                  )
+                ).map(sub => {
+                  const isActive = activeSectId === sub.id;
                   return (
                     <button
                       key={sub.id}
                       onClick={() => {
-                        if (hasContent) {
-                          setActiveSectId(sub.id);
-                          toast.success(`Đã chọn môn học ${sub.name}! 📚`);
-                        }
+                        setActiveSectId(sub.id);
+                        toast.success(`Đã chọn môn học ${sub.name}! 📚`);
                       }}
-                      disabled={!hasContent}
                       className={`rounded-2xl border p-5 text-left transition-all duration-300 cursor-pointer group shadow-lg flex items-center justify-between ${
-                        !hasContent
-                          ? 'border-white/5 bg-black/10 opacity-40 cursor-not-allowed'
-                          : isActive
+                        isActive
                           ? 'border-synth-cyan bg-synth-cyan/15 shadow-[0_0_15px_rgba(0,240,255,0.2)] ring-1 ring-synth-cyan'
                           : 'border-white/5 bg-synth-gray/10 hover:border-white/10 hover:bg-synth-gray/20'
                       }`}
@@ -427,7 +419,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                             {sub.name}
                           </span>
                           <span className="block text-[10px] text-synth-text-muted mt-0.5">
-                            {hasContent ? `Có nội dung cho Lớp ${activeGradeTier}` : `Chưa có nội dung Lớp ${activeGradeTier}`}
+                            Có nội dung cho Lớp {activeGradeTier}
                           </span>
                         </div>
                       </div>

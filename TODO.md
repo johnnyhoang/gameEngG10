@@ -405,12 +405,61 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
 
 - [x] **A6 — Loại bỏ runtime migration suy luận theo account**
   - *Mục tiêu:* Không để startup tự tạo profile hoặc chuyển dữ liệu chỉ vì account hiện có một profile.
-  - *Phải sửa:* Gỡ `adaptLegacyProfiles()` khỏi `initDB`; giữ source adapter legacy chưa xóa để tuân thủ quy tắc không tự xóa function; đăng ký migration index active-profile vào startup migration chain.
+  - *Phải sửa:* Gỡ `adaptLegacyProfiles()` khỏi `initDB`; source adapter chỉ được xóa sau khi có phê duyệt riêng; đăng ký migration index active-profile vào startup migration chain.
   - *Impact:* Backend startup không còn âm thầm đổi ownership hoặc sinh profile theo heuristic.
   - *Acceptance:* Không có runtime call tới adapter; mọi migration ownership sau này cần profile identity tường minh và migration được duyệt riêng.
+  - *Kết quả bổ sung 2026-07-13:* Người dùng đã duyệt cleanup; source adapter legacy đã được xóa hoàn toàn tại H2.
 
 - [x] **A7 — Loại account khỏi business authorization/query**
   - *Mục tiêu:* Sau active-profile middleware, roster và family workflow chỉ dùng profile/relationship.
   - *Phải sửa:* Bỏ fallback chọn profile theo account, bỏ ownership query lặp lại bằng account, không loại toàn bộ sibling profile khỏi tìm kiếm.
   - *Impact:* Profile cùng account có thể tương tác như các profile độc lập; quyền không đổi khi tạo thêm profile.
   - *Acceptance:* `account_id` trong route nghiệp vụ chỉ còn ở thao tác quản lý/provision danh sách profile của account hoặc boundary xác thực.
+
+# Backlog cleanup feature ẩn và capability theo môn (đã duyệt 2026-07-13)
+
+- [x] **H1 — Chuẩn hóa capability theo môn và sửa contract route (ưu tiên kiến trúc)**
+  - *Mục tiêu:* Tính năng chuyên môn chỉ hiện trong đúng môn; route FE–BE có đúng một tiền tố `/api`.
+  - *Phải sửa:* Registry/navigation Công viên Thư Giãn và Kho Nền Tảng; route AI Toán và route admin đang khai báo `/api` lặp.
+  - *Impact:* Xưởng Toán Hình 3D/Hình/Đồ Thị chỉ hiện ở Toán; các mini-app tiếng Anh chỉ hiện ở Tiếng Anh; quản lý role và duyệt Phó Viện Trưởng hoạt động lại.
+  - *Rủi ro:* Ẩn nhầm feature dùng chung hoặc làm đổi URL consumer; cần kiểm tra toàn bộ registry và fetch caller.
+  - *Acceptance:* Matrix subject × feature đúng; bốn endpoint không còn `/api/api`; build và route tests đạt.
+  - *Kết quả:* Có registry capability theo môn; English Skill Districts chỉ thuộc Tiếng Anh, ba Xưởng Toán chỉ thuộc Toán và screen tự thoát khi đổi môn; bốn route FE–BE đã bỏ prefix lặp.
+
+- [x] **H2 — Loại bỏ cơ chế PIN và profile adapter legacy**
+  - *Dependency:* H1.
+  - *Phải sửa:* Route/utility/schema/migration PIN; xóa adapter suy luận account→profile và mọi reference.
+  - *Impact:* Auth/profile chỉ dựa trên active profile; không còn security state trùng lặp theo account/profile.
+  - *Rủi ro:* Database production còn bảng/dữ liệu PIN; migration phải idempotent và không ảnh hưởng profile.
+  - *Acceptance:* Không còn endpoint, type, table hoặc UI PIN; không còn runtime/source adapter legacy; backend build/test đạt.
+  - *Kết quả:* Đã xóa route/utility/UI mapping/schema PIN và profile adapter; startup chạy migration `DROP TABLE IF EXISTS`. Postflight DB production xác nhận bảng PIN không tồn tại trước và sau migration.
+
+- [x] **H3 — Availability hoàn toàn data-driven và Gatekeeper không placeholder**
+  - *Dependency:* H1.
+  - *Phải sửa:* Xóa `coming_soon` hardcode; selector grade/subject suy ra từ content/capability; Gatekeeper trả empty state và log context thiếu coverage.
+  - *Impact:* Thêm grade/môn bằng dữ liệu; thiếu câu hỏi không bị che bởi dữ liệu giả.
+  - *Rủi ro:* Context không có content biến mất khỏi selector; modal Gatekeeper phải xử lý không có câu an toàn.
+  - *Acceptance:* Không còn `coming_soon`/fallback `1 + 1`; log chứa grade/subject/page; UI có empty state rõ ràng.
+  - *Kết quả:* Selector chỉ render grade/môn có content; bỏ status hardcode; Gatekeeper lọc đủ grade + subject, trả `null`, log context và hiển thị empty state học vụ.
+
+- [x] **H4 — Hợp nhất UI cũ trước khi xóa**
+  - *Dependency:* H1-H3.
+  - *Phải sửa:* So sánh và chuyển phần còn giá trị từ `RunFinishedScreen` sang `PostQuizReview`/`FinalResultScreen`; hợp nhất Lecture/Quest/Reward modal vào manager/modal hiện hành; xóa `SonTrangThuGian` sau khi xác nhận `RelaxationZone` bao phủ đầy đủ.
+  - *Impact:* Một implementation cho mỗi flow, không mất hành vi/reward/validation.
+  - *Rủi ro:* Bỏ sót UX hoặc field chỉ có ở modal cũ; cần lập parity trước khi xóa.
+  - *Acceptance:* Không còn consumer hoặc file duplicate; flow tạo/sửa và kết quả quiz giữ đủ hành vi hữu ích; build đạt.
+  - *Kết quả:* Parity cho thấy `PostQuizReview`/`FinalResultScreen` và ba manager hiện hành đã bao phủ đầy đủ hoặc tốt hơn; đã xóa năm component duplicate, không cần chuyển thêm hành vi legacy.
+
+- [x] **H5 — Chuẩn hóa script vận hành và dọn artifact**
+  - *Dependency:* H2-H4.
+  - *Phải sửa:* Phân loại script import/sync/migration/patch; chuyển script còn dùng vào `scripts/maintenance` có README/npm command; xóa script/artifact một lần đã hết giá trị.
+  - *Impact:* Repo gọn và quy trình vận hành có thể truy vết.
+  - *Rủi ro:* Xóa nhầm công cụ production; phải kiểm tra package scripts, import/reference và lịch sử migration trước khi xóa.
+  - *Acceptance:* Không còn script mồ côi không tài liệu; mọi script được giữ có owner, mục đích, cách chạy và safety note.
+  - *Kết quả:* Đã xóa script import/sync/migration/patch một lần, scratch và text extraction không có consumer/npm command; bỏ các dependency chỉ phục vụ mã đã chết.
+
+- [x] **H6 — Verification toàn diện và đồng bộ tài liệu**
+  - *Dependency:* H1-H5.
+  - *Phải làm:* Frontend/backend build, lint/test, static unused scan, migration pre/postflight và cập nhật backlog/spec.
+  - *Acceptance:* Không còn feature ẩn ngoài gating đã định nghĩa; code/docs đồng bộ; không có lỗi do thay đổi.
+  - *Kết quả:* FE build, BE build đạt; lint không có error. Static scan chỉ còn serverless entrypoint `backend/api/index.ts` và các exported helper/type không phải feature; entrypoint được giữ vì có thể là deployment contract.

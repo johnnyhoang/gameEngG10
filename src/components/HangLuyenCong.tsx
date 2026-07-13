@@ -23,6 +23,7 @@ import type { Lesson } from '../data/lessons';
 import { FogCard } from './FogCard';
 import { Level3Overlay } from './Level3Overlay';
 import { LessonStudyView } from './LessonStudyView';
+import { hasSubjectCapability } from '../config/subjectCapabilities';
 
 const getElementalDungeon = (lesson: Lesson): 'fire' | 'ice' | 'stone' => {
   const t = (lesson.topic || '').toLowerCase();
@@ -435,7 +436,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
         <div className="space-y-6">
           
           {/* Kho Nền Tảng tương tác - chỉ dành cho Toán */}
-          {selectedSubject === 'math' && (
+          {hasSubjectCapability(selectedSubject, 'math-foundation-studios') && (
             <div className="glass-panel rounded-2xl border border-white/10 p-5 bg-black/20">
               <h2 className="font-orbitron font-black text-xs text-synth-cyan uppercase tracking-wider mb-3 flex items-center gap-2">
                 <Target className="w-4 h-4 text-synth-cyan" />

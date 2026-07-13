@@ -17,7 +17,14 @@ export const GlobalSectModal: React.FC = () => {
 
   if (!isSectModalOpen) return null;
 
-  const subjects = Object.values(SUBJECTS_CONFIG);
+  const hasContent = (subjectId: SubjectId) => lessons.some(lesson =>
+    lesson.subject === subjectId && (lesson.gradeTier ?? 9) === activeGradeTier
+  ) || questions.some(question =>
+    (question.subject ?? 'english') === subjectId
+    && (question.gradeTier ?? question.grade ?? 9) === activeGradeTier
+  );
+
+  const subjects = Object.values(SUBJECTS_CONFIG).filter(subject => hasContent(subject.id));
   const chuyenSau = subjects.filter(s => s.group === 'chuyen_sau');
   const coBan = subjects.filter(s => s.group === 'co_ban');
 
@@ -25,13 +32,6 @@ export const GlobalSectModal: React.FC = () => {
     setActiveSectId(id);
     setSectModalOpen(false);
   };
-
-  const hasContent = (subjectId: SubjectId) => lessons.some(lesson =>
-    lesson.subject === subjectId && (lesson.gradeTier ?? 9) === activeGradeTier
-  ) || questions.some(question =>
-    (question.subject ?? 'english') === subjectId
-    && (question.gradeTier ?? question.grade ?? 9) === activeGradeTier
-  );
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -70,17 +70,13 @@ export const GlobalSectModal: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {chuyenSau.map(s => {
               const active = s.id === activeSectId;
-              const available = hasContent(s.id);
               return (
                 <button
                   key={s.id}
-                  onClick={() => available && handleSelect(s.id)}
-                  disabled={!available}
+                  onClick={() => handleSelect(s.id)}
                   style={{ borderColor: active ? s.color : 'rgba(255,255,255,0.1)' }}
                   className={`flex items-center justify-between p-4 rounded-xl border text-left cursor-pointer transition-all duration-300 ${
-                    !available
-                      ? 'bg-black/10 opacity-40 cursor-not-allowed'
-                      : active
+                    active
                       ? 'bg-white/5 shadow-[0_0_12px_rgba(255,255,255,0.1)]' 
                       : 'bg-black/20 hover:border-white/20'
                   }`}
@@ -104,17 +100,13 @@ export const GlobalSectModal: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {coBan.map(s => {
               const active = s.id === activeSectId;
-              const available = hasContent(s.id);
               return (
                 <button
                   key={s.id}
-                  onClick={() => available && handleSelect(s.id)}
-                  disabled={!available}
+                  onClick={() => handleSelect(s.id)}
                   style={{ borderColor: active ? s.color : 'rgba(255,255,255,0.1)' }}
                   className={`flex items-center justify-between p-4 rounded-xl border text-left cursor-pointer transition-all duration-300 ${
-                    !available
-                      ? 'bg-black/10 opacity-40 cursor-not-allowed'
-                      : active
+                    active
                       ? 'bg-white/5 shadow-[0_0_12px_rgba(255,255,255,0.1)]' 
                       : 'bg-black/20 hover:border-white/20'
                   }`}

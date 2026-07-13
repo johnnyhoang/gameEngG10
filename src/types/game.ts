@@ -347,19 +347,17 @@ export interface GradeTierConfig {
   tier: GradeTier;
   name: string;
   icon: string;
-  /** Nhãn mô tả mặc định; khả dụng thực tế phải được suy ra từ nội dung hiện có. */
-  status: 'active' | 'coming_soon';
   description: string;
 }
 
 export const GRADE_TIERS: GradeTierConfig[] = [
-  { tier: 6, name: 'Tầng Lớp 6', icon: '🏯', status: 'coming_soon', description: 'Nhập môn học đường — sắp khai mở.' },
-  { tier: 7, name: 'Tầng Lớp 7', icon: '⛩️', status: 'coming_soon', description: 'Rèn gân cốt — sắp khai mở.' },
-  { tier: 8, name: 'Tầng Lớp 8', icon: '🏔️', status: 'active', description: 'Luyện nội công.' },
-  { tier: 9, name: 'Tầng Lớp 9', icon: '🗼', status: 'active', description: '9 môn phái: 3 Yêu Cầu Cao (bám tuyển sinh 10) + 6 Yêu Cầu Cơ Bản.' },
-  { tier: 10, name: 'Tầng Lớp 10', icon: '🌋', status: 'coming_soon', description: 'Thượng tầng THPT — sắp khai mở.' },
-  { tier: 11, name: 'Tầng Lớp 11', icon: '🌌', status: 'coming_soon', description: 'Thượng tầng THPT — sắp khai mở.' },
-  { tier: 12, name: 'Tầng Lớp 12', icon: '☄️', status: 'coming_soon', description: 'Đỉnh tầng — hướng tới kỳ thi THPT Quốc Gia.' }
+  { tier: 6, name: 'Tầng Lớp 6', icon: '🏯', description: 'Nội dung học tập Lớp 6.' },
+  { tier: 7, name: 'Tầng Lớp 7', icon: '⛩️', description: 'Nội dung học tập Lớp 7.' },
+  { tier: 8, name: 'Tầng Lớp 8', icon: '🏔️', description: 'Nội dung học tập Lớp 8.' },
+  { tier: 9, name: 'Tầng Lớp 9', icon: '🗼', description: 'Nội dung học tập Lớp 9.' },
+  { tier: 10, name: 'Tầng Lớp 10', icon: '🌋', description: 'Nội dung học tập Lớp 10.' },
+  { tier: 11, name: 'Tầng Lớp 11', icon: '🌌', description: 'Nội dung học tập Lớp 11.' },
+  { tier: 12, name: 'Tầng Lớp 12', icon: '☄️', description: 'Nội dung học tập Lớp 12.' }
 ];
 
 export function getGradeTierConfig(tier: GradeTier): GradeTierConfig {

@@ -5,6 +5,7 @@ import { useGameState } from '../hooks/useGameState';
 import { FogCard, getFogStatus } from './FogCard';
 import { Level3Overlay } from './Level3Overlay';
 import { toast } from '../utils/toast';
+import { hasSubjectCapability } from '../config/subjectCapabilities';
 
 // Năng Lượng tiêu hao mỗi ván mini-game Công Viên Thư Giãn có sinh điểm (SUB_SPEC_ENERGY §3).
 const MINIGAME_ENERGY_COST = 10;
@@ -276,7 +277,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
           borderClass={isUnicorn ? 'border-blue-200/40' : 'border-blue-500/15'}
         />
 
-        {activeSectId === 'english' && (
+        {hasSubjectCapability(activeSectId, 'english-skill-districts') && (
           <CanhSection
             icon="🇬🇧"
             label="English Skill Districts"

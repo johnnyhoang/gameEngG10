@@ -871,7 +871,7 @@ Mỗi **Page Cấp 2** (Hầm nguyên tố trong Học Đường — §2.8.3) đ
 
 Môn phái của câu hỏi (`subject`) mặc định là **`english`** nếu không gắn tường minh — quy ước này áp dụng thống nhất ở mọi nơi lọc theo môn phái (Gatekeeper, PlayArea), vì phần lớn ngân hàng câu Tiếng Anh cũ chưa từng gắn `subject`.
 
-**Chọn câu theo 2 tầng (`pickGatekeeperQuestion`):** Tầng 1 ưu tiên câu đủ điều kiện đúng Hầm nguyên tố của khu vực; nếu Hầm đó chưa có đủ câu, Tầng 2 nới ra toàn bộ câu đủ điều kiện của môn phái (không phân biệt Hầm). Chỉ khi môn phái hoàn toàn không có câu nào đủ điều kiện mới dùng câu tạm thời (placeholder) — Viện Trưởng/Giáo viên cần bổ sung ngân hàng câu hỏi cho môn/hầm đó khi thấy placeholder xuất hiện thường xuyên.
+**Chọn câu theo 2 tầng (`pickGatekeeperQuestion`):** Tầng 1 ưu tiên câu đủ điều kiện đúng Hầm nguyên tố của khu vực; nếu Hầm đó chưa có đủ câu, Tầng 2 nới ra toàn bộ câu đủ điều kiện của môn phái (không phân biệt Hầm). Nếu môn phái hoàn toàn không có câu đủ điều kiện, Gatekeeper phải hiển thị trạng thái **“Chưa có câu hỏi kiểm tra phù hợp”** và ghi log kèm `gradeTier`, `subjectId`, khu vực để quản trị viên bổ sung dữ liệu. Tuyệt đối không dùng câu hỏi giả hoặc placeholder để che thiếu coverage.
 
 **Thống kê & CRUD:** Màn Kho Đề Thi (Kho Ngân Hàng Câu Hỏi, dành cho Giáo viên & Viện Trưởng) phải hiển thị: (a) số câu đủ điều kiện Gác Cổng theo từng môn phái + theo từng Hầm nguyên tố, và (b) bộ lọc riêng để xem/quản lý các câu đủ điều kiện Gác Cổng trong CRUD ngân hàng câu hỏi.
 

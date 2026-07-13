@@ -323,13 +323,6 @@ CREATE TABLE IF NOT EXISTS ge10_audit_logs (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
--- Individual Profile Security PINs (Sprint 3)
-CREATE TABLE IF NOT EXISTS ge10_users_security (
-    user_id VARCHAR(255) PRIMARY KEY REFERENCES ge10_users(id) ON DELETE CASCADE,
-    pin_hash VARCHAR(255) NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
 -- Student Skip Reviews Queue (Sprint 4)
 CREATE TABLE IF NOT EXISTS ge10_skip_reviews (
     id VARCHAR(255) PRIMARY KEY,

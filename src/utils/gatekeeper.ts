@@ -87,18 +87,6 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
  * kho để làm Gatekeeper, thay vì để học viên bị kẹt với "Không tìm thấy câu
  * hỏi gác cổng". Xóa fallback này khi mọi môn đã có đủ đề Gatekeeper thật.
  */
-const FALLBACK_GATEKEEPER_QUESTION: Question = {
-  id: 'gatekeeper-fallback-placeholder',
-  type: 'multiple_choice',
-  category: 'placeholder',
-  prompt: '(Câu hỏi tạm thời — môn này chưa có đủ đề gác cổng) 1 + 1 = ?',
-  options: ['1', '2', '3', '4'],
-  correctAnswer: '2',
-  explanation: 'Đây là câu hỏi tạm thời vì môn này chưa có đủ câu hỏi gác cổng phù hợp.',
-  difficulty: 1,
-  source: 'Gatekeeper fallback tạm thời'
-};
-
 /** Bảng ánh xạ pageId (Page Cấp 2 trong Học Đường) → Hầm nguyên tố */
 export const PAGE_TO_HAM_MAP: Record<string, HamNguyenTo> = {
   // === Học Đường — Tiếng Anh ===
@@ -151,11 +139,12 @@ export function getHamForPage(pageId: string): HamNguyenTo {
  * 3. Lọc câu hỏi đủ điều kiện Gác Cổng (`isGatekeeperEligible`) thuộc đúng hầm đó.
  * 4. Nếu hầm đó chưa đủ câu, nới ra toàn bộ câu đủ điều kiện của môn phái (không phân biệt hầm).
  * 5. Ưu tiên câu chưa được dùng trong 30 ngày (dựa trên usedQuestionIds).
- * 6. Random chọn 1 câu; nếu môn phái không có câu nào đủ điều kiện, dùng câu tạm thời.
+ * 6. Random chọn 1 câu; nếu context không có câu đủ điều kiện, trả `null` và ghi log coverage.
  */
 export function pickGatekeeperQuestion(
   pageId: string,
   subjectId: SubjectId,
+  gradeTier: number,
   allQuestions: Question[],
   usedQuestionIds: string[] = []
 ): Question | null {
@@ -163,11 +152,12 @@ export function pickGatekeeperQuestion(
   const eligibleTopics = getTopicsBySubjectAndHam(subjectId, ham);
   const eligibleTopicIds = new Set(eligibleTopics.map(t => t.id));
 
-  const matchSubject = (q: Question) => getQuestionSubject(q) === subjectId;
+  const matchContext = (q: Question) =>
+    getQuestionSubject(q) === subjectId && (q.gradeTier ?? q.grade ?? 9) === gradeTier;
 
   // Tier 1: đúng môn phái + đúng Hầm nguyên tố + đủ điều kiện Gác Cổng.
   const candidates = allQuestions.filter(q =>
-    matchSubject(q) && !!q.topicId && eligibleTopicIds.has(q.topicId) && isGatekeeperEligible(q)
+    matchContext(q) && !!q.topicId && eligibleTopicIds.has(q.topicId) && isGatekeeperEligible(q)
   );
 
   if (candidates.length > 0) {
@@ -177,8 +167,11 @@ export function pickGatekeeperQuestion(
   }
 
   // Tier 2: Hầm này chưa đủ câu — nới ra toàn bộ câu đủ điều kiện của môn phái.
-  const fallback = allQuestions.filter(q => matchSubject(q) && isGatekeeperEligible(q));
-  if (fallback.length === 0) return FALLBACK_GATEKEEPER_QUESTION;
+  const fallback = allQuestions.filter(q => matchContext(q) && isGatekeeperEligible(q));
+  if (fallback.length === 0) {
+    console.error('[Gatekeeper] Chưa có câu hỏi kiểm tra phù hợp', { gradeTier, subjectId, pageId, ham });
+    return null;
+  }
 
   const unused = fallback.filter(q => !usedQuestionIds.includes(q.id));
   const pool = unused.length > 0 ? unused : fallback;

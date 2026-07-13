@@ -172,8 +172,6 @@ router.post('/game/session/end', async (req: any, res) => {
       return res.status(403).json({ error: 'Profile ID mismatch.' });
     }
 
-    // Get base settings from settings
-    const baseSettingsRes = await client.query(`SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'game_settings'`); // placeholder
     const baseXP = 15;
     const baseRuby = 5;
 

@@ -15,6 +15,7 @@ import { GatekeeperModal } from './components/GatekeeperModal';
 import { ProfileSelectionScreen } from './components/ProfileSelectionScreen';
 import { GlobalSectModal } from './components/GlobalSectModal';
 import { LogoutConfirmModal } from './components/Common/LogoutConfirmModal';
+import { hasSubjectCapability } from './config/subjectCapabilities';
 
 // Helper decorator to encapsulate Suspense for each lazy component individually, avoiding app-wide unmount loops
 const withSuspense = <P extends object>(
@@ -68,6 +69,13 @@ function App() {
 
   // Screen routing state
   const [screen, setScreen] = useState<'map' | 'arena' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang' | 'hang-3d' | 'hang-plane' | 'hang-graph' | 'lesson-study' | 'relax' | 'profile'>('map');
+
+  useEffect(() => {
+    const mathOnlyScreens = new Set(['hang-3d', 'hang-plane', 'hang-graph']);
+    if (!hasSubjectCapability(activeSectId, 'math-foundation-studios') && mathOnlyScreens.has(screen)) {
+      setScreen('hang');
+    }
+  }, [activeSectId, screen]);
   const [playMode, setPlayMode] = useState<'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'lesson' | 'survival'>('mixed');
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const masterLesson = useGameState(state => state.masterLesson);

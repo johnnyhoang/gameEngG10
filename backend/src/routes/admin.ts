@@ -147,7 +147,7 @@ router.get('/admin/users-all', authMiddleware, async (req: any, res) => {
 
 
 // POST /api/admin/update-user-role: Bật/Tắt (active/deactivate/create) bất kỳ role nào trong 4 role của tài khoản
-router.post('/api/admin/update-user-role', authMiddleware, async (req: any, res) => {
+router.post('/admin/update-user-role', authMiddleware, async (req: any, res) => {
   const adminId = req.profile.id;
   try {
     const adminCheck = await pool.query(
@@ -251,7 +251,7 @@ router.get('/admin/vice-principal-applications', authMiddleware, async (req: any
 });
 
 // POST /api/admin/respond-vice-principal: Duyệt hoặc từ chối yêu cầu ứng tuyển Phó Viện Trưởng (Chỉ dành cho Viện Trưởng)
-router.post('/api/admin/respond-vice-principal', authMiddleware, async (req: any, res) => {
+router.post('/admin/respond-vice-principal', authMiddleware, async (req: any, res) => {
   const adminId = req.profile.id;
   try {
     const adminCheck = await pool.query(

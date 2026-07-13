@@ -255,7 +255,7 @@ Thông tin bài toán:
 });
 
 // POST /api/ai/geometry-plane: Uses Gemini API to analyze a grade 9 plane geometry problem and return structured drawing guidance
-router.post('/api/ai/geometry-plane', authMiddleware, async (req: any, res) => {
+router.post('/ai/geometry-plane', authMiddleware, async (req: any, res) => {
   const { problemText } = req.body || {};
   if (!problemText || !String(problemText).trim()) {
     return res.status(400).json({ error: 'Missing problemText.' });
@@ -333,7 +333,7 @@ ${problemText}`;
 });
 
 // POST /api/ai/function-graph: Uses Gemini API to analyze a grade 9 function graph problem and return structured guidance
-router.post('/api/ai/function-graph', authMiddleware, async (req: any, res) => {
+router.post('/ai/function-graph', authMiddleware, async (req: any, res) => {
   const { problemText } = req.body || {};
   if (!problemText || !String(problemText).trim()) {
     return res.status(400).json({ error: 'Missing problemText.' });

@@ -605,9 +605,6 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
                     } else if (log.action === 'promote_user') {
                       actionBadgeColor = 'bg-synth-yellow/10 text-synth-yellow border border-synth-yellow/20';
                       actionName = 'Bổ Nhiệm Quyền';
-                    } else if (log.action === 'update_pin') {
-                      actionBadgeColor = 'bg-synth-magenta/10 text-synth-magenta border border-synth-magenta/20';
-                      actionName = 'Đổi PIN Bảo Mật';
                     } else if (log.action === 'invite_secondary_parent') {
                       actionBadgeColor = 'bg-synth-purple/10 text-synth-purple border border-synth-purple/20';
                       actionName = 'Mời Chủ Nhiệm Phụ';
@@ -627,8 +624,6 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
                         detailText = `Nạp đầy Năng Lượng lên ${p.targetEnergy}%`;
                       } else if (log.action === 'promote_user') {
                         detailText = `Bổ nhiệm vai trò mới: ${p.targetRole === 'pho_vien' ? 'Phó Viện Trưởng 🛡️' : p.targetRole === 'parent' ? 'Chủ Nhiệm Chính' : 'Sĩ Tử'}`;
-                      } else if (log.action === 'update_pin') {
-                        detailText = 'Cập nhật mã PIN bảo mật cá nhân thành công';
                       } else if (log.action === 'invite_secondary_parent') {
                         detailText = 'Gửi thư mời làm Chủ nhiệm Phụ cùng quản lý';
                       } else if (log.action === 'update_secondary_permissions') {

@@ -45,10 +45,3 @@ export interface ExplanationBoxProps {
   aiFeedback: string;
   aiSuggestions: string[];
 }
-
-export interface RunFinishedScreenProps {
-  mode: string;
-  rewardsEarned: { ruby: number; xp: number };
-  runMistakes: number;
-  onEscape: () => void;
-}
