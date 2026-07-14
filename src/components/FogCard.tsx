@@ -75,7 +75,7 @@ export const FogCard: React.FC<FogCardProps> = ({
       <div 
         className={`transition-all duration-500 h-full w-full ${
           status === 'shadowed' 
-            ? 'filter grayscale-[100%] brightness-50 opacity-80 blur-[1px] group-hover:grayscale-[50%] group-hover:brightness-75 group-hover:blur-0' 
+            ? 'filter grayscale-[50%] brightness-75 opacity-90 group-hover:grayscale-[25%] group-hover:brightness-90' 
             : ''
         } ${status === 'permanent' ? 'ring-2 ring-yellow-400/50 shadow-[0_0_15px_rgba(250,204,21,0.3)] rounded-2xl' : ''}`}
       >
@@ -86,17 +86,17 @@ export const FogCard: React.FC<FogCardProps> = ({
       {status === 'shadowed' && (
         <div
           className={`absolute inset-0 z-10 flex flex-col items-end justify-end overflow-hidden rounded-2xl transition-opacity duration-300 ${
-            isHovered ? 'opacity-40' : 'opacity-55'
+            isHovered ? 'opacity-20' : 'opacity-28'
           }`}
-          style={{ backgroundColor: 'color-mix(in srgb, var(--color-synth-bg) 55%, transparent)' }}
+          style={{ backgroundColor: 'color-mix(in srgb, var(--color-synth-bg) 28%, transparent)' }}
         >
           <div
             className="absolute -inset-8 rounded-full blur-xl animate-[fog-drift_9s_ease-in-out_infinite]"
-            style={{ backgroundColor: 'color-mix(in srgb, var(--color-synth-bg) 55%, white 10%)' }}
+            style={{ backgroundColor: 'color-mix(in srgb, var(--color-synth-bg) 28%, white 5%)' }}
           />
           <div
             className="absolute -inset-10 rounded-full blur-xl animate-[fog-drift-reverse_12s_ease-in-out_infinite]"
-            style={{ backgroundColor: 'color-mix(in srgb, var(--color-synth-bg) 45%, black 8%)' }}
+            style={{ backgroundColor: 'color-mix(in srgb, var(--color-synth-bg) 22%, black 4%)' }}
           />
           <span
             className="relative z-10 text-[10px] uppercase font-orbitron font-bold tracking-wider text-right max-w-[85%] px-3 pb-2"
