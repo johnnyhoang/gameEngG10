@@ -640,14 +640,14 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
 
 # Phòng Hiệu Trưởng & Sơ Đồ Tổ Chức (2026-07-14)
 
-- [ ] **PHT1 — Cấu hình phòng Hiệu Trưởng và Sơ Đồ Tổ Chức**
+- [x] **PHT1 — Cấu hình phòng Hiệu Trưởng và Sơ Đồ Tổ Chức**
   - *Mục tiêu:* Đổi tên Phòng Ban điều hành thành Phòng Hiệu Trưởng; thêm tab Sơ Đồ Tổ Chức hiển thị diagram cây phân cấp (Viện chủ -> Phó viện chủ -> Chủ nhiệm chính -> Phó chủ nhiệm -> Sĩ tử).
   - *Phải sửa:* `src/components/ParentConsole.tsx`, `SUB_SPEC_TERMINOLOGY.md`, `SUB_SPEC_FAMILY_ROLE.md`.
   - *Phải làm:* Đổi tên tab `thien_co_cac` và banner chào mừng; thêm sub-tab `org_chart`; tích hợp component `<OrgChart />`.
   - *Rủi ro:* Bố cục bị tràn trên màn hình nhỏ; lọc sai các mối liên kết hoặc hiển thị sai vai trò.
   - *Acceptance:* Nhãn tab, banner và các text đồng bộ; build pass không có lỗi biên dịch.
 
-- [ ] **PHT2 — Xây dựng Component vẽ Sơ Đồ Tổ Chức**
+- [x] **PHT2 — Xây dựng Component vẽ Sơ Đồ Tổ Chức**
   - *Mục tiêu:* Tạo component `src/components/ParentConsole/OrgChart.tsx` hiển thị diagram cây phân cấp mượt mà, đầy đủ các liên kết.
   - *Phải sửa:* `src/components/ParentConsole/OrgChart.tsx` (Mới).
   - *Phải làm:* 
@@ -658,5 +658,15 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
     - Chỉ hiển thị Tên hoặc Email (tuyệt đối không hiển thị ID/foreign key của DB).
     - Thêm tooltip thông tin chi tiết mượt mà.
   - *Acceptance:* Đầy đủ liên kết mượt mà; tooltip hoạt động chuẩn; kiểm tra tính đúng đắn của dữ liệu trên từng vai trò.
+
+
+# Xáo Trộn Đáp Án MCQ (2026-07-14)
+
+- [x] **MCQ1 — Triển khai xáo trộn ngẫu nhiên đáp án trắc nghiệm MCQ everywhere khi hiển thị**
+  - *Mục tiêu:* Đảm bảo khi hiển thị câu hỏi trắc nghiệm MCQ ở bất kỳ đâu (Làm bài Trường Thi, làm Riddle Đố vui, xem lại PostQuizReview), các đáp án luôn được xáo trộn ngẫu nhiên so với đề bài gốc.
+  - *Phải sửa:* `src/utils/shuffle.ts` (Mới), `src/components/PlayArea/QuestionMCQ.tsx`, `src/miniapps/riddle/RiddleGames.tsx`, `src/components/PlayArea/PostQuizReview.tsx`.
+  - *Phải làm:* Áp dụng thuật toán xáo trộn seed-based (dựa trên ID câu hỏi) để đảm bảo ngẫu nhiên nhưng ổn định giữa lúc làm bài và lúc review.
+  - *Acceptance:* Options được xáo trộn; không bị thay đổi ngẫu nhiên mỗi lần re-render; review khớp 100% với lúc làm bài; build pass.
+
 
 

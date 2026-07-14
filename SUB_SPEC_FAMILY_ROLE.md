@@ -186,7 +186,7 @@ Bảng Roster trong Phòng Học Vụ (`SettingsManager.tsx`) thay thế hoàn t
 
 ### 3.5 Sơ Đồ Tổ Chức (Organization Chart)
 
-Nằm trong **Phòng Hiệu Trưởng**, sơ đồ tổ chức hiển thị trực quan các liên kết nhân sự dưới dạng cây phân cấp (Diagram):
+Nằm trong **Phòng Hiệu Trưởng** (`phong_hieu_truong`), sơ đồ tổ chức hiển thị trực quan các liên kết nhân sự dưới dạng cây phân cấp (Diagram):
 1.  **Nhóm Viện Chủ (Viện Trưởng 👑):** Ở tầng cao nhất, đại diện cho những người sở hữu toàn quyền học viện.
 2.  **Nhóm Phó Viện Chủ (Phó Viện Trưởng 🛡️):** Tầng tiếp theo, được kết nối với nhóm Viện Chủ qua các liên kết quản trị.
 3.  **Chủ Nhiệm Chính (👨‍👩‍👧):** Tầng thứ ba, đại diện cho những giáo viên chủ nhiệm quản lý các lớp học.

@@ -244,7 +244,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
           {isConsoleUser && currentScreen === 'parent' && (
             <>
               {([
-                { tab: 'thien_co_cac', icon: '⚙️', label: 'Hiệu Trưởng', title: 'Phòng Hiệu Trưởng — Trung tâm quản trị' },
+                { tab: 'phong_hieu_truong', icon: '⚙️', label: 'Hiệu Trưởng', title: 'Phòng Hiệu Trưởng — Trung tâm quản trị' },
                 { tab: 'van_quyen_cac', icon: '📚', label: 'Đề Thi', title: 'Ngân Hàng Đề Thi' },
                 { tab: 'tang_kinh_cac', icon: '📖', label: 'Bài Giảng', title: 'Thư Viện Bài Giảng' },
                 { tab: 'than_phan', icon: '👤', label: 'Hồ Sơ', title: 'Hồ Sơ Của Tôi' },

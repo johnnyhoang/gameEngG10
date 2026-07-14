@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { QuestionMCQProps } from './types';
+import { shuffleWithSeed } from '../../utils/shuffle';
 
 const getMCQLayoutClass = (options: string[]) => {
   if (!options || options.length === 0) return 'grid grid-cols-1 gap-2.5';
@@ -29,9 +30,13 @@ export const QuestionMCQ: React.FC<QuestionMCQProps> = ({
 }) => {
   if (!activeQuestion.options) return null;
 
+  const shuffledOptions = useMemo(() => {
+    return shuffleWithSeed(activeQuestion.options || [], activeQuestion.id);
+  }, [activeQuestion.id, activeQuestion.options]);
+
   return (
-    <div className={getMCQLayoutClass(activeQuestion.options)}>
-      {activeQuestion.options.map((option, idx) => {
+    <div className={getMCQLayoutClass(shuffledOptions)}>
+      {shuffledOptions.map((option, idx) => {
         const cleanOpt = option.trim();
         const isSelected = selectedAnswer === cleanOpt;
         const correctAnsStr = Array.isArray(activeQuestion.correctAnswer)

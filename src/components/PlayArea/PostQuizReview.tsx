@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Award, ArrowLeft, ArrowRight, List, HelpCircle, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 import type { Question } from '../../types/game';
 import { QuestionMCQ } from './QuestionMCQ';
@@ -9,6 +9,7 @@ import { useGameState } from '../../hooks/useGameState';
 import { isLightTheme } from '../../theme/uiThemes';
 import { getAssessmentProvider } from '../../subject-modules/registry';
 import type { SubjectId } from '../../types/game';
+import { shuffleWithSeed } from '../../utils/shuffle';
 
 export interface PostQuizReviewProps {
   mode: string;
@@ -216,6 +217,11 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
   const isEssay = Boolean(getAssessmentProvider(activeSectId as SubjectId, q));
   const isTextInput = q.type === 'short-answer' || q.type === 'text_input';
 
+  const shuffledReviewOptions = useMemo(() => {
+    if (!q.options) return [];
+    return shuffleWithSeed(q.options, q.id);
+  }, [q.id, q.options]);
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fade-in p-4">
       {/* Navigation Header */}
@@ -328,7 +334,7 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
               💡 Phân tích chi tiết các lựa chọn
             </h5>
             <div className="space-y-2">
-              {q.options.map((option, idx) => {
+              {shuffledReviewOptions.map((option, idx) => {
                 const cleanOpt = option.trim();
                 const isSelected = reviewItem.userAnswer === cleanOpt;
                 const correctAnsStr = Array.isArray(q.correctAnswer) ? q.correctAnswer[0] : q.correctAnswer;

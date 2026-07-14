@@ -13,6 +13,8 @@ import {
 } from './riddleEngine';
 import { recordMissionEvent } from '../../services/missionLedgerService';
 import { toast } from '../../utils/toast';
+import { useMemo } from 'react';
+import { shuffleWithSeed } from '../../utils/shuffle';
 
 const MODE_CONFIG: Record<RiddleMode, { title: string; description: string; count: number; seconds: number | null }> = {
   'ruby-riddle': {
@@ -52,6 +54,11 @@ export function RiddleGames() {
   const missionEventsSent = useRef<Set<string>>(new Set());
   const roundId = useRef(crypto.randomUUID());
   const activeQuestion = roundQuestions[questionIndex];
+
+  const shuffledRiddleOptions = useMemo(() => {
+    if (!activeQuestion?.options) return [];
+    return shuffleWithSeed(activeQuestion.options, activeQuestion.id);
+  }, [activeQuestion?.id, activeQuestion?.options]);
 
   const loadRound = useCallback(async (nextMode: RiddleMode, resetScore: boolean) => {
     if (!currentUser?.id) return;
@@ -274,7 +281,7 @@ export function RiddleGames() {
               <div className="space-y-3">
                 <p className="text-sm font-semibold leading-snug text-white">{activeQuestion.prompt}</p>
                 <div className="space-y-2">
-                  {activeQuestion.options?.map(option => {
+                  {shuffledRiddleOptions.map(option => {
                     const isCorrectOption = submitted && isRiddleAnswerCorrect(option, activeQuestion.correctAnswer, activeQuestion.options ?? []);
                     const isSelected = selectedAnswer === option;
                     return (

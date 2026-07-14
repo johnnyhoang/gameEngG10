@@ -141,7 +141,7 @@ export const ParentConsole: React.FC = () => {
   }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (activeTab === 'thien_co_cac' && isAdmin(currentUser?.role)) {
+    if (activeTab === 'phong_hieu_truong' && isAdmin(currentUser?.role)) {
       useGameState.getState().fetchAuditLogs();
     }
   }, [activeTab, currentUser?.role]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -202,7 +202,7 @@ export const ParentConsole: React.FC = () => {
           <button
             onClick={() => {
               setViewingStudentId(null);
-              setActiveTab('thien_co_cac');
+              setActiveTab('phong_hieu_truong');
               toast.success('Đã quay lại danh sách học sinh');
             }}
             className="px-3 py-1.5 rounded bg-synth-gray/30 border border-white/10 text-xs text-white hover:bg-white/10 font-bold cursor-pointer transition-colors"
@@ -214,7 +214,7 @@ export const ParentConsole: React.FC = () => {
 
       {/* Tab Panels */}
       <div className="glass-panel rounded-2xl border border-white/5 p-5">
-        {activeTab === 'thien_co_cac' && (
+        {activeTab === 'phong_hieu_truong' && (
           <div className="space-y-6">
             {/* Welcome & Dashboard: gọn một khối — lời chào ngắn + chỉ số + bảng vàng */}
             <div className="glass-panel rounded-2xl border border-synth-cyan/30 p-5 bg-gradient-to-r from-synth-cyan/10 via-transparent to-synth-magenta/5 relative overflow-hidden shadow-lg space-y-4">
@@ -465,7 +465,7 @@ export const ParentConsole: React.FC = () => {
               resolveSkipReview={resolveSkipReview}
               onSwitchStudent={() => {
                 setViewingStudentId(null);
-                setActiveTab('thien_co_cac');
+                setActiveTab('phong_hieu_truong');
                 toast.success('Đã quay lại danh sách học sinh');
               }}
               // Reward props
@@ -509,11 +509,11 @@ export const ParentConsole: React.FC = () => {
       <nav className={`md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-2 py-2 pb-3 grid ${viewingStudentId ? 'grid-cols-5' : 'grid-cols-4'} gap-1 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)] text-center`}>
         <button
           onClick={() => {
-            setActiveTab('thien_co_cac');
+            setActiveTab('phong_hieu_truong');
             fetchAdminStudents();
           }}
           className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-            activeTab === 'thien_co_cac' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
+            activeTab === 'phong_hieu_truong' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
           }`}
         >
           <span className="text-base">⚙️</span>
@@ -554,7 +554,7 @@ export const ParentConsole: React.FC = () => {
           <button
             onClick={() => {
               setViewingStudentId(null);
-              setActiveTab('thien_co_cac');
+              setActiveTab('phong_hieu_truong');
               toast.success('Đã quay lại danh sách học sinh');
             }}
             className="flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider text-red-400 hover:text-red-300 transition-colors cursor-pointer"

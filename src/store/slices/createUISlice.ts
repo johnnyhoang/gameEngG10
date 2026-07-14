@@ -26,7 +26,7 @@ export const createUISlice: StateCreator<
   uiThemesByUser: {},
   helpPageId: null,
   handbookPages: ALL_HANDBOOK_PAGES,
-  parentConsoleTab: 'thien_co_cac',
+  parentConsoleTab: 'phong_hieu_truong',
 
   setSectModalOpen: (open) => set({ isSectModalOpen: open }),
 
