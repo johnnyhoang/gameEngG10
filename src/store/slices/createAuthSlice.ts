@@ -344,6 +344,7 @@ export const createAuthSlice: StateCreator<
       // 1. Clear all credentials from localStorage & sessionStorage immediately & synchronously
       try {
         localStorage.removeItem('ge10_selected_profile_id');
+        localStorage.removeItem('cyber-app-screen');
 
         const keysToRemove: string[] = [];
         for (let i = 0; i < localStorage.length; i++) {

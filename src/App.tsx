@@ -69,7 +69,13 @@ function App() {
   const classLinks = useGameState(state => state.classLinks);
 
   // Screen routing state
-  const [screen, setScreen] = useState<'map' | 'arena' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang' | 'hang-3d' | 'hang-plane' | 'hang-graph' | 'lesson-study' | 'relax' | 'profile'>('map');
+  const [screen, setScreen] = useState<'map' | 'arena' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang' | 'hang-3d' | 'hang-plane' | 'hang-graph' | 'lesson-study' | 'relax' | 'profile'>(
+    () => (localStorage.getItem('cyber-app-screen') as any) || 'map'
+  );
+
+  useEffect(() => {
+    localStorage.setItem('cyber-app-screen', screen);
+  }, [screen]);
 
   useEffect(() => {
     const mathOnlyScreens = new Set(['hang-3d', 'hang-plane', 'hang-graph']);
@@ -144,6 +150,11 @@ function App() {
   // Auto-switch screen for admin/parent users on login & show handbook on student login
   useEffect(() => {
     if (currentUser) {
+      const savedScreen = localStorage.getItem('cyber-app-screen');
+      if (savedScreen) {
+        setScreen(savedScreen as any);
+        return;
+      }
       if (isParentRole(currentUser.role) || isAdmin(currentUser.role)) {
         setScreen('parent');
       } else if (currentUser.role === 'student') {
