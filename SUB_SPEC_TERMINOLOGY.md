@@ -80,7 +80,7 @@ Quy trình thêm hoặc đổi thuật ngữ:
 | **Hồ Sơ Sĩ Tử** 👑 | Student Profile | `ProfileThemeModal`, `isProfileOpen` | Module | Quản lý hồ sơ, danh hiệu, phong cách và môn học của Sĩ Tử. | APPROVED |
 | **Phòng Điều Hành** | Administration Console | `ParentConsole`, `parent` | Module | Không gian quản lý dành cho Viện Trưởng, Phó Viện Trưởng, Chủ Nhiệm Chính và Chủ Nhiệm Phụ theo quyền. | APPROVED |
 | **Sổ Danh Bộ** 🏛️ | Member Register | `chinh_dien` | Module | Quản lý danh sách, hồ sơ và vai trò thành viên. | APPROVED |
-| **Phòng Học Vụ** 📖 | Academic Affairs & Analytics | `thien_co_cac` | Module | Báo cáo, thống kê và dashboard học tập. | APPROVED |
+| **Phòng Hiệu Trưởng** 📖 | Principal's Room / Academic Affairs | `thien_co_cac` | Module | Nơi Hiệu Trưởng/Viện Trưởng quản lý học viện, xem báo cáo, thống kê và sơ đồ tổ chức. | APPROVED |
 | **Kho Đề Thi** 📚 | Question Bank | `van_quyen_cac`, `QuestionBank` | Module | Quản lý câu hỏi, đề thi và quy trình import đề. | APPROVED |
 | **Phòng Tài Vụ** 💰 | Resources & Rewards Administration | `ngan_cac` | Module | Quản lý tài nguyên, cấu hình gameplay và quà khuyến học. | APPROVED |
 | **Cẩm Nang Học Đường** 📖 | School Handbook | `GiangHoCamNang`, `handbookPages` | Feature | Hướng dẫn sử dụng và giải thích quy tắc trong ứng dụng. | APPROVED |

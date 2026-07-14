@@ -4,6 +4,8 @@ import { isSuperAdmin } from '../../utils/roleHelpers';
 import { toast } from '../../utils/toast';
 import { authService } from '../../services/authService';
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+
 const ROLES_CONFIG = [
   { key: 'student',     label: 'Học Sinh',    icon: '🌱', color: 'synth-cyan' },
   { key: 'parent',      label: 'Chủ Nhiệm Chính', icon: '📋', color: 'synth-orange' },
@@ -25,7 +27,7 @@ export const RoleManager: React.FC<RoleManagerProps> = ({ currentUser }) => {
     setLoading(true);
     try {
       const token = await authService.getAccessToken();
-      const res = await fetch('/api/admin/users-all', {
+      const res = await fetch(`${backendUrl}/api/admin/users-all`, {
         headers: { Authorization: `Bearer ${token}`, 'X-Profile-Id': currentUser.id }
       });
       if (res.ok) {
@@ -81,7 +83,7 @@ export const RoleManager: React.FC<RoleManagerProps> = ({ currentUser }) => {
       const token = await authService.getAccessToken();
       const nextActiveState = !currentlyActive;
 
-      const res = await fetch('/api/admin/update-user-role', {
+      const res = await fetch(`${backendUrl}/api/admin/update-user-role`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, 'X-Profile-Id': currentUser.id },
         body: JSON.stringify({

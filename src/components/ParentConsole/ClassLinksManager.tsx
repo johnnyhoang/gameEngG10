@@ -2,29 +2,29 @@ import React, { useState } from 'react';
 import { toast } from '../../utils/toast';
 import { SearchSuggest } from '../Common/SearchSuggest';
 
-interface FamilyManagerProps {
+interface ClassLinksManagerProps {
   currentUser: any;
-  familyLinks: any[];
+  classLinks: any[];
   secondaryParents: any[];
-  sendInvite: (targetEmail: string, connectAsSecondary?: boolean) => Promise<{ success: boolean; conflictCode?: string; error?: string }>;
-  respondInvite: (linkId: string, accept: boolean) => Promise<boolean>;
+  sendClassInvite: (targetEmail: string, connectAsSecondary?: boolean) => Promise<{ success: boolean; conflictCode?: string; error?: string }>;
+  respondClassInvite: (linkId: string, accept: boolean) => Promise<boolean>;
   inviteSecondary: (email: string) => Promise<boolean>;
   inviteSecondaryRequest: (email: string) => Promise<{ success: boolean; error?: string }>;
   updateSecondaryPermissions: (linkId: string, permissions: any) => Promise<boolean>;
-  leaveFamily: (linkId: string) => Promise<boolean>;
+  leaveClass: (linkId: string) => Promise<boolean>;
   applyVicePrincipal?: () => Promise<{ success: boolean; error?: string }>;
 }
 
-export const FamilyManager: React.FC<FamilyManagerProps> = ({
+export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
   currentUser,
-  familyLinks,
+  classLinks,
   secondaryParents,
-  sendInvite,
-  respondInvite,
+  sendClassInvite,
+  respondClassInvite,
   inviteSecondary,
   inviteSecondaryRequest,
   updateSecondaryPermissions,
-  leaveFamily,
+  leaveClass,
   applyVicePrincipal
 }) => {
   const [inviteStudentEmail, setInviteStudentEmail] = useState('');
@@ -43,7 +43,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
     if (processingIds[linkId]) return;
     setProcessingIds(prev => ({ ...prev, [linkId]: true }));
     try {
-      const ok = await respondInvite(linkId, accept);
+      const ok = await respondClassInvite(linkId, accept);
       if (ok) toast.success(successMsg);
     } catch (err) {
       console.error(err);
@@ -53,12 +53,12 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
     }
   };
 
-  const handleLeaveFamily = async (linkId: string, confirmMsg: string, successMsg: string) => {
+  const handleLeaveClass = async (linkId: string, confirmMsg: string, successMsg: string) => {
     if (processingIds[linkId]) return;
     if (window.confirm(confirmMsg)) {
       setProcessingIds(prev => ({ ...prev, [linkId]: true }));
       try {
-        const ok = await leaveFamily(linkId);
+        const ok = await leaveClass(linkId);
         if (ok) toast.success(successMsg);
       } catch (err) {
         console.error(err);
@@ -86,7 +86,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
   const isPrimaryTeacher = currentUser?.role === 'parent';
   const isSecondaryTeacher = currentUser?.role === 'secondary_parent';
 
-  const vicePrincipalApplication = familyLinks.find(
+  const vicePrincipalApplication = classLinks.find(
     l => l.link_type === 'vice_principal' && l.parent_id === currentUser?.id
   );
 
@@ -111,10 +111,10 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
 
   // --- FILTERS ---
   // Active students under this teacher
-  const activeStudents = familyLinks.filter(l => l.status === 'active');
+  const activeStudents = classLinks.filter(l => l.status === 'active');
   
   // Incoming requests from students trying to join class (Primary Link & pending_parent)
-  const incomingStudentRequests = familyLinks.filter(
+  const incomingStudentRequests = classLinks.filter(
     l => l.status === 'pending_parent' && l.link_type === 'primary'
   );
 
@@ -124,7 +124,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
   );
 
   // Outgoing invitations sent to students
-  const outgoingStudentInvites = familyLinks.filter(
+  const outgoingStudentInvites = classLinks.filter(
     l => l.status === 'pending_student'
   );
 
@@ -236,7 +236,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                         className="px-3 py-1.5 rounded bg-synth-green text-black font-bold text-[10px] uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[50px]"
                       >
                         {processingIds[sp.id] ? (
-                          <span className="animate-spin inline-block w-3 h-3 border-2 border-black border-t-transparent rounded-full"></span>
+                          <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-black border-t-transparent rounded-full"></span>
                         ) : (
                           'Duyệt'
                         )}
@@ -247,7 +247,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                         className="px-3 py-1.5 rounded border border-red-500 text-red-400 font-bold text-[10px] uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[60px]"
                       >
                         {processingIds[sp.id] ? (
-                          <span className="animate-spin inline-block w-3 h-3 border-2 border-red-400 border-t-transparent rounded-full"></span>
+                          <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-red-400 border-t-transparent rounded-full"></span>
                         ) : (
                           'Từ chối'
                         )}
@@ -262,7 +262,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
       )}
 
       {/* ================= SECTION 2: INCOMING CLASS INVITATIONS FOR SECONDARY TEACHER ================= */}
-      {isSecondaryTeacher && familyLinks.filter(l => l.status === 'pending_parent' && l.link_type === 'secondary').length > 0 && (
+      {isSecondaryTeacher && classLinks.filter(l => l.status === 'pending_parent' && l.link_type === 'secondary').length > 0 && (
         <div className="rounded-2xl border border-synth-magenta/20 bg-synth-magenta/5 p-4 space-y-3">
           <h4 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-2">
              📩 Lời Mời Đồng Hành Từ Giáo Viên Chính
@@ -271,7 +271,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
             Bạn được mời làm Giáo viên phụ (Chủ Nhiệm Phụ) quản lý chung cho lớp học sau:
           </p>
           <div className="space-y-2">
-            {familyLinks.filter(l => l.status === 'pending_parent' && l.link_type === 'secondary').map(link => (
+            {classLinks.filter(l => l.status === 'pending_parent' && l.link_type === 'secondary').map(link => (
               <div key={link.id} className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/10">
                 <div className="flex items-center gap-2.5">
                   {link.parent_avatar ? (
@@ -316,7 +316,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
         </div>
       )}
 
-      {/* ================= SECTION 3: SEND CONNECTION INVITES & REQUESTS (Layout 2 cột 2 hàng) ================= */}
+      {/* ================= SECTION 3: SEND CONNECTION INVITES & REQUESTS ================= */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Card 1: Mời Thành Viên Lớp Học */}
         {isPrimaryTeacher && (
@@ -340,13 +340,13 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                   onClick={async () => {
                     if (!inviteStudentEmail.trim()) return;
                     setIsInvitingStudent(true);
-                    const result = await sendInvite(inviteStudentEmail.trim());
+                    const result = await sendClassInvite(inviteStudentEmail.trim());
                     if (result.success) {
                       toast.success('Đã gửi lời mời thành công!');
                       setInviteStudentEmail('');
                     } else if (result.conflictCode === 'STUDENT_HAS_PRIMARY') {
                       if (window.confirm(`${result.error}\n\nBạn có muốn gửi lời mời làm Chủ Nhiệm Phụ để cùng quản lý không?`)) {
-                        const secRes = await sendInvite(inviteStudentEmail.trim(), true);
+                        const secRes = await sendClassInvite(inviteStudentEmail.trim(), true);
                         if (secRes.success) {
                           toast.success('Đã gửi lời mời làm Chủ Nhiệm Phụ thành công!');
                           setInviteStudentEmail('');
@@ -467,7 +467,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                 </div>
                 <button
                   disabled={processingIds[vicePrincipalApplication.id]}
-                  onClick={() => handleLeaveFamily(vicePrincipalApplication.id, 'Bạn có chắc muốn hủy đơn ứng cử Phó Viện Trưởng này không?', 'Đã hủy đơn ứng cử Phó Viện Trưởng.')}
+                  onClick={() => handleLeaveClass(vicePrincipalApplication.id, 'Bạn có chắc muốn hủy đơn ứng cử Phó Viện Trưởng này không?', 'Đã hủy đơn ứng cử Phó Viện Trưởng.')}
                   className="px-2.5 py-1 rounded border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-[9px] uppercase cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[70px]"
                 >
                   {processingIds[vicePrincipalApplication.id] ? (
@@ -492,7 +492,6 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
         )}
       </div>
 
-
       {/* ================= SECTION 4: OUTGOING REQUESTS PENDING RESPONSE ================= */}
       {(outgoingStudentInvites.length > 0 || outgoingTeacherInvites.length > 0) && (
         <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-3">
@@ -509,7 +508,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                 </div>
                 <button
                   disabled={processingIds[link.id]}
-                  onClick={() => handleLeaveFamily(link.id, 'Bạn có chắc muốn thu hồi lời mời này?', 'Đã thu hồi lời mời.')}
+                  onClick={() => handleLeaveClass(link.id, 'Bạn có chắc muốn thu hồi lời mời này?', 'Đã thu hồi lời mời.')}
                   className="px-2 py-1 text-[9px] text-red-400 hover:text-red-300 bg-red-500/10 rounded font-bold uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[70px]"
                 >
                   {processingIds[link.id] ? (
@@ -530,7 +529,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                 </div>
                 <button
                   disabled={processingIds[sp.id]}
-                  onClick={() => handleLeaveFamily(sp.id, 'Bạn có chắc muốn thu hồi lời mời này?', 'Đã thu hồi lời mời.')}
+                  onClick={() => handleLeaveClass(sp.id, 'Bạn có chắc muốn thu hồi lời mời này?', 'Đã thu hồi lời mời.')}
                   className="px-2 py-1 text-[9px] text-red-400 hover:text-red-300 bg-red-500/10 rounded font-bold uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[70px]"
                 >
                   {processingIds[sp.id] ? (
@@ -588,39 +587,39 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                       <td className="py-3 px-3">
                         <div className="flex items-center gap-3">
                           <label className="flex items-center gap-1.5 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={perms.can_approve_rewards || false}
-                            disabled={updatingPermsIds[sp.id]}
-                            onChange={(e) => handleUpdatePermissions(sp.id, { can_approve_rewards: e.target.checked }, 'Đã cập nhật quyền duyệt quà')}
-                            className="accent-synth-purple cursor-pointer disabled:cursor-wait"
-                          />
-                          <span>Duyệt quà</span>
-                        </label>
-                        <label className="flex items-center gap-1.5 cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={perms.can_create_missions || false}
-                            disabled={updatingPermsIds[sp.id]}
-                            onChange={(e) => handleUpdatePermissions(sp.id, { can_create_missions: e.target.checked }, 'Đã cập nhật quyền giao nhiệm vụ')}
-                            className="accent-synth-purple cursor-pointer disabled:cursor-wait"
-                          />
-                          <span>Giao nhiệm vụ</span>
-                        </label>
-                      </div>
-                    </td>
-                    <td className="py-3 px-3 text-right">
-                      <button
-                        disabled={processingIds[sp.id]}
-                        onClick={() => handleLeaveFamily(sp.id, `Bạn có chắc muốn mời Giáo viên phụ ${sp.parent_name || sp.parent_email} ra khỏi lớp không?`, 'Đã xóa Giáo viên phụ khỏi lớp.')}
-                        className="px-2 py-1 text-[9px] border border-red-500/30 hover:border-red-500/60 bg-red-500/10 text-red-400 rounded uppercase font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[100px]"
-                      >
-                        {processingIds[sp.id] ? (
-                          <span className="animate-spin inline-block w-3 h-3 border-2 border-red-400 border-t-transparent rounded-full"></span>
-                        ) : (
-                          'Hủy Đồng Hành'
-                        )}
-                      </button>
+                            <input
+                              type="checkbox"
+                              checked={perms.can_approve_rewards || false}
+                              disabled={updatingPermsIds[sp.id]}
+                              onChange={(e) => handleUpdatePermissions(sp.id, { can_approve_rewards: e.target.checked }, 'Đã cập nhật quyền duyệt quà')}
+                              className="accent-synth-purple cursor-pointer disabled:cursor-wait"
+                            />
+                            <span>Duyệt quà</span>
+                          </label>
+                          <label className="flex items-center gap-1.5 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={perms.can_create_missions || false}
+                              disabled={updatingPermsIds[sp.id]}
+                              onChange={(e) => handleUpdatePermissions(sp.id, { can_create_missions: e.target.checked }, 'Đã cập nhật quyền giao nhiệm vụ')}
+                              className="accent-synth-purple cursor-pointer disabled:cursor-wait"
+                            />
+                            <span>Giao nhiệm vụ</span>
+                          </label>
+                        </div>
+                      </td>
+                      <td className="py-3 px-3 text-right">
+                        <button
+                          disabled={processingIds[sp.id]}
+                          onClick={() => handleLeaveClass(sp.id, `Bạn có chắc muốn mời Giáo viên phụ ${sp.parent_name || sp.parent_email} ra khỏi lớp không?`, 'Đã xóa Giáo viên phụ khỏi lớp.')}
+                          className="px-2 py-1 text-[9px] border border-red-500/30 hover:border-red-500/60 bg-red-500/10 text-red-400 rounded uppercase font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[100px]"
+                        >
+                          {processingIds[sp.id] ? (
+                            <span className="animate-spin inline-block w-3 h-3 border-2 border-red-400 border-t-transparent rounded-full"></span>
+                          ) : (
+                            'Hủy Đồng Hành'
+                          )}
+                        </button>
                       </td>
                     </tr>
                   );
@@ -642,7 +641,6 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
           </div>
 
           <div className="space-y-3">
-            {/* We find unique active class-level links for this secondary parent */}
             {secondaryParents.filter(sp => sp.status === 'active').map((sp: any) => (
               <div key={sp.id} className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/5">
                 <div className="flex items-center gap-2.5">
@@ -660,7 +658,7 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
                 </div>
                 <button
                   disabled={processingIds[sp.id]}
-                  onClick={() => handleLeaveFamily(sp.id, 'Bạn có chắc muốn xin dừng đồng hành với lớp này không?', 'Đã rời lớp đồng hành.')}
+                  onClick={() => handleLeaveClass(sp.id, 'Bạn có chắc muốn xin dừng đồng hành với lớp này không?', 'Đã rời lớp đồng hành.')}
                   className="px-3 py-1.5 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-xs uppercase cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[110px]"
                 >
                   {processingIds[sp.id] ? (
@@ -678,4 +676,3 @@ export const FamilyManager: React.FC<FamilyManagerProps> = ({
     </div>
   );
 };
-

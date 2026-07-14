@@ -6,17 +6,17 @@ import { useGameState } from '../../hooks/useGameState';
 
 interface AdminConnectionManagerProps {
   currentUser: any;
-  familyLinks: any[];
-  respondInvite: (linkId: string, accept: boolean) => Promise<boolean>;
-  leaveFamily: (linkId: string) => Promise<boolean>;
+  classLinks: any[];
+  respondClassInvite: (linkId: string, accept: boolean) => Promise<boolean>;
+  leaveClass: (linkId: string) => Promise<boolean>;
   inviteAdminConnection?: (email: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
   currentUser,
-  familyLinks,
-  respondInvite,
-  leaveFamily,
+  classLinks,
+  respondClassInvite,
+  leaveClass,
   inviteAdminConnection
 }) => {
   const [inviteEmail, setInviteEmail] = useState('');
@@ -28,10 +28,10 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
     if (processingIds[linkId]) return;
     setProcessingIds(prev => ({ ...prev, [linkId]: true }));
     try {
-      const ok = await respondInvite(linkId, accept);
+      const ok = await respondClassInvite(linkId, accept);
       if (ok) {
         toast.success(accept ? 'Đã chấp nhận kết nối Ban Giám Hiệu!' : 'Đã từ chối kết nối.');
-        await fetchFamily();
+        await fetchClassLinks();
       }
     } catch (err) {
       console.error(err);
@@ -41,15 +41,15 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
     }
   };
 
-  const handleLeaveFamily = async (linkId: string, confirmMsg: string, successMsg: string) => {
+  const handleLeaveClass = async (linkId: string, confirmMsg: string, successMsg: string) => {
     if (processingIds[linkId]) return;
     if (window.confirm(confirmMsg)) {
       setProcessingIds(prev => ({ ...prev, [linkId]: true }));
       try {
-        const ok = await leaveFamily(linkId);
+        const ok = await leaveClass(linkId);
         if (ok) {
           toast.success(successMsg);
-          await fetchFamily();
+          await fetchClassLinks();
         }
       } catch (err) {
         console.error(err);
@@ -60,18 +60,18 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
     }
   };
 
-  const fetchFamily = useGameState(state => state.fetchFamily);
+  const fetchClassLinks = useGameState(state => state.fetchClassLinks);
 
   // --- FILTERS ---
-  const activeConnections = familyLinks.filter(
+  const activeConnections = classLinks.filter(
     l => l.link_type === 'admin_connection' && l.status === 'active'
   );
 
-  const incomingRequests = familyLinks.filter(
+  const incomingRequests = classLinks.filter(
     l => l.link_type === 'admin_connection' && l.status === 'pending' && l.sender_id !== currentUser?.id
   );
 
-  const outgoingRequests = familyLinks.filter(
+  const outgoingRequests = classLinks.filter(
     l => l.link_type === 'admin_connection' && l.status === 'pending' && l.sender_id === currentUser?.id
   );
 
@@ -97,7 +97,7 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
 
   const handleRefresh = async () => {
     setLoading(true);
-    await fetchFamily();
+    await fetchClassLinks();
     setLoading(false);
   };
 
@@ -237,7 +237,7 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
                 </div>
                 <button
                   disabled={processingIds[link.id]}
-                  onClick={() => handleLeaveFamily(link.id, 'Bạn có chắc muốn hủy lời mời kết nối này không?', 'Đã hủy lời mời kết nối.')}
+                  onClick={() => handleLeaveClass(link.id, 'Bạn có chắc muốn hủy lời mời kết nối này không?', 'Đã hủy lời mời kết nối.')}
                   className="px-3 py-1.5 rounded border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-xs uppercase cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[100px]"
                 >
                   {processingIds[link.id] ? (
@@ -287,7 +287,7 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
                 </div>
                 <button
                   disabled={processingIds[link.id]}
-                  onClick={() => handleLeaveFamily(link.id, 'Bạn có chắc muốn hủy kết nối đồng hành với thành viên Ban Giám Hiệu này không?', 'Đã hủy kết nối đồng hành.')}
+                  onClick={() => handleLeaveClass(link.id, 'Bạn có chắc muốn hủy kết nối đồng hành với thành viên Ban Giám Hiệu này không?', 'Đã hủy kết nối đồng hành.')}
                   className="px-3 py-1.5 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-xs uppercase cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[100px]"
                 >
                   {processingIds[link.id] ? (

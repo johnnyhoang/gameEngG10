@@ -26,7 +26,7 @@ export const adminService = {
     const token = await adminService.getAccessToken();
     if (!token) return [];
 
-    const res = await fetch(`${backendUrl}/api/family/skip-reviews/${studentId}`, {
+    const res = await fetch(`${backendUrl}/api/class-links/skip-reviews/${studentId}`, {
       headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders() }
     });
     if (res.ok) {
@@ -39,7 +39,7 @@ export const adminService = {
     const token = await adminService.getAccessToken();
     if (!token) return false;
 
-    const res = await fetch(`${backendUrl}/api/family/skip-reviews/resolve`, {
+    const res = await fetch(`${backendUrl}/api/class-links/skip-reviews/resolve`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
       body: JSON.stringify({ reviewId })

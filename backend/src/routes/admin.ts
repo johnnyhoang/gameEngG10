@@ -34,7 +34,7 @@ router.get('/admin/users', authMiddleware, async (req: any, res) => {
         SELECT l.id, l.parent_id, l.student_id, l.link_type, l.status,
                u_parent.name as parent_name, u_parent.role as parent_role,
                u_student.name as student_name, u_student.role as student_role
-        FROM ge10_family_links l
+        FROM ge10_class_links l
         JOIN ge10_users u_parent ON l.parent_id = u_parent.id
         JOIN ge10_users u_student ON l.student_id = u_student.id
         WHERE l.status = 'active'
@@ -47,7 +47,7 @@ router.get('/admin/users', authMiddleware, async (req: any, res) => {
         SELECT DISTINCT u.id, u.name, u.email, u.avatar_url, u.role,
                p.level, p.xp, p.ruby, p.streak, p.energy, p.max_energy, p.reset_hours
         FROM ge10_users u
-        JOIN ge10_family_links l ON u.id = l.student_id
+        JOIN ge10_class_links l ON u.id = l.student_id
         LEFT JOIN ge10_player_profiles p ON u.id = p.user_id
         WHERE l.parent_id = $1 AND l.status = 'active' AND u.is_active = TRUE
       `, [callerProfileId]);
@@ -72,7 +72,7 @@ router.get('/admin/users', authMiddleware, async (req: any, res) => {
         const coTeachersRes = await pool.query(`
           SELECT DISTINCT u.id, u.name, u.email, u.avatar_url, u.role
           FROM ge10_users u
-          JOIN ge10_family_links l ON u.id = l.parent_id
+          JOIN ge10_class_links l ON u.id = l.parent_id
           WHERE l.student_id = ANY($1) AND l.status = 'active' AND u.id != $2 AND u.is_active = TRUE
         `, [studentIds, callerProfileId]);
 
@@ -91,7 +91,7 @@ router.get('/admin/users', authMiddleware, async (req: any, res) => {
           SELECT l.id, l.parent_id, l.student_id, l.link_type, l.status,
                  u_parent.name as parent_name, u_parent.role as parent_role,
                  u_student.name as student_name, u_student.role as student_role
-          FROM ge10_family_links l
+          FROM ge10_class_links l
           JOIN ge10_users u_parent ON l.parent_id = u_parent.id
           JOIN ge10_users u_student ON l.student_id = u_student.id
           WHERE l.student_id = ANY($1) AND l.status = 'active'
@@ -238,7 +238,7 @@ router.get('/admin/vice-principal-applications', authMiddleware, async (req: any
     const appsRes = await pool.query(`
       SELECT l.id, l.status, l.created_at, 
              u.id as teacher_id, u.name as teacher_name, u.email as teacher_email, u.avatar_url as teacher_avatar, u.account_id as teacher_account_id
-      FROM ge10_family_links l
+      FROM ge10_class_links l
       JOIN ge10_users u ON l.parent_id = u.id
       WHERE l.link_type = 'vice_principal' AND l.status = 'pending'
       ORDER BY l.created_at DESC
@@ -269,7 +269,7 @@ router.post('/admin/respond-vice-principal', authMiddleware, async (req: any, re
 
     // 1. Lấy thông tin đơn ứng tuyển
     const appCheck = await pool.query(
-      "SELECT * FROM ge10_family_links WHERE id = $1 AND link_type = 'vice_principal' AND status = 'pending'",
+      "SELECT * FROM ge10_class_links WHERE id = $1 AND link_type = 'vice_principal' AND status = 'pending'",
       [applicationId]
     );
     if (appCheck.rowCount === 0) {
@@ -317,11 +317,11 @@ router.post('/admin/respond-vice-principal', authMiddleware, async (req: any, re
       }
 
       // Cập nhật trạng thái đơn ứng tuyển sang active
-      await pool.query("UPDATE ge10_family_links SET status = 'active' WHERE id = $1", [applicationId]);
+      await pool.query("UPDATE ge10_class_links SET status = 'active' WHERE id = $1", [applicationId]);
       await logAuditEvent(teacherProfileId, 'approve_vice_principal_request', null, { applicationId });
     } else {
       // Từ chối: Xóa đơn ứng tuyển
-      await pool.query("DELETE FROM ge10_family_links WHERE id = $1", [applicationId]);
+      await pool.query("DELETE FROM ge10_class_links WHERE id = $1", [applicationId]);
       await logAuditEvent(teacherProfileId, 'reject_vice_principal_request', null, { applicationId });
     }
 

@@ -3,17 +3,17 @@ import { activeProfileHeaders } from './profileHeaders';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
 
-export const familyService = {
+export const classLinksService = {
   getAccessToken: async (): Promise<string | null> => {
     const sessionRes = await supabase.auth.getSession();
     return sessionRes.data.session?.access_token || null;
   },
 
-  fetchFamily: async (profileId: string): Promise<{ links: any[]; secondaryParents: any[] }> => {
-    const token = await familyService.getAccessToken();
+  fetchClassLinks: async (profileId: string): Promise<{ links: any[]; secondaryParents: any[] }> => {
+    const token = await classLinksService.getAccessToken();
     if (!token) throw new Error('No access token');
 
-    const res = await fetch(`${backendUrl}/api/family/${profileId}`, {
+    const res = await fetch(`${backendUrl}/api/class-links/${profileId}`, {
       headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders(profileId) }
     });
     if (res.ok) {
@@ -23,14 +23,14 @@ export const familyService = {
         secondaryParents: data.secondaryParents || []
       };
     }
-    throw new Error('Failed to fetch family data');
+    throw new Error('Failed to fetch class links data');
   },
 
   sendInvite: async (senderProfileId: string, targetEmail: string, connectAsSecondary?: boolean): Promise<{ success: boolean; conflictCode?: string; error?: string }> => {
-    const token = await familyService.getAccessToken();
+    const token = await classLinksService.getAccessToken();
     if (!token) return { success: false, error: 'No access token' };
 
-    const res = await fetch(`${backendUrl}/api/family/invite`, {
+    const res = await fetch(`${backendUrl}/api/class-links/invite`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders(senderProfileId) },
       body: JSON.stringify({ senderProfileId, targetEmail, connectAsSecondary })
@@ -41,10 +41,10 @@ export const familyService = {
   },
 
   inviteSecondary: async (senderProfileId: string, targetEmail: string): Promise<boolean> => {
-    const token = await familyService.getAccessToken();
+    const token = await classLinksService.getAccessToken();
     if (!token) return false;
 
-    const res = await fetch(`${backendUrl}/api/family/invite-secondary`, {
+    const res = await fetch(`${backendUrl}/api/class-links/invite-secondary`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders(senderProfileId) },
       body: JSON.stringify({ senderProfileId, targetEmail })
@@ -56,10 +56,10 @@ export const familyService = {
   },
 
   inviteSecondaryRequest: async (senderProfileId: string, targetEmail: string): Promise<{ success: boolean; error?: string }> => {
-    const token = await familyService.getAccessToken();
+    const token = await classLinksService.getAccessToken();
     if (!token) return { success: false, error: 'No access token' };
 
-    const res = await fetch(`${backendUrl}/api/family/invite-secondary-request`, {
+    const res = await fetch(`${backendUrl}/api/class-links/invite-secondary-request`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
       body: JSON.stringify({ senderProfileId, targetEmail })
@@ -70,7 +70,7 @@ export const familyService = {
   },
 
   searchUsers: async (q: string, role?: string, profileId?: string): Promise<any[]> => {
-    const token = await familyService.getAccessToken();
+    const token = await classLinksService.getAccessToken();
     if (!token) return [];
 
     const url = new URL(`${backendUrl}/api/users/search`);
@@ -87,10 +87,10 @@ export const familyService = {
   },
 
   updateSecondaryPermissions: async (senderProfileId: string, linkId: string, permissions: any): Promise<boolean> => {
-    const token = await familyService.getAccessToken();
+    const token = await classLinksService.getAccessToken();
     if (!token) return false;
 
-    const res = await fetch(`${backendUrl}/api/family/secondary-permissions`, {
+    const res = await fetch(`${backendUrl}/api/class-links/secondary-permissions`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
       body: JSON.stringify({ senderProfileId, linkId, permissions })
@@ -102,10 +102,10 @@ export const familyService = {
   },
 
   respondInvite: async (profileId: string, linkId: string, accept: boolean): Promise<boolean> => {
-    const token = await familyService.getAccessToken();
+    const token = await classLinksService.getAccessToken();
     if (!token) return false;
 
-    const res = await fetch(`${backendUrl}/api/family/respond`, {
+    const res = await fetch(`${backendUrl}/api/class-links/respond`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders(profileId) },
       body: JSON.stringify({ profileId, linkId, accept })
@@ -113,11 +113,11 @@ export const familyService = {
     return res.ok;
   },
 
-  leaveFamily: async (profileId: string, linkId: string): Promise<boolean> => {
-    const token = await familyService.getAccessToken();
+  leaveClass: async (profileId: string, linkId: string): Promise<boolean> => {
+    const token = await classLinksService.getAccessToken();
     if (!token) return false;
 
-    const res = await fetch(`${backendUrl}/api/family/leave`, {
+    const res = await fetch(`${backendUrl}/api/class-links/leave`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders(profileId) },
       body: JSON.stringify({ profileId, linkId })
@@ -126,10 +126,10 @@ export const familyService = {
   },
 
   applyVicePrincipal: async (profileId: string): Promise<any> => {
-    const token = await familyService.getAccessToken();
+    const token = await classLinksService.getAccessToken();
     if (!token) return { success: false, error: 'No token' };
 
-    const res = await fetch(`${backendUrl}/api/family/apply-vice-principal`, {
+    const res = await fetch(`${backendUrl}/api/class-links/apply-vice-principal`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders(profileId) },
       body: JSON.stringify({ profileId })
@@ -140,10 +140,10 @@ export const familyService = {
   },
 
   inviteAdminConnection: async (senderProfileId: string, targetEmail: string): Promise<any> => {
-    const token = await familyService.getAccessToken();
+    const token = await classLinksService.getAccessToken();
     if (!token) return { success: false, error: 'No token' };
 
-    const res = await fetch(`${backendUrl}/api/family/invite-admin-connection`, {
+    const res = await fetch(`${backendUrl}/api/class-links/invite-admin-connection`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
       body: JSON.stringify({ senderProfileId, targetEmail })

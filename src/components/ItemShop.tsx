@@ -115,10 +115,7 @@ export const ItemShop: React.FC = () => {
 
   const handleRedeem = (id: string, title: string) => {
     const reward = rewards.find(r => r.id === id);
-    if (!reward || reward.remainingQuantity <= 0) {
-      toast.error('Phần thưởng đã hết số lượng!');
-      return;
-    }
+    if (!reward) return;
     if (player.ruby < reward.costRuby) {
       toast.error('Ruby chưa đủ để đổi phần thưởng này!');
       return;
@@ -226,7 +223,10 @@ export const ItemShop: React.FC = () => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative">
-            <FogCard pageId="shop-item-shield" requiredCompletions={2} decayDays={7} onOpenLevel3={handleBuyShield}>
+            <FogCard pageId="shop-item-shield" requiredCompletions={2} decayDays={7}
+              forceOpenNormal={player.ruby >= 150}
+              label="Chưa đủ Ruby"
+              onOpenLevel3={handleBuyShield}>
               <div className={`glass-panel rounded-2xl p-5 flex justify-between items-center h-full ${isUnicorn ? 'border-violet-200/35 bg-gradient-to-tr from-white/85 via-cyan-50/70 to-fuchsia-50/70' : 'border-synth-cyan/20 bg-gradient-to-tr from-synth-cyan/5 to-transparent'}`}>
                 <div className="flex gap-4 items-center">
                   <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl border shrink-0 ${isUnicorn ? 'bg-cyan-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-cyan/30'}`}>🛡️</div>
@@ -242,7 +242,10 @@ export const ItemShop: React.FC = () => {
             </FogCard>
           </div>
           <div className="relative md:col-span-2">
-            <FogCard pageId="shop-item-hint" requiredCompletions={2} decayDays={7} onOpenLevel3={handleBuyHint}>
+            <FogCard pageId="shop-item-hint" requiredCompletions={2} decayDays={7}
+              forceOpenNormal={player.ruby >= 50}
+              label="Chưa đủ Ruby"
+              onOpenLevel3={handleBuyHint}>
               <div className={`glass-panel rounded-2xl p-5 flex justify-between items-center h-full ${isUnicorn ? 'border-violet-200/35 bg-gradient-to-tr from-white/85 via-amber-50/70 to-fuchsia-50/70' : 'border-synth-orange/20 bg-gradient-to-tr from-synth-orange/5 to-transparent'}`}>
                 <div className="flex gap-4 items-center">
                   <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl border shrink-0 ${isUnicorn ? 'bg-amber-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-orange/30'}`}>📜</div>
@@ -274,7 +277,9 @@ export const ItemShop: React.FC = () => {
             const isActive = theme.id === uiTheme;
             return (
               <div key={theme.id} className="relative">
-                <FogCard pageId={`shop-theme-${theme.id}`} requiredCompletions={1} decayDays={10} label="Trang phục chưa trải nghiệm"
+                <FogCard pageId={`shop-theme-${theme.id}`} requiredCompletions={1} decayDays={10}
+                  forceOpenNormal={isUnlocked || player.ruby >= THEME_UNLOCK_COST}
+                  label="Chưa đủ Ruby"
                   onOpenLevel3={() => isUnlocked ? setUiTheme(theme.id) : handleBuyTheme(theme.id)}>
                   <div className={`glass-panel rounded-2xl p-5 flex justify-between items-center h-full ${isUnicorn ? 'border-violet-200/35 bg-gradient-to-tr from-white/85 via-violet-50/70 to-fuchsia-50/70' : 'border-synth-purple/20 bg-gradient-to-tr from-synth-purple/5 to-transparent'}`}>
                     <div className="flex gap-4 items-center min-w-0">
@@ -325,28 +330,28 @@ export const ItemShop: React.FC = () => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {rewards.map(reward => {
-                const isOutOfStock = reward.remainingQuantity <= 0;
                 const isAffordable = player.ruby >= reward.costRuby;
-                const canRedeem = !isOutOfStock && isAffordable;
+                const canRedeem = isAffordable;
                 return (
                   <div key={reward.id} className="relative">
                     <FogCard pageId={`shop-reward-${reward.id}`} requiredCompletions={1} decayDays={5}
+                      forceOpenNormal={isAffordable}
+                      label="Chưa đủ Ruby"
                       onOpenLevel3={() => canRedeem && handleRedeem(reward.id, reward.title)}>
-                      <div className={`glass-panel rounded-2xl p-4 flex justify-between items-center transition-all duration-200 h-full ${isUnicorn ? 'border-violet-200/25 bg-white/75 hover:bg-white/90' : 'border border-white/5 bg-synth-gray/20 hover:bg-synth-gray/30'} ${isOutOfStock ? 'opacity-50' : ''}`}>
+                      <div className={`glass-panel rounded-2xl p-4 flex justify-between items-center transition-all duration-200 h-full ${isUnicorn ? 'border-violet-200/25 bg-white/75 hover:bg-white/90' : 'border border-white/5 bg-synth-gray/20 hover:bg-synth-gray/30'}`}>
                         <div className="flex gap-3 items-center min-w-0">
                           <div className="w-10 h-10 rounded-lg bg-synth-blue/60 border border-white/5 flex items-center justify-center shrink-0 text-xl">🎁</div>
                           <div className="space-y-0.5 min-w-0">
                             <h4 className={`font-semibold text-sm truncate ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{reward.title}</h4>
                             <div className="flex items-center gap-2 flex-wrap">
                               <span className={`text-[10px] font-bold font-orbitron ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-orange'}`}>{reward.costRuby} Ruby</span>
-                              <span className={`text-[10px] font-bold font-orbitron px-1 rounded border ${isOutOfStock ? 'text-red-400 border-red-400/30 bg-red-400/5' : 'text-synth-cyan border-synth-cyan/30 bg-synth-cyan/5'}`}>Còn {reward.remainingQuantity}/{reward.quantity}</span>
                             </div>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 ml-2 shrink-0">
                           <button onClick={(e) => { e.stopPropagation(); handleRedeem(reward.id, reward.title); }} disabled={!canRedeem}
                             className={`px-3.5 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed ${isUnicorn ? 'bg-gradient-to-r from-fuchsia-300 to-violet-300 text-violet-900 hover:brightness-105' : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.3)]'}`}>
-                            {isOutOfStock ? 'Hết Hàng' : 'Đổi Quà'}
+                            Đổi Quà
                           </button>
                         </div>
                       </div>
@@ -380,6 +385,8 @@ export const ItemShop: React.FC = () => {
                 return (
                   <div key={reward.id} className="relative">
                     <FogCard pageId={`shop-class-reward-${reward.id}`} requiredCompletions={1} decayDays={5}
+                      forceOpenNormal={isAffordable}
+                      label="Chưa đủ Ruby"
                       onOpenLevel3={() => !alreadyPending && canRedeem && handleRedeemClass(reward.id, reward.title)}>
                       <div className={`glass-panel rounded-2xl p-4 flex justify-between items-center transition-all duration-200 h-full ${isUnicorn ? 'border-violet-200/25 bg-white/75 hover:bg-white/90' : 'border border-white/5 bg-synth-gray/20 hover:bg-synth-gray/30'} ${isOutOfStock ? 'opacity-50' : ''}`}>
                         <div className="flex gap-3 items-center min-w-0">

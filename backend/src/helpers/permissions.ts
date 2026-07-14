@@ -78,7 +78,7 @@ export const checkStudentManagementPermission = async (
 
     if (role === 'parent') {
       const linkCheck = await pool.query(
-        "SELECT id FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'primary' AND status = 'active'",
+        "SELECT id FROM ge10_class_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'primary' AND status = 'active'",
         [profileId, studentUserId]
       );
       if (linkCheck.rows.length > 0 && hasPermission(role, permissionAction)) return true;
@@ -86,7 +86,7 @@ export const checkStudentManagementPermission = async (
 
     if (role === 'secondary_parent') {
       const linkCheck = await pool.query(
-        "SELECT secondary_permissions FROM ge10_family_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'secondary' AND status = 'active'",
+        "SELECT secondary_permissions FROM ge10_class_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'secondary' AND status = 'active'",
         [profileId, studentUserId]
       );
       if (linkCheck.rows.length > 0) {

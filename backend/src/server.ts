@@ -10,7 +10,7 @@ import { SEED_LESSONS } from './lessonsData.js';
 // Routers
 import profilesRouter from './routes/profiles.js';
 import questionsRouter from './routes/questions.js';
-import familyRouter from './routes/family.js';
+import classLinksRouter from './routes/classLinks.js';
 import aiRouter from './routes/ai.js';
 import adminRouter from './routes/admin.js';
 import economyRouter from './routes/economy.js';
@@ -102,6 +102,12 @@ const initDB = async () => {
     } else {
       throw new Error(`Missing required mission ledger migration: ${missionLedgerPath}`);
     }
+    const renameFamilyToClassPath = path.join(__dirname, '..', 'migrations', '20260714_rename_family_to_class.sql');
+    if (fs.existsSync(renameFamilyToClassPath)) {
+      await pool.query(fs.readFileSync(renameFamilyToClassPath, 'utf8'));
+    } else {
+      throw new Error(`Missing required rename family to class migration: ${renameFamilyToClassPath}`);
+    }
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS subject VARCHAR(50) DEFAULT 'english';`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS image_url TEXT;`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;`);
@@ -143,7 +149,7 @@ const initDB = async () => {
     // Migration: Seed default classroom rewards for all existing active teachers
     console.log('=== Khởi chạy migration Quà Khuyến Học cho Chủ Nhiệm ===');
     const teachersRes = await pool.query(
-      `SELECT DISTINCT parent_id FROM ge10_family_links 
+      `SELECT DISTINCT parent_id FROM ge10_class_links 
        WHERE status = 'active' 
          AND parent_id IN (SELECT id FROM ge10_users WHERE role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien'))`
     );
@@ -166,7 +172,7 @@ app.get('/api/health', (req, res) => {
 // Register routes
 app.use('/api', profilesRouter);
 app.use('/api', questionsRouter);
-app.use('/api', familyRouter);
+app.use('/api', classLinksRouter);
 app.use('/api', aiRouter);
 app.use('/api', adminRouter);
 app.use('/api', economyRouter);
@@ -183,3 +189,4 @@ if (!process.env.VERCEL) {
 }
 
 export default app;
+// Trigger reload: 2026-07-14 11:21

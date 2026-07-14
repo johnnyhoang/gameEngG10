@@ -117,7 +117,7 @@ ON CONFLICT (profile_id, mission_key, period_key) DO NOTHING;
 UPDATE ge10_profile_mission_assignments a
 SET current = a.target, status = 'completed', completed_at = COALESCE(a.completed_at, NOW()), updated_at = NOW()
 WHERE a.mission_key = 'onboarding-teacher-link'
-  AND EXISTS (SELECT 1 FROM ge10_family_links f WHERE f.student_id = a.profile_id AND f.status = 'active');
+  AND EXISTS (SELECT 1 FROM ge10_class_links f WHERE f.student_id = a.profile_id AND f.status = 'active');
 
 UPDATE ge10_profile_mission_assignments a
 SET current = a.target, status = 'completed', completed_at = COALESCE(a.completed_at, p.completed_at), updated_at = NOW()

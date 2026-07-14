@@ -629,3 +629,34 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
   - *Mục tiêu:* Giữ feature `openMysteryBox` có dấu vết rõ trên UI nhưng không mở lại reward client-side thiếu chống nhận lặp.
   - *Phải sửa:* Thêm thẻ disabled trong Sổ Tu Học, ghi rõ đang hoàn thiện; không gọi action và không thay đổi Ruby/XP.
   - *Acceptance:* Sĩ Tử thấy Hòm Bí Mật trong Tiến Độ Tu Học; không thể click nhận thưởng; build pass.
+
+# Cấu trúc và mô tả các loại câu hỏi trắc nghiệm (2026-07-13)
+
+- [x] **QT1 — Đặc tả 11 loại câu hỏi trong hệ thống**
+  - *Mục tiêu:* Tạo tài liệu đặc tả `SUB_SPEC_QUESTION_TYPES.md` mô tả toàn bộ cấu trúc dữ liệu, hành vi UI và cơ chế chấm điểm của 11 loại câu hỏi.
+  - *Phải làm:* Mô tả cấu trúc TS interface `Question` và bảng DB `ge10_custom_questions`; phân tích hành vi và cơ chế chấm điểm của `mcq`, `multiple_choice`, `text_input`, `matching`, `wordform`, `rewrite`, `cloze`, `reading`, `short-answer`, `proof`, `multi-part`.
+  - *Kết quả:* Đã tạo tài liệu `SUB_SPEC_QUESTION_TYPES.md` đầy đủ thông tin, cấu trúc rõ ràng, chuẩn hóa theo từ điển và kiểm chứng build thành công.
+
+
+# Phòng Hiệu Trưởng & Sơ Đồ Tổ Chức (2026-07-14)
+
+- [ ] **PHT1 — Cấu hình phòng Hiệu Trưởng và Sơ Đồ Tổ Chức**
+  - *Mục tiêu:* Đổi tên Phòng Ban điều hành thành Phòng Hiệu Trưởng; thêm tab Sơ Đồ Tổ Chức hiển thị diagram cây phân cấp (Viện chủ -> Phó viện chủ -> Chủ nhiệm chính -> Phó chủ nhiệm -> Sĩ tử).
+  - *Phải sửa:* `src/components/ParentConsole.tsx`, `SUB_SPEC_TERMINOLOGY.md`, `SUB_SPEC_FAMILY_ROLE.md`.
+  - *Phải làm:* Đổi tên tab `thien_co_cac` và banner chào mừng; thêm sub-tab `org_chart`; tích hợp component `<OrgChart />`.
+  - *Rủi ro:* Bố cục bị tràn trên màn hình nhỏ; lọc sai các mối liên kết hoặc hiển thị sai vai trò.
+  - *Acceptance:* Nhãn tab, banner và các text đồng bộ; build pass không có lỗi biên dịch.
+
+- [ ] **PHT2 — Xây dựng Component vẽ Sơ Đồ Tổ Chức**
+  - *Mục tiêu:* Tạo component `src/components/ParentConsole/OrgChart.tsx` hiển thị diagram cây phân cấp mượt mà, đầy đủ các liên kết.
+  - *Phải sửa:* `src/components/ParentConsole/OrgChart.tsx` (Mới).
+  - *Phải làm:* 
+    - Lọc dữ liệu từ `adminStudents` và `adminLinks` thành 5 tầng rõ ràng.
+    - Vẽ cây phân cấp trực quan bằng CSS Flexbox/Grid và đường SVG mỏng.
+    - Hiển thị mối nối giữa Phó Viện Trưởng với Viện Trưởng, Chủ Nhiệm Phụ (Phó Chủ Nhiệm) với Chủ Nhiệm Chính và nối ngang với nhau.
+    - Nhóm học sinh tự do (chưa gán lớp) dưới quyền Ban Giám Hiệu.
+    - Chỉ hiển thị Tên hoặc Email (tuyệt đối không hiển thị ID/foreign key của DB).
+    - Thêm tooltip thông tin chi tiết mượt mà.
+  - *Acceptance:* Đầy đủ liên kết mượt mà; tooltip hoạt động chuẩn; kiểm tra tính đúng đắn của dữ liệu trên từng vai trò.
+
+

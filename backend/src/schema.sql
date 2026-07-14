@@ -20,8 +20,8 @@ ALTER TABLE ge10_users DROP COLUMN IF EXISTS family_id;
 ALTER TABLE ge10_users ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE;
 
 
--- Family Links Table (Multi-Profile & Secondary Parents)
-CREATE TABLE IF NOT EXISTS ge10_family_links (
+-- Class Links Table (Multi-Profile & Secondary Parents/Teachers)
+CREATE TABLE IF NOT EXISTS ge10_class_links (
     id VARCHAR(255) PRIMARY KEY,
     parent_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
     student_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,

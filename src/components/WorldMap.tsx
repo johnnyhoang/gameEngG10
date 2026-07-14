@@ -49,16 +49,16 @@ export function WorldMap({
   const parentQuests = useGameState(state => state.parentQuests || []);
   const claimParentQuest = useGameState(state => state.claimParentQuest);
   
-  const familyLinks = useGameState(state => state.familyLinks || []);
-  const respondInvite = useGameState(state => state.respondInvite);
-  const leaveFamily = useGameState(state => state.leaveFamily);
-  const sendInvite = useGameState(state => state.sendInvite);
+  const classLinks = useGameState(state => state.classLinks);
+  const respondClassInvite = useGameState(state => state.respondClassInvite);
+  const leaveClass = useGameState(state => state.leaveClass);
+  const sendClassInvite = useGameState(state => state.sendClassInvite);
   const [inviteEmail, setInviteEmail] = useState('');
   const [isInviting, setIsInviting] = useState(false);
 
-  const activeLink = familyLinks.find((l: any) => l.status === 'active');
-  const pendingLink = familyLinks.find((l: any) => l.status === 'pending_parent' && l.student_id === currentUser?.id);
-  const pendingStudentInvites = familyLinks.filter((l: any) => l.status === 'pending_student');
+  const activeLink = classLinks.find((l: any) => l.status === 'active');
+  const pendingLink = classLinks.find((l: any) => l.status === 'pending_parent' && l.student_id === currentUser?.id);
+  const pendingStudentInvites = classLinks.filter((l: any) => l.status === 'pending_student');
 
   const isWeekend = () => {
     const day = new Date().getDay();
@@ -185,71 +185,84 @@ export function WorldMap({
 
             {/* Connection Status & Action Form */}
             <div className="pt-1 text-xs">
-              {activeLink ? (
-                <div className={`flex flex-wrap items-center gap-2 px-3 py-2 rounded-xl border ${
-                  isUnicorn ? 'border-violet-200/50 bg-violet-50/50 text-violet-800' : 'border-synth-cyan/20 bg-synth-cyan/5 text-synth-cyan'
-                }`}>
-                  <span className="font-bold">🎓 Lớp Chủ Nhiệm:</span>
-                  <span className={isUnicorn ? 'text-violet-900' : 'text-white font-bold'}>
-                    {activeLink.parent_name || activeLink.parent_email || 'Chưa rõ tên'}
-                  </span>
-                  <span className={`text-[10px] ${isUnicorn ? 'text-violet-600/70' : 'text-slate-400'}`}>
-                    ({activeLink.parent_email})
-                  </span>
-                  <button
-                    onClick={async () => {
-                      if (window.confirm('Bạn có chắc muốn rời khỏi lớp của Chủ Nhiệm này không?')) {
-                        const success = await leaveFamily(activeLink.id);
-                        if (success) toast.success('Đã rời Lớp Chủ Nhiệm');
-                      }
-                    }}
-                    className={`ml-2 px-2.5 py-1 rounded-lg border text-[9px] uppercase font-black tracking-wide cursor-pointer transition-colors ${
-                      isUnicorn
-                        ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100'
-                        : 'border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20'
-                    }`}
-                  >
-                    Rời Lớp 🚪
-                  </button>
-                </div>
-              ) : pendingLink ? (
-                <div className={`flex flex-wrap items-center gap-2 px-3 py-2 rounded-xl border ${
-                  isUnicorn ? 'border-amber-200/50 bg-amber-50/50 text-amber-800' : 'border-synth-orange/20 bg-synth-orange/5 text-synth-orange'
-                }`}>
-                  <span className="font-bold">⏳ Xin gia nhập lớp:</span>
-                  <span className={isUnicorn ? 'text-amber-900' : 'text-white font-bold'}>
-                    {pendingLink.parent_name || pendingLink.parent_email || 'Chưa rõ tên'}
-                  </span>
-                  <span className="text-[10px] opacity-70">
-                    ({pendingLink.parent_email})
-                  </span>
-                  <span className="font-bold text-[9px] uppercase animate-pulse tracking-wider">(Chờ duyệt)</span>
-                  <button
-                    onClick={async () => {
-                      if (window.confirm('Bạn có chắc muốn hủy yêu cầu kết nối này không?')) {
-                        const ok = await leaveFamily(pendingLink.id);
-                        if (ok) toast.success('Đã hủy yêu cầu kết nối.');
-                      }
-                    }}
-                    className={`ml-2 px-2.5 py-1 rounded-lg border text-[9px] uppercase font-black tracking-wide cursor-pointer transition-colors ${
-                      isUnicorn
-                        ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100'
-                        : 'border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20'
-                    }`}
-                  >
-                    Hủy Yêu Cầu
-                  </button>
-                </div>
-              ) : (
+              <div className="space-y-3">
+                {/* 1. Active class connection status */}
+                {activeLink && (
+                  <div className={`flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-xl border ${
+                    isUnicorn ? 'border-violet-200/50 bg-violet-50/50 text-violet-800' : 'border-synth-cyan/20 bg-synth-cyan/5 text-synth-cyan'
+                  }`}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-bold">🎓 Lớp Chủ Nhiệm:</span>
+                      <span className={isUnicorn ? 'text-violet-900' : 'text-white font-bold'}>
+                        {activeLink.parent_name || activeLink.parent_email || 'Chưa rõ tên'}
+                      </span>
+                      <span className={`text-[10px] ${isUnicorn ? 'text-violet-600/70' : 'text-slate-400'}`}>
+                        ({activeLink.parent_email})
+                      </span>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        if (window.confirm('Bạn có chắc muốn rời khỏi lớp của Chủ Nhiệm này không?')) {
+                          const success = await leaveClass(activeLink.id);
+                          if (success) toast.success('Đã rời Lớp Chủ Nhiệm');
+                        }
+                      }}
+                      className={`px-2.5 py-1 rounded-lg border text-[9px] uppercase font-black tracking-wide cursor-pointer transition-colors ${
+                        isUnicorn
+                          ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100'
+                          : 'border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                      }`}
+                    >
+                      Rời Lớp 🚪
+                    </button>
+                  </div>
+                )}
+
+                {/* 2. Pending connection request status */}
+                {pendingLink && (
+                  <div className={`flex flex-wrap items-center justify-between gap-2 px-3 py-2 rounded-xl border ${
+                    isUnicorn ? 'border-amber-200/50 bg-amber-50/50 text-amber-800' : 'border-synth-orange/20 bg-synth-orange/5 text-synth-orange'
+                  }`}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="font-bold">⏳ Xin gia nhập lớp:</span>
+                      <span className={isUnicorn ? 'text-amber-900' : 'text-white font-bold'}>
+                        {pendingLink.parent_name || pendingLink.parent_email || 'Chưa rõ tên'}
+                      </span>
+                      <span className="text-[10px] opacity-70">
+                        ({pendingLink.parent_email})
+                      </span>
+                      <span className="font-bold text-[9px] uppercase animate-pulse tracking-wider">(Chờ duyệt)</span>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        if (window.confirm('Bạn có chắc muốn hủy yêu cầu kết nối này không?')) {
+                          const ok = await leaveClass(pendingLink.id);
+                          if (ok) toast.success('Đã hủy yêu cầu kết nối.');
+                        }
+                      }}
+                      className={`px-2.5 py-1 rounded-lg border text-[9px] uppercase font-black tracking-wide cursor-pointer transition-colors ${
+                        isUnicorn
+                          ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100'
+                          : 'border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                      }`}
+                    >
+                      Hủy Yêu Cầu
+                    </button>
+                  </div>
+                )}
+
+                {/* 3. Connection input form (Always visible to allow class switching/joining) */}
                 <div className={`flex flex-col sm:flex-row sm:items-center gap-3 p-3 rounded-2xl border ${
                   isUnicorn ? 'border-violet-200/50 bg-white/70' : 'border-white/10 bg-black/20'
                 }`}>
                   <div className="space-y-0.5 shrink-0">
                     <p className={`font-bold flex items-center gap-1.5 ${isUnicorn ? 'text-violet-800' : 'text-synth-cyan'}`}>
-                      <span>🎓</span> Kết nối Lớp Chủ Nhiệm
+                      <span>🎓</span> {(activeLink || pendingLink) ? 'Chuyển Lớp Chủ Nhiệm' : 'Kết nối Lớp Chủ Nhiệm'}
                     </p>
                     <p className={`text-[10px] leading-relaxed ${isUnicorn ? 'text-violet-600/70' : 'text-slate-400'}`}>
-                      Sĩ Tử mới? Nhập Email Google của Thầy/Cô để gia nhập lớp.
+                      {(activeLink || pendingLink)
+                        ? 'Muốn đổi lớp? Nhập Email Google của Thầy/Cô mới để chuyển lớp.'
+                        : 'Sĩ Tử mới? Nhập Email Google của Thầy/Cô để gia nhập lớp.'}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 flex-1 max-w-sm w-full">
@@ -265,7 +278,7 @@ export function WorldMap({
                       onClick={async () => {
                         if (!inviteEmail.trim()) return;
                         setIsInviting(true);
-                        const result = await sendInvite(inviteEmail.trim());
+                        const result = await sendClassInvite(inviteEmail.trim());
                         if (result.success) {
                           toast.success('Đã gửi yêu cầu kết nối thành công! Vui lòng chờ Thầy/Cô phê duyệt.');
                           setInviteEmail('');
@@ -281,11 +294,11 @@ export function WorldMap({
                           : 'bg-synth-cyan hover:bg-synth-cyan/80 text-black disabled:opacity-50'
                       }`}
                     >
-                      {isInviting ? 'Gửi...' : 'Xin Kết Nối'}
+                      {isInviting ? 'Gửi...' : (activeLink || pendingLink) ? 'Xin Chuyển Lớp' : 'Xin Kết Nối'}
                     </button>
                   </div>
                 </div>
-              )}
+              </div>
 
               {/* Lời mời kết nối từ thầy cô gửi tới */}
               {pendingStudentInvites.length > 0 && (
@@ -303,7 +316,7 @@ export function WorldMap({
                       <div className="flex gap-2">
                         <button
                           onClick={async () => {
-                            const success = await respondInvite(link.id, true);
+                            const success = await respondClassInvite(link.id, true);
                             if (success) toast.success('Đã đồng ý kết nối!');
                           }}
                           className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase cursor-pointer ${
@@ -314,7 +327,7 @@ export function WorldMap({
                         </button>
                         <button
                           onClick={async () => {
-                            const success = await respondInvite(link.id, false);
+                            const success = await respondClassInvite(link.id, false);
                             if (success) toast.success('Đã từ chối kết nối');
                           }}
                           className={`px-2.5 py-1 rounded-lg text-[9px] font-bold uppercase cursor-pointer ${

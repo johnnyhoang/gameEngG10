@@ -55,7 +55,7 @@ router.get('/class-rewards', async (req: any, res) => {
 
     // Student: check if in a class
     const linksRes = await pool.query(
-      `SELECT parent_id FROM ge10_family_links WHERE student_id = $1 AND status = 'active'`,
+      `SELECT parent_id FROM ge10_class_links WHERE student_id = $1 AND status = 'active'`,
       [profileId]
     );
     const teacherIds = linksRes.rows.map((r: any) => r.parent_id);
@@ -174,7 +174,7 @@ router.post('/class-rewards/:id/redeem', async (req: any, res) => {
 
     // Verify student is linked to this teacher
     const linkCheck = await pool.query(
-      `SELECT id FROM ge10_family_links WHERE student_id = $1 AND parent_id = $2 AND status = 'active'`,
+      `SELECT id FROM ge10_class_links WHERE student_id = $1 AND parent_id = $2 AND status = 'active'`,
       [profileId, reward.teacher_id]
     );
     if (linkCheck.rows.length === 0) {

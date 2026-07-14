@@ -7,11 +7,12 @@ import { toast } from '../utils/toast';
 // Import child managers
 import { AdminConnectionManager } from './ParentConsole/AdminConnectionManager';
 import { ProfilePage } from './ProfilePage';
-import { FamilyManager } from './ParentConsole/FamilyManager';
+import { ClassLinksManager } from './ParentConsole/ClassLinksManager';
 import { SettingsManager } from './ParentConsole/SettingsManager';
 import { StudentProfileView } from './ParentConsole/StudentProfileView';
 import { QuestionBankManager } from './ParentConsole/QuestionBankManager';
 import { LectureBankManager } from './ParentConsole/LectureBankManager';
+import { OrgChart } from './ParentConsole/OrgChart';
 
 export const ParentConsole: React.FC = () => {
   const markRewardDelivered = useGameState(state => state.markRewardDelivered);
@@ -21,8 +22,8 @@ export const ParentConsole: React.FC = () => {
 
   // Admin and member management states
   const currentUser = useGameState(state => state.currentUser);
-  const adminStudents = useGameState(state => state.adminStudents || []);
-  const adminLinks = useGameState(state => state.adminLinks || []);
+  const adminStudents = useGameState(state => state.adminStudents);
+  const adminLinks = useGameState(state => state.adminLinks);
   const selectedStudentProfile = useGameState(state => state.selectedStudentProfile);
   const fetchAdminStudents = useGameState(state => state.fetchAdminStudents);
   const fetchStudentProfile = useGameState(state => state.fetchStudentProfile);
@@ -50,15 +51,15 @@ export const ParentConsole: React.FC = () => {
   const fetchSkipReviews = useGameState(state => state.fetchSkipReviews);
   const resolveSkipReview = useGameState(state => state.resolveSkipReview);
 
-  // Family Management
-  const familyLinks = useGameState(state => state.familyLinks || []);
-  const secondaryParents = useGameState(state => state.secondaryParents || []);
-  const sendInvite = useGameState(state => state.sendInvite);
-  const respondInvite = useGameState(state => state.respondInvite);
+  // Class Links Management
+  const classLinks = useGameState(state => state.classLinks);
+  const secondaryParents = useGameState(state => state.secondaryParents);
+  const sendClassInvite = useGameState(state => state.sendClassInvite);
+  const respondClassInvite = useGameState(state => state.respondClassInvite);
   const inviteSecondary = useGameState(state => state.inviteSecondary);
   const inviteSecondaryRequest = useGameState(state => state.inviteSecondaryRequest);
   const updateSecondaryPermissions = useGameState(state => state.updateSecondaryPermissions);
-  const leaveFamily = useGameState(state => state.leaveFamily);
+  const leaveClass = useGameState(state => state.leaveClass);
   const applyVicePrincipal = useGameState(state => state.applyVicePrincipal);
   const inviteAdminConnection = useGameState(state => state.inviteAdminConnection);
   const uiTheme = useGameState(state => state.uiTheme);
@@ -66,7 +67,7 @@ export const ParentConsole: React.FC = () => {
 
   // Local state for layout
   const [activeTab, setActiveTab] = useState<'thien_co_cac' | 'van_quyen_cac' | 'tang_kinh_cac' | 'ngan_cac' | 'than_phan'>('thien_co_cac');
-  const [thienCoSubTab, setThienCoSubTab] = useState<'dashboard' | 'settings'>('dashboard');
+  const [thienCoSubTab, setThienCoSubTab] = useState<'dashboard' | 'org_chart' | 'settings'>('dashboard');
   const [viewingStudentId, setViewingStudentId] = useState<string | null>(null);
 
   // Filter students strictly by role for stats
@@ -108,22 +109,22 @@ export const ParentConsole: React.FC = () => {
   const [inspectLoading, setInspectLoading] = useState(false);
 
   // Load students list on mount for admin users
-  // NOTE: fetchAdminStudents/fetchFamily intentionally NOT in deps — Zustand actions get new references
+  // NOTE: fetchAdminStudents/fetchClassLinks intentionally NOT in deps — Zustand actions get new references
   // on every set() call, which would cause an infinite loop. We only re-run when role changes.
   useEffect(() => {
-    const { fetchAdminStudents: fetchAdm, fetchFamily: fetchFam } = useGameState.getState();
+    const { fetchAdminStudents: fetchAdm, fetchClassLinks: fetchClass } = useGameState.getState();
     if (isAdmin(currentUser?.role)) {
       fetchAdm();
     }
     if (isParentRole(currentUser?.role) || isAdmin(currentUser?.role)) {
-      fetchFam();
+      fetchClass();
     }
   }, [currentUser?.role]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    const { fetchAdminStudents: fetchAdm, fetchFamily: fetchFam } = useGameState.getState();
+    const { fetchAdminStudents: fetchAdm, fetchClassLinks: fetchClass } = useGameState.getState();
     fetchAdm();
-    fetchFam();
+    fetchClass();
   }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -150,7 +151,7 @@ export const ParentConsole: React.FC = () => {
   };
 
   // Phân quyền Chủ nhiệm phụ
-  const currentStudentLink = familyLinks.find(l => l.student_id === viewingStudentId && l.status === 'active');
+  const currentStudentLink = classLinks.find(l => l.student_id === viewingStudentId && l.status === 'active');
   const isPrimaryLink = currentStudentLink?.link_type === 'primary';
   const isSecondaryLink = currentStudentLink?.link_type === 'secondary';
 
@@ -222,7 +223,7 @@ export const ParentConsole: React.FC = () => {
         <div className="flex gap-2">
           {(['thien_co_cac', 'van_quyen_cac', 'tang_kinh_cac'] as const).map(tab => {
             const tabNames: Record<string, string> = {
-              thien_co_cac: '⚙️ Ban Điều Hành',
+              thien_co_cac: '⚙️ Phòng Hiệu Trưởng',
               van_quyen_cac: '📚 Ngân Hàng Đề Thi',
               tang_kinh_cac: '📖 Thư Viện Bài Giảng'
             };
@@ -297,10 +298,10 @@ export const ParentConsole: React.FC = () => {
               <div className="absolute bottom-0 left-0 w-48 h-48 bg-synth-magenta/5 rounded-full blur-3xl pointer-events-none"></div>
               <div className="relative z-10 space-y-2">
                 <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
-                  ⚙️ BAN ĐIỀU HÀNH — TRUNG TÂM QUẢN TRỊ HỌC VIỆN
+                  ⚙️ PHÒNG HIỆU TRƯỞNG — TRUNG TÂM QUẢN TRỊ HỌC VIỆN
                 </h3>
                 <p className="text-xs text-synth-text-muted leading-relaxed max-w-4xl">
-                  Chào mừng bạn đến với Ban Điều Hành! Đây là trung tâm điều hành và quản trị của học viện. Tại đây, bạn có thể theo dõi danh sách học sinh, thiết lập liên kết gia đình/trường học, điều chỉnh quy tắc nhận thưởng (Ruby), biên soạn cẩm nang học tập, và xem lịch sử hoạt động.
+                  Chào mừng bạn đến với Phòng Hiệu Trưởng! Đây là trung tâm điều hành và quản trị của học viện. Tại đây, bạn có thể theo dõi danh sách học sinh, thiết lập liên kết gia đình/trường học, điều chỉnh quy tắc nhận thưởng (Ruby), biên soạn cẩm nang học tập, và xem lịch sử hoạt động.
                 </p>
               </div>
             </div>
@@ -325,7 +326,7 @@ export const ParentConsole: React.FC = () => {
               </div>
             </div>
 
-            {/* Sub-Tab Control inside Phòng Học Vụ */}
+            {/* Sub-Tab Control inside Phòng Hiệu Trưởng */}
             <div className="flex gap-2 border-b border-white/5 pb-3">
               <button
                 onClick={() => setThienCoSubTab('dashboard')}
@@ -336,6 +337,16 @@ export const ParentConsole: React.FC = () => {
                 }`}
               >
                 👥 Học Sinh & Liên Kết
+              </button>
+              <button
+                onClick={() => setThienCoSubTab('org_chart')}
+                className={`px-4 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider border cursor-pointer transition-all duration-300 ${
+                  thienCoSubTab === 'org_chart'
+                    ? 'bg-synth-cyan border-synth-cyan text-black shadow-[0_0_8px_#00f0ff]'
+                    : 'bg-transparent border-white/10 text-synth-text-muted hover:text-white hover:border-white/30'
+                }`}
+              >
+                🌳 Sơ Đồ Tổ Chức
               </button>
               <button
                 onClick={() => setThienCoSubTab('settings')}
@@ -350,7 +361,13 @@ export const ParentConsole: React.FC = () => {
             </div>
 
             {/* Sub-Tab Contents */}
-            {thienCoSubTab === 'dashboard' ? (
+            {thienCoSubTab === 'org_chart' ? (
+              <OrgChart
+                currentUser={currentUser}
+                adminStudents={adminStudents}
+                adminLinks={adminLinks}
+              />
+            ) : thienCoSubTab === 'dashboard' ? (
               <div className="space-y-6">
                 {/* List of students for parent/admin viewing */}
                 <div className="rounded-2xl border border-white/5 bg-white/5 p-5 space-y-4">
@@ -360,7 +377,7 @@ export const ParentConsole: React.FC = () => {
                     </h4>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {familyLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).map((link: any) => (
+                    {classLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).map((link: any) => (
                       <div key={link.student_id} className="p-4 rounded-xl bg-synth-gray/20 border border-white/5 flex flex-col justify-between gap-3 hover:border-synth-cyan/40 transition-colors">
                         <div>
                           <div className="flex flex-wrap items-center gap-2 mb-1">
@@ -386,7 +403,7 @@ export const ParentConsole: React.FC = () => {
                         </button>
                       </div>
                     ))}
-                    {familyLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).length === 0 && (
+                    {classLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).length === 0 && (
                       <p className="text-xs text-synth-text-muted italic py-4 col-span-3 text-center">
                         Chưa có tài khoản học sinh nào kết nối vào gia đình.
                       </p>
@@ -398,22 +415,22 @@ export const ParentConsole: React.FC = () => {
                 {(currentUser?.role === 'truong_vien' || currentUser?.role === 'pho_vien') ? (
                   <AdminConnectionManager
                     currentUser={currentUser}
-                    familyLinks={familyLinks}
-                    respondInvite={respondInvite}
-                    leaveFamily={leaveFamily}
+                    classLinks={classLinks}
+                    respondClassInvite={respondClassInvite}
+                    leaveClass={leaveClass}
                     inviteAdminConnection={inviteAdminConnection}
                   />
                 ) : (
-                  <FamilyManager
+                  <ClassLinksManager
                     currentUser={currentUser}
-                    familyLinks={familyLinks}
+                    classLinks={classLinks}
                     secondaryParents={secondaryParents}
-                    sendInvite={sendInvite}
-                    respondInvite={respondInvite}
+                    sendClassInvite={sendClassInvite}
+                    respondClassInvite={respondClassInvite}
                     inviteSecondary={inviteSecondary}
                     inviteSecondaryRequest={inviteSecondaryRequest}
                     updateSecondaryPermissions={updateSecondaryPermissions}
-                    leaveFamily={leaveFamily}
+                    leaveClass={leaveClass}
                     applyVicePrincipal={applyVicePrincipal}
                   />
                 )}
@@ -508,7 +525,7 @@ export const ParentConsole: React.FC = () => {
           }`}
         >
           <span className="text-base">⚙️</span>
-          <span>Thiên Cơ</span>
+          <span>Hiệu Trưởng</span>
         </button>
 
         <button

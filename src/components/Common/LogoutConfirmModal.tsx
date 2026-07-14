@@ -38,6 +38,12 @@ export const LogoutConfirmModal: React.FC<LogoutConfirmModalProps> = ({
     }
   };
 
+  const handleSwitchProfile = () => {
+    localStorage.removeItem('ge10_selected_profile_id');
+    useGameState.setState({ currentUser: null });
+    onCancel();
+  };
+
   const isStudent = currentUser?.role === 'student';
 
   return (
@@ -82,34 +88,48 @@ export const LogoutConfirmModal: React.FC<LogoutConfirmModalProps> = ({
             {/* Dialog Content */}
             <div className="space-y-3 mb-6 px-2">
               <p className={`text-sm ${isUnicorn ? 'text-slate-600' : 'text-slate-300'}`}>
-                {isStudent
-                  ? 'Sĩ Tử có chắc chắn muốn rời khỏi học viện rèn luyện hôm nay?'
+                {currentUser
+                  ? 'Bạn muốn đổi sang vai trò khác hay đăng xuất hoàn toàn khỏi học viện?'
                   : 'Bạn có chắc chắn muốn đăng xuất khỏi tài khoản của mình?'}
               </p>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex gap-3">
-              <button
-                onClick={onCancel}
-                className={`flex-1 py-2.5 rounded-xl font-bold uppercase text-xs tracking-wider border transition-colors cursor-pointer ${
-                  isUnicorn
-                    ? 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200'
-                    : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
-                }`}
-              >
-                Hủy bỏ
-              </button>
-              <button
-                onClick={handleConfirm}
-                className={`flex-1 py-2.5 rounded-xl font-bold uppercase text-xs tracking-wider cursor-pointer transition-all duration-300 ${
-                  isUnicorn
-                    ? 'bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white hover:brightness-105 shadow-md shadow-fuchsia-500/20'
-                    : 'bg-synth-magenta text-white hover:shadow-[0_0_15px_rgba(255,0,127,0.4)]'
-                }`}
-              >
-                Đồng ý
-              </button>
+            <div className="flex flex-col gap-2">
+              {currentUser && (
+                <button
+                  onClick={handleSwitchProfile}
+                  className={`py-2.5 rounded-xl font-bold uppercase text-xs tracking-wider border cursor-pointer transition-all duration-300 ${
+                    isUnicorn
+                      ? 'bg-violet-100 hover:bg-violet-200 text-violet-700 border-violet-200/50 shadow-sm'
+                      : 'bg-synth-cyan/10 hover:bg-synth-cyan/20 text-synth-cyan border-synth-cyan/30 hover:border-synth-cyan/50 shadow-[0_0_10px_rgba(0,240,255,0.05)]'
+                  }`}
+                >
+                  Đổi vai trò
+                </button>
+              )}
+              <div className="flex gap-2.5">
+                <button
+                  onClick={onCancel}
+                  className={`flex-1 py-2.5 rounded-xl font-bold uppercase text-xs tracking-wider border transition-colors cursor-pointer ${
+                    isUnicorn
+                      ? 'bg-slate-100 hover:bg-slate-200 text-slate-600 border-slate-200'
+                      : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                  }`}
+                >
+                  Hủy bỏ
+                </button>
+                <button
+                  onClick={handleConfirm}
+                  className={`flex-1 py-2.5 rounded-xl font-bold uppercase text-xs tracking-wider cursor-pointer transition-all duration-300 ${
+                    isUnicorn
+                      ? 'bg-gradient-to-r from-fuchsia-500 to-violet-500 text-white hover:brightness-105 shadow-md shadow-fuchsia-500/20'
+                      : 'bg-synth-magenta text-white hover:shadow-[0_0_15px_rgba(255,0,127,0.4)]'
+                  }`}
+                >
+                  Đồng ý
+                </button>
+              </div>
             </div>
           </>
         ) : (

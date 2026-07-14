@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Sparkles } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
 
-export type FogStatus = 'shadowed' | 'temporary' | 'permanent';
+export type FogStatus = 'shadowed' | 'temporary' | 'permanent' | 'none';
 
 interface FogCardProps {
   pageId: string;
@@ -12,6 +12,7 @@ interface FogCardProps {
   children: React.ReactNode;
   /** Nhãn hiển thị trên lớp mờ sương — tùy ngữ cảnh trang (xem SUB_SPEC_UI_RULES.md §2) */
   label?: string;
+  forceOpenNormal?: boolean;
 }
 
 export function getFogStatus(
@@ -51,10 +52,11 @@ export const FogCard: React.FC<FogCardProps> = ({
   decayDays = 7,
   onOpenLevel3,
   children,
-  label = 'Khu vực chưa khám phá'
+  label = 'Khu vực chưa khám phá',
+  forceOpenNormal = false
 }) => {
   const explorationProgress = useGameState(state => state.explorationProgress);
-  const status = getFogStatus(pageId, explorationProgress, requiredCompletions, decayDays);
+  const status = forceOpenNormal ? 'none' : getFogStatus(pageId, explorationProgress, requiredCompletions, decayDays);
   
   const [isHovered, setIsHovered] = useState(false);
 

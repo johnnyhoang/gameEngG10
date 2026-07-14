@@ -153,7 +153,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* 1. Cấu hình game settings (Phòng Học Vụ — CORE_SPECS §2.1) */}
+      {/* 1. Cấu hình game settings (Phòng Hiệu Trưởng — CORE_SPECS §2.1) */}
       <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="w-4 h-4 text-synth-cyan" />

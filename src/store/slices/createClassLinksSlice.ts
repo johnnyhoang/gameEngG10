@@ -1,41 +1,41 @@
 // @ts-nocheck
 import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
-import { familyService } from '../../services/familyService';
+import { classLinksService } from '../../services/classLinksService';
 
-export const createFamilySlice: StateCreator<
+export const createClassLinksSlice: StateCreator<
   StoreState,
   [],
   [],
   Pick<StoreState, 
-    'familyLinks' | 'secondaryParents' | 'fetchFamily' | 'sendInvite' | 'inviteSecondary' | 'inviteSecondaryRequest' | 'searchUsers' | 'updateSecondaryPermissions' | 'respondInvite' | 'leaveFamily' | 'applyVicePrincipal' | 'inviteAdminConnection'
+    'classLinks' | 'secondaryParents' | 'fetchClassLinks' | 'sendClassInvite' | 'inviteSecondary' | 'inviteSecondaryRequest' | 'searchUsers' | 'updateSecondaryPermissions' | 'respondClassInvite' | 'leaveClass' | 'applyVicePrincipal' | 'inviteAdminConnection'
   >
 > = (set, get) => ({
-  familyLinks: [],
+  classLinks: [],
   secondaryParents: [],
 
-  fetchFamily: async () => {
+  fetchClassLinks: async () => {
     const state = get();
     const pId = state.currentUser?.id;
     if (!pId || pId.startsWith('mock-')) return;
     try {
-      const data = await familyService.fetchFamily(pId);
+      const data = await classLinksService.fetchClassLinks(pId);
       set({ 
-        familyLinks: data.links || [],
-        secondaryParents: data.classSecondaryLinks || []
+        classLinks: data.links || [],
+        secondaryParents: data.secondaryParents || []
       });
     } catch (e) {
-      console.error('Lỗi lấy dữ liệu gia đình', e);
+      console.error('Lỗi lấy dữ liệu liên kết lớp', e);
     }
   },
 
-  sendInvite: async (targetEmail: string, connectAsSecondary?: boolean) => {
+  sendClassInvite: async (targetEmail: string, connectAsSecondary?: boolean) => {
     const state = get();
     const pId = state.currentUser?.id;
     if (!pId) return { success: false, error: 'No current user' };
-    const result = await familyService.sendInvite(pId, targetEmail, connectAsSecondary);
+    const result = await classLinksService.sendInvite(pId, targetEmail, connectAsSecondary);
     if (result.success) { 
-      await state.fetchFamily(); 
+      await state.fetchClassLinks(); 
     }
     return result;
   },
@@ -44,9 +44,9 @@ export const createFamilySlice: StateCreator<
     const state = get();
     const pId = state.currentUser?.id;
     if (!pId) return false;
-    const success = await familyService.inviteSecondary(pId, targetEmail);
+    const success = await classLinksService.inviteSecondary(pId, targetEmail);
     if (success) { 
-      await state.fetchFamily(); 
+      await state.fetchClassLinks(); 
     }
     return success;
   },
@@ -55,44 +55,44 @@ export const createFamilySlice: StateCreator<
     const state = get();
     const pId = state.currentUser?.id;
     if (!pId) return { success: false, error: 'No current user' };
-    const result = await familyService.inviteSecondaryRequest(pId, targetEmail);
+    const result = await classLinksService.inviteSecondaryRequest(pId, targetEmail);
     if (result.success) {
-      await state.fetchFamily();
+      await state.fetchClassLinks();
     }
     return result;
   },
 
   searchUsers: async (q: string, role?: string) => {
     const profileId = get().currentUser?.id;
-    return familyService.searchUsers(q, role, profileId);
+    return classLinksService.searchUsers(q, role, profileId);
   },
 
   updateSecondaryPermissions: async (linkId: string, permissions: any) => {
     const state = get();
     const pId = state.currentUser?.id;
     if (!pId) return false;
-    const success = await familyService.updateSecondaryPermissions(pId, linkId, permissions);
+    const success = await classLinksService.updateSecondaryPermissions(pId, linkId, permissions);
     if (success) { 
-      await state.fetchFamily(); 
+      await state.fetchClassLinks(); 
     }
     return success;
   },
 
-  respondInvite: async (linkId: string, accept: boolean) => {
+  respondClassInvite: async (linkId: string, accept: boolean) => {
     const state = get();
     const pId = state.currentUser?.id;
     if (!pId) return false;
-    const success = await familyService.respondInvite(pId, linkId, accept);
-    if (success) { await state.fetchFamily(); }
+    const success = await classLinksService.respondInvite(pId, linkId, accept);
+    if (success) { await state.fetchClassLinks(); }
     return success;
   },
 
-  leaveFamily: async (linkId: string) => {
+  leaveClass: async (linkId: string) => {
     const state = get();
     const pId = state.currentUser?.id;
     if (!pId) return false;
-    const success = await familyService.leaveFamily(pId, linkId);
-    if (success) { await state.fetchFamily(); }
+    const success = await classLinksService.leaveClass(pId, linkId);
+    if (success) { await state.fetchClassLinks(); }
     return success;
   },
 
@@ -100,8 +100,8 @@ export const createFamilySlice: StateCreator<
     const state = get();
     const pId = state.currentUser?.id;
     if (!pId) return { success: false, error: 'Chưa chọn profile' };
-    const res = await familyService.applyVicePrincipal(pId);
-    if (res.success) { await state.fetchFamily(); }
+    const res = await classLinksService.applyVicePrincipal(pId);
+    if (res.success) { await state.fetchClassLinks(); }
     return res;
   },
 
@@ -109,9 +109,8 @@ export const createFamilySlice: StateCreator<
     const state = get();
     const pId = state.currentUser?.id;
     if (!pId) return { success: false, error: 'Chưa chọn profile' };
-    const res = await familyService.inviteAdminConnection(pId, targetEmail);
-    if (res.success) { await state.fetchFamily(); }
+    const res = await classLinksService.inviteAdminConnection(pId, targetEmail);
+    if (res.success) { await state.fetchClassLinks(); }
     return res;
   }
 });
-

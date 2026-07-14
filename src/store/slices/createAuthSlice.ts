@@ -121,9 +121,9 @@ export const createAuthSlice: StateCreator<
         lastSyncTime: new Date().toISOString(),
       });
       localStorage.setItem('ge10_selected_profile_id', profileId);
-      // Fetch family data after profile is selected
+      // Fetch class links data after profile is selected
       const state = get();
-      if(state.fetchFamily) await state.fetchFamily();
+      if(state.fetchClassLinks) await state.fetchClassLinks();
     } catch (e) {
       console.error('selectProfile error', e);
     }
@@ -373,7 +373,7 @@ export const createAuthSlice: StateCreator<
           sessionAccountId: null,
           availableProfiles: [],
           profilesLoading: false,
-          familyLinks: [],
+          classLinks: [],
           player: INITIAL_PLAYER,
           pet: INITIAL_PET,
           categoryStats: {},

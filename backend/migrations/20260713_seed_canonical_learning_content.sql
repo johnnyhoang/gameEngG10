@@ -28,4 +28,2254 @@ ON CONFLICT (id) DO UPDATE SET type=EXCLUDED.type,category=EXCLUDED.category,top
   options=EXCLUDED.options,correct_answer=EXCLUDED.correct_answer,explanation=EXCLUDED.explanation,difficulty=EXCLUDED.difficulty,
   source=EXCLUDED.source,subject=EXCLUDED.subject,grade_tier=EXCLUDED.grade_tier,image_url=EXCLUDED.image_url,metadata=EXCLUDED.metadata,is_confused=EXCLUDED.is_confused;
 
+-- Seed Info 9 Questions
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a1', 'mcq', 'máy tính', 'inf-digital-world', 'Thành phần nào sau đây đóng vai trò là ''não bộ'' của máy tính, thực hiện các lệnh và xử lý dữ liệu?', ARRAY['RAM', 'CPU (Bộ xử lý trung tâm)', 'Ổ cứng SSD', 'Card đồ họa (GPU)']::varchar[], ARRAY['CPU (Bộ xử lý trung tâm)']::varchar[], 'CPU (Central Processing Unit) là bộ xử lý trung tâm, chịu trách nhiệm điều khiển các hoạt động và xử lý dữ liệu của máy tính.', 2, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["phan-cung", "cpu"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a2', 'mcq', 'máy tính', 'inf-digital-world', 'Thông số ''Hz'' (Hertz) hoặc ''GHz'' khi nói về CPU của máy tính dùng để đo đại lượng nào?', ARRAY['Dung lượng lưu trữ của bộ nhớ', 'Tốc độ truyền dữ liệu mạng', 'Tốc độ xử lý (chu kỳ xung nhịp) của CPU', 'Điện năng tiêu thụ của máy tính']::varchar[], ARRAY['Tốc độ xử lý (chu kỳ xung nhịp) của CPU']::varchar[], 'Tần số xung nhịp đo bằng Hz, MHz hoặc GHz thể hiện số chu kỳ xử lý mà CPU có thể thực hiện trong một giây.', 3, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["cpu", "thong-so"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a3', 'mcq', 'thế giới số', 'inf-digital-world', 'Thiết bị nào sau đây thuộc nhóm thiết bị thông minh (IoT) có khả năng kết nối mạng và tự động hóa?', ARRAY['Bóng đèn LED thông thường', 'Đồng hồ thông minh (Smartwatch)', 'Ổ cắm điện cơ', 'Máy tính bỏ túi Casiofx-580']::varchar[], ARRAY['Đồng hồ thông minh (Smartwatch)']::varchar[], 'Đồng hồ thông minh có bộ vi xử lý, hệ điều hành, có khả năng kết nối mạng và tương tác với các thiết bị khác, thuộc nhóm thiết bị thông minh.', 3, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["thiet-bi-thong-minh", "iot"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a4', 'mcq', 'máy tính', 'inf-digital-world', 'Bộ nhớ RAM có đặc điểm nào sau đây?', ARRAY['Lưu trữ dữ liệu vĩnh viễn kể cả khi mất điện', 'Là bộ nhớ ngoài của máy tính', 'Dữ liệu bị xóa sạch khi tắt nguồn điện máy tính', 'Tốc độ truy xuất dữ liệu chậm hơn ổ cứng']::varchar[], ARRAY['Dữ liệu bị xóa sạch khi tắt nguồn điện máy tính']::varchar[], 'RAM (Random Access Memory) là bộ nhớ truy cập ngẫu nhiên có tính chất khả biến (volatile), dữ liệu sẽ mất đi khi ngắt nguồn điện.', 4, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["ram", "bo-nho"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a5', 'mcq', 'máy tính', 'inf-digital-world', 'Trong kiến trúc máy tính, bộ nhớ đệm nằm bên trong hoặc rất gần CPU để tăng tốc độ truy xuất dữ liệu được gọi là gì?', ARRAY['Bộ nhớ Cache', 'Bộ nhớ ROM', 'Ổ cứng SSD', 'Bộ nhớ Flash']::varchar[], ARRAY['Bộ nhớ Cache']::varchar[], 'Bộ nhớ đệm (Cache memory) có tốc độ siêu nhanh, tích hợp gần CPU để lưu các dữ liệu thường xuyên sử dụng, giảm thời gian chờ đợi cho bộ xử lý.', 5, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["cache", "bo-nho"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a6', 'mcq', 'thế giới số', 'inf-digital-world', 'Yếu tố nào sau đây quyết định một hệ thống máy móc được coi là hệ thống tự động hóa thông minh?', ARRAY['Có kích thước lớn và vỏ bằng kim loại', 'Sử dụng nhiều điện năng', 'Có khả năng cảm nhận môi trường và tự đưa ra quyết định dựa trên dữ liệu', 'Phải có màn hình cảm ứng']::varchar[], ARRAY['Có khả năng cảm nhận môi trường và tự đưa ra quyết định dựa trên dữ liệu']::varchar[], 'Hệ thống thông minh kết hợp cảm biến để thu thập dữ liệu và thuật toán xử lý để tự động đưa ra quyết định tối ưu.', 5, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["tu-dong-hoa", "thong-minh"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a7', 'mcq', 'tìm kiếm thông tin', 'inf-data-manage', 'Để tìm kiếm chính xác một cụm từ trên Internet (ví dụ: Tin học lớp 9 thành phố Hồ Chí Minh), ta nên đặt cụm từ đó trong ký hiệu nào?', ARRAY['Dấu ngoặc đơn ( )', 'Dấu ngoặc kép " "', 'Dấu ngoặc nhọn { }', 'Dấu ngoặc vuông [ ]']::varchar[], ARRAY['Dấu ngoặc kép " "']::varchar[], 'Khi đặt cụm từ trong cặp dấu ngoặc kép " ", công cụ tìm kiếm sẽ lọc ra các kết quả chứa chính xác cụm từ đó theo đúng thứ tự ký tự.', 3, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["tim-kiem", "internet"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a8', 'mcq', 'đám mây', 'inf-data-manage', 'Dịch vụ nào sau đây KHÔNG phải là dịch vụ lưu trữ đám mây?', ARRAY['Google Drive', 'Microsoft OneDrive', 'Dropbox', 'WinRAR']::varchar[], ARRAY['WinRAR']::varchar[], 'WinRAR là phần mềm dùng để nén và giải nén tệp tin cục bộ trên máy tính, không phải dịch vụ lưu trữ trực tuyến (đám mây).', 2, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["dam-may", "luu-tru"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a9', 'mcq', 'đám mây', 'inf-data-manage', 'Ưu điểm lớn nhất của việc chia sẻ tệp tin qua dịch vụ đám mây so với gửi qua USB truyền thống là gì?', ARRAY['Không cần kết nối Internet khi nhận tệp', 'Nhiều người có thể cùng truy cập và chỉnh sửa tệp đồng thời từ bất cứ đâu', 'Tốc độ tải dữ liệu luôn nhanh hơn tốc độ đọc của USB', 'Tệp tin luôn an toàn tuyệt đối 100% không lo rò rỉ']::varchar[], ARRAY['Nhiều người có thể cùng truy cập và chỉnh sửa tệp đồng thời từ bất cứ đâu']::varchar[], 'Điện toán đám mây hỗ trợ tính năng cộng tác theo thời gian thực (real-time collaboration), giúp nhiều người cùng làm việc trên một tệp dữ liệu từ xa.', 4, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["dam-may", "chia-se"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a10', 'mcq', 'tìm kiếm thông tin', 'inf-data-manage', 'Khi tìm kiếm thông tin trên Internet, toán tử ''site:'' đi kèm tên miền có tác dụng gì?', ARRAY['Chỉ tìm kiếm các kết quả nằm trong trang web được chỉ định', 'Tìm kiếm các hình ảnh liên quan đến trang web đó', 'Loại trừ trang web đó ra khỏi danh sách kết quả tìm kiếm', 'Tải toàn bộ nội dung trang web về máy tính']::varchar[], ARRAY['Chỉ tìm kiếm các kết quả nằm trong trang web được chỉ định']::varchar[], 'Toán tử ''site:ten_mien'' giới hạn phạm vi tìm kiếm của các công cụ tìm kiếm chỉ bên trong trang web hoặc tên miền đó.', 4, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["tim-kiem", "toan-tu"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a11', 'mcq', 'tìm kiếm thông tin', 'inf-data-manage', 'Nếu bạn muốn tìm kiếm tài liệu về ''lập trình Python'' nhưng định dạng tệp tải về bắt buộc phải là tệp PDF, từ khóa nào sau đây là chính xác?', ARRAY['lập trình python pdf', 'lập trình python filetype:pdf', 'lập trình python site:pdf', 'lập trình python doc:pdf']::varchar[], ARRAY['lập trình python filetype:pdf']::varchar[], 'Toán tử ''filetype:'' dùng để lọc kết quả tìm kiếm theo định dạng tệp mong muốn (pdf, docx, xlsx, pptx...).', 5, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["tim-kiem", "filetype"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a12', 'mcq', 'bản quyền', 'inf-ethics-law', 'Hành vi nào sau đây vi phạm quyền tác giả đối với một tác phẩm phần mềm máy tính?', ARRAY['Mua bản quyền phần mềm để cài đặt sử dụng cá nhân', 'Tự viết một phần mềm mới dựa trên ý tưởng của riêng mình', 'Bẻ khóa (Crack) phần mềm trả phí rồi chia sẻ miễn phí lên mạng xã hội', 'Giới thiệu phần mềm hay cho bạn bè cùng biết']::varchar[], ARRAY['Bẻ khóa (Crack) phần mềm trả phí rồi chia sẻ miễn phí lên mạng xã hội']::varchar[], 'Bẻ khóa phần mềm thương mại là hành vi thay đổi cấu trúc mã nguồn trái phép, vi phạm Luật Sở hữu trí tuệ và quyền tác giả.', 3, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["ban-quyen", "dao-duc"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a13', 'mcq', 'thông tin cá nhân', 'inf-ethics-law', 'Để bảo vệ thông tin cá nhân khi tham gia môi trường mạng xã hội, hành động nào sau đây KHÔNG được khuyến khích?', ARRAY['Cài đặt mật khẩu mạnh kết hợp xác thực 2 lớp (2FA)', 'Công khai số điện thoại, căn cước công dân và địa chỉ nhà lên trang cá nhân', 'Kiểm tra kỹ quyền truy cập trước khi đồng ý cài đặt ứng dụng lạ', 'Chỉ kết bạn với những người mình quen biết trong đời thực']::varchar[], ARRAY['Công khai số điện thoại, căn cước công dân và địa chỉ nhà lên trang cá nhân']::varchar[], 'Công khai các thông tin định danh cá nhân nhạy cảm sẽ tạo điều kiện cho kẻ xấu thực hiện hành vi lừa đảo, giả mạo danh tính.', 2, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["bao-mat", "thong-tin-ca-nhan"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a14', 'mcq', 'bản quyền', 'inf-ethics-law', 'Thuật ngữ ''Phần mềm mã nguồn mở'' (Open Source Software) có ý nghĩa cốt lõi là gì?', ARRAY['Người dùng được tải về miễn phí nhưng không được xem mã gốc', 'Người dùng được quyền xem, sửa đổi và chia sẻ mã nguồn của phần mềm', 'Phần mềm chạy trực tiếp trên trình duyệt không cần cài đặt', 'Phần mềm chỉ dành cho các chuyên gia công nghệ sử dụng']::varchar[], ARRAY['Người dùng được quyền xem, sửa đổi và chia sẻ mã nguồn của phần mềm']::varchar[], 'Phần mềm mã nguồn mở cho phép cộng đồng tiếp cận mã nguồn để nghiên cứu, cải tiến và phát triển theo các điều khoản giấy phép đi kèm.', 4, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["ma-nguon-mo", "ban-quyen"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a15', 'mcq', 'đạo đức', 'inf-ethics-law', 'Khi trích dẫn thông tin hoặc hình ảnh từ internet vào bài báo cáo học tập, học sinh cần làm gì để đảm bảo tính văn hóa và luật pháp số?', ARRAY['Tự nhận đó là nội dung do mình tự sáng tạo ra', 'Ghi rõ nguồn tham khảo, tên tác giả và liên kết gốc (nếu có)', 'Chỉnh sửa làm mờ logo của tác giả gốc để tránh bị phát hiện', 'Chỉ trích dẫn các tài liệu nước ngoài vì không ai kiểm tra']::varchar[], ARRAY['Ghi rõ nguồn tham khảo, tên tác giả và liên kết gốc (nếu có)']::varchar[], 'Trích dẫn nguồn là biểu hiện của việc tôn trọng quyền tác giả và tính trung thực trong học thuật khoa học.', 3, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["trich-dan", "dao-duc"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a16', 'mcq', 'bảng tính', 'inf-digital-tools', 'Trong bảng tính Excel, tại ô A1 chứa giá trị 85. Công thức `=IF(A1>=80, "Giỏi", "Khá")` sẽ trả về kết quả nào?', ARRAY['Giỏi', 'Khá', '85', 'Báo lỗi #VALUE!']::varchar[], ARRAY['Giỏi']::varchar[], 'Biểu thức điều kiện A1>=80 (85>=80) là Đúng (True), do đó hàm IF trả về tham số thứ hai là chuỗi ''Giỏi''.', 3, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["excel", "ham-if"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a17', 'mcq', 'bảng tính', 'inf-digital-tools', 'Hàm `SUMIF` trong chương trình bảng tính được sử dụng để làm gì?', ARRAY['Tính tổng tất cả các ô trong một vùng chọn', 'Đếm số lượng ô có chứa dữ liệu số', 'Tính tổng các ô thỏa mãn một điều kiện cụ thể nào đó', 'Tìm giá trị lớn nhất trong vùng dữ liệu']::varchar[], ARRAY['Tính tổng các ô thỏa mãn một điều kiện cụ thể nào đó']::varchar[], 'Hàm SUMIF là sự kết hợp của SUM và IF, dùng để tính tổng các giá trị trong một phạm vi đáp ứng tiêu chuẩn điều kiện được đưa ra.', 4, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["excel", "ham-sumif"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a18', 'mcq', 'bảng tính', 'inf-digital-tools', 'Cho vùng dữ liệu B2:B6 chứa các chuỗi: "Táo", "Ổi", "Táo", "Mận", "Táo". Công thức `=COUNTIF(B2:B6, "Táo")` sẽ cho ra giá trị là bao nhiêu?', ARRAY['2', '3', '4', '5']::varchar[], ARRAY['3']::varchar[], 'Hàm COUNTIF đếm số lần xuất hiện của chuỗi ''Táo'' trong vùng từ B2 đến B6. Chuỗi này xuất hiện đúng 3 lần.', 3, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["excel", "ham-countif"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a19', 'mcq', 'trình chiếu', 'inf-digital-tools', 'Khi thiết kế một bài bài trình chiếu, nguyên tắc nào sau đây giúp bài thuyết trình trực quan và chuyên nghiệp hơn?', ARRAY['Đặt càng nhiều chữ trên một slide càng tốt', 'Sử dụng ít nhất 10 màu sắc khác nhau trên một slide để tạo sự sặc sỡ', 'Sử dụng từ khóa ngắn gọn kết hợp sơ đồ, hình ảnh minh họa chất lượng cao', 'Sử dụng nhiều hiệu ứng chuyển động phức tạp cho mọi đối tượng chữ']::varchar[], ARRAY['Sử dụng từ khóa ngắn gọn kết hợp sơ đồ, hình ảnh minh họa chất lượng cao']::varchar[], 'Bài trình chiếu cần ngắn gọn, cô đọng nội dung chính và tận dụng hình ảnh, biểu đồ trực quan để người nghe dễ tiếp thu.', 3, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["trinh-chieu", "thiet-ke"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a20', 'mcq', 'video', 'inf-digital-tools', 'Phần mềm nào sau đây thường được sử dụng để cắt, ghép và biên tập các đoạn video ngắn trên máy tính hoặc điện thoại?', ARRAY['Microsoft Word', 'CapCut', 'MySQL', 'Notepad']::varchar[], ARRAY['CapCut']::varchar[], 'CapCut là một ứng dụng/phần mềm phổ biến hiện nay chuyên dùng để cắt ghép, chỉnh sửa và tạo kỹ xảo cho video.', 2, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["video", "bien-tap"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a21', 'mcq', 'lập trình', 'inf-algorithm', 'Trong sơ đồ khối của thuật toán, hình thoi dùng để biểu diễn cho thao tác nào?', ARRAY['Bắt đầu hoặc Kết thúc', 'Nhập hoặc Xuất dữ liệu', 'Phép xử lý, tính toán', 'Biểu thức điều kiện (Xét điều kiện rẽ nhánh)']::varchar[], ARRAY['Biểu thức điều kiện (Xét điều kiện rẽ nhánh)']::varchar[], 'Trong sơ đồ khối, hình chữ nhật dùng cho xử lý, hình van/oval dùng cho bắt đầu/kết thúc, hình bình hành dùng cho nhập/xuất, và hình thoi biểu diễn điều kiện rẽ nhánh.', 3, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["so-do-khoi", "thuat-toan"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a22', 'mcq', 'lập trình', 'inf-algorithm', 'Đoạn mã nguồn Python sau đây hiển thị kết quả gì ra màn hình?
+```python
+x = 10
+if x % 2 == 0:
+    print("Chẵn")
+else:
+    print("Lẻ")
+```', ARRAY['Chẵn', 'Lẻ', '10', 'Báo lỗi cú pháp']::varchar[], ARRAY['Chẵn']::varchar[], 'Biến x nhận giá trị 10. Phép toán `10 % 2` cho kết quả bằng 0, điều kiện `0 == 0` là Đúng nên khối lệnh `if` thực thi, in ra chữ ''Chẵn''.', 4, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["python", "cau-lenh-dieu-kien"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a23', 'mcq', 'lập trình', 'inf-algorithm', 'Trong Python, cấu trúc vòng lặp nào được sử dụng khi biết trước số lần lặp cụ thể?', ARRAY['while', 'if-else', 'for', 'switch-case']::varchar[], ARRAY['for']::varchar[], 'Vòng lặp `for` (thường kết hợp với hàm `range()`) được dùng để lặp với số lần biết trước trong Python.', 3, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["python", "vong-lap"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a24', 'mcq', 'lập trình', 'inf-algorithm', 'Đoạn mã lệnh Python sau đây tính toán tổng các số và in ra màn hình giá trị bao nhiêu?
+```python
+s = 0
+for i in range(1, 4):
+    s = s + i
+print(s)
+```', ARRAY['3', '4', '6', '10']::varchar[], ARRAY['6']::varchar[], '`range(1, 4)` tạo ra dãy số từ 1 đến 3 (gồm 1, 2, 3). Vòng lặp tính toán: s = 0 + 1 = 1; s = 1 + 2 = 3; s = 3 + 3 = 6. Kết quả là 6.', 5, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["python", "tinh-toan"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a25', 'mcq', 'lập trình', 'inf-algorithm', 'Từ khóa nào trong Python được sử dụng để định nghĩa một hàm (khối lệnh có thể tái sử dụng)?', ARRAY['function', 'def', 'define', 'proc']::varchar[], ARRAY['def']::varchar[], 'Trong Python, từ khóa `def` (viết tắt của define) dùng để khai báo mở đầu một hàm tự định nghĩa.', 4, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["python", "ham"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a26', 'mcq', 'hướng nghiệp', 'inf-career', 'Nghề nghiệp nào sau đây chuyên chịu trách nhiệm thiết kế, xây dựng và bảo trì các phần mềm, ứng dụng máy tính?', ARRAY['Chuyên viên quản trị mạng', 'Kỹ sư phần mềm / Lập trình viên', 'Chuyên gia phân tích dữ liệu', 'Kỹ thuật viên sửa chữa phần cứng']::varchar[], ARRAY['Kỹ sư phần mềm / Lập trình viên']::varchar[], 'Kỹ sư phần mềm hoặc Lập trình viên sử dụng ngôn ngữ lập trình để phát triển ứng dụng, hệ thống phần mềm đáp ứng nhu cầu thực tế.', 2, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["huong-nghiep", "lap-trinh-vien"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a27', 'mcq', 'hướng nghiệp', 'inf-career', 'Sự phát triển mạnh mẽ của công nghệ Trí tuệ nhân tạo (AI) yêu cầu người lao động trong tương lai cần tập trung phát triển nhóm kỹ năng nào nhất?', ARRAY['Nhập dữ liệu thủ công tốc độ nhanh', 'Ghi nhớ máy móc các thông số kỹ thuật', 'Tư duy phản biện, giải quyết vấn đề sáng tạo và năng lực số', 'Chép tay mã nguồn phần mềm ra giấy']::varchar[], ARRAY['Tư duy phản biện, giải quyết vấn đề sáng tạo và năng lực số']::varchar[], 'Khi các công việc lặp đi lặp lại được tự động hóa bằng AI, con người cần phát triển tư duy bậc cao như phản biện, sáng tạo và làm chủ công nghệ số.', 3, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["ai", "ky-nang-tuong-lai"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a28', 'mcq', 'máy tính', 'inf-digital-world', 'Khi chọn mua ổ cứng máy tính, thông số nào thể hiện không gian lưu trữ dữ liệu tối đa của ổ cứng đó?', ARRAY['Tốc độ bus (MHz)', 'Dung lượng (GB, TB)', 'Kích thước hình học (inch)', 'Điện áp hoạt động (Volt)']::varchar[], ARRAY['Dung lượng (GB, TB)']::varchar[], 'Dung lượng bộ nhớ đo bằng Gigabyte (GB) hoặc Terabyte (TB) xác định khả năng chứa nhiều hay ít tệp tin dữ liệu của ổ cứng.', 2, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["o-cung", "dung-luong"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a29', 'mcq', 'thế giới số', 'inf-digital-world', 'Trong nông nghiệp thông minh công nghệ cao, thiết bị nào thường thu thập chỉ số độ ẩm và nhiệt độ đất một cách tự động?', ARRAY['Thiết bị định tuyến Router', 'Cảm biến (Sensor)', 'Đầu đọc mã vạch', 'Máy chiếu chuyên dụng']::varchar[], ARRAY['Cảm biến (Sensor)']::varchar[], 'Cảm biến có chức năng chuyển đổi các đại lượng vật lý bên ngoài môi trường (nhiệt độ, ánh sáng, độ ẩm) thành tín hiệu số để máy tính xử lý.', 3, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["cam-bien", "iot"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a30', 'mcq', 'bảng tính', 'inf-digital-tools', 'Tại ô C3 của Excel chứa công thức `=SUMIF(A1:A5, ">10", B1:B5)`. Tham số `B1:B5` đại diện cho điều gì?', ARRAY['Vùng chứa điều kiện lọc dữ liệu', 'Vùng chứa các giá trị thực tế sẽ tính tổng', 'Vùng đếm số lượng ô trống', 'Vùng hiển thị thông tin lỗi kết quả']::varchar[], ARRAY['Vùng chứa các giá trị thực tế sẽ tính tổng']::varchar[], 'Tham số thứ 3 của hàm SUMIF (sum_range) chỉ định vùng chứa các ô số thực tế sẽ cộng lại với nhau nếu ô tương ứng ở vùng 1 thỏa mãn điều kiện.', 5, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["excel", "ham-sumif"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a31', 'mcq', 'lập trình', 'inf-algorithm', 'Xem đoạn mã Python sau:
+```python
+n = 5
+while n > 2:
+    n = n - 1
+print(n)
+```
+Kết quả hiển thị ra màn hình là bao nhiêu?', ARRAY['5', '3', '2', 'Lặp vô hạn']::varchar[], ARRAY['2']::varchar[], 'Vòng lặp while chạy khi n > 2. Các bước lặp: n=5 (5>2, n thành 4), n=4 (4>2, n thành 3), n=3 (3>2, n thành 2). Khi n=2, điều kiện n>2 là False nên vòng lặp kết thúc và in ra 2.', 4, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["python", "vong-lap-while"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a32', 'mcq', 'lập trình', 'inf-algorithm', 'Trong Python, tham số nào của hàm `print()` được dùng để quy định ký tự kết thúc thay vì xuống dòng mặc định?', ARRAY['sep', 'end', 'terminate', 'newline']::varchar[], ARRAY['end']::varchar[], 'Tham số `end` trong hàm print() cho phép thay đổi ký tự kết thúc mặc định (xuống dòng ''\n'') thành ký tự tự chọn khác.', 4, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["python", "print"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a33', 'mcq', 'bảng tính', 'inf-digital-tools', 'Trong bảng tính Excel, ký tự nào được dùng trước tên cột và tên dòng để tạo địa chỉ ô tuyệt đối (không bị thay đổi khi sao chép công thức)?', ARRAY['&', '%', '$', '#']::varchar[], ARRAY['$']::varchar[], 'Ký tự đô la $ dùng để cố định hàng hoặc cột trong địa chỉ ô tuyệt đối (ví dụ: $A$1) khi sao chép công thức.', 3, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["excel", "dia-chi-o"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a34', 'mcq', 'máy tính', 'inf-digital-world', 'Phần mềm nào sau đây thuộc nhóm phần mềm hệ thống (System Software) quản trị thiết bị phần cứng?', ARRAY['Hệ điều hành Windows 11', 'Trình duyệt Google Chrome', 'Phần mềm gõ tiếng Việt Unikey', 'Trình soạn thảo Microsoft Word']::varchar[], ARRAY['Hệ điều hành Windows 11']::varchar[], 'Hệ điều hành là phần mềm hệ thống đóng vai trò cầu nối, quản lý phần cứng và cung cấp môi trường chạy cho phần mềm ứng dụng.', 2, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["phan-mem", "he-dieu-hanh"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a35', 'mcq', 'hướng nghiệp', 'inf-career', 'Công việc chính của một chuyên gia An ninh mạng (Cybersecurity Specialist) là gì?', ARRAY['Lắp đặt dây cáp mạng mạng Internet trong nhà dân', 'Thiết kế đồ họa giao diện cho trang web', 'Bảo vệ hệ thống mạng, dữ liệu khỏi các cuộc tấn công của hacker', 'Bán linh kiện phần cứng máy tính']::varchar[], ARRAY['Bảo vệ hệ thống mạng, dữ liệu khỏi các cuộc tấn công của hacker']::varchar[], 'Chuyên gia an ninh mạng chịu trách nhiệm phát hiện lỗ hổng và bảo vệ tài sản số của cơ quan doanh nghiệp trước các vụ tấn công mạng trái phép.', 3, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["huong-nghiep", "an-ninh-mang"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a36', 'multiple_choice', 'lập trình', 'inf-algorithm', 'Trong ngôn ngữ lập trình Python, những tên biến nào sau đây là HỢP LỆ? (Chọn các phương án đúng)', ARRAY['_myvar', 'my_var123', '123myvar', 'my-var', 'class']::varchar[], ARRAY['_myvar', 'my_var123']::varchar[], 'Tên biến hợp lệ trong Python chỉ chứa chữ cái, chữ số và dấu gạch dưới _, bắt đầu bằng chữ cái hoặc dấu gạch dưới, không dùng dấu gạch ngang -, không bắt đầu bằng số và không trùng từ khóa hệ thống như class.', 5, 'Khảo sát chuyên môn Tin học 9 TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "multi-part", "tags": ["python", "bien-so"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a37', 'multiple_choice', 'đám mây', 'inf-data-manage', 'Các phương pháp nào giúp bảo mật dữ liệu lưu trữ trên đám mây hiệu quả? (Chọn các phương án đúng)', ARRAY['Bật tính năng xác thực đa yếu tố (MFA / 2FA) cho tài khoản', 'Mã hóa dữ liệu trước khi tải lên lưu trữ', 'Sử dụng chung một mật khẩu dễ nhớ cho tất cả các nền tảng đám mây', 'Phân quyền truy cập tệp tin một cách chính xác (chỉ xem hoặc có chỉnh sửa)']::varchar[], ARRAY['Bật tính năng xác thực đa yếu tố (MFA / 2FA) cho tài khoản', 'Mã hóa dữ liệu trước khi tải lên lưu trữ', 'Phân quyền truy cập tệp tin một cách chính xác (chỉ xem hoặc có chỉnh sửa)']::varchar[], 'Bật xác thực đa yếu tố, mã hóa tệp tin và phân quyền truy cập là các biện pháp an ninh mạng cơ bản để bảo mật đám mây. Dùng chung một mật khẩu yếu rất nguy hiểm.', 4, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "multi-part", "tags": ["bao-mat", "dam-may"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a38', 'multiple_choice', 'máy tính', 'inf-digital-world', 'Những thiết bị nào sau đây thuộc nhóm thiết bị vào (Input Devices) của hệ thống máy tính?', ARRAY['Bàn phím (Keyboard)', 'Chuột máy tính (Mouse)', 'Màn hình (Monitor)', 'Máy quét (Scanner)', 'Loa (Speakers)']::varchar[], ARRAY['Bàn phím (Keyboard)', 'Chuột máy tính (Mouse)', 'Máy quét (Scanner)']::varchar[], 'Bàn phím, chuột và máy quét nhập thông tin vào máy tính. Màn hình và loa là thiết bị xuất dữ liệu ra ngoài.', 3, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "multi-part", "tags": ["thiet-bi-vao", "phan-cung"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a39', 'multiple_choice', 'bảng tính', 'inf-digital-tools', 'Các kiểu biểu đồ nào sau đây thường dùng để trực quan hóa dữ liệu trong phần mềm Excel? (Chọn các phương án đúng)', ARRAY['Biểu đồ cột (Column Chart)', 'Biểu đồ đường (Line Chart)', 'Biểu đồ hình quạt tròn (Pie Chart)', 'Biểu đồ sơ đồ khối thuật toán (Flowchart Chart)']::varchar[], ARRAY['Biểu đồ cột (Column Chart)', 'Biểu đồ đường (Line Chart)', 'Biểu đồ hình quạt tròn (Pie Chart)']::varchar[], 'Biểu đồ cột, đường, và hình quạt là các dạng biểu đồ tích hợp mặc định trong Excel dùng biểu diễn số liệu. Sơ đồ khối là sơ đồ tư duy giải quyết vấn đề, không thuộc đồ thị số liệu.', 3, 'Khảo sát chuyên môn Tin học 9 TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "multi-part", "tags": ["excel", "bieu-do"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a40', 'text_input', 'lập trình', 'inf-algorithm', 'Trong Scratch, khối lệnh lặp vô hạn lần (không bao giờ dừng lại tự động) có tên tiếng Anh là gì?', NULL, ARRAY['forever', 'Forever']::varchar[], 'Khối lệnh lặp vô tận trong Scratch có tên là ''forever''.', 3, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["scratch", "vong-lap"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a41', 'text_input', 'bảng tính', 'inf-digital-tools', 'Trong bảng tính Excel, tên hàm tiếng Anh dùng để tính giá trị trung bình cộng của một danh sách các số là gì?', NULL, ARRAY['AVERAGE', 'average']::varchar[], 'Hàm AVERAGE trong Excel tính số trung bình cộng của các đối số truyền vào.', 3, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["excel", "ham-trung-binh"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a42', 'text_input', 'bản quyền', 'inf-ethics-law', 'Hành động sao chép hoặc phân phối phần mềm có bản quyền một cách bất hợp pháp được gọi chung là gì trong tiếng Việt? 
+-> Vi phạm ..............................', NULL, ARRAY['bản quyền', 'quyền tác giả', 'vi phạm bản quyền']::varchar[], 'Sao chép phần mềm không có sự đồng ý của tác giả là hành vi vi phạm bản quyền phần mềm.', 3, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["ban-quyen"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a43', 'text_input', 'máy tính', 'inf-digital-world', 'Đơn vị đo chu kỳ xung nhịp (tốc độ xử lý) của các bộ vi xử lý máy tính hiện đại ngày nay có ký hiệu viết tắt là gì?', NULL, ARRAY['GHz', 'ghz', 'Gigahertz']::varchar[], 'CPU hiện nay thường có tốc độ đo bằng GHz (Gigahertz), ví dụ 3.5 GHz nghĩa là 3.5 tỷ chu kỳ xử lý mỗi giây.', 4, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["cpu", "thong-so"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a44', 'wordform', 'lập trình', 'inf-algorithm', 'Thư viện lập trình vẽ hình học cơ bản trong ngôn ngữ Python bắt đầu bằng chữ TUR-......?', NULL, ARRAY['tle']::varchar[], 'Thư viện turtle trong Python cung cấp các công cụ vẽ đồ họa đơn giản mô phỏng một chú rùa di chuyển.', 4, 'Khảo sát chuyên môn Tin học 9 TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["python", "turtle"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a45', 'wordform', 'bảng tính', 'inf-digital-tools', 'Mỗi trang bảng tính đơn lẻ chứa lưới các hàng và cột trong một file Excel được gọi bằng tiếng Anh là SPREAD-......?', NULL, ARRAY['sheet']::varchar[], 'Mỗi sheet (hoặc spreadsheet) là một trang làm việc độc lập chứa lưới dữ liệu của file bảng tính.', 3, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["excel", "sheet"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a46', 'rewrite', 'lập trình', 'inf-algorithm', 'Sửa lại câu lệnh gán biến sau trong Python cho đúng cú pháp: ''Ta muốn gán giá trị 10 cho biến x, lệnh viết là: 10 = x'' 
+-> Sửa lại: Lệnh gán biến đúng là .............................................', NULL, ARRAY['x = 10', 'biến x bằng 10']::varchar[], 'Trong lập trình Python, biến nhận giá trị luôn đứng bên trái dấu bằng, giá trị cần gán đứng bên phải (ví dụ: x = 10).', 3, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["python", "cú-pháp"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a47', 'rewrite', 'bản quyền', 'inf-ethics-law', 'Sửa lại nhận định sau cho đúng luật bản quyền phần mềm: ''Nếu mua một phần mềm có phí, ta có quyền phân phối sao chép miễn phí cho mọi người sử dụng.'' 
+-> Sửa lại: Ta chỉ có quyền .............................................', NULL, ARRAY['sử dụng phần mềm đó cho cá nhân', 'dùng cho cá nhân và không được sao chép trái phép', 'cài đặt và sử dụng cá nhân theo điều khoản mua']::varchar[], 'Mua bản quyền phần mềm có phí chỉ cấp quyền sử dụng phần mềm trên thiết bị cá nhân, không bao gồm quyền nhân bản và phân phối lại.', 5, 'Khảo sát chuyên môn Tin học 9 TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["ban-quyen"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a48', 'short-answer', 'lập trình', 'inf-algorithm', 'Cho đoạn mã Python sau. Vòng lặp for sẽ chạy và in ra chữ ''Hi'' bao nhiêu lần? (Điền đáp số dạng chữ số)
+```python
+for i in range(2, 7):
+    print(''Hi'')
+```', NULL, ARRAY['5', 'năm']::varchar[], '`range(2, 7)` sinh ra dãy số gồm [2, 3, 4, 5, 6], tổng cộng có 5 phần tử nên vòng lặp in ra chữ ''Hi'' đúng 5 lần.', 4, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["python", "range"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a49', 'short-answer', 'bảng tính', 'inf-digital-tools', 'Trong Excel, ô A1=75. Công thức `=IF(A1>=80, "A", IF(A1>=70, "B", "C"))` sẽ trả về ký tự nào? (Điền một ký tự)', NULL, ARRAY['B', 'b']::varchar[], 'Đầu tiên xét A1>=80 (75>=80) là False. Chuyển sang nhánh false chạy tiếp IF(A1>=70, "B", "C"). Xét 75>=70 là True, nên kết quả trả về là ''B''.', 4, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["excel", "ham-if"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a50', 'proof', 'lập trình', 'inf-algorithm', 'Trình bày lập luận giải thuật tìm kiếm nhị phân (Binary Search). Giải thích tại sao dãy số bắt buộc phải được sắp xếp trước khi áp dụng giải thuật này.', NULL, ARRAY['Lập luận tìm kiếm nhị phân: 1. Nguyên lý: So sánh giá trị tìm kiếm với phần tử giữa của dãy. 2. Nếu bằng: dừng và trả về vị trí. 3. Nếu giá trị cần tìm nhỏ hơn phần tử giữa: thu hẹp không gian tìm kiếm về nửa bên trái. 4. Nếu lớn hơn: thu hẹp về nửa bên phải. 5. Giải thích: Dãy số phải được sắp xếp để quy luật chia đôi dãy luôn chính xác, giúp loại bỏ một nửa số lượng phần tử ở mỗi bước so sánh, tăng tốc độ tìm kiếm xuống độ phức tạp O(log N).']::varchar[], 'Tìm kiếm nhị phân chia đôi không gian tìm kiếm dựa vào tính chất sắp xếp tăng/giảm dần của dãy số để loại bỏ 50% số lượng phần tử ở mỗi bước lặp.', 7, 'Ngân hàng đề thi học kỳ Tin học 9 - TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "proof", "solutionStyle": "rubric", "solutionSteps": ["Xác định điều kiện đầu vào của giải thuật tìm kiếm nhị phân.", "Mô tả quy trình so sánh giá trị cần tìm với giá trị ở vị trí giữa dãy.", "Lập luận hướng thu hẹp không gian tìm kiếm về nửa bên trái hoặc bên phải.", "Giải thích lý do thuật toán bị lỗi nếu dãy số chưa được sắp xếp trước đó.", "Phân tích hiệu quả độ phức tạp thuật toán O(log N)."]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a51', 'multi-part', 'lập trình', 'inf-algorithm', 'Cho thuật toán tìm giá trị lớn nhất trong một mảng số nguyên bằng Python:
+```python
+numbers = [12, 45, 7, 89, 32]
+max_val = numbers[0]
+for x in numbers:
+    if x > max_val:
+        max_val = x
+```
+a) Biến `max_val` ban đầu được khởi gán bằng giá trị bao nhiêu?
+b) Sau khi chạy xong vòng lặp for qua mảng `numbers`, biến `max_val` nhận kết quả cuối cùng là bao nhiêu?', NULL, ARRAY['12', '89']::varchar[], 'a) Lệnh max_val = numbers[0] gán phần tử đầu tiên của mảng là 12 cho max_val. b) Vòng lặp duyệt qua toàn bộ phần tử, cập nhật max_val mỗi khi tìm thấy số lớn hơn. Kết quả cuối cùng là số lớn nhất trong mảng: 89.', 6, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "multi-part", "tags": ["python", "thuat-toan-tim-max"], "subparts": ["a", "b"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+-- Seed Tech 9 Questions
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a1', 'mcq', 'định hướng nghề nghiệp', 'tech-career-jobs', 'Nhóm nghề nghiệp nào sau đây chiếm tỷ trọng lớn trong kỷ nguyên Cách mạng công nghiệp 4.0 và gắn liền với việc thiết kế, vận hành hệ thống tự động?', ARRAY['Nhóm nghề thủ công mỹ nghệ', 'Nhóm nghề Kỹ thuật và Công nghệ', 'Nhóm nghề nông nghiệp truyền thống', 'Nhóm nghề khai khoáng thô']::varchar[], ARRAY['Nhóm nghề Kỹ thuật và Công nghệ']::varchar[], 'Trong kỷ nguyên số, nhóm nghề Kỹ thuật và Công nghệ đóng vai trò nòng cốt, thúc đẩy sự phát triển của tự động hóa, trí tuệ nhân tạo và các hệ thống sản xuất thông minh.', 2, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["huong-nghiep", "ky-thuat"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a2', 'mcq', 'lắp đặt mạng điện', 'tech-circuit-install', 'Trong sơ đồ nguyên lý của mạng điện trong nhà, cầu chì thường được lắp đặt ở vị trí nào để bảo vệ mạch điện?', ARRAY['Trên dây trung tính, trước công tắc', 'Trên dây pha, trước công tắc và tải tiêu thụ', 'Mắc song song với tải tiêu thụ', 'Sau thiết bị điện đồ dùng']::varchar[], ARRAY['Trên dây pha, trước công tắc và tải tiêu thụ']::varchar[], 'Cầu chì phải được mắc nối tiếp trên dây pha (dây nóng) và đứng trước các thiết bị khác để khi xảy ra sự cố ngắn mạch hoặc quá tải, cầu chì sẽ nóng chảy và ngắt dòng điện kịp thời.', 3, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["dien-dan-dung", "cau-chi"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a3', 'mcq', 'lắp đặt mạng điện', 'tech-circuit-install', 'Để đo điện năng tiêu thụ của một hộ gia đình tại TP.HCM trong một tháng, cơ quan điện lực sử dụng loại đồng hồ đo điện nào?', ARRAY['Ampe kế', 'Vôn kế', 'Công tơ điện (Kwh kế)', 'Ohm kế']::varchar[], ARRAY['Công tơ điện (Kwh kế)']::varchar[], 'Công tơ điện là thiết bị đo lường chuyên dụng để xác định lượng điện năng tiêu thụ (tính bằng Kilowatt giờ - kWh) của một mạch điện hoặc hộ gia đình.', 2, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["dien-dan-dung", "cong-to-dien"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a4', 'mcq', 'nông nghiệp', 'tech-circuit-install', 'Trong kỹ thuật gieo trồng cây ăn quả, phương pháp nhân giống vô tính nào giúp giữ nguyên được đặc tính tốt của cây mẹ và cho quả nhanh thu hoạch nhất?', ARRAY['Gieo hạt truyền thống', 'Chiết cành hoặc Ghép cành', 'Tưới nước nhỏ giọt', 'Bón phân hữu cơ bề mặt']::varchar[], ARRAY['Chiết cành hoặc Ghép cành']::varchar[], 'Chiết và ghép cành là các phương pháp nhân giống vô tính tiên tiến, giúp cây con thừa hưởng hoàn toàn bộ gen tốt từ cây mẹ, rút ngắn thời gian sinh trưởng so với gieo từ hạt.', 3, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["nong-nghiep", "nhan-giong"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a5', 'mcq', 'lập trình', 'tech-circuit-install', 'Khi ứng dụng mô hình STEM vào môn Công nghệ 9 để thiết kế ngôi nhà thông minh, thiết bị lập trình vi điều khiển nào sau đây thường được sử dụng phổ biến nhất?', ARRAY['Bo mạch Arduino hoặc Micro:bit', 'Ổ cứng HDD máy tính', 'Bộ nhớ RAM', 'Bộ nguồn máy tính ATX']::varchar[], ARRAY['Bo mạch Arduino hoặc Micro:bit']::varchar[], 'Arduino và Micro:bit là các bo mạch vi điều khiển mã nguồn mở, hỗ trợ học sinh lập trình kết nối cảm biến để tự động hóa các mô hình công nghệ (như bật tắt đèn, tưới nước tự động).', 4, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["stem", "vi-dieu-khien"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a6', 'mcq', 'lắp đặt mạng điện', 'tech-circuit-install', 'Khi tiến hành nối dây dẫn điện, việc quấn băng dính cách điện ngoài cùng của mối nối nhằm mục đích cốt lõi nào?', ARRAY['Tăng tính thẩm mỹ cho bảng điện', 'Đảm bảo an toàn điện, chống rò rỉ điện và chập mạch', 'Giúp mối nối dẫn điện tốt hơn', 'Tăng trọng lượng của dây dẫn']::varchar[], ARRAY['Đảm bảo an toàn điện, chống rò rỉ điện và chập mạch']::varchar[], 'Băng dính cách điện giúp cách ly phần lõi đồng/nhôm trần của mối nối với môi trường xung quanh, ngăn ngừa tai nạn điện giật và hiện tượng đoản mạch.', 2, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["dien-dan-dung", "an-toan-dien"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a7', 'mcq', 'định hướng nghề nghiệp', 'tech-career-jobs', 'Người làm việc trong ngành nghề nào sau đây đòi hỏi phải có kiến thức chuyên sâu về bản vẽ kỹ thuật, quy chuẩn an toàn điện lưới và kỹ năng lắp đặt hệ thống cơ điện công trình?', ARRAY['Kỹ sư cơ khí chế tạo', 'Kỹ sư điện / Kỹ thuật viên điện dân dụng', 'Chuyên viên thiết kế thời trang', 'Chuyên gia làm vườn nghệ thuật']::varchar[], ARRAY['Kỹ sư điện / Kỹ thuật viên điện dân dụng']::varchar[], 'Ngành điện - điện tử đòi hỏi năng lực đọc bản vẽ sơ đồ mạch điện, am hiểu quy chuẩn an toàn để thi công hệ thống điện năng an toàn, hiệu quả.', 3, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["huong-nghiep", "nghanh-dien"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a8', 'mcq', 'nông nghiệp', 'tech-circuit-install', 'Hệ thống tư ứng dụng công nghệ số và cảm biến để tự động tưới nước khi đất bị khô trong nông nghiệp đô thị tại TP.HCM được gọi là gì?', ARRAY['Hệ thống tưới ngập nước định kỳ', 'Hệ thống tưới thông minh (Smart Irrigation System)', 'Hệ thống canh tác nương rẫy', 'Hệ thống phun sương thủ công bằng tay']::varchar[], ARRAY['Hệ thống tưới thông minh (Smart Irrigation System)']::varchar[], 'Hệ thống tưới thông minh sử dụng cảm biến độ ẩm đất để phân tích dữ liệu, tự động kích hoạt máy bơm nước khi cần thiết, giúp tiết kiệm tài nguyên và tối ưu năng suất.', 4, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["nong-nghiep-cong-nghe-cao", "iot"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a9', 'mcq', 'đạo đức', 'tech-career-choice', 'Khi tham gia các hoạt động thực hành xưởng công nghệ hoặc vườn trường, hành vi nào sau đây vi phạm nghiêm trọng quy định an toàn lao động?', ARRAY['Đeo kính bảo hộ và găng tay đúng quy định', 'Đùa nghịch, dùng dụng cụ đục, kìm, dao kéo trêu chọc bạn học', 'Tuân thủ tuyệt đối sự hướng dẫn của giáo viên bộ môn', 'Kiểm tra kỹ tình trạng thiết bị trước khi cắm điện nguồn']::varchar[], ARRAY['Đùa nghịch, dùng dụng cụ đục, kìm, dao kéo trêu chọc bạn học']::varchar[], 'Đùa nghịch bằng dụng cụ sắc nhọn hoặc thiết bị điện trong giờ thực hành rất dễ dẫn đến chấn thương nghiêm trọng, vi phạm nội quy an toàn lao động.', 2, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["an-toan-lao-dong", "dao-duc"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a10', 'mcq', 'lắp đặt mạng điện', 'tech-circuit-install', 'Sơ đồ nào sau đây biểu thị rõ ràng vị trí sắp đặt lắp đặt thực tế của các thiết bị điện, bảng điện và đường đi của dây dẫn trong một căn phòng?', ARRAY['Sơ đồ nguyên lý', 'Sơ đồ lắp đặt', 'Sơ đồ khối chức năng', 'Sơ đồ tư duy kiến trúc']::varchar[], ARRAY['Sơ đồ lắp đặt']::varchar[], 'Sơ đồ lắp đặt (sơ đồ vị trí) thể hiện rõ ràng vị trí lắp đặt thực tế và cách đi dây của hệ thống điện, dùng để trực tiếp thi công.', 3, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["dien-dan-dung", "so-do-dien"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a11', 'mcq', 'chế biến thực phẩm', 'tech-circuit-install', 'Trong mô-đun Chế biến thực phẩm, nguyên tắc cốt lõi nào đảm bảo ngăn ngừa ngộ độc thức ăn và vi khuẩn xâm nhập khi bảo quản thực phẩm?', ARRAY['Để thực phẩm chín chung với thực phẩm sống', 'Giữ thực phẩm ở nhiệt độ phòng trong nhiều ngày liên tục', 'Đảm bảo quy trình ăn chín uống sôi, phân loại hộp kín bảo quản lạnh', 'Chỉ cần rửa qua nước muối không cần che đậy']::varchar[], ARRAY['Đảm bảo quy trình ăn chín uống sôi, phân loại hộp kín bảo quản lạnh']::varchar[], 'Phân loại thực phẩm sống/chín riêng biệt và lưu trữ ở nhiệt độ lạnh thích hợp giúp ức chế sự phát triển của vi sinh vật gây hại.', 2, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["che-bien-thuc-pham", "an-toan-thuc-pham"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a12', 'mcq', 'định hướng nghề nghiệp', 'tech-career-jobs', 'Thị trường lao động tại TP.HCM hiện nay đang có xu hướng tuyển dụng cao đối với ngành ''Cơ điện tử''. Ngành này là sự kết hợp giao thoa của những lĩnh vực nào?', ARRAY['Xây dựng, Mỹ thuật và Du lịch', 'Cơ khí, Điện - Điện tử và Máy tính/Công nghệ thông tin', 'Nông nghiệp, Sinh học và Hóa chất', 'Kinh tế thương mại và Văn học số']::varchar[], ARRAY['Cơ khí, Điện - Điện tử và Máy tính/Công nghệ thông tin']::varchar[], 'Cơ điện tử (Mechatronics) là ngành kỹ thuật liên ngành cao, tích hợp cơ khí chính xác, hệ thống điện tử điều khiển và tư duy lập trình máy tính để tạo ra các robot, hệ thống tự động.', 4, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["huong-nghiep", "co-dien-tu"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a13', 'mcq', 'lắp đặt mạng điện', 'tech-circuit-install', 'Thiết bị điện nào tự động ngắt mạch điện khi phát hiện dòng điện rò rỉ xuống đất hoặc có người bị điện giật, giúp bảo vệ an toàn tính mạng?', ARRAY['Cầu chì (Fuse)', 'Aptomat chống giật (RCCB/ELCB)', 'Công tắc hai cực', 'Ổ cắm điện đơn']::varchar[], ARRAY['Aptomat chống giật (RCCB/ELCB)']::varchar[], 'Aptomat chống rò/chống giật có khả năng so sánh dòng điện đi và về, lập tức ngắt mạch chỉ trong mili giây khi phát hiện sự chênh lệch dòng (do rò điện hoặc người chạm vào dây nóng).', 4, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["an-toan-dien", "aptomat"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a14', 'mcq', 'lập trình', 'tech-circuit-install', 'Trong bài toán thiết kế hệ thống chiếu sáng tự động thông minh cho nhà ở, điều kiện logic nào sau đây là phù hợp nhất để bật đèn?', ARRAY['Nếu ánh sáng môi trường xung quanh cao hơn ngưỡng quy định', 'Nếu cảm biến phát hiện có người ĐỒNG THỜI cường độ ánh sáng tự nhiên thấp (trời tối)', 'Nếu nhiệt độ phòng tăng cao', 'Nếu thời gian trong ngày là buổi trưa']::varchar[], ARRAY['Nếu cảm biến phát hiện có người ĐỒNG THỜI cường độ ánh sáng tự nhiên thấp (trời tối)']::varchar[], 'Để tiết kiệm năng lượng tối ưu, hệ thống đèn thông minh chỉ nên bật khi có sự xuất hiện của con người kết hợp với điều kiện ánh sáng môi trường không đủ.', 4, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["thiet-ke-he-thong", "logic"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a15', 'mcq', 'nông nghiệp', 'tech-circuit-install', 'Khi bón phân cho cây ăn quả, tại sao người ta thường bón theo hình chiếu của tán cây xuống mặt đất?', ARRAY['Vì rễ cây chỉ tập trung ở sát gốc cây', 'Vì hệ thống rễ ăn sâu và rộng hút chất dinh dưỡng tập trung nhiều nhất ở vùng rìa hình chiếu tán cây', 'Để tránh làm bẩn lá cây khi bón phân', 'Vì quy định bón phân bắt buộc phải làm như vậy']::varchar[], ARRAY['Vì hệ thống rễ ăn sâu và rộng hút chất dinh dưỡng tập trung nhiều nhất ở vùng rìa hình chiếu tán cây']::varchar[], 'Đầu rễ non (rễ hút dinh dưỡng) của cây ăn quả thường phân bố rộng tương ứng với độ rộng của tán cây bên trên, bón phân ở vùng này giúp cây hấp thụ tối đa.', 3, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["nong-nghiep", "ky-thuat-bon-phan"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a16', 'mcq', 'bản quyền', 'tech-career-jobs', 'Khi một học sinh tự tay thiết kế bản vẽ mạch điện thông minh trên phần mềm máy tính trong cuộc thi sáng tạo khoa học kỹ thuật, sản phẩm của học sinh đó được bảo hộ bởi luật nào?', ARRAY['Luật Thương mại', 'Luật Sở hữu trí tuệ (Quyền tác giả đối với tác phẩm khoa học)', 'Luật Hình sự quốc tế', 'Luật Giáo dục căn bản']::varchar[], ARRAY['Luật Sở hữu trí tuệ (Quyền tác giả đối với tác phẩm khoa học)']::varchar[], 'Bản vẽ kỹ thuật, thiết kế giải pháp công nghệ là đối tượng được bảo hộ quyền tác giả và quyền sở hữu công nghiệp thuộc Luật Sở hữu trí tuệ.', 3, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["ban-quyen", "phap-luat-cong-nghe"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a17', 'mcq', 'lắp đặt mạng điện', 'tech-circuit-install', 'Thiết bị điện nào dùng để đóng, ngắt dòng điện độc lập của các đồ dùng điện hoặc một nhánh mạch điện bằng tay?', ARRAY['Công tơ điện', 'Công tắc điện', 'Cầu chì', 'Chuông điện']::varchar[], ARRAY['Công tắc điện']::varchar[], 'Công tắc điện đóng vai trò điều khiển cơ học bằng tay việc đóng/ngắt dòng điện đi vào tải tiêu thụ điện.', 2, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["dien-dan-dung", "thiet-bi-dien"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a18', 'mcq', 'máy tính', 'tech-career-jobs', 'Thuật ngữ ''Hệ thống SCADA'' hoặc ''Hệ thống điều khiển giám sát dữ liệu'' trong các nhà máy xí nghiệp sản xuất hiện đại tại TP.HCM thuộc phạm vi ứng dụng nào?', ARRAY['Công nghệ thông tin văn phòng', 'Tự động hóa công nghiệp', 'Thủ công nghệ nghệ thuật', 'Nông nghiệp thô sơ']::varchar[], ARRAY['Tự động hóa công nghiệp']::varchar[], 'SCADA là hệ thống điều khiển giám sát và thu thập dữ liệu phục vụ quản lý, vận hành tự động dây chuyền sản xuất công nghiệp quy mô lớn.', 5, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["tu-dong-hoa", "scada"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a19', 'mcq', 'định hướng nghề nghiệp', 'tech-career-jobs', 'Để trở thành một nhà thiết kế vi mạch (Chip bán dẫn) - ngành nghề trọng điểm đang được TP.HCM đầu tư phát triển, học sinh cần học tốt nhất các môn học cốt lõi nào?', ARRAY['Ngữ văn, Lịch sử, Địa lý', 'Toán học, Vật lý, Tin học/Công nghệ', 'Sinh học, Hóa học, Giáo dục công dân', 'Mỹ thuật, Âm nhạc, Tiếng Anh']::varchar[], ARRAY['Toán học, Vật lý, Tin học/Công nghệ']::varchar[], 'Thiết kế vi mạch bán dẫn đòi hỏi nền tảng tư duy toán học, kiến thức vật lý chất bán dẫn - điện tử và năng lực lập trình máy tính (Tin học/Công nghệ).', 4, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["huong-nghiep", "vi-mach"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a20', 'mcq', 'lắp đặt mạng điện', 'tech-circuit-install', 'Dụng cụ cầm tay nào chuyên dùng để gọt vỏ cách điện của dây dẫn điện một cách nhanh chóng mà không làm khía cắt vào lõi đồng bên trong?', ARRAY['Kìm tuốt dây', 'Búa đóng đinh', 'Tua vít ba cạnh', 'Cưa sắt cầm tay']::varchar[], ARRAY['Kìm tuốt dây']::varchar[], 'Kìm tuốt dây điện được thiết kế với các cỡ lưỡi dao phù hợp với đường kính dây dẫn, giúp tách vỏ cách điện an toàn mà không làm tổn hại lõi kim loại dẫn điện.', 2, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["dung-cu", "dien-dan-dung"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a21', 'mcq', 'lắp đặt mạng điện', 'tech-circuit-install', 'Khi thiết kế mạch điện bảng điện gồm: 1 cầu chì bảo vệ cho 1 ổ cắm và 1 công tắc điều khiển 1 bóng đèn. Thiết bị nào sẽ luôn luôn có điện kể cả khi công tắc ở trạng thái ngắt?', ARRAY['Bóng đèn', 'Ổ cắm điện', 'Cả bóng đèn và ổ cắm', 'Không thiết bị nào có điện']::varchar[], ARRAY['Ổ cắm điện']::varchar[], 'Ổ cắm điện được mắc song song với mạch nhánh của đèn và công tắc. Cầu chì bảo vệ chung phía trước, do đó khi công tắc ngắt (đèn tắt), ổ cắm vẫn duy trì nguồn điện liên tục.', 4, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["mach-dien", "thiet-ke"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a22', 'mcq', 'nông nghiệp', 'tech-circuit-install', 'Loại đất nào sau đây thích hợp nhất để phát triển các loại cây ăn quả lâu năm nhờ khả năng giữ nước và giàu chất dinh dưỡng hữu cơ?', ARRAY['Đất cát hạt thô', 'Đất sét nặng ngập úng', 'Đất thịt, đất phù sa hoặc đất đỏ ba gian thoát nước tốt', 'Đất đá sỏi cằn cỗi']::varchar[], ARRAY['Đất thịt, đất phù sa hoặc đất đỏ ba gian thoát nước tốt']::varchar[], 'Cây ăn quả cần tầng đất dày, giàu mùn dinh dưỡng và có kết cấu thoáng, thoát nước tốt để bộ rễ phát triển sâu rộng không bị thối rễ.', 2, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["nong-nghiep", "tho-nhuong"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a23', 'mcq', 'lập trình', 'tech-circuit-install', 'Trong sơ đồ thuật toán điều khiển của rô-bốt hút bụi thông minh tự động quay đầu khi gặp chướng ngại vật, khối hình học nào xác định thao tác kiểm tra xem ''Có vật cản hay không''?', ARRAY['Khối hình chữ nhật', 'Khối hình thoi', 'Khối hình tròn', 'Khối hình bình hành']::varchar[], ARRAY['Khối hình thoi']::varchar[], 'Khối hình thoi trong sơ đồ thuật toán luôn thực hiện chức năng kiểm tra điều kiện logic (Đúng/Sai) để đưa ra quyết định rẽ nhánh hành vi cho hệ thống tự động.', 3, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["thuat-toan", "so-do-khoi"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a24', 'mcq', 'thông tin cá nhân', 'tech-career-choice', 'Để quản lý an toàn dữ liệu vận hành hệ thống điện mặt trời áp mái thông minh của gia đình lưu trữ trực tuyến đám mây, biện pháp nào bảo mật nhất?', ARRAY['Chia sẻ tài khoản quản trị cho tất cả mọi người cùng dùng', 'Sử dụng mật khẩu mặc định của nhà sản xuất cung cấp ban đầu', 'Đặt mật khẩu phức tạp gồm chữ hoa, chữ thường, số, ký tự đặc biệt và bật xác thực 2 lớp', 'Không cần đặt mật khẩu bảo vệ']::varchar[], ARRAY['Đặt mật khẩu phức tạp gồm chữ hoa, chữ thường, số, ký tự đặc biệt và bật xác thực 2 lớp']::varchar[], 'Mật khẩu mạnh kết hợp xác thực đa yếu tố giúp tối đa hóa khả năng bảo vệ tài khoản điều khiển thiết bị công nghệ số khỏi sự xâm nhập trái phép của tin tặc.', 3, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["bao-mat", "iot"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a25', 'mcq', 'lắp đặt mạng điện', 'tech-circuit-install', 'Công thức tính điện năng tiêu thụ (A) của đồ dùng điện trong nhà dựa trên công suất (P) và thời gian hoạt động (t) là công thức nào?', ARRAY['A = P . t', 'A = P / t', 'A = U . I', 'A = P + t']::varchar[], ARRAY['A = P . t']::varchar[], 'Điện năng tiêu thụ bằng tích của công suất thiết bị nhân với thời gian thiết bị hoạt động thực tế: A = P . t.', 3, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["dien-dan-dung", "cong-thuc"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a26', 'mcq', 'định hướng nghề nghiệp', 'tech-career-choice', 'Yếu tố nào sau đây đóng vai trò quan trọng nhất khi cá nhân đưa ra quyết định lựa chọn một ngành nghề kỹ thuật công nghệ phù hợp cho tương lai?', ARRAY['Chỉ dựa hoàn toàn vào ý kiến trào lưu trên mạng xã hội', 'Sự kết hợp giữa năng lực, sở thích cá nhân và nhu cầu thực tế của thị trường lao động', 'Chọn nghề nhàn hạ nhất không cần lao động chân tay hay trí óc', 'Chọn ngẫu nhiên không cần tính toán']::varchar[], ARRAY['Sự kết hợp giữa năng lực, sở thích cá nhân và nhu cầu thực tế của thị trường lao động']::varchar[], 'Chọn nghề bền vững cần dựa trên mô hình định hướng: Đam mê (sở thích), Năng lực sở trường và Cơ hội nghề nghiệp thực tế của xã hội.', 2, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["huong-nghiep", "tu-van"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a27', 'mcq', 'lắp đặt mạng điện', 'tech-circuit-install', 'Khi kiểm tra một mạch điện xem có nguồn điện chạy qua hay không một cách an toàn, người thợ điện sử dụng dụng cụ kiểm tra chuyên dụng nào?', ARRAY['Thước cuộn thép', 'Kìm cắt chân linh kiện', 'Bút thử điện thông thường', 'Băng dính đen cách điện']::varchar[], ARRAY['Bút thử điện thông thường']::varchar[], 'Bút thử điện có điện trở bảo vệ bên trong, cho phép người dùng kiểm tra nhanh sự hiện diện của điện áp cao trên dây dẫn mà vẫn đảm bảo an toàn.', 2, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["dung-cu-dien", "an-toan"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a28', 'mcq', 'máy tính', 'tech-career-jobs', 'Hệ thống lưu trữ điện dự phòng quy mô lớn sử dụng pin năng lượng sạch để cấp điện liên tục cho các trung tâm dữ liệu khi mất điện lưới được viết tắt là gì?', ARRAY['BESS (Hệ thống lưu trữ năng lượng bằng pin)', 'CPU', 'RAM', 'HDMI']::varchar[], ARRAY['BESS (Hệ thống lưu trữ năng lượng bằng pin)']::varchar[], 'BESS (Battery Energy Storage System) là giải pháp công nghệ hiện đại lưu trữ năng lượng điện tái tạo, đảm bảo tính liên tục cho các hệ thống hạ tầng số và công nghệ cao.', 5, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["nang-luong", "he-thong"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a29', 'mcq', 'lắp đặt mạng điện', 'tech-circuit-install', 'Mạng điện sinh hoạt dân dụng tại Việt Nam hiện nay có thông số điện áp định mức tiêu chuẩn là bao nhiêu?', ARRAY['110 V', '220 V', '380 V', '24 V']::varchar[], ARRAY['220 V']::varchar[], 'Điện áp xoay chiều một pha định mức dùng cho mạng điện sinh hoạt gia đình tại Việt Nam là 220V với tần số tiêu chuẩn là 50Hz.', 2, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["dien-dan-dung", "thong-so"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a30', 'mcq', 'lập trình', 'tech-circuit-install', 'Đoạn chương trình Python điều khiển độ sáng của đèn LED thông minh theo phần trăm (%) công suất phát như sau:
+```python
+power = 40
+if power >= 80:
+    status = "High"
+elif power >= 30:
+    status = "Medium"
+else:
+    status = "Low"
+print(status)
+```
+Kết quả in ra màn hình là chuỗi nào?', ARRAY['High', 'Medium', 'Low', '40']::varchar[], ARRAY['Medium']::varchar[], 'Giá trị power = 40. Biểu thức 40 >= 80 là Sai, chương trình chuyển xuống nhánh elif 40 >= 30 mang giá trị Đúng (True), do đó biến status nhận giá trị ''Medium''.', 4, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["python", "dieu-khien-logic"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a31', 'mcq', 'chế biến thực phẩm', 'tech-circuit-install', 'Phương pháp chế biến thực phẩm nào sử dụng nhiệt độ cao của hơi nước làm chín thực phẩm, giúp giữ lại tối đa chất dinh dưỡng tự nhiên?', ARRAY['Rán (chiên) ngập dầu', 'Hấp (thổi đồ)', 'Nướng trực tiếp trên than hồng', 'Muối chua lên men']::varchar[], ARRAY['Hấp (thổi đồ)']::varchar[], 'Phương pháp hấp chín bằng hơi nước tránh cho thực phẩm tiếp xúc trực tiếp với nước hay chất béo nhiệt độ quá cao, bảo toàn lượng vitamin và khoáng chất tốt nhất.', 2, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["che-bien-thuc-pham", "phuong-phap"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-mcq-a32', 'mcq', 'định hướng nghề nghiệp', 'tech-career-choice', 'Để đánh giá độ phù hợp của một người với nghề ''Kỹ sư năng lượng tái tạo'' (Điện mặt trời, điện gió), tiêu chí nào dưới đây thuộc về ''Năng lực'' chuyên môn nghề nghiệp?', ARRAY['Sở thích xem phim tài liệu về môi trường', 'Khả năng phân tích mạch điện, tính toán công suất hệ thống nguồn và kỹ năng thiết kế kỹ thuật', 'Mong muốn kiếm được mức lương cao nhanh chóng', 'Sở thích đi du lịch dã ngoại']::varchar[], ARRAY['Khả năng phân tích mạch điện, tính toán công suất hệ thống nguồn và kỹ năng thiết kế kỹ thuật']::varchar[], 'Khả năng tính toán toán học, phân tích mạch cơ điện và vận dụng phần mềm chuyên ngành thiết kế là biểu hiện cốt lõi của năng lực chuyên môn nghề nghiệp kỹ thuật.', 3, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["huong-nghiep", "tieu-chi"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-sa-a33', 'short-answer', 'lắp đặt mạng điện', 'tech-circuit-install', 'Trong thiết kế sơ đồ điện, hãy viết tên viết tắt của thiết bị đóng cắt mạch điện tự động bảo vệ quá tải thay thế cho cầu chì truyền thống.', NULL, ARRAY['Aptomat', 'aptomat', 'CB', 'cb']::varchar[], 'Aptomat (hay CB - Circuit Breaker) là thiết bị đóng cắt tự động có chức năng bảo vệ mạch điện khi xảy ra sự cố quá tải hoặc ngắn mạch một cách chính xác, tiện lợi.', 3, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["dien-dan-dung", "thiet-bi"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-sa-a34', 'short-answer', 'lắp đặt mạng điện', 'tech-circuit-install', 'Hãy điền tên đơn vị đo của điện năng tiêu thụ hiển thị trực tiếp trên mặt của Công tơ điện gia đình.', NULL, ARRAY['kWh', 'kwh', 'Kilowatt giờ', 'kilowatt gio']::varchar[], 'Điện năng tiêu thụ của các thiết bị điện dân dụng được đo lường bằng đơn vị Kilowatt giờ (kWh), dân gian thường gọi là ''ký điện'' hoặc ''số điện''.', 3, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["dien-dan-dung", "don-vi"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-sa-a35', 'short-answer', 'máy tính', 'tech-career-jobs', 'Cụm từ viết tắt tiếng Anh ''IoT'' dùng để chỉ mạng lưới các thiết bị phần cứng được nhúng cảm biến, phần mềm để kết nối, trao đổi dữ liệu qua internet có tên tiếng Việt là Vạn vật _______________.', NULL, ARRAY['kết nối', 'ket noi', 'Vạn vật kết nối']::varchar[], 'IoT (Internet of Things) dịch sang tiếng Việt nghĩa là Vạn vật kết nối, là nền tảng cốt lõi của công nghệ tự động hóa và nhà thông minh hiện nay.', 2, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["khai-niem", "iot"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-sa-a36', 'short-answer', 'định hướng nghề nghiệp', 'tech-career-jobs', 'Điền cụm từ: Hoạt động giúp học sinh nhận biết được năng lực, sở thích cá nhân, tìm hiểu yêu cầu của các ngành nghề xã hội để lựa chọn hướng đi học tập, công việc phù hợp sau khi tốt nghiệp THCS được gọi là hướng __________.', NULL, ARRAY['nghiệp', 'nghiep', 'Hướng nghiệp', 'huong nghiep']::varchar[], 'Công tác giáo dục hướng nghiệp lớp 9 giúp học sinh phân luồng hiệu quả, chọn đúng trường nghề (Trung cấp, Cao đẳng nghề) hoặc tiếp tục học THPT theo năng lực.', 2, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["huong-nghiep", "khai-niem"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-sa-a37', 'short-answer', 'lắp đặt mạng điện', 'tech-circuit-install', 'Một bóng đèn huỳnh quang có ghi thông số 220V - 40W. Khi hoạt động bình thường liên tục trong đúng 10 giờ, bóng đèn này tiêu thụ lượng điện năng là bao nhiêu Wh?', NULL, ARRAY['400', '400Wh']::varchar[], 'Điện năng tiêu thụ A = P . t = 40W . 10h = 400Wh (tương đương 0.4 kWh).', 4, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["dien-dan-dung", "bai-tap-tinh-toan"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-sa-a38', 'short-answer', 'nông nghiệp', 'tech-circuit-install', 'Điền cụm từ: Phương pháp nhân giống cây ăn quả bằng cách cắt lấy một đoạn cành, chồi non của cây mẹ cắm trực tiếp vào chất nền/đất ẩm để đoạn cành đó tự ra rễ phát triển thành cây con hoàn chỉnh được gọi là phương pháp ____________ cành.', NULL, ARRAY['giâm', 'giam', 'giâm cành']::varchar[], 'Giâm cành là phương pháp nhân giống vô tính đơn giản, nhanh chóng và được ứng dụng rộng rãi cho nhiều loại cây trồng nông nghiệp.', 3, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["nong-nghiep", "nhan-giong"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-sa-a39', 'short-answer', 'lắp đặt mạng điện', 'tech-circuit-install', 'Vật liệu nào (như đồng, nhôm) cho phép dòng điện chạy qua một cách dễ dàng và được làm lõi của dây dẫn điện được gọi là vật liệu dẫn _____________.', NULL, ARRAY['điện', 'dien']::varchar[], 'Vật liệu dẫn điện có điện trở suất nhỏ, giúp truyền tải năng lượng điện từ nguồn đến phụ tải tiêu thụ với hao hụt thấp nhất.', 2, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["vat-lieu-dien", "co-ban"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-sa-a40', 'short-answer', 'lập trình', 'tech-circuit-install', 'Học sinh xây dựng code Python đọc giá trị từ cảm biến mưa: Nếu rain == True thì phát tín hiệu đóng mái che tự động, ngược lại thì mở. Khối cấu trúc lập trình này được gọi là cấu trúc rẽ ____________.', NULL, ARRAY['nhánh', 'nhanh', 'rẽ nhánh']::varchar[], 'Cấu trúc rẽ nhánh (if-else) điều khiển máy tính chọn một trong các hướng thực hiện câu lệnh tùy thuộc vào điều kiện kiểm tra là Đúng hay Sai.', 3, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["python", "cau-truc-lap-trinh"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-sa-a41', 'short-answer', 'lắp đặt mạng điện', 'tech-circuit-install', 'Trong quy trình vẽ sơ đồ lắp đặt mạch điện, bước đầu tiên và quan trọng nhất trước khi vẽ đường dây dẫn điện là xác định vị trí của các thiết bị trên ____________ điện.', NULL, ARRAY['bảng', 'bang', 'bảng điện']::varchar[], 'Bố trí vị trí bảng điện và các thiết bị (cầu chì, công tắc, ổ cắm) trên bảng điện một cách khoa học giúp đường dây đi hợp lý, an toàn và dễ thao tác thực tế.', 4, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["dien-dan-dung", "quy-trinh"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-sa-a42', 'short-answer', 'chế biến thực phẩm', 'tech-circuit-install', 'Phương pháp bảo quản thực phẩm bằng cách sấy khô, làm bay hơi bớt lượng nước bên trong nhằm mục đích làm chậm sự phát triển của vi sinh vật thuộc nhóm phương pháp làm ____________ thực phẩm.', NULL, ARRAY['khô', 'kho', 'sấy khô', 'say kho']::varchar[], 'Làm khô/sấy khô giảm hoạt độ của nước bên trong thực phẩm, ngăn chặn vi khuẩn và nấm mốc sinh sôi, kéo dài thời gian lưu trữ.', 2, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["che-bien-thuc-pham", "bao-quan"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-sa-a43', 'short-answer', 'đạo đức', 'tech-career-choice', 'Việc vứt bỏ bừa bãi các rác thải công nghệ nguy hại như pin hỏng, bo mạch điện tử cũ trực tiếp ra môi trường đất, nước vi phạm nghiêm trọng Luật Bảo vệ ____________.', NULL, ARRAY['môi trường', 'moi truong']::varchar[], 'Rác thải điện tử chứa nhiều kim loại nặng độc hại (chì, thủy ngân). Quy trình xử lý bắt buộc phải thu gom phân loại theo đúng quy định pháp luật môi trường.', 3, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["dao-duc-moi-truong", "phap-luat"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-sa-a44', 'short-answer', 'lắp đặt mạng điện', 'tech-circuit-install', 'Trong sơ đồ nguyên lý mạch điện đèn cầu thang (mạch đèn điều khiển từ hai nơi độc lập), người thợ điện bắt buộc phải sử dụng loại công tắc mấy cực?', NULL, ARRAY['3', 'ba', '3 cực', 'ba cực']::varchar[], 'Mạch đèn hai nơi (mạch đèn cầu thang) sử dụng hai công tắc ba cực (công tắc chuyển mạch) phối hợp nối dây với nhau để đóng ngắt đèn độc lập ở hai đầu.', 5, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["dien-dan-dung", "mach-dien-phuc-tap"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-sa-a45', 'short-answer', 'lập trình', 'tech-circuit-install', 'Để lập trình đo độ ẩm đất liên tục cho mô hình vườn rau thông minh, học sinh sử dụng lệnh lặp vô hạn trong Python là câu lệnh cấu trúc while ____________: (điền từ khóa logic tiếng Anh phù hợp).', NULL, ARRAY['True', 'true']::varchar[], 'Vòng lặp while True: tạo ra một chu trình lặp vô hạn, giúp chương trình của hệ thống vi điều khiển IoT chạy liên tục để giám sát thông số cảm biến theo thời gian thực.', 5, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["python", "vong-lap-vo-han"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-sa-a46', 'short-answer', 'nông nghiệp', 'tech-circuit-install', 'Bệnh hại cây trồng do các tác nhân vi sinh vật siêu nhỏ, không có cấu trúc tế bào, bắt buộc ký sinh nội bào gây ra được gọi là bệnh do ______________.', NULL, ARRAY['vi-rút', 'virus', 'vi rut']::varchar[], 'Virus là tác nhân gây ra nhiều bệnh hiểm nghèo trên cây ăn quả, thường lan truyền qua các vectơ trung gian như rầy, rệp hoặc dụng cụ cắt tỉa cành.', 4, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["nong-nghiep", "benh-cay-trong"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-sa-a47', 'short-answer', 'lắp đặt mạng điện', 'tech-circuit-install', 'Để bảo vệ các đường dây dẫn điện đi ngầm trong tường nhà khỏi bị ẩm ướt hoặc lực tác động cơ học làm đứt gãy, người ta lồng dây dẫn bên trong các ống loại vật liệu nào?', NULL, ARRAY['nhựa', 'ống nhựa', 'nhựa cách điện', 'pvc']::varchar[], 'Ống nhựa cách điện PVC luồn dây có khả năng chịu lực chống cháy, bảo vệ hệ thống dây điện âm tường an toàn tuyệt đối.', 3, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["dien-dan-dung", "luon-day"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+-- Seed KHTN 9 Questions
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-khtn9-mcq-a1', 'mcq', 'vật lí', 'sci-phy-optics', 'Khi ánh sáng truyền từ môi trường nước sang môi trường không khí với góc tới lớn hơn góc giới hạn phản xạ toàn phần, hiện tượng nào sau đây sẽ xảy ra?', ARRAY['Tia sáng bị khúc xạ mạnh hơn', 'Tia sáng truyền thẳng không bị đổi hướng', 'Toàn bộ tia sáng bị phản xạ trở lại môi trường nước', 'Ánh sáng bị phân ly thành các màu cầu vồng']::varchar[], ARRAY['Toàn bộ tia sáng bị phản xạ trở lại môi trường nước']::varchar[], 'Khi ánh sáng đi từ môi trường chiết quang hơn sang môi trường chiết quang kém và có góc tới lớn hơn góc giới hạn ($i > i_{gh}$), toàn bộ ánh sáng sẽ bị phản xạ ngược trở lại môi trường cũ, đây là hiện tượng phản xạ toàn phần.', 3, 'Sở GD&ĐT TP.HCM', 'science', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["quang-hoc", "phan-xa-toan-phan"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-khtn9-mcq-a2', 'mcq', 'hóa học', 'sci-chem-organic', 'Dãy các hợp chất nào sau đây đều thuộc loại hợp chất hữu cơ hydrocarbon?', ARRAY['$CH_4, C_2H_4, C_2H_2$', '$CH_3Cl, C_2H_5OH, CH_3COOH$', '$CO_2, CaCO_3, NaHCO_3$', '$C_6H_{12}O_6, C_{12}H_{22}O_{11}, C_2H_4$']::varchar[], ARRAY['$CH_4, C_2H_4, C_2H_2$']::varchar[], 'Hydrocarbon là những hợp chất hữu cơ mà trong phân tử chỉ chứa hai nguyên tố là carbon (C) và hydrogen (H). Các dãy còn lại đều có chứa nguyên tố khác hoặc là hợp chất vô cơ.', 2, 'Đề thi học kỳ KHTN 9', 'science', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["hoa-huu-co", "hydrocarbon"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-khtn9-mcq-a3', 'mcq', 'sinh học', 'sci-bio-genetics-mendelian', 'Theo quy luật phân ly của Mendel, khi cho lai hai cây đậu hà lan thuần chủng hạt vàng (trội) và hạt xanh (lặn) với nhau, tỷ lệ kiểu hình ở đời con F2 sẽ là bao nhiêu?', ARRAY['100% hạt vàng', '3 hạt vàng : 1 hạt xanh', '1 hạt vàng : 1 hạt xanh', '9 hạt vàng : 7 hạt xanh']::varchar[], ARRAY['3 hạt vàng : 1 hạt xanh']::varchar[], 'Đời F1 thu được 100% dị hợp (Aa - hạt vàng). Khi F1 tự thụ phấn ($Aa \times Aa$), đời F2 cho ra tỷ lệ kiểu gen là $1AA : 2Aa : 1aa$, tương ứng tỷ lệ kiểu hình trội/lặn là 3 vàng : 1 xanh.', 3, 'Sở GD&ĐT TP.HCM', 'science', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["di-truyen", "mendel"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-khtn9-mcq-a4', 'mcq', 'vật lí', 'sci-phy-optics', 'Một thấu kính hội tụ có tiêu cự $f = 12\text{ cm}$. Đặt một vật sáng phẳng nhỏ vuông góc với trục chính và cách thấu kính một khoảng $d = 24\text{ cm}$. Tính chất của ảnh thu được qua thấu kính là gì?', ARRAY['Ảnh ảo, cùng chiều và lớn hơn vật', 'Ảnh thật, ngược chiều và nhỏ hơn vật', 'Ảnh thật, ngược chiều và bằng vật', 'Ảnh ảo, ngược chiều và bằng vật']::varchar[], ARRAY['Ảnh thật, ngược chiều và bằng vật']::varchar[], 'Khi vật đặt tại vị trí cách thấu kính hội tụ một khoảng $d = 2f$ ($24 = 2 \times 12$), thấu kính sẽ cho ảnh thật, ngược chiều, cách thấu kính đúng một khoảng $d'' = 2f = 24\text{ cm}$ và có độ lớn bằng vật.', 4, 'Đề thi học kỳ KHTN 9', 'science', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["thau-kinh", "hinh-hoc-quang"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-khtn9-mcq-a5', 'mcq', 'hóa học', 'sci-chem-metal', 'Trường hợp nào sau đây xảy ra hiện tượng ăn mòn điện hóa học gây hư hại kim loại nghiêm trọng trong thực tế?', ARRAY['Để một chiếc đinh sắt nguyên chất trong bình chứa khí oxygen khô', 'Nhúng thanh kẽm vào dung dịch acid $HCl$', 'Cột dây đồng vào đường ống dẫn nước bằng thép (sắt) rồi để ngoài không khí ẩm', 'Đốt cháy dây magnesi ($Mg$) trong không khí']::varchar[], ARRAY['Cột dây đồng vào đường ống dẫn nước bằng thép (sắt) rồi để ngoài không khí ẩm']::varchar[], 'Khi sắt kết xúc trực tiếp với đồng trong môi trường chất điện ly (không khí ẩm), sẽ hình thành một pin điện hóa. Sắt có tính khử mạnh hơn đồng nên đóng vai trò là cực âm (anode) và bị ăn mòn điện hóa rất nhanh.', 4, 'Sở GD&ĐT TP.HCM', 'science', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["an-mon-kim-loai", "dien-hoa"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-khtn9-mcq-a6', 'mcq', 'sinh học', 'sci-bio-dna-gene', 'Thành phần cấu tạo cốt lõi của một phân tử DNA (Axit Đêôxiribônuclêit) bao gồm các loại nucleotide nào sau đây?', ARRAY['A, U, G, X', 'A, T, G, X', 'A, T, U, X', 'U, G, X, Axit amin']::varchar[], ARRAY['A, T, G, X']::varchar[], 'DNA được cấu tạo từ 4 loại đơn phân nucleotide là Adenine (A), Thymine (T), Guanine (G), và Cytosine (X). Nucleotide loại Uracil (U) chỉ xuất hiện trong cấu trúc của RNA.', 2, 'Đề thi học kỳ KHTN 9', 'science', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["sinh-hoc-phan-tu", "dna"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-khtn9-mcq-a7', 'mcq', 'vật lí', 'sci-phy-electricity', 'Một điện trở $R = 20\ \Omega$ được mắc vào hiệu điện thế không đổi $U = 10\text{V}$. Công suất điện tiêu thụ trên điện trở này là bao nhiêu?', ARRAY['200 W', '2 W', '5 W', '0.5 W']::varchar[], ARRAY['5 W']::varchar[], 'Công suất điện được tính bằng công thức: $P = \frac{U^2}{R}$. Thay số vào ta có: $P = \frac{10^2}{20} = \frac{100}{20} = 5\text{ W}$.', 3, 'Sở GD&ĐT TP.HCM', 'science', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["dien-hoc", "cong-suat"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-khtn9-mcq-a8', 'mcq', 'hóa học', 'sci-chem-organic', 'Để phân biệt hai dung dịch mất nhãn gồm Rượu etylic ($C_2H_5OH$) và Axit axetic ($CH_3COOH$), ta có thể dùng thuốc thử đơn giản nào dưới đây?', ARRAY['Dung dịch NaCl', 'Quỳ tím hoặc dung dịch muối $Na_2CO_3$', 'Nước lọc', 'Khí hydrogen']::varchar[], ARRAY['Quỳ tím hoặc dung dịch muối $Na_2CO_3$']::varchar[], 'Axit axetic ($CH_3COOH$) có tính acid làm quỳ tím hóa đỏ và tác dụng với muối carbonate giải phóng khí $CO_2$ (sủi bọt khí). Rượu etylic không có các phản ứng này.', 2, 'Sở GD&ĐT TP.HCM', 'science', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["nhan-biet", "hoa-huu-co"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-khtn9-mcq-a9', 'mcq', 'sinh học', 'sci-bio-ecosystem', 'Nhân tố sinh thái nào sau đây thuộc nhóm nhân tố sinh thái vô sinh ảnh hưởng trực tiếp đến đời sống thực vật?', ARRAY['Sự cạnh tranh nguồn thức ăn của chim ăn hạt', 'Ánh sáng, nhiệt độ và độ ẩm không khí', 'Các loài vi khuẩn phân hủy trong đất', 'Hoạt động chặt phá rừng của con người']::varchar[], ARRAY['Ánh sáng, nhiệt độ và độ ẩm không khí']::varchar[], 'Nhân tố vô sinh bao gồm tất cả các đặc tính vật lý và hóa học của môi trường xung quanh sinh vật (như khí hậu, đất, nước, ánh sáng...). Các phương án còn lại là nhân tố hữu sinh và con người.', 2, 'Đề thi học kỳ KHTN 9', 'science', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["sinh-thai", "moi-truong"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-khtn9-mcq-a10', 'mcq', 'vật lí', 'sci-phy-electromagnet', 'Hiện tượng cảm ứng điện từ xuất hiện dòng điện cảm ứng trong một cuộn dây dẫn kín khi nào?', ARRAY['Đặt một nam thanh nam châm đứng yên bên cạnh cuộn dây', 'Số đường sức từ xuyên qua tiết diện S của cuộn dây biến thiên (tăng hoặc giảm)', 'Cho dòng điện một chiều chạy qua cuộn dây', 'Đốt nóng cuộn dây dẫn bằng ngọn lửa']::varchar[], ARRAY['Số đường sức từ xuyên qua tiết diện S của cuộn dây biến thiên (tăng hoặc giảm)']::varchar[], 'Điều kiện để xuất hiện dòng điện cảm ứng trong cuộn dây dẫn kín là số đường sức từ xuyên qua tiết diện S của cuộn dây đó phải biến thiên theo thời gian.', 3, 'Sở GD&ĐT TP.HCM', 'science', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["dien-tu-hoc", "cam-ung-dien-tu"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-khtn9-sa-a11', 'short-answer', 'vật lí', 'sci-phy-optics', 'Một tia sáng truyền từ không khí vào thủy tinh có chiết suất $n = 1.5$. Nếu góc khúc xạ trong thủy tinh đo được là $r = 30^\circ$, hãy tính giá trị của $\sin(i)$ (trong đó $i$ là góc tới).', NULL, ARRAY['0.75', '3/4']::varchar[], 'Áp dụng định luật khúc xạ ánh sáng: $n_1 \cdot \sin(i) = n_2 \cdot \sin(r)$. Với môi trường 1 là không khí ($n_1 = 1$), môi trường 2 là thủy tinh ($n_2 = 1.5$). Ta có: $1 \cdot \sin(i) = 1.5 \cdot \sin(30^\circ) = 1.5 \cdot 0.5 = 0.75$.', 4, 'Sở GD&ĐT TP.HCM', 'science', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["quang-hoc", "khuc-xa"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-khtn9-sa-a12', 'short-answer', 'hóa học', 'sci-chem-organic', 'Hãy viết tên quốc tế viết tắt của polyme có tên thông thường là nhựa PE, được tạo thành từ phản ứng trùng hợp khí ethylene.', NULL, ARRAY['Polyethylene', 'polyethylene', 'PE', 'pe']::varchar[], 'Nhựa PE có tên đầy đủ là Polyethylene, được điều chế bằng cách trùng hợp các phân tử khí etilen ($C_2H_4$) dưới điều kiện nhiệt độ, áp suất và xúc tác thích hợp.', 2, 'Đề thi học kỳ KHTN 9', 'science', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["polymer", "hoa-huu-co"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-khtn9-sa-a13', 'short-answer', 'sinh học', 'sci-bio-dna-gene', 'Tên gọi của cấu trúc gồm một chuỗi các nucleotide liên kết với nhau, đóng vai trò là đơn vị lưu trữ và truyền đạt thông tin di truyền của sinh vật, nằm trên nhiễm sắc thể là gì?', NULL, ARRAY['Gen', 'gen', 'Gene', 'gene']::varchar[], 'Gen là một đoạn của phân tử DNA mang thông tin mã hóa cho một chuỗi polypeptide hoặc một phân tử RNA, là đơn vị cơ sở của di truyền.', 2, 'Sở GD&ĐT TP.HCM', 'science', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["di-truyen", "co-ban"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-khtn9-sa-a14', 'short-answer', 'hóa học', 'sci-chem-organic', 'Khi đốt cháy hoàn toàn 1 mol khí metan ($CH_4$) trong khí oxygen dư, phản ứng sinh ra khí carbon dioxide và nước. Hãy tính số mol khí $CO_2$ thu được sau phản ứng.', NULL, ARRAY['1', '1 mol']::varchar[], 'Phương trình hóa học: $CH_4 + 2O_2 \rightarrow CO_2 + 2H_2O$. Dựa vào tỉ lệ phương trình, 1 mol $CH_4$ phản ứng cháy hoàn toàn sẽ tạo ra đúng 1 mol $CO_2$.', 3, 'Đề thi học kỳ KHTN 9', 'science', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["tinh-toan-hoa-hoc", "hydrocarbon"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-khtn9-sa-a15', 'short-answer', 'vật lí', 'sci-phy-electromagnet', 'Một máy biến thế có số vòng dây cuộn sơ cấp là 4400 vòng, cuộn thứ cấp là 220 vòng. Khi đặt vào hai đầu cuộn sơ cấp một hiệu điện thế xoay chiều $U_1 = 220\text{V}$, hiệu điện thế ở hai đầu cuộn thứ cấp $U_2$ bằng bao nhiêu V?', NULL, ARRAY['11', '11V', '11 V']::varchar[], 'Áp dụng công thức máy biến thế: $\frac{U_1}{U_2} = \frac{N_1}{N_2} \Rightarrow \frac{220}{U_2} = \frac{4400}{220} = 20 \Rightarrow U_2 = \frac{220}{20} = 11\text{V}$.', 4, 'Sở GD&ĐT TP.HCM', 'science', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["may-bien-the", "dien-tu"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+-- Seed Extra Tech/Info Questions
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-sa-a48', 'short-answer', 'định hướng nghề nghiệp', 'tech-career-jobs', 'Các cơ sở giáo dục tổ chức các chương trình đào tạo nghề ngắn hạn hoặc dài hạn, cấp bằng Sơ cấp, Trung cấp, Cao đẳng nghề cho học sinh sau THCS được gọi chung là các trường ______________.', NULL, ARRAY['nghề', 'trường nghề', 'trung cấp nghề', 'cao đẳng nghề']::varchar[], 'Hệ thống các trường nghề đáp ứng nhu cầu học song hành (vừa học văn hóa bổ túc vừa học nghề nghiệp kỹ thuật), chuẩn bị nguồn nhân lực thực hành cho xã hội.', 2, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["huong-nghiep", "giao-duc"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-sa-a49', 'short-answer', 'lắp đặt mạng điện', 'tech-circuit-install', 'Mạch điện có hiện tượng dây pha (dây nóng) chạm trực tiếp vào dây trung tính (dây nguội) mà không qua bất kỳ tải tiêu thụ nào, làm dòng điện tăng vọt cực đại gây cháy nổ gọi là hiện tượng ngắn mạch hoặc chập ______________.', NULL, ARRAY['mạch', 'chap mach', 'ngắn mạch']::varchar[], 'Ngắn mạch (chập mạch) sinh ra nhiệt lượng cực lớn tức thì, nếu hệ thống bảo vệ (cầu chì, aptomat) không ngắt kịp thời sẽ dẫn đến hỏa hoạn nghiêm trọng.', 3, 'Đề thi học kỳ Công nghệ 9', 'technology', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["an-toan-dien", "su-co"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-tech9-sa-a50', 'short-answer', 'định hướng nghề nghiệp', 'tech-career-jobs', 'Điền từ thích hợp: Trong nền kinh tế số, năng lực thích ứng nhanh và biết sử dụng linh hoạt các công cụ phần mềm máy tính, thiết bị số phục vụ công việc chuyên môn được gọi là năng lực ____________.', NULL, ARRAY['số', 'nang luc so', 'tin học', 'tin hoc']::varchar[], 'Năng lực số (Digital Literacy) là một trong những tiêu chuẩn bắt buộc cốt lõi đối với mọi nguồn nhân lực chất lượng cao trong thị trường lao động tương lai.', 3, 'Sở GD&ĐT TP.HCM', 'technology', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["huong-nghiep", "nang-luc-so"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a31', 'mcq', 'lập trình', 'inf-algorithm', 'Xem đoạn mã Python sau:
+```python
+n = 5
+while n > 2:
+    n = n - 1
+print(n)
+```
+Giá trị của `n` được in ra là bao nhiêu?', ARRAY['5', '3', '2', '0']::varchar[], ARRAY['2']::varchar[], 'Vòng lặp giảm n: Lần 1: n=4 (4>2), Lần 2: n=3 (3>2), Lần 3: n=2. Lúc này điều kiện 2>2 là Sai, vòng lặp dừng lại. Giá trị cuối cùng của n là 2.', 5, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["python", "vong-lap-while"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-mcq-a32', 'mcq', 'hướng nghiệp', 'inf-career', 'Lĩnh vực nghề nghiệp Tin học nào chuyên nghiên cứu các giải pháp ngăn chặn các cuộc tấn công mạng và bảo mật dữ liệu cho doanh nghiệp?', ARRAY['Thiết kế đồ họa số', 'An toàn thông tin / Bảo mật mạng', 'Quản trị cơ sở dữ liệu', 'Lập trình web di động']::varchar[], ARRAY['An toàn thông tin / Bảo mật mạng']::varchar[], 'Chuyên gia an toàn thông tin tập trung bảo vệ hệ thống thông tin, mạng máy tính khỏi các mối đe dọa truy cập bất hợp pháp và phá hoại dữ liệu.', 3, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "single-choice", "tags": ["huong-nghiep", "an-ninh-mang"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-sa-a33', 'short-answer', 'bảng tính', 'inf-digital-tools', 'Trong Microsoft Excel, hàm nào dùng để đếm số lượng ô thỏa mãn một điều kiện cho trước?', NULL, ARRAY['COUNTIF', 'countif']::varchar[], 'Hàm COUNTIF dùng để đếm số ô trong một vùng dữ liệu thỏa mãn điều kiện nhất định.', 4, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["excel", "ham-so"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-sa-a34', 'short-answer', 'máy tính', 'inf-digital-world', 'Hãy viết tên viết tắt (gồm 3 chữ cái đại diện) của thiết bị lưu trữ bán dẫn có tốc độ đọc ghi dữ liệu vượt trội hơn hẳn so với ổ cứng cơ học HDD truyền thống.', NULL, ARRAY['SSD', 'ssd']::varchar[], 'SSD (Solid State Drive) là ổ cứng thể rắn sử dụng chip nhớ flash, mang lại tốc độ truy xuất dữ liệu cực nhanh so với ổ đĩa HDD.', 3, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["o-cung", "ssd"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-sa-a35', 'short-answer', 'đám mây', 'inf-data-manage', 'Điền cụm từ chính xác: Việc lưu trữ dữ liệu, chạy phần mềm dựa trên nền tảng internet thông qua hệ thống máy chủ của các nhà cung cấp dịch vụ được gọi chung là công nghệ điện toán ______________.', NULL, ARRAY['đám mây', 'dam may']::varchar[], 'Điện toán đám mây (Cloud Computing) cho phép người dùng khai thác tài nguyên công nghệ qua internet mà không cần tự đầu tư phần cứng phức tạp.', 2, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["dien-toan-dam-may", "khai-niem"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-sa-a36', 'short-answer', 'bản quyền', 'inf-ethics-law', 'Quyền hợp pháp của tác giả đối với sản phẩm trí tuệ do họ sáng tạo ra được gọi là gì?', NULL, ARRAY['Quyền tác giả', 'quyền tác giả', 'Bản quyền', 'bản quyền']::varchar[], 'Quyền tác giả (hay bản quyền) bảo vệ các tác phẩm gốc văn học, nghệ thuật, phần mềm tin học khỏi việc sao chép trái phép.', 2, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["phap-luat", "ban-quyen"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-sa-a37', 'short-answer', 'bảng tính', 'inf-digital-tools', 'Trong Excel, nếu viết công thức `=IF(5>8, "Đúng", "Sai")`, màn hình hiển thị kết quả là chuỗi chữ nào?', NULL, ARRAY['Sai', 'sai']::varchar[], 'Vì biểu thức điều kiện 5>8 mang giá trị False (Sai), nên hàm IF sẽ trả về giá trị ứng với trường hợp điều kiện sai, tức là chữ ''Sai''.', 3, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["excel", "ham-if"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-sa-a38', 'short-answer', 'lập trình', 'inf-algorithm', 'Trong ngôn ngữ Python, kết quả trả về của phép toán `15 // 4` (phép chia lấy phần nguyên) là bao nhiêu?', NULL, ARRAY['3']::varchar[], 'Phép toán `//` chia lấy phần nguyên. 15 chia cho 4 được 3 dư 3, do đó phần nguyên kết quả là 3.', 4, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["python", "toan-tu"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-sa-a39', 'short-answer', 'lập trình', 'inf-algorithm', 'Trong ngôn ngữ Python, phép toán nào dùng để lấy số dư của phép chia (phép chia modulo)? Điền ký tự đại diện cho toán tử đó.', NULL, ARRAY['%']::varchar[], 'Ký tự `%` là toán tử chia lấy phần dư trong lập trình Python (ví dụ: `7 % 3` bằng 1).', 3, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["python", "phep-du"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-sa-a40', 'short-answer', 'lập trình', 'inf-algorithm', 'Đoạn code Python sau có lỗi ở dòng nào?
+```python
+1: x = 5
+2: if x > 0
+3:     print("Dương")
+```
+(Điền số dòng bị lỗi)', NULL, ARRAY['2']::varchar[], 'Dòng thứ 2 thiếu dấu hai chấm `:` ở cuối câu lệnh điều kiện `if`. Cú pháp đúng phải là `if x > 0:`.', 5, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["python", "sua-loi"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-sa-a41', 'short-answer', 'máy tính', 'inf-digital-world', 'Thành phần phần cứng máy tính viết tắt là ''ALU'' chịu trách nhiệm tính toán số học và thực hiện các phép toán nào?', NULL, ARRAY['logic', 'Logic', 'phép toán logic']::varchar[], 'ALU (Arithmetic Logic Unit) là đơn vị chịu trách nhiệm thực hiện toàn bộ các phép toán số học (+, -, *, /) và các phép toán logic (AND, OR, NOT, so sánh) của bộ vi xử lý.', 5, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["cpu", "alu"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-sa-a42', 'short-answer', 'tìm kiếm thông tin', 'inf-data-manage', 'Điền toán tử phù hợp: Để loại trừ các trang web chứa một từ khóa nhất định khỏi kết quả tìm kiếm Google, ta đặt dấu _________ sát trước từ khóa cần loại bỏ.', NULL, ARRAY['trừ', '-', 'dấu trừ']::varchar[], 'Toán tử dấu trừ `-` đặt liền trước từ khóa giúp loại trừ các bài viết chứa từ khóa đó khỏi trang kết quả (ví dụ: `apple -iphone`).', 4, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["tim-kiem", "toan-tu"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-sa-a43', 'short-answer', 'đạo đức', 'inf-ethics-law', 'Hành vi sử dụng công nghệ số để cố ý làm nhục, đe dọa hoặc quấy rối người khác lặp đi lặp lại được gọi là hành vi bắt nạt qua ______________.', NULL, ARRAY['mạng', 'không gian mạng', 'internet']::varchar[], 'Bắt nạt qua mạng (Cyberbullying) là một vấn nạn vi phạm quy tắc đạo đức nghiêm trọng trong môi trường số.', 3, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["dao-duc-so", "an-toan"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-sa-a44', 'short-answer', 'bảng tính', 'inf-digital-tools', 'Trong Excel, nếu ô A1=10, A2=5, A3=20. Công thức `=SUMIF(A1:A3, "<15")` trả về kết quả bằng bao nhiêu?', NULL, ARRAY['15']::varchar[], 'Các ô thỏa mãn điều kiện nhỏ hơn 15 gồm có A1 (10) và A2 (5). Hàm SUMIF thực hiện cộng tổng: 10 + 5 = 15.', 4, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["excel", "ham-sumif"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-sa-a45', 'short-answer', 'lập trình', 'inf-algorithm', 'Trong Python, kết quả xuất ra màn hình của lệnh `print(type(3.14))` là gì?', NULL, ARRAY['<class ''float''>', 'float']::varchar[], 'Hàm type() trả về kiểu dữ liệu của đối tượng. 3.14 là số thực nên thuộc lớp dữ liệu số thực kiểu ''float''.', 5, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["python", "kieu-du-lieu"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-sa-a46', 'short-answer', 'lập trình', 'inf-algorithm', 'Đoạn mã sau hiển thị số mấy lên màn hình?
+```python
+a = 2
+b = 3
+a, b = b, a
+print(a)
+```', NULL, ARRAY['3']::varchar[], 'Cú pháp `a, b = b, a` là kỹ thuật hoán đổi (swap) giá trị nhanh hai biến trong Python. Biến `a` nhận giá trị mới từ biến `b` ban đầu, tức bằng 3.', 5, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["python", "bien"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-sa-a47', 'short-answer', 'lập trình', 'inf-algorithm', 'Cho biết số vòng lặp thực hiện trong đoạn mã Python sau:
+```python
+for i in range(5):
+    pass
+```', NULL, ARRAY['5']::varchar[], '`range(5)` tạo chuỗi số 0, 1, 2, 3, 4 gồm chính xác 5 phần tử nên khối lệnh lặp đúng 5 lần.', 4, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["python", "vong-lap"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-sa-a48', 'short-answer', 'lập trình', 'inf-algorithm', 'Hãy viết tên hàm trong Python dùng để yêu cầu người dùng nhập thông tin đầu vào từ bàn phím.', NULL, ARRAY['input()', 'input']::varchar[], 'Hàm `input()` tạm dừng chương trình và chờ đợi người dùng nhập một chuỗi ký tự từ bàn phím.', 3, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["python", "nhap-lieu"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-sa-a49', 'short-answer', 'bảng tính', 'inf-digital-tools', 'Ký tự nào bắt buộc phải gõ đầu tiên khi bạn muốn nhập một công thức hoặc hàm toán học tính toán vào ô dữ liệu Excel?', NULL, ARRAY['=']::varchar[], 'Dấu bằng `=` thông báo cho phần mềm bảng tính biết nội dung phía sau là công thức tính toán chứ không phải chuỗi văn bản thông thường.', 2, 'Đề thi học kỳ Tin học 9', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["excel", "cu-phap"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
+INSERT INTO ge10_custom_questions (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+VALUES ('hcm-info9-sa-a50', 'short-answer', 'hướng nghiệp', 'inf-career', 'Điền từ thích hợp: Ngành khoa học máy tính chuyên nghiên cứu cách xây dựng thuật toán giúp máy tính có khả năng suy nghĩ, học tập và mô phỏng trí tuệ con người được gọi tắt là công nghệ ______.', NULL, ARRAY['AI', 'ai', 'Trí tuệ nhân tạo', 'tri tue nhan tao']::varchar[], 'Trí tuệ nhân tạo (AI - Artificial Intelligence) đang thay đổi cấu trúc thị trường lao động và mở ra nhiều cơ hội định hướng nghề nghiệp Tin học.', 3, 'Sở GD&ĐT TP.HCM', 'informatics', 9, '{"isStandard": true, "answerMode": "short-answer", "tags": ["huong-nghiep", "ai"]}'::jsonb)
+ON CONFLICT (id) DO UPDATE SET 
+  type = EXCLUDED.type,
+  category = EXCLUDED.category,
+  topic_id = EXCLUDED.topic_id,
+  prompt = EXCLUDED.prompt,
+  options = EXCLUDED.options,
+  correct_answer = EXCLUDED.correct_answer,
+  explanation = EXCLUDED.explanation,
+  difficulty = EXCLUDED.difficulty,
+  source = EXCLUDED.source,
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  metadata = EXCLUDED.metadata;
+
 COMMIT;

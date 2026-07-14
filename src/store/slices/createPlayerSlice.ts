@@ -371,7 +371,7 @@ export const createPlayerSlice: StateCreator<
           // Đổi Danh Mục Quà Khuyến Học (CORE_SPECS §3.2): hành động CHỦ Ý — bắt buộc đủ Ruby, không cho âm.
           const state = get();
           const reward = state.rewards.find(r => r.id === rewardId);
-          if (!reward || reward.remainingQuantity <= 0 || state.player.ruby < reward.costRuby) return false;
+          if (!reward || state.player.ruby < reward.costRuby) return false;
 
           const redemption: RewardRedemption = {
             id: `rr-${Date.now()}`,
@@ -387,7 +387,7 @@ export const createPlayerSlice: StateCreator<
               ...prev.player,
               ruby: prev.player.ruby - reward.costRuby
             },
-            rewards: prev.rewards.map(r => r.id === rewardId ? { ...r, remainingQuantity: r.remainingQuantity - 1 } : r),
+            rewards: prev.rewards,
             rewardRedemptions: [redemption, ...prev.rewardRedemptions]
           }));
 

@@ -3,7 +3,7 @@ import { persist } from 'zustand/middleware';
 import type { StoreState } from './types';
 
 import { createAuthSlice } from './slices/createAuthSlice';
-import { createFamilySlice } from './slices/createFamilySlice';
+import { createClassLinksSlice } from './slices/createClassLinksSlice';
 import { createUISlice } from './slices/createUISlice';
 import { createPlayerSlice } from './slices/createPlayerSlice';
 import { createAdminSlice } from './slices/createAdminSlice';
@@ -15,7 +15,7 @@ export const useGameState = create<StoreState>()(
   persist(
     (set, get, store) => ({
       ...createAuthSlice(set, get, store),
-      ...createFamilySlice(set, get, store),
+      ...createClassLinksSlice(set, get, store),
       ...createUISlice(set, get, store),
       ...createPlayerSlice(set, get, store),
       ...createAdminSlice(set, get, store),

@@ -2,7 +2,7 @@ import type {
   UserProfile, PlayerProfile, Question, CategoryStat, PetState, ParentReward, RewardRedemption,
   ClassReward, ClassRewardRedemption,
   Challenge, HistoryLog,
-  HandbookPage, ParentQuest, GradeTier, SubjectId, UiThemeId, GameSettings, FamilyLink, LearningContext,
+  HandbookPage, ParentQuest, GradeTier, SubjectId, UiThemeId, GameSettings, ClassLink, LearningContext,
   PageExplorationState, ExplorationProgress
 } from '../types/game';
 
@@ -145,17 +145,17 @@ export interface StoreState {
   deleteParentQuest: (questId: string) => void;
   claimParentQuest: (questId: string) => void;
 
-  // === FAMILY SLICE ===
-  familyLinks: FamilyLink[];
+  // === CLASS LINKS SLICE ===
+  classLinks: ClassLink[];
   secondaryParents: any[];
-  fetchFamily: () => Promise<void>;
-  sendInvite: (targetEmail: string, connectAsSecondary?: boolean) => Promise<{ success: boolean; conflictCode?: string; error?: string }>;
+  fetchClassLinks: () => Promise<void>;
+  sendClassInvite: (targetEmail: string, connectAsSecondary?: boolean) => Promise<{ success: boolean; conflictCode?: string; error?: string }>;
   inviteSecondary: (targetEmail: string) => Promise<boolean>;
   inviteSecondaryRequest: (targetEmail: string) => Promise<{ success: boolean; error?: string }>;
   searchUsers: (q: string, role?: string) => Promise<any[]>;
   updateSecondaryPermissions: (linkId: string, permissions: { can_approve_rewards?: boolean, can_create_missions?: boolean, read_only?: boolean }) => Promise<boolean>;
-  respondInvite: (linkId: string, accept: boolean) => Promise<boolean>;
-  leaveFamily: (linkId: string) => Promise<boolean>;
+  respondClassInvite: (linkId: string, accept: boolean) => Promise<boolean>;
+  leaveClass: (linkId: string) => Promise<boolean>;
   applyVicePrincipal: () => Promise<{ success: boolean; error?: string }>;
   inviteAdminConnection: (targetEmail: string) => Promise<{ success: boolean; error?: string }>;
 

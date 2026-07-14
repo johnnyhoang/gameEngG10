@@ -52,6 +52,7 @@ export const SearchSuggest: React.FC<SearchSuggestProps> = ({
     if (!query.trim()) {
       setSuggestions([]);
       setIsOpen(false);
+      setLoading(false); // Reset loading state
       return;
     }
 
@@ -99,10 +100,12 @@ export const SearchSuggest: React.FC<SearchSuggestProps> = ({
   };
 
   const selectItem = (item: any) => {
+    isUserTypingRef.current = false;
     onSelect(item);
     setQuery(item.email);
     if (onChange) onChange(item.email);
     setIsOpen(false);
+    setLoading(false);
   };
 
   return (

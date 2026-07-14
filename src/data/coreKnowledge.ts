@@ -1388,6 +1388,23 @@ export const CATEGORY_TO_TOPIC_MAP: Record<string, string> = {
   // History & Geography
   'history': 'his-vn-party',
   'geography': 'geo-regions-7',
+  // Arts / Fine Arts
+  'mĩ thuật tạo hình': 'art-visual-figure',
+  'mĩ thuật ứng dụng': 'art-visual-apply',
+  'lịch sử mĩ thuật': 'art-visual-history',
+  // Informatics
+  'máy tính': 'inf-digital-world',
+  'thế giới số': 'inf-digital-world',
+  'tìm kiếm thông tin': 'inf-data-manage',
+  'đám mây': 'inf-data-manage',
+  'bản quyền': 'inf-ethics-law',
+  'thông tin cá nhân': 'inf-ethics-law',
+  'đạo đức': 'inf-ethics-law',
+  'bảng tính': 'inf-digital-tools',
+  'trình chiếu': 'inf-digital-tools',
+  'video': 'inf-digital-tools',
+  'lập trình': 'inf-algorithm',
+  'hướng nghiệp': 'inf-career',
 };
 
 /**

@@ -66,7 +66,7 @@ function App() {
   const setUiTheme = useGameState(state => state.setUiTheme);
   
   const { activeSectId, activeGradeTier } = useSect();
-  const familyLinks = useGameState(state => state.familyLinks || []);
+  const classLinks = useGameState(state => state.classLinks);
 
   // Screen routing state
   const [screen, setScreen] = useState<'map' | 'arena' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang' | 'hang-3d' | 'hang-plane' | 'hang-graph' | 'lesson-study' | 'relax' | 'profile'>('map');
@@ -80,7 +80,7 @@ function App() {
 
   useEffect(() => {
     if (!currentUser?.id || currentUser.id.startsWith('mock-')) return;
-    const activeLink = familyLinks.find((link: any) => link.status === 'active');
+    const activeLink = classLinks.find((link: any) => link.status === 'active');
     if (!activeLink) return;
     void recordMissionEvent({
       profileId: currentUser.id,
@@ -88,10 +88,10 @@ function App() {
       eventType: 'teacher_link_activated',
       gradeTier: activeGradeTier,
       subjectId: activeSectId,
-      entityType: 'family-link',
+      entityType: 'class-link',
       entityId: activeLink.id,
     });
-  }, [activeGradeTier, activeSectId, currentUser?.id, familyLinks]);
+  }, [activeGradeTier, activeSectId, currentUser?.id, classLinks]);
 
   useEffect(() => {
     if (screen !== 'hang-3d' || !currentUser?.id) return;

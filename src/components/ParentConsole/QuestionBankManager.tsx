@@ -636,7 +636,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                   </h5>
                 </div>
                 <p className="text-[10px] text-synth-text-muted leading-relaxed">
-                  Dán đề thi của bạn vào ô dưới đây (hỗ trợ đề thi trắc nghiệm tiếng Việt/tiếng Anh thô). AI của Phòng Học Vụ sẽ tự động nhận diện câu hỏi, lựa chọn, đáp án, và đề xuất lời giải thích chi tiết.
+                  Dán đề thi của bạn vào ô dưới đây (hỗ trợ đề thi trắc nghiệm tiếng Việt/tiếng Anh thô). AI của Phòng Hiệu Trưởng sẽ tự động nhận diện câu hỏi, lựa chọn, đáp án, và đề xuất lời giải thích chi tiết.
                 </p>
 
                 <form onSubmit={handleAiIngest} className="space-y-3">

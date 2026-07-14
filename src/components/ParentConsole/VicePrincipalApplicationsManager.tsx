@@ -4,6 +4,8 @@ import { isAdmin } from '../../utils/roleHelpers';
 import { toast } from '../../utils/toast';
 import { authService } from '../../services/authService';
 
+const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+
 interface VicePrincipalApplicationsManagerProps {
   currentUser: any;
 }
@@ -18,7 +20,7 @@ export const VicePrincipalApplicationsManager: React.FC<VicePrincipalApplication
     setLoading(true);
     try {
       const token = await authService.getAccessToken();
-      const res = await fetch('/api/admin/vice-principal-applications', {
+      const res = await fetch(`${backendUrl}/api/admin/vice-principal-applications`, {
         headers: { Authorization: `Bearer ${token}`, 'X-Profile-Id': currentUser.id }
       });
       if (res.ok) {
@@ -40,7 +42,7 @@ export const VicePrincipalApplicationsManager: React.FC<VicePrincipalApplication
     setProcessingId(applicationId);
     try {
       const token = await authService.getAccessToken();
-      const res = await fetch('/api/admin/respond-vice-principal', {
+      const res = await fetch(`${backendUrl}/api/admin/respond-vice-principal`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, 'X-Profile-Id': currentUser.id },
         body: JSON.stringify({ applicationId, accept })

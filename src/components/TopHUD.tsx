@@ -24,12 +24,12 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   const showHelp = useGameState(state => state.showHelp);
   const tickEnergyRegen = useGameState(state => state.tickEnergyRegen);
   const uiTheme = useGameState(state => state.uiTheme);
-  const familyLinks = useGameState(state => state.familyLinks || []);
+  const classLinks = useGameState(state => state.classLinks);
 
   const isUnicorn = isLightTheme(uiTheme);
 
   const isStudent = currentUser?.role === 'student';
-  const isConnected = isStudent && familyLinks.some(l => l.status === 'active');
+  const isConnected = isStudent && classLinks.some(l => l.status === 'active');
 
   // Tick Năng Lượng đều đặn để mở khóa đúng giờ hồi mà không cần reload trang (SUB_SPEC_ENERGY §5).
   useEffect(() => {

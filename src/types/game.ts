@@ -59,7 +59,7 @@ export interface GameSettings {
   updatedAt: number;
 }
 
-export interface FamilyLink {
+export interface ClassLink {
   id: string;
   status: 'pending_student' | 'pending_parent' | 'active';
   parent_id?: string;

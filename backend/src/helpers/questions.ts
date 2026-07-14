@@ -64,11 +64,11 @@ export const ensureDefaultRewards = async (userId: string) => {
   const rewardsRes = await pool.query('SELECT id FROM ge10_parent_rewards WHERE user_id = $1', [userId]);
   if (rewardsRes.rowCount === 0) {
     const defaultRewards = [
-      { id: `default-rew-1-${userId}`, title: '15 phút chơi game', cost_ruby: 150, quantity: 10 },
-      { id: `default-rew-2-${userId}`, title: 'Ly trà sữa đặc biệt', cost_ruby: 400, quantity: 4 },
-      { id: `default-rew-3-${userId}`, title: 'Bao lì xì 20.000đ', cost_ruby: 500, quantity: 5 },
-      { id: `default-rew-4-${userId}`, title: 'Bao lì xì 50.000đ', cost_ruby: 1000, quantity: 3 },
-      { id: `default-rew-5-${userId}`, title: 'Bao lì xì 100.000đ', cost_ruby: 1800, quantity: 1 }
+      { id: `default-rew-1-${userId}`, title: '15 phút chơi game', cost_ruby: 150, quantity: 999999 },
+      { id: `default-rew-2-${userId}`, title: 'Ly trà sữa đặc biệt', cost_ruby: 400, quantity: 999999 },
+      { id: `default-rew-3-${userId}`, title: 'Bao lì xì 20.000đ', cost_ruby: 500, quantity: 999999 },
+      { id: `default-rew-4-${userId}`, title: 'Bao lì xì 50.000đ', cost_ruby: 1000, quantity: 999999 },
+      { id: `default-rew-5-${userId}`, title: 'Bao lì xì 100.000đ', cost_ruby: 1800, quantity: 999999 }
     ];
 
     for (const dr of defaultRewards) {
@@ -86,10 +86,10 @@ export const ensureDefaultClassRewards = async (teacherId: string) => {
   const rewardsRes = await pool.query('SELECT id FROM ge10_class_rewards WHERE teacher_id = $1', [teacherId]);
   if (rewardsRes.rowCount === 0) {
     const defaultRewards = [
-      { id: `default-cls-rew-1-${teacherId}`, title: '15 phút chơi game', cost_ruby: 150, quantity: 10 },
-      { id: `default-cls-rew-2-${teacherId}`, title: 'Ly trà sữa đặc biệt', cost_ruby: 400, quantity: 4 },
-      { id: `default-cls-rew-3-${teacherId}`, title: 'Bao lì xì 20.000đ', cost_ruby: 500, quantity: 5 },
-      { id: `default-cls-rew-4-${teacherId}`, title: 'Bao lì xì 50.000đ', cost_ruby: 1000, quantity: 3 },
+      { id: `default-cls-rew-1-${teacherId}`, title: '15 phút chơi game', cost_ruby: 150, quantity: 1 },
+      { id: `default-cls-rew-2-${teacherId}`, title: 'Ly trà sữa đặc biệt', cost_ruby: 400, quantity: 1 },
+      { id: `default-cls-rew-3-${teacherId}`, title: 'Bao lì xì 20.000đ', cost_ruby: 500, quantity: 1 },
+      { id: `default-cls-rew-4-${teacherId}`, title: 'Bao lì xì 50.000đ', cost_ruby: 1000, quantity: 1 },
       { id: `default-cls-rew-5-${teacherId}`, title: 'Bao lì xì 100.000đ', cost_ruby: 1800, quantity: 1 }
     ];
 

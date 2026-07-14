@@ -127,7 +127,7 @@ export function Arena({ onStartPlay }: ArenaProps) {
       }
 
       return {
-        id: a.config?.mode || a.id,
+        id: a.id,
         title: a.title,
         subtitle: 'Luyện tập chuyên đề',
         description: a.config?.reward || 'Rèn luyện phản xạ nhanh với các dạng bài tập.',

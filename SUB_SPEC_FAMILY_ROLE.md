@@ -184,6 +184,19 @@ Bảng Roster trong Phòng Học Vụ (`SettingsManager.tsx`) thay thế hoàn t
     *   *Giáo viên:* Tên & Avatar, Email, Danh sách Học sinh phụ trách (chủ nhiệm hoặc hỗ trợ).
     *   *Ban giám hiệu:* Tên & Avatar, Email, Vai trò (Viện Trưởng hoặc Phó Viện Trưởng).
 
+### 3.5 Sơ Đồ Tổ Chức (Organization Chart)
+
+Nằm trong **Phòng Hiệu Trưởng**, sơ đồ tổ chức hiển thị trực quan các liên kết nhân sự dưới dạng cây phân cấp (Diagram):
+1.  **Nhóm Viện Chủ (Viện Trưởng 👑):** Ở tầng cao nhất, đại diện cho những người sở hữu toàn quyền học viện.
+2.  **Nhóm Phó Viện Chủ (Phó Viện Trưởng 🛡️):** Tầng tiếp theo, được kết nối với nhóm Viện Chủ qua các liên kết quản trị.
+3.  **Chủ Nhiệm Chính (👨‍👩‍👧):** Tầng thứ ba, đại diện cho những giáo viên chủ nhiệm quản lý các lớp học.
+4.  **Phó Chủ Nhiệm (👤):** Tầng thứ tư, nối trực tiếp với Chủ Nhiệm Chính tương ứng (qua liên kết `secondary` giữa 2 giáo viên) và nối ngang/chéo với các Phó Chủ Nhiệm khác trong lớp học.
+5.  **Sĩ Tử (Học Sinh 🌱):** Hiển thị gọn gàng dưới chân của từng giáo viên chủ nhiệm phụ trách (cả chính và phụ). Những học sinh tự do (chưa gán lớp) sẽ được hiển thị dưới dạng nhóm riêng do Ban Giám Hiệu (Viện Trưởng/Phó Viện Trưởng) quản lý trực tiếp.
+
+**Quy tắc bảo mật thông tin UI:**
+- Tuyệt đối không hiển thị ID cơ sở dữ liệu (`id`, `uuid`, `profile_id`...) của các tài khoản trên giao diện sơ đồ.
+- Chỉ hiển thị Tên hiển thị (`name`), nếu không có tên thì bắt buộc dùng Email (`email`). Kèm theo Avatar và các tooltip thông tin giáo dục thân thiện (XP, Level, Streak).
+
 ---
 
 ## 4. Ma Trận Phân Quyền Tổng Hợp
