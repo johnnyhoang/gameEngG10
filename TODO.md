@@ -669,4 +669,14 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
   - *Acceptance:* Options được xáo trộn; không bị thay đổi ngẫu nhiên mỗi lần re-render; review khớp 100% với lúc làm bài; build pass.
 
 
+# Bộ đếm Đúng/Sai Đố Vui Nhận Ruby (2026-07-14)
+
+- [x] **RDL1 — Hiển thị bộ đếm số câu đúng, số câu sai tích lũy trong phiên chơi Đố Vui Nhận Ruby**
+  - *Mục tiêu:* Học sinh chơi Đố Vui Nhận Ruby (vô hạn, chơi tiếp nhiều lượt) có thể biết được tổng số câu mình đã trả lời đúng và sai từ lúc mở game lên cho tới lúc đóng game.
+  - *Phải sửa:* `src/miniapps/riddle/RiddleGames.tsx`.
+  - *Phải làm:* Lưu trữ trạng thái `sessionCorrect` và `sessionWrong`, cộng dồn mỗi khi trả lời câu hỏi và hiển thị trên thanh tiến độ góc phải của Modal; tự động reset khi đóng game.
+  - *Acceptance:* Bộ đếm tăng chính xác; reset về 0 khi đóng modal; build pass.
+
+
+
 

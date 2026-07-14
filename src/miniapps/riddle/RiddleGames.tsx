@@ -48,6 +48,8 @@ export function RiddleGames() {
   const [finished, setFinished] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [sessionCorrect, setSessionCorrect] = useState(0);
+  const [sessionWrong, setSessionWrong] = useState(0);
 
   const usedThisSession = useRef<Set<string>>(new Set());
   const answeredThisRound = useRef<Set<string>>(new Set());
@@ -148,6 +150,9 @@ export function RiddleGames() {
       }
     }
     if (correct) {
+      if (mode === 'ruby-riddle') {
+        setSessionCorrect(current => current + 1);
+      }
       setScore(current => current + 1);
       void awardRubyAndXp(
         10,
@@ -156,6 +161,9 @@ export function RiddleGames() {
         `Trả lời đúng câu ${activeQuestion.id} trong ${MODE_CONFIG[mode].title}.`
       );
     } else {
+      if (mode === 'ruby-riddle') {
+        setSessionWrong(current => current + 1);
+      }
       toast.error('Nhầm rồi Sĩ Tử! Hãy thử sức ở câu sau nhé! 🐷');
     }
   };
@@ -208,6 +216,8 @@ export function RiddleGames() {
     setMode(null);
     setRoundQuestions([]);
     setFinished(false);
+    setSessionCorrect(0);
+    setSessionWrong(0);
   };
 
   return (
@@ -255,9 +265,18 @@ export function RiddleGames() {
           bodyClassName="p-4 sm:p-6 flex items-center justify-center"
         >
           <div className="relative w-full max-w-2xl rounded-2xl border border-synth-cyan/30 bg-white/5 p-5 sm:p-6 shadow-2xl">
-            <p className="mb-3 text-xs text-slate-400">
-              {mode === 'encounter-sprint' ? `Câu ${Math.min(questionIndex + 1, 3)}/3` : 'Một câu mỗi lượt'}
-            </p>
+            <div className="flex justify-between items-center mb-3">
+              <p className="text-xs text-slate-400">
+                {mode === 'encounter-sprint' ? `Câu ${Math.min(questionIndex + 1, 3)}/3` : 'Một câu mỗi lượt'}
+              </p>
+              {mode === 'ruby-riddle' && (
+                <div className="text-[10px] font-orbitron font-bold px-2 py-0.5 rounded bg-white/5 border border-white/5 flex gap-2">
+                  <span className="text-slate-400">Đã chơi phiên này:</span>
+                  <span className="text-synth-green">Đúng: {sessionCorrect}</span>
+                  <span className="text-red-400">Sai: {sessionWrong}</span>
+                </div>
+              )}
+            </div>
 
             {loading ? (
               <p className="py-8 text-center text-sm text-slate-400">Đang chọn câu đố...</p>
