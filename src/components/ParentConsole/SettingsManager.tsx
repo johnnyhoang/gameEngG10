@@ -3,8 +3,6 @@ import { SlidersHorizontal, BookOpen, BarChart as ChartIcon, FileText } from 'lu
 import { getStudentRankForLevel } from '../../types/game';
 import { isAdmin } from '../../utils/roleHelpers';
 import { toast } from '../../utils/toast';
-import { RoleManager } from './RoleManager';
-import { VicePrincipalApplicationsManager } from './VicePrincipalApplicationsManager';
 import { SideDrawer } from '../Common/SideDrawer';
 
 /** Một dòng thiết lập dạng chuẩn: nhãn bên trái, ô số + nút −/+ bên phải */
@@ -259,7 +257,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
 
         <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between bg-white/5 rounded-xl border border-white/5 p-4">
           <p className="text-[10px] text-synth-text-muted leading-relaxed">
-            Các cấu hình này áp dụng chung cho tất cả học sinh (Đảo thử thách và lượng điểm nhận được). Riêng Năng Lượng Tối Đa + giờ hồi thì chỉnh RIÊNG cho từng học sinh tại tab 👤 {currentUser?.role === 'truong_vien' || currentUser?.role === 'pho_vien' ? 'Học Tích Học Viện' : 'Hồ Sơ Học Sinh'} → xem hồ sơ con.
+            Các cấu hình này áp dụng chung cho tất cả học sinh (Đảo thử thách và lượng điểm nhận được). Riêng Năng Lượng Tối Đa + giờ hồi thì chỉnh RIÊNG cho từng học sinh: vào ⚙️ Phòng Hiệu Trưởng → 👥 Học Sinh & Liên Kết → bấm vào học sinh cần chỉnh.
           </p>
           <button
             onClick={handleSaveSettings}
@@ -705,11 +703,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
         </div>
       )}
 
-      {/* Duyệt đơn ứng cử Phó Viện Trưởng */}
-      <VicePrincipalApplicationsManager currentUser={currentUser} />
-
-      {/* Quản lý Role & Profile — chỉ Viện Trưởng */}
-      <RoleManager currentUser={currentUser} />
+      {/* Duyệt ứng tuyển Phó Viện + cấp/thu hồi quyền đã chuyển sang tab 🛡️ Nhân Sự & Phân Quyền */}
     </div>
   );
 };

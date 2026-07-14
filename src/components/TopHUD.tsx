@@ -25,10 +25,13 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   const tickEnergyRegen = useGameState(state => state.tickEnergyRegen);
   const uiTheme = useGameState(state => state.uiTheme);
   const classLinks = useGameState(state => state.classLinks);
+  const parentConsoleTab = useGameState(state => state.parentConsoleTab);
+  const setParentConsoleTab = useGameState(state => state.setParentConsoleTab);
 
   const isUnicorn = isLightTheme(uiTheme);
 
   const isStudent = currentUser?.role === 'student';
+  const isConsoleUser = !!currentUser && !isStudent;
   const isConnected = isStudent && classLinks.some(l => l.status === 'active');
 
   // Tick Năng Lượng đều đặn để mở khóa đúng giờ hồi mà không cần reload trang (SUB_SPEC_ENERGY §5).
@@ -237,7 +240,31 @@ export const TopHUD: React.FC<TopHUDProps> = ({
             </>
           )}
 
-
+          {/* Nav chính Phòng Điều Hành cho Giáo viên / Ban Giám Hiệu — cùng vị trí với nav học sinh */}
+          {isConsoleUser && currentScreen === 'parent' && (
+            <>
+              {([
+                { tab: 'thien_co_cac', icon: '⚙️', label: 'Hiệu Trưởng', title: 'Phòng Hiệu Trưởng — Trung tâm quản trị' },
+                { tab: 'van_quyen_cac', icon: '📚', label: 'Đề Thi', title: 'Ngân Hàng Đề Thi' },
+                { tab: 'tang_kinh_cac', icon: '📖', label: 'Bài Giảng', title: 'Thư Viện Bài Giảng' },
+                { tab: 'than_phan', icon: '👤', label: 'Hồ Sơ', title: 'Hồ Sơ Của Tôi' },
+              ] as const).map(item => (
+                <button
+                  key={item.tab}
+                  onClick={() => setParentConsoleTab(item.tab)}
+                  title={item.title}
+                  className={navBtnClass(
+                    parentConsoleTab === item.tab,
+                    isUnicorn ? 'bg-gradient-to-r from-fuchsia-400 to-cyan-300 border-violet-200 text-violet-900 shadow-[0_0_10px_rgba(192,132,252,0.2)]' : 'bg-synth-cyan border-synth-cyan text-black shadow-[0_0_12px_#00f0ff]',
+                    isUnicorn ? 'bg-white/50 border-violet-200/50 text-violet-700 hover:bg-white/80' : 'bg-transparent border-synth-cyan/50 text-synth-cyan hover:bg-synth-cyan/10'
+                  )}
+                >
+                  <span>{item.icon}</span>
+                  <span className="hidden lg:inline">{item.label}</span>
+                </button>
+              ))}
+            </>
+          )}
 
           {currentUser && (
             <button

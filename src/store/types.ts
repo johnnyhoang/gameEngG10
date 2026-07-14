@@ -9,6 +9,9 @@ import type {
 // We might need to import Lesson and ExplorationProgress from their correct files.
 import type { Lesson } from '../data/lessons';
 
+/** Các tab chính của Phòng Điều Hành (ParentConsole) — nav đặt trên TopHUD */
+export type ParentConsoleTab = 'thien_co_cac' | 'van_quyen_cac' | 'tang_kinh_cac' | 'ngan_cac' | 'than_phan';
+
 
 export interface StoreState {
   // === AUTH & MULTI-PROFILE SLICE ===
@@ -168,8 +171,11 @@ export interface StoreState {
   uiThemesByUser: Record<string, UiThemeId>;
   gameSettings: GameSettings;
   helpPageId: string | null;
+  /** Tab đang mở trong Phòng Điều Hành — chia sẻ giữa TopHUD (nav chính) và ParentConsole */
+  parentConsoleTab: ParentConsoleTab;
 
   addHandbookPage: (page: Omit<HandbookPage, 'id'>) => void;
+  setParentConsoleTab: (tab: ParentConsoleTab) => void;
   setSectModalOpen: (open: boolean) => void;
   setLearningContext: (context: LearningContext) => void;
   setSubject: (subject: SubjectId) => void;

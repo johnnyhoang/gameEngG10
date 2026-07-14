@@ -15,7 +15,8 @@ export const createUISlice: StateCreator<
     'isSectModalOpen' | 'currentSubject' | 'activeGradeTier' | 
     'uiTheme' | 'uiThemesByUser' | 'helpPageId' | 'handbookPages' |
     'setSectModalOpen' | 'setLearningContext' | 'setSubject' | 'setGradeTier' | 'setUiTheme' |
-    'showHelp' | 'closeHelp' | 'initEventSubscriptions' | 'addHandbookPage'
+    'showHelp' | 'closeHelp' | 'initEventSubscriptions' | 'addHandbookPage' |
+    'parentConsoleTab' | 'setParentConsoleTab'
   >
 > = (set, get) => ({
   isSectModalOpen: false,
@@ -25,8 +26,11 @@ export const createUISlice: StateCreator<
   uiThemesByUser: {},
   helpPageId: null,
   handbookPages: ALL_HANDBOOK_PAGES,
+  parentConsoleTab: 'thien_co_cac',
 
   setSectModalOpen: (open) => set({ isSectModalOpen: open }),
+
+  setParentConsoleTab: (tab) => set({ parentConsoleTab: tab }),
 
   setLearningContext: (context: LearningContext) => {
     set(state => {

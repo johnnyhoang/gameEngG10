@@ -5,6 +5,7 @@ import { isParentRole } from '../../utils/roleHelpers';
 import { toast } from '../../utils/toast';
 import { RewardManager } from './RewardManager';
 import { QuestManager } from './QuestManager';
+import { SideDrawer } from '../Common/SideDrawer';
 
 interface StudentProfileViewProps {
   currentUser: any;
@@ -20,6 +21,8 @@ interface StudentProfileViewProps {
   adminSetEnergyConfig: (studentId: string, maxEnergy: number, resetHours: 2 | 3 | 5) => Promise<void>;
   fetchSkipReviews: (studentId: string) => Promise<void>;
   resolveSkipReview: (reviewId: string) => Promise<boolean>;
+  /** Quay lại danh sách học sinh (hiện nút "Đổi học sinh khác" trên header khi được truyền) */
+  onSwitchStudent?: () => void;
   // Reward props
   activeRewardCatalog: any[];
   activeRedemptions: any[];
@@ -47,6 +50,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
   adminSetEnergyConfig,
   fetchSkipReviews,
   resolveSkipReview,
+  onSwitchStudent,
   activeRewardCatalog,
   activeRedemptions,
   addParentReward,
@@ -66,6 +70,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
   const [isSettingEnergy, setIsSettingEnergy] = useState(false);
   const [isSettingEnergyConfig, setIsSettingEnergyConfig] = useState(false);
   const [resolvingReviewIds, setResolvingReviewIds] = useState<Record<string, boolean>>({});
+  const [energyDrawerOpen, setEnergyDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (selectedStudentProfile?.player) {
@@ -86,15 +91,16 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
   }
 
   const { studentUser, player, pet, categoryStats = {}, logs = [] } = selectedStudentProfile;
+  const pendingSkipCount = (skipReviews || []).length;
 
   return (
     <div className="space-y-6">
-      {/* 1. Header Profile */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r from-synth-cyan/5 via-white/3 to-synth-magenta/5 border border-white/10 p-5 rounded-2xl">
+      {/* 1. Header hồ sơ: danh tính + chỉ số + thao tác nhanh (gộp, không lặp banner bên ngoài) */}
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-4 bg-gradient-to-r from-synth-cyan/5 via-white/3 to-synth-magenta/5 border border-white/10 p-5 rounded-2xl">
         <div className="flex items-center gap-4">
-          <img 
-            src={studentUser?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'} 
-            alt={studentUser?.name} 
+          <img
+            src={studentUser?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}
+            alt={studentUser?.name}
             className="w-16 h-16 rounded-full border-2 border-synth-magenta/40 shadow-md object-cover"
           />
           <div>
@@ -103,39 +109,280 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
           </div>
         </div>
 
-        {/* Quick parameters display */}
-        <div className="grid grid-cols-2 sm:flex sm:items-center gap-4 text-xs">
-          <div className="bg-white/3 border border-white/5 rounded-2xl px-4 py-2.5 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
-            <span className="block text-[9px] uppercase text-synth-text-muted">Cấp Độ</span>
-            <span className="font-orbitron font-black text-synth-magenta text-sm">LV.{player?.level || 1}</span>
+        <div className="flex flex-col items-center lg:items-end gap-3">
+          {/* Quick parameters display */}
+          <div className="grid grid-cols-3 sm:flex sm:items-center gap-2.5 text-xs">
+            <div className="bg-white/3 border border-white/5 rounded-2xl px-3.5 py-2 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
+              <span className="block text-[9px] uppercase text-synth-text-muted">Cấp Độ</span>
+              <span className="font-orbitron font-black text-synth-magenta text-sm">LV.{player?.level || 1}</span>
+            </div>
+            <div className="bg-white/3 border border-white/5 rounded-2xl px-3.5 py-2 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
+              <span className="block text-[9px] uppercase text-synth-text-muted">Ruby</span>
+              <span className={`font-orbitron font-black text-sm ${(player?.ruby || 0) < 0 ? 'text-red-400' : 'text-synth-orange'}`}>
+                {player?.ruby || 0} Ruby
+              </span>
+            </div>
+            <div className="bg-white/3 border border-white/5 rounded-2xl px-3.5 py-2 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
+              <span className="block text-[9px] uppercase text-synth-text-muted">Tích Lũy Điểm Số</span>
+              <span className="font-orbitron font-black text-synth-green text-sm">{player?.xp || 0} XP</span>
+            </div>
+            <div className="bg-white/3 border border-white/5 rounded-2xl px-3.5 py-2 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
+              <span className="block text-[9px] uppercase text-synth-text-muted">Chuỗi ngày</span>
+              <span className="font-orbitron font-black text-orange-400 text-sm">{player?.streak || 0} ngày</span>
+            </div>
+            <div className="bg-white/3 border border-white/5 rounded-2xl px-3.5 py-2 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
+              <span className="block text-[9px] uppercase text-synth-text-muted">Năng Lượng</span>
+              <span className="font-orbitron font-black text-synth-cyan text-sm">⚡ {player?.energy || 0}/{maxE}</span>
+            </div>
           </div>
-          <div className="bg-white/3 border border-white/5 rounded-2xl px-4 py-2.5 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
-            <span className="block text-[9px] uppercase text-synth-text-muted">Ruby</span>
-            <span className={`font-orbitron font-black text-sm ${(player?.ruby || 0) < 0 ? 'text-red-400' : 'text-synth-orange'}`}>
-              {player?.ruby || 0} Ruby
-            </span>
-          </div>
-          <div className="bg-white/3 border border-white/5 rounded-2xl px-4 py-2.5 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
-            <span className="block text-[9px] uppercase text-synth-text-muted">Tích Lũy Điểm Số</span>
-            <span className="font-orbitron font-black text-synth-green text-sm">{player?.xp || 0} XP</span>
-          </div>
-          <div className="bg-white/3 border border-white/5 rounded-2xl px-4 py-2.5 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
-            <span className="block text-[9px] uppercase text-synth-text-muted">Chuỗi ngày</span>
-            <span className="font-orbitron font-black text-orange-400 text-sm">{player?.streak || 0} ngày</span>
+
+          {/* Thao tác nhanh */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setEnergyDrawerOpen(true)}
+              className="px-3.5 py-2 rounded-xl bg-synth-cyan text-black font-orbitron font-bold text-[10px] uppercase tracking-wider hover:shadow-[0_0_12px_rgba(0,240,255,0.4)] transition-all cursor-pointer"
+            >
+              ⚡ Nạp Năng Lượng
+            </button>
+            {onSwitchStudent && (
+              <button
+                onClick={onSwitchStudent}
+                className="px-3.5 py-2 rounded-xl border border-white/10 text-slate-300 hover:bg-white/10 font-orbitron font-bold text-[10px] uppercase tracking-wider transition-all cursor-pointer"
+              >
+                🔄 Đổi Học Sinh Khác
+              </button>
+            )}
           </div>
         </div>
       </div>
 
-      {/* 2. Nạp Năng Lượng & Thú Cưng */}
+      {/* 2. Biểu đồ Mastery chuyên đề — thông tin học tập lên đầu trang */}
+      <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-4">
+        <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
+          📊 Tiến Độ Học Tập Chuyên Đề (Mastery Breakdown)
+        </h4>
+        <div className="h-64 w-full text-xs">
+          {Object.keys(categoryStats).length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={Object.values(categoryStats).map((stat: any) => ({
+                name: stat.name,
+                correct: stat.correct,
+                total: stat.total
+              }))}>
+                <XAxis dataKey="name" stroke="#888888" fontSize={9} tickLine={false} />
+                <YAxis stroke="#888888" fontSize={9} tickLine={false} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: '#181b2a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
+                  labelStyle={{ color: '#fff', fontWeight: 'bold' }}
+                />
+                <Bar dataKey="correct" name="Đúng" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={30} />
+                <Bar dataKey="total" name="Tổng" fill="#334155" radius={[6, 6, 0, 0]} maxBarSize={30} />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <div className="h-full flex items-center justify-center text-synth-text-muted">
+              Học sinh chưa bắt đầu làm bài luyện tập.
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 3. Nhật Ký Hoạt Động & Hàng Đợi Skip Reviews — việc cần theo dõi/xử lý, ngay sau tiến độ */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Nạp Năng Lượng (Energy Control) */}
-        <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-4">
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4 text-synth-cyan" />
-            <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
-              ⚡ Nạp Năng Lượng cho Học Sinh
-            </h4>
+        {/* Hàng đợi Phản hồi Skip (Closed-loop Review) */}
+        {isParentRole(currentUser?.role) ? (
+          <div className="glass-panel rounded-2xl border border-white/5 p-5 flex flex-col h-[350px]">
+            <div className="flex justify-between items-center mb-4">
+              <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider flex items-center gap-1.5">
+                ⚠️ Hàng đợi phản hồi Bỏ qua (Skip Reviews)
+                {pendingSkipCount > 0 && (
+                  <span className="px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[9px] font-black">
+                    {pendingSkipCount}
+                  </span>
+                )}
+              </h4>
+              <button
+                onClick={() => {
+                  if (studentUser?.id) {
+                    fetchSkipReviews(studentUser.id);
+                  }
+                }}
+                className="px-2 py-0.5 rounded border border-synth-orange/30 text-synth-orange text-[9px] font-orbitron font-bold hover:bg-synth-orange/10 cursor-pointer transition-colors"
+              >
+                Tải Lại
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto space-y-2.5 text-xs pr-1">
+              {!skipReviews || skipReviews.length === 0 ? (
+                <div className="h-full flex items-center justify-center text-synth-text-muted text-center py-8 italic">
+                  Chưa có phản hồi bỏ qua câu hỏi nào chờ xem duyệt.
+                </div>
+              ) : (
+                skipReviews.map((review: any) => (
+                  <div key={review.id} className="p-3 rounded-lg bg-white/5 border border-white/5 space-y-2">
+                    <div className="flex justify-between items-start gap-2">
+                      <span className="font-bold text-white max-w-xs break-words block">
+                        {review.question_prompt}
+                      </span>
+                      <span className="px-1.5 py-0.5 rounded text-[8px] font-bold font-orbitron uppercase bg-red-500/20 text-red-400 border border-red-500/30 whitespace-nowrap">
+                        {review.reason}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] text-synth-text-muted">
+                      <span>{new Date(review.created_at).toLocaleString('vi-VN')}</span>
+                      <button
+                        disabled={resolvingReviewIds[review.id]}
+                        onClick={async () => {
+                          if (resolvingReviewIds[review.id]) return;
+                          setResolvingReviewIds(prev => ({ ...prev, [review.id]: true }));
+                          try {
+                            const ok = await resolveSkipReview(review.id);
+                            if (ok) {
+                              toast.success('Đã xác nhận phản hồi bỏ qua.');
+                            }
+                          } catch (err) {
+                            console.error(err);
+                            toast.error('Không thể lưu xác nhận.');
+                          } finally {
+                            setResolvingReviewIds(prev => ({ ...prev, [review.id]: false }));
+                          }
+                        }}
+                        className="px-2 py-1 rounded bg-synth-green text-black font-black uppercase text-[8px] font-orbitron cursor-pointer transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        {resolvingReviewIds[review.id] ? 'Đang duyệt...' : 'Đã Xem ✓'}
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
+        ) : (
+          <div className="glass-panel rounded-2xl border border-white/5 p-5 flex flex-col h-[350px] items-center justify-center text-center text-xs text-slate-400">
+            <span>🔒 Chỉ phụ huynh mới xem được hàng đợi Skip Reviews.</span>
+          </div>
+        )}
+
+        {/* Nhật ký hoạt động học tập */}
+        <div className="glass-panel rounded-2xl border border-white/5 p-5 flex flex-col h-[350px]">
+          <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider mb-4">
+            Nhật ký 50 hoạt động học tập gần nhất
+          </h4>
+          <div className="flex-1 overflow-y-auto space-y-2.5 text-xs pr-1">
+            {logs.length === 0 ? (
+              <div className="text-center py-8 text-synth-text-muted italic">
+                Chưa ghi nhận hoạt động học tập nào.
+              </div>
+            ) : (
+              logs.slice(0, 50).map((log: any) => (
+                <div key={log.id} className="p-3 rounded-lg bg-white/5 border border-white/5 space-y-1.5">
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-white capitalize">{log.actionType || 'Học tập'}</span>
+                    <span className="text-[10px] text-synth-text-muted">
+                      {new Date(log.timestamp).toLocaleString('vi-VN')}
+                    </span>
+                  </div>
+                  <p className="text-slate-300 leading-relaxed">{log.description}</p>
+                  <div className="flex gap-4 text-[10px] font-bold font-orbitron">
+                    {log.xpAwarded !== 0 && (
+                      <span className={log.xpAwarded > 0 ? 'text-synth-green' : 'text-red-400'}>
+                        {log.xpAwarded > 0 ? '+' : ''}{log.xpAwarded} XP
+                      </span>
+                    )}
+                    {log.rubyAwarded !== 0 && (
+                      <span className={log.rubyAwarded > 0 ? 'text-synth-orange' : 'text-red-400'}>
+                        {log.rubyAwarded > 0 ? '+' : ''}{log.rubyAwarded} Ruby
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Quản Lý Quà Khuyến Học & Duyệt Đổi Quà */}
+      <div className="glass-panel rounded-2xl border border-white/5 p-5">
+        <RewardManager
+          viewingStudentId={studentUser?.id}
+          activeRewardCatalog={activeRewardCatalog}
+          activeRedemptions={activeRedemptions}
+          canApproveReward={canApproveReward}
+          addParentReward={addParentReward}
+          deleteParentReward={deleteParentReward}
+          markRewardDelivered={markRewardDelivered}
+          cancelRedemption={cancelRedemption}
+          adminMarkRewardDelivered={adminMarkRewardDelivered}
+          adminCancelRedemption={adminCancelRedemption}
+        />
+      </div>
+
+      {/* 5. Cáo Thị Nhiệm Vụ */}
+      {studentUser?.id && (
+        <div className="glass-panel rounded-2xl border border-white/5 p-5">
+          <QuestManager
+            parentQuests={parentQuests}
+            canCreateMission={canCreateMission}
+            addParentQuest={addParentQuest}
+            completeParentQuest={completeParentQuest}
+            deleteParentQuest={deleteParentQuest}
+          />
+        </div>
+      )}
+
+      {/* 6. Thú cưng — thông tin tham khảo, đặt cuối trang */}
+      <div className="glass-panel rounded-2xl border border-white/5 p-5">
+        <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider mb-4">
+          🐷 Thú Cưng Đồng Hành (Pet Stable)
+        </h4>
+        {pet ? (
+          <div className="flex items-center gap-5 bg-white/3 border border-white/5 p-4 rounded-2xl w-full max-w-2xl">
+            <div className="w-20 h-20 rounded-3xl bg-black/40 border border-synth-magenta/25 flex items-center justify-center text-5xl shrink-0 shadow-lg relative group overflow-hidden">
+              <div className="absolute inset-0 bg-synth-magenta/5 animate-pulse pointer-events-none"></div>
+              <span className="relative z-10 group-hover:scale-115 transition-transform duration-300 inline-block">
+                {pet.stage === 'egg' ? '🥚' : pet.stage === 'baby' ? '🐷' : '🐗'}
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-3 flex-1 text-xs">
+              <div>
+                <span className="block text-[9px] uppercase text-slate-400 font-bold">Tên thú cưng</span>
+                <span className="font-bold text-white text-sm">Heo Maikawaii</span>
+              </div>
+              <div>
+                <span className="block text-[9px] uppercase text-slate-400 font-bold">Cấp độ</span>
+                <span className="font-orbitron font-black text-synth-magenta text-sm">LV.{pet.level}</span>
+              </div>
+              <div>
+                <span className="block text-[9px] uppercase text-slate-400 font-bold">Tâm trạng</span>
+                <span className="inline-flex items-center gap-1 font-bold text-white mt-0.5 capitalize">
+                  {pet.mood === 'happy' ? '😄 Hân Hoan' : pet.mood === 'neutral' ? '😐 Bình Hòa' : '😢 U Uất'}
+                </span>
+              </div>
+              <div>
+                <span className="block text-[9px] uppercase text-slate-400 font-bold">Cho ăn gần cuối</span>
+                <span className="font-semibold text-slate-300 block mt-0.5">
+                  {pet.lastFed ? new Date(pet.lastFed).toLocaleDateString('vi-VN') : 'Chưa rõ'}
+                </span>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="text-xs text-synth-text-muted italic py-6 text-center w-full">
+            Học sinh chưa kích hoạt Thú cưng đồng hành.
+          </p>
+        )}
+      </div>
+
+      {/* Drawer Nạp Năng Lượng: mở từ nút nhanh trên header, gom cả nạp + cấu hình riêng */}
+      <SideDrawer
+        isOpen={energyDrawerOpen}
+        onClose={() => setEnergyDrawerOpen(false)}
+        title={<><SlidersHorizontal className="w-4 h-4 text-synth-cyan" /> ⚡ Năng Lượng — {studentUser?.name}</>}
+        widthClass="max-w-md"
+      >
+        <div className="p-5 space-y-4">
           <p className="text-xs text-slate-300">
             Nạp đầy năng lượng để học sinh hoàn thành các đảo thử thách học tập.
           </p>
@@ -147,7 +394,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
               <span>{player?.energy || 0} / {maxE} ({(player?.energy && maxE) ? Math.round((player.energy / maxE) * 100) : 0}%)</span>
             </div>
             <div className="w-full h-3 bg-black/40 rounded-full overflow-hidden border border-white/5 p-0.5">
-              <div 
+              <div
                 className="h-full bg-gradient-to-r from-synth-cyan to-blue-500 rounded-full transition-all duration-500 shadow-[0_0_8px_rgba(0,240,255,0.4)]"
                 style={{ width: `${Math.min(100, Math.max(0, (player?.energy && maxE) ? (player.energy / maxE) * 100 : 0))}%` }}
               />
@@ -252,221 +499,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
             )}
           </div>
         </div>
-
-        {/* Pet stable information */}
-        <div className="glass-panel rounded-2xl border border-white/5 p-5">
-          <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider mb-4">
-            🐷 Thú Cưng Đồng Hành (Pet Stable)
-          </h4>
-          {pet ? (
-            <div className="flex items-center gap-5 bg-white/3 border border-white/5 p-4 rounded-2xl w-full">
-              <div className="w-20 h-20 rounded-3xl bg-black/40 border border-synth-magenta/25 flex items-center justify-center text-5xl shrink-0 shadow-lg relative group overflow-hidden">
-                <div className="absolute inset-0 bg-synth-magenta/5 animate-pulse pointer-events-none"></div>
-                <span className="relative z-10 group-hover:scale-115 transition-transform duration-300 inline-block">
-                  {pet.stage === 'egg' ? '🥚' : pet.stage === 'baby' ? '🐷' : '🐗'}
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-3 flex-1 text-xs">
-                <div>
-                  <span className="block text-[9px] uppercase text-slate-400 font-bold">Tên thú cưng</span>
-                  <span className="font-bold text-white text-sm">Heo Maikawaii</span>
-                </div>
-                <div>
-                  <span className="block text-[9px] uppercase text-slate-400 font-bold">Cấp độ</span>
-                  <span className="font-orbitron font-black text-synth-magenta text-sm">LV.{pet.level}</span>
-                </div>
-                <div>
-                  <span className="block text-[9px] uppercase text-slate-400 font-bold">Tâm trạng</span>
-                  <span className="inline-flex items-center gap-1 font-bold text-white mt-0.5 capitalize">
-                    {pet.mood === 'happy' ? '😄 Hân Hoan' : pet.mood === 'neutral' ? '😐 Bình Hòa' : '😢 U Uất'}
-                  </span>
-                </div>
-                <div>
-                  <span className="block text-[9px] uppercase text-slate-400 font-bold">Cho ăn gần cuối</span>
-                  <span className="font-semibold text-slate-300 block mt-0.5">
-                    {pet.lastFed ? new Date(pet.lastFed).toLocaleDateString('vi-VN') : 'Chưa rõ'}
-                  </span>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <p className="text-xs text-synth-text-muted italic py-6 text-center w-full">
-              Học sinh chưa kích hoạt Thú cưng đồng hành.
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* 3. Biểu đồ Mastery chuyên đề */}
-      <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-4">
-        <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
-          📊 Tiến Độ Học Tập Chuyên Đề (Mastery Breakdown)
-        </h4>
-        <div className="h-64 w-full text-xs">
-          {Object.keys(categoryStats).length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={Object.values(categoryStats).map((stat: any) => ({
-                name: stat.name,
-                correct: stat.correct,
-                total: stat.total
-              }))}>
-                <XAxis dataKey="name" stroke="#888888" fontSize={9} tickLine={false} />
-                <YAxis stroke="#888888" fontSize={9} tickLine={false} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: '#181b2a', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
-                  labelStyle={{ color: '#fff', fontWeight: 'bold' }}
-                />
-                <Bar dataKey="correct" name="Đúng" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={30} />
-                <Bar dataKey="total" name="Tổng" fill="#334155" radius={[6, 6, 0, 0]} maxBarSize={30} />
-              </BarChart>
-            </ResponsiveContainer>
-          ) : (
-            <div className="h-full flex items-center justify-center text-synth-text-muted">
-              Học sinh chưa bắt đầu làm bài luyện tập.
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* 4. Quản Lý Quà Khuyến Học & Duyệt Đổi Quà (Nằm trong Học Tịch) */}
-      <div className="glass-panel rounded-2xl border border-white/5 p-5">
-        <RewardManager
-          viewingStudentId={studentUser?.id}
-          activeRewardCatalog={activeRewardCatalog}
-          activeRedemptions={activeRedemptions}
-          canApproveReward={canApproveReward}
-          addParentReward={addParentReward}
-          deleteParentReward={deleteParentReward}
-          markRewardDelivered={markRewardDelivered}
-          cancelRedemption={cancelRedemption}
-          adminMarkRewardDelivered={adminMarkRewardDelivered}
-          adminCancelRedemption={adminCancelRedemption}
-        />
-      </div>
-
-      {/* 5. Cáo Thị Nhiệm Vụ */}
-      {studentUser?.id && (
-        <div className="glass-panel rounded-2xl border border-white/5 p-5">
-          <QuestManager
-            parentQuests={parentQuests}
-            canCreateMission={canCreateMission}
-            addParentQuest={addParentQuest}
-            completeParentQuest={completeParentQuest}
-            deleteParentQuest={deleteParentQuest}
-          />
-        </div>
-      )}
-
-      {/* 6. Nhật Ký Hoạt Động & Hàng Đợi Skip Reviews */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Hàng đợi Phản hồi Skip (Closed-loop Review) */}
-        {isParentRole(currentUser?.role) ? (
-          <div className="glass-panel rounded-2xl border border-white/5 p-5 flex flex-col h-[350px]">
-            <div className="flex justify-between items-center mb-4">
-              <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider flex items-center gap-1.5">
-                ⚠️ Hàng đợi phản hồi Bỏ qua (Skip Reviews)
-              </h4>
-              <button
-                onClick={() => {
-                  if (studentUser?.id) {
-                    fetchSkipReviews(studentUser.id);
-                  }
-                }}
-                className="px-2 py-0.5 rounded border border-synth-orange/30 text-synth-orange text-[9px] font-orbitron font-bold hover:bg-synth-orange/10 cursor-pointer transition-colors"
-              >
-                Tải Lại
-              </button>
-            </div>
-            
-            <div className="flex-1 overflow-y-auto space-y-2.5 text-xs pr-1">
-              {!skipReviews || skipReviews.length === 0 ? (
-                <div className="h-full flex items-center justify-center text-synth-text-muted text-center py-8 italic">
-                  Chưa có phản hồi bỏ qua câu hỏi nào chờ xem duyệt.
-                </div>
-              ) : (
-                skipReviews.map((review: any) => (
-                  <div key={review.id} className="p-3 rounded-lg bg-white/5 border border-white/5 space-y-2">
-                    <div className="flex justify-between items-start gap-2">
-                      <span className="font-bold text-white max-w-xs break-words block">
-                        {review.question_prompt}
-                      </span>
-                      <span className="px-1.5 py-0.5 rounded text-[8px] font-bold font-orbitron uppercase bg-red-500/20 text-red-400 border border-red-500/30 whitespace-nowrap">
-                        {review.reason}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center text-[10px] text-synth-text-muted">
-                      <span>{new Date(review.created_at).toLocaleString('vi-VN')}</span>
-                      <button
-                        disabled={resolvingReviewIds[review.id]}
-                        onClick={async () => {
-                          if (resolvingReviewIds[review.id]) return;
-                          setResolvingReviewIds(prev => ({ ...prev, [review.id]: true }));
-                          try {
-                            const ok = await resolveSkipReview(review.id);
-                            if (ok) {
-                              toast.success('Đã xác nhận phản hồi bỏ qua.');
-                            }
-                          } catch (err) {
-                            console.error(err);
-                            toast.error('Không thể lưu xác nhận.');
-                          } finally {
-                            setResolvingReviewIds(prev => ({ ...prev, [review.id]: false }));
-                          }
-                        }}
-                        className="px-2 py-1 rounded bg-synth-green text-black font-black uppercase text-[8px] font-orbitron cursor-pointer transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                      >
-                        {resolvingReviewIds[review.id] ? 'Đang duyệt...' : 'Đã Xem ✓'}
-                      </button>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="glass-panel rounded-2xl border border-white/5 p-5 flex flex-col h-[350px] items-center justify-center text-center text-xs text-slate-400">
-            <span>🔒 Chỉ phụ huynh mới xem được hàng đợi Skip Reviews.</span>
-          </div>
-        )}
-
-        {/* Nhật ký hoạt động học tập */}
-        <div className="glass-panel rounded-2xl border border-white/5 p-5 flex flex-col h-[350px]">
-          <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider mb-4">
-            Nhật ký 50 hoạt động học tập gần nhất
-          </h4>
-          <div className="flex-1 overflow-y-auto space-y-2.5 text-xs pr-1">
-            {logs.length === 0 ? (
-              <div className="text-center py-8 text-synth-text-muted italic">
-                Chưa ghi nhận hoạt động học tập nào.
-              </div>
-            ) : (
-              logs.slice(0, 50).map((log: any) => (
-                <div key={log.id} className="p-3 rounded-lg bg-white/5 border border-white/5 space-y-1.5">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-white capitalize">{log.actionType || 'Học tập'}</span>
-                    <span className="text-[10px] text-synth-text-muted">
-                      {new Date(log.timestamp).toLocaleString('vi-VN')}
-                    </span>
-                  </div>
-                  <p className="text-slate-300 leading-relaxed">{log.description}</p>
-                  <div className="flex gap-4 text-[10px] font-bold font-orbitron">
-                    {log.xpAwarded !== 0 && (
-                      <span className={log.xpAwarded > 0 ? 'text-synth-green' : 'text-red-400'}>
-                        {log.xpAwarded > 0 ? '+' : ''}{log.xpAwarded} XP
-                      </span>
-                    )}
-                    {log.rubyAwarded !== 0 && (
-                      <span className={log.rubyAwarded > 0 ? 'text-synth-orange' : 'text-red-400'}>
-                        {log.rubyAwarded > 0 ? '+' : ''}{log.rubyAwarded} Ruby
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </div>
+      </SideDrawer>
     </div>
   );
 };

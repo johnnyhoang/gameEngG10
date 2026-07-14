@@ -102,33 +102,48 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
-        <div>
-          <h3 className="font-orbitron font-bold text-lg text-synth-magenta uppercase tracking-wider flex items-center gap-2">
-            🛡️ Ban Giám Hiệu Giang Hồ
-          </h3>
-          <p className="text-xs text-slate-400 mt-1">
-            Vai trò hiện tại: <span className="font-bold text-synth-magenta uppercase font-orbitron">
-              {currentUser?.role === 'truong_vien' ? 'Viện Trưởng 👑' : 'Phó Viện Trưởng 🛡️'}
-            </span> — Quản trị viên quản lý toàn diện lớp học và học sinh.
-          </p>
-        </div>
+    <div className="glass-panel rounded-2xl border border-synth-magenta/30 p-5 space-y-4">
+      {/* Header gọn: tên khối + đếm + nút tải lại (vai trò đã hiển thị trên TopHUD) */}
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-1.5">
+          🤝 Ban Giám Hiệu Đồng Hành ({activeConnections.length})
+        </h3>
         <button
           onClick={handleRefresh}
-          className="px-3 py-1.5 rounded-lg border border-synth-magenta/30 text-synth-magenta hover:bg-synth-magenta/10 font-bold text-xs uppercase cursor-pointer flex items-center gap-1.5 self-start md:self-auto transition-colors"
+          className="p-1 rounded hover:bg-white/5 text-slate-400 hover:text-white transition-colors cursor-pointer"
+          title="Tải lại danh sách"
           disabled={loading}
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-          Tải Lại
         </button>
       </div>
 
-      {/* ================= SECTION 1: INCOMING REQUESTS ================= */}
+      {/* Mời kết nối: một hàng duy nhất */}
+      {inviteAdminConnection && (
+        <div className="flex flex-col sm:flex-row gap-2">
+          <SearchSuggest
+            placeholder="Mời Viện Trưởng / Phó Viện Trưởng theo tên hoặc email..."
+            roleFilter="admin_board"
+            value={inviteEmail}
+            onChange={setInviteEmail}
+            onSelect={user => setInviteEmail(user.email)}
+            className="w-full flex-1"
+          />
+          <button
+            onClick={handleSendInvite}
+            disabled={isSending || !inviteEmail.trim()}
+            className="w-full sm:w-auto px-4 py-2 bg-synth-magenta text-black font-bold font-orbitron text-xs uppercase rounded-lg hover:synth-glow-magenta transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0"
+          >
+            {isSending ? 'Đang gửi...' : 'Gửi Yêu Cầu ⚔️'}
+          </button>
+        </div>
+      )}
+
+      {/* Lời mời ĐẾN đang chờ mình duyệt */}
       {incomingRequests.length > 0 && (
-        <div className="rounded-2xl border border-synth-magenta/20 bg-synth-magenta/5 p-4 space-y-3">
-          <h4 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-2">
-            📥 Lời Mời Kết Nối Ban Giám Hiệu
+        <div className="rounded-xl border border-synth-magenta/20 bg-synth-magenta/5 p-3 space-y-2">
+          <h4 className="font-orbitron font-bold text-[10px] text-synth-magenta uppercase tracking-wider">
+            📥 Lời Mời Đến ({incomingRequests.length})
           </h4>
           <div className="space-y-2">
             {incomingRequests.map(link => (
@@ -178,44 +193,11 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
         </div>
       )}
 
-      {/* ================= SECTION 2: SEND CONNECTION INVITE ================= */}
-      {inviteAdminConnection && (
-        <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-4">
-          <div>
-            <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-2">
-              ✉️ Lời Mời Đồng Hành Ban Giám Hiệu
-            </h4>
-            <p className="text-[11px] text-slate-400 mt-1">Kết nối với các Viện Trưởng hoặc Phó Viện Trưởng khác để cùng song hành trong học viện.</p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row gap-2.5 items-end sm:items-center">
-            <div className="w-full flex-1">
-              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1.5">Mời Qua Tài Khoản</span>
-              <SearchSuggest
-                placeholder="Tìm Viện Trưởng / Phó Viện Trưởng theo tên hoặc email..."
-                roleFilter="admin_board"
-                value={inviteEmail}
-                onChange={setInviteEmail}
-                onSelect={user => setInviteEmail(user.email)}
-                className="w-full"
-              />
-            </div>
-            <button
-              onClick={handleSendInvite}
-              disabled={isSending || !inviteEmail.trim()}
-              className="w-full sm:w-auto px-4 py-2 bg-synth-magenta text-black font-bold font-orbitron text-xs uppercase rounded-lg hover:synth-glow-magenta transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0"
-            >
-              {isSending ? 'Đang gửi...' : 'Gửi Yêu Cầu ⚔️'}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* ================= SECTION 3: OUTGOING REQUESTS ================= */}
+      {/* Lời mời ĐÃ GỬI đang chờ phản hồi */}
       {outgoingRequests.length > 0 && (
-        <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-3">
-          <h4 className="font-orbitron font-bold text-xs text-slate-300 uppercase tracking-wider">
-            ⏳ Lời Mời Kết Nối Đã Gửi (Đang Chờ Phản Hồi)
+        <div className="rounded-xl border border-white/5 bg-white/5 p-3 space-y-2">
+          <h4 className="font-orbitron font-bold text-[10px] text-slate-300 uppercase tracking-wider">
+            ⏳ Đã Gửi — Chờ Phản Hồi ({outgoingRequests.length})
           </h4>
           <div className="space-y-2">
             {outgoingRequests.map(link => (
