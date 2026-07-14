@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { toast } from '../../utils/toast';
 import type { Question } from '../../types/game';
 import type { UiThemeId } from '../../types/game';
+import { shuffleWithSeed } from '../../utils/shuffle';
 
 
 export interface StoryAppProps {
@@ -21,6 +22,11 @@ export const StoryApp: React.FC<StoryAppProps> = ({ uiTheme, gradeTier, onReward
   const [storyLives, setStoryLives] = useState(3);
   const [storyInventory, setStoryInventory] = useState<string[]>([]);
   const [activeStoryQuest, setActiveStoryQuest] = useState<Question | null>(null);
+
+  const shuffledStoryOptions = useMemo(() => {
+    if (!activeStoryQuest?.options) return [];
+    return shuffleWithSeed(activeStoryQuest.options, activeStoryQuest.id);
+  }, [activeStoryQuest?.id, activeStoryQuest?.options]);
 
   const initStoryQuest = (subject: 'math' | 'english' | 'literature') => {
     const list = questions.filter(q =>
@@ -108,14 +114,14 @@ export const StoryApp: React.FC<StoryAppProps> = ({ uiTheme, gradeTier, onReward
               <p className="text-[10px] font-bold text-synth-purple font-orbitron uppercase">Câu đố [{ctx.subject}]:</p>
               <p className="text-sm text-white leading-relaxed">{activeStoryQuest.prompt}</p>
               {activeStoryQuest.options && (
-                <div className="grid grid-cols-1 gap-2 mt-2">
-                  {activeStoryQuest.options.map((opt, i) => (
-                    <button key={i} onClick={() => handleStoryAnswer(opt)} className="p-2.5 rounded-xl border border-white/10 bg-white/5 text-xs text-left text-slate-300 hover:bg-synth-purple/15 hover:border-synth-purple/40 cursor-pointer transition-all">
-                      {String.fromCharCode(65 + i)}. {opt}
-                    </button>
-                  ))}
-                </div>
-              )}
+                 <div className="grid grid-cols-1 gap-2 mt-2">
+                   {shuffledStoryOptions.map((opt, i) => (
+                     <button key={i} onClick={() => handleStoryAnswer(opt)} className="p-2.5 rounded-xl border border-white/10 bg-white/5 text-xs text-left text-slate-300 hover:bg-synth-purple/15 hover:border-synth-purple/40 cursor-pointer transition-all">
+                       {String.fromCharCode(65 + i)}. {opt}
+                     </button>
+                   ))}
+                 </div>
+               )}
             </div>
           </div>
         );

@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useMemo } from 'react';
 import { Volume2 } from 'lucide-react';
 import type { EnglishChoiceItem, EnglishSkillDistrictId, EnglishWritingItem } from '../../data/englishSkillDistricts';
 import { CONVERSATION_TOWN_ITEMS, LISTENING_LAKE_ITEMS, PHRASE_VALLEY_ITEMS, WRITING_PAVILION_ITEMS } from '../../data/englishSkillDistricts';
 import { toast } from '../../utils/toast';
+import { shuffleWithSeed } from '../../utils/shuffle';
 
 interface EnglishSkillDistrictAppProps {
   mode: EnglishSkillDistrictId;
@@ -39,6 +40,11 @@ export function EnglishSkillDistrictApp({ mode, onReward, onGameComplete }: Engl
   const rewarded = useRef(false);
 
   const item = items[index];
+
+  const shuffledOptions = useMemo(() => {
+    if (isWriting || !item || !(item as EnglishChoiceItem).options) return [];
+    return shuffleWithSeed((item as EnglishChoiceItem).options, item.id);
+  }, [item?.id, isWriting, item]);
 
   useEffect(() => () => {
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
@@ -155,7 +161,7 @@ export function EnglishSkillDistrictApp({ mode, onReward, onGameComplete }: Engl
         />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          {(item as EnglishChoiceItem).options.map(option => (
+          {shuffledOptions.map(option => (
             <button
               type="button"
               key={option}

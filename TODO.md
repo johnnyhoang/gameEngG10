@@ -663,8 +663,8 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
 # Xáo Trộn Đáp Án MCQ (2026-07-14)
 
 - [x] **MCQ1 — Triển khai xáo trộn ngẫu nhiên đáp án trắc nghiệm MCQ everywhere khi hiển thị**
-  - *Mục tiêu:* Đảm bảo khi hiển thị câu hỏi trắc nghiệm MCQ ở bất kỳ đâu (Làm bài Trường Thi, làm Riddle Đố vui, xem lại PostQuizReview), các đáp án luôn được xáo trộn ngẫu nhiên so với đề bài gốc.
-  - *Phải sửa:* `src/utils/shuffle.ts` (Mới), `src/components/PlayArea/QuestionMCQ.tsx`, `src/miniapps/riddle/RiddleGames.tsx`, `src/components/PlayArea/PostQuizReview.tsx`.
+  - *Mục tiêu:* Đảm bảo khi hiển thị câu hỏi trắc nghiệm MCQ ở bất kỳ đâu (Làm bài Trường Thi, làm Riddle Đố vui, xem lại PostQuizReview, các minigame như Districts, Adventure, Reading, Story), các đáp án luôn được xáo trộn ngẫu nhiên so với đề bài gốc.
+  - *Phải sửa:* `src/utils/shuffle.ts` (Mới), `src/components/PlayArea/QuestionMCQ.tsx`, `src/miniapps/riddle/RiddleGames.tsx`, `src/components/PlayArea/PostQuizReview.tsx`, `src/miniapps/english-skill-districts/EnglishSkillDistrictApp.tsx`, `src/miniapps/adventure/AdventureApp.tsx`, `src/miniapps/reading/ReadingApp.tsx`, `src/miniapps/story/StoryApp.tsx`.
   - *Phải làm:* Áp dụng thuật toán xáo trộn seed-based (dựa trên ID câu hỏi) để đảm bảo ngẫu nhiên nhưng ổn định giữa lúc làm bài và lúc review.
   - *Acceptance:* Options được xáo trộn; không bị thay đổi ngẫu nhiên mỗi lần re-render; review khớp 100% với lúc làm bài; build pass.
 

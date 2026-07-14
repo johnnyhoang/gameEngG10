@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { toast } from '../../utils/toast';
 import type { Question } from '../../types/game';
 import type { UiThemeId } from '../../types/game';
+import { shuffleWithSeed } from '../../utils/shuffle';
 
 
 export interface AdventureAppProps {
@@ -21,6 +22,11 @@ export const AdventureApp: React.FC<AdventureAppProps> = ({  uiTheme, onReward, 
   const [rolledNumber, setRolledNumber] = useState(0);
   const [activeBoardQuestion, setActiveBoardQuestion] = useState<Question | null>(null);
   const [boardStatus, setBoardStatus] = useState<'idle' | 'answering' | 'won'>('idle');
+
+  const shuffledAdventureOptions = useMemo(() => {
+    if (!activeBoardQuestion?.options) return [];
+    return shuffleWithSeed(activeBoardQuestion.options.slice(0, 4), activeBoardQuestion.id);
+  }, [activeBoardQuestion?.id, activeBoardQuestion?.options]);
 
   const handleRollDice = () => {
     if (diceRolling || boardStatus !== 'idle') return;
@@ -115,7 +121,7 @@ export const AdventureApp: React.FC<AdventureAppProps> = ({  uiTheme, onReward, 
           <p className="text-sm text-white leading-relaxed">{activeBoardQuestion.prompt}</p>
           {activeBoardQuestion.options && (
             <div className="grid grid-cols-1 gap-2">
-              {activeBoardQuestion.options.slice(0, 4).map((opt, i) => (
+              {shuffledAdventureOptions.map((opt, i) => (
                 <button key={i} onClick={() => handleBoardAnswer(opt)}
                   className="p-2.5 rounded-xl border border-white/10 bg-white/5 text-xs text-left text-slate-300 hover:bg-synth-orange/15 hover:border-synth-orange/40 cursor-pointer transition-all">
                   {String.fromCharCode(65 + i)}. {opt}

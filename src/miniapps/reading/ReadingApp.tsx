@@ -1,6 +1,7 @@
 import type { UiThemeId } from '../../types/game';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from '../../utils/toast';
+import { shuffleWithSeed } from '../../utils/shuffle';
 
 const READING_DATA = {
   english: {
@@ -53,6 +54,15 @@ export const ReadingApp: React.FC<ReadingAppProps> = ({ activeSectId, uiTheme, o
   const [readingChecked, setReadingChecked] = useState(false);
   const [readingResult, setReadingResult] = useState<'success' | 'fail' | null>(null);
 
+  const data = READING_DATA[readingSubject];
+
+  const shuffledReadingOptions = useMemo(() => {
+    if (!data.options) return [];
+    const cleanOptions = data.options.map(opt => opt.replace(/^[A-Z]\s*\.\s*/i, ''));
+    const shuffledClean = shuffleWithSeed(cleanOptions, readingSubject);
+    return shuffledClean.map((opt, i) => `${String.fromCharCode(65 + i)}. ${opt}`);
+  }, [readingSubject, data.options]);
+
   const initReadingGame = () => {
     setHighlightedIndices([]);
     setSelectedReadingOption('');
@@ -72,11 +82,13 @@ export const ReadingApp: React.FC<ReadingAppProps> = ({ activeSectId, uiTheme, o
   };
 
   const checkReadingChallenge = () => {
-    const data = READING_DATA[readingSubject];
     if (!selectedReadingOption.trim()) { toast.error('Vui lòng chọn một đáp án!'); return; }
     const highlightedWords = highlightedIndices.map(idx => data.words[idx].replace(/[.,/#!$%^&*;:{}=\-_`~()]/g, ''));
     const matchCount = highlightedWords.filter(w => data.targetWords.some(tw => tw.toLowerCase().includes(w.toLowerCase()))).length;
-    const isOptionCorrect = selectedReadingOption.trim() === data.correctOption;
+    
+    const cleanSelected = selectedReadingOption.replace(/^[A-Z]\s*\.\s*/i, '').trim().toLowerCase();
+    const cleanCorrect = data.correctOption.replace(/^[A-Z]\s*\.\s*/i, '').trim().toLowerCase();
+    const isOptionCorrect = cleanSelected === cleanCorrect;
     const isHighlightAcceptable = matchCount >= 1;
     setReadingChecked(true);
     if (isOptionCorrect && isHighlightAcceptable) {
@@ -90,8 +102,6 @@ export const ReadingApp: React.FC<ReadingAppProps> = ({ activeSectId, uiTheme, o
       onGameComplete?.({ correctAnswers: 0, timeSpent: 0, score: 0, passed: false });
     }
   };
-
-  const data = READING_DATA[readingSubject];
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -119,7 +129,7 @@ export const ReadingApp: React.FC<ReadingAppProps> = ({ activeSectId, uiTheme, o
         <div className="bg-white/5 p-4 rounded-2xl border border-white/5 space-y-3 text-left">
           <h4 className="text-xs font-bold text-white">Câu hỏi: {data.question}</h4>
           <div className="grid grid-cols-1 gap-2">
-            {data.options.map((opt, i) => (
+            {shuffledReadingOptions.map((opt, i) => (
               <button key={i} onClick={() => !readingChecked && setSelectedReadingOption(opt)} disabled={readingChecked}
                 className={`p-2.5 rounded-xl border text-xs text-left cursor-pointer transition-all ${selectedReadingOption === opt ? 'border-synth-cyan bg-synth-cyan/15 text-synth-cyan font-semibold' : 'border-white/5 bg-white/5 text-slate-300 hover:bg-white/10'}`}>
                 {opt}
