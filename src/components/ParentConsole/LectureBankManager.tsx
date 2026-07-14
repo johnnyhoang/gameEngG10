@@ -250,48 +250,37 @@ export const LectureBankManager: React.FC = () => {
           </button>
         </div>
 
-        {/* Môn phái selector dạng Grid Card mẫu dọc to hoành tráng - Tối ưu Grid Columns & Spacing */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        {/* Môn phái selector — card dẹp 2 dòng tiết kiệm chiều cao */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
           <button
             onClick={() => setSelectedSubject('all')}
-            className={`relative overflow-hidden rounded-3xl border p-4 text-left transition-all duration-300 cursor-pointer hover:-translate-y-1 flex flex-col justify-between h-[180px] ${
+            className={`relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition-all duration-300 cursor-pointer hover:-translate-y-0.5 ${
               selectedSubject === 'all'
                 ? 'border-synth-cyan bg-synth-cyan/15 shadow-[0_0_15px_rgba(0,240,255,0.2)] ring-1 ring-synth-cyan'
                 : 'border-white/5 bg-white/5 hover:border-white/15'
             }`}
           >
-            <div className="flex justify-between items-start w-full gap-2">
-              <div className="flex items-center gap-2 min-w-0">
-                <span className="text-3xl shrink-0">📚</span>
-                <div className="min-w-0">
-                  <span className="block text-xs font-black uppercase font-orbitron text-white truncate">
-                    Tất Cả
-                  </span>
-                  <span className="block text-[8px] text-slate-400 uppercase font-semibold truncate">
-                    Toàn Học Viện
-                  </span>
-                </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xl shrink-0">📚</span>
+              <div className="min-w-0 flex-1">
+                <span className="block text-[11px] font-black uppercase font-orbitron text-white truncate">
+                  Tất Cả
+                </span>
+                <span className="block text-[9px] text-slate-400 truncate">
+                  <strong className="text-white">{lessons.length}</strong> bài · Toàn Học Viện
+                </span>
               </div>
               {selectedSubject === 'all' && (
-                <span className="text-[8px] font-black uppercase tracking-wider bg-synth-cyan text-black px-2 py-0.5 rounded-full shadow-[0_0_8px_rgba(0,240,255,0.4)] shrink-0">
+                <span className="text-[7px] font-black uppercase tracking-wider bg-synth-cyan text-black px-1.5 py-0.5 rounded-full shadow-[0_0_8px_rgba(0,240,255,0.4)] shrink-0">
                   Active
                 </span>
               )}
             </div>
-
-            <div className="space-y-1 text-[10px] text-slate-300 w-full mt-2">
-              <div className="flex justify-between items-center gap-2">
-                <span className="text-slate-400 font-semibold whitespace-nowrap">Tổng bài giảng:</span>
-                <span className="font-bold text-white whitespace-nowrap">{lessons.length} bài</span>
+            <div className="flex items-center gap-2 mt-2" title="Độ phủ giáo trình">
+              <div className="flex-1 h-1 bg-black/45 rounded-full overflow-hidden">
+                <div className="h-full rounded-full bg-synth-cyan w-full" />
               </div>
-              <div className="flex justify-between items-center gap-2">
-                <span className="text-slate-400 font-semibold whitespace-nowrap">Trạng thái:</span>
-                <span className="font-bold text-synth-cyan whitespace-nowrap">Đang hiển thị</span>
-              </div>
-            </div>
-
-            <div className="w-full mt-2 h-1 bg-black/45 rounded-full overflow-hidden">
-              <div className="h-full rounded-full bg-synth-cyan w-full" />
+              <span className="text-[8px] font-bold text-slate-400 shrink-0">100%</span>
             </div>
           </button>
 
@@ -306,49 +295,30 @@ export const LectureBankManager: React.FC = () => {
               <button
                 key={sub.id}
                 onClick={() => setSelectedSubject(sub.id)}
-                className={`relative overflow-hidden rounded-3xl border p-4 text-left transition-all duration-300 cursor-pointer hover:-translate-y-1 flex flex-col justify-between h-[180px] ${
+                className={`relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition-all duration-300 cursor-pointer hover:-translate-y-0.5 ${
                   isActive
                     ? 'border-synth-cyan bg-synth-cyan/15 shadow-[0_0_15px_rgba(0,240,255,0.2)] ring-1 ring-synth-cyan'
                     : 'border-white/5 bg-white/5 hover:border-white/15'
                 }`}
               >
-                {/* Subject icon & title */}
-                <div className="flex justify-between items-start w-full gap-2">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <span className="text-3xl shrink-0">{sub.icon}</span>
-                    <div className="min-w-0">
-                      <span className="block text-xs font-black uppercase font-orbitron text-white truncate" title={sub.name}>
-                        {sub.name}
-                      </span>
-                      <span className="block text-[8px] text-slate-400 uppercase font-semibold truncate">
-                        {sub.group === 'chuyen_sau' ? 'Chuyên Sâu' : 'Cơ Bản'}
-                      </span>
-                    </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl shrink-0">{sub.icon}</span>
+                  <div className="min-w-0 flex-1">
+                    <span className="block text-[11px] font-black uppercase font-orbitron text-white truncate" title={sub.name}>
+                      {sub.name}
+                    </span>
+                    <span className="block text-[9px] text-slate-400 truncate" title={`${count} bài giảng · ${topicsCount} nhóm chủ đề · ${sub.group === 'chuyen_sau' ? 'Chuyên Sâu' : 'Cơ Bản'}`}>
+                      <strong className="text-white">{count}</strong> bài · <strong className="text-white">{topicsCount}</strong> nhóm · {sub.group === 'chuyen_sau' ? 'Chuyên Sâu' : 'Cơ Bản'}
+                    </span>
                   </div>
                   {isActive && (
-                    <span className="text-[8px] font-black uppercase tracking-wider bg-synth-cyan text-black px-2 py-0.5 rounded-full shadow-[0_0_8px_rgba(0,240,255,0.4)] shrink-0">
+                    <span className="text-[7px] font-black uppercase tracking-wider bg-synth-cyan text-black px-1.5 py-0.5 rounded-full shadow-[0_0_8px_rgba(0,240,255,0.4)] shrink-0">
                       Active
                     </span>
                   )}
                 </div>
-
-                <div className="space-y-1 text-[10px] text-slate-300 w-full mt-2">
-                  <div className="flex justify-between items-center gap-2">
-                    <span className="text-slate-400 font-semibold whitespace-nowrap">Bài giảng:</span>
-                    <span className="font-bold text-white whitespace-nowrap">{count} bài</span>
-                  </div>
-                  <div className="flex justify-between items-center gap-2">
-                    <span className="text-slate-400 font-semibold whitespace-nowrap">Chủ đề:</span>
-                    <span className="font-bold text-white whitespace-nowrap">{topicsCount} nhóm</span>
-                  </div>
-                </div>
-
-                <div className="space-y-1 w-full mt-2">
-                  <div className="flex justify-between text-[8px] font-bold text-slate-400">
-                    <span className="whitespace-nowrap">Độ phủ giáo trình</span>
-                    <span>{percent}%</span>
-                  </div>
-                  <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
+                <div className="flex items-center gap-2 mt-2" title="Độ phủ giáo trình">
+                  <div className="flex-1 h-1 bg-black/40 rounded-full overflow-hidden">
                     <div
                       className="h-full rounded-full transition-all duration-500"
                       style={{
@@ -357,6 +327,7 @@ export const LectureBankManager: React.FC = () => {
                       }}
                     />
                   </div>
+                  <span className="text-[8px] font-bold text-slate-400 shrink-0">{percent}%</span>
                 </div>
               </button>
             );
