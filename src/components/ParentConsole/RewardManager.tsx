@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, Award, Check, X, Users, ChevronDown, ChevronUp } from 'lucide-react';
 import { useGameState } from '../../hooks/useGameState';
 import { toast } from '../../utils/toast';
+import { SideDrawer } from '../Common/SideDrawer';
 
 interface RewardManagerProps {
   viewingStudentId: string | null;
@@ -40,6 +41,8 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
   const [classCost, setClassCost] = useState(200);
   const [classQty, setClassQty] = useState(5);
   const [isCreating, setIsCreating] = useState(false);
+  const [isClassFormOpen, setIsClassFormOpen] = useState(false);
+  const [isPersonalFormOpen, setIsPersonalFormOpen] = useState(false);
   const [showPendingOnly, setShowPendingOnly] = useState(true);
   const [processingRedemptions, setProcessingRedemptions] = useState<Record<string, boolean>>({});
 
@@ -117,7 +120,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
     if (classCost <= 0 || classQty <= 0) { toast.error('Chi phí và số lượng phải lớn hơn 0!'); return; }
     setIsCreating(true);
     const ok = await createClassReward(classTitle.trim(), classCost, classQty);
-    if (ok) { setClassTitle(''); setClassCost(200); setClassQty(5); }
+    if (ok) { setClassTitle(''); setClassCost(200); setClassQty(5); setIsClassFormOpen(false); }
     setIsCreating(false);
   };
 
@@ -128,6 +131,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
     addParentReward(rewardTitle.trim(), rewardCost, rewardQuantity);
     toast.success('Đã tạo phần quà mới thành công!');
     setRewardTitle(''); setRewardCost(200); setRewardQuantity(5);
+    setIsPersonalFormOpen(false);
   };
 
   return (
@@ -154,63 +158,30 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Form tạo class reward */}
+          {/* Danh mục quà lớp + nút mở drawer tạo mới */}
           <div className="glass-panel rounded-2xl border border-synth-orange/20 p-5 h-fit space-y-4">
-            <h5 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider flex items-center gap-1.5">
-              <Plus className="w-3.5 h-3.5" /> Thêm Quà Khuyến Học Mới
-            </h5>
-            <form onSubmit={handleCreateClassReward} className="space-y-3">
-              <div className="flex flex-col gap-1">
-                <label className="text-[10px] text-synth-text-muted uppercase">Tên Quà</label>
-                <input
-                  type="text"
-                  value={classTitle}
-                  onChange={e => setClassTitle(e.target.value)}
-                  disabled={!canApproveReward}
-                  placeholder="Ví dụ: Sticker ngôi sao, Giờ chơi game"
-                  className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange disabled:opacity-50"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-synth-text-muted uppercase">Giá (Ruby)</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={classCost}
-                    onChange={e => setClassCost(Number(e.target.value))}
-                    disabled={!canApproveReward}
-                    className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange disabled:opacity-50"
-                  />
-                </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-synth-text-muted uppercase">Số lượng</label>
-                  <input
-                    type="number"
-                    min={1}
-                    value={classQty}
-                    onChange={e => setClassQty(Number(e.target.value))}
-                    disabled={!canApproveReward}
-                    className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange disabled:opacity-50"
-                  />
-                </div>
-              </div>
-              <p className="text-[10px] text-synth-text-muted">
-                🎁 Quà trao ngoài đời thực — bấm "Phát Thưởng" khi đã thực hiện.
-              </p>
+            <div className="flex items-center justify-between gap-2">
+              <h5 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider flex items-center gap-1.5">
+                🎁 Quà Khuyến Học Của Lớp
+              </h5>
               <button
-                type="submit"
-                disabled={!canApproveReward || isCreating}
-                className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-orange text-black hover:synth-glow-orange cursor-pointer transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => setIsClassFormOpen(true)}
+                disabled={!canApproveReward}
+                className="px-3 py-1.5 rounded-lg bg-synth-orange text-black font-orbitron font-bold text-[10px] uppercase tracking-wider hover:synth-glow-orange cursor-pointer transition-all flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
               >
-                {isCreating ? 'Đang tạo...' : '+ Tạo Quà Khuyến Học Cho Lớp'}
+                <Plus className="w-3.5 h-3.5" /> Thêm Quà
               </button>
-              {!canApproveReward && (
-                <p className="text-[9px] text-yellow-500/80 italic leading-tight">
-                  ⚠️ Bạn chưa được cấp quyền quản lý Quà Khuyến Học của lớp này.
-                </p>
-              )}
-            </form>
+            </div>
+            {!canApproveReward && (
+              <p className="text-[9px] text-yellow-500/80 italic leading-tight">
+                ⚠️ Bạn chưa được cấp quyền quản lý Quà Khuyến Học của lớp này.
+              </p>
+            )}
+            {classRewards.length === 0 && (
+              <div className="text-center py-6 text-xs text-synth-text-muted border border-dashed border-white/10 rounded-xl">
+                Chưa có Quà Khuyến Học nào cho lớp.
+              </div>
+            )}
 
             {/* Danh sách phúc lợi hiện có */}
             {classRewards.length > 0 && (
@@ -372,47 +343,25 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {/* Form tạo per-student reward */}
+            {/* Danh mục quà cá nhân + nút mở drawer tạo mới */}
             <div className="glass-panel rounded-2xl border border-synth-text-muted/20 p-5 h-fit">
-              <h5 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase tracking-wider mb-4 flex items-center gap-1.5">
-                <Plus className="w-3.5 h-3.5" /> Thêm Quà Khuyến Học Cho Sĩ Tử Này
-              </h5>
-              <form onSubmit={handleCreateOldReward} className="space-y-3">
-                <div className="flex flex-col gap-1">
-                  <label className="text-[10px] text-synth-text-muted uppercase">Tên Quà</label>
-                  <input
-                    type="text"
-                    value={rewardTitle}
-                    onChange={e => setRewardTitle(e.target.value)}
-                    disabled={!canApproveReward}
-                    placeholder="Ví dụ: Ly trà sữa, 1h chơi iPad"
-                    className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-cyan disabled:opacity-50"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[10px] text-synth-text-muted uppercase">Giá (Ruby)</label>
-                    <input type="number" value={rewardCost} onChange={e => setRewardCost(Number(e.target.value))}
-                      disabled={!canApproveReward}
-                      className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-cyan disabled:opacity-50"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <label className="text-[10px] text-synth-text-muted uppercase">Số lượng</label>
-                    <input type="number" min={1} value={rewardQuantity} onChange={e => setRewardQuantity(Number(e.target.value))}
-                      disabled={!canApproveReward}
-                      className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-cyan disabled:opacity-50"
-                    />
-                  </div>
-                </div>
+              <div className="flex items-center justify-between gap-2 mb-4">
+                <h5 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase tracking-wider flex items-center gap-1.5">
+                  👤 Quà Cho Sĩ Tử Này
+                </h5>
                 <button
-                  type="submit"
+                  onClick={() => setIsPersonalFormOpen(true)}
                   disabled={!canApproveReward}
-                  className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-3 py-1.5 rounded-lg bg-synth-cyan text-black font-orbitron font-bold text-[10px] uppercase tracking-wider hover:synth-glow-cyan cursor-pointer transition-all flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
                 >
-                  Tạo Quà Khuyến Học Cá Nhân
+                  <Plus className="w-3.5 h-3.5" /> Thêm Quà
                 </button>
-              </form>
+              </div>
+              {activeRewardCatalog.length === 0 && (
+                <div className="text-center py-6 text-xs text-synth-text-muted border border-dashed border-white/10 rounded-xl">
+                  Chưa có phần quà cá nhân nào.
+                </div>
+              )}
 
               {activeRewardCatalog.length > 0 && (
                 <div className="mt-4 pt-3 border-t border-white/5 space-y-1.5">
@@ -498,6 +447,115 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
           </div>
         )}
       </div>
+
+      {/* Drawer: Tạo Quà Khuyến Học cho lớp */}
+      <SideDrawer
+        isOpen={isClassFormOpen}
+        onClose={() => setIsClassFormOpen(false)}
+        widthClass="max-w-md"
+        title={
+          <span className="text-synth-orange flex items-center gap-1.5">
+            <Plus className="w-4 h-4" /> Thêm Quà Khuyến Học Mới
+          </span>
+        }
+      >
+        <form onSubmit={handleCreateClassReward} className="p-5 space-y-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] text-synth-text-muted uppercase">Tên Quà</label>
+            <input
+              type="text"
+              value={classTitle}
+              onChange={e => setClassTitle(e.target.value)}
+              disabled={!canApproveReward}
+              placeholder="Ví dụ: Sticker ngôi sao, Giờ chơi game"
+              className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange disabled:opacity-50"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] text-synth-text-muted uppercase">Giá (Ruby)</label>
+              <input
+                type="number"
+                min={1}
+                value={classCost}
+                onChange={e => setClassCost(Number(e.target.value))}
+                disabled={!canApproveReward}
+                className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange disabled:opacity-50"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] text-synth-text-muted uppercase">Số lượng</label>
+              <input
+                type="number"
+                min={1}
+                value={classQty}
+                onChange={e => setClassQty(Number(e.target.value))}
+                disabled={!canApproveReward}
+                className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange disabled:opacity-50"
+              />
+            </div>
+          </div>
+          <p className="text-[10px] text-synth-text-muted">
+            🎁 Quà trao ngoài đời thực — bấm "Phát Thưởng" khi đã thực hiện.
+          </p>
+          <button
+            type="submit"
+            disabled={!canApproveReward || isCreating}
+            className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-orange text-black hover:synth-glow-orange cursor-pointer transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isCreating ? 'Đang tạo...' : '+ Tạo Quà Khuyến Học Cho Lớp'}
+          </button>
+        </form>
+      </SideDrawer>
+
+      {/* Drawer: Tạo Quà Khuyến Học cá nhân */}
+      <SideDrawer
+        isOpen={isPersonalFormOpen}
+        onClose={() => setIsPersonalFormOpen(false)}
+        widthClass="max-w-md"
+        title={
+          <span className="text-synth-cyan flex items-center gap-1.5">
+            <Plus className="w-4 h-4" /> Thêm Quà Khuyến Học Cho Sĩ Tử Này
+          </span>
+        }
+      >
+        <form onSubmit={handleCreateOldReward} className="p-5 space-y-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] text-synth-text-muted uppercase">Tên Quà</label>
+            <input
+              type="text"
+              value={rewardTitle}
+              onChange={e => setRewardTitle(e.target.value)}
+              disabled={!canApproveReward}
+              placeholder="Ví dụ: Ly trà sữa, 1h chơi iPad"
+              className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-cyan disabled:opacity-50"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] text-synth-text-muted uppercase">Giá (Ruby)</label>
+              <input type="number" value={rewardCost} onChange={e => setRewardCost(Number(e.target.value))}
+                disabled={!canApproveReward}
+                className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-cyan disabled:opacity-50"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] text-synth-text-muted uppercase">Số lượng</label>
+              <input type="number" min={1} value={rewardQuantity} onChange={e => setRewardQuantity(Number(e.target.value))}
+                disabled={!canApproveReward}
+                className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-cyan disabled:opacity-50"
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
+            disabled={!canApproveReward}
+            className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Tạo Quà Khuyến Học Cá Nhân
+          </button>
+        </form>
+      </SideDrawer>
     </div>
   );
 };

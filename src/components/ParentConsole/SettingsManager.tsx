@@ -5,6 +5,7 @@ import { isAdmin } from '../../utils/roleHelpers';
 import { toast } from '../../utils/toast';
 import { RoleManager } from './RoleManager';
 import { VicePrincipalApplicationsManager } from './VicePrincipalApplicationsManager';
+import { SideDrawer } from '../Common/SideDrawer';
 
 interface SettingsManagerProps {
   currentUser: any;
@@ -42,6 +43,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
   const [hbCategory, setHbCategory] = useState('Dặn Dò của Viện Trưởng');
   const [hbTitle, setHbTitle] = useState('');
   const [hbContent, setHbContent] = useState('');
+  const [isHbFormOpen, setIsHbFormOpen] = useState(false);
 
   const handleSaveSettings = async () => {
     await updateGameSettings({
@@ -149,6 +151,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
     toast.success('Đã nạp thêm trang dặn dò thành công vào cẩm nang của Sĩ Tử! ✍️');
     setHbTitle('');
     setHbContent('');
+    setIsHbFormOpen(false);
   };
 
   return (
@@ -260,17 +263,29 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
       {/* 2. Cẩm nang học viện */}
       {isCallerAdmin && (
         <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-synth-magenta" />
               <h3 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-1.5">
                 📜 Cẩm Nang Học Viện (Handbook)
               </h3>
             </div>
+            <button
+              onClick={() => setIsHbFormOpen(true)}
+              className="px-3 py-1.5 rounded-lg bg-synth-magenta text-white font-orbitron font-bold text-[10px] uppercase tracking-wider hover:bg-synth-magenta/80 transition-colors cursor-pointer shrink-0"
+            >
+              ✍️ Viết thêm trang cẩm nang
+            </button>
           </div>
-          <div className="bg-white/5 rounded-xl border border-white/5 p-4 space-y-4">
-            <h4 className="font-bold text-xs text-slate-300">Viết thêm trang cẩm nang</h4>
-            <form onSubmit={handleCreateHandbookPage} className="space-y-4 text-left">
+
+          {/* Drawer: Viết trang cẩm nang mới */}
+          <SideDrawer
+            isOpen={isHbFormOpen}
+            onClose={() => setIsHbFormOpen(false)}
+            widthClass="max-w-xl"
+            title={<span className="text-synth-magenta">📜 Viết thêm trang cẩm nang</span>}
+          >
+            <form onSubmit={handleCreateHandbookPage} className="p-5 space-y-4 text-left">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <label className="space-y-1 text-xs block">
                   <span className="text-synth-text-muted font-semibold block">Đề mục trang sách (Category)</span>
@@ -302,7 +317,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
                   value={hbContent}
                   onChange={(e) => setHbContent(e.target.value)}
                   placeholder="Nhập nội dung dặn dò chi tiết tại đây..."
-                  className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-magenta text-xs h-24 resize-none"
+                  className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-magenta text-xs h-40 resize-none"
                 />
               </label>
               <button
@@ -312,7 +327,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
                 Nạp trang sách ✍️
               </button>
             </form>
-          </div>
+          </SideDrawer>
         </div>
       )}
 

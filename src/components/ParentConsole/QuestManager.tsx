@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Plus, Trash2, SlidersHorizontal } from 'lucide-react';
 import { toast } from '../../utils/toast';
+import { SideDrawer } from '../Common/SideDrawer';
 
 interface QuestManagerProps {
   parentQuests: any[];
@@ -20,6 +21,7 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
   const [questTitle, setQuestTitle] = useState('');
   const [questDesc, setQuestDesc] = useState('');
   const [questRuby, setQuestRuby] = useState(50);
+  const [isFormOpen, setIsFormOpen] = useState(false);
 
   const handleCreateQuest = (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,71 +34,83 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
     setQuestTitle('');
     setQuestDesc('');
     setQuestRuby(50);
+    setIsFormOpen(false);
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <SlidersHorizontal className="w-5 h-5 text-synth-cyan" />
-        <h3 className="font-orbitron font-bold text-sm text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
-          🎯 Cáo Thị — Nhiệm vụ Chủ nhiệm giao cho con
-        </h3>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal className="w-5 h-5 text-synth-cyan" />
+          <h3 className="font-orbitron font-bold text-sm text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
+            🎯 Cáo Thị — Nhiệm vụ Chủ nhiệm giao cho con
+          </h3>
+        </div>
+        {canCreateMission && (
+          <button
+            onClick={() => setIsFormOpen(true)}
+            className="px-4 py-2 bg-synth-cyan text-black font-bold font-orbitron text-xs uppercase rounded-lg hover:synth-glow-cyan transition-all flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /> Giao Nhiệm Vụ Mới
+          </button>
+        )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Quest Creator Form */}
-        <div className="glass-panel rounded-2xl border border-white/5 p-5 h-fit space-y-4">
-          <h4 className="text-xs font-bold text-white uppercase tracking-wider">
-            Giao nhiệm vụ mới cho con 📜
-          </h4>
-          {!canCreateMission ? (
-            <p className="text-xs text-red-400 italic">
-              Tài khoản Chủ Nhiệm Phụ của bạn chưa được cấp quyền giao nhiệm vụ.
-            </p>
-          ) : (
-            <form onSubmit={handleCreateQuest} className="space-y-4">
-              <label className="space-y-1.5 text-xs block">
-                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Tiêu đề nhiệm vụ</span>
-                <input
-                  type="text"
-                  value={questTitle}
-                  onChange={(e) => setQuestTitle(e.target.value)}
-                  placeholder="Ví dụ: Rửa bát đĩa buổi tối, Quét nhà sạch sẽ"
-                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
-                />
-              </label>
-              <label className="space-y-1.5 text-xs block">
-                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Yêu cầu cụ thể (Mô tả)</span>
-                <textarea
-                  value={questDesc}
-                  onChange={(e) => setQuestDesc(e.target.value)}
-                  placeholder="Mô tả hành động cần con thực hiện..."
-                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs h-20 resize-none"
-                />
-              </label>
-              <label className="space-y-1.5 text-xs block">
-                <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Phần thưởng (Ruby)</span>
-                <input
-                  type="number"
-                  min={10}
-                  step={10}
-                  value={questRuby}
-                  onChange={(e) => setQuestRuby(Number(e.target.value) || 0)}
-                  className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
-                />
-              </label>
-              <button
-                type="submit"
-                className="w-full py-2.5 rounded-xl bg-synth-cyan text-black font-orbitron font-bold text-xs uppercase tracking-wider transition hover:opacity-90 cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <Plus className="w-4 h-4" /> Giao nhiệm vụ cho con
-              </button>
-            </form>
-          )}
-        </div>
+      {!canCreateMission && (
+        <p className="text-xs text-red-400 italic">
+          Tài khoản Chủ Nhiệm Phụ của bạn chưa được cấp quyền giao nhiệm vụ.
+        </p>
+      )}
 
-        {/* List of parent quests */}
-        <div className="glass-panel rounded-2xl border border-white/5 p-5 md:col-span-2 space-y-4">
+      {/* Quest Creator Drawer */}
+      <SideDrawer
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        widthClass="max-w-md"
+        title={<span className="text-synth-cyan">📜 Giao nhiệm vụ mới cho con</span>}
+      >
+        <form onSubmit={handleCreateQuest} className="p-5 space-y-4">
+          <label className="space-y-1.5 text-xs block">
+            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Tiêu đề nhiệm vụ</span>
+            <input
+              type="text"
+              value={questTitle}
+              onChange={(e) => setQuestTitle(e.target.value)}
+              placeholder="Ví dụ: Rửa bát đĩa buổi tối, Quét nhà sạch sẽ"
+              className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
+            />
+          </label>
+          <label className="space-y-1.5 text-xs block">
+            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Yêu cầu cụ thể (Mô tả)</span>
+            <textarea
+              value={questDesc}
+              onChange={(e) => setQuestDesc(e.target.value)}
+              placeholder="Mô tả hành động cần con thực hiện..."
+              className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs h-20 resize-none"
+            />
+          </label>
+          <label className="space-y-1.5 text-xs block">
+            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Phần thưởng (Ruby)</span>
+            <input
+              type="number"
+              min={10}
+              step={10}
+              value={questRuby}
+              onChange={(e) => setQuestRuby(Number(e.target.value) || 0)}
+              className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
+            />
+          </label>
+          <button
+            type="submit"
+            className="w-full py-2.5 rounded-xl bg-synth-cyan text-black font-orbitron font-bold text-xs uppercase tracking-wider transition hover:opacity-90 cursor-pointer flex items-center justify-center gap-1.5"
+          >
+            <Plus className="w-4 h-4" /> Giao nhiệm vụ cho con
+          </button>
+        </form>
+      </SideDrawer>
+
+      {/* List of parent quests */}
+      <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-4">
           <h4 className="text-xs font-bold text-synth-text-muted uppercase tracking-wider">
             Nhiệm vụ đang giao ({parentQuests.length})
           </h4>
@@ -155,7 +169,6 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
               </div>
             )}
           </div>
-        </div>
       </div>
     </div>
   );

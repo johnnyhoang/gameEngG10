@@ -21,7 +21,7 @@ import type { SubjectId } from '../types/game';
 import { useSect } from '../contexts/SectContext';
 import type { Lesson } from '../data/lessons';
 import { FogCard } from './FogCard';
-import { Level3Overlay } from './Level3Overlay';
+import { FullscreenModal } from './Common/FullscreenModal';
 import { LessonStudyView } from './LessonStudyView';
 import { getSubjectActivities, getSubjectToolIds } from '../subject-modules/registry';
 
@@ -728,7 +728,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
       </div>
 
       {overlayLessonId && (
-        <Level3Overlay
+        <FullscreenModal
           isOpen={true}
           onClose={() => setOverlayLessonId(null)}
           title="CHI TIẾT CHUYÊN ĐỀ"
@@ -744,7 +744,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
             }}
             onBack={() => setOverlayLessonId(null)}
           />
-        </Level3Overlay>
+        </FullscreenModal>
       )}
     </div>
   );

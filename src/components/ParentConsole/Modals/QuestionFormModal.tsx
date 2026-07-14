@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X } from 'lucide-react';
+import { SideDrawer } from '../../Common/SideDrawer';
 import type { GradeTier, Question, SubjectId } from '../../../types/game';
 import { SUBJECTS_CONFIG } from '../../../types/game';
 import { CORE_KNOWLEDGE_TOPICS } from '../../../data/coreKnowledge';
@@ -168,27 +168,45 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className={`glass-panel w-full max-w-4xl border rounded-2xl overflow-hidden flex flex-col max-h-[90vh] ${
-        isAddingNew ? 'border-synth-green/30 bg-synth-green/5' : 'border-synth-cyan/30 bg-synth-cyan/5'
-      }`}>
-        {/* Modal Header */}
-        <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
-          <h4 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 ${
-            isAddingNew ? 'text-synth-green' : 'text-synth-cyan'
-          }`}>
-            <span>{isAddingNew ? '➕ Tạo mới câu hỏi' : '✏️ Chỉnh sửa câu hỏi'}</span>
-          </h4>
-          <button
-            onClick={onClose}
-            className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <SideDrawer
+      isOpen={isOpen}
+      onClose={onClose}
+      widthClass="max-w-2xl"
+      panelClassName={isAddingNew ? 'border-l-synth-green/40' : 'border-l-synth-cyan/40'}
+      title={
+        <span className={isAddingNew ? 'text-synth-green' : 'text-synth-cyan'}>
+          {isAddingNew ? '➕ Tạo mới câu hỏi' : '✏️ Chỉnh sửa câu hỏi'}
+        </span>
+      }
+    >
+      <form onSubmit={(e) => handleSubmit(e)} className="p-5 space-y-4 text-xs text-left">
+          {editingQuestion && (
+            <div className="p-3.5 rounded-xl border border-synth-cyan/20 bg-synth-cyan/5 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+              <div>
+                <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">👁️ Tổng lượt mở</span>
+                <span className="text-sm font-bold text-white mt-1 block">{editingQuestion.timesOpened || 0}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">✅ Trả lời đúng</span>
+                <span className="text-sm font-bold text-emerald-400 mt-1 block">{editingQuestion.timesAnsweredCorrectly || 0}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">⏩ Lượt bỏ qua</span>
+                <span className="text-sm font-bold text-amber-500 mt-1 block">{editingQuestion.timesSkipped || 0}</span>
+              </div>
+              <div>
+                <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">🎯 Tỉ lệ đúng</span>
+                <span className="text-sm font-bold text-synth-cyan mt-1 block">
+                  {editingQuestion.timesOpened && editingQuestion.timesOpened > 0 ? (
+                    `${Math.round(((editingQuestion.timesAnsweredCorrectly || 0) / editingQuestion.timesOpened) * 100)}%`
+                  ) : (
+                    '—'
+                  )}
+                </span>
+              </div>
+            </div>
+          )}
 
-        {/* Modal Body / Form */}
-        <form onSubmit={(e) => handleSubmit(e)} className="p-5 flex-1 overflow-y-auto space-y-4 text-xs text-left">
           <div className="grid grid-cols-2 gap-2">
             <label className="space-y-1 block">
               <span className="text-slate-400 font-semibold">Môn học</span>
@@ -352,7 +370,6 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
             </div>
           </div>
         </form>
-      </div>
-    </div>
+    </SideDrawer>
   );
 };

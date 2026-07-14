@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { BookOpen, Plus, Trash2, Search, X, RefreshCw } from 'lucide-react';
+import { BookOpen, Plus, Trash2, Search, RefreshCw } from 'lucide-react';
+import { SideDrawer } from '../Common/SideDrawer';
 import { SUBJECTS_CONFIG } from '../../types/game';
 import { toast } from '../../utils/toast';
 import { supabase } from '../../utils/supabaseClient';
@@ -441,25 +442,18 @@ export const LectureBankManager: React.FC = () => {
         </div>
       )}
 
-      {/* CREATE/EDIT MODAL OVERLAY */}
-      {isModalOpen && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="glass-panel w-full max-w-2xl border border-white/10 rounded-2xl overflow-hidden flex flex-col max-h-[90vh]">
-            {/* Modal Header */}
-            <div className="p-4 border-b border-white/10 flex justify-between items-center bg-white/5">
-              <h4 className="font-orbitron font-bold text-sm text-synth-cyan uppercase tracking-wider flex items-center gap-2">
-                <BookOpen className="w-4 h-4" /> {editingLesson ? 'Hiệu Đính Bài Giảng' : 'Soạn Thảo Bài Giảng Mới'}
-              </h4>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Modal Body / Form */}
-            <form onSubmit={handleSaveLesson} className="p-5 flex-1 overflow-y-auto space-y-4 text-xs text-left">
+      {/* CREATE/EDIT SIDE DRAWER */}
+      <SideDrawer
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        widthClass="max-w-2xl"
+        title={
+          <span className="text-synth-cyan flex items-center gap-2">
+            <BookOpen className="w-4 h-4" /> {editingLesson ? 'Hiệu Đính Bài Giảng' : 'Soạn Thảo Bài Giảng Mới'}
+          </span>
+        }
+      >
+        <form onSubmit={handleSaveLesson} className="p-5 space-y-4 text-xs text-left">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label className="space-y-1 block">
                   <span className="text-slate-400 font-semibold">Môn phái học tập</span>
@@ -562,10 +556,8 @@ export const LectureBankManager: React.FC = () => {
                   )}
                 </div>
               </div>
-            </form>
-          </div>
-        </div>
-      )}
+        </form>
+      </SideDrawer>
     </div>
   );
 };

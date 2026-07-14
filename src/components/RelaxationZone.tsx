@@ -3,7 +3,7 @@ import { ArrowLeft, Sparkles, Lock } from 'lucide-react';
 import { useSect } from '../contexts/SectContext';
 import { useGameState } from '../hooks/useGameState';
 import { FogCard, getFogStatus } from './FogCard';
-import { Level3Overlay } from './Level3Overlay';
+import { FullscreenModal } from './Common/FullscreenModal';
 import { toast } from '../utils/toast';
 import { getSubjectMiniGameIds } from '../subject-modules/registry';
 
@@ -293,15 +293,15 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
         )}
       </div>
 
-      {/* Level 3 Overlay — game modal */}
+      {/* Fullscreen modal — game */}
       {activeGame && (
-        <Level3Overlay
+        <FullscreenModal
           isOpen={true}
           onClose={() => setActiveGame(null)}
           title={`${activeGame.icon} ${activeGame.title.toUpperCase()}`}
         >
           {renderGame(activeGame, pageExplorationStates, currentUser, activeSectId, activeGradeTier, completeLevel3Page)}
-        </Level3Overlay>
+        </FullscreenModal>
       )}
     </div>
   );

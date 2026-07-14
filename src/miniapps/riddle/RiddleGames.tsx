@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Clock3, Gem, Sparkles, X } from 'lucide-react';
+import { Clock3, Gem, Sparkles } from 'lucide-react';
+import { FullscreenModal } from '../../components/Common/FullscreenModal';
 import { useGameState } from '../../hooks/useGameState';
 import { useSect } from '../../contexts/SectContext';
 import type { Question, SubjectId } from '../../types/game';
@@ -233,24 +234,23 @@ export function RiddleGames() {
       </div>
 
       {mode && (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
-          <div className="relative w-full max-w-sm rounded-2xl border border-synth-cyan/30 bg-synth-bg p-4 shadow-2xl">
-            <button onClick={close} className="absolute right-3 top-3 text-slate-400 hover:text-white" aria-label="Đóng">
-              <X className="h-5 w-5" />
-            </button>
-            <div className="mb-3 flex items-center justify-between gap-3 pr-7">
-              <div>
-                <h3 className="font-orbitron text-sm font-black text-white">{MODE_CONFIG[mode].title}</h3>
-                <p className="text-[10px] text-slate-400">
-                  {mode === 'encounter-sprint' ? `Câu ${Math.min(questionIndex + 1, 3)}/3` : 'Một câu mỗi lượt'}
-                </p>
-              </div>
-              {mode === 'encounter-sprint' && (
-                <span className={`font-orbitron text-sm font-black ${secondsLeft <= 10 ? 'text-red-400' : 'text-synth-cyan'}`}>
-                  {secondsLeft}s
-                </span>
-              )}
-            </div>
+        <FullscreenModal
+          isOpen={true}
+          onClose={close}
+          title={`🐷 ${MODE_CONFIG[mode].title.toUpperCase()}`}
+          headerExtra={
+            mode === 'encounter-sprint' ? (
+              <span className={`font-orbitron text-lg font-black ${secondsLeft <= 10 ? 'text-red-400' : 'text-synth-cyan'}`}>
+                {secondsLeft}s
+              </span>
+            ) : undefined
+          }
+          bodyClassName="p-4 sm:p-6 flex items-center justify-center"
+        >
+          <div className="relative w-full max-w-2xl rounded-2xl border border-synth-cyan/30 bg-white/5 p-5 sm:p-6 shadow-2xl">
+            <p className="mb-3 text-xs text-slate-400">
+              {mode === 'encounter-sprint' ? `Câu ${Math.min(questionIndex + 1, 3)}/3` : 'Một câu mỗi lượt'}
+            </p>
 
             {loading ? (
               <p className="py-8 text-center text-sm text-slate-400">Đang chọn câu đố...</p>
@@ -323,7 +323,7 @@ export function RiddleGames() {
               </div>
             ) : null}
           </div>
-        </div>
+        </FullscreenModal>
       )}
     </section>
   );
