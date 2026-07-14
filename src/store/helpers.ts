@@ -25,7 +25,7 @@ export const logActivity = (
     gradeTier: get().activeGradeTier
   };
   set((state: any) => ({
-    logs: [newLog, ...state.logs].slice(0, 200)
+    logs: [newLog, ...(state.logs || [])].slice(0, 200)
   }));
 };
 

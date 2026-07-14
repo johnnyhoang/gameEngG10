@@ -2278,4 +2278,659 @@ ON CONFLICT (id) DO UPDATE SET
   grade_tier = EXCLUDED.grade_tier,
   metadata = EXCLUDED.metadata;
 
+
+-- Seed Science grade 9 lessons
+INSERT INTO ge10_lessons (id, subject, grade_tier, topic, title, theory, category, examples, practice_points, difficulty, is_standard)
+VALUES 
+  ('sci-9-1', 'science', 9, 'nat-physics', 'Khúc xạ ánh sáng và Định luật khúc xạ ánh sáng', '# I. Hiện tượng khúc xạ ánh sáng
+- **Định nghĩa:** Là hiện tượng tia sáng truyền từ môi trường trong suốt này sang môi trường trong suốt khác bị gãy khúc tại mặt phân cách giữa hai môi trường.
+- **Các khái niệm cơ bản:**
+  + $SI$: Tia tới.
+  + $IK$: Tia khúc xạ.
+  + $N''IN$: Pháp tuyến với mặt phân cách tại điểm tới $I$.
+  + $i = \widehat{SIN}$: Góc tới (góc hợp bởi tia tới và pháp tuyến).
+  + $r = \widehat{KIN''}$: Góc khúc xạ (góc hợp bởi tia khúc xạ và pháp tuyến).
+
+# II. Định luật khúc xạ ánh sáng
+- Tia khúc xạ nằm trong mặt phẳng tới (mặt phẳng chứa tia tới và pháp tuyến) và ở bên kia pháp tuyến so với tia tới.
+- Với hai môi trường trong suốt nhất định, tỉ số giữa sin của góc tới ($\sin i$) và sin của góc khúc xạ ($\sin r$) luôn là một hằng số:
+$$\frac{\sin i}{\sin r} = n_{21} = \text{const}$$
+- Trong đó: $n_{21} = \frac{n_2}{n_1}$ là chiết suất tỉ đối của môi trường 2 (chứa tia khúc xạ) đối với môi trường 1 (chứa tia tới).
+- Chiết suất tuyệt đối $n$ của một môi trường là chiết suất của nó đối với chân không: $n = \frac{c}{v}$ (với $c = 3 \cdot 10^8 \text{ m/s}$ là tốc độ ánh sáng trong chân không, $v$ là tốc độ ánh sáng trong môi trường).
+- **Dạng đối xứng của định luật:**
+$$n_1 \cdot \sin i = n_2 \cdot \sin r$$', 'physics', '["Một tia sáng truyền từ không khí (chiết suất n1 = 1) vào nước (chiết suất n2 = 4/3) dưới góc tới i = 30 độ. Hãy tính góc khúc xạ r.", "Hiện tượng chiếc đũa cắm vào cốc nước trông như bị gãy khúc tại mặt nước là do hiện tượng khúc xạ ánh sáng gây ra."]'::jsonb, '["Vẽ đúng hình biểu diễn tia tới, tia khúc xạ, pháp tuyến và các góc i, r.", "Xác định đúng môi trường chứa tia tới (n1) và môi trường chứa tia khúc xạ (n2) để áp dụng công thức đối xứng.", "Biện luận độ lớn của góc r so với góc i khi ánh sáng truyền từ môi trường kém chiết quang sang môi trường chiết quang hơn và ngược lại."]'::jsonb, 5, true),\n  ('sci-9-2', 'science', 9, 'nat-physics', 'Thấu kính mỏng và Công thức thấu kính', '# I. Phân loại thấu kính
+- **Thấu kính hội tụ (Rìa mỏng):** Làm hội tụ chùm tia tới song song thành một chùm phản xạ/khúc xạ hội tụ.
+- **Thấu kính phân kì (Rìa dày):** Làm phân kì chùm tia tới song song.
+- **Các đặc điểm hình học:** Quang tâm $O$, trục chính, tiêu điểm ảnh chính $F''$, tiêu điểm vật chính $F$, tiêu cự $f = \overline{OF''}$.
+  + Thấu kính hội tụ: $f > 0$.
+  + Thấu kính phân kì: $f < 0$.
+
+# II. Công thức thấu kính mỏng
+- Gọi $d$ là khoảng cách từ vật đến thấu kính ($d > 0$ nếu vật thật).
+- Gọi $d''$ là khoảng cách từ ảnh đến thấu kính ($d'' > 0$ nếu ảnh thật, $d'' < 0$ nếu ảnh ảo).
+- **Công thức xác định vị trí ảnh:**
+$$\frac{1}{f} = \frac{1}{d} + \frac{1}{d''}$$
+- **Công thức tính độ phóng đại của ảnh ($k$):**
+$$k = - \frac{d''}{d}$$
+  + Nếu $k > 0$: Ảnh cùng chiều với vật (ảnh ảo).
+  + Nếu $k < 0$: Ảnh ngược chiều với vật (ảnh thật).
+  + Độ lớn $|k| = \frac{A''B''}{AB}$ cho biết ảnh lớn hay nhỏ hơn vật bao nhiêu lần.', 'physics', '["Một vật sáng AB đặt vuông góc với trục chính của một thấu kính hội tụ có tiêu cự f = 12 cm, cách thấu kính d = 18 cm. Xác định vị trí, tính chất và độ phóng đại của ảnh.", "Dùng thấu kính phân kì để quan sát một vật thật luôn thu được ảnh ảo, cùng chiều và nhỏ hơn vật."]'::jsonb, '["Quy ước dấu của f, d, d'' và k phải thuộc lòng trước khi giải bài tập.", "Kỹ năng vẽ hình tạo ảnh qua thấu kính bằng 2 trong 3 tia sáng đặc biệt.", "Biến đổi đại số chính xác để rút ra giá trị d hoặc d'' từ công thức tổng quát."]'::jsonb, 6, true),\n  ('sci-9-3', 'science', 9, 'nat-chemistry', 'Tính chất chung của Kim loại và Dãy hoạt động hóa học', '# I. Tính chất vật lý và hóa học của kim loại
+- **Tính chất vật lý chung:** Có tính dẻo, dẫn điện, dẫn nhiệt tốt và có ánh kim. Tất cả do các electron tự do trong tinh thể kim loại gây ra.
+- **Tính chất hóa học chung:**
+  + Tác dụng với phi kim (Oxi, Lưu huỳnh, Clo...): $4Al + 3O_2 \xrightarrow{t^o} 2Al_2O_3$
+  + Tác dụng với dung dịch Axit ($HCl, H_2SO_4$ loãng): Kim loại trước H giải phóng khí $H_2$: $Fe + 2HCl \rightarrow FeCl_2 + H_2 \uparrow$
+  + Tác dụng với dung dịch muối: Kim loại mạnh hơn đẩy kim loại yếu hơn ra khỏi muối: $Fe + CuSO_4 \rightarrow FeSO_4 + Cu \downarrow$
+
+# II. Dãy hoạt động hóa học của kim loại
+- **Dãy chuẩn:** $K, Na, Ca, Mg, Al, Zn, Fe, Pb, (H), Cu, Ag, Au$
+- **Ý nghĩa của dãy:**
+  + Mức độ hoạt động hóa học giảm dần từ trái sang phải.
+  + Kim loại đứng trước $Mg$ ($K, Na, Ca$) phản ứng mãnh liệt với nước ở nhiệt độ thường tạo thành bazơ và giải phóng $H_2$.
+  + Kim loại đứng trước $H$ tác dụng được với dung dịch axit ($HCl, H_2SO_4$ loãng) giải phóng $H_2$.
+  + Kim loại đứng trước (trừ $K, Na, Ca$) đẩy được kim loại đứng sau ra khỏi dung dịch muối của chúng.', 'chemistry', '["Cho một cây đinh sắt sạch vào dung dịch đồng(II) sunfat (CuSO4). Hiện tượng quan sát được là có lớp kim loại màu đỏ bám lên đinh sắt, màu xanh của dung dịch nhạt dần.", "Viết phương trình hóa học khi cho Magie (Mg) tác dụng với axit Clohiđric (HCl)."]'::jsonb, '["Ghi nhớ chính xác thứ tự các nguyên tố trong dãy hoạt động hóa học.", "Nhận biết hiện tượng thí nghiệm dựa trên quy luật hoạt động của kim loại.", "Tính toán lượng chất (mol, khối lượng, thể tích khí) dựa theo phương trình phản ứng hóa học."]'::jsonb, 5, true),\n  ('sci-9-4', 'science', 9, 'nat-chemistry', 'Sơ lược về Hợp chất hữu cơ và Thủy tinh hóa lỏng (Ankan - Axit axetic - Glucozơ)', '# I. Khái niệm về hợp chất hữu cơ
+- Hợp chất hữu cơ là hợp chất của Cacbon (trừ các oxit của cacbon như $CO, CO_2$, axit cacbonic $H_2CO_3$, muối cacbonat kim loại...).
+- Được chia làm hai loại chính: Hiđrocacbon (chỉ chứa $C$ và $H$) và Dẫn xuất của hiđrocacbon (ngoài $C, H$ còn có $O, N, Cl...$).
+
+# II. Các hợp chất tiêu biểu
+- **Mêtan ($CH_4$):** Là hiđrocacbon no đơn giản nhất, liên kết đơn bền vững. Tham gia phản ứng thế với Clo khi có ánh sáng:
+$$CH_4 + Cl_2 \xrightarrow{\text{Ánh sáng}} CH_3Cl + HCl$$
+- **Axit axetic ($CH_3COOH$):** Có nhóm $-COOH$ gây ra tính axit. Tác dụng với rượu etylic ($C_2H_5OH$) tạo este (phản ứng este hóa):
+$$CH_3COOH + C_2H_5OH \xrightleftharpoons[t^o]{H_2SO_4 \text{ đặc}} CH_3COOC_2H_5 + H_2O$$
+- **Glucozơ ($C_6H_{12}O_6$):** Là chất dinh dưỡng quan trọng. Tham gia phản ứng tráng bạc với dung dịch $AgNO_3$ trong $NH_3$ tạo thành bạc kim loại, hoặc phản ứng lên men rượu:
+$$C_6H_{12}O_6 \xrightarrow{\text{Men rượu, } 30-35^o C} 2C_2H_5OH + 2CO_2 \uparrow$$', 'chemistry', '["Tính khối lượng Axit axetic cần dùng để trung hòa hoàn toàn 100 ml dung dịch NaOH 1M.", "Nhận biết dung dịch Glucozơ và dung dịch Saccarozơ bằng phản ứng tráng bạc."]'::jsonb, '["Phân biệt cấu tạo mạch cacbon và các nhóm chức đặc trưng (-OH, -COOH).", "Viết đúng phương trình phản ứng hữu cơ, đặc biệt là phản ứng hai chiều (este hóa) và điều kiện phản ứng.", "Giải bài toán hiệu suất phản ứng hữu cơ (vì đa số phản ứng hữu cơ không đạt hiệu suất 100%)."]'::jsonb, 6, true),\n  ('sci-9-5', 'science', 9, 'nat-biology', 'Di truyền học Men-đen và Các quy luật di truyền', '# I. Các khái niệm cơ bản của Di truyền học
+- **Gen:** Một đoạn của phân tử DNA mang thông tin mã hóa cho một sản phẩm nhất định (chuỗi pôlipeptit hoặc RNA).
+- **Alen:** Các trạng thái khác nhau của cùng một gen (Ví dụ: gen quy định màu hoa có alen $A$ quy định hoa đỏ, alen $a$ quy định hoa trắng).
+- **Kiểu gen:** Tổ hợp toàn bộ các alen trong tế bào của cơ thể (Ví dụ: $AA, Aa, aa$).
+- **Kiểu hình:** Tập hợp các tính trạng của cơ thể (Ví dụ: hoa đỏ, hoa trắng).
+
+# II. Quy luật phân ly của Men-đen
+- **Nội dung:** Trong quá trình phát sinh giao tử, mỗi nhân tố di truyền (alen) trong cặp alen phân ly đồng đều về các giao tử, nên $50\%$ giao tử chứa alen này và $50\%$ giao tử chứa alen kia.
+- **Sơ đồ lai minh họa (Lai một tính trạng):**
+  + $P_{\text{thuần chủng}}$: $AA$ (Hoa đỏ) $\times$ $aa$ (Hoa trắng)
+  + $G_P$: $A$ ; $a$
+  + $F_1$: $100\% Aa$ (Hoa đỏ)
+  + $F_1 \times F_1$: $Aa$ (Hoa đỏ) $\times$ $Aa$ (Hoa đỏ)
+  + $G_{F1}$: $(\frac{1}{2}A : \frac{1}{2}a)$ $\times$ $(\frac{1}{2}A : \frac{1}{2}a)$
+  + $F_2$ Kiểu gen: $\frac{1}{4}AA : \frac{2}{4}Aa : \frac{1}{4}aa$ (Tỉ lệ $1 : 2 : 1$).
+  + $F_2$ Kiểu hình: $3$ Hoa đỏ : $1$ Hoa trắng (Tỉ lệ $3 : 1$).', 'biology', '["Ở đậu Hà Lan, hạt vàng (A) là trội hoàn toàn so với hạt xanh (a). Cho cây hạt vàng dị hợp tự thụ phấn, xác định tỉ lệ kiểu hình ở đời con.", "Phép lai phân tích là phép lai giữa cơ thể mang tính trạng trội chưa biết kiểu gen với cơ thể mang tính trạng lặn nhằm kiểm tra kiểu gen của cơ thể đó."]'::jsonb, '["Kỹ năng viết giao tử chính xác từ kiểu gen cho trước (quy tắc phân ly).", "Sử dụng khung kẻ Punnett để phối hợp các giao tử tạo thành tổ hợp kiểu gen đời con.", "Phân biệt rõ ràng giữa tỉ lệ kiểu gen và tỉ lệ kiểu hình dựa vào mối quan hệ trội - lặn."]'::jsonb, 6, true),\n  ('sci-9-6', 'science', 9, 'nat-biology', 'Nhiễm sắc thể, DNA và Quá trình di truyền phân tử', '# I. Nhiễm sắc thể (NST) và Chu kỳ tế bào
+- NST là cấu trúc nằm trong nhân tế bào, cấu tạo từ DNA và protein histôn, cấu trúc này xoắn lại ở các mức độ khác nhau.
+- Bộ NST lưỡng bội ($2n$) đặc trưng cho loài sinh sản hữu tính. Ví dụ ở người $2n = 46$.
+- **Nguyên phân:** Quá trình phân chia tế bào sinh dưỡng giúp cơ thể tăng trưởng, giữ nguyên bộ NST $2n$.
+- **Giảm phân:** Quá trình hình thành giao tử (tinh trùng, trứng), bộ NST giảm đi một nửa còn đơn bội ($n$).
+
+# II. Cấu trúc DNA và Nguyên tắc bổ sung
+- DNA (Axit khửôxiribônuclêic) là chuỗi xoắn kép gồm hai mạch pôlinuclêôtit chạy song song ngược chiều nhau.
+- Đơn phân của DNA là nuclêôtit gồm 4 loại: $A$ (Ađênin), $T$ (Timin), $G$ (Guanin), $X$ (Xitôzin).
+- **Nguyên tắc bổ sung (NTBS):** Các nuclêôtit trên hai mạch liên kết với nhau bằng liên kết hiđrô theo quy luật:
+$$A \text{ liên kết với } T \text{ bằng 2 liên kết hiđrô } (A = T)$$
+$$G \text{ liên kết với } X \text{ bằng 3 liên kết hiđrô } (G \equiv X)$$
+- **Các hệ quả công thức:**
+  + Tổng số nuclêôtit: $N = 2A + 2G = 2T + 2X$
+  + Chiều dài phân tử DNA: $L = \frac{N}{2} \cdot 3,4 \text{ (\AA)}$', 'biology', '["Một gen có tổng số nuclêôtit N = 2400. Biết số nuclêôtit loại A = 600. Hãy tính số nuclêôtit loại G của gen đó.", "Giải thích tại sao con cái lại có những đặc điểm giống bố mẹ dựa trên cơ chế tự nhân đôi của DNA và sự phân ly NST trong giảm phân."]'::jsonb, '["Vận dụng thành thạo nguyên tắc bổ sung để tính toán số lượng và phần trăm từng loại nuclêôtit.", "Nhớ các hệ thức liên hệ giữa số nuclêôtit, chiều dài (L) và số liên kết hiđrô (H).", "Xác định trạng thái của NST (đơn, kép) qua các kỳ của nguyên phân và giảm phân."]'::jsonb, 7, true),\n  ('sci-9-7', 'science', 9, 'nat-physics', 'Điện trở của dây dẫn - Định luật Ohm', '# I. Điện trở của dây dẫn
+- **Định nghĩa:** Điện trở là đại lượng đặc trưng cho mức độ cản trở dòng điện của dây dẫn. Kí hiệu là $R$, đơn vị là Ôm ($\Omega$).
+- **Công thức tính điện trở phụ thuộc vào đặc tính dây dẫn:**
+$$R = \rho \cdot \frac{l}{S}$$
+Trong đó:
+  + $\rho$: Điện trở suất của vật liệu làm dây dẫn ($\Omega \cdot m$).
+  + $l$: Chiều dài dây dẫn ($m$).
+  + $S$: Tiết diện của dây dẫn ($m^2$).
+
+# II. Định luật Ohm
+- **Phát biểu:** Cường độ dòng điện chạy qua một dây dẫn tỉ lệ thuận với hiệu điện thế đặt vào hai đầu dây và tỉ lệ nghịch với điện trở của dây.
+- **Biểu thức toán học:**
+$$I = \frac{U}{R}$$
+Trong đó:
+  + $I$: Cường độ dòng điện ($A$).
+  + $U$: Hiệu điện thế ($V$).
+  + $R$: Điện trở ($\Omega$).
+- **Hệ thức biến đổi:** $U = I \cdot R$ hoặc $R = \frac{U}{I}$.', 'physics', '["Một dây dẫn bằng đồng có điện trở suất 1,7.10^-8 Ohm.m, chiều dài 20m, tiết diện 0,5 mm^2. Hãy tính điện trở của dây.", "Đặt vào hai đầu điện trở R = 15 Ohm một hiệu điện thế U = 12V. Tính cường độ dòng điện chạy qua điện trở."]'::jsonb, '["Đổi đơn vị tiết diện từ mm^2 sang m^2 chính xác (1 mm^2 = 10^-6 m^2).", "Vận dụng định luật Ohm cho đoạn mạch nối tiếp (I bằng nhau, U bằng tổng) và đoạn mạch song song (U bằng nhau, I bằng tổng)."]'::jsonb, 5, true),\n  ('sci-9-8', 'science', 9, 'nat-physics', 'Công suất điện và Điện năng tiêu thụ', '# I. Công suất điện
+- **Định nghĩa:** Công suất điện của một đoạn mạch là đại lượng đặc trưng cho tốc độ tiêu thụ điện năng của đoạn mạch đó, được xác định bằng tích của hiệu điện thế và cường độ dòng điện.
+- **Công thức tổng quát:**
+$$P = U \cdot I$$
+- **Các công thức biến đổi (áp dụng cho đoạn mạch chỉ có điện trở thuần R):**
+$$P = I^2 \cdot R = \frac{U^2}{R}$$
+Trong đó:
+  + $P$: Công suất điện (Oat - $W$).
+  + $U$: Hiệu điện thế ($V$).
+  + $I$: Cường độ dòng điện ($A$).
+
+# II. Điện năng tiêu thụ (Công của dòng điện)
+- **Công thức tính:** Điện năng tiêu thụ bằng tích của công suất điện và thời gian dòng điện chạy qua.
+$$A = P \cdot t = U \cdot I \cdot t$$
+- **Đơn vị đo:**
+  + Trong hệ SI: đơn vị là Jun ($J$), với $1 \text{ J} = 1 \text{ W} \cdot 1 \text{ s}$.
+  + Trong thực tế (đồng hồ đo điện): đơn vị là Kilôoat giờ ($kWh$), với $1 \text{ kWh} = 3.600.000 \text{ J} = 3,6 \cdot 10^6 \text{ J}$.', 'physics', '["Một bóng đèn có ghi 220V - 100W. Tính điện trở của đèn và điện năng đèn tiêu thụ khi thắp sáng liên tục trong 5 giờ.", "Tính tiền điện phải trả cho một lò sưởi 2000W hoạt động 3 giờ mỗi ngày trong suốt 30 ngày, biết giá điện là 2000 đồng/kWh."]'::jsonb, '["Phân biệt ý nghĩa số ghi định mức trên các thiết bị điện (U_đm, P_đm).", "Thành thạo kỹ năng chuyển đổi đơn vị qua lại giữa Jun (J) và Kilôoat giờ (kWh)."]'::jsonb, 5, true),\n  ('sci-9-9', 'science', 9, 'nat-physics', 'Cảm ứng điện từ và Dòng điện xoay chiều', '# I. Hiện tượng cảm ứng điện từ
+- **Khái niệm từ thông:** Từ thông $\Phi$ đại diện cho số lượng đường sức từ xuyên qua một diện tích vòng dây kín.
+- **Hiện tượng cảm ứng điện từ:** Khi số đường sức từ xuyên qua tiết diện của một cuộn dây dẫn kín biến thiên (tăng hoặc giảm), trong cuộn dây xuất hiện một dòng điện gọi là **dòng điện cảm ứng**.
+
+# II. Dòng điện xoay chiều (AC)
+- **Định nghĩa:** Là dòng điện có chiều và trị số biến thiên tuần hoàn theo thời gian.
+- **Cơ chế tạo ra:** Cho cuộn dây dẫn kín quay trong từ trường của nam châm, hoặc cho nam châm quay trước cuộn dây dẫn kín.
+- **Các đại lượng đặc trưng:**
+  + Tần số ($f$): Số chu kỳ dao động trong 1 giây (đơn vị Hertz - $Hz$).
+  + Giá trị hiệu dụng: Cường độ hiệu dụng ($I$) và Hiệu điện thế hiệu dụng ($U$) là các giá trị tương đương với dòng điện một chiều về mặt tác dụng nhiệt.
+- **Công thức máy biến áp (Biến thế):**
+$$\frac{U_1}{U_2} = \frac{N_1}{N_2}$$
+Trong đó: $U_1, N_1$ là hiệu điện thế và số vòng dây cuộn sơ cấp; $U_2, N_2$ là hiệu điện thế và số vòng dây cuộn thứ cấp.', 'physics', '["Một máy biến áp có số vòng dây cuộn sơ cấp là 4400 vòng, cuộn thứ cấp là 220 vòng. Đặt vào hai đầu cuộn sơ cấp hiệu điện thế xoay chiều U1 = 220V. Tính hiệu điện thế U2 ở hai đầu cuộn thứ cấp.", "Giải thích tại sao khi đưa một cực của nam châm lại gần hoặc ra xa cuộn dây kín thì đèn LED nối với cuộn dây lại lóe sáng."]'::jsonb, '["Nắm vững điều kiện xuất hiện dòng điện cảm ứng là ''sự biến thiên từ thông'', không phải chỉ cần có từ trường.", "Vận dụng công thức máy biến thế để xác định máy tăng áp hay máy hạ áp."]'::jsonb, 6, true),\n  ('sci-9-10', 'science', 9, 'nat-physics', 'Năng lượng, Sự chuyển hóa năng lượng và Định luật bảo toàn năng lượng', '# I. Các dạng năng lượng và Sự chuyển hóa
+- Năng lượng tồn tại dưới nhiều dạng: Cơ năng (Động năng, Thế năng), Nhiệt năng, Điện năng, Hóa năng, Quang năng, Năng lượng hạt nhân.
+- Năng lượng có thể chuyển hóa từ dạng này sang dạng khác hoặc truyền từ vật này sang vật khác.
+
+# II. Định luật bảo toàn năng lượng
+- **Phát biểu:** Năng lượng không tự sinh ra cũng không tự mất đi; nó chỉ chuyển hóa từ dạng này sang dạng khác, hoặc truyền từ vật này sang vật khác.
+- **Phương trình cân bằng nhiệt (Dạng cơ bản của bảo toàn năng lượng):**
+$$Q_{\text{tỏa}} = Q_{\text{thu}}$$
+Trong đó: $Q = m \cdot c \cdot \Delta t$ (với $m$ là khối lượng, $c$ là nhiệt dung riêng, $\Delta t$ là độ biến thiên nhiệt độ).
+- **Hiệu suất của quá trình chuyển hóa:**
+$$H = \frac{A_{\text{có ích}}}{A_{\text{toàn phần}}} \cdot 100\%$$', 'physics', '["Thả một quả cầu nhôm có khối lượng 0,2kg ở nhiệt độ 100 độ C vào một cốc chứa 0,5kg nước ở 20 độ C. Tính nhiệt độ khi có cân bằng nhiệt, bỏ qua sự hao phí nhiệt ra môi trường.", "Phân tích sự chuyển hóa năng lượng từ Thủy năng thành Điện năng trong một nhà máy thủy điện."]'::jsonb, '["Xác định đúng vật nào tỏa nhiệt (nhiệt độ giảm) và vật nào thu nhiệt (nhiệt độ tăng) để thiết lập phương trình.", "Tính toán phần năng lượng hao phí (thường chuyển hóa thành nhiệt năng vô ích) dựa trên hiệu suất H."]'::jsonb, 5, true),\n  ('sci-9-11', 'science', 9, 'nat-chemistry', 'Tính chất của Phi kim và Sơ lược về Bảng tuần hoàn các nguyên tố hóa học', '# I. Tính chất hóa học của phi kim
+- **Tác dụng với kim loại:** Tạo thành muối hoặc oxit.
+$$2Fe + 3Cl_2 \xrightarrow{t^o} 2FeCl_3$$
+$$C + O_2 \xrightarrow{t^o} CO_2$$
+- **Tác dụng với Hiđro:** Tạo thành hợp chất khí.
+$$H_2 + Cl_2 \xrightarrow{\text{Ánh sáng}} 2HCl$$
+- **Mức độ hoạt động hóa học:** Các phi kim khác nhau có mức độ hoạt động khác nhau (F, Cl, O là các phi kim mạnh; S, C, P là các phi kim yếu hơn).
+
+# II. Cấu tạo Bảng tuần hoàn các nguyên tố hóa học
+- **Nguyên tắc sắp xếp:** Theo chiều tăng dần của điện tích hạt nhân nguyên tử.
+- **Cấu trúc:**
+  + **Ô nguyên tố:** Cho biết số hiệu nguyên tử (= số proton = số electron), ký hiệu hóa học, tên nguyên tố và nguyên tử khối.
+  + **Chu kỳ:** Gồm các nguyên tố mà nguyên tử của chúng có cùng số lớp electron (Bảng tuần hoàn có 7 chu kỳ).
+  + **Nhóm:** Gồm các nguyên tố mà nguyên tử của chúng có số electron lớp ngoài cùng bằng nhau (chia thành nhóm A và nhóm B).
+- **Quy luật biến đổi:** Trong một chu kỳ (từ trái sang phải), tính kim loại giảm dần, tính phi kim tăng dần. Trong một nhóm A (từ trên xuống dưới), tính kim loại tăng dần, tính phi kim giảm dần.', 'chemistry', '["Dựa vào bảng tuần hoàn, hãy xác định cấu tạo nguyên tử của nguyên tố Natri (Na) ở ô số 11, chu kỳ 3, nhóm IA.", "Viết phương trình phản ứng khi đốt cháy hoàn toàn lưu huỳnh (S) trong lọ chứa khí oxi (O2)."]'::jsonb, '["Mối liên hệ giữa vị trí của nguyên tố trong bảng tuần hoàn và cấu tạo nguyên tử (Số thứ tự chu kỳ = Số lớp e, Số thứ tự nhóm A = Số e lớp ngoài cùng).", "Dự đoán tính chất hóa học cơ bản của nguyên tố khi biết vị trí của nó."]'::jsonb, 5, true),\n  ('sci-9-12', 'science', 9, 'nat-chemistry', 'Hiđrocacbon không no: Etilen và Axetilen', '# I. Etilen ($C_2H_4$)
+- **Cấu tạo:** Có một liên kết đôi $C=C$ trong phân tử, gồm 1 liên kết kém bền dễ bị đứt ra trong các phản ứng hóa học.
+- **Tính chất hóa học đặc trưng:**
+  + **Phản ứng cộng:** Làm mất màu dung dịch Brom.
+$$CH_2=CH_2 + Br_2 \rightarrow CH_2Br-CH_2Br$$
+  + **Phản ứng trùng hợp:** Các phân tử etilen liên kết với nhau tạo thành chuỗi Polietilen (nhựa PE).
+$$n \cdot CH_2=CH_2 \xrightarrow{t^o, p, xt} -(-CH_2-CH_2-)-_n$$
+
+# II. Axetilen ($C_2H_2$)
+- **Cấu tạo:** Có một liên kết ba $C \equiv C$ trong phân tử, gồm 2 liên kết kém bền.
+- **Tính chất hóa học:**
+  + **Phản ứng cộng:** Cộng với Brom theo 2 giai đoạn (tỉ lệ 1:1 hoặc 1:2).
+$$CH \equiv CH + 2Br_2 \rightarrow CHBr_2-CHBr_2$$
+  + **Phản ứng cháy:** Phản ứng tỏa nhiệt rất lớn, dùng trong đèn xì oxy-axetilen để hàn cắt kim loại.
+$$2C_2H_2 + 5O_2 \xrightarrow{t^o} 4CO_2 + 2H_2O$$', 'chemistry', '["Trình bày phương pháp hóa học để phân biệt hai khí mất nhãn: Mêtan (CH4) và Etilen (C2H4).", "Tính thể tích không khí (chứa 20% oxi) cần dùng để đốt cháy hoàn toàn 5,6 lít khí Axetilen ở đktc."]'::jsonb, '["Ghi nhớ hiện tượng làm mất màu dung dịch Brom để nhận biết các hiđrocacbon không no.", "Viết đúng công thức cấu tạo thu gọn có biểu diễn liên kết đôi hoặc liên kết ba.", "Tính toán lượng chất theo hệ số tỉ lệ phương trình (đặc biệt chú ý tỉ lệ mol phản ứng cộng của Axetilen)."]'::jsonb, 6, true),\n  ('sci-9-13', 'science', 9, 'nat-chemistry', 'Dẫn xuất Hiđrocacbon: Rượu Etylic (Etanol)', '# I. Cấu tạo và Tính chất vật lý
+- **Công thức phân tử:** $C_2H_6O$
+- **Công thức cấu tạo:** $CH_3-CH_2-OH$ (có nhóm $-OH$ đặc trưng cho tính chất của ancol).
+- **Độ rượu:** Là số mililít rượu etylic nguyên chất có trong 100 ml hỗn hợp rượu với nước.
+$$Độ rượu = \frac{V_{\text{rượu nguyên chất}}}{V_{\text{hỗn hợp}}} \cdot 100$$
+
+# II. Tính chất hóa học
+- **Phản ứng với kim loại kiềm ($Na, K$):** Thế nguyên tử H trong nhóm $-OH$.
+$$2C_2H_5OH + 2Na \rightarrow 2C_2H_5ONa + H_2 \uparrow$$
+- **Phản ứng cháy:** Tỏa nhiều nhiệt, ngọn lửa màu xanh.
+$$C_2H_5OH + 3O_2 \xrightarrow{t^o} 2CO_2 + 3H_2O$$
+- **Phản ứng lên men giấm:**
+$$C_2H_5OH + O_2 \xrightarrow{\text{Men giấm}} CH_3COOH + H_2O$$', 'chemistry', '["Tính thể tích rượu etylic nguyên chất có trong 500 ml rượu 45 độ.", "Cho 9,2 gam rượu etylic tác dụng hoàn toàn với natri dư. Tính thể tích khí hiđro thu được ở đktc."]'::jsonb, '["Áp dụng chính xác công thức tính độ rượu và khối lượng riêng ($m = D \\cdot V$) để tìm khối lượng rượu nguyên chất.", "Nhận biết nguyên tử H ở nhóm -OH linh động hơn các nguyên tử H ở mạch cacbon thông qua phản ứng với Na."]'::jsonb, 5, true),\n  ('sci-9-14', 'science', 9, 'nat-chemistry', 'Chất béo và Polime', '# I. Chất béo (Lipit)
+- **Thành phần cấu tạo:** Chất béo là hỗn hợp các este của glixerol $[C_3H_5(OH)_3]$ với các axit béo (như axit panmitic $C_{15}H_{31}COOH$, axit stearic $C_{17}H_{35}COOH$, axit oleic $C_{17}H_{33}COOH$).
+- **Công thức tổng quát:** $(R-COO)_3C_3H_5$.
+- **Phản ứng thủy phân trong môi trường kiềm (Phản ứng xà phòng hóa):**
+$$(R-COO)_3C_3H_5 + 3NaOH \xrightarrow{t^o} 3R-COONa \text{ (Xà phòng)} + C_3H_5(OH)_3 \text{ (Glixerol)}$$
+
+# II. Khái niệm về Polime
+- Polime là những hợp chất có phân tử khối rất lớn do nhiều mắt xích liên kết với nhau tạo nên.
+- Phân loại: Polime tự nhiên (tinh bột, xenlulozơ, cao su thiên nhiên...) và Polime tổng hợp (nhựa PE, PVC, tơ nilon...).
+- Cấu trúc: Mạch thẳng, mạch phân nhánh hoặc mạch mạng không gian (nhựa bakelit, cao su lưu hóa).', 'chemistry', '["Thủy phân hoàn toàn 89 gam chất béo tristearin (C17H35COO)3C3H5 bằng dung dịch NaOH. Tính khối lượng glixerol thu được.", "Phân biệt cao su lưu hóa và cao su thông thường về mặt cấu trúc mạch polime và tính đàn hồi."]'::jsonb, '["Nắm vững bản chất phản ứng xà phòng hóa để tính toán theo định luật bảo toàn khối lượng hoặc tỉ lệ mol (1 mol chất béo : 3 mol kiềm : 1 mol glixerol).", "Nhận biết các ứng dụng thực tế của polime trong đời sống (chất dẻo, tơ sợi, cao su)."]'::jsonb, 6, true),\n  ('sci-9-15', 'science', 9, 'nat-biology', 'Quy luật di truyền liên kết', '# I. Thí nghiệm của Moóc-găng (Morgan)
+- Đối tượng thí nghiệm: Ruồi giấm ($2n = 8$).
+- Phép lai: Ruồi cái thân xám, cánh dài thuần chủng $\times$ Ruồi đực thân đen, cánh cụt.
+  + $F_1$: $100\% Thân xám, cánh dài.
+  + Lai phân tích ruồi đực $F_1$: Đực $F_1$ (Xám, dài) $\times$ Cái (Đen, cụt).
+  + Kết quả đời con $F_B$: $1$ Thân xám, cánh dài : $1$ Thân đen, cánh cụt.
+
+# II. Giải thích quy luật liên kết gen
+- Do các gen quy định các tính trạng khác nhau (thân xám và cánh dài, thân đen và cánh cụt) cùng nằm trên một nhiễm sắc thể và cùng phân ly về giao tử trong quá trình giảm phân.
+- **Ký hiệu sơ đồ lai liên kết:**
+  + Quy ước: $B$: thân xám, $b$: thân đen; $V$: cánh dài, $v$: cánh cụt.
+  + Kiểu gen ruồi $F_1$: $\frac{BV}{bv}$ (Các gen nằm trên cùng một cặp NST gạch quang).
+  + Khi giảm phân, cơ thể $\frac{BV}{bv}$ chỉ cho 2 loại giao tử với tỉ lệ bằng nhau là $\underline{BV}$ và $\underline{bv}$ (nếu liên kết hoàn toàn).
+- **Ý nghĩa:** Hạn chế sự xuất hiện của biến dị tổ hợp, đảm bảo sự di truyền ổn định của từng nhóm tính trạng tốt luôn đi kèm với nhau.', 'biology', '["Cho giao phấn giữa hai cây thuần chủng cùng loài khác nhau về hai cặp tính trạng tương phản, đời F1 thu được 100% cây thân cao, quả đỏ. Cho đực F1 lai phân tích, thu được đời con có tỉ lệ 1 thân cao, quả đỏ : 1 thân thấp, quả vàng. Xác định quy luật di truyền.", "Viết các loại giao tử của cơ thể có kiểu gen AB/ab trong trường hợp liên kết gen hoàn toàn."]'::jsonb, '["Nhận diện quy luật liên kết gen dựa vào tỉ lệ kiểu hình rút gọn của phép lai phân tích (tỉ lệ 1:1 đối với 2 tính trạng thay vì 1:1:1:1 như phân ly độc lập).", "Cách viết đúng ký hiệu cặp gen liên kết trên nhiễm sắc thể."]'::jsonb, 7, true),\n  ('sci-9-16', 'science', 9, 'nat-biology', 'Đột biến gen và Đột biến nhiễm sắc thể', '# I. Đột biến gen
+- **Định nghĩa:** Là những biến đổi trong cấu trúc của gen, liên quan đến một hoặc một số cặp nuclêôtit tại một điểm nào đó của phân tử DNA.
+- **Các dạng đột biến gen cơ bản:**
+  + Mất một hoặc một số cặp nuclêôtit.
+  + Thêm một hoặc một số cặp nuclêôtit.
+  + Thay thế cặp nuclêôtit này bằng cặp nuclêôtit khác.
+- **Hậu quả:** Có thể làm thay đổi trình tự axit amin trong chuỗi pôlipeptit, từ đó làm thay đổi kiểu hình của cơ thể (đa số gây hại, một số trung tính hoặc có lợi cho tiến hóa/chọn giống).
+
+# II. Đột biến nhiễm sắc thể (NST)
+- **Đột biến cấu trúc NST:** Là những biến đổi trong cấu trúc nội tại của từng NST. Gồm các dạng: Mất đoạn, Lặp đoạn, Đảo đoạn, Chuyển đoạn.
+- **Đột biến số lượng NST:** Là sự biến đổi số lượng NST xảy ra ở một hoặc một số cặp NST, hoặc ở toàn bộ các cặp NST.
+  + **Thể dị bội (Lệch bội):** Thay đổi ở một hoặc một vài cặp NST (Ví dụ: Thể ba nhiễm $2n+1$ gây hội chứng Down ở người ở cặp NST số 21; Thể một nhiễm $2n-1$).
+  + **Thể đa bội:** Tăng số nguyên lần bộ NST đơn bội và lớn hơn $2n$ (Ví dụ: Tam bội $3n$, Tứ bội $4n$). Cơ thể đa bội thường có tế bào to, cơ quan sinh dưỡng lớn, sinh trưởng mạnh.', 'biology', '["Hội chứng Down ở người xuất hiện do bệnh nhân có 3 nhiễm sắc thể ở cặp số 21, đây là một dạng đột biến số lượng NST (Thể lệch bội).", "Một gen sau đột biến bị giảm đi 2 liên kết hiđrô nhưng chiều dài không đổi. Xác định dạng đột biến gen xảy ra."]'::jsonb, '["Phân biệt rõ ràng giữa biến dị không di truyền (thường biến) và biến dị di truyền (đột biến).", "Tính toán sự thay đổi số lượng nuclêôtit hoặc số liên kết hiđrô của gen sau đột biến để kết luận dạng đột biến.", "Nhận biết các hội chứng di truyền phổ biến ở người do đột biến NST."]'::jsonb, 7, true),\n  ('sci-9-17', 'science', 9, 'nat-biology', 'Môi trường và Các nhân tố sinh thái', '# I. Môi trường sống của sinh vật
+- Môi trường là nơi sinh sống của sinh vật, bao gồm tất cả những gì bao quanh chúng và tác động trực tiếp hoặc gián tiếp lên sự sinh trưởng, phát triển, sinh sản của sinh vật.
+- Có 4 loại môi trường sống chủ yếu: Môi trường nước, môi trường trên cạn, môi trường trong đất và môi trường sinh vật.
+
+# II. Các nhân tố sinh thái
+- Nhân tố sinh thái là những yếu tố của môi trường tác động lên sinh vật. Chia làm hai nhóm chính:
+  + **Nhân tố vô sinh (không sống):** Ánh sáng, nhiệt độ, độ ẩm, không khí, gió, áp suất, địa hình...
+  + **Nhân tố hữu sinh (sống):** Các sinh vật xung quanh và nhân tố con người (con người được tách riêng vì có tác động ý thức làm thay đổi mạnh mẽ môi trường).
+- **Giới hạn sinh thái:** Là giới hạn chịu đựng của một cơ thể sinh vật đối với một nhân tố sinh thái nhất định của môi trường. Gồm:
+  + Điểm gây chết dưới và Điểm gây chết trên.
+  + Khoảng thuận lợi (sinh vật phát triển tốt nhất).
+  + Khoảng chống chịu (sinh vật bị ức chế sinh lý).', 'biology', '["Cá rô phi nuôi ở Việt Nam có giới hạn nhiệt độ từ 5,6 độ C đến 42 độ C. Khoảng thuận lợi cho các hoạt động sinh lý của chúng là từ 20 độ C đến 35 độ C.", "Cây sống dưới tán rừng (cây ưa bóng) có lá bản rộng, mỏng, màu xanh thẫm để hấp thụ ánh sáng khuếch tán hiệu quả hơn."]'::jsonb, '["Phân biệt được nhân tố vô sinh và nhân tố hữu sinh trong một hệ sinh thái cụ thể.", "Vẽ và giải thích sơ đồ đồ thị giới hạn sinh thái của một loài sinh vật.", "Nêu được các đặc điểm thích nghi của sinh vật với nhân tố ánh sáng, nhiệt độ."]'::jsonb, 5, true),\n  ('sci-9-18', 'science', 9, 'nat-biology', 'Hệ sinh thái, Chuỗi thức ăn và Lưới thức ăn', '# I. Quần thể, Quần xã và Hệ sinh thái
+- **Quần thể sinh vật:** Tập hợp các cá thể cùng loài, cùng sinh sống trong một khoảng không gian và thời gian nhất định, có khả năng sinh sản tạo thế hệ mới.
+- **Quần xã sinh vật:** Tập hợp các quần thể sinh vật thuộc nhiều loài khác nhau, cùng sống trong một không gian xác định, có mối quan hệ gắn bó như một thể thống nhất.
+- **Hệ sinh thái:** Bao gồm quần xã sinh vật và môi trường sống của quần xã (sinh cảnh). Trong hệ sinh thái, các sinh vật luôn tác động lẫn nhau và tác động qua lại với các nhân tố vô sinh tạo thành một hệ thống hoàn chỉnh, ổn định.
+
+# II. Chuỗi thức ăn và Lưới thức ăn
+- **Chuỗi thức ăn:** Là một chuỗi gồm nhiều loài sinh vật có quan hệ dinh dưỡng với nhau, trong đó mỗi loài là một mắt xích tiêu thụ mắt xích phía trước và là thức ăn cho mắt xích phía sau.
+  + Cấu trúc: Sinh vật sản xuất (Thực vật) $\rightarrow$ Sinh vật tiêu thụ bậc 1 (Động vật ăn cỏ) $\rightarrow$ Sinh vật tiêu thụ bậc 2 (Động vật ăn thịt) $\rightarrow$ Sinh vật phân hủy (Vi khuẩn, nấm).
+- **Lưới thức ăn:** Tập hợp các chuỗi thức ăn có chung các mắt xích trong hệ sinh thái. Quần xã càng đa dạng về thành phần loài thì lưới thức ăn càng phức tạp và hệ sinh thái càng bền vững.', 'biology', '["Xây dựng chuỗi thức ăn từ các sinh vật: Cỏ, Thỏ, Cáo, Vi khuẩn. (Cỏ -> Thỏ -> Cáo -> Vi khuẩn).", "Trong một khu rừng, nếu loài rắn bị săn bắt quá mức, quần thể chuột (thức ăn của rắn) sẽ tăng nhanh số lượng, dẫn đến phá hoại thảm thực vật rừng."]'::jsonb, '["Kỹ năng vẽ sơ đồ lưới thức ăn từ một danh sách các loài sinh vật kèm mối quan hệ dinh dưỡng.", "Xác định đúng bậc dinh dưỡng và vị trí sinh vật tiêu thụ (bậc 1, bậc 2, bậc 3) trong chuỗi thức ăn.", "Biện luận sự thay đổi số lượng của một loài khi một mắt xích khác trong lưới thức ăn bị biến động."]'::jsonb, 6, true)
+ON CONFLICT (id) DO UPDATE SET
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  topic = EXCLUDED.topic,
+  title = EXCLUDED.title,
+  theory = EXCLUDED.theory,
+  category = EXCLUDED.category,
+  examples = EXCLUDED.examples,
+  practice_points = EXCLUDED.practice_points,
+  difficulty = EXCLUDED.difficulty,
+  is_standard = EXCLUDED.is_standard;
+
+
+-- Seed History and Geography grade 9 lessons
+INSERT INTO ge10_lessons (id, subject, grade_tier, topic, title, theory, category, examples, practice_points, difficulty, is_standard)
+VALUES 
+  ('his-9-1', 'history_geography', 9, 'history', 'Thế giới từ năm 1918 đến năm 1945', '# I. Tình hình thế giới sau Chiến tranh thế giới thứ nhất
+- **Cách mạng tháng Mười Nga (1917):** Thắng lợi mở ra thời kỳ mới trong lịch sử nhân loại, thiết lập nhà nước XHCN đầu tiên trên thế giới.
+- **Cao trào cách mạng 1918 - 1923:** Phong trào đấu tranh của giai cấp công nhân ở các nước tư bản châu Âu diễn ra mạnh mẽ, dẫn đến sự thành lập của Quốc tế Cộng sản (1919).
+- **Khủng hoảng kinh tế 1929 - 1933:** Cuộc đại khủng hoảng thừa tàn phá nặng nề nền kinh tế thế giới tư bản, dẫn đến sự ra đời của chủ nghĩa phát xít ở Đức, Ý, Nhật.
+
+# II. Chiến tranh thế giới thứ hai (1939 - 1945)
+- **Nguyên nhân:** Do mâu thuẫn giữa các nước đế quốc về thị trường và thuộc địa, sự trỗi dậy của phe Phát xít (Đức, Ý, Nhật) cùng chính sách dung dưỡng của Anh, Pháp, Mỹ.
+- **Diễn biến chính:**
+  + *1/9/1939:* Đức tấn công Ba Lan, chiến tranh bùng nổ.
+  + *6/1941:* Đức tấn công Liên Xô, tính chất chiến tranh thay đổi sang cuộc chiến chống phát xít của nhân loại tiến bộ.
+  + *1943:* Trận Stalingrad tạo bước ngoặt, phe Đồng minh chuyển sang thế phản công.
+- **Kết quả:** Phe Phát xít sụp đổ hoàn toàn. Liên Xô và lực lượng Đồng minh giành thắng lợi, cứu nhân loại khỏi thảm họa phát xít.', 'history', '["Sự thành lập khối Trục (Đức - Ý - Nhật) là minh chứng cho việc hình thành lò lửa chiến tranh thế giới thứ hai.", "Hội nghị Yalta (2/1945) giữa ba cường quốc Liên Xô, Mỹ, Anh phân chia lại khu vực ảnh hưởng sau chiến tranh."]'::jsonb, '["Phân tích tác động trực tiếp của cuộc khủng hoảng kinh tế 1929 - 1933 đến sự hình thành chủ nghĩa phát xít.", "Ghi nhớ các mốc thời gian bước ngoặt của Chiến tranh thế giới thứ hai."]'::jsonb, 6, true),\n  ('his-9-2', 'history_geography', 9, 'history', 'Việt Nam từ năm 1919 đến năm 1930', '# I. Cuộc khai thác thuộc địa lần thứ hai của thực dân Pháp
+- **Mục đích:** Bù đắp thiệt hại sau Chiến tranh thế giới thứ nhất.
+- **Chính sách:** Đầu tư mạnh vào nông nghiệp (đồn điền cao su) và khai thác mỏ (than đá), tăng thuế, độc quyền thị trường.
+- **Chuyển biến xã hội:** Xã hội phân hóa sâu sắc thành các giai cấp:
+  + *Giai cấp công nhân:* Tăng nhanh về số lượng, bị tầng tầng áp bức, là lực lượng lãnh đạo cách mạng.
+  + *Giai cấp nông dân:* Chiếm đa số, bị bần cùng hóa, là lực lượng quân đội cách mạng đông đảo.
+  + *Tầng lớp tiểu tư sản và Tư sản dân tộc:* Có tinh thần dân tộc nhưng dễ thỏa hiệp.
+
+# II. Hoạt động cứu nước của Nguyễn Ái Quốc và Sự thành lập Đảng
+- **Hành trình tìm đường cứu nước:**
+  + *7/1920:* Đọc Sơ thảo luận cương của Lênin về vấn đề dân tộc và thuộc địa, tìm ra con đường cứu nước: Cách mạng vô sản.
+  + *12/1920:* Tham gia sáng lập Đảng Cộng sản Pháp.
+- **Thành lập Đảng Cộng sản Việt Nam (1930):**
+  + Từ ngày 6/1 đến 8/2/1930, Nguyễn Ái Quốc chủ trì Hội nghị hợp nhất các tổ chức cộng sản tại Hương Cảng (Trung Quốc).
+  + Đảng Cộng sản Việt Nam ra đời cùng Cương lĩnh chính trị đầu tiên, chấm dứt thời kỳ khủng hoảng về đường lối lãnh đạo cách mạng.', 'history', '["Nguyễn Ái Quốc thành lập Hội Việt Nam Cách mạng Thanh niên (1925) tại Quảng Châu để huấn luyện cán bộ.", "Ba tổ chức cộng sản ra đời năm 1929: Đông Dương Cộng sản đảng, An Nam Cộng sản đảng và Đông Dương Cộng sản liên đoàn."]'::jsonb, '["Phân biệt đặc điểm giai cấp công nhân Việt Nam so với công nhân các nước tư bản phương Tây.", "Ý nghĩa lịch sử mang tính bước ngoặt của sự kiện thành lập Đảng năm 1930."]'::jsonb, 7, true),\n  ('his-9-3', 'history_geography', 9, 'history', 'Cách mạng tháng Tám năm 1945 và Sự thành lập nước VNDCCH', '# I. Lệnh Tổng khởi nghĩa được ban bố
+- **Thời cơ lịch sử:** Nhật đảo chính Pháp (9/3/1945), sau đó Nhật đầu hàng Đồng minh vô điều kiện (15/8/1945). Quân Pháp chưa kịp quay lại, quân Đồng minh chưa vào giải giáp $\rightarrow$ Xuất hiện thời cơ "ngàn năm có một".
+- **Chủ trương của Đảng:** Hội nghị toàn quốc của Đảng tại Tân Trào quyết định phát động Tổng khởi nghĩa trong cả nước, thành lập Ủy ban Khởi nghĩa toàn quốc.
+
+# II. Diễn biến và Ý nghĩa lịch sử
+- **Diễn biến chính:**
+  + *19/8/1945:* Khởi nghĩa thắng lợi tại Hà Nội.
+  + *23/8/1945:* Khởi nghĩa thắng lợi tại Huế.
+  + *25/8/1945:* Khởi nghĩa thắng lợi tại Sài Gòn.
+  + *2/9/1945:* Tại Quảng trường Ba Đình, Chủ tịch Hồ Chí Minh đọc bản Tuyên ngôn Độc lập, khai sinh nước Việt Nam Dân chủ Cộng hòa.
+- **Ý nghĩa lịch sử:**
+  + Phá tan xiềng xích nô dịch của phát xít Nhật và thực dân Pháp, lật đổ chế độ phong kiến tồn tại ngàn năm.
+  + Mở ra kỷ nguyên mới cho dân tộc Việt Nam: Kỷ nguyên độc lập, tự do và tiến lên chủ nghĩa xã hội.', 'history', '["Sự kiện vua Bảo Đại thoái vị ngày 30/8/1945 đánh dấu sự chấm dứt hoàn toàn của chế độ phong kiến nhà Nguyễn.", "Chiều 16/8/1945, một đội quân giải phóng do Võ Nguyên Giáp chỉ huy tiến về giải phóng thị xã Thái Nguyên."]'::jsonb, '["Phân tích điều kiện khách quan và chủ quan tạo nên thời cơ chín muồi của Cách mạng tháng Tám.", "Giải thích lý do Cách mạng tháng Tám diễn ra nhanh chóng, ít đổ máu và giành thắng lợi triệt để."]'::jsonb, 7, true),\n  ('his-9-4', 'history_geography', 9, 'history', 'Cuộc kháng chiến chống thực dân Pháp (1945 - 1954)', '# I. Những năm đầu toàn quốc kháng chiến (1946 - 1950)
+- **Lời kêu gọi toàn quốc kháng chiến (19/12/1946):** Bản tuyên ngôn thể hiện ý chí quyết tâm sắt đá bảo vệ độc lập của nhân dân Việt Nam.
+- **Chiến dịch Việt Bắc thu - đông (1947):** Đập tan cuộc tấn công quy mô lớn của Pháp vào căn cứ địa, bảo vệ cơ quan đầu não cách mạng, chuyển sang giai đoạn kháng chiến trường kỳ.
+- **Chiến dịch Biên giới thu - đông (1950):** Khai thông biên giới Việt - Trung, giành quyền chủ động chiến lược trên chiến trường chính Bắc Bộ.
+
+# II. Bước phát triển quyết định và Chiến thắng Điện Biên Phủ (1954)
+- **Kế hoạch Navarre của Pháp (1953):** Nhằm tập trung quân chiếm đóng, giành thắng lợi quân sự quyết định để kết thúc chiến tranh trong danh dự.
+- **Chiến dịch lịch sử Điện Biên Phủ (1954):**
+  + Phương châm chiến lược: Chuyển từ "Đánh nhanh thắng nhanh" sang "Đánh chắc tiến chắc".
+  + Kết quả: Sau 56 ngày đêm chiến đấu kiên cường, ngày 7/5/1954, tập đoàn cứ điểm Điện Biên Phủ bị tiêu diệt hoàn toàn.
+- **Hiệp định Geneva (1954):** Pháp công nhận các quyền dân tộc cơ bản của ba nước Đông Dương: Độc lập, chủ quyền, thống nhất và toàn vẹn lãnh thổ. Vĩ tuyến 17 tạm thời làm giới tuyến quân sự.', 'history', '["Đại tướng Võ Nguyên Giáp quyết định hoãn giờ nổ súng tại Điện Biên Phủ để chuyển phương châm sang ''Đánh chắc tiến chắc''.", "Anh hùng Phan Đình Giót lấy thân mình lấp lỗ châu mai trong trận chiến mở màn tại cứ điểm Him Lam."]'::jsonb, '["Giải thích ý nghĩa chiến lược của chiến thắng Biên giới 1950 và Điện Biên Phủ 1954.", "Phân tích các điều khoản cơ bản của Hiệp định Geneva ảnh hưởng đến cục diện đất nước sau năm 1954."]'::jsonb, 8, true),\n  ('his-9-5', 'history_geography', 9, 'history', 'Cuộc kháng chiến chống Mỹ cứu nước (1954 - 1975)', '# I. Chiến lược cách mạng hai miền và các hình thức chiến tranh của Mỹ
+- **Đặc điểm:** Miền Bắc tiến lên xây dựng XHCN làm hậu phương, miền Nam tiếp tục cách mạng dân tộc dân chủ nhân dân làm tiền tuyến.
+- **Các chiến lược chiến tranh của Mỹ tại miền Nam:**
+  + *Chiến tranh đơn phương (1954 - 1960):* Dùng chính quyền tay sai Ngô Đình Diệm để khủng bố cách mạng $\rightarrow$ Phong trào Đồng khởi (1959-1960) nổ ra, làm sụp đổ từng mảng lớn chính quyền địch.
+  + *Chiến tranh đặc biệt (1961 - 1965):* Công thức "Quân đội tay sai + Cố vấn Mỹ + Vũ khí Mỹ", quốc sách "Ấp chiến lược".
+  + *Chiến tranh cục bộ (1965 - 1968):* Quân Mỹ trực tiếp tham chiến giữ vai trò chủ đạo, mở các cuộc hành quân "Tìm và diệt". Bị bẻ gãy bởi Tổng tiến công Tết Mậu Thân (1968).
+  + *Việt Nam hóa chiến tranh (1969 - 1973):* Công thức "Quân đội Sài Gòn + Hỏa lực, hâu cần Mỹ". Mỹ mở rộng chiến tranh ra toàn Đông Dương và đánh phá miền Bắc bằng không quân.
+
+# II. Hiệp định Paris (1973) và Đại thắng mùa Xuân năm 1975
+- **Hiệp định Paris (27/1/1973):** Mỹ rút hết quân về nước, công nhận độc lập chủ quyền của Việt Nam, tạo điều kiện "Mỹ cút, Ngụy nhào".
+- **Tổng tiến công và nổi dậy Xuân 1975:**
+  + *Chiến dịch Tây Nguyên (3/1975):* Trận mở màn Buôn Ma Thuột thắng lợi, chuyển cuộc chiến sang tổng công kích.
+  + *Chiến dịch Huế - Đà Nẵng (3/1975):* Giải phóng hoàn toàn dải đất miền Trung.
+  + *Chiến dịch Hồ Chí Minh (26/4 - 30/4/1975):* 11h30 ngày 30/4, lá cờ cách mạng tung bay trên dinh Độc Lập, miền Nam hoàn toàn giải phóng, thống nhất đất nước.', 'history', '["Chiến thắng ''Điện Biên Phủ trên không'' cuối năm 1972 buộc Mỹ phải ký Hiệp định Paris.", "Xe tăng mang số hiệu 390 húc đổ cổng chính Dinh Độc Lập trưa ngày 30/4/1975."]'::jsonb, '["So sánh sự giống và khác nhau giữa chiến lược Chiến tranh cục bộ và Việt Nam hóa chiến tranh.", "Phân tích nguyên nhân thắng lợi của cuộc kháng chiến chống Mỹ cứu nước."]'::jsonb, 8, true),\n  ('his-9-6', 'history_geography', 9, 'geography', 'Địa lý dân cư và Các ngành kinh tế Việt Nam', '# I. Địa lý dân cư Việt Nam
+- **Đặc điểm:** Nước ta có cơ cấu dân số trẻ nhưng đang dịch chuyển sang giai đoạn già hóa dân số nhanh. Nước ta có 54 dân tộc anh em, dân tộc Kinh chiếm đa số (khoảng $85\%$).
+- **Phân bộ dân cư:** Không đồng đều, tập trung đông đúc ở đồng bằng, ven biển và đô thị (Đồng bằng sông Hồng có mật độ cao nhất); thưa thớt ở miền núi, cao nguyên (Tây Bắc, Tây Nguyên).
+- **Đô thị hóa:** Tốc độ đô thị hóa diễn ra nhanh chóng, mở rộng quy mô diện tích đô thị, lối sống thành thị phổ biến nhưng tỉ lệ dân đô thị vẫn thấp hơn nông thôn.
+
+# II. Thực trạng các ngành kinh tế lớn
+- **Nông nghiệp:** Phát triển mạnh mẽ theo hướng hàng hóa. Cơ cấu nội ngành chuyển dịch theo hướng giảm tỉ trọng trồng trọt (đặc biệt là cây lương thực), tăng tỉ trọng chăn nuôi và thủy hải sản. Việt Nam là nước xuất khẩu gạo, cà phê, hồ tiêu hàng đầu thế giới.
+- **Công nghiệp:** Cơ cấu ngành đa dạng, chuyển dịch từ các ngành khai khoáng, gia công sơ chế sang công nghiệp chế biến, chế tạo, công nghệ cao (điện tử, lắp ráp). Tập trung chủ yếu ở Đông Nam Bộ và Đồng bằng sông Hồng.
+- **Dịch vụ:** Tăng trưởng nhanh, chiếm tỉ trọng ngày càng cao trong GDP. Các ngành giao thông vận tải, bưu chính viễn thông, tài chính ngân hàng và du lịch phát triển hiện đại, hội nhập quốc tế.', 'geography', '["Đông Nam Bộ là vùng có giá trị sản xuất công nghiệp và mức độ đô thị hóa cao nhất cả nước.", "Đồng bằng sông Cửu Long là vùng trọng điểm sản xuất lương thực, thực phẩm lớn nhất của Việt Nam."]'::jsonb, '["Rèn luyện kỹ năng đọc và phân tích biểu đồ cơ cấu ngành kinh tế, biểu đồ dân số.", "Giải thích nguyên nhân dẫn đến sự phân bố dân cư không đồng đều giữa các vùng kinh tế tại Việt Nam."]'::jsonb, 5, true),\n  ('his-9-7', 'history_geography', 9, 'geography', 'Các vùng kinh tế trọng điểm Việt Nam (Bắc Bộ, Trung Bộ, Nam Bộ)', '# I. Vùng Trung du miền núi Bắc Bộ và Đồng bằng sông Hồng
+- **Trung du và miền núi Bắc Bộ:** Có thế mạnh về khai thác khoáng sản, thủy điện lớn (Sơn La, Hòa Bình), trồng cây công nghiệp cận nhiệt và ôn đới (chè, cây dược liệu). Khó khăn lớn là địa hình chia cắt, thiên tai lũ quét, sạt lở.
+- **Đồng bằng sông Hồng:** Vùng kinh tế phát triển năng động, có mật độ dân số cao nhất. Thế mạnh về thâm canh lúa nước, công nghiệp chế biến, cơ sở hạ tầng giao thông đồng bộ hoàn chỉnh.
+
+# II. Vùng Duyên hải miền Trung và Tây Nguyên
+- **Bắc Trung Bộ và Duyên hải Nam Trung Bộ:** Thế mạnh kinh tế biển (đánh bắt, nuôi trồng thủy sản, du lịch biển, dịch vụ hàng hải). Thường xuyên chịu ảnh hưởng bởi thiên tai (bão, lũ lụt, hạn hán, cát bay).
+- **Tây Nguyên:** Vùng duy nhất không giáp biển. Địa hình cao nguyên đất đỏ ba-zan màu mỡ $\rightarrow$ vùng chuyên canh cây công nghiệp nhiệt đới quy mô lớn nhất cả nước (cà phê, cao su, tiêu).
+
+# III. Vùng Đông Nam Bộ và Đồng bằng sông Cửu Long
+- **Đông Nam Bộ:** Vùng kinh tế đầu tàu của cả nước, dẫn đầu về thu hút vốn đầu tư nước ngoài (FDI), phát triển mạnh dầu khí, khu công nghiệp tập trung.
+- **Đồng bằng sông Cửu Long:** Vùng nông nghiệp trù phú, mạng lưới sông ngòi, kênh rạch chằng chịt $\rightarrow$ phát triển mạnh trồng lúa, cây ăn trái, nuôi trồng và chế biến thủy sản xuất khẩu lớn nhất Việt Nam.', 'geography', '["Tỉnh Đắk Lắk thuộc Tây Nguyên là thủ phủ sản xuất cà phê xuất khẩu của Việt Nam.", "Vùng kinh tế trọng điểm phía Nam gồm các lõi trung tâm: TP. Hồ Chí Minh, Bình Dương, Đồng Nai, Bà Rịa - Vũng Tàu."]'::jsonb, '["Sử dụng Atlat Địa lý Việt Nam để xác định vị trí địa lý, trung tâm công nghiệp và cửa khẩu lớn của từng vùng.", "So sánh thế mạnh phát triển kinh tế giữa vùng Đông Nam Bộ và vùng Đồng bằng sông Hồng."]'::jsonb, 6, true),\n  ('his-9-8', 'history_geography', 9, 'geography', 'Địa lý biển đảo Việt Nam và Chiến lược phát triển bền vũnng', '# I. Vùng biển và hệ thống hải đảo Việt Nam
+- **Vùng biển quốc gia:** Diện tích khoảng 1 triệu $km^2$ thuộc Biển Đông. Bao gồm 5 bộ phận cấu thành pháp lý theo Luật Biển: Nội thủy, Lãnh hải, Vùng tiếp giáp lãnh hải, Vùng đặc quyền kinh tế và Thềm lục địa.
+- **Hệ thống hải đảo:** Nước ta có hơn 3000 hòn đảo lớn nhỏ, bao gồm hai quần đảo xa bờ là quần đảo Hoàng Sa (thành phố Đà Nẵng) và quần đảo Trường Sa (tỉnh Khánh Hòa). Đảo có vai trò chiến lược về kinh tế và an ninh quốc phòng.
+
+# II. Phát triển tổng hợp kinh tế biển và bảo vệ môi trường
+- **Các ngành kinh tế biển then chốt:**
+  + *Khai thác khoáng sản:* Dầu khí (bể trầm tích Cửu Long, Nam Côn Sơn), khai thác muối ven biển.
+  + *Giao thông vận tải biển:* Phát triển hệ thống cảng biển nước sâu (Lạch Huyện, Cái Mép - Thị Vải), tuyến đường biển quốc tế.
+  + *Du lịch biển đảo:* Phát triển các trung tâm nghỉ dưỡng hàng đầu (Hạ Long, Nha Trang, Phú Quốc).
+  + *Khai thác và nuôi trồng thủy sản:* Đánh bắt xa bờ gắn liền với bảo vệ chủ quyền biên giới biển.
+- **Bảo vệ môi trường biển đảo:** Ngăn chặn ô nhiễm rác thải nhựa, tràn dầu, suy thoái hệ sinh thái rạn san hô, rừng ngập mặn; chủ động ứng phó với biến đổi khí hậu và mực nước biển dâng.', 'geography', '["Huyện đảo Phú Quốc (Kiên Giang) là đảo lớn nhất Việt Nam, phát triển mạnh về dịch vụ du lịch sinh thái biển.", "Khai thác dầu khí tại mỏ Bạch Hổ mang lại nguồn thu ngoại tệ lớn cho ngân sách quốc gia."]'::jsonb, '["Xác định 5 bộ phận cấu thành vùng biển Việt Nam trên sơ đồ mặt cắt ngang.", "Trình bày tầm quan trọng cốt lõi của hai quần đảo Hoàng Sa và Trường Sa trong việc khẳng định chủ quyền quốc gia."]'::jsonb, 6, true)
+ON CONFLICT (id) DO UPDATE SET
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  topic = EXCLUDED.topic,
+  title = EXCLUDED.title,
+  theory = EXCLUDED.theory,
+  category = EXCLUDED.category,
+  examples = EXCLUDED.examples,
+  practice_points = EXCLUDED.practice_points,
+  difficulty = EXCLUDED.difficulty,
+  is_standard = EXCLUDED.is_standard;
+
+
+-- Seed Civics grade 9 lessons
+INSERT INTO ge10_lessons (id, subject, grade_tier, topic, title, theory, category, examples, practice_points, difficulty, is_standard)
+VALUES 
+  ('gdcd-9-1', 'civics', 9, 'ethics', 'Sống có lý tưởng và Có chí tự lập', '# I. Sống có lý tưởng
+- **Khái niệm:** Sống có lý tưởng là xác định được mục đích sống cao đẹp, đúng đắn, luôn phấn đấu để đạt được mục đích đó nhằm mang lại lợi ích cho bản thân, gia đình, nhà trường và xã hội.
+- **Ý nghĩa:** Người sống có lý tưởng luôn được mọi người tôn trọng, yêu quý; cuộc sống trở nên có ý nghĩa, định hướng rõ ràng và vượt qua được những khó khăn thử thách để đạt tới thành công.
+- **Trách nhiệm của học sinh:** Ra sức học tập, rèn luyện đạo đức, tích lũy tri thức, xây dựng hoài bão lớn lao và sẵn sàng đóng góp sức trẻ cho sự nghiệp xây dựng, bảo vệ Tổ quốc.
+
+# II. Có chí tự lập
+- **Khái niệm:** Chí tự lập là khả năng tự mình xây dựng cuộc sống, tự giải quyết các công việc, tự lo liệu cho bản thân mà không dựa dẫm, ỷ lại hay phụ thuộc hoàn toàn vào người khác.
+- **Biểu hiện:** Tự giác học tập, chủ động hoàn thành công việc được giao, tự tìm cách khắc phục khó khăn, kiên trì theo đuổi mục tiêu đã đề ra.
+- **Ý nghĩa:** Giúp con người rèn luyện sự bản lĩnh, tự tin, dễ thích nghi với mọi hoàn cảnh sống và nhận được sự tin cậy, nể phục từ cộng đồng.', 'ethics', '["Học sinh tự lập thời gian biểu học tập tại nhà và nghiêm túc thực hiện mà không cần cha mẹ phải nhắc nhở, thúc giục hàng ngày.", "Tấm gương vượt khó của người khuyết tật tự học nghề, tự nuôi sống bản thân và giúp đỡ những người có hoàn cảnh tương tự."]'::jsonb, '["Phân biệt giữa tính tự lập (tự quyết định, tự chịu trách nhiệm) với sự ích kỷ, cô lập hoặc cố tình không hợp tác với tập thể.", "Xác định và viết ra mục tiêu ngắn hạn, dài hạn của bản thân trong năm học lớp 9 để rèn luyện sống có lý tưởng."]'::jsonb, 4, true),\n  ('gdcd-9-2', 'civics', 9, 'ethics', 'Quản lý tiền hiệu quả và Thích ứng với sự thay đổi', '# I. Quản lý tiền hiệu quả
+- **Khái niệm:** Là việc biết sử dụng nguồn tiền có sẵn (tiền tiêu vặt, tiền mừng tuổi, tiền do lao động làm ra...) một cách hợp lý, khoa học, có kế hoạch rõ ràng để phục vụ nhu cầu cuộc sống và dự phòng tương lai.
+- **Các nguyên tắc quản lý tiền cơ bản:**
+  + **Phân chia ngân sách:** Áp dụng các quy tắc tài chính như chia nhỏ tiền vào các khoản: nhu cầu thiết yếu (học tập, ăn uống), tích lũy (tiết kiệm) và sở thích cá nhân.
+  + **Ưu tiên chi tiêu:** Phân biệt rõ ràng giữa "Cần" (những thứ bắt buộc phải có để sống và học tập) và "Muốn" (những thứ thỏa mãn sở thích nhất thời).
+  + **Tiết kiệm trước, chi tiêu sau:** Luôn trích một phần tiền cố định vào quỹ tiết kiệm ngay khi nhận được trước khi phân bổ chi tiêu.
+
+# II. Thích ứng với sự thay đổi
+- **Khái niệm:** Là khả năng điều chỉnh nhận thức, thái độ và hành vi của bản thân để phù hợp, linh hoạt và phát triển tốt trước những biến động của môi trường tự nhiên, xã hội hoặc hoàn cảnh cá nhân.
+- **Kỹ năng thích ứng:** Nhìn nhận sự thay đổi theo hướng tích cực, rèn luyện kỹ năng giải quyết vấn đề, chủ động tìm kiếm sự giúp đỡ từ người có kinh nghiệm và không ngừng học hỏi thêm kỹ năng mới.', 'ethics', '["Dùng phương pháp chia tiền tiết kiệm vào các ống heo khác nhau để quản lý chi tiêu cá nhân hằng tháng.", "Khi chuyển từ bậc Tiểu học lên THCS hoặc từ THCS lên THPT, học sinh chủ động thay đổi phương pháp học tập từ thụ động sang tự học để thích ứng với lượng kiến thức lớn hơn."]'::jsonb, '["Thực hành lập kế hoạch chi tiêu cá nhân trong vòng 1 tháng dựa trên số tiền tiêu vặt thực tế.", "Phân tích các giải pháp ứng phó tích cực khi gặp phải một sự thay đổi đột ngột trong cuộc sống (ví dụ: chuyển trường, thay đổi chỗ ở)."]'::jsonb, 5, true),\n  ('gdcd-9-3', 'civics', 9, 'law', 'Quyền và nghĩa vụ lao động của công dân', '# I. Khái niệm và Ý nghĩa của lao động
+- **Lao động:** Là hoạt động có mục đích của con người nhằm tạo ra của cải vật chất và các giá trị tinh thần cho xã hội. Lao động là nhân tố quyết định sự tồn tại và phát triển của nhân loại.
+- **Ý nghĩa:** Giúp con người tự nuôi sống bản thân, gia đình, cống hiến cho đất nước và hoàn thiện nhân cách.
+
+# II. Nội dung quyền và nghĩa vụ lao động của công dân
+- **Quyền lao động:** Công dân có quyền tự do lựa chọn nghề nghiệp, việc làm, học nghề và nâng cao trình độ nghề nghiệp phù hợp với khả năng của mình.
+- **Nghĩa vụ lao động:** Công dân có nghĩa vụ lao động để tự nuôi sống bản thân, nuôi sống gia đình, góp phần duy trì và phát triển đất nước.
+
+# III. Quy định của pháp luật đối với lao động chưa thành niên
+- **Độ tuổi lao động:** Người lao động là người từ đủ 15 tuổi trở lên.
+- **Bảo vệ lao động chưa thành niên:**
+  + Nghiêm cấm sử dụng lao động dưới 15 tuổi làm việc (trừ một số công việc nghệ thuật, thể thao do pháp luật quy định và phải có sự đồng ý của cha mẹ).
+  + Nghiêm cấm lạm dụng sức lao động, cưỡng bức lao động, hoặc sử dụng người chưa thành niên làm các công việc nặng nhọc, độc hại, nguy hiểm ảnh hưởng xấu đến sự phát triển thể chất và tinh thần.', 'law', '["Học sinh THCS sau khi tốt nghiệp có quyền lựa chọn tiếp tục học lên THPT, đi học nghề tại các trường trung cấp, hoặc tự tìm kiếm việc làm phù hợp với độ tuổi.", "Một doanh nghiệp bị xử phạt hành chính do bắt nhân viên 16 tuổi làm việc trong môi trường hầm lò độc hại vượt quá số giờ quy định."]'::jsonb, '["Nhận biết các hành vi vi phạm pháp luật lao động, đặc biệt là các hành vi xâm hại quyền lợi của lao động trẻ em.", "Phân biệt giữa việc giúp đỡ gia đình làm việc nhà (trách nhiệm đạo đức) với việc bị bóc lột sức lao động trái pháp luật."]'::jsonb, 6, true),\n  ('gdcd-9-4', 'civics', 9, 'law', 'Quyền và nghĩa vụ kinh doanh - Nghĩa vụ nộp thuế', '# I. Quyền tự do kinh doanh
+- **Kinh doanh:** Là hoạt động sản xuất, dịch vụ, mua bán hàng hóa nhằm mục đích sinh lợi nhuận.
+- **Quyền tự do kinh doanh:** Công dân có quyền tự mình quyết định quy mô, hình thức, ngành nghề kinh doanh theo quy định của pháp luật. Tuy nhiên, chỉ được kinh doanh những ngành nghề mà pháp luật không cấm.
+
+# II. Nghĩa vụ nộp thuế
+- **Thuế:** Là một khoản thu bắt buộc mà các tổ chức, cá nhân có nghĩa vụ nộp vào ngân sách nhà nước theo quy định của pháp luật.
+- **Vai trò của thuế:**
+  + Là nguồn thu chính để duy trì hoạt động của bộ máy nhà nước.
+  + Chi trả cho các dịch vụ công cộng, phúc lợi xã hội (xây dựng trường học, bệnh viện, đường sá, quốc phòng, an ninh).
+  + Điều tiết, ổn định nền kinh tế vĩ mô.
+- **Nghĩa vụ của công dân:** Kê khai đúng, nộp thuế đầy đủ và đúng hạn theo quy định pháp luật. Nghiêm cấm các hành vi trốn thuế, gian lận thuế.', 'law', '["Gia đình bạn A mở cửa hàng tạp hóa bán lẻ tại nhà, bố mẹ A phải đăng ký giấy phép kinh doanh và nộp thuế môn bài, thuế giá trị gia tăng hàng năm.", "Nhà nước sử dụng ngân sách từ nguồn thuế thu được để xây dựng cầu đường, hỗ trợ đồng bào vùng sâu vùng xa bị thiên tai lũ lụt."]'::jsonb, '["Giải thích được vì sao nộp thuế vừa là nghĩa vụ bắt buộc, vừa là quyền lợi gián tiếp của mỗi công dân.", "Nhận biết một số ngành nghề kinh doanh bị pháp luật nghiêm cấm (kinh doanh chất ma túy, động vật hoang dã nguy cấp, vũ khí trái phép...)."]'::jsonb, 6, true),\n  ('gdcd-9-5', 'civics', 9, 'law', 'Quyền tham gia quản lý nhà nước và xã hội của công dân', '# I. Nội dung quyền tham gia quản lý nhà nước và xã hội
+- **Khái niệm:** Là quyền của công dân được tham gia thảo luận các công việc chung của đất nước, của địa phương; kiến nghị với các cơ quan nhà nước và biểu quyết khi Nhà nước tổ chức trưng cầu ý dân.
+- **Các hình thức thực hiện:**
+  + **Trực tiếp:** Tự mình tham gia phát biểu ý kiến tại các cuộc họp ở địa phương, ứng cử vào các cơ quan quyền lực nhà nước (Quốc hội, Hội đồng nhân dân), tham gia bỏ phiếu bầu cử khi đủ tuổi.
+  + **Gián tiếp:** Thông qua đại biểu Quốc hội, đại biểu Hội đồng nhân dân đại diện gửi gắm tâm tư nguyện vọng, hoặc gửi đơn thư kiến nghị, đóng góp ý kiến qua các phương tiện thông tin đại chúng.
+
+# II. Ý nghĩa và Trách nhiệm của công dân
+- **Ý nghĩa:** Đảm bảo quyền làm chủ thực sự của nhân dân, phát huy sức mạnh trí tuệ tập thể và hạn chế các hiện tượng tiêu cực, quan liêu của bộ máy nhà nước.
+- **Trách nhiệm:** Học sinh rèn luyện tinh thần tự giác, ý thức tập thể, tích cực tham gia các hoạt động tự quản của lớp, của trường và đóng góp ý kiến xây dựng cộng đồng nơi cư trú phù hợp với lứa tuổi.', 'law', '["Người dân tham gia họp thôn, xã để đóng góp ý kiến về việc làm đường bê tông nông thôn và giám sát quá trình thi công xây dựng.", "Học sinh lớp 9 tham gia đóng góp ý kiến xây dựng nội quy học sinh của nhà trường vào đầu năm học."]'::jsonb, '["Phân biệt rõ hai hình thức dân chủ trực tiếp và dân chủ gián tiếp qua các tình huống thực tế.", "Nắm vững độ tuổi được quyền bầu cử (từ đủ 18 tuổi trở lên) và ứng cử (từ đủ 21 tuổi trở lên) vào Quốc hội, Hội đồng nhân dân."]'::jsonb, 7, true),\n  ('gdcd-9-6', 'civics', 9, 'law', 'Nghĩa vụ bảo vệ Tổ quốc', '# I. Vì sao phải bảo vệ Tổ quốc?
+- Non sông đất nước Việt Nam là do cha ông ta đã tốn biết bao xương máu mới xây dựng và giữ gìn được.
+- Đất nước luôn đứng trước các nguy cơ thách thức về an ninh phi truyền thống, diễn biến hòa bình và các thế lực thù địch xâm phạm chủ quyền lãnh thổ.
+- Bảo vệ Tổ quốc là nghĩa vụ thiêng liêng và quyền cao quý của mỗi công dân.
+
+# II. Nội dung nghĩa vụ bảo vệ Tổ quốc
+- Bao gồm: Tham gia lực lượng vũ trang nhân dân, thực hiện nghĩa vụ quân sự; tham gia xây dựng nền quốc phòng toàn dân; giữ gìn an ninh chính trị, trật tự an toàn xã hội; sẵn sàng chiến đấu, hy sinh để bảo vệ độc lập, chủ quyền, thống nhất và toàn vẹn lãnh thổ.
+- **Nghĩa vụ quân sự:** Công dân nam giới từ đủ 18 tuổi đến hết 25 tuổi (hoặc đến hết 27 tuổi đối với người được tạm hoãn gọi nhập ngũ học đại học, cao đẳng) có nghĩa vụ phục vụ tại ngũ trong Quân đội nhân dân Việt Nam.
+- **Trách nhiệm học sinh:** Ra sức học tập, rèn luyện thể chất, tuân thủ pháp luật, cảnh giác trước các thông tin sai lệch của các thế lực thù địch trên không gian mạng và tích cực tham gia các hoạt động quốc phòng, an ninh tại trường học.', 'law', '["Các thanh niên đủ 18 tuổi tại địa phương hăng hái viết đơn tình nguyện lên đường nhập ngũ thực hiện nghĩa vụ quân sự.", "Học sinh nghiêm túc tham gia môn học Giáo dục quốc phòng và an ninh để rèn luyện ý thức tổ chức kỷ luật và các kỹ năng quân sự cơ bản."]'::jsonb, '["Nêu được các hành vi thể hiện nghĩa vụ bảo vệ Tổ quốc trong thời bình phù hợp với lứa tuổi học sinh.", "Giải thích lý do vì sao trốn tránh nghĩa vụ quân sự là hành vi vi phạm pháp luật nghiêm trọng và bị xử lý kỷ luật."]'::jsonb, 6, true)
+ON CONFLICT (id) DO UPDATE SET
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  topic = EXCLUDED.topic,
+  title = EXCLUDED.title,
+  theory = EXCLUDED.theory,
+  category = EXCLUDED.category,
+  examples = EXCLUDED.examples,
+  practice_points = EXCLUDED.practice_points,
+  difficulty = EXCLUDED.difficulty,
+  is_standard = EXCLUDED.is_standard;
+
+
+-- Seed Technology grade 9 lessons
+INSERT INTO ge10_lessons (id, subject, grade_tier, topic, title, theory, category, examples, practice_points, difficulty, is_standard)
+VALUES 
+  ('tec-9-1', 'technology', 9, 'electrical_engineering', 'An toàn lao động trong lắp đặt mạng điện trong nhà', '# I. Các tai nạn điện thường gặp và nguyên nhân
+- **Tiếp xúc trực tiếp với vật mang điện:** Chạm tay vào dây dẫn trần, thiết bị rò rỉ điện ra vỏ kim loại do hỏng lớp cách điện.
+- **Vi phạm khoảng cách an toàn:** Đến quá gần đường dây cao thế gây phóng điện hồ quang qua không khí.
+- **Phóng điện do ẩm ướt:** Sử dụng thiết bị điện khi tay ướt hoặc trong môi trường có độ ẩm quá cao.
+
+# II. Các nguyên tắc an toàn khi lắp đặt và sửa chữa điện
+- **Trước khi làm việc:** Phải cắt nguồn điện (ngắt cầu dao, aptomat) và dùng bút thử điện kiểm tra lại xem còn điện hay không.
+- **Trong khi làm việc:** Sử dụng các dụng cụ bảo hộ lao động cách điện tiêu chuẩn (kìm cách điện, tuốc nơ vít có cán bọc nhựa, găng tay cao su cách điện, giày cao su).
+- **Biển báo hiệu:** Treo biển cảnh báo "Đang sửa chữa, cấm đóng điện" tại vị trí cầu dao nguồn.
+
+# III. Quy trình sơ cứu người bị tai nạn điện giật
+- **Bước 1:** Nhanh chóng tách nạn nhân ra khỏi nguồn điện bằng cách ngắt công tắc/cầu dao, hoặc dùng vật cách điện khô (gậy gỗ, tre) gạt dây điện ra khỏi người nạn nhân.
+- **Bước 2:** Đưa nạn nhân đến nơi thoáng mát, kiểm tra hô hấp và nhịp tim.
+- **Bước 3:** Thực hiện hô hấp nhân tạo và hà hơi thổi ngạt nếu nạn nhân ngừng thở, đồng thời gọi ngay cấp cứu y tế.', 'electrical', '["Khi lắp ổ cắm điện mới, thợ điện ngắt Aptomat tổng của tầng rồi dùng bút thử điện kiểm tra hai cực của ổ cũ trước khi tháo lắp.", "Người thợ đứng trên ghế gỗ khô ráo để lắp bóng đèn tuýp nhằm tăng tính cách điện với mặt đất."]'::jsonb, '["Sử dụng đúng cách bút thử điện để kiểm tra sự có mặt của dòng điện.", "Trình bày nhuần nhuyễn các bước xử lý tình huống khẩn cấp khi phát hiện người bị điện giật mà vẫn bảo vệ được an toàn cho bản thân."]'::jsonb, 5, true),\n  ('tec-9-2', 'technology', 9, 'electrical_engineering', 'Dụng cụ dùng trong lắp đặt mạng điện', '# I. Dụng cụ đo lường điện
+- **Vôn kế (Voltmeter):** Đo hiệu điện thế ($U$), mắc song song với mạch điện cần đo.
+- **Ampe kế (Ammeter):** Đo cường độ dòng điện ($I$), mắc nối tiếp với mạch điện.
+- **Oát kế (Wattmeter):** Đo công suất điện ($P$).
+- **Công tơ điện (Kwh meter):** Đo điện năng tiêu thụ của mạch điện.
+- **Vạn năng kế (Multimeter):** Tích hợp đo nhiều thông số như hiệu điện thế, cường độ dòng điện, điện trở ($R$).
+
+# II. Dụng cụ cơ khí cầm tay dùng trong lắp đặt điện
+- **Kìm điện (Kìm răng):** Dùng để cắt dây dẫn, tuốt vỏ cách điện và kẹp giữ dây khi nối.
+- **Kìm tuốt dây:** Chuyên dụng dùng để tách lớp vỏ cách điện mà không làm sứt mẻ lõi đồng bên trong.
+- **Tuốc nơ vít (Tua vít):** Dùng để vặn chặt hoặc nới lỏng các ốc vít tại các cực tiếp điện của thiết bị.
+- **Khoan cầm tay:** Khoan lỗ trên bảng điện, tường hoặc trần để bắt vít định vị thiết bị.', 'electrical', '["Sử dụng vạn năng kế vặn về thang đo điện trở Ohm để kiểm tra xem sợi dây cáp đồng có bị đứt ngầm hay không.", "Dùng kìm tuốt dây chuyên dụng để bóc vỏ cách điện của dây đôi mềm một cách nhanh chóng mà không làm đứt các sợi đồng nhỏ bên trong."]'::jsonb, '["Nhận biết và gọi tên chính xác các dụng cụ lắp đặt điện cơ bản dựa vào hình vẽ hoặc hiện vật thực tế.", "Thực hành thao tác tuốt dây dẫn điện đúng kỹ thuật, lõi dây phẳng nhẵn và không bị khía rạch."]'::jsonb, 5, true),\n  ('tec-9-3', 'technology', 9, 'electrical_engineering', 'Thiết bị bảo vệ và đóng cắt của mạng điện trong nhà', '# I. Thiết bị đóng cắt mạch điện
+- **Công tắc điện:** Dùng để đóng hoặc cắt mạch điện của thiết bị tiêu thụ (đèn, quạt). Công tắc luôn được mắc trên dây pha (dây nóng) trước thiết bị.
+- **Cầu dao:** Dùng để đóng cắt đồng thời cả dây pha và dây trung tính của mạng điện, thường lắp ở đầu nhánh mạch điện.
+
+# II. Thiết bị bảo vệ mạch điện
+- **Cầu chì:** Bảo vệ mạch điện khi xảy ra sự cố quá tải hoặc ngắn mạch (chập mạch). Dây chì sẽ nóng chảy và đứt trước khi dòng điện cực đại làm hỏng các thiết bị khác hoặc gây cháy nhà. Cầu chì luôn được mắc nối tiếp trên dây pha.
+- **Aptomat (Cầu dao tự động - CB):** Tích hợp cả chức năng đóng cắt bằng tay và tự động ngắt mạch bảo vệ khi có sự cố quá tải, ngắn mạch hoặc rò điện. Aptomat đang dần thay thế hoàn toàn cho cầu dao và cầu chì truyền thống nhờ tính tiện lợi và an toàn cao.', 'electrical', '["Khi dây pha bị chập trực tiếp vào dây trung tính, dòng điện tăng vọt khiến dây chì trong cầu chì bị nóng chảy tức thì, ngắt nguồn điện bảo vệ hệ thống.", "Lắp đặt Aptomat chống giật (RCCB) cho bình nóng lạnh để tự động ngắt dòng điện ngay lập tức khi phát hiện dòng rò nhỏ hơn hoặc bằng 30mA."]'::jsonb, '["Giải thích nguyên lý hoạt động của cầu chì dựa trên tác dụng nhiệt của dòng điện.", "Phân biệt sơ đồ lắp đặt công tắc và cầu chì trên dây pha (dây nóng) so với dây trung hòa (dây nguội) và giải thích tại sao không được lắp ngược lại."]'::jsonb, 6, true),\n  ('tec-9-4', 'technology', 9, 'electrical_engineering', 'Quy trình nối dây dẫn điện', '# I. Các loại mối nối dây dẫn điện
+- **Mối nối thẳng (Nối nối tiếp):** Dùng để kéo dài dây dẫn.
+- **Mối nối phân nhánh (Nối rẽ):** Dùng để trích dòng điện từ đường dây chính ra đường dây nhánh.
+- **Mối nối dùng phụ kiện (Hộp nối dây, đầu nối đầu cos):** Đảm bảo an toàn cao, dễ sửa chữa.
+
+# II. Quy trình công nghệ nối dây dẫn điện gồm 6 bước tiêu chuẩn
+- **Bước 1: Bóc vỏ cách điện.** Dùng kìm tuốt dây hoặc dao nhọn bóc lớp vỏ cách điện cắt vát góc 30-45 độ để tránh cắt vào lõi.
+- **Bước 2: Làm sạch lõi.** Dùng giấy ráp (giấy nhám) mài sạch lớp oxit bám trên bề mặt lõi kim loại đến khi sáng ánh kim để tiếp xúc điện tốt nhất.
+- **Bước 3: Nối dây.** Thực hiện quấn chặt các vòng dây khít nhau đối với dây lõi một sợi, hoặc đan xen xoắn chặt đối với dây lõi nhiều sợi.
+- **Bước 4: Kiểm tra mối nối.** Mối nối phải chắc chắn cơ học (kéo mạnh không tuột), tiếp xúc điện tốt, phẳng nhẵn không có đầu nhọn đâm ra ngoài.
+- **Bước 5: Hàn mối nối (Nếu cần).** Phủ thiếc hàn lên mối nối để chống oxy hóa tăng độ bền cơ và điện.
+- **Bước 6: Cách điện mối nối.** Quấn băng dính cách điện kín mối nối, quấn đè từ phần vỏ cách điện bên này sang phần vỏ cách điện bên kia.', 'electrical', '["Khi nối dây điện từ trục chính chạy dọc hành lang vào bóng đèn trong phòng, ta dùng mối nối phân nhánh hình chữ T.", "Quấn băng keo cách điện xung quanh mối nối chữ T bằng cách quấn nửa chồng nửa (vòng sau đè lên một nửa vòng trước) để bít kín toàn bộ lõi đồng lộ ra."]'::jsonb, '["Thực hiện thành thạo thao tác xoắn mối nối thẳng và mối nối phân nhánh đối với cả hai loại dây: dây lõi một sợi và dây lõi nhiều sợi.", "Đánh giá tính thẩm mỹ và độ an toàn kỹ thuật của mối nối tự làm dựa trên các tiêu chí độ bền lực và cách điện."]'::jsonb, 6, true),\n  ('tec-9-5', 'technology', 9, 'electrical_engineering', 'Thiết kế và Lắp đặt mạch điện bảng điện', '# I. Chức năng của bảng điện
+- Bảng điện là nơi tập trung các thiết bị đóng cắt, bảo vệ và lấy điện của mạng điện trong nhà.
+- **Phân loại:**
+  + *Bảng điện chính:* Chứa cầu dao tổng, aptomat tổng bảo vệ toàn bộ hệ thống điện căn nhà.
+  + *Bảng điện nhánh:* Chứa cầu chì, công tắc, ổ cắm cung cấp điện tới từng khu vực phòng hoặc thiết bị riêng biệt.
+
+# II. Quy trình vẽ sơ đồ mạch điện bảng điện
+- **Sơ đồ nguyên lý:** Biểu thị mối quan hệ điện giữa các phần tử trong mạch mà không phụ thuộc vào vị trí lắp đặt hình học của chúng.
+- **Sơ đồ lắp đặt (Sơ đồ vị trí):** Biểu thị chính xác vị trí lắp đặt thực tế của thiết bị và đường đi của dây dẫn trên bảng điện.
+- **Quy tắc nối dây:** Dây pha ($A$) đi qua cầu chì $\rightarrow$ công tắc $\rightarrow$ thiết bị tiêu thụ điện (đèn) $\rightarrow$ dây trung tính ($O$). Ổ cắm điện được đấu song song trực tiếp với nguồn điện (một cực nối dây pha sau cầu chì bảo vệ, một cực nối trực tiếp dây trung tính).
+
+# III. Quy trình lắp đặt bảng điện nhánh gồm 5 bước
+1. **Vạch dấu:** Xác định vị trí lắp các thiết bị trên bảng điện và đường đi dây dẫn.
+2. **Khoan lỗ:** Khoan lỗ luồn dây và lỗ bắt vít cố định thiết bị.
+3. **Lắp thiết bị vào bảng điện:** Gá lắp và bắt chặt các thiết bị lên bảng điện đúng vị trí vạch dấu.
+4. **Nối dây mạch điện:** Đi dây và đấu nối các cực của thiết bị theo sơ đồ lắp đặt.
+5. **Kiểm tra:** Đảm bảo mạch thông suốt, không chập mạch, vận hành thử bằng cách cấp nguồn kiểm tra hoạt động đóng cắt của công tắc và thiết bị.', 'electrical', '["Thiết kế bảng điện gồm 1 cầu chì bảo vệ chung, 1 ổ cắm luôn có điện và 1 công tắc điều khiển 1 bóng đèn sợi đốt.", "Sử dụng bảng điện bằng nhựa cách điện chống cháy để lắp đặt các thiết bị điện trong gia đình nhằm đảm bảo mỹ quan và độ bền."]'::jsonb, '["Vẽ thành thạo sơ đồ nguyên lý và sơ đồ lắp đặt của mạch điện bảng điện đơn giản.", "Thực hiện đấu nối dây trên bảng điện nhựa đúng kỹ thuật gọn gàng, không để lộ dây đồng trần tại các điểm bắt vít."]'::jsonb, 7, true),\n  ('tec-9-6', 'technology', 9, 'electrical_engineering', 'Mạch điện hai công tắc ba cực điều khiển một đèn (Mạch đèn cầu thang)', '# I. Cấu tạo của công tắc ba cực
+- Khác với công tắc hai cực (chỉ có 1 cực động, 1 cực tĩnh), công tắc ba cực có **1 cực chung (cực động - số 1)** và **2 cực tĩnh (số 2 và số 3)**.
+- Khi tác động gạt nút nhấn, cực chung chỉ có thể liên kết tiếp điện với một trong hai cực tĩnh cùng lúc.
+
+# II. Sơ đồ nguyên lý mạch điện cầu thang
+- **Mục đích:** Có thể bật hoặc tắt cùng một bóng đèn ở hai vị trí khác xa nhau (Ví dụ: đầu cầu thang tầng 1 và cuối cầu thang tầng 2, hoặc đầu giường và cửa ra vào phòng ngủ).
+- **Nguyên lý nối dây:**
+  + Dây pha ($A$) nối vào cực chung của công tắc 3 cực thứ nhất ($K_1$).
+  + Hai cực tĩnh của công tắc thứ nhất ($K_1$) được nối song song với hai cực tĩnh tương ứng của công tắc 3 cực thứ hai ($K_2$) bằng hai dây dẫn trung gian.
+  + Cực chung của công tắc thứ hai ($K_2$) nối vào một cực của bóng đèn.
+  + Cực còn lại của bóng đèn nối về dây trung tính ($O$).
+- **Nguyên lý hoạt động:** Khi cả hai công tắc cùng đóng vào đường dây trung gian phía trên hoặc cùng đóng vào đường dây trung gian phía dưới $\rightarrow$ mạch kín $\rightarrow$ đèn sáng. Khi một công tắc đóng lên trên, một công tắc đóng xuống dưới $\rightarrow$ mạch hở $\rightarrow$ đèn tắt.', 'electrical', '["Ứng dụng lắp mạch đèn cầu thang: khi đi từ tầng 1 lên bật đèn sáng, lên tới tầng 2 tắt đèn bằng công tắc đặt tại tầng 2.", "Sử dụng mạch điện này cho phòng ngủ lớn: bật đèn ở cửa chính khi vào phòng, lười dậy tắt đèn có thể tắt ngay bằng công tắc ở đầu giường."]'::jsonb, '["Phân biệt rõ sự khác nhau về cấu tạo mặt sau và ký hiệu sơ đồ của công tắc 2 cực và công tắc 3 cực.", "Vẽ sơ đồ lắp đặt mạch điện điều khiển một đèn từ hai nơi khác nhau và thực hành đấu nối dây chạy thực tế an toàn."]'::jsonb, 8, true)
+ON CONFLICT (id) DO UPDATE SET
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  topic = EXCLUDED.topic,
+  title = EXCLUDED.title,
+  theory = EXCLUDED.theory,
+  category = EXCLUDED.category,
+  examples = EXCLUDED.examples,
+  practice_points = EXCLUDED.practice_points,
+  difficulty = EXCLUDED.difficulty,
+  is_standard = EXCLUDED.is_standard;
+
+
+-- Seed Informatics grade 9 lessons
+INSERT INTO ge10_lessons (id, subject, grade_tier, topic, title, theory, category, examples, practice_points, difficulty, is_standard)
+VALUES 
+  ('ict-9-1', 'informatics', 9, 'networks_and_internet', 'Từ máy tính đơn lẻ đến mạng máy tính và Internet', '# I. Mạng máy tính là gì?
+- **Khái niệm:** Mạng máy tính là tập hợp các máy tính và thiết bị được kết nối với nhau theo một phương thức nào đó để truyền tải thông tin và chia sẻ dữ liệu, thiết bị.
+- **Thành phần của mạng:**
+  + **Thiết bị đầu cuối:** Máy tính, điện thoại, máy in, camera...
+  + **Môi trường truyền dẫn:** Dây dẫn (cáp đồng trục, cáp xoắn đôi, cáp quang) hoặc sóng điện từ (Wi-Fi, Bluetooth).
+  + **Thiết bị kết nối mạng:** Vỉ mạng (Network Card), Hub, Switch, Router (Bộ định tuyến), Modem.
+  + **Giao thức truyền thông (Protocol):** Tập hợp các quy tắc định dạng và truyền dữ liệu (ví dụ: TCP/IP).
+
+# II. Internet và các dịch vụ cơ bản
+- **Khái niệm Internet:** Là hệ thống thông tin toàn cầu được liên kết từ nhiều mạng máy tính khác nhau trên khắp thế giới sử dụng bộ giao thức TCP/IP.
+- **Các dịch vụ phổ biến:**
+  + **Tổ chức và khai thác thông tin:** Mạng thông tin toàn cầu WWW (World Wide Web) dựa trên các trang web và trình duyệt web.
+  + **Tìm kiếm thông tin:** Các máy tìm kiếm như Google, Bing...
+  + **Thư điện tử (E-mail):** Dịch vụ gửi và nhận thư qua mạng máy tính dưới dạng số hóa.
+  + **Hội thoại trực tuyến & Đám mây:** Chat, gọi video, lưu trữ dữ liệu trực tuyến (Google Drive, OneDrive).', 'networks', '["Văn phòng trường học kết nối các máy tính của giáo viên với một máy in dùng chung thông qua thiết bị Switch để tiết kiệm chi phí mua thiết bị.", "Sử dụng công cụ tìm kiếm Google với từ khóa chứa trong dấu ngoặc kép \"tài liệu Tin học 9\" để tìm chính xác cụm từ này trên các trang web."]'::jsonb, '["Phân biệt giữa mạng LAN (mạng cục bộ trong phạm vi nhỏ như phòng học, gia đình) và mạng WAN (mạng diện rộng kết nối quy mô tỉnh, quốc gia).", "Thực hành kỹ năng tìm kiếm nâng cao trên Internet bằng cách sử dụng các từ khóa logic (AND, OR, NOT) hoặc các toán tử lọc file (filetype:pdf, site:gov)."]'::jsonb, 5, true),\n  ('ict-9-2', 'informatics', 9, 'organization_and_storage', 'Tổ chức và khai thác thông tin trên Internet', '# I. Trang web, Website và Địa chỉ IP/Tên miền
+- **Trang web (Web page):** Là một siêu văn bản (hypertext) được gán một địa chỉ truy cập trên Internet, chứa văn bản, hình ảnh, âm thanh, video và các liên kết (hyperlink) đến các trang khác.
+- **Website:** Là một tập hợp các trang web liên quan được tổ chức dưới một địa chỉ truy cập chung gọi là tên miền (Domain Name).
+- **Trang chủ (Homepage):** Là trang đầu tiên xuất hiện khi ta truy cập vào một website.
+- **Trình duyệt web (Web Browser):** Là phần mềm ứng dụng giúp người dùng giao tiếp với hệ thống WWW để truy cập, hiển thị các trang web (ví dụ: Google Chrome, Microsoft Edge, Mozilla Firefox, Safari).
+
+# II. Thư điện tử (E-mail)
+- **Hệ thống thư điện tử:** Hoạt động tương tự như hệ thống bưu chính truyền thống nhưng việc truyền nhận thư được thực hiện hoàn toàn bằng phương thức điện tử thông qua mạng máy tính.
+- **Địa chỉ thư điện tử:** Có cấu trúc dạng `<Tên_đăng_nhập>@<Tên_miền_dịch_vụ_thư>`. Ví dụ: `hocsinh9@gmail.com`.
+  + *Ưu điểm:* Chi phí thấp, thời gian chuyển gần như tức thời, có thể gửi kèm tệp tin văn bản, hình ảnh, âm thanh.', 'networks', '["Địa chỉ website của Bộ Giáo dục và Đào tạo Việt Nam là `moet.gov.vn`. Khi gõ địa chỉ này vào thanh địa chỉ của trình duyệt Chrome, trang chủ của Bộ sẽ hiện ra.", "Đăng ký tài khoản Gmail miễn phí để gửi báo cáo bài tập thực hành Tin học cho giáo viên chủ bộ môn dưới dạng tệp đính kèm (Attachment)."]'::jsonb, '["Thực hành soạn thảo, gửi thư điện tử có đính kèm tệp tin và trả lời thư (Reply/Reply All) đúng quy cách xã giao công nghệ thông tin.", "Nhận biết và cảnh giác với các thư rác (Spam), thư lừa đảo (Phishing) chứa liên kết độc hại hoặc yêu cầu cung cấp thông tin cá nhân mật."]'::jsonb, 5, true),\n  ('ict-9-3', 'informatics', 9, 'ethics_and_society', 'Đạo đức, pháp luật và văn hóa trong môi trường số', '# I. Bản quyền và Sở hữu trí tuệ trong môi trường số
+- **Sản phẩm số:** Là các thông tin, tài liệu, phần mềm, tác phẩm nghệ thuật... được lưu trữ dưới dạng số hóa.
+- **Tôn trọng bản quyền:** Khi sử dụng thông tin từ Internet hoặc các nguồn số khác, phải trích nguồn rõ ràng, không được tự ý sao chép, phân phối hoặc chỉnh sửa các tác phẩm có bản quyền khi chưa được sự đồng ý của tác giả.
+- **Phần mềm lậu:** Việc bẻ khóa (crack) phần mềm hoặc sử dụng các bản sao không có bản quyền là vi phạm pháp luật nghiêm trọng và dễ rủi ro nhiễm mã độc.
+
+# II. Giao tiếp văn minh trên mạng xã hội
+- **Quy tắc ứng xử:** Sử dụng ngôn từ lịch sự, văn minh; không chia sẻ các thông tin sai sự thật, xúc phạm danh dự của người khác hoặc kích động bạo lực.
+- **Bảo mật thông tin cá nhân:** Không tự ý chia sẻ thông tin cá nhân nhạy cảm (số CCCD, mật khẩu, địa chỉ nhà, lịch trình sinh hoạt) lên mạng xã hội để tránh bị kẻ xấu lợi dụng lừa đảo hoặc tống tiền.', 'ethics', '["Sử dụng một hình ảnh tìm được trên mạng để làm slide thuyết trình lớp học bằng cách ghi nguồn tác giả ở góc dưới bức ảnh.", "Báo cáo (Report) các tài khoản giả mạo hoặc đăng tải nội dung bắt nạt, lăng mạ bạn học trên mạng xã hội thay vì tham gia bình luận hay chia sẻ lại."]'::jsonb, '["Phân biệt giữa các loại phần mềm: Phần mềm thương mại (Commercial), phần mềm chia sẻ (Shareware), phần mềm miễn phí (Freeware) và phần mềm nguồn mở (Open Source).", "Thảo luận về hậu quả pháp lý và xã hội của việc lan truyền thông tin giả (Fake news) trên mạng xã hội."]'::jsonb, 6, true),\n  ('ict-9-4', 'informatics', 9, 'presentation_software', 'Phần mềm trình chiếu cơ bản (PowerPoint)', '# I. Vai trò của phần mềm trình chiếu
+- Phần mềm trình chiếu dùng để tạo ra các bài trình chiếu dưới dạng điện tử phục vụ cho các cuộc họp, bài giảng, thuyết trình dự án...
+- **Trang chiếu (Slide):** Là vùng làm việc chính của bài trình chiếu. Một bài trình chiếu là tập hợp của nhiều trang chiếu được hiển thị nối tiếp nhau.
+
+# II. Các đối tượng trên trang chiếu
+- **Văn bản:** Đối tượng quan trọng nhất, thường được đặt trong các hộp văn bản (Text Box).
+- **Hình ảnh, Đồ họa:** Giúp minh họa trực quan sinh động cho nội dung.
+- **Âm thanh, Video:** Tăng tính tương tác và thu hút người xem.
+
+# III. Các hiệu ứng trong bài trình chiếu
+- **Hiệu ứng chuyển trang (Slide Transition):** Thay đổi cách thức xuất hiện của trang chiếu này thay thế trang chiếu kia.
+- **Hiệu ứng động cho đối tượng (Animation):** Cách thức xuất hiện hoặc chuyển động của từng văn bản, hình ảnh cụ thể trên trang chiếu.
+  + *Các nhóm hiệu ứng chính:* Entrance (Xuất hiện), Emphasis (Nhấn mạnh), Exit (Biến mất), Motion Paths (Di chuyển theo đường vẽ).', 'presentation', '["Thiết kế bài thuyết trình về chủ đề \"Bảo vệ môi trường học đường\" gồm 5 trang chiếu phối hợp hài hòa giữa chữ viết và hình ảnh thực tế.", "Áp dụng hiệu ứng \"Fade\" cho các hộp văn bản xuất hiện lần lượt khi người nói bấm chuột để người nghe tập trung vào từng luận điểm."]'::jsonb, '["Thiết kế bố cục slide theo nguyên tắc 6x6 (không quá 6 dòng trên 1 slide, không quá 6 từ trên một dòng) để slide thoáng và dễ đọc.", "Thực hành chèn hình ảnh, căn lề và áp dụng hiệu ứng chuyển slide một cách tinh tế, tránh lạm dụng quá nhiều hiệu ứng gây rối mắt."]'::jsonb, 6, true),\n  ('ict-9-5', 'informatics', 9, 'problem_solving', 'Giải quyết vấn đề với sự trợ giúp của máy tính và thuật toán', '# I. Bài toán và Thuật toán
+- **Bài toán:** Là một nhiệm vụ cần thực hiện từ những thông tin đầu vào (Input) cho trước để thu được kết quả đầu ra (Output) mong muốn.
+- **Thuật toán (Algorithm):** Là một dãy các chỉ dẫn rõ ràng, hữu hạn, được sắp xếp theo một trình tự xác định nhằm giải quyết một bài toán cụ thể.
+- **Các cách mô tả thuật toán:**
+  + Sử dụng ngôn ngữ tự nhiên.
+  + Sử dụng sơ đồ khối (Flowchart).
+  + Sử dụng mã giả (Pseudocode).
+
+# II. Các cấu trúc điều khiển cơ bản trong thuật toán
+- **Cấu trúc tuần tự:** Các bước được thực hiện lần lượt từ trên xuống dưới.
+- **Cấu trúc rẽ nhánh (Điều kiện):** Kiểm tra một điều kiện, nếu ĐÚNG thì thực hiện việc này, nếu SAI thì thực hiện việc kia (hoặc bỏ qua).
+- **Cấu trúc lặp:** Thực hiện lặp đi lặp lại một nhóm công việc cho đến khi thỏa mãn một điều kiện dừng nào đó.', 'programming', '["Thuật toán tìm số lớn nhất trong hai số a và b: Nhận vào hai số a, b (Input). Nếu a > b thì kết quả là a, ngược lại kết quả là b. Đưa kết quả ra màn hình (Output).", "Sơ đồ khối của thuật toán tính điểm trung bình học kỳ sử dụng các hình oval để bắt đầu/kết thúc, hình chữ nhật cho bước tính toán, hình thoi cho bước so sánh xét điều kiện đạt hay không đạt."]'::jsonb, '["Vẽ sơ đồ khối mô tả thuật toán giải phương trình bậc nhất $ax + b = 0$.", "Phân tích thuật toán lặp để tính tổng các số tự nhiên liên tiếp từ 1 đến $N$ và xác định điều kiện dừng của vòng lặp."]'::jsonb, 7, true),\n  ('ict-9-6', 'informatics', 9, 'programming_scratch', 'Lập trình trực quan cơ bản (Scratch)', '# I. Làm quen với môi trường lập trình trực quan Scratch
+- **Khái niệm:** Scratch là một ngôn ngữ lập trình trực quan, thay vì viết các mã lệnh phức tạp bằng văn bản, người dùng sẽ kéo và ghép các khối lệnh (blocks) giống như trò chơi xếp hình để tạo ra chương trình.
+- **Các thành phần giao diện chính:**
+  + **Sân khấu (Stage):** Nơi hiển thị kết quả hoạt động của chương trình và các nhân vật.
+  + **Nhân vật (Sprite):** Các đối tượng thực hiện hành động trong chương trình.
+  + **Khu vực nhóm lệnh:** Nơi chứa các khối lệnh được phân loại theo màu sắc và chức năng (Motion, Looks, Sound, Control, Sensing...).
+  + **Khu vực viết kịch bản (Script Area):** Nơi kéo thả và lắp ráp các khối lệnh để lập trình cho nhân vật.
+
+# II. Xây dựng kịch bản chương trình đơn giản
+- **Sử dụng khối sự kiện (Events):** Khởi chạy chương trình (ví dụ: "Khi bấm vào lá cờ xanh").
+- **Sử dụng cấu trúc lặp (Control):** Khối lệnh `repeat` (lặp số lần cố định) hoặc `forever` (lặp vô hạn).
+- **Sử dụng biến số (Variables):** Để lưu trữ các giá trị dữ liệu có thể thay đổi trong quá trình chạy chương trình (như điểm số, thời gian, số lần đếm).', 'programming', '["Tạo kịch bản cho chú mèo Scratch di chuyển 10 bước, nếu chạm vào cạnh sân khấu thì bật lại và đổi hướng di chuyển.", "Thiết kế chương trình trò chơi \"Hứng táo\": Trái táo rơi ngẫu nhiên từ trên xuống, người chơi dùng phím mũi tên điều khiển chiếc bát hứng táo, mỗi lần hứng trúng biến ''Điểm'' tăng lên 1 đơn vị."]'::jsonb, '["Sử dụng nhóm lệnh cảm biến (Sensing) kết hợp cấu trúc điều khiển `if... then` để nhân vật phản ứng khi chạm vào một màu sắc hoặc nhân vật khác.", "Thực hành tạo một biến số có tên là `Score` và lập trình tăng/giảm điểm tương ứng với các sự kiện trong kịch bản game tự thiết kế."]'::jsonb, 7, true)
+ON CONFLICT (id) DO UPDATE SET
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  topic = EXCLUDED.topic,
+  title = EXCLUDED.title,
+  theory = EXCLUDED.theory,
+  category = EXCLUDED.category,
+  examples = EXCLUDED.examples,
+  practice_points = EXCLUDED.practice_points,
+  difficulty = EXCLUDED.difficulty,
+  is_standard = EXCLUDED.is_standard;
+
+
+-- Seed Art grade 9 lessons
+INSERT INTO ge10_lessons (id, subject, grade_tier, topic, title, theory, category, examples, practice_points, difficulty, is_standard)
+VALUES 
+  ('art-9-1', 'art', 9, 'music_theory', 'Lý thuyết âm nhạc: Giọng song song, Giọng cùng tên và Quãng dịch', '# I. Giọng song song (Relative Keys)
+- **Khái niệm:** Là một cặp giọng (gồm một giọng Trưởng và một giọng Thứ) có chung hóa biểu (cùng số lượng dấu thăng hoặc dấu giáng ở đầu khuông nhạc) nhưng khác nhau về âm chủ (chủ âm).
+- **Quy luật:** Âm chủ của giọng Thứ song song luôn nằm dưới âm chủ của giọng Trưởng song song một quãng 3 thứ (tương đương 1,5 cung).
+- **Ví dụ:** Giọng Đô Trưởng (C major) và giọng La thứ (A minor) là hai giọng song song vì đều không có dấu hóa nào ở hóa biểu.
+
+# II. Giọng cùng tên (Parallel Keys)
+- **Khái niệm:** Là một cặp giọng (gồm một giọng Trưởng và một giọng Thứ) có cùng một âm chủ nhưng khác nhau về hóa biểu.
+- **Ví dụ:** Giọng Đô Trưởng (C major - không có dấu hóa) và giọng Đô thứ (C minor - có 3 dấu giáng: Si giáng, Mi giáng, La giáng).
+
+# III. Quãng dịch giọng (Transposition)
+- **Khái niệm:** Là việc chuyển dịch toàn bộ một bản nhạc (gồm giai điệu và hợp âm) từ giọng này sang giọng khác cao hơn hoặc thấp hơn một quãng nhất định, nhằm phù hợp với tầm giọng của người hát hoặc âm vực của nhạc cụ mà không làm thay đổi cấu trúc giai điệu.', 'music', '["Xác định giọng song song của giọng Sol Trưởng (G major - có 1 dấu thăng F#) là giọng Mi thứ (E minor - cũng có 1 dấu thăng F#).", "Dịch giọng một bài hát viết ở tông La thứ (Am) lên tông Si thứ (Bm) bằng cách nâng tất cả các nốt nhạc trong bài lên một quãng 2 trưởng (1 cung) để phù hợp với giọng ca sĩ nam."]'::jsonb, '["Thực hành tìm giọng Thứ song song của các giọng Trưởng quen thuộc (ví dụ: F major -> D minor, D major -> B minor).", "Tập viết lại một đoạn giai điệu ngắn 4 ô nhịp từ giọng Đô Trưởng sang giọng Sol Trưởng đúng cao độ quãng dịch."]'::jsonb, 6, true),\n  ('art-9-2', 'art', 9, 'music_appreciation', 'Thường thức âm nhạc: Lịch sử âm nhạc phương Tây và Nhạc sĩ thiên tài', '# I. Sơ lược về các thời kỳ âm nhạc phương Tây đại chúng
+- **Thời kỳ Cổ điển (Classical Period - khoảng 1750-1820):** Đề cao tính cân bằng, cấu trúc rõ ràng, sự hài hòa và tinh tế. Nhạc cụ phát triển mạnh mẽ, đặc biệt là đàn Piano và dàn nhạc giao hưởng.
+- **Thời kỳ Lãng mạn (Romantic Period - khoảng 1800-1910):** Chú trọng biểu hiện cảm xúc cá nhân sâu sắc, tự do hơn về mặt cấu trúc và sử dụng nhiều hòa âm phong phú, kịch tính.
+
+# II. Cuộc đời và sự nghiệp của Ludwig van Beethoven (1770 - 1827)
+- **Tiểu sử:** Nhà soạn nhạc vĩ đại người Đức, cầu nối giữa thời kỳ âm nhạc Cổ điển và Lãng mạn. Dù bị điếc hoàn toàn ở giai đoạn cuối đời, ông vẫn sáng tạo ra những kiệt tác bất hủ.
+- **Tác phẩm tiêu biểu:** Bản giao hưởng số 5 (Giao hưởng Định mệnh), Bản giao hưởng số 9 (với chương "Ca ngợi niềm vui"), các bản sonata viết cho piano như "Ánh trăng" (Moonlight Sonata), "Thư gửi Elise" (Für Elise).
+- **Ý nghĩa:** Âm nhạc của Beethoven tràn đầy tinh thần đấu tranh, khát vọng tự do và niềm tin mãnh liệt vào con người vượt lên số phận nghiệt ngã.', 'music', '["Nghe giai điệu mở đầu đầy kịch tính của Bản giao hưởng số 5 (Beethoven) để cảm nhận chủ đề \"số phận gõ cửa\".", "Phân tích sự khác biệt về mặt cảm xúc giữa âm nhạc mực thước của Mozart (thời Cổ điển) và âm nhạc bùng nổ, giàu nội tâm của Chopin (thời Lãng mạn)."]'::jsonb, '["Nhận biết được giai điệu của ít nhất 3 tác phẩm kinh niên của Beethoven khi nghe nhạc trực quan.", "Thuyết trình ngắn về tinh thần vượt khó của Beethoven thông qua câu chuyện ông viết Bản giao hưởng số 9 khi tai đã điếc hoàn toàn."]'::jsonb, 5, true),\n  ('art-9-3', 'art', 9, 'fine_arts_history', 'Mỹ thuật: Tìm hiểu trào lưu nghệ thuật Ấn tượng và Hậu ấn tượng phương Tây', '# I. Trường phái Ấn tượng (Impressionism)
+- **Thời gian và bối cảnh:** Ra đời tại Pháp vào cuối thế kỷ XIX (khoảng những năm 1860-1870), phản ứng lại quy chuẩn gò bó của hội họa hàn lâm viện.
+- **Đặc điểm nghệ thuật:**
+  + Đề cao việc nắm bắt khoảnh khắc, ánh sáng và màu sắc tức thời của thiên nhiên.
+  + Nét bút nhanh, mạnh, không chú trọng vẽ chi tiết hay đường viền sắc nét.
+  + Sử dụng màu sắc nguyên bản, đặt cạnh nhau trên toan để mắt người xem tự hòa trộn trực quan.
+- **Tác giả tiêu biểu:** Claude Monet (bức tranh khởi nguồn "Ấn tượng mặt trời mọc"), Pierre-Auguste Renoir, Edgar Degas.
+
+# II. Trường phái Hậu ấn tượng (Post-Impressionism)
+- **Đặc điểm nghệ thuật:** Phát triển tiếp nối sau trường phái Ấn tượng nhưng chuyển hướng đi sâu vào biểu hiện cảm xúc cá nhân, cấu trúc hình khối và biểu tượng thay vì chỉ mô tả ánh sáng tự nhiên.
+- **Tác giả tiêu biểu:** Vincent van Gogh (bức "Đêm đầy sao", "Hoa hướng dương"), Paul Cézanne (cha đẻ của cấu trúc hội họa hiện đại), Paul Gauguin.', 'art', '["Claude Monet vẽ cùng một đống rơm hoặc mặt tiền nhà thờ vào các thời điểm khác nhau trong ngày (sáng, trưa, chiều) để nghiên cứu sự thay đổi màu sắc của ánh sáng.", "Vincent van Gogh sử dụng những nét cọ xoắn ốc mạnh mẽ, dày màu (kỹ thuật impasto) trong bức vẽ \"Đêm đầy sao\" để bộc lộ thế giới nội tâm mãnh liệt của mình."]'::jsonb, '["Phân biệt được điểm khác nhau cơ bản giữa tranh Ấn tượng (ghi lại khoảnh khắc thị giác) và tranh Hậu ấn tượng (bộc lộ cảm xúc nội tâm sâu sắc).", "Sưu tầm hình ảnh các bức tranh tiêu biểu của Monet và Van Gogh để làm bài thu hoạch phân tích bố cục, màu sắc."]'::jsonb, 6, true),\n  ('art-9-4', 'art', 9, 'fine_arts_practice', 'Mỹ thuật: Thiết kế đồ họa - Tạo dáng và Trang trí sản phẩm thời trang, bao bì', '# I. Tạo dáng và Trang trí sản phẩm thời trang
+- **Quy trình thiết kế:**
+  + **Xác định công năng:** Sản phẩm dành cho đối tượng nào? (Trẻ em, người lớn, đi học, đi chơi, đi dạ hội...). Công năng quyết định kiểu dáng.
+  + **Phác thảo dáng:** Tạo hình dáng bên ngoài của sản phẩm (ví dụ: túi xách, áo thun, giày thể thao) đảm bảo sự cân đối, tiện dụng.
+  + **Trang trí:** Sử dụng họa tiết (đối xứng, lặp lại, tự do) kết hợp với màu sắc hài hòa để làm nổi bật vẻ đẹp của sản phẩm.
+
+# II. Thiết kế bao bì sản phẩm (Packaging Design)
+- **Vai trò của bao bì:** Bảo vệ sản phẩm bên trong, cung cấp thông tin cần thiết (tên, thành phần, hạn sử dụng) và thu hút khách hàng thông qua nhận diện thương hiệu trực quan.
+- **Yêu cầu kỹ thuật và thẩm mỹ:**
+  + Kiểu dáng bao bì phải dễ đóng mở, dễ vận chuyển.
+  + Chữ viết trên bao bì (Typography) phải rõ ràng, dễ đọc.
+  + Màu sắc, hình ảnh minh họa phải đồng bộ với thông điệp của sản phẩm.', 'art', '["Thiết kế một mẫu túi xách thân thiện với môi trường làm từ chất liệu vải bố có in họa tiết hoa lá cách điệu tối giản.", "Thiết kế vỏ hộp đựng bánh trung thu sử dụng tông màu đỏ và vàng kim ấm áp, kết hợp hình ảnh vầng trăng tròn và thỏ ngọc mang nét văn hóa truyền thống."]'::jsonb, '["Vẽ phác thảo tạo dáng và trang trí một chiếc áo phông (T-shirt) tự chọn họa tiết biểu trưng cho lứa tuổi học trò lớp 9.", "Thực hành triển khai bản vẽ trải phẳng (bản vẽ kỹ thuật mở phẳng các mặt) của một chiếc hộp giấy hình lập phương hoặc hình hộp chữ nhật."]'::jsonb, 7, true),\n  ('art-9-5', 'art', 9, 'fine_arts_practice', 'Mỹ thuật: Thiết kế công nghiệp - Tạo hình đồ chơi, vật dụng từ vật liệu tái chế', '# I. Ý nghĩa của việc thiết kế từ vật liệu tái chế
+- **Bảo vệ môi trường:** Tái sử dụng rác thải nhựa, giấy vụn, vỏ lon để giảm thiểu chất thải ra thiên nhiên.
+- **Kích thích tư duy sáng tạo:** Học cách nhìn nhận giá trị thẩm mỹ mới từ những đồ dùng đã qua sử dụng.
+
+# II. Quy trình thiết kế sản phẩm mỹ thuật ứng dụng
+- **Bước 1: Lên ý tưởng và chuẩn bị nguyên liệu.** Thu gom các vật liệu sạch như vỏ chai nhựa, lõi cuộn giấy, bìa carton, nắp chai, dây len...
+- **Bước 2: Tạo hình khối cơ bản.** Liên kết các vật liệu bằng keo nến, băng dính hai mặt để tạo nên khung xương, kết cấu vững chắc của sản phẩm.
+- **Bước 3: Hoàn thiện bề mặt.** Dùng màu acrylic, giấy màu hoặc màu nước phủ lên bề mặt sản phẩm để che đi các vết nối bẩn và định hình tông màu chủ đạo.
+- **Bước 4: Trang trí chi tiết.** Thêm các họa tiết nhỏ, phụ kiện trang trí để sản phẩm sinh động và bắt mắt hơn.', 'art', '["Biến những chiếc chai nhựa Coca-Cola cũ thành những chậu trồng cây hình thù các con vật ngộ nghĩnh (mèo, gấu) và sơn màu acrylic phủ bên ngoài.", "Sử dụng các lõi giấy vệ sinh ghép lại để làm thành một chiếc ống cắm bút nhiều ngăn đa năng đặt trên bàn học."]'::jsonb, '["Tự lên phương án thiết kế và thực hiện chế tạo một mô hình phương tiện giao thông (ô tô, tàu hỏa, máy bay) từ vỏ hộp sữa và nắp chai nhựa.", "Đánh giá sản phẩm dựa trên 3 tiêu chí: Tính sáng tạo độc đáo, Tính thẩm mỹ hoàn thiện và Tính ứng dụng thực tế."]'::jsonb, 7, true)
+ON CONFLICT (id) DO UPDATE SET
+  subject = EXCLUDED.subject,
+  grade_tier = EXCLUDED.grade_tier,
+  topic = EXCLUDED.topic,
+  title = EXCLUDED.title,
+  theory = EXCLUDED.theory,
+  category = EXCLUDED.category,
+  examples = EXCLUDED.examples,
+  practice_points = EXCLUDED.practice_points,
+  difficulty = EXCLUDED.difficulty,
+  is_standard = EXCLUDED.is_standard;
+
 COMMIT;

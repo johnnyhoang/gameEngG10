@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { SideDrawer } from '../../Common/SideDrawer';
 import type { GradeTier, Question, SubjectId } from '../../../types/game';
 import { SUBJECTS_CONFIG } from '../../../types/game';
@@ -14,6 +15,10 @@ interface QuestionFormModalProps {
   gradeTier: GradeTier;
   addQuestion: (question: Partial<Question>) => Promise<boolean>;
   updateQuestion: (id: string, question: Partial<Question>) => Promise<boolean>;
+  /** Vị trí câu đang sửa trong danh sách đã lọc (1-based) — null khi không xác định được */
+  navPosition?: { current: number; total: number } | null;
+  /** Chuyển sang câu trước (-1) / câu sau (+1) trong danh sách */
+  onNavigate?: (direction: -1 | 1) => void;
 }
 
 const QUESTION_TYPE_LABELS: Record<string, string> = {
@@ -38,7 +43,9 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
   selectedSect,
   gradeTier,
   addQuestion,
-  updateQuestion
+  updateQuestion,
+  navPosition,
+  onNavigate
 }) => {
   const [editType, setEditType] = useState<Question['type']>('mcq');
   const [editPrompt, setEditPrompt] = useState('');
@@ -86,6 +93,16 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
 
   if (!isOpen) return null;
 
+  // Sau khi lưu ở chế độ chỉnh sửa: giữ drawer mở và chuyển sang câu kế tiếp trong danh sách;
+  // đang ở câu cuối (hoặc không có danh sách) thì mới đóng.
+  const advanceAfterSave = () => {
+    if (onNavigate && navPosition && navPosition.current < navPosition.total) {
+      onNavigate(1);
+    } else {
+      onClose();
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent, forceStandard = false) => {
     e.preventDefault();
     if (!editPrompt.trim()) {
@@ -125,8 +142,8 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
     } else if (editingQuestion) {
       const ok = await updateQuestion(editingQuestion.id, payload);
       if (ok) {
-        toast.success('Đã lưu thay đổi câu hỏi thành công!');
-        onClose();
+        toast.success(forceStandard ? 'Đã lưu và đánh dấu Đạt Chuẩn thành công! 🏆' : 'Đã lưu thay đổi câu hỏi thành công!');
+        advanceAfterSave();
       }
     }
     setIsSaving(false);
@@ -162,7 +179,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
     const ok = await updateQuestion(editingQuestion.id, payload);
     if (ok) {
       toast.success('Đã hủy trạng thái Đạt Chuẩn câu hỏi thành công! ❌');
-      onClose();
+      advanceAfterSave();
     }
     setIsSaving(false);
   };
@@ -180,6 +197,30 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
       }
     >
       <form onSubmit={(e) => handleSubmit(e)} className="p-5 space-y-4 text-xs text-left">
+          {editingQuestion && (
+            <div className="flex items-center justify-between gap-2 p-2 rounded-xl border border-white/10 bg-white/5">
+              <button
+                type="button"
+                disabled={isSaving || !navPosition || navPosition.current <= 1}
+                onClick={() => onNavigate?.(-1)}
+                className="px-3 py-1.5 rounded-lg border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer uppercase font-orbitron font-bold text-[10px] tracking-wider flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" /> Câu trước
+              </button>
+              <span className="text-[10px] font-orbitron font-bold text-slate-300 uppercase tracking-wider">
+                {navPosition ? `Câu ${navPosition.current}/${navPosition.total}` : 'Ngoài danh sách lọc'}
+              </span>
+              <button
+                type="button"
+                disabled={isSaving || !navPosition || navPosition.current >= navPosition.total}
+                onClick={() => onNavigate?.(1)}
+                className="px-3 py-1.5 rounded-lg border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer uppercase font-orbitron font-bold text-[10px] tracking-wider flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Câu sau <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
           {editingQuestion && (
             <div className="p-3.5 rounded-xl border border-synth-cyan/20 bg-synth-cyan/5 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
               <div>
@@ -336,7 +377,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
               onClick={onClose}
               className="px-4 py-2 border border-white/10 rounded-lg text-slate-300 hover:bg-white/5 transition-colors cursor-pointer uppercase font-orbitron font-bold text-[10px] tracking-wider"
             >
-              Hủy bỏ
+              {isAddingNew ? 'Hủy bỏ' : '✕ Đóng'}
             </button>
             <div className="flex gap-2">
               <button

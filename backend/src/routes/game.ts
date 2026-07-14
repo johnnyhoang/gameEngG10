@@ -42,6 +42,16 @@ const cleanAnswer = (str: string) => {
     .replace(/[₂]/g, '2');
 };
 
+// Fisher-Yates shuffle algorithm (uniform distribution)
+function shuffle<T>(array: T[]): T[] {
+  const arr = [...array];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 // POST /api/game/session/start
 router.post('/game/session/start', async (req: any, res) => {
   const { profileId, sessionType, subject, gradeTier, bossId, lessonId, failedQuestionIds = [] } = req.body;
@@ -53,13 +63,16 @@ router.post('/game/session/start', async (req: any, res) => {
   try {
     if (profileId !== req.profile.id) return res.status(403).json({ error: 'Profile ID does not match active profile.' });
 
-    // Load custom/system questions
+    // Load custom/system questions with student attempts count
     const qRes = await pool.query(
-      `SELECT * FROM ge10_custom_questions 
-       WHERE (user_id = $1 
-          OR user_id IS NULL 
-          OR user_id IN (SELECT id FROM ge10_users WHERE role IN ('truong_vien', 'pho_vien')))
-         AND subject = $2 AND grade_tier = $3`,
+      `SELECT q.*, COALESCE(p.times_attempted, 0) as student_attempts
+       FROM ge10_custom_questions q
+       LEFT JOIN ge10_student_question_performance p 
+         ON q.id = p.question_id AND p.student_id = $1
+       WHERE (q.user_id = $1 
+          OR q.user_id IS NULL 
+          OR q.user_id IN (SELECT id FROM ge10_users WHERE role IN ('truong_vien', 'pho_vien')))
+         AND q.subject = $2 AND q.grade_tier = $3`,
       [profileId, subject, gradeTier]
     );
 
@@ -78,11 +91,27 @@ router.post('/game/session/start', async (req: any, res) => {
       imageUrl: row.image_url,
       metadata: row.metadata || undefined,
       isConfused: row.is_confused,
-      gradeTier: row.grade_tier
+      gradeTier: row.grade_tier,
+      attempts: Number(row.student_attempts) || 0
     }));
 
     let poolSelected: typeof questions = [];
     const count = sessionType === 'boss' ? 5 : sessionType === 'survival' ? 15 : 10;
+
+    // Exclude top 30% most attempted questions by the student if candidate pool is large enough
+    let filteredQuestions = [...questions];
+    const totalQuestions = questions.length;
+    const maxExclude = Math.floor(totalQuestions * 0.3);
+
+    if (maxExclude > 0 && (totalQuestions - maxExclude) >= count) {
+      const sortedByAttempts = [...questions].sort((a, b) => b.attempts - a.attempts);
+      const thresholdAttempts = sortedByAttempts[maxExclude - 1].attempts;
+      
+      if (thresholdAttempts > 0) {
+        const excludedIds = new Set(sortedByAttempts.slice(0, maxExclude).map(q => q.id));
+        filteredQuestions = questions.filter(q => !excludedIds.has(q.id));
+      }
+    }
 
     if (sessionType === 'boss') {
       const bossTag = bossId === 'b-2024' ? '2024'
@@ -91,24 +120,54 @@ router.post('/game/session/start', async (req: any, res) => {
         : bossId === 'b-hk1' ? 'HK1'
         : bossId === 'b-hk2' ? 'HK2'
         : '2026';
-      const examPool = questions.filter(q => q.source.includes(bossTag));
-      const fullExamPool = examPool.length > 0 ? examPool : questions;
-      const examSample = fullExamPool.length > 20
-        ? [...fullExamPool].sort(() => Math.random() - 0.5).slice(0, 20)
-        : fullExamPool;
-      poolSelected = [...examSample].sort(() => Math.random() - 0.5).slice(0, count);
+      const examPool = filteredQuestions.filter(q => q.source.includes(bossTag));
+      const fullExamPool = examPool.length > 0 ? examPool : filteredQuestions;
+      
+      // Group by attempts, shuffle within groups, concatenate
+      const attemptsGroups: { [key: number]: typeof questions } = {};
+      for (const q of fullExamPool) {
+        const att = q.attempts;
+        if (!attemptsGroups[att]) {
+          attemptsGroups[att] = [];
+        }
+        attemptsGroups[att].push(q);
+      }
+      
+      const sortedAttempts = Object.keys(attemptsGroups).map(Number).sort((a, b) => a - b);
+      let smartSortedPool: typeof questions = [];
+      for (const att of sortedAttempts) {
+        smartSortedPool = [...smartSortedPool, ...shuffle(attemptsGroups[att])];
+      }
+      
+      poolSelected = smartSortedPool.slice(0, count);
     } else if (sessionType === 'revenge') {
-      poolSelected = questions.filter(q => failedQuestionIds.includes(q.id));
+      poolSelected = shuffle(questions.filter(q => failedQuestionIds.includes(q.id)));
     } else if (sessionType === 'lesson') {
-      poolSelected = questions.filter(q => q.metadata?.lessonId === lessonId || q.category === lessonId); // fallback
-      poolSelected = poolSelected.slice(0, 3);
+      let lessonPool = questions.filter(q => q.metadata?.lessonId === lessonId || q.category === lessonId);
+      lessonPool = shuffle(lessonPool);
+      poolSelected = lessonPool.slice(0, 3);
       if (poolSelected.length < 3) {
-        const extra = questions.filter(q => !poolSelected.some(p => p.id === q.id));
+        const extra = shuffle(questions.filter(q => !poolSelected.some(p => p.id === q.id)));
         poolSelected = [...poolSelected, ...extra].slice(0, 3);
       }
     } else {
-      // Practice / Normal: randomize and pick count
-      poolSelected = [...questions].sort(() => Math.random() - 0.5).slice(0, count);
+      // Practice / Normal / Survival: group by attempts, shuffle within groups, concatenate
+      const attemptsGroups: { [key: number]: typeof questions } = {};
+      for (const q of filteredQuestions) {
+        const att = q.attempts;
+        if (!attemptsGroups[att]) {
+          attemptsGroups[att] = [];
+        }
+        attemptsGroups[att].push(q);
+      }
+      
+      const sortedAttempts = Object.keys(attemptsGroups).map(Number).sort((a, b) => a - b);
+      let smartSortedPool: typeof questions = [];
+      for (const att of sortedAttempts) {
+        smartSortedPool = [...smartSortedPool, ...shuffle(attemptsGroups[att])];
+      }
+      
+      poolSelected = smartSortedPool.slice(0, count);
     }
 
     const sessionId = crypto.randomUUID();

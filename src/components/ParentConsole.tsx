@@ -376,33 +376,68 @@ export const ParentConsole: React.FC = () => {
                       👥 Danh sách Học Sinh liên kết
                     </h4>
                   </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {classLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).map((link: any) => (
-                      <div key={link.student_id} className="p-4 rounded-xl bg-synth-gray/20 border border-white/5 flex flex-col justify-between gap-3 hover:border-synth-cyan/40 transition-colors">
-                        <div>
-                          <div className="flex flex-wrap items-center gap-2 mb-1">
-                            <span className="font-bold text-white text-sm block">{link.student_name || link.student_email || 'Học sinh'}</span>
-                            {link.link_type === 'primary' ? (
-                              <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded bg-synth-cyan/20 border border-synth-cyan/40 text-synth-cyan" title="Bạn là Chủ Nhiệm Chính của lớp này">
-                                Chủ Nhiệm Chính
-                              </span>
-                            ) : (
-                              <span className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta" title="Bạn là Chủ nhiệm phụ hỗ trợ lớp này">
-                                Chủ nhiệm phụ
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-[10px] text-synth-text-muted">{link.student_email}</span>
-                        </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    {classLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).map((link: any) => {
+                      const student = adminStudents.find((s: any) => s.id === link.student_id);
+                      return (
                         <button
+                          key={link.student_id}
                           disabled={inspectLoading}
                           onClick={() => handleInspectStudent(link.student_id)}
-                          className="px-3 py-2 bg-synth-cyan text-black font-bold font-orbitron text-[10px] uppercase rounded-lg hover:synth-glow-cyan transition-all cursor-pointer w-full text-center disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Bấm để xem hoạt động, tiến độ và báo cáo của học sinh"
+                          className="text-left p-3.5 rounded-xl bg-synth-gray/20 border border-white/5 hover:border-synth-cyan/40 hover:bg-white/[0.06] transition-all cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                          {inspectLoading ? 'Đang tải...' : 'Xem Hoạt Động 👑'}
+                          {/* Hàng 1: avatar + tên + email + chevron */}
+                          <div className="flex items-center gap-3">
+                            {student?.avatar_url ? (
+                              <img src={student.avatar_url} alt="" className="w-10 h-10 rounded-full border border-white/10 object-cover shrink-0" />
+                            ) : (
+                              <span className="w-10 h-10 rounded-full bg-synth-purple/25 border border-white/10 flex items-center justify-center text-sm font-black text-white shrink-0">
+                                {(link.student_name || link.student_email || '?').trim().charAt(0).toUpperCase()}
+                              </span>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-bold text-white text-sm truncate">{link.student_name || link.student_email || 'Học sinh'}</span>
+                                <span
+                                  className={`px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded shrink-0 ${
+                                    link.link_type === 'primary'
+                                      ? 'bg-synth-cyan/20 border border-synth-cyan/40 text-synth-cyan'
+                                      : 'bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta'
+                                  }`}
+                                  title={link.link_type === 'primary' ? 'Bạn là Chủ Nhiệm Chính của lớp này' : 'Bạn là Chủ nhiệm phụ hỗ trợ lớp này'}
+                                >
+                                  {link.link_type === 'primary' ? 'CN Chính' : 'CN Phụ'}
+                                </span>
+                              </div>
+                              <span className="text-[10px] text-synth-text-muted truncate block">{link.student_email}</span>
+                            </div>
+                            <span className="text-lg text-slate-500 group-hover:text-synth-cyan group-hover:translate-x-0.5 transition-all shrink-0 font-bold">
+                              {inspectLoading ? '…' : '›'}
+                            </span>
+                          </div>
+
+                          {/* Hàng 2: chỉ số nhanh của học sinh */}
+                          <div className="flex items-center gap-1.5 mt-3 flex-wrap">
+                            <span className="px-1.5 py-0.5 rounded bg-synth-purple/15 border border-synth-purple/30 text-[9px] font-bold font-orbitron text-white">
+                              👑 LV.{student?.level ?? 1}
+                            </span>
+                            <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold font-orbitron text-slate-300">
+                              {student?.xp ?? 0} XP
+                            </span>
+                            <span className="px-1.5 py-0.5 rounded bg-synth-orange/10 border border-synth-orange/30 text-[9px] font-bold font-orbitron text-synth-orange">
+                              💎 {student?.ruby ?? 0}
+                            </span>
+                            <span className="px-1.5 py-0.5 rounded bg-synth-cyan/10 border border-synth-cyan/25 text-[9px] font-bold font-orbitron text-synth-cyan">
+                              ⚡ {student?.energy ?? 0}/{student?.max_energy ?? 100}
+                            </span>
+                            <span className="px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-[9px] font-bold font-orbitron text-red-400">
+                              🔥 {student?.streak ?? 0} ngày
+                            </span>
+                          </div>
                         </button>
-                      </div>
-                    ))}
+                      );
+                    })}
                     {classLinks.filter(l => l.status === 'active' && (l.parent_id === currentUser?.id || isAdmin(currentUser?.role))).length === 0 && (
                       <p className="text-xs text-synth-text-muted italic py-4 col-span-3 text-center">
                         Chưa có tài khoản học sinh nào kết nối vào gia đình.

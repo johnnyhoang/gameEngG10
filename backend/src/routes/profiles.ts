@@ -273,7 +273,11 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
       imageUrl: row.image_url,
       lessonId: row.lesson_id,
       isConfused: row.is_confused,
-      metadata: row.metadata || undefined
+      metadata: row.metadata || undefined,
+      timesOpened: row.times_opened || 0,
+      timesAnsweredCorrectly: row.times_answered_correctly || 0,
+      timesSkipped: row.times_skipped || 0,
+      lastOpenedAt: row.last_opened_at
     }));
 
     res.json({

@@ -75,7 +75,7 @@ export const FogCard: React.FC<FogCardProps> = ({
       <div 
         className={`transition-all duration-500 h-full w-full ${
           status === 'shadowed' 
-            ? 'filter grayscale-[50%] brightness-75 opacity-90 group-hover:grayscale-[25%] group-hover:brightness-90' 
+            ? 'filter grayscale-[50%] brightness-75 opacity-90 group-hover:grayscale-0 group-hover:brightness-110 group-hover:opacity-100 group-hover:ring-2 group-hover:ring-synth-cyan/50 group-hover:shadow-[0_0_25px_rgba(0,240,255,0.5)] rounded-2xl' 
             : ''
         } ${status === 'permanent' ? 'ring-2 ring-yellow-400/50 shadow-[0_0_15px_rgba(250,204,21,0.3)] rounded-2xl' : ''}`}
       >
@@ -85,8 +85,8 @@ export const FogCard: React.FC<FogCardProps> = ({
       {/* Lớp phủ mờ sương — cùng tông với nền trang (theo theme đang chọn), không dùng nền đen hay icon ổ khóa (SUB_SPEC_UI_RULES.md §2) */}
       {status === 'shadowed' && (
         <div
-          className={`absolute inset-0 z-10 flex flex-col items-end justify-end overflow-hidden rounded-2xl transition-opacity duration-300 ${
-            isHovered ? 'opacity-20' : 'opacity-28'
+          className={`absolute inset-0 z-10 flex flex-col items-end justify-end overflow-hidden rounded-2xl transition-all duration-500 ${
+            isHovered ? 'opacity-0 scale-95 pointer-events-none' : 'opacity-28'
           }`}
           style={{ backgroundColor: 'color-mix(in srgb, var(--color-synth-bg) 28%, transparent)' }}
         >

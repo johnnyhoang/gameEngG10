@@ -138,6 +138,33 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
     sp => sp.status === 'active'
   );
 
+  // Với Chủ Nhiệm Phụ: các đơn "xin đồng hành" mình đã gửi đi, đang chờ giáo viên chính duyệt
+  // (cùng status pending_primary nhưng ngược chiều với incomingTeacherRequests của Chủ Nhiệm Chính)
+  const outgoingCoTeachRequests = isSecondaryTeacher
+    ? secondaryParents.filter(sp => sp.status === 'pending_primary')
+    : [];
+
+  // Dòng "yêu cầu đã gửi, đang chờ" hiển thị ngay trong box đã tạo ra nó
+  const renderOutgoingInvite = (id: string, name: string, email: string) => (
+    <div key={id} className="flex items-center justify-between gap-2 p-2 rounded-lg bg-black/20 border border-white/5">
+      <div className="min-w-0">
+        <span className="block text-[11px] text-slate-300 font-bold truncate">{name}</span>
+        <span className="block text-[10px] text-slate-500 truncate">{email}</span>
+      </div>
+      <button
+        disabled={processingIds[id]}
+        onClick={() => handleLeaveClass(id, 'Bạn có chắc muốn thu hồi yêu cầu này?', 'Đã thu hồi yêu cầu.')}
+        className="px-2 py-1 text-[9px] text-red-400 hover:text-red-300 bg-red-500/10 rounded font-bold uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[64px] shrink-0"
+      >
+        {processingIds[id] ? (
+          <span className="animate-spin inline-block w-3 h-3 border-2 border-red-400 border-t-transparent rounded-full"></span>
+        ) : (
+          'Thu Hồi'
+        )}
+      </button>
+    </div>
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
@@ -365,6 +392,18 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                   Mời
                 </button>
               </div>
+
+              {/* Lời mời học sinh đã gửi — chờ học sinh chấp nhận */}
+              {outgoingStudentInvites.length > 0 && (
+                <div className="pt-2 border-t border-white/5 space-y-1.5">
+                  <span className="block text-[9px] text-synth-orange font-bold uppercase tracking-wider">
+                    ⏳ Chờ học sinh chấp nhận ({outgoingStudentInvites.length})
+                  </span>
+                  {outgoingStudentInvites.map(link =>
+                    renderOutgoingInvite(link.id, link.student_name || 'Học sinh', link.student_email)
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -404,6 +443,18 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                   Mời
                 </button>
               </div>
+
+              {/* Lời mời giáo viên phụ đã gửi — chờ giáo viên chấp nhận */}
+              {isPrimaryTeacher && outgoingTeacherInvites.length > 0 && (
+                <div className="pt-2 border-t border-white/5 space-y-1.5">
+                  <span className="block text-[9px] text-synth-orange font-bold uppercase tracking-wider">
+                    ⏳ Chờ giáo viên chấp nhận ({outgoingTeacherInvites.length})
+                  </span>
+                  {outgoingTeacherInvites.map(sp =>
+                    renderOutgoingInvite(sp.id, sp.parent_name || 'Giáo viên phụ', sp.parent_email)
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -444,6 +495,18 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                 Gửi Xin
               </button>
             </div>
+
+            {/* Đơn xin đồng hành đã gửi — chờ giáo viên chính duyệt */}
+            {outgoingCoTeachRequests.length > 0 && (
+              <div className="pt-2 border-t border-white/5 space-y-1.5">
+                <span className="block text-[9px] text-synth-orange font-bold uppercase tracking-wider">
+                  ⏳ Chờ giáo viên chính duyệt ({outgoingCoTeachRequests.length})
+                </span>
+                {outgoingCoTeachRequests.map(sp =>
+                  renderOutgoingInvite(sp.id, sp.parent_name || 'Giáo viên chính', sp.parent_email)
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -491,58 +554,6 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
           </div>
         )}
       </div>
-
-      {/* ================= SECTION 4: OUTGOING REQUESTS PENDING RESPONSE ================= */}
-      {(outgoingStudentInvites.length > 0 || outgoingTeacherInvites.length > 0) && (
-        <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-3">
-          <h4 className="font-orbitron font-bold text-xs text-slate-400 uppercase tracking-wider">
-            ⏳ Yêu Cầu Kết Nối Đã Gửi Đi (Đang Chờ Duyệt)
-          </h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Học sinh chờ duyệt */}
-            {outgoingStudentInvites.map(link => (
-              <div key={link.id} className="flex items-center justify-between p-2 rounded-xl bg-black/20 border border-white/5 text-xs">
-                <div>
-                  <span className="block text-slate-300 font-bold">{link.student_name || 'Học sinh'}</span>
-                  <span className="text-[10px] text-slate-500">{link.student_email}</span>
-                </div>
-                <button
-                  disabled={processingIds[link.id]}
-                  onClick={() => handleLeaveClass(link.id, 'Bạn có chắc muốn thu hồi lời mời này?', 'Đã thu hồi lời mời.')}
-                  className="px-2 py-1 text-[9px] text-red-400 hover:text-red-300 bg-red-500/10 rounded font-bold uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[70px]"
-                >
-                  {processingIds[link.id] ? (
-                    <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-red-400 border-t-transparent rounded-full"></span>
-                  ) : (
-                    'Thu Hồi'
-                  )}
-                </button>
-              </div>
-            ))}
-
-            {/* Giáo viên phụ chờ duyệt */}
-            {outgoingTeacherInvites.map(sp => (
-              <div key={sp.id} className="flex items-center justify-between p-2 rounded-xl bg-black/20 border border-white/5 text-xs">
-                <div>
-                  <span className="block text-synth-purple font-bold">{sp.parent_name || 'Giáo viên phụ'}</span>
-                  <span className="text-[10px] text-slate-500">{sp.parent_email}</span>
-                </div>
-                <button
-                  disabled={processingIds[sp.id]}
-                  onClick={() => handleLeaveClass(sp.id, 'Bạn có chắc muốn thu hồi lời mời này?', 'Đã thu hồi lời mời.')}
-                  className="px-2 py-1 text-[9px] text-red-400 hover:text-red-300 bg-red-500/10 rounded font-bold uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[70px]"
-                >
-                  {processingIds[sp.id] ? (
-                    <span className="animate-spin inline-block w-3.5 h-3.5 border-2 border-red-400 border-t-transparent rounded-full"></span>
-                  ) : (
-                    'Thu Hồi'
-                  )}
-                </button>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* ================= SECTION 5: ACTIVE SECONDARY TEACHERS & PERMISSIONS ================= */}
       {isPrimaryTeacher && activeSecondaryTeachers.length > 0 && (

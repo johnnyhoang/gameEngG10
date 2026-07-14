@@ -77,6 +77,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
   const [topicFilter, setTopicFilter] = useState('all');
   const [confusedFilter, setConfusedFilter] = useState<'all' | 'confused'>('all');
   const [riddleFilter, setRiddleFilter] = useState<'all' | 'eligible' | 'not-eligible'>('all');
+  const [sortBy, setSortBy] = useState<string>('default');
 
   // local state for editing / adding question
   const [isAddingNew, setIsAddingNew] = useState(false);
@@ -87,7 +88,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
 
   useEffect(() => {
     setVisibleCount(10);
-  }, [selectedSect, questionQuery, subjectFilter, questionTypeFilter, examPartFilter, topicFilter, confusedFilter, riddleFilter]);
+  }, [selectedSect, questionQuery, subjectFilter, questionTypeFilter, examPartFilter, topicFilter, confusedFilter, riddleFilter, sortBy]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
@@ -116,7 +117,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
 
   // Filters logic
   const filteredQuestions = useMemo(() => {
-    return contextQuestions.filter(q => {
+    const list = contextQuestions.filter(q => {
       const matchSect = selectedSect ? q.subject === selectedSect : true;
       const matchGrade = (q.gradeTier ?? q.grade ?? 9) === activeGradeTier;
       const matchSub = subjectFilter === 'all' ? true : q.subject === subjectFilter;
@@ -131,7 +132,30 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
 
       return matchGrade && matchSect && matchSub && matchType && matchPart && matchTopic && matchConfused && matchRiddle && matchQuery;
     });
-  }, [contextQuestions, activeGradeTier, selectedSect, subjectFilter, questionTypeFilter, examPartFilter, topicFilter, confusedFilter, riddleFilter, questionQuery]);
+
+    if (sortBy === 'timesOpened') {
+      return [...list].sort((a, b) => (b.timesOpened || 0) - (a.timesOpened || 0));
+    }
+    if (sortBy === 'timesAnsweredCorrectly') {
+      return [...list].sort((a, b) => (b.timesAnsweredCorrectly || 0) - (a.timesAnsweredCorrectly || 0));
+    }
+    if (sortBy === 'timesSkipped') {
+      return [...list].sort((a, b) => (b.timesSkipped || 0) - (a.timesSkipped || 0));
+    }
+
+    return list;
+  }, [contextQuestions, activeGradeTier, selectedSect, subjectFilter, questionTypeFilter, examPartFilter, topicFilter, confusedFilter, riddleFilter, questionQuery, sortBy]);
+
+  // Vị trí câu đang sửa trong danh sách đã lọc — phục vụ điều hướng Câu trước/Câu sau trong drawer chỉnh sửa.
+  const editingIndex = editingQuestion
+    ? filteredQuestions.findIndex(q => q.id === editingQuestion.id)
+    : -1;
+
+  const handleNavigateEditing = (direction: -1 | 1) => {
+    if (editingIndex < 0) return;
+    const nextQuestion = filteredQuestions[editingIndex + direction];
+    if (nextQuestion) setEditingQuestion(nextQuestion);
+  };
 
   // Thống kê câu đủ điều kiện cho hai mini-game câu đố theo môn và Hầm nguyên tố.
   const riddleStats = useMemo(() => getRiddleCoverageStats(contextQuestions), [contextQuestions]);
@@ -176,41 +200,51 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
   }, [contextQuestions, selectedSect, activeGradeTier]);
 
 
+  const sectQuestions = useMemo(() => {
+    return contextQuestions.filter(q => selectedSect ? q.subject === selectedSect : true);
+  }, [contextQuestions, selectedSect]);
+
   // Counts helpers
   const questionTypeCounts = useMemo(() => {
-    return questions.reduce((acc: Record<string, number>, q) => {
+    return sectQuestions.reduce((acc: Record<string, number>, q) => {
       acc[q.type] = (acc[q.type] || 0) + 1;
       return acc;
     }, {});
-  }, [questions]);
+  }, [sectQuestions]);
 
   const examPartCounts = useMemo(() => {
-    return questions.reduce((acc: Record<string, number>, q) => {
+    return sectQuestions.reduce((acc: Record<string, number>, q) => {
       const key = q.metadata?.examPart?.trim() || 'Chưa gắn part';
       acc[key] = (acc[key] || 0) + 1;
       return acc;
     }, {});
-  }, [questions]);
+  }, [sectQuestions]);
 
   const topicCounts = useMemo(() => {
-    return questions.reduce((acc: Record<string, number>, q) => {
+    return sectQuestions.reduce((acc: Record<string, number>, q) => {
       const key = q.topicId?.trim() || 'untagged';
       acc[key] = (acc[key] || 0) + 1;
       return acc;
     }, {});
-  }, [questions]);
+  }, [sectQuestions]);
 
   const topTypeEntries = Object.entries(questionTypeCounts).sort((a, b) => b[1] - a[1]);
   const topExamParts = Object.entries(examPartCounts).sort((a, b) => b[1] - a[1]);
   const topTopics = Object.entries(topicCounts).sort((a, b) => b[1] - a[1]);
 
+  const showPartFilter = useMemo(() => {
+    if (topExamParts.length === 0) return false;
+    if (topExamParts.length === 1 && topExamParts[0][0] === 'Chưa gắn part') return false;
+    return true;
+  }, [topExamParts]);
+
   const examPartLabelMap = useMemo(() => {
-    return questions.reduce((acc: Record<string, string>, q) => {
+    return sectQuestions.reduce((acc: Record<string, string>, q) => {
       const key = q.metadata?.examPart?.trim() || 'Chưa gắn part';
       if (!acc[key]) acc[key] = getExamPartLabel(q);
       return acc;
     }, {});
-  }, [questions]);
+  }, [sectQuestions]);
 
   const topicLabelMap = useMemo(() => {
     return Object.fromEntries([
@@ -547,6 +581,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                       setTopicFilter('all');
                       setConfusedFilter('all');
                       setRiddleFilter('all');
+                      setSortBy('default');
                       setQuestionQuery('');
                     }}
                     className="text-[9px] px-2 py-0.5 rounded bg-white/5 border border-white/10 font-bold uppercase hover:bg-white/10 text-white cursor-pointer transition-colors"
@@ -555,7 +590,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                   <label className="space-y-1 text-[10px] block">
                     <span className="uppercase font-orbitron font-bold text-synth-text-muted">Dạng câu</span>
                     <select
@@ -571,21 +606,23 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                       ))}
                     </select>
                   </label>
-                  <label className="space-y-1 text-[10px] block">
-                    <span className="uppercase font-orbitron font-bold text-synth-text-muted">Bài / Part</span>
-                    <select
-                      value={examPartFilter}
-                      onChange={(e) => setExamPartFilter(e.target.value)}
-                      className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs cursor-pointer outline-none focus:border-synth-cyan"
-                    >
-                      <option value="all">Tất cả part</option>
-                      {topExamParts.map(([part, count]) => (
-                        <option key={part} value={part}>
-                          {examPartLabelMap[part] || part} ({count})
-                        </option>
-                      ))}
-                    </select>
-                  </label>
+                  {showPartFilter && (
+                    <label className="space-y-1 text-[10px] block">
+                      <span className="uppercase font-orbitron font-bold text-synth-text-muted">Bài / Part</span>
+                      <select
+                        value={examPartFilter}
+                        onChange={(e) => setExamPartFilter(e.target.value)}
+                        className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs cursor-pointer outline-none focus:border-synth-cyan"
+                      >
+                        <option value="all">Tất cả part</option>
+                        {topExamParts.map(([part, count]) => (
+                          <option key={part} value={part}>
+                            {examPartLabelMap[part] || part} ({count})
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
                   <label className="space-y-1 text-[10px] block">
                     <span className="uppercase font-orbitron font-bold text-synth-text-muted">Chuyên đề (Topic)</span>
                     <select
@@ -609,7 +646,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                       className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs cursor-pointer outline-none focus:border-synth-cyan"
                     >
                       <option value="all">Tất cả câu</option>
-                      <option value="confused">Con hổng hiểu 🧠 ({questions.filter(q => q.isConfused).length})</option>
+                      <option value="confused">Con hổng hiểu 🧠 ({sectQuestions.filter(q => q.isConfused).length})</option>
                     </select>
                   </label>
                   <label className="space-y-1 text-[10px] block">
@@ -620,8 +657,21 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                       className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs cursor-pointer outline-none focus:border-synth-cyan"
                     >
                       <option value="all">Tất cả câu</option>
-                      <option value="eligible">🐷 Đủ điều kiện câu đố ({questions.filter(isRiddleEligible).length})</option>
+                      <option value="eligible">🐷 Đủ điều kiện câu đố ({sectQuestions.filter(isRiddleEligible).length})</option>
                       <option value="not-eligible">Chưa đủ điều kiện</option>
+                    </select>
+                  </label>
+                  <label className="space-y-1 text-[10px] block">
+                    <span className="uppercase font-orbitron font-bold text-synth-text-muted">Sắp xếp theo</span>
+                    <select
+                      value={sortBy}
+                      onChange={(e) => setSortBy(e.target.value)}
+                      className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs cursor-pointer outline-none focus:border-synth-cyan"
+                    >
+                      <option value="default">Mặc định</option>
+                      <option value="timesOpened">👁️ Số lần mở</option>
+                      <option value="timesAnsweredCorrectly">✅ Số lần làm đúng</option>
+                      <option value="timesSkipped">⏩ Số lần bỏ qua</option>
                     </select>
                   </label>
                 </div>
@@ -720,7 +770,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
               {/* Row 3: List of Questions (Full Width) */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center text-xs text-synth-text-muted">
-                  <span>Đang tải: <strong>{Math.min(visibleCount, filteredQuestions.length)}</strong> / {filteredQuestions.length} câu (Tổng {questions.length})</span>
+                  <span>Đang tải: <strong>{Math.min(visibleCount, filteredQuestions.length)}</strong> / {filteredQuestions.length} câu (Tổng {sectQuestions.length})</span>
                 </div>
 
                 <div 
@@ -799,6 +849,14 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                                   💡 Giải thích: {q.explanation}
                                 </p>
                               )}
+                              <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-[10px] text-synth-text-muted/75 font-semibold font-orbitron border-t border-white/5 pt-1.5">
+                                <span>👁️ Mở: {q.timesOpened || 0}</span>
+                                <span>✅ Đúng: {q.timesAnsweredCorrectly || 0}</span>
+                                <span>⏩ Bỏ qua: {q.timesSkipped || 0}</span>
+                                {q.timesOpened && q.timesOpened > 0 ? (
+                                  <span className="text-synth-cyan">🎯 Đúng: {Math.round(((q.timesAnsweredCorrectly || 0) / q.timesOpened) * 100)}%</span>
+                                ) : null}
+                              </div>
                             </div>
                           </div>
 
@@ -840,6 +898,8 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
         gradeTier={activeGradeTier}
         addQuestion={addQuestion}
         updateQuestion={updateQuestion}
+        navPosition={editingIndex >= 0 ? { current: editingIndex + 1, total: filteredQuestions.length } : null}
+        onNavigate={handleNavigateEditing}
       />
     </div>
   );

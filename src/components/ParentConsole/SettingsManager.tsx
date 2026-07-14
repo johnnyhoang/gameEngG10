@@ -7,6 +7,53 @@ import { RoleManager } from './RoleManager';
 import { VicePrincipalApplicationsManager } from './VicePrincipalApplicationsManager';
 import { SideDrawer } from '../Common/SideDrawer';
 
+/** Một dòng thiết lập dạng chuẩn: nhãn bên trái, ô số + nút −/+ bên phải */
+const SettingRow: React.FC<{
+  label: string;
+  hint?: string;
+  unit?: string;
+  value: number;
+  onChange: (value: number) => void;
+  step?: number;
+  min?: number;
+}> = ({ label, hint, unit, value, onChange, step = 1, min = 0 }) => (
+  <div className="flex items-center justify-between gap-3 py-2.5 border-b border-white/5 last:border-b-0">
+    <div className="min-w-0">
+      <span className="block text-xs font-semibold text-white">{label}</span>
+      {hint && <span className="block text-[10px] text-synth-text-muted mt-0.5">{hint}</span>}
+    </div>
+    <div className="flex items-center gap-1.5 shrink-0">
+      <button
+        type="button"
+        onClick={() => onChange(Math.max(min, value - step))}
+        className="w-7 h-7 rounded-lg border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer font-bold leading-none"
+        aria-label={`Giảm ${label}`}
+      >
+        −
+      </button>
+      <input
+        type="number"
+        min={min}
+        step={step}
+        value={value}
+        onChange={(e) => onChange(Math.max(min, Number(e.target.value) || 0))}
+        className="w-20 p-2 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-center outline-none focus:border-synth-cyan text-xs font-bold"
+      />
+      <button
+        type="button"
+        onClick={() => onChange(value + step)}
+        className="w-7 h-7 rounded-lg border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer font-bold leading-none"
+        aria-label={`Tăng ${label}`}
+      >
+        +
+      </button>
+      {unit && (
+        <span className="text-[10px] text-synth-text-muted font-bold uppercase w-10 text-left">{unit}</span>
+      )}
+    </div>
+  </div>
+);
+
 interface SettingsManagerProps {
   currentUser: any;
   adminStudents: any[];
@@ -165,86 +212,49 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
           </h3>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <label className="space-y-2 text-xs">
-            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Bonus Boss — Đề Dễ (Ruby)</span>
-            <input
-              type="number"
-              min={0}
-              step={10}
-              value={bossBonusEasy}
-              onChange={(e) => setBossBonusEasy(Number(e.target.value) || 0)}
-              className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
-            />
-          </label>
-          <label className="space-y-2 text-xs">
-            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Bonus Boss — Đề Trung Bình (Ruby)</span>
-            <input
-              type="number"
-              min={0}
-              step={10}
-              value={bossBonusMedium}
-              onChange={(e) => setBossBonusMedium(Number(e.target.value) || 0)}
-              className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
-            />
-          </label>
-          <label className="space-y-2 text-xs">
-            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Bonus Boss — Đề Khó (Ruby)</span>
-            <input
-              type="number"
-              min={0}
-              step={10}
-              value={bossBonusHard}
-              onChange={(e) => setBossBonusHard(Number(e.target.value) || 0)}
-              className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
-            />
-          </label>
-        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          {/* Nhóm 1: Bonus phá đảo Boss */}
+          <div className="rounded-xl border border-white/5 bg-white/5 p-4">
+            <h4 className="text-[10px] font-orbitron font-bold uppercase tracking-wider text-synth-orange">
+              🏆 Bonus Phá Đảo Boss
+            </h4>
+            <p className="text-[10px] text-synth-text-muted mt-0.5 mb-2">
+              Ruby thưởng thêm khi hoàn thành ải Boss, theo độ khó đề.
+            </p>
+            <SettingRow label="Đề Dễ" unit="Ruby" value={bossBonusEasy} onChange={setBossBonusEasy} step={10} />
+            <SettingRow label="Đề Trung Bình" unit="Ruby" value={bossBonusMedium} onChange={setBossBonusMedium} step={10} />
+            <SettingRow label="Đề Khó" unit="Ruby" value={bossBonusHard} onChange={setBossBonusHard} step={10} />
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {[
-            { label: 'Đảo 1', value: challengeCost1, setter: setChallengeCost1 },
-            { label: 'Đảo 2', value: challengeCost2, setter: setChallengeCost2 },
-            { label: 'Đảo 3', value: challengeCost3, setter: setChallengeCost3 },
-            { label: 'Đảo 4', value: challengeCost4, setter: setChallengeCost4 }
-          ].map(item => (
-            <label key={item.label} className="space-y-2 text-xs">
-              <span className="block text-synth-text-muted font-bold uppercase tracking-wider">{item.label} cost (Năng Lượng)</span>
-              <input
-                type="number"
-                min={0}
-                step={1}
-                value={item.value}
-                onChange={(e) => item.setter(Number(e.target.value) || 0)}
-                className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
-              />
-            </label>
-          ))}
-        </div>
+          {/* Nhóm 2: Chi phí năng lượng theo Đảo */}
+          <div className="rounded-xl border border-white/5 bg-white/5 p-4">
+            <h4 className="text-[10px] font-orbitron font-bold uppercase tracking-wider text-synth-cyan">
+              ⚡ Chi Phí Vào Đảo Thử Thách
+            </h4>
+            <p className="text-[10px] text-synth-text-muted mt-0.5 mb-2">
+              Năng Lượng học sinh phải trả cho mỗi lượt vào từng Đảo.
+            </p>
+            {[
+              { label: 'Đảo 1', value: challengeCost1, setter: setChallengeCost1 },
+              { label: 'Đảo 2', value: challengeCost2, setter: setChallengeCost2 },
+              { label: 'Đảo 3', value: challengeCost3, setter: setChallengeCost3 },
+              { label: 'Đảo 4', value: challengeCost4, setter: setChallengeCost4 }
+            ].map(item => (
+              <SettingRow key={item.label} label={item.label} unit="⚡ NL" value={item.value} onChange={item.setter} />
+            ))}
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <label className="space-y-2 text-xs">
-            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Điểm XP cơ bản / Câu đúng</span>
-            <input
-              type="number"
-              min={1}
-              step={1}
-              value={baseXPVal}
-              onChange={(e) => setBaseXPVal(Number(e.target.value) || 15)}
-              className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
-            />
-          </label>
-          <label className="space-y-2 text-xs">
-            <span className="block text-synth-text-muted font-bold uppercase tracking-wider">Ruby cơ bản (Ruby) / Câu đúng</span>
-            <input
-              type="number"
-              min={1}
-              step={1}
-              value={baseRubyVal}
-              onChange={(e) => setBaseRubyVal(Number(e.target.value) || 5)}
-              className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
-            />
-          </label>
+          {/* Nhóm 3: Thưởng cơ bản mỗi câu đúng */}
+          <div className="rounded-xl border border-white/5 bg-white/5 p-4">
+            <h4 className="text-[10px] font-orbitron font-bold uppercase tracking-wider text-synth-green">
+              🎯 Thưởng Mỗi Câu Đúng
+            </h4>
+            <p className="text-[10px] text-synth-text-muted mt-0.5 mb-2">
+              Điểm cơ bản cộng cho học sinh với mỗi câu trả lời đúng.
+            </p>
+            <SettingRow label="XP cơ bản" unit="XP" value={baseXPVal} onChange={setBaseXPVal} min={1} />
+            <SettingRow label="Ruby cơ bản" unit="Ruby" value={baseRubyVal} onChange={setBaseRubyVal} min={1} />
+          </div>
         </div>
 
         <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between bg-white/5 rounded-xl border border-white/5 p-4">
