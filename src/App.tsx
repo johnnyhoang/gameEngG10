@@ -650,6 +650,12 @@ function App() {
         <>
           <PetStableOverlay isDungeonScreen={isDungeonScreen || isHangMatterScreen || screen === 'pet'} />
           <LevelUpCelebration />
+        </>
+      )}
+
+      {/* Bộ chọn và Màn chờ chuyển môn/lớp cho MỌI người dùng đã đăng nhập */}
+      {currentUser && (
+        <>
           <GlobalSectModal requireConfirm={screen === 'play' || screen === 'lesson-study'} />
 
           {/* Màn chờ chuyển môn/lớp — chặn thao tác đến khi ngữ cảnh mới nạp xong */}
