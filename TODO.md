@@ -727,3 +727,21 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
     - Trong `PlayArea.tsx`: Load `GeometryApp` ở chế độ `widget` cho câu hỏi hình học, ẩn toàn bộ CLI và panel nhập đề bài.
   - *Acceptance:* `PlayArea.tsx` chỉ hiển thị canvas vẽ hình đi kèm nút Next/Prev bước giải (nếu có); phòng thực hành hiển thị full Studio; build/lint pass 100%.
 
+
+# Xử lý Nợ Kỹ Thuật (Refactoring & Nợ Code)
+
+## T9 — Khắc phục lỗi Rules-of-hooks & Tối ưu hóa nạp dữ liệu
+
+- [ ] **T9.1 — Sửa lỗi rules-of-hooks có sẵn trong PostQuizReview và QuestionMCQ**
+  - *Mục tiêu:* Đảm bảo các React hooks (đặc biệt là `useMemo`) không được gọi có điều kiện bên trong các nhánh if/else hoặc return sớm, tuân thủ nghiêm ngặt quy tắc Rules of Hooks để tránh crash runtime.
+  - *Phải sửa:* `src/components/PlayArea/PostQuizReview.tsx` (dòng ~220) và `src/components/PlayArea/QuestionMCQ.tsx` (dòng ~33).
+  - *Phải làm:* Di chuyển toàn bộ các lệnh gọi `useMemo`, `useEffect` lên phía đầu component, trước bất kỳ câu lệnh return hoặc rẽ nhánh điều kiện nào.
+  - *Acceptance:* Compile thành công, linter không còn báo lỗi `react-hooks/rules-of-hooks` hay cảnh báo tương ứng.
+
+- [ ] **T9.2 — [Dài hạn] Chuyển đổi sang nạp câu hỏi động từ Server (Dynamic Content Fetching)**
+  - *Mục tiêu:* Thay vì tải toàn bộ "kho client trộn + lọc" (`questions.ts` dung lượng lớn) về trình duyệt lúc mở app, chuyển sang fetch nội dung theo môn học (`subjectId`) và cấp lớp (`gradeTier`) từ server khi người dùng thay đổi ngữ cảnh học tập.
+  - *Phải làm:*
+    - Xây dựng API endpoint phía backend để lọc và trả về câu hỏi/bài học theo cặp `(gradeTier, subjectId)`.
+    - Cập nhật store frontend (`createPlayerSlice.ts`) để gọi API này khi đổi môn/lớp và lưu vào store state cục bộ.
+    - Loại bỏ danh mục static import khổng lồ của `questions.ts` khỏi app shell chính.
+  - *Thời điểm triển khai:* Nên làm khi ngân hàng đề thi phình to (từ vài nghìn câu trở lên) để giảm tải payload tải về ban đầu và loại hẳn lớp lọc phức tạp ở client.
