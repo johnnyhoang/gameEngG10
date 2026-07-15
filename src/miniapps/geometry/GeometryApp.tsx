@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { useGeometryState } from './hooks/useGeometryState';
 import { PlaneCanvas } from './components/PlaneCanvas';
 import { SolidCanvas } from './components/SolidCanvas';
@@ -155,7 +155,7 @@ export const GeometryApp: React.FC<GeometryAppProps> = ({
   const fullSteps3D = useMemo(() => [...baseSteps3D, ...commandSteps3D], [baseSteps3D, commandSteps3D]);
 
   // Gọi AI soi đề 2D
-  const handleAiAnalyze2D = async () => {
+  const handleAiAnalyze2D = useCallback(async () => {
     const text = prompt.trim();
     if (!text) {
       setAnalysisStatus2D('error');
@@ -221,10 +221,11 @@ export const GeometryApp: React.FC<GeometryAppProps> = ({
       setAnalysisStatus2D('error');
       setAnalysisError2D(error.message || 'Không thể gọi AI phân tích hình.');
     }
-  };
+  }, [prompt, planeScene, setPlaneScene, setLessonSteps2D, setMaxStep2D, setCurrentStep2D, setHistory2D, setAnalysisStatus2D, setAnalysisError2D]);
+
 
   // Gọi AI soi đề 3D
-  const handleAiAnalyze3D = async () => {
+  const handleAiAnalyze3D = useCallback(async () => {
     const text = prompt.trim();
     if (!text) {
       setAnalysisError3D('Nhập nguyên văn đề bài trước khi phân tích.');
@@ -304,7 +305,8 @@ export const GeometryApp: React.FC<GeometryAppProps> = ({
       setIsPlaying3D(false);
       setAnalysisStatus3D('success');
     }
-  };
+  }, [prompt, shape3D, model3D, history3D.length, baseSteps3D.length, setManualShape3D, setAutoResolve3D, setHistory3D, setActiveStepIndex3D, setIsPlaying3D, setAnalysisStatus3D, setAnalysisError3D]);
+
 
   const handleAiAnalyze = () => {
     if (activeDim === '2d') {
@@ -329,6 +331,35 @@ export const GeometryApp: React.FC<GeometryAppProps> = ({
       applyPreset3D('iso');
     }
   };
+
+  // Nap initialScene (neu co)
+  useEffect(() => {
+    if (_initialScene) {
+      if (activeDim === '2d') {
+        setPlaneScene(_initialScene);
+        if (_initialScene.overlays) {
+          setMaxStep2D(_initialScene.overlays.length - 1);
+          setCurrentStep2D(0);
+        }
+      } else {
+        if (_initialScene.manualShape3D) setManualShape3D(_initialScene.manualShape3D);
+        if (_initialScene.history3D) setHistory3D(_initialScene.history3D);
+      }
+    }
+  }, [_initialScene, activeDim, setPlaneScene, setMaxStep2D, setCurrentStep2D, setManualShape3D, setHistory3D]);
+
+  // Tu dong soi de AI khi o che do widget hoac solve (fix loi treo hinh mac dinh)
+  useEffect(() => {
+    if ((mode === 'widget' || mode === 'solve') && prompt.trim() && !_initialScene) {
+      if (activeDim === '2d' && analysisStatus2D === 'idle') {
+        handleAiAnalyze2D();
+      } else if (activeDim === '3d' && analysisStatus3D === 'idle') {
+        handleAiAnalyze3D();
+      }
+    }
+  }, [activeDim, prompt, _initialScene, mode, analysisStatus2D, analysisStatus3D, handleAiAnalyze2D, handleAiAnalyze3D]);
+
+
 
   // --- RENDER WIDGET MODE (Tối giản trong Quiz) ---
   if (mode === 'widget') {

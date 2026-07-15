@@ -188,6 +188,8 @@ export interface QuestionMeta {
   diagramHint?: string;
   tags?: string[];
   isStandard?: boolean;
+  sceneData?: any;
+
   scienceTopic?: string;
 }
 

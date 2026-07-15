@@ -1083,10 +1083,16 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
               {showBikiBoard && (
                 <div className="p-3 border-t border-synth-cyan/15 bg-black/25 space-y-4">
                   <Suspense fallback={<div className="flex items-center justify-center h-32"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-synth-cyan"></div></div>}>
-                    <GeometryApp mode="widget" dimension={is3D ? '3d' : '2d'} problemText={activeQuestion.prompt} />
+                    <GeometryApp
+                      mode="widget"
+                      dimension={is3D ? '3d' : '2d'}
+                      problemText={activeQuestion.prompt}
+                      initialScene={activeQuestion.metadata?.sceneData}
+                    />
                   </Suspense>
                 </div>
               )}
+
 
             </div>
           )}
