@@ -1,59 +1,54 @@
-// ============================================================
-// Canvas3D.tsx — SVG Canvas render engine cho đồ họa 3D
-// Đảm nhận: chiếu 3D, vẽ mặt/cạnh/annotations, click tương tác.
-// ============================================================
-
-import { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback } from 'react';
+import { useGeometryState } from '../hooks/useGeometryState';
 import type {
   LessonStep,
   OverlayAnnotation,
   Point3D,
   ProjectedFace,
   SceneModel,
-  Vertex
-} from './types';
+  Vertex,
+  CommandHistoryItem
+} from '../utils/solidMath';
 import {
   centroid,
   getVertexMap,
   pickBaseFace,
   resolvePointReference,
   rotatePoint,
-  unionEdges
-} from './shapeGenerators';
+  unionEdges,
+  normalizeVertexId
+} from '../utils/solidMath';
 
-export interface Canvas3DProps {
+interface SolidCanvasProps {
   model: SceneModel;
-  yaw: number;
-  pitch: number;
-  roll: number;
-  zoom: number;
-  panX: number;
-  panY: number;
   overlayAnnotations: OverlayAnnotation[];
   currentStep: LessonStep | undefined;
-  boardTool: 'ai' | 'vertex-vertex' | 'vertex-edge' | 'perpendicular' | 'plane-3p';
-  pickedVertex: string | null;
-  pickedVertices: string[];
-  onVertexClick: (vertexId: string) => void;
-  onEdgeClick: (from: string, to: string) => void;
+  interactive?: boolean;
 }
 
-export function Canvas3D({
+export const SolidCanvas: React.FC<SolidCanvasProps> = ({
   model,
-  yaw,
-  pitch,
-  roll,
-  zoom,
-  panX,
-  panY,
   overlayAnnotations,
   currentStep,
-  boardTool,
-  pickedVertex,
-  pickedVertices,
-  onVertexClick,
-  onEdgeClick
-}: Canvas3DProps) {
+  interactive = true
+}) => {
+  const {
+    yaw3D: yaw,
+    pitch3D: pitch,
+    roll3D: roll,
+    zoom3D: zoom,
+    panX3D: panX,
+    panY3D: panY,
+    boardTool3D: boardTool,
+    pickedVertex3D: pickedVertex,
+    pickedVertices3D: pickedVertices,
+    setPickedVertex3D: setPickedVertex,
+    setPickedVertices3D: setPickedVertices,
+    setHistory3D: setHistory,
+    setActiveStepIndex3D: setActiveStepIndex,
+    setIsPlaying3D: setIsPlaying
+  } = useGeometryState();
+
   const vertexMap = useMemo(() => getVertexMap(model), [model]);
 
   // Tính toán các đỉnh phụ từ annotations (đường cao, trung điểm, v.v.)
@@ -91,7 +86,6 @@ export function Canvas3D({
   }, [extraVertexMap, vertexMap]);
 
   const projectPoint = useCallback((point: Point3D) => {
-    // Tâm chiếu & hệ số tỉ lệ khớp khung an toàn 800x560 (CORE_SPECS §5 Khuôn khổ dựng hình).
     const center = { x: 400, y: 280 };
     const rotated = rotatePoint(point, yaw, pitch, roll);
     const perspective = 432 * zoom;
@@ -145,7 +139,7 @@ export function Canvas3D({
         return Boolean(face?.visible);
       });
       return { ...edge, a, b, depth, solid: adjacentVisible || edge.faces.length <= 1 };
-    }).filter((edge): edge is { from: string; to: string; faces: string[]; a: { x: number; y: number; z: number }; b: { x: number; y: number; z: number }; depth: number; solid: boolean } => edge !== null).sort((a, b) => a.depth - b.depth);
+    }).filter((edge): edge is any => edge !== null).sort((a, b) => a.depth - b.depth);
 
     return { transformedMap, facesWithProjected, edges };
   }, [displayVertices, model.faces, pitch, projectPoint, roll, yaw]);
@@ -169,7 +163,119 @@ export function Canvas3D({
     return resolved ? projectPoint(resolved) : undefined;
   }, [transformed.transformedMap, model, displayVertices, projectPoint]);
 
-  // ---- Render functions ----
+  const createManualConstruction = (summary: string, annotations: OverlayAnnotation[], steps: LessonStep[]) => {
+    const item: CommandHistoryItem = {
+      id: `manual-${Date.now()}`,
+      text: summary,
+      summary,
+      annotations,
+      steps: steps.length > 0 ? steps : [{
+        title: 'Thao tác thủ công',
+        body: summary,
+        focus: [],
+        annotationIds: annotations.map(item => item.id)
+      }]
+    };
+    setHistory(prev => [...prev, item]);
+    setActiveStepIndex(overlayAnnotations.length + 1); // Cập nhật focus bước giải mới
+    setIsPlaying(false);
+  };
+
+  const addManualFaceByVertices = (vertices: string[], summary: string, note: string, color: string) => {
+    const cleanVertices = vertices.map(normalizeVertexId);
+    const annotation: OverlayAnnotation = {
+      id: `manual-${Date.now()}-a1`,
+      type: 'face',
+      title: summary,
+      body: note,
+      points: cleanVertices,
+      color,
+      opacity: 0.3
+    };
+    createManualConstruction(summary, [annotation], [{
+      title: 'Chọn mặt phẳng',
+      body: note,
+      focus: cleanVertices,
+      annotationIds: [annotation.id]
+    }]);
+  };
+
+  const handleVertexClick = (vertexId: string) => {
+    if (!interactive) return;
+    if (boardTool === 'vertex-vertex') {
+      if (!pickedVertex) {
+        setPickedVertex(vertexId);
+        return;
+      }
+      if (pickedVertex === vertexId) {
+        setPickedVertex(null);
+        return;
+      }
+      const from = pickedVertex;
+      const to = vertexId;
+      const itemId = `manual-${Date.now()}`;
+      const annotation: OverlayAnnotation = {
+        id: `${itemId}-a1`,
+        type: 'line',
+        title: `${from} nối ${to}`,
+        body: `Nối đỉnh ${from} với đỉnh ${to} bằng công cụ thủ công.`,
+        from, to,
+        color: '#00f0ff', opacity: 1, dashed: false
+      };
+      createManualConstruction(
+        `Nối đỉnh ${from} với đỉnh ${to}`,
+        [annotation],
+        [{ title: 'Nối hai đỉnh', body: `Dựng đoạn thẳng từ ${from} đến ${to}. Đây là thao tác cơ bản để dựng cạnh, đường chéo hoặc đường phụ.`, focus: [from, to], annotationIds: [annotation.id] }]
+      );
+      setPickedVertex(null);
+      return;
+    }
+
+    if (boardTool === 'vertex-edge' || boardTool === 'perpendicular') {
+      setPickedVertex(pickedVertex === vertexId ? null : vertexId);
+      return;
+    }
+
+    if (boardTool === 'plane-3p') {
+      setPickedVertices((prev: string[]) => {
+        const next = prev.includes(vertexId) ? prev : [...prev, vertexId];
+        if (next.length === 3) {
+          addManualFaceByVertices(next, `Mặt phẳng qua ${next.join(', ')}`, `Tô nổi mặt phẳng đi qua ba điểm ${next.join(', ')} để học sinh dễ theo dõi và trình bày.`, '#22c55e');
+          return [];
+        }
+        return next;
+      });
+    }
+  };
+
+  const handleEdgeClick = (from: string, to: string) => {
+    if (!interactive) return;
+    if ((boardTool !== 'vertex-edge' && boardTool !== 'perpendicular') || !pickedVertex) return;
+    const edgeId = `${normalizeVertexId(from)}${normalizeVertexId(to)}`;
+    const isPerpendicular = boardTool === 'perpendicular';
+    const annotation: OverlayAnnotation = {
+      id: `manual-${Date.now()}-a1`,
+      type: 'line',
+      title: isPerpendicular ? `Vuông góc từ ${pickedVertex}` : `${pickedVertex} tới cạnh ${edgeId}`,
+      body: isPerpendicular ? `Dựng đường vuông góc từ ${pickedVertex} xuống cạnh ${edgeId}.` : `Nối đỉnh ${pickedVertex} tới cạnh ${edgeId} bằng trung điểm của cạnh.`,
+      from: pickedVertex, to: `EDGE:${edgeId}`,
+      color: isPerpendicular ? '#00f0ff' : '#f59e0b', opacity: 1, dashed: true
+    };
+    const marker: OverlayAnnotation = {
+      id: `manual-${Date.now()}-a2`,
+      type: 'marker',
+      title: isPerpendicular ? 'Vuông góc' : 'Trung điểm',
+      body: isPerpendicular ? `Đánh dấu chân đường vuông góc trên cạnh ${edgeId}.` : `Đánh dấu trung điểm của cạnh ${edgeId}.`,
+      at: `EDGE:${edgeId}`,
+      color: isPerpendicular ? '#ffffff' : '#f8fafc', opacity: 1, dashed: isPerpendicular
+    };
+    createManualConstruction(
+      isPerpendicular ? `Vẽ đường vuông góc từ ${pickedVertex} xuống cạnh ${edgeId}` : `Nối đỉnh ${pickedVertex} tới cạnh ${edgeId}`,
+      [annotation, marker],
+      [{ title: isPerpendicular ? 'Vẽ vuông góc' : 'Nối đỉnh với cạnh', body: isPerpendicular ? `Chọn đỉnh ${pickedVertex}, sau đó bấm cạnh ${edgeId} để dựng đường vuông góc.` : `Chọn đỉnh ${pickedVertex}, sau đó nối đến cạnh ${edgeId} để hỗ trợ dựng mặt phẳng hoặc chứng minh.`, focus: [pickedVertex, edgeId], annotationIds: [annotation.id, marker.id] }]
+    );
+    setPickedVertex(null);
+  };
 
   const renderFace = (face: ProjectedFace) => {
     const coords = face.vertices.map(id => pointCoords(id)).filter(Boolean) as { x: number; y: number; z: number }[];
@@ -280,7 +386,6 @@ export function Canvas3D({
         const stroke = active ? '#f8fafc' : '#cbd5e1';
         return (
           <g key={`${edge.from}-${edge.to}`}>
-            {/* Vùng click rộng hơn cho cạnh */}
             <line
               x1={edge.a.x}
               y1={edge.a.y}
@@ -288,8 +393,8 @@ export function Canvas3D({
               y2={edge.b.y}
               stroke="transparent"
               strokeWidth={14}
-              className={boardTool === 'vertex-edge' || boardTool === 'perpendicular' ? 'cursor-pointer' : undefined}
-              onClick={() => onEdgeClick(edge.from, edge.to)}
+              className={interactive && (boardTool === 'vertex-edge' || boardTool === 'perpendicular') ? 'cursor-pointer' : undefined}
+              onClick={() => handleEdgeClick(edge.from, edge.to)}
             />
             <line
               x1={edge.a.x}
@@ -328,8 +433,8 @@ export function Canvas3D({
               stroke="#0f172a"
               strokeWidth={1.5}
               filter="url(#biki-shadow)"
-              className={boardTool !== 'ai' ? 'cursor-pointer' : undefined}
-              onClick={() => onVertexClick(vertex.id)}
+              className={interactive && boardTool !== 'ai' ? 'cursor-pointer' : undefined}
+              onClick={() => handleVertexClick(vertex.id)}
             />
             <text x={point.x + 10} y={point.y - 10} fill="#f8fafc" fontSize="12" fontWeight={700}>
               {vertex.id}
@@ -339,4 +444,4 @@ export function Canvas3D({
       })}
     </svg>
   );
-}
+};

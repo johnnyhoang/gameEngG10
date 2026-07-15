@@ -48,9 +48,8 @@ const HangMatThatPage = withSuspense(lazy(() => import('./components/HangMatThat
 const DesktopCentralNav = withSuspense(lazy(() => import('./components/DesktopCentralNav').then(m => ({ default: m.DesktopCentralNav }))), null);
 const LessonStudyView = withSuspense(lazy(() => import('./components/LessonStudyView').then(m => ({ default: m.LessonStudyView }))));
 const RelaxationZone = withSuspense(lazy(() => import('./components/RelaxationZone').then(m => ({ default: m.RelaxationZone }))));
-const Biki3DStudio = withSuspense(lazy(() => import('./components/Biki3DStudio').then(m => ({ default: m.Biki3DStudio }))));
+const GeometryApp = withSuspense(lazy(() => import('./miniapps/geometry').then(m => ({ default: m.GeometryApp }))));
 const BikiDoThiHamSo = withSuspense(lazy(() => import('./components/BikiDoThiHamSo').then(m => ({ default: m.BikiDoThiHamSo }))));
-const BikiHinhHocPhang = withSuspense(lazy(() => import('./components/BikiHinhHocPhang').then(m => ({ default: m.BikiHinhHocPhang }))));
 
 const APP_VERSION = 'fd44bc2';
 const APP_PUSH_TIME = 'Tue, 7 Jul 2026 12:05 ICT';
@@ -502,7 +501,7 @@ function App() {
               onSwitchToPlane={() => setScreen('hang-plane')}
               onSwitchToGraph={() => setScreen('hang-graph')}
             >
-              <Biki3DStudio problemText="" />
+              <GeometryApp mode="studio" dimension="3d" problemText="" />
             </HangMatThatPage>
           )}
 
@@ -516,9 +515,10 @@ function App() {
               onSwitchToPlane={() => setScreen('hang-plane')}
               onSwitchToGraph={() => setScreen('hang-graph')}
             >
-              <BikiHinhHocPhang problemText="" />
+              <GeometryApp mode="studio" dimension="2d" problemText="" />
             </HangMatThatPage>
           )}
+
 
           {screen === 'hang-graph' && (
             <HangMatThatPage

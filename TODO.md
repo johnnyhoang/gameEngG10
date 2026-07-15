@@ -687,6 +687,43 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
   - *Acceptance:* Bấm F5 khôi phục đúng screen đang làm việc; đổi tài khoản hoặc đăng xuất thì xoá sạch; build pass.
 
 
+# Tách và chuẩn hóa Module Hình học thành Geometry Mini-App (2026-07-15)
 
+## T8 — Tách và chuẩn hóa Module Hình học thành Geometry Mini-App
 
+- [ ] **T8.1 — Khởi tạo cấu trúc Mini-App độc lập**
+  - *Mục tiêu:* Tạo lập thư mục và export thống nhất tại `src/miniapps/geometry`.
+  - *Phải làm:*
+    - Tạo entry `index.ts` để export component và types.
+    - Tạo `GeometryApp.tsx` chịu trách nhiệm định tuyến theo props: `mode`, `dimension`, `problemText`, `initialScene`.
+    - Tạo `GeometryGame.tsx` tuân thủ `MiniGameProps` để đăng ký vào Game Hub.
+    - Tạo Zustand store cục bộ `useGeometryState.ts` để quản lý camera, scene, history, steps.
+  - *Impact:* Thư mục `src/miniapps/geometry` và tích hợp registry.
+  - *Rủi ro:* Quản lý camera state giữa 2D và 3D bị lẫn lộn nếu không thiết kế model và store rõ ràng.
+  - *Acceptance:* Store cục bộ khởi tạo chính xác; chuyển đổi dimension 2D/3D cập nhật đúng state; build pass.
+
+- [ ] **T8.2 — Di chuyển và Module hóa logic toán học và dựng hình**
+  - *Mục tiêu:* Di chuyển và tối ưu hóa logic toán học phẳng và không gian ra khỏi component UI.
+  - *Phải làm:*
+    - Tạo `src/miniapps/geometry/utils/planeMath.ts` chứa các hàm toán học phẳng (distance, projectPointToLine, deriveOverlayGeometry, v.v.).
+    - Tạo `src/miniapps/geometry/utils/solidMath.ts` chứa các hàm toán học không gian & dựng hình 3D (buildShape, detectShape, buildAnnotationsFromAiResult, v.v.).
+    - Đảm bảo logic thuần không import dependencies liên quan tới UI hay React hooks.
+  - *Acceptance:* TypeScript compile thành công; không còn code trùng lặp; không import chéo UI.
+
+- [ ] **T8.3 — Tái cấu trúc Canvas và giao diện chuyên biệt**
+  - *Mục tiêu:* Tách Canvas render và các thanh điều khiển thành các component con độc lập.
+  - *Phải làm:*
+    - Tạo `PlaneCanvas.tsx` (Canvas SVG 2D) nhận dữ liệu từ props/Zustand store.
+    - Tạo `SolidCanvas.tsx` (Canvas SVG 3D) nhận dữ liệu camera và scene chiếu phối cảnh.
+    - Tạo `StudioControls.tsx` (Toolbar dựng hình), `CommandConsole.tsx` (Dòng lệnh CLI), `StepWalkthrough.tsx` (Player bước giải).
+  - *Acceptance:* Các component hiển thị chính xác theo theme token; canvas tương tác (xoay, zoom, kéo thả) trơn tru; build pass.
+
+- [ ] **T8.4 — Tích hợp lại vào App Shell và PlayArea**
+  - *Mục tiêu:* Thay thế các component cũ và nhúng chế độ phù hợp.
+  - *Phải sửa:* `src/App.tsx`, `src/components/PlayArea.tsx`, `src/subject-modules/registry.ts`.
+  - *Phải làm:*
+    - Xóa bỏ các file cũ: `BikiHinhHocPhang.tsx`, `Biki3DStudio.tsx`, thư mục `src/components/3d`.
+    - Trong `App.tsx`: Load `GeometryApp` ở chế độ `studio` cho Phòng thực hành.
+    - Trong `PlayArea.tsx`: Load `GeometryApp` ở chế độ `widget` cho câu hỏi hình học, ẩn toàn bộ CLI và panel nhập đề bài.
+  - *Acceptance:* `PlayArea.tsx` chỉ hiển thị canvas vẽ hình đi kèm nút Next/Prev bước giải (nếu có); phòng thực hành hiển thị full Studio; build/lint pass 100%.
 

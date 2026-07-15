@@ -8,9 +8,9 @@ import { ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../data/englishExamBl
 import { MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
 import { getAssessmentProvider, getQuestionPresentation, getSubjectHint } from '../subject-modules/registry';
 import { Scratchpad } from './Scratchpad';
-const BikiHinhHocPhang = lazy(() => import('./BikiHinhHocPhang').then(m => ({ default: m.BikiHinhHocPhang })));
-const Biki3DStudio = lazy(() => import('./Biki3DStudio').then(m => ({ default: m.Biki3DStudio })));
+const GeometryApp = lazy(() => import('../miniapps/geometry').then(m => ({ default: m.GeometryApp })));
 import { ArrowRight, Award } from 'lucide-react';
+
 import { MienPhatDialog } from './MienPhatDialog';
 import { RubyConfirmModal } from './Common/RubyConfirmModal';
 import { sound } from '../utils/sound';
@@ -1083,14 +1083,11 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
               {showBikiBoard && (
                 <div className="p-3 border-t border-synth-cyan/15 bg-black/25 space-y-4">
                   <Suspense fallback={<div className="flex items-center justify-center h-32"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-synth-cyan"></div></div>}>
-                    {is3D ? (
-                      <Biki3DStudio problemText={activeQuestion.prompt} />
-                    ) : (
-                      <BikiHinhHocPhang problemText={activeQuestion.prompt} />
-                    )}
+                    <GeometryApp mode="widget" dimension={is3D ? '3d' : '2d'} problemText={activeQuestion.prompt} />
                   </Suspense>
                 </div>
               )}
+
             </div>
           )}
 
