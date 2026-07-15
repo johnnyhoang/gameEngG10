@@ -121,7 +121,7 @@ export const createAuthSlice: StateCreator<
         logs: data.logs || [],
         questions: mergedQuestions,
         lessons: (data.lessons || INITIAL_LESSONS).map((l: any) => {
-          const textbook = enrichTextbookAttributes(undefined, l.category, l.subject);
+          const textbook = enrichTextbookAttributes(l.id, l.category, l.subject);
           return {
             ...l,
             loai: l.loai || textbook.loai,
@@ -282,7 +282,7 @@ export const createAuthSlice: StateCreator<
           gameSettings: data.gameSettings || DEFAULT_GAME_SETTINGS,
           questions: mergedQuestions,
           lessons: (data.lessons || INITIAL_LESSONS).map((l: any) => {
-            const textbook = enrichTextbookAttributes(undefined, l.category, l.subject);
+            const textbook = enrichTextbookAttributes(l.id, l.category, l.subject);
             return {
               ...l,
               loai: l.loai || textbook.loai,

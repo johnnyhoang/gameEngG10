@@ -30,7 +30,7 @@ import { DUNGEONS_CONFIG, enrichTextbookAttributes } from '../utils/textbookEnri
 
 const getElementalDungeon = (lesson: Lesson): HamNguyenTo => {
   if (lesson.hamNguyenTo) return lesson.hamNguyenTo;
-  return enrichTextbookAttributes(undefined, lesson.category, lesson.subject).hamNguyenTo;
+  return enrichTextbookAttributes(lesson.id, lesson.category, lesson.subject).hamNguyenTo;
 };
 
 interface HangLuyenCongProps {
