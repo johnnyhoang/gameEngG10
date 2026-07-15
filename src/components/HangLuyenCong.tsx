@@ -26,7 +26,7 @@ import { FogCard } from './FogCard';
 import { FullscreenModal } from './Common/FullscreenModal';
 import { LessonStudyView } from './LessonStudyView';
 import { getSubjectActivities, getSubjectToolIds } from '../subject-modules/registry';
-import { DUNGEONS_CONFIG, enrichTextbookAttributes } from '../utils/textbookEnricher';
+import { DUNGEONS_CONFIG, enrichTextbookAttributes, getDungeonConfig } from '../utils/textbookEnricher';
 
 const getElementalDungeon = (lesson: Lesson): HamNguyenTo => {
   if (lesson.hamNguyenTo) return lesson.hamNguyenTo;
@@ -512,7 +512,6 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                 Chọn chuyên đề để học lý thuyết cốt lõi và làm các bài luyện liên quan.
               </p>
             </div>
-
             <div className="space-y-3">
               {Object.values(DUNGEONS_CONFIG).map(dungeon => {
                 const rawDungeonLessons = subjectLessons.filter(l => getElementalDungeon(l) === dungeon.id);
@@ -528,11 +527,17 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                   ...unmappedLessons.map((l, idx) => ({ ...l, bai: maxBai + 1 + idx }))
                 ].sort((a, b) => (a.bai ?? 0) - (b.bai ?? 0));
 
+                const dungeonConfig = getDungeonConfig(dungeon.id, selectedSubject as string);
+                const firstLesson = dungeonLessons[0];
+                const loaiLabel = firstLesson?.loai && firstLesson.loai !== 'Chưa phân loại SGK' ? ` - ${firstLesson.loai}` : '';
+
                 return (
                   <div key={dungeon.id} className={`rounded-xl border p-2.5 ${dungeon.bg}`}>
                     <div className="mb-2 flex justify-between items-center border-b border-white/5 pb-1.5">
                       <div>
-                        <h3 className="font-orbitron font-black text-xs uppercase tracking-wider text-white">{dungeon.label}</h3>
+                        <h3 className="font-orbitron font-black text-xs uppercase tracking-wider text-white">
+                          {dungeonConfig.label}{loaiLabel}
+                        </h3>
                         <p className="text-[9px] text-slate-400 tracking-wider mt-0.5">{dungeon.desc}</p>
                       </div>
                       <span className="text-[10px] text-slate-400 font-orbitron">{dungeonLessons.length} Bài học</span>
