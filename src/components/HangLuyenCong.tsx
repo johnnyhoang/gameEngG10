@@ -372,23 +372,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
     setVisibleLessonCounts({});
   }, [selectedSubject, activeGradeTier]);
 
-  useEffect(() => {
-    const sentinels = document.querySelectorAll<HTMLElement>('[data-lesson-load-more]');
-    if (sentinels.length === 0) return;
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (!entry.isIntersecting) return;
-        const category = (entry.target as HTMLElement).dataset.lessonLoadMore;
-        if (!category) return;
-        setVisibleLessonCounts(current => ({
-          ...current,
-          [category]: (current[category] ?? 6) + 6
-        }));
-      });
-    }, { rootMargin: '120px 0px' });
-    sentinels.forEach(sentinel => observer.observe(sentinel));
-    return () => observer.disconnect();
-  }, [visibleLessonCounts, subjectLessons]);
+
 
   const sampleQuestions = useMemo(() => {
     const allowedCategories: Record<string, string[]> = {
@@ -617,11 +601,18 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                       })}
                     </div>
                     {(visibleLessonCounts[dungeon.id] ?? 6) < dungeonLessons.length && (
-                      <div
-                        data-lesson-load-more={dungeon.id}
-                        className="h-1 w-full"
-                        aria-hidden="true"
-                      />
+                      <div className="flex justify-center pt-3">
+                        <button
+                          type="button"
+                          onClick={() => setVisibleLessonCounts(current => ({
+                            ...current,
+                            [dungeon.id]: (current[dungeon.id] ?? 6) + 6
+                          }))}
+                          className="px-4 py-1.5 rounded-lg border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-slate-300 font-orbitron font-bold text-[10px] uppercase tracking-wider transition-all duration-200 cursor-pointer"
+                        >
+                          Xem thêm bài học ⚔️
+                        </button>
+                      </div>
                     )}
                   </div>
                 );

@@ -92,7 +92,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
-    if (target.scrollHeight - target.scrollTop - target.clientHeight < 50) {
+    if (target.scrollHeight - target.scrollTop - target.clientHeight < 100) {
       if (visibleCount < filteredQuestions.length) {
         setVisibleCount(prev => prev + 10);
       }

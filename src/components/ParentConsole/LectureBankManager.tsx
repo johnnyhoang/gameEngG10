@@ -50,21 +50,12 @@ export const LectureBankManager: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [deletingIds, setDeletingIds] = useState<Record<string, boolean>>({});
 
-  // Lazy Load Paging
-  const [visibleCount, setVisibleCount] = useState(10);
+  // Lazy Load Paging (Page Size 6)
+  const [visibleCount, setVisibleCount] = useState(6);
 
   useEffect(() => {
-    setVisibleCount(10);
+    setVisibleCount(6);
   }, [searchQuery, currentSubject]);
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const target = e.currentTarget;
-    if (target.scrollHeight - target.scrollTop - target.clientHeight < 50) {
-      if (visibleCount < filteredLessons.length) {
-        setVisibleCount(prev => prev + 10);
-      }
-    }
-  };
 
   const fetchLessons = async () => {
     setLoading(true);
@@ -284,10 +275,8 @@ export const LectureBankManager: React.FC = () => {
           <p className="text-xs text-slate-400 italic">Không tìm thấy bài giảng nào phù hợp.</p>
         </div>
       ) : (
-        <div 
-          onScroll={handleScroll}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-1"
-        >
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto pr-1">
           {filteredLessons.slice(0, visibleCount).map(lesson => (
             <div 
               key={lesson.id} 
@@ -347,6 +336,18 @@ export const LectureBankManager: React.FC = () => {
               </div>
             </div>
           ))}
+          </div>
+          {visibleCount < filteredLessons.length && (
+            <div className="flex justify-center pt-2">
+              <button
+                type="button"
+                onClick={() => setVisibleCount(prev => prev + 6)}
+                className="px-6 py-2 rounded-xl border border-synth-cyan/30 hover:border-synth-cyan bg-synth-cyan/10 hover:bg-synth-cyan/20 text-synth-cyan font-orbitron font-bold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer"
+              >
+                Xem thêm bài giảng ⚔️
+              </button>
+            </div>
+          )}
         </div>
       )}
 
