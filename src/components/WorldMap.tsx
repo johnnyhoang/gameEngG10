@@ -39,7 +39,6 @@ export function WorldMap({
   const categoryStats = useGameState(state => state.categoryStats);
   const lessonsProgress = useGameState(state => state.lessonsProgress);
   const isUnicorn = isLightTheme(uiTheme);
-  const setSectModalOpen = useGameState(state => state.setSectModalOpen);
   const syncWithServer = useGameState(state => state.syncWithServer);
   const player = useGameState(state => state.player);
   const currentUser = useGameState(state => state.currentUser);
@@ -497,16 +496,11 @@ export function WorldMap({
               Chọn khu vực để bắt đầu — {completedLessons}/{subjectLessons.length} chuyên đề đã lĩnh ngộ môn {activeSubjectConfig?.name}
             </p>
           </div>
-          {/* Nút mở Modal đổi môn/lớp toàn cục */}
-          <button
-            onClick={() => setSectModalOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-synth-cyan/30 bg-synth-cyan/10 hover:bg-synth-cyan/20 text-white font-orbitron font-bold text-[10px] uppercase tracking-wider cursor-pointer transition-all shrink-0"
-          >
+          {/* Hiển thị thông tin Môn học hiện tại dạng tĩnh (không cho phép click) */}
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-white font-orbitron font-bold text-[10px] uppercase tracking-wider shrink-0 select-none">
             <span>{activeSubjectConfig?.icon || '📚'}</span>
             <span>{activeSubjectConfig?.name}</span>
-            <span className="text-slate-400 font-normal">|</span>
-            <span className="text-synth-cyan">Đổi Lớp/Môn</span>
-          </button>
+          </div>
         </div>
 
         {/* 3 primary study zone cards */}
