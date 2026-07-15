@@ -89,11 +89,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   currentTheme,
   onSelectTheme
 }) => {
-  const { activeSectId, setActiveSectId } = useSect();
+  const { activeSectId } = useSect();
   const player = useGameState(state => state.player);
   const buyTheme = useGameState(state => state.buyTheme);
   const activeGradeTier = useGameState(state => state.activeGradeTier);
-  const setGradeTier = useGameState(state => state.setGradeTier);
   const lessons = useGameState(state => state.lessons);
   const questions = useGameState(state => state.questions);
 
@@ -303,27 +302,26 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 </span>
               </div>
               <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
-                {GRADE_TIERS.filter(tierCfg =>
+                 {GRADE_TIERS.filter(tierCfg =>
                   lessons.some(lesson => getLessonGradeTier(lesson) === tierCfg.tier)
                   || questions.some(question => getQuestionGradeTier(question) === tierCfg.tier)
                 ).map(tierCfg => {
                   const isActive = tierCfg.tier === activeGradeTier;
                   return (
-                    <button
+                    <div
                       key={tierCfg.tier}
-                      onClick={() => setGradeTier(tierCfg.tier)}
-                      title={tierCfg.description}
+                      title={`${tierCfg.description} (Thay đổi trên thanh điều hướng Top Nav)`}
                       className={`flex flex-col items-center gap-1 rounded-xl border px-2 py-2.5 text-center transition-all ${
                         isActive
-                          ? 'border-synth-cyan bg-synth-cyan/15 shadow-[0_0_10px_rgba(0,240,255,0.35)] cursor-default'
-                          : 'border-white/10 bg-white/5 hover:border-synth-cyan/50 cursor-pointer'
+                          ? 'border-synth-cyan bg-synth-cyan/15 shadow-[0_0_10px_rgba(0,240,255,0.35)]'
+                          : 'border-white/10 bg-white/5 opacity-60'
                       }`}
                     >
                       <span className="text-lg leading-none">{tierCfg.icon}</span>
                       <span className={`text-[10px] font-bold font-orbitron ${isActive ? 'text-synth-cyan' : 'text-slate-400'}`}>
                         Lớp {tierCfg.tier}
                       </span>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
@@ -391,7 +389,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pt-2">
-                {Object.values(SUBJECTS_CONFIG).filter(sub => {
+                 {Object.values(SUBJECTS_CONFIG).filter(sub => {
                   const allowedSubjects = GRADE_SUBJECTS[activeGradeTier] || [];
                   return allowedSubjects.includes(sub.id) && (
                     lessons.some(lesson => lessonInScope(lesson, sub.id, activeGradeTier))
@@ -400,16 +398,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 }).map(sub => {
                   const isActive = activeSectId === sub.id;
                   return (
-                    <button
+                    <div
                       key={sub.id}
-                      onClick={() => {
-                        setActiveSectId(sub.id);
-                        toast.success(`Đã chọn môn học ${sub.name}! 📚`);
-                      }}
-                      className={`rounded-2xl border p-5 text-left transition-all duration-300 cursor-pointer group shadow-lg flex items-center justify-between ${
+                      title={`${sub.name} (Thay đổi trên thanh điều hướng Top Nav)`}
+                      className={`rounded-2xl border p-5 text-left transition-all duration-300 group shadow-lg flex items-center justify-between ${
                         isActive
                           ? 'border-synth-cyan bg-synth-cyan/15 shadow-[0_0_15px_rgba(0,240,255,0.2)] ring-1 ring-synth-cyan'
-                          : 'border-white/5 bg-synth-gray/10 hover:border-white/10 hover:bg-synth-gray/20'
+                          : 'border-white/5 bg-synth-gray/10 opacity-70'
                       }`}
                       style={{ borderLeft: `4px solid ${sub.color}` }}
                     >
@@ -429,7 +424,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                           Đang chọn
                         </span>
                       )}
-                    </button>
+                    </div>
                   );
                 })}
               </div>

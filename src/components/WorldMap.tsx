@@ -34,11 +34,12 @@ export function WorldMap({
   onOpenArena, onOpenHang, onOpenRelax, onOpenShop, onOpenPet,
   onSpinWheel, onStudyLesson, onStartLessonPractice
 }: WorldMapProps) {
-  const { activeSectId, activeGradeTier, setActiveSectId } = useSect();
+  const { activeSectId, activeGradeTier } = useSect();
   const uiTheme = useGameState(state => state.uiTheme);
   const categoryStats = useGameState(state => state.categoryStats);
   const lessonsProgress = useGameState(state => state.lessonsProgress);
   const isUnicorn = isLightTheme(uiTheme);
+  const setSectModalOpen = useGameState(state => state.setSectModalOpen);
   const syncWithServer = useGameState(state => state.syncWithServer);
   const player = useGameState(state => state.player);
   const currentUser = useGameState(state => state.currentUser);
@@ -496,26 +497,16 @@ export function WorldMap({
               Chọn khu vực để bắt đầu — {completedLessons}/{subjectLessons.length} chuyên đề đã lĩnh ngộ môn {activeSubjectConfig?.name}
             </p>
           </div>
-          {/* Quick Sect Switcher */}
-          <div className="flex flex-wrap gap-2">
-            {Object.values(SUBJECTS_CONFIG).map(s => {
-              const active = s.id === activeSectId;
-              return (
-                <button
-                  key={s.id}
-                  onClick={() => setActiveSectId(s.id)}
-                  style={{ borderColor: active ? s.color : 'rgba(255,255,255,0.05)' }}
-                  className={`px-3 py-1.5 rounded-lg border font-orbitron font-bold text-[9px] uppercase tracking-wider cursor-pointer transition-all duration-300 ${
-                    active
-                      ? 'bg-white/10 text-white shadow-[0_0_8px_rgba(255,255,255,0.05)]'
-                      : 'bg-black/20 text-slate-400 hover:text-white hover:border-white/10'
-                  }`}
-                >
-                  {s.icon} {s.name}
-                </button>
-              );
-            })}
-          </div>
+          {/* Nút mở Modal đổi môn/lớp toàn cục */}
+          <button
+            onClick={() => setSectModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-synth-cyan/30 bg-synth-cyan/10 hover:bg-synth-cyan/20 text-white font-orbitron font-bold text-[10px] uppercase tracking-wider cursor-pointer transition-all shrink-0"
+          >
+            <span>{activeSubjectConfig?.icon || '📚'}</span>
+            <span>{activeSubjectConfig?.name}</span>
+            <span className="text-slate-400 font-normal">|</span>
+            <span className="text-synth-cyan">Đổi Lớp/Môn</span>
+          </button>
         </div>
 
         {/* 3 primary study zone cards */}
