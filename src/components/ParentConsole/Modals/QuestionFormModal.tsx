@@ -5,6 +5,7 @@ import type { GradeTier, Question, SubjectId } from '../../../types/game';
 import { SUBJECTS_CONFIG } from '../../../types/game';
 import { CORE_KNOWLEDGE_TOPICS } from '../../../data/coreKnowledge';
 import { toast } from '../../../utils/toast';
+import { DUNGEONS_CONFIG, enrichTextbookAttributes } from '../../../utils/textbookEnricher';
 
 interface QuestionFormModalProps {
   isOpen: boolean;
@@ -58,6 +59,8 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
   const [editSource, setEditSource] = useState('');
   const [editImageUrl, setEditImageUrl] = useState('');
   const [editSubject, setEditSubject] = useState<SubjectId>('english');
+  const [editLoai, setEditLoai] = useState('');
+  const [editBai, setEditBai] = useState('');
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
@@ -74,6 +77,8 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
         setEditSource('Custom Ingest');
         setEditImageUrl('');
         setEditSubject(selectedSect || 'english');
+        setEditLoai('');
+        setEditBai('');
       } else if (editingQuestion) {
         const q = editingQuestion;
         setEditType(q.type);
@@ -87,6 +92,8 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
         setEditSource(q.source || '');
         setEditImageUrl(q.imageUrl || '');
         setEditSubject(q.subject || 'english');
+        setEditLoai(q.loai || '');
+        setEditBai(q.bai !== undefined ? String(q.bai) : '');
       }
     }
   }, [isOpen, isAddingNew, editingQuestion, selectedSect]);
@@ -114,6 +121,8 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
     const parsedOptions = editOptions.split('\n').map(o => o.trim()).filter(Boolean);
     const parsedCorrectAnswer = editCorrectAnswer.split('\n').map(a => a.trim()).filter(Boolean);
 
+    const parsedBai = editBai.trim() ? parseFloat(editBai) : undefined;
+
     const payload: Partial<Question> = {
       type: editType,
       prompt: editPrompt,
@@ -127,6 +136,8 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
       imageUrl: editImageUrl || undefined,
       subject: editSubject,
       gradeTier,
+      loai: editLoai.trim() || undefined,
+      bai: parsedBai,
       metadata: {
         ...(editingQuestion?.metadata || {}),
         isStandard: forceStandard ? true : (editingQuestion?.metadata?.isStandard || false)
@@ -315,12 +326,41 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
                 className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white cursor-pointer"
               >
                 <option value="">-- Chưa chọn topic --</option>
-                {CORE_KNOWLEDGE_TOPICS.filter(t => t.subjectId === editSubject).map(t => (
-                  <option key={t.id} value={t.id}>
-                    {t.label} ({t.hamNguyenTo === 'hoa' ? '🔥 Hỏa' : t.hamNguyenTo === 'bang' ? '❄️ Băng' : '🪨 Thạch'})
-                  </option>
-                ))}
+                {CORE_KNOWLEDGE_TOPICS.filter(t => t.subjectId === editSubject).map(t => {
+                  const textbook = enrichTextbookAttributes(t.id, undefined, editSubject);
+                  const details = DUNGEONS_CONFIG[textbook.hamNguyenTo];
+                  const dLabel = details ? details.label.split(' ')[0] : textbook.hamNguyenTo; // e.g. 🔥 or 🪨
+                  return (
+                    <option key={t.id} value={t.id}>
+                      {t.label} ({dLabel})
+                    </option>
+                  );
+                })}
               </select>
+            </label>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2 border-t border-white/5 pt-2 mt-2">
+            <label className="space-y-1 block">
+              <span className="text-slate-400 font-semibold text-[11px]">Phân loại SGK (Ví dụ: Đại số)</span>
+              <input
+                type="text"
+                value={editLoai}
+                onChange={(e) => setEditLoai(e.target.value)}
+                placeholder="Ghi đè Loại SGK nếu cần..."
+                className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white"
+              />
+            </label>
+            <label className="space-y-1 block">
+              <span className="text-slate-400 font-semibold text-[11px]">Số thứ tự Bài (Ví dụ: 5.5)</span>
+              <input
+                type="number"
+                step="any"
+                value={editBai}
+                onChange={(e) => setEditBai(e.target.value)}
+                placeholder="Ghi đè số Bài..."
+                className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white"
+              />
             </label>
           </div>
 

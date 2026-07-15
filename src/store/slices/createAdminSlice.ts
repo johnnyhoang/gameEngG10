@@ -10,6 +10,8 @@ import { eventBus } from '../../utils/EventBus';
 import { toast } from '../../utils/toast';
 import { adminService } from '../../services/adminService';
 import { playerService } from '../../services/playerService';
+import { enrichTextbookAttributes } from '../../utils/textbookEnricher';
+import { getHoChiMinhDateString } from '../../utils/date';
 
 export const createAdminSlice: StateCreator<
   StoreState,
@@ -128,10 +130,17 @@ export const createAdminSlice: StateCreator<
 
   importQuestions: (importedQuestions) => {
           set((state: any) => {
-            // Dedup bằng Set thay vì .some() lồng trong .filter() — O(N*M) cũ từng
-            // gây OOM tương tự bug đã fix ở customQuestions merge (login/selectProfile).
             const existingPrompts = new Set(state.questions.map((q: any) => q.prompt));
-            const filteredNew = importedQuestions.filter(newQ => !existingPrompts.has(newQ.prompt));
+            const filteredNew = importedQuestions
+              .filter(newQ => !existingPrompts.has(newQ.prompt))
+              .map(newQ => {
+                const textbook = enrichTextbookAttributes(newQ.topicId, newQ.category, newQ.subject);
+                return {
+                  ...newQ,
+                  loai: textbook.loai,
+                  bai: textbook.bai
+                };
+              });
             return {
               questions: [...state.questions, ...filteredNew]
             };
@@ -169,7 +178,8 @@ export const createAdminSlice: StateCreator<
   addQuestion: async (newQ) => {
           const state = get();
           const id = 'cust-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
-          const question = { id, ...newQ, source: newQ.source || 'AI Ingested' } as Question;
+          const textbook = enrichTextbookAttributes(newQ.topicId, newQ.category, newQ.subject);
+          const question = { id, ...newQ, source: newQ.source || 'AI Ingested', loai: textbook.loai, bai: textbook.bai } as Question;
           
           try {
             const ok = await adminService.updateCustomQuestion(id, question);
@@ -196,7 +206,12 @@ export const createAdminSlice: StateCreator<
           if (!question) return false;
 
           const isCustomQuestion = question.source?.startsWith('AI Ingested') || question.isConfused;
-          const nextQuestion = { ...question, ...updatedQuestion } as Question;
+          const textbook = enrichTextbookAttributes(
+            updatedQuestion.topicId || question.topicId,
+            updatedQuestion.category || question.category,
+            updatedQuestion.subject || question.subject
+          );
+          const nextQuestion = { ...question, ...updatedQuestion, loai: textbook.loai, bai: textbook.bai } as Question;
 
           if (isCustomQuestion) {
             try {
@@ -221,7 +236,7 @@ export const createAdminSlice: StateCreator<
 
   flagQuestionConfused: async (question, reason?: 'quá khó' | 'quá dài' | 'quá khùng', severity?: number) => {
     const state = get();
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getHoChiMinhDateString(new Date());
     
     // Check local skip limit (3/day)
     let skips = state.player.dailySkips || { date: todayStr, count: 0 };

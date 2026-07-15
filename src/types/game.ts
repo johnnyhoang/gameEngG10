@@ -149,10 +149,12 @@ export interface Question {
   timesSkipped?: number;
   /** Lần cuối cùng câu hỏi được sử dụng */
   lastOpenedAt?: string;
+  loai?: string;
+  bai?: number;
 }
 
 // ==================== CORE KNOWLEDGE TAXONOMY ====================
-export type HamNguyenTo = 'hoa' | 'bang' | 'thach';
+export type HamNguyenTo = 'hoa' | 'bang' | 'thach' | 'phong' | 'loi' | 'thuy' | 'moc' | 'kim' | 'quang' | 'am';
 export type ExamRelevance = 'high' | 'medium' | 'low';
 
 /** Mỗi chuyên đề/nhóm kiến thức cốt lõi trong ngân hàng câu hỏi — xem CORE_SPECS §9 */

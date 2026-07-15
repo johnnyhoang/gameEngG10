@@ -18,7 +18,7 @@ import {
    HANG_SOURCES
 } from '../data/hangLuyenCong';
 import { SUBJECTS_CONFIG } from '../types/game';
-import type { SubjectId } from '../types/game';
+import type { SubjectId, HamNguyenTo } from '../types/game';
 import { useSect } from '../contexts/SectContext';
 import { filterLessonsInScope, filterQuestionsInScope } from '../utils/learningScope';
 import type { Lesson } from '../data/lessons';
@@ -26,16 +26,11 @@ import { FogCard } from './FogCard';
 import { FullscreenModal } from './Common/FullscreenModal';
 import { LessonStudyView } from './LessonStudyView';
 import { getSubjectActivities, getSubjectToolIds } from '../subject-modules/registry';
+import { DUNGEONS_CONFIG, enrichTextbookAttributes } from '../utils/textbookEnricher';
 
-const getElementalDungeon = (lesson: Lesson): 'fire' | 'ice' | 'stone' => {
-  const t = (lesson.topic || '').toLowerCase();
-  const c = (lesson.category || '').toLowerCase();
-  const str = `${t} ${c}`;
-  
-  if (str.includes('vocabulary') || str.includes('pronunciation') || str.includes('rút gọn') || str.includes('từ vựng') || str.includes('phát âm')) return 'fire';
-  if (str.includes('reading') || str.includes('hình học không gian') || str.includes('đồ thị') || str.includes('bất đẳng thức') || str.includes('đọc hiểu')) return 'ice';
-  if (str.includes('grammar') || str.includes('hệ phương trình') || str.includes('vi-ét') || str.includes('ngữ pháp')) return 'stone';
-  return 'stone';
+const getElementalDungeon = (lesson: Lesson): HamNguyenTo => {
+  if (lesson.hamNguyenTo) return lesson.hamNguyenTo;
+  return enrichTextbookAttributes(undefined, lesson.category, lesson.subject).hamNguyenTo;
 };
 
 interface HangLuyenCongProps {
@@ -374,7 +369,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   }, [lessons, selectedSubject, activeGradeTier]);
 
   useEffect(() => {
-    setVisibleLessonCounts({ fire: 6, ice: 6, stone: 6 });
+    setVisibleLessonCounts({});
   }, [selectedSubject, activeGradeTier]);
 
   useEffect(() => {
@@ -535,13 +530,19 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
             </div>
 
             <div className="space-y-3">
-              {[
-                { id: 'fire', label: '🔥 Hỏa Hầm', desc: 'Phản xạ nhanh, ghi nhớ ngắn hạn', bg: 'bg-orange-500/[0.02] border-orange-500/15 text-orange-400' },
-                { id: 'ice', label: '❄️ Băng Hầm', desc: 'Suy luận logic sâu, điềm tĩnh', bg: 'bg-cyan-500/[0.02] border-cyan-500/15 text-synth-cyan' },
-                { id: 'stone', label: '🪨 Thạch Hầm', desc: 'Kiến thức nền tảng, quy tắc cốt lõi', bg: 'bg-stone-500/[0.02] border-stone-500/15 text-stone-400' }
-              ].map(dungeon => {
-                const dungeonLessons = subjectLessons.filter(l => getElementalDungeon(l) === dungeon.id);
-                if (dungeonLessons.length === 0) return null;
+              {Object.values(DUNGEONS_CONFIG).map(dungeon => {
+                const rawDungeonLessons = subjectLessons.filter(l => getElementalDungeon(l) === dungeon.id);
+                if (rawDungeonLessons.length === 0) return null;
+
+                // Tự động gán số thứ tự cho các bài chưa có số bài (do Viện Chủ tạo thêm hoặc ngoài danh mục)
+                const mappedLessons = rawDungeonLessons.filter(l => typeof l.bai === 'number');
+                const unmappedLessons = rawDungeonLessons.filter(l => typeof l.bai !== 'number');
+                const maxBai = mappedLessons.length > 0 ? Math.max(...mappedLessons.map(l => l.bai as number)) : 0;
+
+                const dungeonLessons = [
+                  ...mappedLessons,
+                  ...unmappedLessons.map((l, idx) => ({ ...l, bai: maxBai + 1 + idx }))
+                ].sort((a, b) => (a.bai ?? 0) - (b.bai ?? 0));
 
                 return (
                   <div key={dungeon.id} className={`rounded-xl border p-2.5 ${dungeon.bg}`}>
@@ -550,7 +551,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                         <h3 className="font-orbitron font-black text-xs uppercase tracking-wider text-white">{dungeon.label}</h3>
                         <p className="text-[9px] text-slate-400 tracking-wider mt-0.5">{dungeon.desc}</p>
                       </div>
-                      <span className="text-[10px] text-slate-400 font-orbitron">{dungeonLessons.length} Chuyên đề</span>
+                      <span className="text-[10px] text-slate-400 font-orbitron">{dungeonLessons.length} Bài học</span>
                     </div>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-2">
@@ -570,8 +571,12 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                               }`}>
                                 <div className="space-y-1.5">
                                   <div className="flex items-center justify-between gap-2">
-                                    <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[8px] font-bold text-slate-400 uppercase tracking-wider">
-                                      {lesson.topic}
+                                    <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
+                                      lesson.loai === 'Chưa phân loại SGK'
+                                        ? 'bg-red-500/20 border border-red-500/40 text-red-400'
+                                        : 'bg-white/5 border border-white/10 text-slate-400'
+                                    }`}>
+                                      {lesson.loai === 'Chưa phân loại SGK' ? '⚠️ Thiếu SGK KNTT' : (lesson.loai || lesson.topic)}
                                     </span>
                                     {isCompleted ? (
                                       <span className="text-[8px] font-bold text-synth-cyan uppercase font-orbitron tracking-wider">
@@ -584,7 +589,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                                     )}
                                   </div>
                                   <h3 className="font-orbitron font-bold uppercase text-xs text-white tracking-wide leading-snug">
-                                    {lesson.title}
+                                    {lesson.bai ? `Bài ${lesson.bai}: ` : ''}{lesson.title}
                                   </h3>
                                   <p className="text-[10px] text-slate-400 line-clamp-1 leading-snug">
                                     {lesson.theory.replace(/[#*`>]/g, '').trim()}

@@ -19,6 +19,7 @@ import { toast } from '../utils/toast';
 import { supabase } from '../utils/supabaseClient';
 import { gameService } from '../services/gameService';
 import type { ActivityResult } from '../types/activityResult';
+import { getHoChiMinhDateString } from '../utils/date';
 
 // Subcomponents
 import { PlayAreaHeader } from './PlayArea/PlayAreaHeader';
@@ -1165,7 +1166,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           </button>
 
           {!checked && (() => {
-            const todayStr = new Date().toISOString().split('T')[0];
+            const todayStr = getHoChiMinhDateString(new Date());
             const skipsCount = player.dailySkips?.date === todayStr ? (player.dailySkips.count || 0) : 0;
             const remainingSkips = Math.max(0, 3 - skipsCount);
             const isBlocked = remainingSkips <= 0;

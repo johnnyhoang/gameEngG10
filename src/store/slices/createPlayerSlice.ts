@@ -15,6 +15,7 @@ import { computeSubjectMasteryRatio, getMasteryRankByRatio } from '../../utils/m
 import { playerService } from '../../services/playerService';
 import { getSubjectActivities } from '../../subject-modules/registry';
 import { recordMissionEvent } from '../../services/missionLedgerService';
+import { getHoChiMinhDateString } from '../../utils/date';
 
 export const createPlayerSlice: StateCreator<
   StoreState,
@@ -806,10 +807,24 @@ export const createPlayerSlice: StateCreator<
 
   checkDailyReset: () => {
           const state = get();
-          const todayStr = new Date().toISOString().split('T')[0];
-          const lastActiveStr = state.player.lastActive.split('T')[0];
+          const todayStr = getHoChiMinhDateString(new Date());
+          const lastActiveStr = getHoChiMinhDateString(state.player.lastActive);
 
           if (todayStr === lastActiveStr) return; // Already updated today
+
+          if (!lastActiveStr) {
+            // First time check-in or uninitialized lastActive
+            set({
+              player: {
+                ...state.player,
+                energy: state.player.maxEnergy ?? 100,
+                energyDepletedAt: null,
+                lastActive: new Date().toISOString(),
+                dailySkips: { date: todayStr, count: 0 }
+              }
+            });
+            return;
+          }
 
           // Calculate dates difference
           const lastActiveDate = new Date(lastActiveStr);

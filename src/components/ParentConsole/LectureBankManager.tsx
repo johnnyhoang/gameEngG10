@@ -6,6 +6,8 @@ import type { SubjectId } from '../../types/game';
 import { toast } from '../../utils/toast';
 import { supabase } from '../../utils/supabaseClient';
 import { useGameState } from '../../hooks/useGameState';
+import { DUNGEONS_CONFIG } from '../../utils/textbookEnricher';
+import type { HamNguyenTo } from '../../types/game';
 
 interface Lesson {
   id: string;
@@ -16,6 +18,9 @@ interface Lesson {
   theory: string;
   grade_tier: number;
   is_standard?: boolean;
+  loai?: string;
+  bai?: number;
+  hamNguyenTo?: HamNguyenTo;
   created_at?: string;
 }
 
@@ -39,6 +44,9 @@ export const LectureBankManager: React.FC = () => {
   const [formTitle, setFormTitle] = useState('');
   const [formTheory, setFormTheory] = useState('');
   const [formIsStandard, setFormIsStandard] = useState(false);
+  const [formLoai, setFormLoai] = useState('');
+  const [formBai, setFormBai] = useState('');
+  const [formHamNguyenTo, setFormHamNguyenTo] = useState<HamNguyenTo>('thach');
   const [isSaving, setIsSaving] = useState(false);
   const [deletingIds, setDeletingIds] = useState<Record<string, boolean>>({});
 
@@ -94,6 +102,9 @@ export const LectureBankManager: React.FC = () => {
     setFormTitle('');
     setFormTheory('');
     setFormIsStandard(false);
+    setFormLoai('');
+    setFormBai('');
+    setFormHamNguyenTo('thach');
     setIsModalOpen(true);
   };
 
@@ -105,6 +116,9 @@ export const LectureBankManager: React.FC = () => {
     setFormTitle(lesson.title);
     setFormTheory(lesson.theory);
     setFormIsStandard(lesson.is_standard || false);
+    setFormLoai(lesson.loai || '');
+    setFormBai(lesson.bai !== undefined ? String(lesson.bai) : '');
+    setFormHamNguyenTo(lesson.hamNguyenTo || 'thach');
     setIsModalOpen(true);
   };
 
@@ -121,6 +135,8 @@ export const LectureBankManager: React.FC = () => {
       const token = session.data.session?.access_token;
       if (!token) return;
 
+      const parsedBai = formBai.trim() ? parseFloat(formBai) : undefined;
+
       const payload = {
         subject: formSubject,
         gradeTier: activeGradeTier,
@@ -128,7 +144,10 @@ export const LectureBankManager: React.FC = () => {
         topic: formTopic.trim(),
         title: formTitle.trim(),
         theory: formTheory.trim(),
-        is_standard: isStandardOverride !== undefined ? isStandardOverride : formIsStandard
+        is_standard: isStandardOverride !== undefined ? isStandardOverride : formIsStandard,
+        loai: formLoai.trim() || undefined,
+        bai: parsedBai,
+        hamNguyenTo: formHamNguyenTo
       };
 
       const url = editingLesson 
@@ -393,6 +412,45 @@ export const LectureBankManager: React.FC = () => {
                     placeholder="Ví dụ: Động từ đi kèm To-Infinitive và Gerund, Cách vẽ đồ thị bậc 1..."
                     className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
                   />
+                </label>
+              </div>
+              <div className="grid grid-cols-3 gap-4 border-t border-white/5 pt-3 mt-3">
+                <label className="space-y-1 block">
+                  <span className="text-slate-400 font-semibold text-[11px]">Loại SGK (Học Đường)</span>
+                  <input
+                    type="text"
+                    value={formLoai}
+                    onChange={(e) => setFormLoai(e.target.value)}
+                    placeholder="Đại số, Hình học, Ngữ pháp..."
+                    className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
+                  />
+                </label>
+
+                <label className="space-y-1 block">
+                  <span className="text-slate-400 font-semibold text-[11px]">Số thứ tự Bài (Số thực/lẻ)</span>
+                  <input
+                    type="number"
+                    step="any"
+                    value={formBai}
+                    onChange={(e) => setFormBai(e.target.value)}
+                    placeholder="1, 5.5, 9..."
+                    className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
+                  />
+                </label>
+
+                <label className="space-y-1 block">
+                  <span className="text-slate-400 font-semibold text-[11px]">Hầm Nguyên Tố</span>
+                  <select
+                    value={formHamNguyenTo}
+                    onChange={(e) => setFormHamNguyenTo(e.target.value as HamNguyenTo)}
+                    className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/25 text-white outline-none focus:border-synth-cyan text-xs cursor-pointer"
+                  >
+                    {Object.entries(DUNGEONS_CONFIG).map(([key, details]) => (
+                      <option key={key} value={key} className="bg-slate-900 text-white">
+                        {details.label}
+                      </option>
+                    ))}
+                  </select>
                 </label>
               </div>
 

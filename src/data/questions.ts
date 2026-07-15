@@ -1,6 +1,7 @@
 import type { Question, GradeTier, SubjectId } from '../types/game';
 import { GRADE_SUBJECTS } from '../types/game';
 import { inferTopicId } from './coreKnowledge';
+import { enrichTextbookAttributes } from '../utils/textbookEnricher';
 import {
   SCIENCE_RIDDLE_QUESTIONS,
   HISTORY_GEOGRAPHY_RIDDLE_QUESTIONS,
@@ -8805,11 +8806,17 @@ for i in range(5):
   } as any
 ];
 
-const ALL_BASE_QUESTIONS: Question[] = (RAW_INITIAL_QUESTIONS.map(q => ({
-  ...q,
-  gradeTier: q.gradeTier || q.grade || 9,
-  topicId: q.topicId || inferTopicId(q.category, q.subject)
-})) as Question[]).concat(
+const ALL_BASE_QUESTIONS: Question[] = (RAW_INITIAL_QUESTIONS.map(q => {
+  const baseTopicId = q.topicId || inferTopicId(q.category, q.subject);
+  const textbook = enrichTextbookAttributes(baseTopicId, q.category, q.subject);
+  return {
+    ...q,
+    gradeTier: q.gradeTier || q.grade || 9,
+    topicId: baseTopicId,
+    loai: textbook.loai,
+    bai: textbook.bai
+  };
+}) as Question[]).concat(
   SCIENCE_RIDDLE_QUESTIONS,
   HISTORY_GEOGRAPHY_RIDDLE_QUESTIONS,
   CIVICS_RIDDLE_QUESTIONS,
@@ -8818,11 +8825,17 @@ const ALL_BASE_QUESTIONS: Question[] = (RAW_INITIAL_QUESTIONS.map(q => ({
   ARTS_RIDDLE_QUESTIONS,
   MATH_RIDDLE_QUESTIONS,
   ENGLISH_RIDDLE_QUESTIONS,
-).map(q => ({
-  ...q,
-  gradeTier: q.gradeTier || 9,
-  topicId: q.topicId || inferTopicId(q.category, q.subject)
-}));
+).map(q => {
+  const baseTopicId = q.topicId || inferTopicId(q.category, q.subject);
+  const textbook = enrichTextbookAttributes(baseTopicId, q.category, q.subject);
+  return {
+    ...q,
+    gradeTier: q.gradeTier || 9,
+    topicId: baseTopicId,
+    loai: textbook.loai,
+    bai: textbook.bai
+  };
+});
 
 const clonedQuestions: Question[] = [];
 
@@ -8855,12 +8868,16 @@ cloneGradeTiers.forEach(tier => {
       }
     }
     
+    const textbook = enrichTextbookAttributes(baseTopicId, q.category, subId);
+    
     clonedQuestions.push({
       ...q,
       id: `${q.id}-g${tier}`,
       subject: subId,
       gradeTier: tier,
-      topicId: `${baseTopicId}-g${tier}`
+      topicId: `${baseTopicId}-g${tier}`,
+      loai: textbook.loai,
+      bai: textbook.bai
     });
   });
 });

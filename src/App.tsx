@@ -148,7 +148,7 @@ function App() {
   const masterLesson = useGameState(state => state.masterLesson);
   const [bossId, setBossId] = useState<string | undefined>(undefined);
   // Track where to return after a lesson study (map or hang)
-  const [lessonBackTarget, setLessonBackTarget] = useState<'map' | 'hang'>('hang');
+  const [lessonBackTarget, setLessonBackTarget] = useState<'map' | 'hang' | 'arena'>('hang');
   const [authLoading, setAuthLoading] = useState(true);
 
   const logout = useGameState(state => state.logout);
@@ -347,9 +347,13 @@ function App() {
 
   const handleStartPlay = (
     mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'lesson' | 'survival',
-    id?: string
+    id?: string,
+    backTarget?: 'map' | 'arena' | 'hang'
   ) => {
     setPlayMode(mode);
+    if (backTarget) {
+      setLessonBackTarget(backTarget);
+    }
     if (mode === 'lesson') {
       setSelectedLessonId(id || null);
       setBossId(undefined);
@@ -440,7 +444,7 @@ function App() {
                   if (result.passed) {
                     await masterLesson(selectedLessonId, result.accuracyRatio);
                   }
-                  setScreen('hang');
+                  setScreen(lessonBackTarget || 'hang');
                 } else {
                   setScreen('map');
                 }

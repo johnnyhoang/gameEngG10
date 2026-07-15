@@ -1,4 +1,5 @@
-import type { GradeTier, SubjectId } from '../types/game';
+import type { GradeTier, SubjectId, HamNguyenTo } from '../types/game';
+import { enrichTextbookAttributes } from '../utils/textbookEnricher';
 
 export interface Lesson {
   id: string;
@@ -13,6 +14,9 @@ export interface Lesson {
   theory: string;
   category: string;
   is_standard?: boolean;
+  loai?: string;
+  bai?: number;
+  hamNguyenTo?: HamNguyenTo;
 }
 
 const GRADE9_LESSONS: Lesson[] = [
@@ -2966,9 +2970,13 @@ const clonedLessons: Lesson[] = [];
 
 // Thêm lớp 9 gốc (giữ nguyên ID cũ để tương thích ngược)
 GRADE9_LESSONS.forEach(lesson => {
+  const textbook = enrichTextbookAttributes(undefined, lesson.category, lesson.subject);
   clonedLessons.push({
     ...lesson,
-    gradeTier: 9 as const
+    gradeTier: 9 as const,
+    loai: textbook.loai,
+    bai: textbook.bai,
+    hamNguyenTo: textbook.hamNguyenTo
   });
 });
 
@@ -2989,11 +2997,16 @@ GRADE9_LESSONS.forEach(lesson => {
       }
     }
     
+    const textbook = enrichTextbookAttributes(undefined, lesson.category, subId);
+    
     clonedLessons.push({
       ...lesson,
       id: `${lesson.id}-g${tier}`,
       subject: subId,
-      gradeTier: tier
+      gradeTier: tier,
+      loai: textbook.loai,
+      bai: textbook.bai,
+      hamNguyenTo: textbook.hamNguyenTo
     });
   });
 });
@@ -3024,6 +3037,7 @@ const CS_SUBJECTS_IDS = [
 ] as SubjectId[];
 
 const csMockLessons: Lesson[] = CS_SUBJECTS_IDS.map((subId, index) => {
+  const textbook = enrichTextbookAttributes(undefined, `cs-topic-${index}`, subId);
   return {
     id: `cs-mock-lesson-${subId}`,
     subject: subId,
@@ -3031,6 +3045,9 @@ const csMockLessons: Lesson[] = CS_SUBJECTS_IDS.map((subId, index) => {
     topic: 'Nhập môn chuyên ngành',
     title: `Tổng quan về môn học`,
     category: `cs-topic-${index}`,
+    loai: textbook.loai,
+    bai: textbook.bai,
+    hamNguyenTo: textbook.hamNguyenTo,
     theory: `# Tổng quan Môn học
 Chào mừng Sĩ tử đến với môn chuyên ngành. Đây là bài giảng nhập môn giới thiệu các kiến thức cốt lõi.
 

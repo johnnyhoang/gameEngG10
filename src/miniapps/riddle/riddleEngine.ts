@@ -1,8 +1,7 @@
 import type { Question, SubjectId } from '../../types/game';
-import type { HamNguyenTo } from '../../types/game';
-import { getTopicById } from '../../data/coreKnowledge';
 import { supabase } from '../../utils/supabaseClient';
 import { getQuestionSubject, questionInScope } from '../../utils/learningScope';
+import { enrichTextbookAttributes } from '../../utils/textbookEnricher';
 
 export type RiddleMode = 'ruby-riddle' | 'encounter-sprint';
 
@@ -23,7 +22,7 @@ export function isRiddleEligible(question: Question): boolean {
 export interface RiddleCoverageStats {
   total: number;
   eligible: number;
-  byHam: Record<HamNguyenTo, number>;
+  byHam: Record<string, number>;
 }
 
 export function getRiddleCoverageStats(
@@ -32,12 +31,14 @@ export function getRiddleCoverageStats(
   const stats: Partial<Record<SubjectId, RiddleCoverageStats>> = {};
   for (const question of allQuestions) {
     const subjectId = getQuestionSubject(question);
-    const entry = stats[subjectId] ?? { total: 0, eligible: 0, byHam: { hoa: 0, bang: 0, thach: 0 } };
+    const entry = stats[subjectId] ?? { total: 0, eligible: 0, byHam: {} };
     entry.total += 1;
     if (isRiddleEligible(question)) {
       entry.eligible += 1;
-      const topic = question.topicId ? getTopicById(question.topicId) : undefined;
-      if (topic) entry.byHam[topic.hamNguyenTo] += 1;
+      const ham = (question as any).hamNguyenTo || enrichTextbookAttributes(question.topicId, question.category, subjectId).hamNguyenTo;
+      if (ham) {
+        entry.byHam[ham] = (entry.byHam[ham] || 0) + 1;
+      }
     }
     stats[subjectId] = entry;
   }

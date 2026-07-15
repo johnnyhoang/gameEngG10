@@ -2,6 +2,7 @@ import express from 'express';
 import { pool } from '../db.js';
 import { activeProfileMiddleware, authMiddleware } from '../middleware/auth.js';
 import crypto from 'crypto';
+import { getHoChiMinhDateString } from '../utils/date.js';
 import {
   trackQuestionOpened,
   trackQuestionAnsweredCorrectly,
@@ -350,7 +351,7 @@ router.post('/game/session/end', async (req: any, res) => {
 
     // Daily Ruby Cap implementation: limit daily Ruby earned to 300
     // Check daily Ruby earned so far
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getHoChiMinhDateString(new Date());
     const checkCapRes = await client.query(
       `SELECT daily_ruby_earned, last_ruby_earned_date FROM ge10_player_profiles WHERE user_id = $1`,
       [profileId]

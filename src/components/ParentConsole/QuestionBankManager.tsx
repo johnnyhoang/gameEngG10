@@ -10,6 +10,7 @@ import { supabase } from '../../utils/supabaseClient';
 import { getRiddleCoverageStats, isRiddleEligible } from '../../miniapps/riddle/riddleEngine';
 import { CORE_KNOWLEDGE_TOPICS } from '../../data/coreKnowledge';
 import { useGameState } from '../../hooks/useGameState';
+import { DUNGEONS_CONFIG, enrichTextbookAttributes } from '../../utils/textbookEnricher';
 
 import { QuestionFormModal } from './Modals/QuestionFormModal';
 
@@ -169,14 +170,19 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
       }
       return acc;
     }, {});
-    const items = topics.map(topic => ({
-      ...topic,
-      count: counts[topic.id] || 0,
-      ratio: topic.minQuestions > 0 ? (counts[topic.id] || 0) / topic.minQuestions : 1,
-    }));
+    const items = topics.map(topic => {
+      const textbook = enrichTextbookAttributes(topic.id, undefined, selectedSect);
+      return {
+        ...topic,
+        hamNguyenTo: textbook.hamNguyenTo,
+        count: counts[topic.id] || 0,
+        ratio: topic.minQuestions > 0 ? (counts[topic.id] || 0) / topic.minQuestions : 1,
+      };
+    });
     const current = items.reduce((sum, item) => sum + Math.min(item.count, item.minQuestions), 0);
     const required = items.reduce((sum, item) => sum + item.minQuestions, 0);
-    const byHam = (['hoa', 'bang', 'thach'] as const).map(ham => {
+    const presentHams = Array.from(new Set(items.map(item => item.hamNguyenTo)));
+    const byHam = presentHams.map(ham => {
       const hamItems = items.filter(item => item.hamNguyenTo === ham);
       const hamCurrent = hamItems.reduce((sum, item) => sum + Math.min(item.count, item.minQuestions), 0);
       const hamRequired = hamItems.reduce((sum, item) => sum + item.minQuestions, 0);
@@ -395,9 +401,10 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
                 {coreCoverage.byHam.map(item => {
-                  const label = item.ham === 'hoa' ? '🔥 Hỏa Hầm' : item.ham === 'bang' ? '❄️ Băng Hầm' : '🪨 Thạch Hầm';
+                  const details = DUNGEONS_CONFIG[item.ham];
+                  const label = details ? details.label : item.ham;
                   return (
                     <div key={item.ham} className="rounded-xl border border-white/5 bg-white/5 p-3 space-y-2">
                       <div className="flex items-center justify-between text-[10px] font-bold">
@@ -463,12 +470,11 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                 Tổng: {riddleStats[selectedSect]?.eligible || 0} / {riddleStats[selectedSect]?.total || 0} câu
               </span>
             </div>
-            <div className="grid grid-cols-3 gap-3">
-              {([
-                { ham: 'hoa', label: '🔥 Hỏa Hầm' },
-                { ham: 'bang', label: '❄️ Băng Hầm' },
-                { ham: 'thach', label: '🪨 Thạch Hầm' },
-              ] as const).map(({ ham, label }) => {
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+              {coreCoverage?.byHam.map(hamItem => {
+                const ham = hamItem.ham;
+                const details = DUNGEONS_CONFIG[ham];
+                const label = details ? details.label : ham;
                 const count = riddleStats[selectedSect]?.byHam[ham] || 0;
                 const isLow = count === 0;
                 return (

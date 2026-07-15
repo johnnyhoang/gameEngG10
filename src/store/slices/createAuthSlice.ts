@@ -11,6 +11,7 @@ import { toast } from '../../utils/toast';
 import { authService } from '../../services/authService';
 import { DEFAULT_GRADE_TIER } from '../../types/game';
 import { normalizeRubyPayload } from '../../utils/rubyCompatibility';
+import { enrichTextbookAttributes } from '../../utils/textbookEnricher';
 
 export const createAuthSlice: StateCreator<
   StoreState,
@@ -89,13 +90,19 @@ export const createAuthSlice: StateCreator<
 
       (data.customQuestions || []).forEach((q: any) => {
         if (!q) return;
-        const idx = q.id ? idMap.get(q.id) : undefined;
+        const textbook = enrichTextbookAttributes(q.topicId, q.category, q.subject);
+        const enrichedQ = {
+          ...q,
+          loai: q.loai || textbook.loai,
+          bai: q.bai || textbook.bai
+        };
+        const idx = enrichedQ.id ? idMap.get(enrichedQ.id) : undefined;
         if (idx !== undefined && idx !== -1) {
-          mergedQuestions[idx] = q;
-        } else if (q.prompt && !promptSet.has(q.prompt)) {
-          mergedQuestions.push(q);
-          promptSet.add(q.prompt);
-          if (q.id) idMap.set(q.id, mergedQuestions.length - 1);
+          mergedQuestions[idx] = enrichedQ;
+        } else if (enrichedQ.prompt && !promptSet.has(enrichedQ.prompt)) {
+          mergedQuestions.push(enrichedQ);
+          promptSet.add(enrichedQ.prompt);
+          if (enrichedQ.id) idMap.set(enrichedQ.id, mergedQuestions.length - 1);
         }
       });
       set({
@@ -113,7 +120,15 @@ export const createAuthSlice: StateCreator<
         explorationProgress: data.explorationProgress || {},
         logs: data.logs || [],
         questions: mergedQuestions,
-        lessons: data.lessons || INITIAL_LESSONS,
+        lessons: (data.lessons || INITIAL_LESSONS).map((l: any) => {
+          const textbook = enrichTextbookAttributes(undefined, l.category, l.subject);
+          return {
+            ...l,
+            loai: l.loai || textbook.loai,
+            bai: l.bai || textbook.bai,
+            hamNguyenTo: l.hamNguyenTo || textbook.hamNguyenTo
+          };
+        }),
         gameSettings: data.gameSettings || DEFAULT_GAME_SETTINGS,
         uiTheme: resolvedTheme,
         currentSubject: data.player?.activeSubject || 'english',
@@ -266,7 +281,15 @@ export const createAuthSlice: StateCreator<
           challenges: data.challenges || INITIAL_CHALLENGES,
           gameSettings: data.gameSettings || DEFAULT_GAME_SETTINGS,
           questions: mergedQuestions,
-          lessons: data.lessons || INITIAL_LESSONS,
+          lessons: (data.lessons || INITIAL_LESSONS).map((l: any) => {
+            const textbook = enrichTextbookAttributes(undefined, l.category, l.subject);
+            return {
+              ...l,
+              loai: l.loai || textbook.loai,
+              bai: l.bai || textbook.bai,
+              hamNguyenTo: l.hamNguyenTo || textbook.hamNguyenTo
+            };
+          }),
           lessonsProgress: data.lessonsProgress || {},
           topics: data.topics || [],
           activities: data.activities || [],
