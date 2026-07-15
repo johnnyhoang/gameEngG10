@@ -28,7 +28,7 @@ export interface HangSource {
   note: string;
 }
 
-export const HANG_TRACKS: Record<HangSubjectId, HangTopic[]> = {
+export const HANG_TRACKS: Partial<Record<HangSubjectId, HangTopic[]>> = {
   english: [
     {
       title: 'Ngữ pháp lõi',
@@ -232,7 +232,7 @@ export const HANG_TOOLS: HangTool[] = [
   }
 ];
 
-export const HANG_SOURCES: Record<HangSubjectId, HangSource[]> = {
+export const HANG_SOURCES: Partial<Record<HangSubjectId, HangSource[]>> = {
   english: [
     {
       label: 'MOET - Tiếng Anh mới: học sinh phải tự học nhiều hơn',

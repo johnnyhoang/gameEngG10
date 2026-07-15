@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import { Zap, Coins, Flame, Shield, LogOut } from 'lucide-react';
+import { Zap, Coins, Flame, Shield, LogOut, ChevronDown } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
 
-import { getStudentRankForLevel } from '../types/game';
+import { getStudentRankForLevel, SUBJECTS_CONFIG, getGradeTierConfig } from '../types/game';
 import { isLightTheme } from '../theme/uiThemes';
 
 interface TopHUDProps {
@@ -27,6 +27,10 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   const classLinks = useGameState(state => state.classLinks);
   const parentConsoleTab = useGameState(state => state.parentConsoleTab);
   const setParentConsoleTab = useGameState(state => state.setParentConsoleTab);
+  const currentSubject = useGameState(state => state.currentSubject);
+  const activeGradeTier = useGameState(state => state.activeGradeTier);
+  const setSectModalOpen = useGameState(state => state.setSectModalOpen);
+  const activeSubjectConfig = SUBJECTS_CONFIG[currentSubject];
 
   const isUnicorn = isLightTheme(uiTheme);
 
@@ -156,25 +160,44 @@ export const TopHUD: React.FC<TopHUDProps> = ({
           )}
         </div>
 
-        {/* Cụm 2: Dải tài nguyên — Ruby + Chuỗi (chỉ dành cho học sinh) */}
-        {isStudent && (
+        {/* Cụm 2: Dải tài nguyên — Môn học + Lớp (cho cả học sinh và giáo viên/viện chủ) */}
+        {(isStudent || isConsoleUser) && (
           <div className={`${groupBoxClass} order-2 md:order-none w-full sm:w-auto justify-between sm:justify-start overflow-x-auto`}>
-            <div className={statItemClass} onClick={() => showHelp('nanite')} title={player.ruby < 0 ? 'Ruby đang ÂM — trả nợ bằng cách rèn luyện thêm!' : 'Ruby — Nhấp để xem hướng dẫn'}>
-              <Coins className={`w-4 h-4 shrink-0 ${player.ruby < 0 ? 'text-red-400 fill-red-400' : 'text-synth-orange fill-synth-orange'}`} />
-              <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${player.ruby < 0 ? 'text-red-400' : 'text-white'}`}>{player.ruby}</span>
-            </div>
+            {/* Cửa đổi môn DUY NHẤT trên top nav — mở GlobalSectModal */}
+            <button
+              onClick={() => setSectModalOpen(true)}
+              className={statItemClass}
+              title={`Đang học: ${activeSubjectConfig?.name || currentSubject} — ${getGradeTierConfig(activeGradeTier).name}. Nhấp để chuyển môn.`}
+            >
+              <span className="text-sm leading-none shrink-0">{activeSubjectConfig?.icon || '📚'}</span>
+              <span className="text-xs font-semibold font-orbitron whitespace-nowrap text-white max-w-[180px] truncate">
+                {activeSubjectConfig?.name || currentSubject} - {getGradeTierConfig(activeGradeTier).name}
+              </span>
+              <ChevronDown className="w-3 h-3 text-synth-cyan shrink-0" />
+            </button>
 
-            <div className="w-px h-8 bg-white/10 shrink-0" />
+            {isStudent && (
+              <>
+                <div className="w-px h-8 bg-white/10 shrink-0" />
 
-            <div className={statItemClass} onClick={() => showHelp('streak')} title="Chuỗi học tập — Nhấp để xem hướng dẫn">
-              <Flame className={`w-4 h-4 shrink-0 ${player.streak > 0 ? 'text-orange-500 fill-orange-500' : 'text-synth-gray'}`} />
-              <span className="text-xs font-semibold font-orbitron text-white whitespace-nowrap">{player.streak}d</span>
-              {hasShield && (
-                <span title="Khiên Bảo Vệ đang bảo vệ Chuỗi học tập!">
-                  <Shield className="w-3.5 h-3.5 text-synth-cyan fill-synth-cyan/20 shrink-0" />
-                </span>
-              )}
-            </div>
+                <div className={statItemClass} onClick={() => showHelp('nanite')} title={player.ruby < 0 ? 'Ruby đang ÂM — trả nợ bằng cách rèn luyện thêm!' : 'Ruby — Nhấp để xem hướng dẫn'}>
+                  <Coins className={`w-4 h-4 shrink-0 ${player.ruby < 0 ? 'text-red-400 fill-red-400' : 'text-synth-orange fill-synth-orange'}`} />
+                  <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${player.ruby < 0 ? 'text-red-400' : 'text-white'}`}>{player.ruby}</span>
+                </div>
+
+                <div className="w-px h-8 bg-white/10 shrink-0" />
+
+                <div className={statItemClass} onClick={() => showHelp('streak')} title="Chuỗi học tập — Nhấp để xem hướng dẫn">
+                  <Flame className={`w-4 h-4 shrink-0 ${player.streak > 0 ? 'text-orange-500 fill-orange-500' : 'text-synth-gray'}`} />
+                  <span className="text-xs font-semibold font-orbitron text-white whitespace-nowrap">{player.streak}d</span>
+                  {hasShield && (
+                    <span title="Khiên Bảo Vệ đang bảo vệ Chuỗi học tập!">
+                      <Shield className="w-3.5 h-3.5 text-synth-cyan fill-synth-cyan/20 shrink-0" />
+                    </span>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         )}
 

@@ -14,6 +14,7 @@ export const createUISlice: StateCreator<
   Pick<StoreState, 
     'isSectModalOpen' | 'currentSubject' | 'activeGradeTier' | 
     'uiTheme' | 'uiThemesByUser' | 'helpPageId' | 'handbookPages' |
+    'isSwitchingContext' | 'learningContextVersion' |
     'setSectModalOpen' | 'setLearningContext' | 'setSubject' | 'setGradeTier' | 'setUiTheme' |
     'showHelp' | 'closeHelp' | 'initEventSubscriptions' | 'addHandbookPage' |
     'parentConsoleTab' | 'setParentConsoleTab'
@@ -22,6 +23,8 @@ export const createUISlice: StateCreator<
   isSectModalOpen: false,
   currentSubject: 'english',
   activeGradeTier: DEFAULT_GRADE_TIER,
+  isSwitchingContext: false,
+  learningContextVersion: 0,
   uiTheme: 'current',
   uiThemesByUser: {},
   helpPageId: null,
@@ -33,6 +36,7 @@ export const createUISlice: StateCreator<
   setParentConsoleTab: (tab) => set({ parentConsoleTab: tab }),
 
   setLearningContext: (context: LearningContext) => {
+    const version = (get().learningContextVersion ?? 0) + 1;
     set(state => {
       const updatedPlayer = state.player ? {
         ...state.player,
@@ -43,9 +47,20 @@ export const createUISlice: StateCreator<
         currentSubject: context.subjectId,
         activeGradeTier: context.gradeTier,
         player: updatedPlayer,
+        learningContextVersion: version,
+        isSwitchingContext: true,
       } as any;
     });
-    get().syncWithServer?.();
+
+    // Spinner giữ tối thiểu 400ms cho người dùng thấy app đang nạp lại ngữ cảnh,
+    // và chỉ tắt khi version chưa bị một lần chuyển mới hơn vượt qua (chống ghi trễ).
+    const minDelay = new Promise(resolve => setTimeout(resolve, 400));
+    const sync = Promise.resolve(get().syncWithServer?.()).catch(() => undefined);
+    void Promise.all([minDelay, sync]).then(() => {
+      if (get().learningContextVersion === version) {
+        set({ isSwitchingContext: false } as any);
+      }
+    });
   },
 
   setSubject: (subject) => {

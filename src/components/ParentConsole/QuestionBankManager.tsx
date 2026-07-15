@@ -68,10 +68,9 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
   importQuestions
 }) => {
   const activeGradeTier = useGameState(state => state.activeGradeTier);
+  const selectedSect = useGameState(state => state.currentSubject); // Đồng bộ toàn cục với Top HUD
   const currentProfileId = useGameState(state => state.currentUser?.id);
-  const [selectedSect, setSelectedSect] = useState<SubjectId | null>(null);
   const [questionQuery, setQuestionQuery] = useState('');
-  const [subjectFilter, setSubjectFilter] = useState<'all' | 'english' | 'math' | 'literature'>('all');
   const [questionTypeFilter, setQuestionTypeFilter] = useState<'all' | Question['type']>('all');
   const [examPartFilter, setExamPartFilter] = useState('all');
   const [topicFilter, setTopicFilter] = useState('all');
@@ -88,7 +87,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
 
   useEffect(() => {
     setVisibleCount(10);
-  }, [selectedSect, questionQuery, subjectFilter, questionTypeFilter, examPartFilter, topicFilter, confusedFilter, riddleFilter, sortBy]);
+  }, [selectedSect, questionQuery, questionTypeFilter, examPartFilter, topicFilter, confusedFilter, riddleFilter, sortBy]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
@@ -118,9 +117,8 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
   // Filters logic
   const filteredQuestions = useMemo(() => {
     const list = contextQuestions.filter(q => {
-      const matchSect = selectedSect ? q.subject === selectedSect : true;
+      const matchSect = q.subject === selectedSect;
       const matchGrade = (q.gradeTier ?? q.grade ?? 9) === activeGradeTier;
-      const matchSub = subjectFilter === 'all' ? true : q.subject === subjectFilter;
       const matchType = questionTypeFilter === 'all' ? true : q.type === questionTypeFilter;
       const matchPart = examPartFilter === 'all' ? true : q.metadata?.examPart === examPartFilter;
       const matchTopic = topicFilter === 'all' ? true : q.topicId === topicFilter;
@@ -130,7 +128,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
       const qText = `${q.prompt} ${q.category} ${q.source || ''} ${q.id}`.toLowerCase();
       const matchQuery = qText.includes(questionQuery.toLowerCase());
 
-      return matchGrade && matchSect && matchSub && matchType && matchPart && matchTopic && matchConfused && matchRiddle && matchQuery;
+      return matchGrade && matchSect && matchType && matchPart && matchTopic && matchConfused && matchRiddle && matchQuery;
     });
 
     if (sortBy === 'timesOpened') {
@@ -144,7 +142,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
     }
 
     return list;
-  }, [contextQuestions, activeGradeTier, selectedSect, subjectFilter, questionTypeFilter, examPartFilter, topicFilter, confusedFilter, riddleFilter, questionQuery, sortBy]);
+  }, [contextQuestions, activeGradeTier, selectedSect, questionTypeFilter, examPartFilter, topicFilter, confusedFilter, riddleFilter, questionQuery, sortBy]);
 
   // Vị trí câu đang sửa trong danh sách đã lọc — phục vụ điều hướng Câu trước/Câu sau trong drawer chỉnh sửa.
   const editingIndex = editingQuestion
@@ -352,59 +350,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
 
   return (
     <div className="space-y-6">
-      {selectedSect === null ? (
-        <div className="glass-panel rounded-2xl border border-white/5 p-8 max-w-4xl mx-auto space-y-6">
-          <div className="text-center space-y-2">
-            <div className="w-16 h-16 mx-auto rounded-full bg-synth-cyan/10 border border-synth-cyan/30 flex items-center justify-center">
-              <Database className="w-8 h-8 text-synth-cyan" />
-            </div>
-            <h2 className="font-orbitron font-black text-xl text-white uppercase tracking-wider flex items-center justify-center gap-2">
-              📚 KHO ĐỀ THI
-            </h2>
-            <p className="text-xs text-synth-text-muted">
-              Kính xin Viện Trưởng lựa chọn Môn phái cần thiết lập giáo án và khảo hạch để tiếp tục.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pt-4">
-            {Object.values(SUBJECTS_CONFIG).map(sub => (
-              <button
-                key={sub.id}
-                onClick={() => {
-                  setSelectedSect(sub.id);
-                  setSubjectFilter(sub.id as any);
-                }}
-                className="rounded-2xl border border-white/5 bg-synth-gray/10 p-5 text-left hover:border-white/10 hover:bg-synth-gray/20 transition-all cursor-pointer group shadow-lg"
-                style={{ borderLeft: `4px solid ${sub.color}` }}
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl">{sub.icon}</span>
-                  <div>
-                    <span className="block text-xs font-black uppercase font-orbitron text-white group-hover:text-synth-cyan transition-colors">
-                      {sub.name}
-                    </span>
-                    <span className="block text-[10px] text-synth-text-muted mt-0.5">
-                      {sub.group === 'chuyen_sau' ? 'Môn thi Chuyên Sâu Lớp 10' : 'Môn tu học Cơ Bản Lớp 9'}
-                    </span>
-                    {(() => {
-                      const stat = riddleStats[sub.id];
-                      const eligible = stat?.eligible || 0;
-                      const isLow = eligible === 0;
-                      return (
-                        <span className={`inline-flex items-center gap-1 mt-1.5 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase font-orbitron border ${isLow ? 'bg-red-500/10 text-red-400 border-red-500/30' : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/30'}`}>
-                          {isLow ? <AlertTriangle className="w-3 h-3" /> : <ShieldCheck className="w-3 h-3" />}
-                          {eligible} câu đố
-                        </span>
-                      );
-                    })()}
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      ) : (
-        <div className="space-y-6">
+      <div className="space-y-6">
           {/* Header context info */}
           <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-white/5 bg-synth-gray/10">
             <div className="flex items-center gap-2">
@@ -424,12 +370,6 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                 className="text-[10px] px-3 py-1.5 rounded-lg bg-synth-cyan text-black hover:opacity-85 uppercase font-black font-orbitron cursor-pointer flex items-center gap-1"
               >
                 <Plus className="w-3.5 h-3.5" /> Thêm Câu Hỏi
-              </button>
-              <button
-                onClick={() => setSelectedSect(null)}
-                className="text-[10px] px-3 py-1.5 rounded-lg border border-white/10 text-synth-text-muted hover:text-white uppercase font-bold cursor-pointer transition-colors"
-              >
-                Đổi môn phái
               </button>
             </div>
           </div>
@@ -885,7 +825,6 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
             </div>
           </div>
         </div>
-      )}
       <QuestionFormModal
         isOpen={isAddingNew || !!editingQuestion}
         onClose={() => {

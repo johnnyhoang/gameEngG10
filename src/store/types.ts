@@ -167,6 +167,10 @@ export interface StoreState {
   isSectModalOpen: boolean;
   currentSubject: SubjectId;
   activeGradeTier: GradeTier;
+  /** Đang trong quá trình chuyển môn/lớp — UI hiện spinner chặn thao tác đến khi xong */
+  isSwitchingContext: boolean;
+  /** Tăng mỗi lần đổi môn/lớp — response async cũ không được ghi đè context mới */
+  learningContextVersion: number;
   uiTheme: UiThemeId;
   uiThemesByUser: Record<string, UiThemeId>;
   gameSettings: GameSettings;

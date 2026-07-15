@@ -1,5 +1,6 @@
 import { isParentRole, isAdmin } from './utils/roleHelpers';
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { filterLessonsInScope } from './utils/learningScope';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useGameState } from './hooks/useGameState';
 import { TopHUD } from './components/TopHUD';
 import { supabase } from './utils/supabaseClient';
@@ -66,6 +67,7 @@ function App() {
   const setUiTheme = useGameState(state => state.setUiTheme);
   
   const { activeSectId, activeGradeTier } = useSect();
+  const isSwitchingContext = useGameState(state => state.isSwitchingContext);
   const classLinks = useGameState(state => state.classLinks);
 
   // Screen routing state
@@ -83,6 +85,18 @@ function App() {
       setScreen('hang');
     }
   }, [activeSectId, screen]);
+
+  // Đổi môn/lớp: dọn sạch state gắn với môn cũ (bài giảng đang mở, ải đang làm)
+  // để không render nhầm nội dung môn cũ sau khi chuyển.
+  const learningContextRef = useRef(`${activeSectId}::${activeGradeTier}`);
+  useEffect(() => {
+    const contextKey = `${activeSectId}::${activeGradeTier}`;
+    if (learningContextRef.current === contextKey) return;
+    learningContextRef.current = contextKey;
+    setSelectedLessonId(null);
+    setBossId(undefined);
+    setScreen(current => (current === 'lesson-study' || current === 'play') ? 'map' : current);
+  }, [activeSectId, activeGradeTier]);
 
   useEffect(() => {
     if (!currentUser?.id || currentUser.id.startsWith('mock-')) return;
@@ -358,6 +372,10 @@ function App() {
   };
 
   const isDungeonScreen = screen === 'play';
+
+  // Key remount theo môn+lớp: đổi ngữ cảnh là toàn bộ màn hình học tập remount sạch,
+  // không còn state cục bộ nào của môn cũ sống sót bên trong component.
+  const learningContextKey = `${activeSectId}-${activeGradeTier}`;
   const isHangMatterScreen = screen === 'hang-3d' || screen === 'hang-plane' || screen === 'hang-graph';
   const topHudScreen = (isHangMatterScreen || screen === 'lesson-study') ? 'hang' : (screen === 'relax' ? 'map' : screen);
 
@@ -392,6 +410,7 @@ function App() {
 
           {screen === 'map' && (
             <WorldMap
+              key={learningContextKey}
               onOpenArena={() => setScreen('arena')}
               onOpenHang={() => setScreen('hang')}
               onOpenRelax={() => setScreen('relax')}
@@ -405,12 +424,14 @@ function App() {
 
           {screen === 'arena' && (
             <Arena
+              key={learningContextKey}
               onStartPlay={handleStartPlay}
             />
           )}
 
           {screen === 'play' && (
-            <PlayArea 
+            <PlayArea
+              key={learningContextKey}
               mode={playMode}
               bossId={bossId}
               lessonId={selectedLessonId || undefined}
@@ -434,15 +455,14 @@ function App() {
 
           {screen === 'hang' && (
             <HangLuyenCong
+              key={learningContextKey}
               onStartPractice={() => {
                 closeHelp();
                 // Find first uncompleted lesson of selected subject, or default to first
                 const lessonsList = useGameState.getState().lessons;
                 const progress = useGameState.getState().lessonsProgress;
                 const gradeTier = useGameState.getState().activeGradeTier;
-                const subLessons = lessonsList.filter(l =>
-                  l.subject === activeSectId && (l.gradeTier ?? 9) === gradeTier
-                );
+                const subLessons = filterLessonsInScope(lessonsList, activeSectId as any, gradeTier);
                 const uncompleted = subLessons.find(l => !progress[l.id]);
                 const targetLesson = uncompleted || subLessons[0];
                 if (targetLesson) {
@@ -515,7 +535,7 @@ function App() {
           )}
 
           {screen === 'relax' && (
-            <RelaxationZone onBack={() => setScreen('map')} />
+            <RelaxationZone key={learningContextKey} onBack={() => setScreen('map')} />
           )}
 
           {screen === 'pet' && (
@@ -630,7 +650,18 @@ function App() {
         <>
           <PetStableOverlay isDungeonScreen={isDungeonScreen || isHangMatterScreen || screen === 'pet'} />
           <LevelUpCelebration />
-          <GlobalSectModal />
+          <GlobalSectModal requireConfirm={screen === 'play' || screen === 'lesson-study'} />
+
+          {/* Màn chờ chuyển môn/lớp — chặn thao tác đến khi ngữ cảnh mới nạp xong */}
+          {isSwitchingContext && (
+            <div className="fixed inset-0 z-[300] flex flex-col items-center justify-center gap-4 bg-black/70 backdrop-blur-sm">
+              <span className="inline-block w-12 h-12 border-4 border-synth-cyan border-t-transparent rounded-full animate-spin" />
+              <p className="font-orbitron font-bold text-sm text-synth-cyan uppercase tracking-wider">
+                Đang chuyển ngữ cảnh học tập...
+              </p>
+              <p className="text-xs text-slate-400">Nạp lại bài giảng và ngân hàng đề theo môn/lớp mới</p>
+            </div>
+          )}
         </>
       )}
 

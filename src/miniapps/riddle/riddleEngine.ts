@@ -2,12 +2,12 @@ import type { Question, SubjectId } from '../../types/game';
 import type { HamNguyenTo } from '../../types/game';
 import { getTopicById } from '../../data/coreKnowledge';
 import { supabase } from '../../utils/supabaseClient';
+import { getQuestionSubject, questionInScope } from '../../utils/learningScope';
 
 export type RiddleMode = 'ruby-riddle' | 'encounter-sprint';
 
-export function getQuestionSubject(question: Question): SubjectId {
-  return (question.subject as SubjectId) || 'english';
-}
+// Dùng chung bộ lọc ngữ cảnh học tập của app — xem src/utils/learningScope.ts
+export { getQuestionSubject };
 
 export function isRiddleEligible(question: Question): boolean {
   const isMcq = question.type === 'mcq' || question.type === 'multiple_choice';
@@ -52,9 +52,7 @@ export function pickRiddleQuestions(
   usedQuestionIds: string[] = []
 ): Question[] {
   const candidates = allQuestions.filter(question =>
-    getQuestionSubject(question) === subjectId
-    && (question.gradeTier ?? question.grade ?? 9) === gradeTier
-    && isRiddleEligible(question)
+    questionInScope(question, subjectId, gradeTier) && isRiddleEligible(question)
   );
   const used = new Set(usedQuestionIds);
   const shuffle = (items: Question[]) => [...items].sort(() => Math.random() - 0.5);

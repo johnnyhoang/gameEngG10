@@ -1,4 +1,4 @@
-import type { Question } from '../types/game';
+import type { Question, GradeTier, SubjectId } from '../types/game';
 import { inferTopicId } from './coreKnowledge';
 import {
   SCIENCE_RIDDLE_QUESTIONS,
@@ -8804,7 +8804,7 @@ for i in range(5):
   } as any
 ];
 
-export const INITIAL_QUESTIONS: Question[] = (RAW_INITIAL_QUESTIONS.map(q => ({
+const ALL_BASE_QUESTIONS: Question[] = (RAW_INITIAL_QUESTIONS.map(q => ({
   ...q,
   gradeTier: q.gradeTier || q.grade || 9,
   topicId: q.topicId || inferTopicId(q.category, q.subject)
@@ -8817,6 +8817,127 @@ export const INITIAL_QUESTIONS: Question[] = (RAW_INITIAL_QUESTIONS.map(q => ({
   ARTS_RIDDLE_QUESTIONS,
   MATH_RIDDLE_QUESTIONS,
   ENGLISH_RIDDLE_QUESTIONS,
-);
+).map(q => ({
+  ...q,
+  gradeTier: q.gradeTier || 9,
+  topicId: q.topicId || inferTopicId(q.category, q.subject)
+}));
+
+const clonedQuestions: Question[] = [];
+
+// Thêm Lớp 9 gốc (giữ nguyên ID cũ để tương thích ngược)
+ALL_BASE_QUESTIONS.forEach(q => {
+  clonedQuestions.push({
+    ...q,
+    gradeTier: 9 as const
+  });
+});
+
+// Nhân bản cho các lớp 6, 7, 8, 10, 11, 12
+([6, 7, 8, 10, 11, 12] as GradeTier[]).forEach(tier => {
+  ALL_BASE_QUESTIONS.forEach(q => {
+    let subId = q.subject ?? 'english';
+    const baseTopicId = q.topicId || inferTopicId(q.category, q.subject);
+    
+    // Tách môn THPT cho Lớp 10, 11, 12
+    if (tier >= 10 && tier <= 12) {
+      if (subId === 'science') {
+        if (baseTopicId.startsWith('sci-phy-')) subId = 'physics';
+        else if (baseTopicId.startsWith('sci-chem-')) subId = 'chemistry';
+        else if (baseTopicId.startsWith('sci-bio-')) subId = 'biology';
+      } else if (subId === 'history_geography') {
+        if (baseTopicId.startsWith('his-')) subId = 'history';
+        else if (baseTopicId.startsWith('geo-')) subId = 'geography';
+      }
+    }
+    
+    clonedQuestions.push({
+      ...q,
+      id: `${q.id}-g${tier}`,
+      subject: subId,
+      gradeTier: tier,
+      topicId: `${baseTopicId}-g${tier}`
+    });
+  });
+});
+
+// Tạo câu hỏi mẫu cho 21 môn Đại học - CS (Lớp 13)
+const CS_SUBJECTS_IDS = [
+  'cs_programming',
+  'cs_algorithms_structures',
+  'cs_computer_systems',
+  'cs_database_data',
+  'cs_networking_security',
+  'cs_software_engineering',
+  'cs_web_app_development',
+  'cs_cloud_computing',
+  'cs_artificial_intelligence',
+  'cs_graphics_advanced_computing',
+  'cs_embedded_systems',
+  'cs_robotics_fundamentals',
+  'cs_robot_programming',
+  'cs_robot_mechanics',
+  'cs_robot_intelligence',
+  'cs_navigation_motion',
+  'cs_robot_perception',
+  'cs_embedded_hardware',
+  'cs_specialized_robotics',
+  'cs_human_interaction',
+  'cs_robotics_engineering'
+] as SubjectId[];
+
+const getCsFirstTopicId = (subId: string): string => {
+  switch (subId) {
+    case 'cs_programming': return 'cs-programming-fundamentals';
+    case 'cs_algorithms_structures': return 'cs-data-structures';
+    case 'cs_computer_systems': return 'cs-computer-architecture';
+    case 'cs_database_data': return 'cs-database-systems';
+    case 'cs_networking_security': return 'cs-computer-networks';
+    case 'cs_software_engineering': return 'cs-software-engineering';
+    case 'cs_web_app_development': return 'cs-web-development';
+    case 'cs_cloud_computing': return 'cs-cloud-computing';
+    case 'cs_artificial_intelligence': return 'cs-artificial-intelligence';
+    case 'cs_graphics_advanced_computing': return 'cs-computer-graphics';
+    case 'cs_embedded_systems': return 'cs-embedded-systems';
+    case 'cs_robotics_fundamentals': return 'cs-robotics-fundamentals';
+    case 'cs_robot_programming': return 'cs-robot-programming';
+    case 'cs_robot_mechanics': return 'cs-robot-kinematics';
+    case 'cs_robot_intelligence': return 'cs-ai-for-robotics';
+    case 'cs_navigation_motion': return 'cs-motion-planning';
+    case 'cs_robot_perception': return 'cs-robot-perception';
+    case 'cs_embedded_hardware': return 'cs-embedded-robotics';
+    case 'cs_specialized_robotics': return 'cs-industrial-robotics';
+    case 'cs_human_interaction': return 'cs-human-robot-interaction-hri';
+    case 'cs_robotics_engineering': return 'cs-robotics-simulation';
+    default: return 'misc';
+  }
+};
+
+const csMockQuestions: Question[] = CS_SUBJECTS_IDS.map((subId) => {
+  return {
+    id: `cs-mock-q-${subId}`,
+    type: 'mcq',
+    category: 'Fundamentals',
+    prompt: `[Câu hỏi chuyên ngành] Đâu là khái niệm cơ bản nhất của môn học này?`,
+    options: [
+      'Khái niệm A (Đáp án chính xác)',
+      'Khái niệm B (Lựa chọn nhiễu)',
+      'Khái niệm C (Lựa chọn nhiễu)',
+      'Khái niệm D (Lựa chọn nhiễu)'
+    ],
+    correctAnswer: 'Khái niệm A (Đáp án chính xác)',
+    explanation: 'Đây là câu hỏi trắc nghiệm mẫu được sinh tự động giúp khởi tạo dữ liệu cho môn học.',
+    difficulty: 2,
+    source: 'Học viện CS',
+    subject: subId,
+    gradeTier: 13,
+    topicId: getCsFirstTopicId(subId)
+  };
+});
+
+export const INITIAL_QUESTIONS: Question[] = [
+  ...clonedQuestions,
+  ...csMockQuestions
+];
 
 

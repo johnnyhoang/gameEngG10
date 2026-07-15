@@ -6,7 +6,7 @@ import { INITIAL_QUESTIONS } from '../../data/questions';
 import { INITIAL_LESSONS } from '../../data/lessons';
 import { DEFAULT_UI_THEME, UI_THEMES } from '../../theme/uiThemes';
 import type { RewardRedemption } from '../../types/game';
-import { DEFAULT_GRADE_TIER } from '../../types/game';
+import { questionInScope } from '../../utils/learningScope';
 import { supabase } from '../../utils/supabaseClient';
 import { logActivity, checkLevelUp } from '../helpers';
 import { eventBus } from '../../utils/EventBus';
@@ -874,12 +874,9 @@ export const createPlayerSlice: StateCreator<
 
   getAdaptiveQuestion: (category) => {
           const state = get();
-          const list = state.questions.filter(q => {
-            const qSubject = (q as any).subject || 'english';
-            // Cô lập Tầng → Môn Phái (CORE_SPECS §1.4): nội dung không gắn tầng mặc định thuộc Tầng 9.
-            const qTier = q.gradeTier ?? DEFAULT_GRADE_TIER;
-            return q.category === category && qSubject === state.currentSubject && qTier === state.activeGradeTier;
-          });
+          const list = state.questions.filter(q =>
+            q.category === category && questionInScope(q, state.currentSubject, state.activeGradeTier)
+          );
           if (list.length === 0) return null;
 
           // Find historical rolling accuracy for this category
@@ -954,7 +951,7 @@ export const createPlayerSlice: StateCreator<
             // Generic fallback for basic subjects: gather categories dynamically from questions of that subject
             const uniqCategories = Array.from(new Set(
               state.questions
-                .filter(q => q.subject === state.currentSubject && (q.gradeTier ?? DEFAULT_GRADE_TIER) === state.activeGradeTier)
+                .filter(q => questionInScope(q, state.currentSubject, state.activeGradeTier))
                 .map(q => q.category)
             )).filter(Boolean);
             
@@ -1035,11 +1032,15 @@ export const createPlayerSlice: StateCreator<
 
   pullServerState: (serverData: any) => {
     set((state: any) => {
-      const updatedPlayer = serverData.player ? { ...state.player, ...serverData.player } : state.player;
+      // Môn/lớp đang chọn là lựa chọn cục bộ tức thời của người dùng — sync nền KHÔNG được
+      // ghi đè (tránh race: vừa đổi môn xong, response sync mang state cũ kéo ngược về môn cũ).
+      // Khôi phục môn/lớp từ server chỉ diễn ra lúc chọn hồ sơ (selectProfile).
+      const mergedPlayer = serverData.player ? { ...state.player, ...serverData.player } : state.player;
+      const updatedPlayer = mergedPlayer
+        ? { ...mergedPlayer, activeSubject: state.currentSubject, activeGradeTier: state.activeGradeTier }
+        : mergedPlayer;
       return {
         player: updatedPlayer,
-        currentSubject: updatedPlayer?.activeSubject || state.currentSubject,
-        activeGradeTier: updatedPlayer?.activeGradeTier || state.activeGradeTier,
         pet: serverData.pet ? { ...state.pet, ...serverData.pet } : state.pet,
         categoryStats: serverData.categoryStats || state.categoryStats,
         logs: serverData.logs || state.logs,

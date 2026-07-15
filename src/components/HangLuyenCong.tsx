@@ -19,6 +19,7 @@ import {
 } from '../data/hangLuyenCong';
 import type { SubjectId } from '../types/game';
 import { useSect } from '../contexts/SectContext';
+import { filterLessonsInScope, filterQuestionsInScope } from '../utils/learningScope';
 import type { Lesson } from '../data/lessons';
 import { FogCard } from './FogCard';
 import { FullscreenModal } from './Common/FullscreenModal';
@@ -134,7 +135,26 @@ const SUBJECT_META: Record<string, any> = {
   }
 };
 
-const SUBJECT_TRACKS: Record<HangSubjectId, {
+const DEFAULT_TRACK = {
+  tag: 'Luyện tập tổng hợp và củng cố kiến thức',
+  title: 'Phòng Luyện Công: Rèn luyện chuyên sâu kiến thức môn học',
+  description: 'Hệ thống câu hỏi và bài giảng được thiết kế để củng cố toàn diện kỹ năng và lý thuyết của môn học.',
+  focusLabel: 'Trọng tâm ôn tập',
+  focusPoints: [
+    'Luyện tập các dạng bài từ cơ bản đến nâng cao',
+    'Xem lý thuyết chi tiết tích hợp kèm theo bài giảng',
+    'Nhận diện nhanh cấu trúc câu hỏi đề thi'
+  ],
+  lessonTitle: 'Bài giảng lý thuyết',
+  lessonDescription: 'Nắm vững cốt lõi kiến thức trước khi bước vào phòng rèn luyện.',
+  sampleTitle: 'Đề mẫu tiêu biểu',
+  sampleDescription: 'Khảo sát nhanh với các dạng bài xuất hiện thường xuyên trong ngân hàng câu hỏi.',
+  toolTitle: 'Pháp bảo rèn luyện',
+  toolDescription: 'Các công cụ bổ trợ học tập giúp nâng cao hiệu quả tu luyện.',
+  notePlaceholder: 'Ghi chép tâm đắc của con sau buổi luyện công này...'
+};
+
+const SUBJECT_TRACKS: Partial<Record<HangSubjectId, {
   tag: string;
   title: string;
   description: string;
@@ -147,7 +167,7 @@ const SUBJECT_TRACKS: Record<HangSubjectId, {
   toolTitle: string;
   toolDescription: string;
   notePlaceholder: string;
-}> = {
+}>> = {
   math: {
     tag: 'Toán - công thức, dạng bài, thực chiến',
     title: 'Track Toán: giải nhanh, trình bày gọn, tránh lỗi công thức',
@@ -345,16 +365,11 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   const subjectToolIds = getSubjectToolIds(selectedSubject);
 
   const subjectQuestions = useMemo(() => {
-    return questions.filter(q =>
-      (q.subject || 'english') === selectedSubject
-      && (q.gradeTier ?? q.grade ?? 9) === activeGradeTier
-    );
+    return filterQuestionsInScope(questions, selectedSubject as SubjectId, activeGradeTier);
   }, [questions, selectedSubject, activeGradeTier]);
 
   const subjectLessons = useMemo(() => {
-    return lessons.filter(l =>
-      l.subject === selectedSubject && (l.gradeTier ?? 9) === activeGradeTier
-    );
+    return filterLessonsInScope(lessons, selectedSubject as SubjectId, activeGradeTier);
   }, [lessons, selectedSubject, activeGradeTier]);
 
   useEffect(() => {
@@ -394,7 +409,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
   }, [selectedSubject, subjectQuestions]);
 
   const meta = SUBJECT_META[selectedSubject];
-  const track = SUBJECT_TRACKS[selectedSubject];
+  const track = SUBJECT_TRACKS[selectedSubject] || DEFAULT_TRACK;
 
   const handleStart = () => {
     onStartPractice();

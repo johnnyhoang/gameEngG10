@@ -3,6 +3,7 @@ import { toast } from '../../utils/toast';
 import type { Question } from '../../types/game';
 import type { UiThemeId } from '../../types/game';
 import { shuffleWithSeed } from '../../utils/shuffle';
+import { filterQuestionsInScope } from '../../utils/learningScope';
 
 
 export interface StoryAppProps {
@@ -29,9 +30,7 @@ export const StoryApp: React.FC<StoryAppProps> = ({ uiTheme, gradeTier, onReward
   }, [activeStoryQuest?.id, activeStoryQuest?.options]);
 
   const initStoryQuest = (subject: 'math' | 'english' | 'literature') => {
-    const list = questions.filter(q =>
-      (q.subject || 'english') === subject && (q.gradeTier ?? q.grade ?? 9) === gradeTier
-    );
+    const list = filterQuestionsInScope(questions, subject, gradeTier);
     if (list.length > 0) {
       setActiveStoryQuest(list[Math.floor(Math.random() * list.length)]);
     }

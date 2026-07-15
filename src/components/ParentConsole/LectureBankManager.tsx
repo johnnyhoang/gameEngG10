@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { BookOpen, Plus, Trash2, Search, RefreshCw } from 'lucide-react';
 import { SideDrawer } from '../Common/SideDrawer';
 import { SUBJECTS_CONFIG } from '../../types/game';
+import type { SubjectId } from '../../types/game';
 import { toast } from '../../utils/toast';
 import { supabase } from '../../utils/supabaseClient';
 import { useGameState } from '../../hooks/useGameState';
@@ -22,17 +23,17 @@ const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '
 
 export const LectureBankManager: React.FC = () => {
   const activeGradeTier = useGameState(state => state.activeGradeTier);
+  const currentSubject = useGameState(state => state.currentSubject);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedSubject, setSelectedSubject] = useState<string>('all');
 
   // Form Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLesson, setEditingLesson] = useState<Lesson | null>(null);
 
   // Form Fields
-  const [formSubject, setFormSubject] = useState('english');
+  const [formSubject, setFormSubject] = useState<SubjectId>(currentSubject);
   const [formCategory, setFormCategory] = useState('');
   const [formTopic, setFormTopic] = useState('');
   const [formTitle, setFormTitle] = useState('');
@@ -46,7 +47,7 @@ export const LectureBankManager: React.FC = () => {
 
   useEffect(() => {
     setVisibleCount(10);
-  }, [searchQuery, selectedSubject]);
+  }, [searchQuery, currentSubject]);
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const target = e.currentTarget;
@@ -87,7 +88,7 @@ export const LectureBankManager: React.FC = () => {
 
   const handleOpenCreateModal = () => {
     setEditingLesson(null);
-    setFormSubject('english');
+    setFormSubject(currentSubject);
     setFormCategory('');
     setFormTopic('');
     setFormTitle('');
@@ -98,7 +99,7 @@ export const LectureBankManager: React.FC = () => {
 
   const handleOpenEditModal = (lesson: Lesson) => {
     setEditingLesson(lesson);
-    setFormSubject(lesson.subject);
+    setFormSubject(lesson.subject as SubjectId);
     setFormCategory(lesson.category);
     setFormTopic(lesson.topic);
     setFormTitle(lesson.title);
@@ -195,7 +196,7 @@ export const LectureBankManager: React.FC = () => {
   // Filters
   const filteredLessons = useMemo(() => {
     return lessons.filter(l => {
-      const matchSubject = selectedSubject === 'all' || l.subject === selectedSubject;
+      const matchSubject = l.subject === currentSubject;
       const matchGrade = l.grade_tier === activeGradeTier;
       const q = searchQuery.toLowerCase().trim();
       const matchQuery = !q || 
@@ -205,7 +206,7 @@ export const LectureBankManager: React.FC = () => {
         l.theory.toLowerCase().includes(q);
       return matchGrade && matchSubject && matchQuery;
     });
-  }, [lessons, activeGradeTier, selectedSubject, searchQuery]);
+  }, [lessons, activeGradeTier, currentSubject, searchQuery]);
 
   return (
     <div className="space-y-6">
@@ -250,89 +251,6 @@ export const LectureBankManager: React.FC = () => {
           </button>
         </div>
 
-        {/* Môn phái selector — card dẹp 2 dòng tiết kiệm chiều cao */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-          <button
-            onClick={() => setSelectedSubject('all')}
-            className={`relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition-all duration-300 cursor-pointer hover:-translate-y-0.5 ${
-              selectedSubject === 'all'
-                ? 'border-synth-cyan bg-synth-cyan/15 shadow-[0_0_15px_rgba(0,240,255,0.2)] ring-1 ring-synth-cyan'
-                : 'border-white/5 bg-white/5 hover:border-white/15'
-            }`}
-          >
-            <div className="flex items-center gap-2">
-              <span className="text-xl shrink-0">📚</span>
-              <div className="min-w-0 flex-1">
-                <span className="block text-[11px] font-black uppercase font-orbitron text-white truncate">
-                  Tất Cả
-                </span>
-                <span className="block text-[9px] text-slate-400 truncate">
-                  <strong className="text-white">{lessons.length}</strong> bài · Toàn Học Viện
-                </span>
-              </div>
-              {selectedSubject === 'all' && (
-                <span className="text-[7px] font-black uppercase tracking-wider bg-synth-cyan text-black px-1.5 py-0.5 rounded-full shadow-[0_0_8px_rgba(0,240,255,0.4)] shrink-0">
-                  Active
-                </span>
-              )}
-            </div>
-            <div className="flex items-center gap-2 mt-2" title="Độ phủ giáo trình">
-              <div className="flex-1 h-1 bg-black/45 rounded-full overflow-hidden">
-                <div className="h-full rounded-full bg-synth-cyan w-full" />
-              </div>
-              <span className="text-[8px] font-bold text-slate-400 shrink-0">100%</span>
-            </div>
-          </button>
-
-          {Object.values(SUBJECTS_CONFIG).map(sub => {
-            const isActive = selectedSubject === sub.id;
-            const subLessons = lessons.filter(l => l.subject === sub.id);
-            const count = subLessons.length;
-            const topicsCount = new Set(subLessons.map(l => l.topic)).size;
-            const percent = count === 0 ? 0 : Math.min(100, Math.max(15, count * 15));
-
-            return (
-              <button
-                key={sub.id}
-                onClick={() => setSelectedSubject(sub.id)}
-                className={`relative overflow-hidden rounded-2xl border px-3 py-2.5 text-left transition-all duration-300 cursor-pointer hover:-translate-y-0.5 ${
-                  isActive
-                    ? 'border-synth-cyan bg-synth-cyan/15 shadow-[0_0_15px_rgba(0,240,255,0.2)] ring-1 ring-synth-cyan'
-                    : 'border-white/5 bg-white/5 hover:border-white/15'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-xl shrink-0">{sub.icon}</span>
-                  <div className="min-w-0 flex-1">
-                    <span className="block text-[11px] font-black uppercase font-orbitron text-white truncate" title={sub.name}>
-                      {sub.name}
-                    </span>
-                    <span className="block text-[9px] text-slate-400 truncate" title={`${count} bài giảng · ${topicsCount} nhóm chủ đề · ${sub.group === 'chuyen_sau' ? 'Chuyên Sâu' : 'Cơ Bản'}`}>
-                      <strong className="text-white">{count}</strong> bài · <strong className="text-white">{topicsCount}</strong> nhóm · {sub.group === 'chuyen_sau' ? 'Chuyên Sâu' : 'Cơ Bản'}
-                    </span>
-                  </div>
-                  {isActive && (
-                    <span className="text-[7px] font-black uppercase tracking-wider bg-synth-cyan text-black px-1.5 py-0.5 rounded-full shadow-[0_0_8px_rgba(0,240,255,0.4)] shrink-0">
-                      Active
-                    </span>
-                  )}
-                </div>
-                <div className="flex items-center gap-2 mt-2" title="Độ phủ giáo trình">
-                  <div className="flex-1 h-1 bg-black/40 rounded-full overflow-hidden">
-                    <div
-                      className="h-full rounded-full transition-all duration-500"
-                      style={{
-                        width: `${percent}%`,
-                        backgroundColor: isActive ? sub.color : '#64748b'
-                      }}
-                    />
-                  </div>
-                  <span className="text-[8px] font-bold text-slate-400 shrink-0">{percent}%</span>
-                </div>
-              </button>
-            );
-          })}
-        </div>
       </div>
 
       {/* Lessons List Grid */}
@@ -430,7 +348,7 @@ export const LectureBankManager: React.FC = () => {
                   <span className="text-slate-400 font-semibold">Môn phái học tập</span>
                   <select
                     value={formSubject}
-                    onChange={(e) => setFormSubject(e.target.value)}
+                    onChange={(e) => setFormSubject(e.target.value as SubjectId)}
                     className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan cursor-pointer"
                   >
                     {Object.values(SUBJECTS_CONFIG).map(sub => (

@@ -3,6 +3,7 @@ import { Award } from 'lucide-react';
 import { toast } from '../../utils/toast';
 import { SUBJECTS_CONFIG } from '../../types/game';
 import type { Question, SubjectId, UiThemeId } from '../../types/game';
+import { filterQuestionsInScope } from '../../utils/learningScope';
 
 export interface FlashcardAppProps {
   questions: Question[];
@@ -31,9 +32,7 @@ export const FlashcardApp: React.FC<FlashcardAppProps> = ({
   const targetSubject = (activeSectId || 'english') as SubjectId;
 
   useEffect(() => {
-    const filtered = questions.filter(q =>
-      (q.subject || 'english') === targetSubject && (q.gradeTier ?? q.grade ?? 9) === gradeTier
-    );
+    const filtered = filterQuestionsInScope(questions, targetSubject, gradeTier);
     const shuffled = [...filtered].sort(() => 0.5 - Math.random()).slice(0, 15);
     setActiveFlashcards(shuffled);
   }, [questions, targetSubject, gradeTier]);

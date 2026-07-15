@@ -1,5 +1,6 @@
 import type { SubjectId, CategoryStat, GradeTier } from '../types/game';
 import { CORE_KNOWLEDGE_TOPICS } from '../data/coreKnowledge';
+import { filterLessonsInScope, filterQuestionsInScope } from './learningScope';
 
 // Đẳng Cấp Môn Phái — nguồn định nghĩa DUY NHẤT (CORE_SPECS §7.4). Dùng chung giữa UI hiển thị
 // (ProfilePage) và store (ratchet maxAchievedMasteryRank) để không lệch bảng như từng xảy ra
@@ -45,12 +46,8 @@ export interface SubjectMasteryInput {
 // Công thức CORE_SPECS §7.4.2: 50% bài học hoàn thành + 50% tỉ lệ câu đúng (mẫu số = tổng
 // minQuestions của Core Knowledge topics thuộc môn, để Viện Trưởng import thêm câu không ăn gian tỉ lệ).
 export function computeSubjectMasteryRatio({ subjectId, gradeTier, questions, categoryStats, lessons, lessonsProgress }: SubjectMasteryInput): number {
-  const contextQuestions = questions.filter(q =>
-    q.subject === subjectId && (q.gradeTier ?? q.grade ?? 9) === gradeTier
-  );
-  const contextLessons = lessons.filter(l =>
-    l.subject === subjectId && (l.gradeTier ?? 9) === gradeTier
-  );
+  const contextQuestions = filterQuestionsInScope(questions, subjectId, gradeTier);
+  const contextLessons = filterLessonsInScope(lessons, subjectId, gradeTier);
   const subjectCategories = Array.from(new Set(contextQuestions.map(q => q.category)));
   const correctCount = subjectCategories.reduce((sum, cat) => sum + (categoryStats[cat]?.totalCorrect || 0), 0);
 

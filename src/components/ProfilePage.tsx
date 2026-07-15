@@ -4,7 +4,8 @@ import { UI_THEMES, type UiThemeConfig } from '../theme/uiThemes';
 import type { UiThemeId, UserProfile } from '../types/game';
 import { useGameState, THEME_UNLOCK_COST } from '../hooks/useGameState';
 import { useSect } from '../contexts/SectContext';
-import { SUBJECTS_CONFIG, GRADE_TIERS, getStudentRankForLevel } from '../types/game';
+import { SUBJECTS_CONFIG, GRADE_TIERS, getStudentRankForLevel, GRADE_SUBJECTS } from '../types/game';
+import { getLessonGradeTier, getQuestionGradeTier, lessonInScope, questionInScope } from '../utils/learningScope';
 import { toast } from '../utils/toast';
 import { GiangHoCamNang } from './GiangHoCamNang';
 import { ActivityLog } from './ActivityLog';
@@ -303,8 +304,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               </div>
               <div className="grid grid-cols-4 sm:grid-cols-7 gap-2">
                 {GRADE_TIERS.filter(tierCfg =>
-                  lessons.some(lesson => (lesson.gradeTier ?? 9) === tierCfg.tier)
-                  || questions.some(question => (question.gradeTier ?? question.grade ?? 9) === tierCfg.tier)
+                  lessons.some(lesson => getLessonGradeTier(lesson) === tierCfg.tier)
+                  || questions.some(question => getQuestionGradeTier(question) === tierCfg.tier)
                 ).map(tierCfg => {
                   const isActive = tierCfg.tier === activeGradeTier;
                   return (
@@ -390,13 +391,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 pt-2">
-                {Object.values(SUBJECTS_CONFIG).filter(sub =>
-                  lessons.some(lesson => lesson.subject === sub.id && (lesson.gradeTier ?? 9) === activeGradeTier)
-                  || questions.some(question =>
-                    (question.subject ?? 'english') === sub.id
-                    && (question.gradeTier ?? question.grade ?? 9) === activeGradeTier
-                  )
-                ).map(sub => {
+                {Object.values(SUBJECTS_CONFIG).filter(sub => {
+                  const allowedSubjects = GRADE_SUBJECTS[activeGradeTier] || [];
+                  return allowedSubjects.includes(sub.id) && (
+                    lessons.some(lesson => lessonInScope(lesson, sub.id, activeGradeTier))
+                    || questions.some(question => questionInScope(question, sub.id, activeGradeTier))
+                  );
+                }).map(sub => {
                   const isActive = activeSectId === sub.id;
                   return (
                     <button

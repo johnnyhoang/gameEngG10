@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { INITIAL_LESSONS } from '../data/lessons';
+import { lessonInScope } from '../utils/learningScope';
 import { 
   ChevronLeft, Sparkles, BookOpen, Languages, Calculator, Play
 } from 'lucide-react';
@@ -49,10 +50,16 @@ export const LessonStudyView: React.FC<LessonStudyViewProps> = ({
 }) => {
   const lessons = useGameState(state => state.lessons);
   const lessonsProgress = useGameState(state => state.lessonsProgress);
+  const currentSubject = useGameState(state => state.currentSubject);
+  const activeGradeTier = useGameState(state => state.activeGradeTier);
 
   const lesson = useMemo(() => {
     return lessons.find(l => l.id === lessonId) || INITIAL_LESSONS.find(l => l.id === lessonId);
   }, [lessons, lessonId]);
+
+  // Chốt chặn: lessonId có thể là ID cũ còn sót sau khi đổi môn/lớp —
+  // không render bài giảng lệch ngữ cảnh học tập đang chọn.
+  const isWrongContext = !!lesson && !lessonInScope(lesson, currentSubject, activeGradeTier);
 
   const isCompleted = lessonsProgress[lessonId] || false;
 
@@ -156,6 +163,26 @@ export const LessonStudyView: React.FC<LessonStudyViewProps> = ({
     return (
       <div className="text-center py-10 font-orbitron text-synth-cyan">
         Không tìm thấy nội dung bài học.
+      </div>
+    );
+  }
+
+  if (isWrongContext) {
+    return (
+      <div className="max-w-xl mx-auto text-center py-10 space-y-4">
+        <p className="font-orbitron font-bold text-sm text-synth-orange uppercase tracking-wider">
+          📚 Bài giảng này thuộc môn/lớp khác
+        </p>
+        <p className="text-xs text-slate-400 leading-relaxed">
+          Bạn vừa chuyển ngữ cảnh học tập nên bài giảng đang mở không còn phù hợp.
+          Hãy quay lại chọn bài giảng của môn hiện tại nhé.
+        </p>
+        <button
+          onClick={onBack}
+          className="px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all"
+        >
+          <ChevronLeft className="w-4 h-4 inline -mt-0.5" /> Quay lại
+        </button>
       </div>
     );
   }

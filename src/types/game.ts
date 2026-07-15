@@ -323,7 +323,7 @@ export interface GameEvent {
 
 // ==================== GRADE TIER (Bậc Học — CORE_SPECS §1.4) ====================
 /** Mỗi lớp học là một Bậc Học học đường cô lập 100% (Tầng → Môn Phái → Nội dung). */
-export type GradeTier = 6 | 7 | 8 | 9 | 10 | 11 | 12;
+export type GradeTier = 6 | 7 | 8 | 9 | 10 | 11 | 12 | 13;
 
 export const DEFAULT_GRADE_TIER: GradeTier = 9;
 
@@ -341,7 +341,8 @@ export const GRADE_TIERS: GradeTierConfig[] = [
   { tier: 9, name: 'Tầng Lớp 9', icon: '🗼', description: 'Nội dung học tập Lớp 9.' },
   { tier: 10, name: 'Tầng Lớp 10', icon: '🌋', description: 'Nội dung học tập Lớp 10.' },
   { tier: 11, name: 'Tầng Lớp 11', icon: '🌌', description: 'Nội dung học tập Lớp 11.' },
-  { tier: 12, name: 'Tầng Lớp 12', icon: '☄️', description: 'Nội dung học tập Lớp 12.' }
+  { tier: 12, name: 'Tầng Lớp 12', icon: '☄️', description: 'Nội dung học tập Lớp 12.' },
+  { tier: 13, name: 'Đại học - CS', icon: '🎓', description: 'Đại học – Computer Science' }
 ];
 
 export function getGradeTierConfig(tier: GradeTier): GradeTierConfig {
@@ -358,7 +359,35 @@ export type SubjectId =
   | 'civics' 
   | 'technology' 
   | 'informatics' 
-  | 'arts';
+  | 'arts'
+  // THPT (Lớp 10 - 12)
+  | 'physics'
+  | 'chemistry'
+  | 'biology'
+  | 'history'
+  | 'geography'
+  // Đại học - CS
+  | 'cs_programming'
+  | 'cs_algorithms_structures'
+  | 'cs_computer_systems'
+  | 'cs_database_data'
+  | 'cs_networking_security'
+  | 'cs_software_engineering'
+  | 'cs_web_app_development'
+  | 'cs_cloud_computing'
+  | 'cs_artificial_intelligence'
+  | 'cs_graphics_advanced_computing'
+  | 'cs_embedded_systems'
+  | 'cs_robotics_fundamentals'
+  | 'cs_robot_programming'
+  | 'cs_robot_mechanics'
+  | 'cs_robot_intelligence'
+  | 'cs_navigation_motion'
+  | 'cs_robot_perception'
+  | 'cs_embedded_hardware'
+  | 'cs_specialized_robotics'
+  | 'cs_human_interaction'
+  | 'cs_robotics_engineering';
 
 export interface LearningContext {
   gradeTier: GradeTier;
@@ -387,7 +416,42 @@ export interface SubjectConfig {
   group: 'chuyen_sau' | 'co_ban';
 }
 
+/** Bản đồ môn học được phép theo từng Cấp lớp (CORE_SPECS §1.4). */
+export const GRADE_SUBJECTS: Record<GradeTier, SubjectId[]> = {
+  6: ['english', 'math', 'literature', 'science', 'history_geography', 'civics', 'technology', 'informatics', 'arts'],
+  7: ['english', 'math', 'literature', 'science', 'history_geography', 'civics', 'technology', 'informatics', 'arts'],
+  8: ['english', 'math', 'literature', 'science', 'history_geography', 'civics', 'technology', 'informatics', 'arts'],
+  9: ['english', 'math', 'literature', 'science', 'history_geography', 'civics', 'technology', 'informatics', 'arts'],
+  10: ['english', 'math', 'literature', 'physics', 'chemistry', 'biology', 'history', 'geography', 'informatics', 'technology', 'civics', 'arts'],
+  11: ['english', 'math', 'literature', 'physics', 'chemistry', 'biology', 'history', 'geography', 'informatics', 'technology', 'civics', 'arts'],
+  12: ['english', 'math', 'literature', 'physics', 'chemistry', 'biology', 'history', 'geography', 'informatics', 'technology', 'civics', 'arts'],
+  13: [
+    'cs_programming',
+    'cs_algorithms_structures',
+    'cs_computer_systems',
+    'cs_database_data',
+    'cs_networking_security',
+    'cs_software_engineering',
+    'cs_web_app_development',
+    'cs_cloud_computing',
+    'cs_artificial_intelligence',
+    'cs_graphics_advanced_computing',
+    'cs_embedded_systems',
+    'cs_robotics_fundamentals',
+    'cs_robot_programming',
+    'cs_robot_mechanics',
+    'cs_robot_intelligence',
+    'cs_navigation_motion',
+    'cs_robot_perception',
+    'cs_embedded_hardware',
+    'cs_specialized_robotics',
+    'cs_human_interaction',
+    'cs_robotics_engineering'
+  ]
+};
+
 export const SUBJECTS_CONFIG: Record<SubjectId, SubjectConfig> = {
+  // THCS & Dùng chung
   english: { id: 'english', name: 'Tiếng Anh', icon: '🇬🇧', color: '#00f0ff', group: 'chuyen_sau' },
   math: { id: 'math', name: 'Toán Học', icon: '📐', color: '#ff007f', group: 'chuyen_sau' },
   literature: { id: 'literature', name: 'Ngữ Văn', icon: '📖', color: '#f97316', group: 'chuyen_sau' },
@@ -396,7 +460,37 @@ export const SUBJECTS_CONFIG: Record<SubjectId, SubjectConfig> = {
   civics: { id: 'civics', name: 'Giáo Dục Công Dân', icon: '⚖️', color: '#f59e0b', group: 'co_ban' },
   technology: { id: 'technology', name: 'Công Nghệ', icon: '🛠️', color: '#3b82f6', group: 'co_ban' },
   informatics: { id: 'informatics', name: 'Tin Học', icon: '💻', color: '#ec4899', group: 'co_ban' },
-  arts: { id: 'arts', name: 'Nghệ Thuật', icon: '🎨', color: '#14b8a6', group: 'co_ban' }
+  arts: { id: 'arts', name: 'Nghệ Thuật', icon: '🎨', color: '#14b8a6', group: 'co_ban' },
+
+  // THPT (Lớp 10 - 12)
+  physics: { id: 'physics', name: 'Vật Lý', icon: '⚛️', color: '#00f0ff', group: 'chuyen_sau' },
+  chemistry: { id: 'chemistry', name: 'Hóa Học', icon: '🧪', color: '#10b981', group: 'chuyen_sau' },
+  biology: { id: 'biology', name: 'Sinh Học', icon: '🧬', color: '#ec4899', group: 'co_ban' },
+  history: { id: 'history', name: 'Lịch Sử', icon: '⏳', color: '#8b5cf6', group: 'co_ban' },
+  geography: { id: 'geography', name: 'Địa Lý', icon: '🌏', color: '#f59e0b', group: 'co_ban' },
+
+  // Đại học - CS
+  cs_programming: { id: 'cs_programming', name: 'Programming', icon: '💻', color: '#00f0ff', group: 'chuyen_sau' },
+  cs_algorithms_structures: { id: 'cs_algorithms_structures', name: 'Algorithms & Data Structures', icon: '📊', color: '#ff007f', group: 'chuyen_sau' },
+  cs_computer_systems: { id: 'cs_computer_systems', name: 'Computer Systems', icon: '🖥️', color: '#3b82f6', group: 'co_ban' },
+  cs_database_data: { id: 'cs_database_data', name: 'Database & Data', icon: '🗄️', color: '#10b981', group: 'co_ban' },
+  cs_networking_security: { id: 'cs_networking_security', name: 'Networking & Security', icon: '🛡️', color: '#ec4899', group: 'chuyen_sau' },
+  cs_software_engineering: { id: 'cs_software_engineering', name: 'Software Engineering', icon: '⚙️', color: '#8b5cf6', group: 'chuyen_sau' },
+  cs_web_app_development: { id: 'cs_web_app_development', name: 'Web & App Development', icon: '🌐', color: '#f59e0b', group: 'co_ban' },
+  cs_cloud_computing: { id: 'cs_cloud_computing', name: 'Cloud Computing', icon: '☁️', color: '#06b6d4', group: 'co_ban' },
+  cs_artificial_intelligence: { id: 'cs_artificial_intelligence', name: 'Artificial Intelligence', icon: '🧠', color: '#a855f7', group: 'chuyen_sau' },
+  cs_graphics_advanced_computing: { id: 'cs_graphics_advanced_computing', name: 'Graphics & Advanced Computing', icon: '🎮', color: '#f43f5e', group: 'co_ban' },
+  cs_embedded_systems: { id: 'cs_embedded_systems', name: 'Embedded Systems', icon: '🔌', color: '#eab308', group: 'co_ban' },
+  cs_robotics_fundamentals: { id: 'cs_robotics_fundamentals', name: 'Robotics Fundamentals', icon: '🤖', color: '#10b981', group: 'chuyen_sau' },
+  cs_robot_programming: { id: 'cs_robot_programming', name: 'Robot Programming', icon: '🤖', color: '#3b82f6', group: 'chuyen_sau' },
+  cs_robot_mechanics: { id: 'cs_robot_mechanics', name: 'Robot Mechanics', icon: '🔩', color: '#f97316', group: 'co_ban' },
+  cs_robot_intelligence: { id: 'cs_robot_intelligence', name: 'Robot Intelligence', icon: '💡', color: '#8b5cf6', group: 'chuyen_sau' },
+  cs_navigation_motion: { id: 'cs_navigation_motion', name: 'Navigation & Motion', icon: '🧭', color: '#14b8a6', group: 'chuyen_sau' },
+  cs_robot_perception: { id: 'cs_robot_perception', name: 'Robot Perception', icon: '👁️', color: '#ec4899', group: 'co_ban' },
+  cs_embedded_hardware: { id: 'cs_embedded_hardware', name: 'Embedded & Hardware', icon: '🎛️', color: '#3b82f6', group: 'co_ban' },
+  cs_specialized_robotics: { id: 'cs_specialized_robotics', name: 'Specialized Robotics', icon: '🦾', color: '#ef4444', group: 'co_ban' },
+  cs_human_interaction: { id: 'cs_human_interaction', name: 'Human Interaction', icon: '🤝', color: '#10b981', group: 'co_ban' },
+  cs_robotics_engineering: { id: 'cs_robotics_engineering', name: 'Robotics Engineering', icon: '📐', color: '#f59e0b', group: 'chuyen_sau' }
 };
 
 // ==================== WUXIA RANK DEFINITIONS ====================

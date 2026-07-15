@@ -3,6 +3,7 @@ import { useGameState, DEFAULT_GAME_SETTINGS } from '../hooks/useGameState';
 import { useSect } from '../contexts/SectContext';
 import { DEFAULT_GRADE_TIER, SUBJECTS_CONFIG } from '../types/game';
 import type { SubjectId } from '../types/game';
+import { filterQuestionsInScope } from '../utils/learningScope';
 import {
   Compass, Sword, ShieldAlert, Star, Zap, BookOpen,
   Skull, BookMarked, Heart, Volume2
@@ -37,10 +38,7 @@ export function Arena({ onStartPlay }: ArenaProps) {
   const isChuyenSau = activeSubjectConfig.group === 'chuyen_sau';
 
   const subjectQuestionCount = useMemo(
-    () => questions.filter(q =>
-      (q.subject || 'english') === activeSectId
-      && (q.gradeTier ?? q.grade ?? DEFAULT_GRADE_TIER) === activeGradeTier
-    ).length,
+    () => filterQuestionsInScope(questions, activeSectId as SubjectId, activeGradeTier).length,
     [questions, activeSectId, activeGradeTier]
   );
 

@@ -8,6 +8,7 @@ import {
 import { CORE_KNOWLEDGE_TOPICS, inferTopicId } from '../data/coreKnowledge';
 import { useSect } from '../contexts/SectContext';
 import { SUBJECTS_CONFIG } from '../types/game';
+import { filterLessonsInScope } from '../utils/learningScope';
 import { SearchSuggest } from './Common/SearchSuggest';
 import { isLightTheme } from '../theme/uiThemes';
 
@@ -80,9 +81,7 @@ export function WorldMap({
   };
 
   const pageExplorationStates = useGameState(state => state.pageExplorationStates || {});
-  const subjectLessons = lessons.filter(l =>
-    l.subject === activeSectId && (l.gradeTier ?? 9) === activeGradeTier
-  );
+  const subjectLessons = filterLessonsInScope(lessons, activeSectId as any, activeGradeTier);
   const completedLessons = subjectLessons.filter(l => lessonsProgress[l.id]).length;
 
 

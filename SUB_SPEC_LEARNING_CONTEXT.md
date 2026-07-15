@@ -13,6 +13,11 @@ interface LearningContext {
 
 - `gradeTier` và `subjectId` luôn đi cùng nhau tại boundary chọn nội dung, API và persistence.
 - Mọi content entity (`Question`, `Lesson`, `CoreKnowledgeTopic`, `Activity`) phải có `gradeTier` và `subjectId`/`subject` bắt buộc.
+- **Bản đồ môn học theo Cấp lớp (`GRADE_SUBJECTS`)**: Cấp lớp quyết định danh sách môn học được phép tu học:
+  - **THCS (Lớp 6 - 9)**: Dùng 9 môn học phổ thông cũ.
+  - **THPT (Lớp 10 - 12)**: Dùng các môn riêng biệt (tách `science` thành `physics`, `chemistry`, `biology`; tách `history_geography` thành `history`, `geography`).
+  - **Đại học - CS (Lớp 13)**: Dùng 21 môn học chuyên ngành Computer Science & Robot học.
+- **Cơ chế Nhân bản dữ liệu học đường (Runtime Cloning)**: Dữ liệu tĩnh gốc của Lớp 9 được tự động nhân bản sang các lớp 6, 7, 8, 10, 11, 12 lúc khởi chạy app. ID của nội dung nhân bản đính kèm hậu tố `-g{tier}` để đảm bảo cô lập hoàn toàn tiến trình học tập của từng lớp. Đối với lớp 10, 11, 12, dữ liệu môn `science` và `history_geography` sẽ được tự động phân bổ vào môn học THPT tương ứng dựa trên tiền tố ID chủ đề.
 - Không dùng tên file/type/route chứa grade cụ thể cho implementation mới.
 - Không fallback sang grade hoặc subject khác khi context hiện tại thiếu dữ liệu. UI phải hiển thị empty state đúng context.
 - Thứ tự cô lập: **Bậc Học → Môn học → Hồ sơ → Quyền truy cập**.
@@ -32,6 +37,16 @@ item.gradeTier === context.gradeTier && item.subjectId === context.subjectId
 - Mọi capability chuyên môn phải được cung cấp qua `SubjectModule` manifest; component lõi không tự kiểm tra `subjectId === ...` để quyết định feature, renderer hoặc bộ chấm.
 - Ngữ Văn cung cấp blueprint/metadata đề Văn, renderer ngữ liệu đọc hiểu, gợi ý theo dạng bài và assessment provider chấm bài viết theo rubric.
 - Grade/môn không có dữ liệu hoặc capability không xuất hiện trong selector/navigation; không duy trì danh sách `active/coming_soon` hardcode.
+
+### 2.1. Các chốt chặn và cơ chế phòng thủ khi đổi ngữ cảnh học tập
+
+Để ngăn chặn triệt để tình trạng rò rỉ nội dung hoặc lệch môn/lớp khi học sinh chuyển môn, hệ thống áp dụng các cơ chế bảo vệ sau:
+1. **Dọn dẹp trạng thái tức thời (Cleanup State)**: Khi thay đổi `activeSectId` hoặc `activeGradeTier`, ứng dụng tự động xóa bỏ `selectedLessonId`, `bossId` và thoát khỏi các màn hình làm bài (`play`) hoặc đọc bài giảng (`lesson-study`) để quay lại màn hình bản đồ (`WorldMap`).
+2. **Remount cây component (Key-based Remounting)**: Gắn thuộc tính `key={\`\${activeSectId}-\${activeGradeTier}\`}` vào các component lớn phụ thuộc ngữ cảnh (`WorldMap`, `Arena`, `PlayArea`, `HangLuyenCong`, `RelaxationZone`). Việc này đảm bảo React sẽ hủy bỏ và khởi tạo lại hoàn toàn component, loại bỏ toàn bộ state cục bộ của môn/lớp cũ.
+3. **Spinner khóa thao tác và Chống race condition (Versioning)**: Khi đổi ngữ cảnh, hiện spinner che toàn màn hình chặn mọi tương tác của học sinh. Spinner giữ tối thiểu 400ms và chỉ tắt khi phiên bản ngữ cảnh hiện tại (`learningContextVersion`) trùng khớp, ngăn chặn các response bất đồng bộ cũ từ API ghi đè/tắt spinner nhầm.
+4. **Xác nhận chuyển môn (Confirmation)**: Hiển thị cảnh báo và yêu cầu xác nhận (`window.confirm`) khi học sinh muốn chuyển môn trong lúc đang làm bài hoặc đang mở bài giảng.
+5. **Cảnh báo lệch ngữ cảnh (Watchdog - Chỉ chạy ở DEV)**: Sử dụng hàm `devWarnOutOfScope` để ghi nhận và thông báo đỏ (`console.error`) lập tức trên màn hình Console của nhà phát triển nếu bất kỳ câu hỏi hoặc bài giảng nào lệch với môn/lớp đang chọn.
+
 
 ## 3. Backend/API
 
@@ -74,4 +89,5 @@ Mọi endpoint phải:
 - Thêm một subject mới chỉ cần nạp config/content/capability; app shell không đổi.
 - Thêm, gỡ hoặc phát triển độc lập một feature chuyên môn chỉ sửa module sở hữu và registry; không thêm nhánh môn mới vào `PlayArea`, navigation hoặc mini-game hub.
 - Refresh/login giữ đúng context theo profile; chuyển context không làm rò state/cache/progress.
+- Chuyển ngữ cảnh học tập phải được bảo vệ bởi đầy đủ 5 cơ chế phòng vệ tại frontend (Dọn dẹp, Remount, Spinner chống race, Xác nhận và Watchdog) đảm bảo không bao giờ rò rỉ dữ liệu môn cũ.
 - Contract tests bao phủ ít nhất hai grade × ba subject và negative test chống truy cập chéo profile/context.

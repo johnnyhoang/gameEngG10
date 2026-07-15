@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { useSect } from '../contexts/SectContext';
 import type { Question } from '../types/game';
+import { devWarnOutOfScope, questionInScope } from '../utils/learningScope';
 import { INITIAL_LESSONS } from '../data/lessons';
 import { ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../data/englishExamBlueprint';
 import { MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
@@ -156,9 +157,13 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const [timeLeft, setTimeLeft] = useState(0);
   const timerRef = useRef<any>(null);
 
+  // Đã nạp xong pool câu hỏi cho ải này chưa (phân biệt "đang tải" với "pool rỗng")
+  const [initDone, setInitDone] = useState(false);
+
   // Initialize questions for this run
   useEffect(() => {
     let active = true;
+    setInitDone(false);
 
     const initOnlineSession = async () => {
       // Phiên dev-backdoor (mock-*) không có backend thật — dùng thẳng bộ câu hỏi local.
@@ -194,6 +199,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           } else {
             setTimeLeft(0);
           }
+          setInitDone(true);
         }
       } catch (err) {
         console.error('Failed to start online game session, falling back to local pool:', err);
@@ -204,11 +210,12 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     };
 
     const runLocalFallback = () => {
-      const subjectQuestions = questionsRef.current.filter(q => {
-        const qSubject = (q as any).subject || 'english';
-        return qSubject === activeSectId;
-      });
-      const fallbackQuestions = subjectQuestions.length > 0 ? subjectQuestions : questionsRef.current;
+      // Pool local phải lọc chặt CẢ môn lẫn lớp — tuyệt đối không nới sang môn/lớp khác
+      // khi thiếu câu (thiếu thì hiện trạng thái "chưa đủ câu hỏi" thay vì lộ nội dung sai).
+      const subjectQuestions = questionsRef.current.filter(q =>
+        questionInScope(q, activeSectId as any, activeGradeTier)
+      );
+      const fallbackQuestions = subjectQuestions;
 
       let pool: Question[] = [];
       const count = mode === 'boss' ? 5 : mode === 'survival' ? 15 : 10;
@@ -279,6 +286,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       } else {
         setTimeLeft(0);
       }
+      setInitDone(true);
     };
 
     initOnlineSession();
@@ -431,6 +439,11 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   }, [runFinished, runMistakes, mode, bossId, sessionId, player.id, answersSubmitted, rewardsEarned, applyDefeatPenalty, completeBossVictory, syncSessionResult, sessionAnswered, sessionCorrect, sessionStartTime, timeoutOccurred, currentQuestions.length]);
 
   const activeQuestion = currentQuestions[currentIndex];
+
+  // Watchdog (dev): câu hỏi đang hiển thị bắt buộc thuộc đúng môn/lớp đang chọn
+  useEffect(() => {
+    devWarnOutOfScope('question', activeQuestion, activeSectId as any, activeGradeTier, 'PlayArea');
+  }, [activeQuestion, activeSectId, activeGradeTier]);
 
   const handleUseHint = () => {
     if (!activeQuestion || hintUsed) return;
@@ -865,7 +878,28 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         </div>
       );
     }
-    return <div className="text-center py-10 font-orbitron text-theme-text-info">Đang rút câu vào ải...</div>;
+    if (!initDone) {
+      return <div className="text-center py-10 font-orbitron text-theme-text-info">Đang rút câu vào ải...</div>;
+    }
+    // Pool đã nạp xong nhưng rỗng: môn/lớp này chưa đủ câu hỏi — không mượn nội dung môn/lớp khác
+    return (
+      <div className="glass-panel rounded-2xl border border-synth-orange/30 p-8 max-w-xl mx-auto text-center space-y-6">
+        <Award className="w-16 h-16 mx-auto text-synth-orange" />
+        <h2 className="font-orbitron font-black text-2xl text-white uppercase tracking-wider">
+          CHƯA CÓ ĐỀ PHÙ HỢP 📭
+        </h2>
+        <p className="text-sm text-synth-text-muted leading-relaxed">
+          Ngân hàng câu hỏi của môn và lớp đang chọn chưa đủ đề cho ải này.
+          Hãy nhờ Thầy/Cô nạp thêm câu hỏi, hoặc thử ải khác nhé!
+        </p>
+        <button
+          onClick={handleEscape}
+          className="px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-border-cyan cursor-pointer transition-all duration-300 shadow-[0_0_15px_rgba(0,240,255,0.4)]"
+        >
+          Trở Lại Bản Đồ 🗺️
+        </button>
+      </div>
+    );
   }
 
   const questionPresentation = getQuestionPresentation(activeSectId, activeQuestion);

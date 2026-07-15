@@ -6,7 +6,7 @@
  * - Chương trình GDPT 2018 lớp 9 (Khoa học tự nhiên, Lịch sử-Địa lý, GDCD, Công nghệ, Tin học, Nghệ thuật)
  */
 
-import type { CoreKnowledgeTopic, SubjectId, HamNguyenTo } from '../types/game';
+import type { CoreKnowledgeTopic, SubjectId, HamNguyenTo, GradeTier } from '../types/game';
 
 // ==================== TIẾNG ANH — 19 chuyên đề ====================
 const ENGLISH_TOPICS: CoreKnowledgeTopic[] = [
@@ -1273,8 +1273,128 @@ const ARTS_TOPICS: CoreKnowledgeTopic[] = [
   },
 ];
 
+// ==================== ĐẠI HỌC - COMPUTER SCIENCE TOPICS ====================
+const CS_SUBJECTS_TOPICS_MAP: Record<string, { label: string; labelEN: string }[]> = {
+  cs_programming: [
+    { label: 'Cơ sở lập trình', labelEN: 'Programming Fundamentals' },
+    { label: 'Lập trình hướng đối tượng (OOP)', labelEN: 'Object-Oriented Programming (OOP)' }
+  ],
+  cs_algorithms_structures: [
+    { label: 'Cấu trúc dữ liệu', labelEN: 'Data Structures' },
+    { label: 'Thuật toán', labelEN: 'Algorithms' },
+    { label: 'Toán rời rạc', labelEN: 'Discrete Mathematics' }
+  ],
+  cs_computer_systems: [
+    { label: 'Kiến trúc máy tính', labelEN: 'Computer Architecture' },
+    { label: 'Hệ điều hành', labelEN: 'Operating Systems' },
+    { label: 'Hệ thống thời gian thực', labelEN: 'Real-Time Systems' }
+  ],
+  cs_database_data: [
+    { label: 'Hệ cơ sở dữ liệu', labelEN: 'Database Systems' },
+    { label: 'Khoa học dữ liệu', labelEN: 'Data Science' }
+  ],
+  cs_networking_security: [
+    { label: 'Mạng máy tính', labelEN: 'Computer Networks' },
+    { label: 'An ninh mạng', labelEN: 'Cybersecurity' }
+  ],
+  cs_software_engineering: [
+    { label: 'Công nghệ phần mềm', labelEN: 'Software Engineering' },
+    { label: 'DevOps & Triển khai phần mềm', labelEN: 'DevOps & Software Deployment' },
+    { label: 'Hệ thống phân tán', labelEN: 'Distributed Systems' }
+  ],
+  cs_web_app_development: [
+    { label: 'Phát triển Web', labelEN: 'Web Development' },
+    { label: 'Phát triển ứng dụng di động', labelEN: 'Mobile Development' },
+    { label: 'Tương tác người - máy (HCI)', labelEN: 'Human-Computer Interaction (HCI)' }
+  ],
+  cs_cloud_computing: [
+    { label: 'Điện toán đám mây', labelEN: 'Cloud Computing' }
+  ],
+  cs_artificial_intelligence: [
+    { label: 'Trí tuệ nhân tạo', labelEN: 'Artificial Intelligence' },
+    { label: 'Học máy', labelEN: 'Machine Learning' },
+    { label: 'Học sâu', labelEN: 'Deep Learning' }
+  ],
+  cs_graphics_advanced_computing: [
+    { label: 'Đồ họa máy tính', labelEN: 'Computer Graphics' },
+    { label: 'Thiết kế trình biên dịch', labelEN: 'Compiler Design' },
+    { label: 'Tính toán song song', labelEN: 'Parallel Computing' }
+  ],
+  cs_embedded_systems: [
+    { label: 'Hệ thống nhúng', labelEN: 'Embedded Systems' }
+  ],
+  cs_robotics_fundamentals: [
+    { label: 'Cơ sở Robot học', labelEN: 'Robotics Fundamentals' }
+  ],
+  cs_robot_programming: [
+    { label: 'Lập trình Robot', labelEN: 'Robot Programming' },
+    { label: 'Hệ điều hành Robot (ROS)', labelEN: 'ROS (Robot Operating System)' }
+  ],
+  cs_robot_mechanics: [
+    { label: 'Động học Robot', labelEN: 'Robot Kinematics' },
+    { label: 'Động lực học Robot', labelEN: 'Robot Dynamics' },
+    { label: 'Hệ thống điều khiển Robot', labelEN: 'Robot Control Systems' }
+  ],
+  cs_robot_intelligence: [
+    { label: 'Trí tuệ nhân tạo cho Robot', labelEN: 'AI for Robotics' },
+    { label: 'Hệ thống tự hành', labelEN: 'Autonomous Systems' }
+  ],
+  cs_navigation_motion: [
+    { label: 'Quy hoạch quỹ đạo', labelEN: 'Motion Planning' },
+    { label: 'Dẫn đường tự hành', labelEN: 'Autonomous Navigation' },
+    { label: 'Định vị và bản đồ hóa đồng thời (SLAM)', labelEN: 'SLAM (Simultaneous Localization and Mapping)' }
+  ],
+  cs_robot_perception: [
+    { label: 'Nhận thức Robot', labelEN: 'Robot Perception' },
+    { label: 'Thị giác máy tính cho Robot', labelEN: 'Computer Vision for Robotics' },
+    { label: 'Tích hợp cảm biến', labelEN: 'Sensor Fusion' }
+  ],
+  cs_embedded_hardware: [
+    { label: 'Robot học nhúng', labelEN: 'Embedded Robotics' },
+    { label: 'Cơ điện tử', labelEN: 'Mechatronics' },
+    { label: 'Internet vạn vật cho Robot (IoT)', labelEN: 'IoT for Robotics' }
+  ],
+  cs_specialized_robotics: [
+    { label: 'Robot công nghiệp', labelEN: 'Industrial Robotics' },
+    { label: 'Robot di động', labelEN: 'Mobile Robotics' },
+    { label: 'Robot mô phỏng người (Humanoid)', labelEN: 'Humanoid Robotics' },
+    { label: 'Hệ thống nhiều Robot', labelEN: 'Multi-Robot Systems' }
+  ],
+  cs_human_interaction: [
+    { label: 'Tương tác người - Robot (HRI)', labelEN: 'Human-Robot Interaction (HRI)' }
+  ],
+  cs_robotics_engineering: [
+    { label: 'Mô phỏng Robot', labelEN: 'Robotics Simulation' },
+    { label: 'Đồ án tốt nghiệp Robot', labelEN: 'Robotics Capstone Project' }
+  ]
+};
+
+const hams: HamNguyenTo[] = ['hoa', 'bang', 'thach'];
+const CS_TOPICS: CoreKnowledgeTopic[] = [];
+Object.entries(CS_SUBJECTS_TOPICS_MAP).forEach(([subId, topicsList]) => {
+  topicsList.forEach((topicInfo, index) => {
+    const cleanId = topicInfo.labelEN.toLowerCase()
+      .replace(/[^a-z0-9]/g, '-')
+      .replace(/-+/g, '-');
+    
+    CS_TOPICS.push({
+      id: `cs-${cleanId}`,
+      subjectId: subId as SubjectId,
+      gradeTier: 13,
+      group: index === 0 ? 'chuyen_sau' : 'co_ban',
+      label: topicInfo.label,
+      labelEN: topicInfo.labelEN,
+      hamNguyenTo: hams[index % 3],
+      examRelevance: 'high',
+      minQuestions: 10,
+      questionTypes: ['mcq', 'short-answer'],
+      description: `Chuyên đề ${topicInfo.label} thuộc môn ${subId}.`
+    });
+  });
+});
+
 // ==================== TẤT CẢ TOPICS ====================
-export const CORE_KNOWLEDGE_TOPICS: CoreKnowledgeTopic[] = [
+const BASE_CORE_KNOWLEDGE_TOPICS: CoreKnowledgeTopic[] = [
   ...ENGLISH_TOPICS,       // 19
   ...MATH_TOPICS,          // 18
   ...LITERATURE_TOPICS,    // 13
@@ -1284,7 +1404,47 @@ export const CORE_KNOWLEDGE_TOPICS: CoreKnowledgeTopic[] = [
   ...TECHNOLOGY_TOPICS,    // 5
   ...INFORMATICS_TOPICS,   // 6
   ...ARTS_TOPICS,          // 6
-  // Tổng: 102 chuyên đề
+];
+
+const clonedTopics: CoreKnowledgeTopic[] = [];
+
+// Thêm lớp 9 gốc (giữ nguyên ID cũ để tương thích ngược)
+BASE_CORE_KNOWLEDGE_TOPICS.forEach(topic => {
+  clonedTopics.push({
+    ...topic,
+    gradeTier: 9
+  });
+});
+
+// Nhân bản cho các lớp 6, 7, 8, 10, 11, 12
+([6, 7, 8, 10, 11, 12] as GradeTier[]).forEach(tier => {
+  BASE_CORE_KNOWLEDGE_TOPICS.forEach(topic => {
+    let subId = topic.subjectId;
+    
+    // Tách môn THPT cho Lớp 10, 11, 12
+    if (tier >= 10 && tier <= 12) {
+      if (subId === 'science') {
+        if (topic.id.startsWith('sci-phy-')) subId = 'physics';
+        else if (topic.id.startsWith('sci-chem-')) subId = 'chemistry';
+        else if (topic.id.startsWith('sci-bio-')) subId = 'biology';
+      } else if (subId === 'history_geography') {
+        if (topic.id.startsWith('his-')) subId = 'history';
+        else if (topic.id.startsWith('geo-')) subId = 'geography';
+      }
+    }
+    
+    clonedTopics.push({
+      ...topic,
+      id: `${topic.id}-g${tier}`,
+      subjectId: subId,
+      gradeTier: tier
+    });
+  });
+});
+
+export const CORE_KNOWLEDGE_TOPICS: CoreKnowledgeTopic[] = [
+  ...clonedTopics,
+  ...CS_TOPICS
 ];
 
 // ==================== UTILITY FUNCTIONS ====================
