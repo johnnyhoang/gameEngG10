@@ -2,11 +2,12 @@ import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { useSect } from '../contexts/SectContext';
 import type { Question } from '../types/game';
+import { SUBJECTS_CONFIG } from '../types/game';
 import { devWarnOutOfScope, questionInScope } from '../utils/learningScope';
 import { INITIAL_LESSONS } from '../data/lessons';
 import { ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../data/englishExamBlueprint';
 import { MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
-import { getAssessmentProvider, getQuestionPresentation, getSubjectHint } from '../subject-modules/registry';
+import { getAssessmentProvider, getQuestionPresentation, getSubjectHint, getSubjectActivities, getSubjectModule } from '../subject-modules/registry';
 import { Scratchpad } from './Scratchpad';
 const GeometryApp = lazy(() => import('../miniapps/geometry').then(m => ({ default: m.GeometryApp })));
 import { ArrowRight, Award } from 'lucide-react';
@@ -254,18 +255,22 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           }
         }
         if (pool.length === 0) {
+          const activities = getSubjectActivities(activeSectId);
+          const activity = activities.find(a => a.modeKey === mode || a.id === mode || a.legacyMode === mode);
+          
+          let topicIds: string[] = [];
+          if (mode === 'mixed') {
+            topicIds = Array.from(new Set(activities.flatMap(a => a.topicIds ?? [])));
+          } else if (activity?.topicIds) {
+            topicIds = [...activity.topicIds];
+          }
+
           pool = fallbackQuestions.filter(q => {
-            if (activeSectId === 'math') {
-              if (mode === 'grammar') return q.category === 'parabol-line' || q.category === 'viet-relation' || q.category === 'linear-function' || q.category === 'Phương trình bậc hai' || q.category === 'Định lý Vi-ét' || q.category === 'Hàm số bậc hai' || q.category === 'Hệ phương trình bậc nhất' || q.category === 'Đồ thị hàm số';
-              if (mode === 'reading') return q.category === 'real-geometry' || q.category === 'plane-geometry' || q.category === 'volume-displacement' || q.category === 'tangent-geometry' || q.category === 'Đường tròn' || q.category === 'Góc với đường tròn' || q.category === 'Tứ giác nội tiếp' || q.category === 'Hệ thức lượng' || q.category === 'Hình học phẳng';
-              if (mode === 'vocabulary') return q.category === 'real-equations' || q.category === 'real-finance' || q.category === 'growth-modeling' || q.category === 'percentage-discount' || q.category === 'shopping-discount' || q.category === 'Toán thực tế';
-            } else {
-              if (mode === 'grammar') return q.category === 'grammar' || q.category === 'passive-voice' || q.category === 'relative-clauses' || q.category === 'rewrite';
-              if (mode === 'reading') return q.category === 'reading' || q.category === 'cloze';
-              if (mode === 'vocabulary') return q.category === 'vocabulary' || q.category === 'wordform';
-              if (mode === 'pronunciation') return q.category === 'pronunciation' || q.category === 'stress';
-            }
-            return true;
+            if (topicIds.length === 0 || topicIds.includes('*')) return true;
+            const qTopicId = q.topicId;
+            if (!qTopicId) return false;
+            const normalizedQTopicId = qTopicId.replace(/-g\d+$/, '');
+            return topicIds.includes(normalizedQTopicId) || topicIds.includes(qTopicId);
           }).slice(0, count);
         }
       }
@@ -605,7 +610,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           setIsAiGrading(false);
         }
       }
-    } else if (activeSectId === 'math' && (activeQuestion.type === 'short-answer' || activeQuestion.type === 'text_input')) {
+    } else if (getSubjectModule(activeSectId)?.supportsShortAnswer && (activeQuestion.type === 'short-answer' || activeQuestion.type === 'text_input')) {
       setIsAiGrading(true);
       setAiFeedback('');
       setAiSuggestions([]);
@@ -798,49 +803,17 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  const modeLabel = activeSectId === 'english'
-    ? (mode === 'vocabulary'
-      ? 'Vocabulary Castle'
-      : mode === 'pronunciation'
-        ? 'Pronunciation Peak'
-        : mode === 'grammar'
-          ? 'Grammar Cave'
-          : mode === 'reading'
-            ? 'Reading Forest'
-            : mode === 'mixed'
-              ? 'Phụ bản hỗn hợp'
-              : mode === 'revenge'
-                ? 'Phụ bản trả bài'
-                : mode === 'boss'
-                  ? 'Trường Thi Boss'
-                  : mode === 'survival'
-                    ? 'Trường Thi sinh tồn'
-                    : 'Phụ bản bài học')
-    : (activeSectId === 'math'
-      ? (mode === 'grammar'
-        ? 'Ải Đại Số'
-        : mode === 'reading'
-          ? 'Ải Hình Học'
-          : mode === 'vocabulary'
-            ? 'Ải Toán Thực Tế'
-            : mode === 'mixed'
-              ? 'Phụ bản hỗn hợp'
-              : mode === 'revenge'
-                ? 'Phụ bản trả bài'
-                : mode === 'boss'
-                  ? 'Trường Thi Boss'
-                  : mode === 'survival'
-                    ? 'Trường Thi sinh tồn'
-                    : 'Phụ bản bài học')
-      : (mode === 'mixed'
-        ? 'Phụ bản hỗn hợp'
-        : mode === 'revenge'
-          ? 'Phụ bản trả bài'
-          : mode === 'boss'
-            ? 'Trường Thi Boss'
-            : mode === 'survival'
-              ? 'Trường Thi sinh tồn'
-              : 'Phụ bản bài học'));
+  const modeLabel = (() => {
+    if (mode === 'mixed') return 'Phụ bản hỗn hợp';
+    if (mode === 'revenge') return 'Phụ bản trả bài';
+    if (mode === 'boss') return 'Trường Thi Boss';
+    if (mode === 'survival') return 'Trường Thi sinh tồn';
+    if (mode === 'lesson') return 'Phụ bản bài học';
+
+    const activities = getSubjectActivities(activeSectId);
+    const activity = activities.find(a => a.modeKey === mode || a.id === mode || a.legacyMode === mode);
+    return activity?.label || activity?.title || mode;
+  })();
 
   // --- Early returns ---
   if (runFinished && activityResult) {
@@ -892,7 +865,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           <p className="text-sm text-synth-text-muted leading-relaxed">
             Chuẩn xác, không có câu nào cần sửa ở môn{' '}
             <span className="text-synth-orange font-bold font-orbitron uppercase">
-              {activeSectId === 'english' ? 'Tiếng Anh' : activeSectId === 'math' ? 'Toán Học' : 'Ngữ Văn'}
+              {SUBJECTS_CONFIG[activeSectId]?.name ?? activeSectId}
             </span>. Hãy tiếp tục duy trì phong độ xuất sắc này nhé!
           </p>
           <button
@@ -934,16 +907,12 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const questionText = questionPresentation.questionText;
 
   const isGeometry = activeQuestion.subject === 'math' && (
+    activeQuestion.topicId?.includes('geometry') ||
+    activeQuestion.topicId?.includes('circle') ||
+    activeQuestion.topicId?.includes('trigonometry') ||
     (activeQuestion.category || '').toLowerCase().includes('geometry') ||
-    (activeQuestion.metadata?.mathTopic || '').toLowerCase().includes('geometry') ||
     (activeQuestion.prompt || '').toLowerCase().includes('hình học') ||
-    (activeQuestion.prompt || '').toLowerCase().includes('đường tròn') ||
-    (activeQuestion.prompt || '').toLowerCase().includes('tam giác') ||
-    (activeQuestion.prompt || '').toLowerCase().includes('tứ giác') ||
-    (activeQuestion.prompt || '').toLowerCase().includes('tiếp tuyến') ||
-    (activeQuestion.prompt || '').toLowerCase().includes('hình trụ') ||
-    (activeQuestion.prompt || '').toLowerCase().includes('hình nón') ||
-    (activeQuestion.prompt || '').toLowerCase().includes('hình cầu')
+    (activeQuestion.prompt || '').toLowerCase().includes('đường tròn')
   );
 
   const is3D = isGeometry && (
@@ -986,7 +955,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         typedAnswer={typedAnswer}
         checked={checked}
         onTypeAnswer={setTypedAnswer}
-        lang={activeSectId === 'english' ? 'en-US' : 'vi-VN'}
+        lang={getSubjectModule(activeSectId)?.lang ?? 'vi-VN'}
       />
     );
   };

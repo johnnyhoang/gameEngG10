@@ -17,6 +17,7 @@ import {
 import {
    HANG_SOURCES
 } from '../data/hangLuyenCong';
+import { SUBJECTS_CONFIG } from '../types/game';
 import type { SubjectId } from '../types/game';
 import { useSect } from '../contexts/SectContext';
 import { filterLessonsInScope, filterQuestionsInScope } from '../utils/learningScope';
@@ -408,7 +409,13 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
     return subjectQuestions.filter(q => targetCategories.includes(q.category)).slice(0, 3);
   }, [selectedSubject, subjectQuestions]);
 
-  const meta = SUBJECT_META[selectedSubject];
+  const meta = SUBJECT_META[selectedSubject] || {
+    label: SUBJECTS_CONFIG[selectedSubject as SubjectId]?.name || selectedSubject,
+    shortLabel: SUBJECTS_CONFIG[selectedSubject as SubjectId]?.name || selectedSubject,
+    accent: 'text-synth-cyan',
+    accentSoft: 'from-synth-cyan/20 to-synth-purple/10',
+    icon: <Sparkles className="w-5 h-5" />
+  };
   const track = SUBJECT_TRACKS[selectedSubject] || DEFAULT_TRACK;
 
   const handleStart = () => {

@@ -872,20 +872,20 @@ export const createPlayerSlice: StateCreator<
           eventBus.publish('DAILY_CHECK_IN', { streakBroken });
         },
 
-  getAdaptiveQuestion: (category) => {
+  getAdaptiveQuestion: (topicId) => {
           const state = get();
-          const list = state.questions.filter(q =>
-            q.category === category && questionInScope(q, state.currentSubject, state.activeGradeTier)
-          );
+          const list = state.questions.filter(q => {
+            const normalizedQTopicId = q.topicId?.replace(/-g\d+$/, '');
+            return (normalizedQTopicId === topicId || q.topicId === topicId) &&
+              questionInScope(q, state.currentSubject, state.activeGradeTier);
+          });
           if (list.length === 0) return null;
 
-          // Find historical rolling accuracy for this category
-          const stat = state.categoryStats[category];
+          // Find historical rolling accuracy for this category/topic
+          const stat = state.categoryStats[topicId];
           const accuracy = stat ? stat.rollingAccuracy : 0.5; // default to medium
 
           // Dynamic difficulty selector:
-          // Low accuracy (e.g. 30%) -> pick easier questions (difficulty 1 - 4) to boost confidence & review basics
-          // High accuracy (e.g. 85%) -> pick harder questions (difficulty 6 - 10) to challenge
           let minDiff = 1;
           let maxDiff = 10;
 
@@ -916,75 +916,47 @@ export const createPlayerSlice: StateCreator<
 
   getQuestionByWeight: (mode) => {
           const state = get();
-          const categoriesPool: string[] = [];
+          const activities = getSubjectActivities(state.currentSubject);
+          const activity = activities.find(a => a.modeKey === mode || a.id === mode || a.legacyMode === mode);
+          
+          let topicPool: string[] = [];
+          if (mode === 'mixed') {
+            topicPool = Array.from(new Set(activities.flatMap(a => a.topicIds ?? [])));
+          } else if (activity?.topicIds) {
+            topicPool = [...activity.topicIds];
+          }
 
-          if (state.currentSubject === 'math') {
-            if (mode === 'grammar') {
-              categoriesPool.push('parabol-line', 'viet-relation', 'linear-function', 'Phương trình bậc hai', 'Định lý Vi-ét', 'Hàm số bậc hai', 'Hệ phương trình bậc nhất', 'Đồ thị hàm số');
-            } else if (mode === 'reading') {
-              categoriesPool.push('real-geometry', 'plane-geometry', 'volume-displacement', 'tangent-geometry', 'Đường tròn', 'Góc với đường tròn', 'Tứ giác nội tiếp', 'Hệ thức lượng', 'Hình học phẳng');
-            } else if (mode === 'vocabulary') {
-              categoriesPool.push('real-equations', 'real-finance', 'growth-modeling', 'percentage-discount', 'shopping-discount', 'Toán thực tế');
-            } else {
-              categoriesPool.push('parabol-line', 'viet-relation', 'linear-function', 'growth-modeling', 'percentage-discount', 'volume-displacement', 'shopping-discount', 'real-equations', 'real-geometry', 'real-finance', 'plane-geometry', 'tangent-geometry', 'Phương trình bậc hai', 'Định lý Vi-ét', 'Hàm số bậc hai', 'Hệ phương trình bậc nhất', 'Đồ thị hàm số', 'Đường tròn', 'Góc với đường tròn', 'Tứ giác nội tiếp', 'Hệ thức lượng', 'Hình học phẳng', 'Toán thực tế');
-            }
-          } else if (getSubjectActivities(state.currentSubject).length > 0) {
-            const activities = getSubjectActivities(state.currentSubject);
-            const activity = activities.find(item => item.id === mode || item.legacyMode === mode);
-            const categories = mode === 'mixed'
-              ? activities.flatMap(item => item.categories)
-              : activity?.categories ?? [];
-            categoriesPool.push(...new Set(categories));
-          } else if (state.currentSubject === 'english') {
-            if (mode === 'grammar') {
-              categoriesPool.push('grammar', 'passive-voice', 'relative-clauses', 'tenses', 'rewrite');
-            } else if (mode === 'reading') {
-              categoriesPool.push('reading', 'cloze');
-            } else if (mode === 'vocabulary') {
-              categoriesPool.push('vocabulary', 'wordform');
-            } else if (mode === 'pronunciation') {
-              categoriesPool.push('pronunciation', 'stress');
-            } else {
-              categoriesPool.push('grammar', 'passive-voice', 'relative-clauses', 'tenses', 'rewrite', 'reading', 'cloze', 'vocabulary', 'wordform', 'pronunciation', 'stress');
-            }
-          } else {
-            // Generic fallback for basic subjects: gather categories dynamically from questions of that subject
-            const uniqCategories = Array.from(new Set(
-              state.questions
-                .filter(q => questionInScope(q, state.currentSubject, state.activeGradeTier))
-                .map(q => q.category)
-            )).filter(Boolean);
-            
-            if (uniqCategories.length > 0) {
-              categoriesPool.push(...uniqCategories);
-            } else {
-              categoriesPool.push('basic-general');
-            }
+          // Fallback hoặc wildcard: lấy tất cả topics của môn học hiện tại
+          if (topicPool.length === 0 || topicPool.includes('*')) {
+            const subjectTopics = state.topics
+              .filter(t => t.subject === state.currentSubject && (t.gradeTier ?? DEFAULT_GRADE_TIER) === state.activeGradeTier)
+              .map(t => t.id);
+            topicPool = subjectTopics.length > 0 ? subjectTopics : ['misc'];
           }
 
           // Calculate weights: W_c = (1.0 - Accuracy) + 0.1
-          const weightedCategories = categoriesPool.map(cat => {
-            const stat = state.categoryStats[cat];
+          const weightedTopics = topicPool.map(topicId => {
+            const stat = state.categoryStats[topicId];
             const accuracy = stat ? stat.rollingAccuracy : 0.5; // Default to 50%
             const weight = (1.0 - accuracy) + 0.1; // epsilon = 0.1
-            return { cat, weight };
+            return { topicId, weight };
           });
 
           // Spin weighted roulette
-          const totalWeight = weightedCategories.reduce((acc, current) => acc + current.weight, 0);
+          const totalWeight = weightedTopics.reduce((acc, current) => acc + current.weight, 0);
           let randomWeight = Math.random() * totalWeight;
-          let selectedCategory = categoriesPool[0];
+          let selectedTopicId = topicPool[0];
 
-          for (const item of weightedCategories) {
+          for (const item of weightedTopics) {
             randomWeight -= item.weight;
             if (randomWeight <= 0) {
-              selectedCategory = item.cat;
+              selectedTopicId = item.topicId;
               break;
             }
           }
 
-          // Fetch adaptive question from the selected category
-          return get().getAdaptiveQuestion(selectedCategory);
+          // Fetch adaptive question from the selected topic
+          return get().getAdaptiveQuestion(selectedTopicId);
         },
 
   syncSessionResult: (data: any) => {

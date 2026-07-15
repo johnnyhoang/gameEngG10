@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { CORE_KNOWLEDGE_TOPICS, inferTopicId } from '../data/coreKnowledge';
 import { useSect } from '../contexts/SectContext';
-import { SUBJECTS_CONFIG } from '../types/game';
+import { SUBJECTS_CONFIG, DEFAULT_GRADE_TIER } from '../types/game';
 import { filterLessonsInScope } from '../utils/learningScope';
 import { SearchSuggest } from './Common/SearchSuggest';
 import { isLightTheme } from '../theme/uiThemes';
@@ -98,7 +98,7 @@ export function WorldMap({
 
     const preferredHam = sortedPages.length > 0 ? getHamForPage(sortedPages[0].pageId) : null;
     const subjectTopics = CORE_KNOWLEDGE_TOPICS.filter(t =>
-      t.subjectId === activeSectId && (t.gradeTier ?? 9) === activeGradeTier
+      t.subjectId === activeSectId && (t.gradeTier ?? DEFAULT_GRADE_TIER) === activeGradeTier
     );
     
     const topicAccuracies = subjectTopics.map(t => {

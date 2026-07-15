@@ -1,4 +1,5 @@
-import type { UiThemeId } from '../../types/game';
+import type { UiThemeId, SubjectId } from '../../types/game';
+import { SUBJECTS_CONFIG } from '../../types/game';
 import React, { useState, useEffect } from 'react';
 import { toast } from '../../utils/toast';
 
@@ -44,7 +45,9 @@ export interface StepBuilderAppProps {
 export const StepBuilderApp: React.FC<StepBuilderAppProps> = ({ activeSectId, uiTheme, onReward, onGameComplete, onGameStart }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
 
-  const stepSubject = (activeSectId === 'english' || activeSectId === 'literature') ? activeSectId : 'math';
+  const hasGameData = activeSectId && activeSectId in STEP_DATA;
+  const stepSubject = activeSectId as keyof typeof STEP_DATA;
+  
   const [scrambledSteps, setScrambledSteps] = useState<StepItem[]>([]);
   const [stepStatus, setStepStatus] = useState<'playing' | 'won'>('playing');
 
@@ -53,11 +56,12 @@ export const StepBuilderApp: React.FC<StepBuilderAppProps> = ({ activeSectId, ui
   }, []);
 
   const initStepGame = () => {
+    if (!hasGameData) return;
     setScrambledSteps([...STEP_DATA[stepSubject]].sort(() => 0.5 - Math.random()));
     setStepStatus('playing');
   };
 
-  useEffect(() => { initStepGame(); }, [stepSubject]);
+  useEffect(() => { initStepGame(); }, [activeSectId]);
 
   const moveStep = (index: number, direction: 'up' | 'down') => {
     if (stepStatus !== 'playing') return;
@@ -80,6 +84,18 @@ export const StepBuilderApp: React.FC<StepBuilderAppProps> = ({ activeSectId, ui
     }
   };
 
+  if (!hasGameData) {
+    return (
+      <div className={`glass-panel rounded-3xl border p-8 text-center space-y-4 max-w-xl mx-auto ${isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-cyan/25'}`}>
+        <p className="text-sm text-slate-300">
+          📭 Trò chơi Sắp xếp Trình tự chưa được thiết lập cho môn {SUBJECTS_CONFIG[activeSectId as SubjectId]?.name || activeSectId}.
+        </p>
+      </div>
+    );
+  }
+
+  const subjectName = SUBJECTS_CONFIG[stepSubject as SubjectId]?.name || stepSubject;
+
   return (
     <div className={`glass-panel rounded-3xl border p-6 space-y-6 ${isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-cyan/25'}`}>
       <div className="flex justify-between items-center">
@@ -88,7 +104,7 @@ export const StepBuilderApp: React.FC<StepBuilderAppProps> = ({ activeSectId, ui
           <p className="text-[10px] text-slate-400 mt-0.5">{TITLES[stepSubject]}</p>
         </div>
         <div className="text-[10px] font-bold font-orbitron uppercase px-3 py-1.5 rounded-lg bg-black/20 border border-white/5 text-slate-400">
-          Chủ đề: {stepSubject === 'math' ? 'Toán Học 📐' : stepSubject === 'english' ? 'Tiếng Anh 🇬🇧' : 'Ngữ Văn ✍️'}
+          Chủ đề: {subjectName}
         </div>
       </div>
 

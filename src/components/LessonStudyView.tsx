@@ -2,6 +2,8 @@ import React, { useMemo } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { INITIAL_LESSONS } from '../data/lessons';
 import { lessonInScope } from '../utils/learningScope';
+import { SUBJECTS_CONFIG } from '../types/game';
+import type { SubjectId } from '../types/game';
 import { 
   ChevronLeft, Sparkles, BookOpen, Languages, Calculator, Play
 } from 'lucide-react';
@@ -65,7 +67,13 @@ export const LessonStudyView: React.FC<LessonStudyViewProps> = ({
 
   const meta = useMemo(() => {
     if (!lesson) return null;
-    return SUBJECT_META[lesson.subject] || SUBJECT_META.english;
+    return SUBJECT_META[lesson.subject] || {
+      label: SUBJECTS_CONFIG[lesson.subject as SubjectId]?.name || lesson.subject,
+      accent: 'text-synth-cyan',
+      border: 'border-synth-cyan/30',
+      bg: 'from-synth-cyan/10 to-synth-purple/5',
+      icon: <Sparkles className="w-5 h-5 text-synth-cyan" />
+    };
   }, [lesson]);
 
   const parsedContent = useMemo(() => {

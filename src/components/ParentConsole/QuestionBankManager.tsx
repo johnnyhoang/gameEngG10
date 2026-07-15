@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Database, Search, Sparkles, ShieldCheck, AlertTriangle, Plus, X } from 'lucide-react';
 import type { Question, SubjectId } from '../../types/game';
-import { SUBJECTS_CONFIG } from '../../types/game';
+import { SUBJECTS_CONFIG, DEFAULT_GRADE_TIER } from '../../types/game';
 import { ENGLISH_EXAM_BLUEPRINT, ENGLISH_TASK_LABELS } from '../../data/englishExamBlueprint';
 import { MATH_EXAM_BLUEPRINT, MATH_TOPIC_LABELS } from '../../data/mathExamBlueprint';
 import { getSubjectQuestionMetadata } from '../../subject-modules/registry';
@@ -161,7 +161,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
   const coreCoverage = useMemo(() => {
     if (!selectedSect) return null;
     const topics = CORE_KNOWLEDGE_TOPICS.filter(topic =>
-      topic.subjectId === selectedSect && (topic.gradeTier ?? 9) === activeGradeTier
+      topic.subjectId === selectedSect && (topic.gradeTier ?? DEFAULT_GRADE_TIER) === activeGradeTier
     );
     const counts = contextQuestions.reduce<Record<string, number>>((acc, question) => {
       if (question.subject === selectedSect && question.topicId) {

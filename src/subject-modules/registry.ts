@@ -24,7 +24,27 @@ function createRegistry(modules: readonly SubjectModule[]): ReadonlyMap<SubjectI
 const MODULES = createRegistry([englishSubjectModule, mathSubjectModule, literatureSubjectModule]);
 
 export function getSubjectModule(subjectId: SubjectId): SubjectModule | undefined {
-  return MODULES.get(subjectId);
+  const mod = MODULES.get(subjectId);
+  if (mod) return mod;
+
+  // Dynamic fallback for other subjects (science, civics, informatics, etc.)
+  // TODO: Once complete data is provided for these subjects, define their standard manifests explicitly
+  return {
+    subjectId,
+    lang: 'vi-VN',
+    supportsShortAnswer: false,
+    activities: [
+      {
+        id: `${subjectId}-mixed`,
+        title: 'Luyện tập ngẫu nhiên',
+        categories: [],
+        modeKey: 'mixed',
+        label: 'Phụ bản hỗn hợp',
+        icon: 'BookOpen',
+        topicIds: ['*'] // wildcard: grab all questions in scope for this subject
+      }
+    ]
+  };
 }
 
 export function getSubjectToolIds(subjectId: SubjectId): readonly string[] {

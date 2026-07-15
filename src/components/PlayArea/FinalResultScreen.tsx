@@ -3,6 +3,7 @@ import { Trophy, XCircle, Clock, Target, Coins, Zap, RotateCcw, Map, CheckCircle
 import type { ActivityResult } from '../../types/activityResult';
 import { useGameState } from '../../hooks/useGameState';
 import { isLightTheme } from '../../theme/uiThemes';
+import { getSubjectModule } from '../../subject-modules/registry';
 
 export interface FinalResultScreenProps {
   result: ActivityResult;
@@ -11,24 +12,24 @@ export interface FinalResultScreenProps {
   onRetry?: () => void;
 }
 
-const MODE_LABEL: Record<string, string> = {
-  lesson: 'Phụ bản bài học',
-  grammar: 'Grammar Cave',
-  reading: 'Reading Forest',
-  vocabulary: 'Vocabulary Castle',
-  pronunciation: 'Pronunciation Peak',
-  mixed: 'Phụ bản hỗn hợp',
-  revenge: 'Phụ bản trả bài',
-  boss: 'Trường Thi Boss',
-  survival: 'Trường Thi sinh tồn',
-};
-
 const MIN_ACCURACY: Record<string, number> = {
   lesson: 70,
   boss: 100,    // boss = no defeat at all
   survival: 100,
   default: 60,
 };
+
+function getModeLabel(subjectId: string, mode: string): string {
+  if (mode === 'lesson') return 'Phụ bản bài học';
+  if (mode === 'mixed') return 'Phụ bản hỗn hợp';
+  if (mode === 'revenge') return 'Phụ bản trả bài';
+  if (mode === 'boss') return 'Trường Thi Boss';
+  if (mode === 'survival') return 'Trường Thi sinh tồn';
+
+  const module = getSubjectModule(subjectId as any);
+  const activity = module?.activities?.find(a => a.modeKey === mode || a.id === mode || a.legacyMode === mode);
+  return activity?.label || activity?.title || mode;
+}
 
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60);
@@ -138,12 +139,7 @@ export const FinalResultScreen: React.FC<FinalResultScreenProps> = ({
           <p className="font-orbitron font-bold text-xs text-white leading-tight">
             {(() => {
               const currentSubject = useGameState.getState().currentSubject;
-              if (currentSubject === 'math') {
-                if (mode === 'grammar') return 'Ải Đại Số';
-                if (mode === 'reading') return 'Ải Hình Học';
-                if (mode === 'vocabulary') return 'Ải Toán Thực Tế';
-              }
-              return MODE_LABEL[mode] ?? mode;
+              return getModeLabel(currentSubject, mode);
             })()}
           </p>
         </div>

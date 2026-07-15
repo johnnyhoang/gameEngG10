@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { toast } from '../../utils/toast';
-import type { UiThemeId } from '../../types/game';
+import type { UiThemeId, SubjectId } from '../../types/game';
+import { SUBJECTS_CONFIG } from '../../types/game';
 
 export interface MatchPairsAppProps {
   activeSectId?: string;
@@ -50,12 +51,15 @@ export const MatchPairsApp: React.FC<MatchPairsAppProps> = ({
 }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
 
-  const matchSubject = (activeSectId === 'math' || activeSectId === 'literature') ? activeSectId : 'english';
+  const hasGameData = activeSectId === 'english' || activeSectId === 'math' || activeSectId === 'literature';
+  const matchSubject = activeSectId as 'english' | 'math' | 'literature';
+
   const [matchCards, setMatchCards] = useState<MatchItem[]>([]);
   const [selectedCards, setSelectedCards] = useState<string[]>([]);
   const [matchStatus, setMatchStatus] = useState<'playing' | 'victory'>('playing');
 
   const initMatchGame = () => {
+    if (!hasGameData) return;
     let source = ENGLISH_PAIRS;
     if (matchSubject === 'math') source = MATH_PAIRS;
     else if (matchSubject === 'literature') source = LITERATURE_PAIRS;
@@ -71,7 +75,17 @@ export const MatchPairsApp: React.FC<MatchPairsAppProps> = ({
     setMatchStatus('playing');
   };
 
-  useEffect(() => { initMatchGame(); }, [matchSubject]);
+  useEffect(() => { initMatchGame(); }, [activeSectId]);
+
+  if (!hasGameData) {
+    return (
+      <div className={`glass-panel rounded-3xl border p-8 text-center space-y-4 max-w-xl mx-auto ${isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-cyan/25'}`}>
+        <p className="text-sm text-slate-300">
+          📭 Trò chơi Ghép Cặp chưa được thiết lập cho môn {SUBJECTS_CONFIG[activeSectId as SubjectId]?.name || activeSectId}.
+        </p>
+      </div>
+    );
+  }
 
   const handleCardClick = (cardId: string) => {
     const card = matchCards.find(c => c.id === cardId);

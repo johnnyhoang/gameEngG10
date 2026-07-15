@@ -1,4 +1,5 @@
-import type { UiThemeId } from '../../types/game';
+import type { UiThemeId, SubjectId } from '../../types/game';
+import { SUBJECTS_CONFIG } from '../../types/game';
 import React, { useState, useEffect } from 'react';
 import { toast } from '../../utils/toast';
 
@@ -43,15 +44,16 @@ export interface DiagramAppProps {
 export const DiagramApp: React.FC<DiagramAppProps> = ({ activeSectId, uiTheme, onReward, onGameComplete }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
 
-  const diagramSubject = (activeSectId === 'english' || activeSectId === 'math' || activeSectId === 'literature')
-    ? activeSectId
-    : 'math';
+  const hasGameData = activeSectId && activeSectId in DIAGRAM_DATA;
+  const diagramSubject = activeSectId as keyof typeof DIAGRAM_DATA;
+
   const [selectedLabel, setSelectedLabel] = useState('');
   const [diagramSlots, setDiagramSlots] = useState<DiagramSlot[]>([]);
   const [diagramLabels, setDiagramLabels] = useState<string[]>([]);
   const [diagramStatus, setDiagramStatus] = useState<'playing' | 'won'>('playing');
 
   const initDiagramGame = () => {
+    if (!hasGameData) return;
     const data = DIAGRAM_DATA[diagramSubject];
     setDiagramSlots(data.slots.map(s => ({ ...s })));
     setDiagramLabels(data.pool);
@@ -59,7 +61,7 @@ export const DiagramApp: React.FC<DiagramAppProps> = ({ activeSectId, uiTheme, o
     setDiagramStatus('playing');
   };
 
-  useEffect(() => { initDiagramGame(); }, [diagramSubject]);
+  useEffect(() => { initDiagramGame(); }, [activeSectId]);
 
   const handlePlaceLabel = (slotId: string) => {
     if (!selectedLabel || diagramStatus !== 'playing') return;
@@ -81,13 +83,30 @@ export const DiagramApp: React.FC<DiagramAppProps> = ({ activeSectId, uiTheme, o
     }
   };
 
+  if (!hasGameData) {
+    return (
+      <div className={`glass-panel rounded-3xl border p-8 text-center space-y-4 max-w-xl mx-auto ${isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-cyan/30'}`}>
+        <p className="text-sm text-slate-300">
+          📭 Trò chơi Lắp Ghép Sơ Đồ chưa được thiết lập cho môn {SUBJECTS_CONFIG[activeSectId as SubjectId]?.name || activeSectId}.
+        </p>
+      </div>
+    );
+  }
+
+  const DIAGRAM_TITLES: Record<string, string> = {
+    math: 'Tam giác vuông 📐',
+    english: 'Cấu trúc câu 🇬🇧',
+    literature: 'Thể loại tác phẩm ✍️'
+  };
+  const themeTitle = DIAGRAM_TITLES[diagramSubject] || SUBJECTS_CONFIG[diagramSubject as SubjectId]?.name || diagramSubject;
+
   return (
     <div className={`glass-panel rounded-3xl border p-6 text-center space-y-6 ${isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-cyan/30'}`}>
       <div className="max-w-md mx-auto space-y-2 flex flex-col items-center">
         <h3 className="font-orbitron font-black text-lg text-white uppercase">🧱 Lắp Ghép Sơ Đồ</h3>
         <p className="text-xs text-slate-400 leading-relaxed">Nhấp chọn một nhãn dán ở bể chứa, sau đó nhấp vào ô trống tương ứng để lắp ráp!</p>
         <div className="text-[10px] font-bold font-orbitron uppercase mt-2 px-3 py-1.5 rounded-lg bg-black/20 border border-white/5 inline-block text-slate-400">
-          Chủ đề: {diagramSubject === 'math' ? 'Tam giác vuông 📐' : diagramSubject === 'english' ? 'Cấu trúc câu 🇬🇧' : 'Thể loại tác phẩm ✍️'}
+          Chủ đề: {themeTitle}
         </div>
       </div>
 

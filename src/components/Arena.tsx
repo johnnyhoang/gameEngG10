@@ -4,6 +4,7 @@ import { useSect } from '../contexts/SectContext';
 import { DEFAULT_GRADE_TIER, SUBJECTS_CONFIG } from '../types/game';
 import type { SubjectId } from '../types/game';
 import { filterQuestionsInScope } from '../utils/learningScope';
+import { getSubjectActivities } from '../subject-modules/registry';
 import {
   Compass, Sword, ShieldAlert, Star, Zap, BookOpen,
   Skull, BookMarked, Heart, Volume2
@@ -75,20 +76,13 @@ export function Arena({ onStartPlay }: ArenaProps) {
       && (a.gradeTier ?? DEFAULT_GRADE_TIER) === activeGradeTier
       && subjectTopicIds.includes(a.topicId)
     );
-    if (bossActs.length === 0) {
-      // Fallback in case no activities loaded yet
-      return [
-        { id: 'b-2024', name: `Đại Ca - ${activeSubjectConfig.name} 2024`, tag: '2024', energy: bossEnergyCost },
-        { id: 'b-2025', name: `Cự Long - ${activeSubjectConfig.name} 2025`, tag: '2025', energy: bossEnergyCost }
-      ];
-    }
     return bossActs.map(a => ({
       id: a.config?.boss_id || a.id,
       name: a.title,
       tag: a.config?.boss_tag || 'Boss',
       energy: a.config?.energy || bossEnergyCost
     }));
-  }, [activities, subjectTopicIds, bossEnergyCost, activeSubjectConfig, activeGradeTier]);
+  }, [activities, subjectTopicIds, bossEnergyCost]);
 
   // Build free practice cards list based on subject activities
   const rankedCards = useMemo(() => {
@@ -97,32 +91,22 @@ export function Arena({ onStartPlay }: ArenaProps) {
       && (a.gradeTier ?? DEFAULT_GRADE_TIER) === activeGradeTier
       && subjectTopicIds.includes(a.topicId)
     );
-    if (quizActs.length === 0) {
-      // Fallback
-      return [
-        {
-          id: 'grammar',
-          title: 'Mixed Practice',
-          subtitle: 'Luyện tập ngẫu nhiên',
-          description: `Rèn luyện toàn bộ trọng tâm môn ${activeSubjectConfig.name}.`,
-          icon: <BookOpen className="w-8 h-8 text-synth-cyan" />,
-          mode: 'mixed' as const,
-          reward: 'Học tập ngẫu nhiên'
-        }
-      ];
-    }
+    
+    const manifestActivities = getSubjectActivities(activeSectId);
+
+    const ICON_MAP: Record<string, any> = {
+      Compass: <Compass className="w-8 h-8 text-synth-cyan" />,
+      Star: <Star className="w-8 h-8 text-synth-cyan" />,
+      BookOpen: <BookOpen className="w-8 h-8 text-synth-cyan" />,
+      BookMarked: <BookMarked className="w-8 h-8 text-synth-cyan" />,
+      Volume2: <Volume2 className="w-8 h-8 text-synth-cyan" />
+    };
+
     return quizActs.map(a => {
       const mode = a.config?.mode || 'mixed';
-      let icon = <Star className="w-8 h-8 text-synth-cyan" />;
-      if (a.id.includes('grammar') || a.id.includes('quad') || a.id.includes('read')) {
-        icon = <BookOpen className="w-8 h-8 text-synth-cyan" />;
-      } else if (a.id.includes('vocabulary') || a.id.includes('essay')) {
-        icon = <BookMarked className="w-8 h-8 text-synth-cyan" />;
-      } else if (a.id.includes('reading') || a.id.includes('vn') || a.id.includes('plane')) {
-        icon = <Compass className="w-8 h-8 text-synth-cyan" />;
-      } else if (a.id.includes('pronunciation') || a.id.includes('lit')) {
-        icon = <Volume2 className="w-8 h-8 text-synth-cyan" />;
-      }
+      const manifestAct = manifestActivities.find(item => item.id === a.id || item.modeKey === mode || item.legacyMode === mode);
+      
+      const icon = (manifestAct?.icon && ICON_MAP[manifestAct.icon]) || <Star className="w-8 h-8 text-synth-cyan" />;
 
       return {
         id: a.id,
@@ -134,7 +118,7 @@ export function Arena({ onStartPlay }: ArenaProps) {
         reward: a.config?.reward || 'Đầy đủ nội dung'
       };
     });
-  }, [activities, subjectTopicIds, activeSubjectConfig, activeGradeTier]);
+  }, [activities, subjectTopicIds, activeSectId]);
 
   return (
     <div className="space-y-6">
@@ -166,39 +150,45 @@ export function Arena({ onStartPlay }: ArenaProps) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {rankedCards.map(card => (
-            <div key={card.id} className="relative">
-              <FogCard
-                pageId={`arena-free-${card.id}`}
-                requiredCompletions={3}
-                decayDays={7}
-                label="Thử thách chưa trải nghiệm"
-                onOpenLevel3={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 30)}
-              >
-                <div
-                  onClick={(e) => { e.stopPropagation(); handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 30); }}
-                  className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full"
-                >
-                  <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white z-10">
-                    <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
-                  </div>
-                  <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
-                    {card.icon}
-                  </div>
-                  <div className="space-y-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h4 className="font-orbitron font-black text-sm text-synth-cyan">🏰 {card.title}</h4>
-                    </div>
-                    <div className="text-[9px] font-bold uppercase tracking-[0.24em] text-slate-400">{card.subtitle}</div>
-                    <p className="text-xs text-slate-300 leading-relaxed line-clamp-2">{card.description}</p>
-                    <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
-                      Phần thưởng: <span className="text-white">{card.reward}</span>
-                    </div>
-                  </div>
-                </div>
-              </FogCard>
+          {rankedCards.length === 0 ? (
+            <div className="col-span-2 glass-panel rounded-2xl border border-dashed border-white/10 p-6 text-center text-xs text-slate-400">
+              📭 Chưa có chuyên đề thử thách nào được cấu hình cho môn này. Vui lòng liên hệ Giáo viên/Admin để thiết lập.
             </div>
-          ))}
+          ) : (
+            rankedCards.map(card => (
+              <div key={card.id} className="relative">
+                <FogCard
+                  pageId={`arena-free-${card.id}`}
+                  requiredCompletions={3}
+                  decayDays={7}
+                  label="Thử thách chưa trải nghiệm"
+                  onOpenLevel3={() => handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 30)}
+                >
+                  <div
+                    onClick={(e) => { e.stopPropagation(); handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 30); }}
+                    className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full"
+                  >
+                    <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white z-10">
+                      <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
+                    </div>
+                    <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
+                      {card.icon}
+                    </div>
+                    <div className="space-y-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h4 className="font-orbitron font-black text-sm text-synth-cyan">🏰 {card.title}</h4>
+                      </div>
+                      <div className="text-[9px] font-bold uppercase tracking-[0.24em] text-slate-400">{card.subtitle}</div>
+                      <p className="text-xs text-slate-300 leading-relaxed line-clamp-2">{card.description}</p>
+                      <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
+                        Phần thưởng: <span className="text-white">{card.reward}</span>
+                      </div>
+                    </div>
+                  </div>
+                </FogCard>
+              </div>
+            ))
+          )}
 
           {/* Random & Revenge inside Ranked list for more options */}
           <div className="relative">
@@ -267,55 +257,61 @@ export function Arena({ onStartPlay }: ArenaProps) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {bosses.map((boss, index) => (
-            <div key={boss.id} className="relative">
-              <FogCard
-                pageId={`arena-boss-${boss.id}`}
-                requiredCompletions={1}
-                decayDays={7}
-                label="Thử thách chưa trải nghiệm"
-                onOpenLevel3={() => handleLaunchZone('boss', boss.energy, boss.id)}
-              >
-                <div
-                  onClick={(e) => { e.stopPropagation(); handleLaunchZone('boss', boss.energy, boss.id); }}
-                  className={`glass-panel glass-panel-hover rounded-2xl p-5 flex flex-col justify-between cursor-pointer relative min-h-[160px] transition-all duration-300 h-full ${
-                    isUnicorn
-                      ? 'border-violet-200/35 hover:border-violet-300 bg-gradient-to-t from-white/80 to-fuchsia-50/60 shadow-[0_14px_30px_rgba(192,132,252,0.1)]'
-                      : 'border-synth-magenta/20 hover:border-synth-magenta bg-gradient-to-t from-synth-magenta/5 to-transparent'
-                  }`}
-                >
-                  <div className={`absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold z-10 ${
-                    isUnicorn ? 'bg-white/80 border border-violet-200/40 text-violet-700' : 'bg-synth-blue border border-synth-magenta/30 text-synth-magenta'
-                  }`}>
-                    <Zap className={`w-3 h-3 ${isUnicorn ? 'text-fuchsia-500 fill-fuchsia-500' : 'text-synth-magenta fill-synth-magenta'}`} /> {boss.energy}
-                  </div>
-
-                  <div className="space-y-2">
-                    <span className={`text-[9px] font-bold font-orbitron px-2 py-0.5 rounded uppercase ${
-                      isUnicorn ? 'bg-fuchsia-100/80 text-violet-700 border border-violet-200/40' : 'bg-synth-magenta/15 text-synth-magenta border border-synth-magenta/30'
-                    }`}>
-                      Độ Khó: Boss
-                    </span>
-                    <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-                      {boss.name}
-                    </h4>
-                    <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'} leading-relaxed`}>
-                      {isChuyenSau
-                        ? `Đề thi chuẩn cấu trúc sở GD HCMC năm ${boss.tag}. 5 câu trích đề, sai 3 câu là thua!`
-                        : `Đề thi ${boss.tag === 'HK1' ? 'Học Kỳ 1' : 'Học Kỳ 2'} lớp 9. 5 câu trích đề, sai 3 câu là thua!`}
-                    </p>
-                  </div>
-
-                  <div className="border-t border-synth-gray/50 pt-3 mt-3 flex justify-between items-center text-xs font-semibold">
-                    <span className={isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}>Bonus hoàn thành:</span>
-                    <span className={`font-orbitron font-bold flex items-center gap-1 ${isUnicorn ? 'text-violet-700' : 'text-synth-green'}`}>
-                      +{bossCompletionBonusRuby[index] ?? [100, 150, 200][index]} Ruby
-                    </span>
-                  </div>
-                </div>
-              </FogCard>
+          {bosses.length === 0 ? (
+            <div className="col-span-3 glass-panel rounded-2xl border border-dashed border-white/10 p-6 text-center text-xs text-slate-400">
+              📭 Môn học này chưa thiết lập Quyết Đấu Boss.
             </div>
-          ))}
+          ) : (
+            bosses.map((boss, index) => (
+              <div key={boss.id} className="relative">
+                <FogCard
+                  pageId={`arena-boss-${boss.id}`}
+                  requiredCompletions={1}
+                  decayDays={7}
+                  label="Thử thách chưa trải nghiệm"
+                  onOpenLevel3={() => handleLaunchZone('boss', boss.energy, boss.id)}
+                >
+                  <div
+                    onClick={(e) => { e.stopPropagation(); handleLaunchZone('boss', boss.energy, boss.id); }}
+                    className={`glass-panel glass-panel-hover rounded-2xl p-5 flex flex-col justify-between cursor-pointer relative min-h-[160px] transition-all duration-300 h-full ${
+                      isUnicorn
+                        ? 'border-violet-200/35 hover:border-violet-300 bg-gradient-to-t from-white/80 to-fuchsia-50/60 shadow-[0_14px_30px_rgba(192,132,252,0.1)]'
+                        : 'border-synth-magenta/20 hover:border-synth-magenta bg-gradient-to-t from-synth-magenta/5 to-transparent'
+                    }`}
+                  >
+                    <div className={`absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold z-10 ${
+                      isUnicorn ? 'bg-white/80 border border-violet-200/40 text-violet-700' : 'bg-synth-blue border border-synth-magenta/30 text-synth-magenta'
+                    }`}>
+                      <Zap className={`w-3 h-3 ${isUnicorn ? 'text-fuchsia-500 fill-fuchsia-500' : 'text-synth-magenta fill-synth-magenta'}`} /> {boss.energy}
+                    </div>
+
+                    <div className="space-y-2">
+                      <span className={`text-[9px] font-bold font-orbitron px-2 py-0.5 rounded uppercase ${
+                        isUnicorn ? 'bg-fuchsia-100/80 text-violet-700 border border-violet-200/40' : 'bg-synth-magenta/15 text-synth-magenta border border-synth-magenta/30'
+                      }`}>
+                        Độ Khó: Boss
+                      </span>
+                      <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
+                        {boss.name}
+                      </h4>
+                      <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'} leading-relaxed`}>
+                        {isChuyenSau
+                          ? `Đề thi chuẩn cấu trúc sở GD HCMC năm ${boss.tag}. 5 câu trích đề, sai 3 câu là thua!`
+                          : `Đề thi ${boss.tag === 'HK1' ? 'Học Kỳ 1' : 'Học Kỳ 2'} lớp 9. 5 câu trích đề, sai 3 câu là thua!`}
+                      </p>
+                    </div>
+
+                    <div className="border-t border-synth-gray/50 pt-3 mt-3 flex justify-between items-center text-xs font-semibold">
+                      <span className={isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}>Bonus hoàn thành:</span>
+                      <span className={`font-orbitron font-bold flex items-center gap-1 ${isUnicorn ? 'text-violet-700' : 'text-synth-green'}`}>
+                        +{bossCompletionBonusRuby[index] ?? [100, 150, 200][index]} Ruby
+                      </span>
+                    </div>
+                  </div>
+                </FogCard>
+              </div>
+            ))
+          )}
         </div>
       </div>
 

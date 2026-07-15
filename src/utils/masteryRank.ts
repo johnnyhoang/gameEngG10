@@ -1,4 +1,5 @@
 import type { SubjectId, CategoryStat, GradeTier } from '../types/game';
+import { DEFAULT_GRADE_TIER } from '../types/game';
 import { CORE_KNOWLEDGE_TOPICS } from '../data/coreKnowledge';
 import { filterLessonsInScope, filterQuestionsInScope } from './learningScope';
 
@@ -52,7 +53,7 @@ export function computeSubjectMasteryRatio({ subjectId, gradeTier, questions, ca
   const correctCount = subjectCategories.reduce((sum, cat) => sum + (categoryStats[cat]?.totalCorrect || 0), 0);
 
   const topics = CORE_KNOWLEDGE_TOPICS.filter(t =>
-    t.subjectId === subjectId && (t.gradeTier ?? 9) === gradeTier
+    t.subjectId === subjectId && (t.gradeTier ?? DEFAULT_GRADE_TIER) === gradeTier
   );
   const totalQuestions = topics.reduce((sum, t) => sum + t.minQuestions, 0) || contextQuestions.length || 1;
 

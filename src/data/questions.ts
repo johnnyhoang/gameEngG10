@@ -1,4 +1,5 @@
 import type { Question, GradeTier, SubjectId } from '../types/game';
+import { GRADE_SUBJECTS } from '../types/game';
 import { inferTopicId } from './coreKnowledge';
 import {
   SCIENCE_RIDDLE_QUESTIONS,
@@ -8833,8 +8834,11 @@ ALL_BASE_QUESTIONS.forEach(q => {
   });
 });
 
-// Nhân bản cho các lớp 6, 7, 8, 10, 11, 12
-([6, 7, 8, 10, 11, 12] as GradeTier[]).forEach(tier => {
+// Nhân bản cho tất cả các lớp khác (trừ lớp 9 gốc đã thêm ở trên và lớp 13 đại học)
+const allGradeTiers = Object.keys(GRADE_SUBJECTS).map(Number) as GradeTier[];
+const cloneGradeTiers = allGradeTiers.filter(tier => tier !== 9 && tier !== 13);
+
+cloneGradeTiers.forEach(tier => {
   ALL_BASE_QUESTIONS.forEach(q => {
     let subId = q.subject ?? 'english';
     const baseTopicId = q.topicId || inferTopicId(q.category, q.subject);

@@ -5,11 +5,49 @@ import { presentLiteratureQuestion } from './presentation';
 
 export const literatureSubjectModule: SubjectModule = {
   subjectId: 'literature',
+  lang: 'vi-VN',
+  supportsShortAnswer: true,
   activities: [
-    { id: 'literature-reading', title: 'Đọc hiểu văn bản', categories: ['literature-reading-poetry', 'literature-reading-prose', 'literature-reading-argument'], legacyMode: 'reading' },
-    { id: 'literature-vietnamese', title: 'Tiếng Việt', categories: ['literature-vietnamese'], legacyMode: 'grammar' },
-    { id: 'literature-social-essay', title: 'Viết đoạn và bài nghị luận', categories: ['literature-writing'], legacyMode: 'vocabulary' },
-    { id: 'literature-literary-essay', title: 'Nghị luận văn học', categories: ['literature-writing'], legacyMode: 'mixed' },
+    {
+      id: 'literature-reading',
+      title: 'Đọc hiểu văn bản',
+      categories: ['literature-reading-poetry', 'literature-reading-prose', 'literature-reading-argument'],
+      legacyMode: 'reading',
+      modeKey: 'reading',
+      label: 'Ải Đọc Hiểu',
+      icon: 'Compass',
+      topicIds: ['lit-reading-poetry', 'lit-reading-prose']
+    },
+    {
+      id: 'literature-vietnamese',
+      title: 'Tiếng Việt',
+      categories: ['literature-vietnamese'],
+      legacyMode: 'grammar',
+      modeKey: 'grammar',
+      label: 'Ải Tiếng Việt',
+      icon: 'BookOpen',
+      topicIds: ['lit-rhetoric-device']
+    },
+    {
+      id: 'literature-social-essay',
+      title: 'Viết đoạn và bài nghị luận',
+      categories: ['literature-writing'],
+      legacyMode: 'vocabulary',
+      modeKey: 'vocabulary',
+      label: 'Ải Viết Nghị Luận',
+      icon: 'BookMarked',
+      topicIds: ['lit-social-essay']
+    },
+    {
+      id: 'literature-literary-essay',
+      title: 'Nghị luận văn học',
+      categories: ['literature-writing'],
+      legacyMode: 'mixed',
+      modeKey: 'mixed',
+      label: 'Ải Nghị Luận Văn Học',
+      icon: 'Star',
+      topicIds: ['lit-literary-essay']
+    },
   ],
   questionPresentation: { present: presentLiteratureQuestion },
   questionMetadata: {

@@ -11,6 +11,10 @@ export interface SubjectActivityContribution {
   title: string;
   categories: readonly string[];
   legacyMode?: string;
+  modeKey?: string;      // legacy mode mapping alias ('grammar', 'reading', ...)
+  label?: string;        // Vietnamese learning name (e.g. 'Ải Đại Số')
+  topicIds?: readonly string[]; // topicIds from coreKnowledge
+  icon?: string;         // optional lucide icon name
 }
 
 export interface MiniGameContribution {
@@ -62,6 +66,8 @@ export interface AssessmentProviderContribution {
 
 export interface SubjectModule {
   subjectId: SubjectId;
+  lang?: 'vi-VN' | 'en-US';   // default is vi-VN
+  supportsShortAnswer?: boolean; // dynamic check for math AI grading
   tools?: readonly SubjectToolContribution[];
   activities?: readonly SubjectActivityContribution[];
   miniGames?: readonly MiniGameContribution[];
