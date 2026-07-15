@@ -135,7 +135,17 @@ export const FinalResultScreen: React.FC<FinalResultScreenProps> = ({
             <Zap className="w-4 h-4" />
             <span className="text-[10px] font-orbitron font-bold uppercase tracking-widest">Ải</span>
           </div>
-          <p className="font-orbitron font-bold text-xs text-white leading-tight">{MODE_LABEL[mode] ?? mode}</p>
+          <p className="font-orbitron font-bold text-xs text-white leading-tight">
+            {(() => {
+              const currentSubject = useGameState.getState().currentSubject;
+              if (currentSubject === 'math') {
+                if (mode === 'grammar') return 'Ải Đại Số';
+                if (mode === 'reading') return 'Ải Hình Học';
+                if (mode === 'vocabulary') return 'Ải Toán Thực Tế';
+              }
+              return MODE_LABEL[mode] ?? mode;
+            })()}
+          </p>
         </div>
       </div>
 

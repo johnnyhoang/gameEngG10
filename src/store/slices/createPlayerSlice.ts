@@ -920,13 +920,13 @@ export const createPlayerSlice: StateCreator<
 
           if (state.currentSubject === 'math') {
             if (mode === 'grammar') {
-              categoriesPool.push('parabol-line', 'viet-relation', 'linear-function');
+              categoriesPool.push('parabol-line', 'viet-relation', 'linear-function', 'Phương trình bậc hai', 'Định lý Vi-ét', 'Hàm số bậc hai', 'Hệ phương trình bậc nhất', 'Đồ thị hàm số');
             } else if (mode === 'reading') {
-              categoriesPool.push('real-geometry', 'plane-geometry', 'volume-displacement', 'tangent-geometry');
+              categoriesPool.push('real-geometry', 'plane-geometry', 'volume-displacement', 'tangent-geometry', 'Đường tròn', 'Góc với đường tròn', 'Tứ giác nội tiếp', 'Hệ thức lượng', 'Hình học phẳng');
             } else if (mode === 'vocabulary') {
-              categoriesPool.push('real-equations', 'real-finance', 'growth-modeling', 'percentage-discount', 'shopping-discount');
+              categoriesPool.push('real-equations', 'real-finance', 'growth-modeling', 'percentage-discount', 'shopping-discount', 'Toán thực tế');
             } else {
-              categoriesPool.push('parabol-line', 'viet-relation', 'linear-function', 'growth-modeling', 'percentage-discount', 'volume-displacement', 'shopping-discount', 'real-equations', 'real-geometry', 'real-finance', 'plane-geometry', 'tangent-geometry');
+              categoriesPool.push('parabol-line', 'viet-relation', 'linear-function', 'growth-modeling', 'percentage-discount', 'volume-displacement', 'shopping-discount', 'real-equations', 'real-geometry', 'real-finance', 'plane-geometry', 'tangent-geometry', 'Phương trình bậc hai', 'Định lý Vi-ét', 'Hàm số bậc hai', 'Hệ phương trình bậc nhất', 'Đồ thị hàm số', 'Đường tròn', 'Góc với đường tròn', 'Tứ giác nội tiếp', 'Hệ thức lượng', 'Hình học phẳng', 'Toán thực tế');
             }
           } else if (getSubjectActivities(state.currentSubject).length > 0) {
             const activities = getSubjectActivities(state.currentSubject);

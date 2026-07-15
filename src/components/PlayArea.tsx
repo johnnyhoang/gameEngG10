@@ -256,9 +256,9 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         if (pool.length === 0) {
           pool = fallbackQuestions.filter(q => {
             if (activeSectId === 'math') {
-              if (mode === 'grammar') return q.category === 'parabol-line' || q.category === 'viet-relation' || q.category === 'linear-function';
-              if (mode === 'reading') return q.category === 'real-geometry' || q.category === 'plane-geometry' || q.category === 'volume-displacement' || q.category === 'tangent-geometry';
-              if (mode === 'vocabulary') return q.category === 'real-equations' || q.category === 'real-finance' || q.category === 'growth-modeling' || q.category === 'percentage-discount' || q.category === 'shopping-discount';
+              if (mode === 'grammar') return q.category === 'parabol-line' || q.category === 'viet-relation' || q.category === 'linear-function' || q.category === 'Phương trình bậc hai' || q.category === 'Định lý Vi-ét' || q.category === 'Hàm số bậc hai' || q.category === 'Hệ phương trình bậc nhất' || q.category === 'Đồ thị hàm số';
+              if (mode === 'reading') return q.category === 'real-geometry' || q.category === 'plane-geometry' || q.category === 'volume-displacement' || q.category === 'tangent-geometry' || q.category === 'Đường tròn' || q.category === 'Góc với đường tròn' || q.category === 'Tứ giác nội tiếp' || q.category === 'Hệ thức lượng' || q.category === 'Hình học phẳng';
+              if (mode === 'vocabulary') return q.category === 'real-equations' || q.category === 'real-finance' || q.category === 'growth-modeling' || q.category === 'percentage-discount' || q.category === 'shopping-discount' || q.category === 'Toán thực tế';
             } else {
               if (mode === 'grammar') return q.category === 'grammar' || q.category === 'passive-voice' || q.category === 'relative-clauses' || q.category === 'rewrite';
               if (mode === 'reading') return q.category === 'reading' || q.category === 'cloze';
@@ -798,23 +798,49 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
-  const modeLabel = mode === 'vocabulary'
-    ? 'Vocabulary Castle'
-    : mode === 'pronunciation'
-      ? 'Pronunciation Peak'
-      : mode === 'grammar'
-        ? 'Grammar Cave'
+  const modeLabel = activeSectId === 'english'
+    ? (mode === 'vocabulary'
+      ? 'Vocabulary Castle'
+      : mode === 'pronunciation'
+        ? 'Pronunciation Peak'
+        : mode === 'grammar'
+          ? 'Grammar Cave'
+          : mode === 'reading'
+            ? 'Reading Forest'
+            : mode === 'mixed'
+              ? 'Phụ bản hỗn hợp'
+              : mode === 'revenge'
+                ? 'Phụ bản trả bài'
+                : mode === 'boss'
+                  ? 'Trường Thi Boss'
+                  : mode === 'survival'
+                    ? 'Trường Thi sinh tồn'
+                    : 'Phụ bản bài học')
+    : (activeSectId === 'math'
+      ? (mode === 'grammar'
+        ? 'Ải Đại Số'
         : mode === 'reading'
-          ? 'Reading Forest'
-          : mode === 'mixed'
-            ? 'Phụ bản hỗn hợp'
-            : mode === 'revenge'
-              ? 'Phụ bản trả bài'
-              : mode === 'boss'
-                ? 'Trường Thi Boss'
-                : mode === 'survival'
-                  ? 'Trường Thi sinh tồn'
-                  : 'Phụ bản bài học';
+          ? 'Ải Hình Học'
+          : mode === 'vocabulary'
+            ? 'Ải Toán Thực Tế'
+            : mode === 'mixed'
+              ? 'Phụ bản hỗn hợp'
+              : mode === 'revenge'
+                ? 'Phụ bản trả bài'
+                : mode === 'boss'
+                  ? 'Trường Thi Boss'
+                  : mode === 'survival'
+                    ? 'Trường Thi sinh tồn'
+                    : 'Phụ bản bài học')
+      : (mode === 'mixed'
+        ? 'Phụ bản hỗn hợp'
+        : mode === 'revenge'
+          ? 'Phụ bản trả bài'
+          : mode === 'boss'
+            ? 'Trường Thi Boss'
+            : mode === 'survival'
+              ? 'Trường Thi sinh tồn'
+              : 'Phụ bản bài học'));
 
   // --- Early returns ---
   if (runFinished && activityResult) {
