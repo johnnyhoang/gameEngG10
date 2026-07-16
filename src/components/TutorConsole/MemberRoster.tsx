@@ -9,6 +9,8 @@ interface MemberRosterProps {
   adminLinks?: any[];
   auditLogs: any[];
   fetchAuditLogs: () => Promise<void>;
+  onInspectStudent?: (studentId: string) => void;
+  inspectLoading?: boolean;
 }
 
 export const MemberRoster: React.FC<MemberRosterProps> = ({
@@ -16,7 +18,9 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
   adminStudents,
   adminLinks = [],
   auditLogs,
-  fetchAuditLogs
+  fetchAuditLogs,
+  onInspectStudent,
+  inspectLoading = false
 }) => {
   const [rosterTab, setRosterTab] = useState<'students' | 'primary_teachers' | 'secondary_teachers' | 'admins'>('students');
   const [teacherStudentTab, setTeacherStudentTab] = useState<'mine' | 'co_managed'>('mine');
@@ -175,6 +179,7 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
                     <th className="py-2.5 px-3">Chuỗi Ngày</th>
                     <th className="py-2.5 px-3">Người Quản Lý</th>
                     <th className="py-2.5 px-3 text-right">Tích Lũy XP</th>
+                    <th className="py-2.5 px-3 text-right">Hành động</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -212,6 +217,18 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
                           </td>
                           <td className="py-2.5 px-3 text-right font-orbitron text-synth-green font-bold">
                             {(stud.player?.xp || 0).toLocaleString()} XP
+                          </td>
+                          <td className="py-2.5 px-3 text-right">
+                            {onInspectStudent && (
+                              <button
+                                disabled={inspectLoading}
+                                onClick={() => onInspectStudent(stud.id)}
+                                title="Xem hoạt động, tiến độ và báo cáo của học sinh"
+                                className="px-3 py-1 rounded-lg bg-synth-cyan/10 hover:bg-synth-cyan/20 border border-synth-cyan/30 text-[10px] uppercase font-bold text-synth-cyan cursor-pointer transition-colors"
+                              >
+                                {inspectLoading ? 'Đang tải...' : '🔍 Xem Hồ Sơ'}
+                              </button>
+                            )}
                           </td>
                         </tr>
                       );
