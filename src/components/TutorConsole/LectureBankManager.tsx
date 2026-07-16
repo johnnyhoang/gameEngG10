@@ -32,6 +32,9 @@ export const LectureBankManager: React.FC = () => {
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [topicFilter, setTopicFilter] = useState('all');
+  const [standardFilter, setStandardFilter] = useState('all');
 
   // Form Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -204,19 +207,44 @@ export const LectureBankManager: React.FC = () => {
   };
 
   // Filters
+  const sectLessons = useMemo(() => {
+    return lessons.filter(l => l.subject === currentSubject && l.grade_tier === activeGradeTier);
+  }, [lessons, currentSubject, activeGradeTier]);
+
+  const topCategories = useMemo(() => {
+    const counts = sectLessons.reduce((acc, l) => {
+      if (!l.category) return acc;
+      acc[l.category] = (acc[l.category] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  }, [sectLessons]);
+
+  const topTopics = useMemo(() => {
+    const counts = sectLessons.filter(l => categoryFilter === 'all' || l.category === categoryFilter).reduce((acc, l) => {
+      if (!l.topic) return acc;
+      acc[l.topic] = (acc[l.topic] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    return Object.entries(counts).sort((a, b) => b[1] - a[1]);
+  }, [sectLessons, categoryFilter]);
+
   const filteredLessons = useMemo(() => {
-    return lessons.filter(l => {
-      const matchSubject = l.subject === currentSubject;
-      const matchGrade = l.grade_tier === activeGradeTier;
+    return sectLessons.filter(l => {
+      if (categoryFilter !== 'all' && l.category !== categoryFilter) return false;
+      if (topicFilter !== 'all' && l.topic !== topicFilter) return false;
+      if (standardFilter === 'standard' && !l.is_standard) return false;
+      if (standardFilter === 'non_standard' && l.is_standard) return false;
+
       const q = searchQuery.toLowerCase().trim();
       const matchQuery = !q || 
         l.title.toLowerCase().includes(q) || 
         l.topic.toLowerCase().includes(q) || 
         l.category.toLowerCase().includes(q) || 
         l.theory.toLowerCase().includes(q);
-      return matchGrade && matchSubject && matchQuery;
+      return matchQuery;
     });
-  }, [lessons, activeGradeTier, currentSubject, searchQuery]);
+  }, [sectLessons, categoryFilter, topicFilter, standardFilter, searchQuery]);
 
   return (
     <div className="space-y-6">
@@ -224,7 +252,7 @@ export const LectureBankManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
         <div>
           <h3 className="font-orbitron font-bold text-lg text-synth-cyan uppercase tracking-wider flex items-center gap-2">
-            📚 Kho Bài Giảng — Quản lý Ngân Hàng Bài Giảng
+            📚 Kho Bài Giảng
           </h3>
           <p className="text-xs text-slate-400 mt-1">
             Soạn thảo, hiệu đính lý thuyết cho các chương mục luyện tập trong Học Đường.
@@ -239,28 +267,87 @@ export const LectureBankManager: React.FC = () => {
       </div>
 
       {/* Filters bar */}
-      <div className="space-y-4">
-        <div className="flex gap-3 items-center">
-          <div className="relative flex-1 w-full">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Tìm theo tiêu đề, chủ đề, nhóm hoặc nội dung lý thuyết..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
-            />
+      <div className="bg-synth-gray/10 rounded-xl p-4 space-y-3">
+        <div className="flex items-center justify-between border-b border-white/5 pb-2">
+          <span className="text-[10px] uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">Bộ lọc bài giảng</span>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                setCategoryFilter('all');
+                setTopicFilter('all');
+                setStandardFilter('all');
+                setSearchQuery('');
+              }}
+              className="text-[9px] px-2 py-1 rounded bg-white/5 border border-white/10 font-bold uppercase hover:bg-white/10 text-white cursor-pointer transition-colors"
+            >
+              Xóa lọc
+            </button>
+            <button
+              onClick={fetchLessons}
+              disabled={loading}
+              className="text-[9px] px-2 py-1 flex items-center gap-1 rounded bg-white/5 border border-white/10 font-bold uppercase hover:bg-white/10 text-white cursor-pointer transition-colors disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} /> Làm mới
+            </button>
           </div>
-          <button
-            onClick={fetchLessons}
-            disabled={loading}
-            className="p-2 rounded-lg border border-white/10 hover:bg-white/5 text-slate-400 hover:text-white transition-colors cursor-pointer shrink-0"
-            title="Tải lại danh sách"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
         </div>
 
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <label className="space-y-1 text-[10px] block">
+            <span className="uppercase font-orbitron font-bold text-synth-text-muted">Nhóm (Category)</span>
+            <select
+              value={categoryFilter}
+              onChange={(e) => setCategoryFilter(e.target.value)}
+              className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs cursor-pointer outline-none focus:border-synth-cyan"
+            >
+              <option value="all">Tất cả nhóm</option>
+              {topCategories.map(([cat, count]) => (
+                <option key={cat} value={cat}>{cat} ({count})</option>
+              ))}
+            </select>
+          </label>
+
+          <label className="space-y-1 text-[10px] block">
+            <span className="uppercase font-orbitron font-bold text-synth-text-muted">Chủ đề (Topic)</span>
+            <select
+              value={topicFilter}
+              onChange={(e) => setTopicFilter(e.target.value)}
+              className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs cursor-pointer outline-none focus:border-synth-cyan"
+            >
+              <option value="all">Tất cả chủ đề</option>
+              {topTopics.map(([topic, count]) => (
+                <option key={topic} value={topic}>{topic} ({count})</option>
+              ))}
+            </select>
+          </label>
+
+          <label className="space-y-1 text-[10px] block">
+            <span className="uppercase font-orbitron font-bold text-synth-text-muted">Trạng thái</span>
+            <select
+              value={standardFilter}
+              onChange={(e) => setStandardFilter(e.target.value)}
+              className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs cursor-pointer outline-none focus:border-synth-cyan"
+            >
+              <option value="all">Tất cả bài giảng</option>
+              <option value="standard">🏆 Đạt chuẩn</option>
+              <option value="non_standard">Chưa đạt chuẩn</option>
+            </select>
+          </label>
+
+          <label className="space-y-1 text-[10px] block">
+            <span className="uppercase font-orbitron font-bold text-synth-text-muted">Tìm kiếm</span>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Tìm tiêu đề, nội dung..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
+              />
+            </div>
+          </label>
+        </div>
       </div>
 
       {/* Lessons List Grid */}

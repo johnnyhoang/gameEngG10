@@ -158,7 +158,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
       <div className="flex items-center gap-2">
         <Award className="w-5 h-5 text-synth-orange" />
         <h3 className="font-orbitron font-bold text-sm text-synth-orange uppercase tracking-wider">
-          💰 Phòng Tài Vụ — Quản lý phúc lợi &amp; Duyệt đổi quà
+          💰 Phòng Tài Vụ
         </h3>
       </div>
 

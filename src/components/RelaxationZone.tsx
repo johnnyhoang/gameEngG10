@@ -80,6 +80,8 @@ function renderGame(
   const lockedStatus = status === 'shadowed';
 
   const props = {
+    // currentUser luôn tồn tại ở đây (màn hình đã qua xác thực) — không dùng ID giả khi thiếu.
+    currentStudentId: currentUser?.id || '',
     activeSectId: currentSubject,
     gradeTier,
     difficulty: (isEasy ? 'easy' : 'hard') as 'easy' | 'hard',

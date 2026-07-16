@@ -195,7 +195,7 @@ export const TutorConsole: React.FC = () => {
               <div className="absolute top-0 right-0 w-32 h-32 bg-synth-cyan/5 rounded-full blur-2xl pointer-events-none"></div>
               <div className="relative z-10 space-y-1">
                 <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
-                  ⚙️ {isAdmin(currentUser?.role) ? 'BAN GIÁM HIỆU' : 'LỚP CHỦ NHIỆM'} — TRUNG TÂM QUẢN TRỊ
+                  ⚙️ {isAdmin(currentUser?.role) ? 'BAN GIÁM HIỆU' : 'LỚP CHỦ NHIỆM'}
                   <button
                     onClick={() => showHelp('parent-console')}
                     className="w-5 h-5 rounded-full bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta text-[10px] font-black flex items-center justify-center hover:bg-synth-magenta/40 cursor-pointer transition-colors shrink-0"

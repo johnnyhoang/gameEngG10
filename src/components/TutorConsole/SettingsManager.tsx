@@ -118,7 +118,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="w-4 h-4 text-synth-cyan" />
           <h3 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
-            ⚙️ Quy Tắc Hoạt Động — Thiết lập nạp Năng Lượng & Bonus Khoa Thi
+            ⚙️ Quy Tắc Hoạt Động
           </h3>
         </div>
 

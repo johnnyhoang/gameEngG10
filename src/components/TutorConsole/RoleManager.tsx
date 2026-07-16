@@ -119,7 +119,7 @@ export const RoleManager: React.FC<RoleManagerProps> = ({ currentUser }) => {
         <div className="flex items-center gap-2">
           <Shield className="w-4 h-4 text-synth-magenta" />
           <h3 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider">
-            👑 Quản Lý Vai Trò — Cấp & Thu Hồi Quyền
+            👑 Quản Lý Vai Trò
           </h3>
         </div>
         <button

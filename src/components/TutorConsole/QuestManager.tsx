@@ -43,7 +43,7 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="w-5 h-5 text-synth-cyan" />
           <h3 className="font-orbitron font-bold text-sm text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
-            🎯 Cáo Thị — Nhiệm vụ Chủ nhiệm giao cho con
+            🎯 Cáo Thị
           </h3>
         </div>
         {canCreateMission && (
