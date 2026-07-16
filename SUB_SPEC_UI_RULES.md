@@ -33,3 +33,24 @@ Xem CORE_SPECS §2.5 — Heo Maikawaii là nhân vật đồng hành/gác cổng
 ## 6. Quy Tắc Giao Diện Toast (Thông báo nhanh)
 - **Không hardcode màu sắc cố định** (như `text-white/95 bg-slate-950/90`) cho Toast.
 - **Sử dụng các biến CSS Toast** (`--theme-toast-bg`, `--theme-toast-text`, `--theme-toast-text-muted`, v.v.) định nghĩa riêng theo từng Phong Cách Học Đường để đảm bảo trên các theme có nền sáng (như Đào Hoa, Trúc Lâm, Tuyết Sơn), chữ thông báo Toast tự động đổi sang màu tối dễ đọc, và trên các theme tối chữ tự động chuyển sang màu sáng tương phản tốt.
+
+## 7. Cấu trúc Giao diện chính và Điều hướng Hub (Tái cấu trúc mới)
+Hệ thống giao diện được tinh giản tối đa thành mô hình Tab Hub thống nhất, loại bỏ hoàn toàn các trang con phụ và điều hướng đa tầng phức tạp:
+
+### 7.1 Cấu trúc 5-Tab Học sinh (AcademyHub)
+Môi trường học sinh (`AcademyHub.tsx`) quản lý 5 tab chính liên kết đồng bộ:
+1. **Học Viện (Academy)**: Hub trung tâm chứa Sổ Tu Học (`LearningLedger`) hiển thị mở rộng ngay đầu trang, Lời chào Sĩ tử, Trợ giảng AI gợi ý điểm yếu, Quests hàng ngày (cột trái) và hồ sơ cá nhân rút gọn + nhật ký hoạt động (`ActivityLog`) (cột phải).
+2. **Hang Luyện (Knowledge Hall)**: PracticeHall tự học theo chuyên đề, sai sót và bài giảng.
+3. **Trường Thi (Challenge Hall)**: Arena luyện thi chính với 4 phòng chiến đấu.
+4. **Khu Thám Hiểm (Adventure Zone)**: RelaxationZone chứa các minigame thư giãn.
+5. **Funzone**: Vùng giải trí tích hợp. Vùng chính là Cửa hàng (`ItemShop`) để mua đồ, cột bên phải là Sân Thú Nuôi (`PetSanctuary`) để chăm sóc thú cưng và Album ngay dưới thú.
+
+### 7.2 Cấu trúc 3-Tab Giáo viên / Viện Trưởng (TutorConsole)
+Môi trường quản trị (`TutorConsole.tsx`) tinh giản còn 3 tab chính:
+1. **Phòng Hiệu Trưởng / Phòng Giáo Viên (`phong_hieu_truong`)**: Chứa thống kê, danh sách học sinh liên kết/toàn trường, danh sách cán bộ nhân sự (Giáo viên, duyệt phó viện trưởng, phân quyền) và Cài đặt hệ thống (SettingsManager) thông qua hệ thống sub-tab con.
+2. **Bài Giảng (`tang_kinh_cac`)**: Phòng quản lý Knowledge (LectureBankManager).
+3. **Đề Thi (`van_quyen_cac`)**: Ngân hàng câu hỏi trắc nghiệm (QuestionBankManager).
+
+### 7.3 Nguyên tắc Modal / Overlay cho cấp sâu hơn
+- **Không sử dụng trang phụ hoặc trang con mới**: Khi bấm vào các tác vụ cấp sâu hơn (như Xưởng hình học 3D/Plane/Graph, chi tiết học bài của học sinh, hoặc Xem hồ sơ chi tiết học sinh `StudentProfileView` từ danh sách của giáo viên), bắt buộc phải render dưới dạng **Modal Overlay toàn màn hình** hoặc **Right/Left Panel overlay**.
+- Khi đóng Modal/Overlay, người dùng phải được trả về chính xác vị trí Tab hiện tại trước đó mà không làm reset trạng thái của Hub.
