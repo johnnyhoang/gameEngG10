@@ -201,8 +201,8 @@ export const FinalResultScreen: React.FC<FinalResultScreenProps> = ({
           <p className="text-[11px] text-slate-400 mt-1 leading-relaxed">
             {passed
               ? mode === 'lesson'
-                ? 'Ải bài học đã được ghi nhận. Sương mù và điểm tu luyện đã được cập nhật.'
-                : 'Chiến công đã được ghi nhận. Sương mù khu vực đã được cập nhật.'
+                ? 'Bài học đã được ghi nhận. Tiến độ học tập đã được cập nhật.'
+                : 'Kết quả đã được ghi nhận. Tiến độ học tập khu vực đã được cập nhật.'
               : status === 'timeout'
                 ? 'Hết thời gian — lần này không tính. Hãy hoàn thành trong 20 phút ở lần tiếp theo.'
                 : `Cần đạt tối thiểu ${isBossSurvival ? 'không mắc đủ 3 lỗi' : `${minAcc}% độ chính xác`} để tính vào tiến độ.`

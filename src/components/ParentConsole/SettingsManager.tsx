@@ -543,7 +543,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
                   <tr className="border-b border-white/10 text-slate-400 font-orbitron uppercase text-[9px] tracking-wider">
                     <th className="py-2.5 px-3">Ban Giám Hiệu</th>
                     <th className="py-2.5 px-3">Email</th>
-                    <th className="py-2.5 px-3">Vai Trò Giang Hồ</th>
+                    <th className="py-2.5 px-3">Chức Vụ Học Viện</th>
                   </tr>
                 </thead>
                 <tbody>

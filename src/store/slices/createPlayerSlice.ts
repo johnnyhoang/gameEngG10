@@ -320,7 +320,7 @@ export const createPlayerSlice: StateCreator<
             }
           });
 
-          logActivity(get, set, 'shop', 'Lĩnh Thẻ Chuyên Cần', 'Đã nhận 1 Thẻ Chuyên Cần bảo vệ Chuỗi Tu Luyện', -cost, 0);
+          logActivity(get, set, 'shop', 'Lĩnh Thẻ Chuyên Cần', 'Đã nhận 1 Thẻ Chuyên Cần bảo vệ Chuỗi Học Tập', -cost, 0);
           return true;
         },
 
@@ -613,16 +613,16 @@ export const createPlayerSlice: StateCreator<
 
           logActivity(get, set,
             'exercise',
-            hitTreasureChest ? 'Lĩnh ngộ bài học! Mở Rương Báu Ải 🎁' : 'Lĩnh ngộ bài học!',
+            hitTreasureChest ? 'Lĩnh hội bài học! Mở Rương Khuyến Học 🎁' : 'Lĩnh hội bài học!',
             hitTreasureChest
-              ? `Đã qua ải chuyên đề: ${lesson.title}. Độ chính xác ≥90% mở thêm Rương Báu Ải!`
-              : `Đã qua ải chuyên đề: ${lesson.title}.`,
+              ? `Đã hoàn thành chuyên đề: ${lesson.title}. Độ chính xác ≥90% mở thêm Rương Khuyến Học!`
+              : `Đã hoàn thành chuyên đề: ${lesson.title}.`,
             rubyGained,
             expGained
           );
           let lessonMsg = `📖 Lĩnh hội bài học thành công: +${expGained} XP ✨`;
           if (rubyGained > 0) {
-            lessonMsg += ` và +${rubyGained} Ruby 💎 (Rương Báu Ải)`;
+            lessonMsg += ` và +${rubyGained} Ruby 💎 (Rương Khuyến Học)`;
           }
           toast.success(lessonMsg);
           get().syncWithServer();

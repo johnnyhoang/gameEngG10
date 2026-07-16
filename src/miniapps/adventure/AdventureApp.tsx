@@ -45,7 +45,7 @@ export const AdventureApp: React.FC<AdventureAppProps> = ({  uiTheme, onReward, 
         setBoardPosition(nextPos);
         if (nextPos >= 9) {
           setBoardStatus('won');
-          onReward(100, 80, 'Về đích Du khảo', 'Đạt vạch đích rương báu sơn trang');
+          onReward(100, 80, 'Về đích Du khảo', 'Nhận rương phần thưởng khuyến học');
           toast.success('Bạn đã clear xong bản đồ du khảo! 🏆');
           onGameComplete?.({ correctAnswers: 10, timeSpent: 0, score: 100, passed: true });
         } else {
@@ -135,7 +135,7 @@ export const AdventureApp: React.FC<AdventureAppProps> = ({  uiTheme, onReward, 
       {boardStatus === 'won' && (
         <div className="text-center py-6 space-y-4">
           <div className="text-5xl animate-bounce">🏆🎉🥇</div>
-          <h4 className="font-orbitron font-black text-xl text-synth-green uppercase">Về Đích! Rương Báu Mở Ra!</h4>
+          <h4 className="font-orbitron font-black text-xl text-synth-green uppercase">Về Đích! Rương Khuyến Học Mở Ra!</h4>
           <p className="text-xs text-slate-300">Phần thưởng: +100 Ruby, +80 XP</p>
           <button onClick={() => { setBoardPosition(0); setBoardStatus('idle'); setRolledNumber(0); }}
             className="px-6 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase bg-synth-orange text-black cursor-pointer hover:scale-105 transition-all">

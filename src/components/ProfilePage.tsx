@@ -232,7 +232,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 : 'bg-white/5 border border-white/5 text-slate-400 hover:text-white'
             }`}
           >
-            👑 Học Tích & Võ Học
+            👑 Học Tích & Học Vấn
           </button>
           <button
             onClick={() => setActiveTab('themes')}

@@ -133,7 +133,7 @@ const SUBJECT_META: Record<string, any> = {
 
 const DEFAULT_TRACK = {
   tag: 'Luyện tập tổng hợp và củng cố kiến thức',
-  title: 'Phòng Luyện Công: Rèn luyện chuyên sâu kiến thức môn học',
+  title: 'Học Đường: Rèn luyện chuyên sâu kiến thức môn học',
   description: 'Hệ thống câu hỏi và bài giảng được thiết kế để củng cố toàn diện kỹ năng và lý thuyết của môn học.',
   focusLabel: 'Trọng tâm ôn tập',
   focusPoints: [
@@ -145,9 +145,9 @@ const DEFAULT_TRACK = {
   lessonDescription: 'Nắm vững cốt lõi kiến thức trước khi bước vào phòng rèn luyện.',
   sampleTitle: 'Đề mẫu tiêu biểu',
   sampleDescription: 'Khảo sát nhanh với các dạng bài xuất hiện thường xuyên trong ngân hàng câu hỏi.',
-  toolTitle: 'Pháp bảo rèn luyện',
-  toolDescription: 'Các công cụ bổ trợ học tập giúp nâng cao hiệu quả tu luyện.',
-  notePlaceholder: 'Ghi chép tâm đắc của con sau buổi luyện công này...'
+  toolTitle: 'Công cụ học tập',
+  toolDescription: 'Các công cụ bổ trợ học tập giúp nâng cao hiệu quả học tập.',
+  notePlaceholder: 'Ghi chép đèn sách của con sau buổi học này...'
 };
 
 const SUBJECT_TRACKS: Partial<Record<HangSubjectId, {

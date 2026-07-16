@@ -5,73 +5,73 @@ import type { HandbookPage } from '../types/game';
 export const INITIAL_HANDBOOK_PAGES: HandbookPage[] = [
   {
     id: 'hb-1',
-    category: 'Võ Học & Tinh Tấn',
-    title: 'Tu Vi & Kinh Nghiệm (XP)',
-    content: 'Tu vi (XP) đo lường trình độ kiến thức của Sĩ Tử trên học đường. Khi làm đúng mỗi câu hỏi thường ở Học Đường, con sẽ tích lũy được +15 XP.'
+    category: 'Học Vấn & Tinh Tấn',
+    title: 'Học Vấn & Kinh Nghiệm (XP)',
+    content: 'Học vấn (XP) đo lường trình độ kiến thức của Sĩ Tử trên học đường. Khi làm đúng mỗi câu hỏi thường ở Học Đường, con sẽ tích lũy được +15 XP.'
   },
   {
     id: 'hb-2',
-    category: 'Võ Học & Tinh Tấn',
-    title: 'Vượt Ải & Diệt Boss',
-    content: 'Lĩnh ngộ thành công mỗi chuyên đề kiến thức sẽ giúp con nhận thêm +50 XP. Quyết đấu thắng Boss nhận +150 XP và được nhân đôi điểm XP câu đúng trong trận.'
+    category: 'Học Vấn & Tinh Tấn',
+    title: 'Vượt Chuyên Đề & Khoa Thi',
+    content: 'Lĩnh ngộ thành công mỗi chuyên đề kiến thức sẽ giúp con nhận thêm +50 XP. Thi đỗ Khoa Thi nhận +150 XP và được nhân đôi điểm XP câu đúng trong bài.'
   },
   {
     id: 'hb-3',
-    category: 'Võ Học & Tinh Tấn',
-    title: 'Luật Lực Bất Tòng Tâm',
-    content: 'Cho Heo Maikawaii ăn tăng cấp sẽ tiêu tốn 30 XP và 50 Ruby của con. Điều này có thể khiến con bị tụt cấp độ tạm thời để tập trung nuôi dưỡng pet.'
+    category: 'Học Vấn & Tinh Tấn',
+    title: 'Luật Nuôi Dưỡng Linh Vật',
+    content: 'Cho Heo Maikawaii ăn tăng cấp sẽ tiêu tốn 30 XP và 50 Ruby của con. Điều này có thể khiến con bị giảm cấp độ tạm thời để tập trung nuôi dưỡng Linh vật.'
   },
   {
     id: 'hb-4',
-    category: 'Võ Học & Tinh Tấn',
+    category: 'Học Vấn & Tinh Tấn',
     title: 'Quy Tắc Thưởng Ruby',
     content: 'Ruby là đơn vị tích lũy để con đổi học cụ và quà khuyến học trong Shop Học Cụ. Làm đúng câu hỏi Trường Thi sẽ thưởng cho con +5 Ruby.'
   },
   {
     id: 'hb-5',
-    category: 'Võ Học & Tinh Tấn',
-    title: 'Luật Liên Hoàn Kích (Combo)',
-    content: 'Làm đúng liên tiếp từ 3 câu trở lên sẽ nhận hệ số nhân Ruby cực lớn x1.2, x1.5, x2.0. Chỉ cần làm sai một câu, chuỗi liên hoàn kích sẽ bị reset.'
+    category: 'Học Vấn & Tinh Tấn',
+    title: 'Luật Đăng Khoa Liên Tiếp (Combo)',
+    content: 'Làm đúng liên tiếp từ 3 câu trở lên sẽ nhận hệ số nhân Ruby cực lớn x1.2, x1.5, x2.0. Chỉ cần làm sai một câu, chuỗi trả lời liên tiếp sẽ bị reset.'
   },
   {
     id: 'hb-6',
-    category: 'Trường Thi Kỳ Ngộ',
+    category: 'Trường Thi & Khoa Cử',
     title: 'Năng Lượng Học Tập',
     content: 'Năng Lượng (Energy) là tài nguyên cần thiết để làm bài tập ở Trường Thi. Mỗi lượt luyện tập thường tiêu hao 30 Năng Lượng của Sĩ Tử.'
   },
   {
     id: 'hb-7',
-    category: 'Trường Thi Kỳ Ngộ',
+    category: 'Trường Thi & Khoa Cử',
     title: 'Luật Tiêu Hao Năng Lượng',
     content: 'Mỗi Khoa Thi tiêu hao 100 Năng Lượng và được trừ ngay khi vào lượt thi. Nếu con bỏ cuộc giữa chừng, lượng Năng Lượng này không được hoàn lại.'
   },
   {
     id: 'hb-8',
-    category: 'Trường Thi Kỳ Ngộ',
-    title: 'Sinh Mệnh & Tim Trường Thi',
-    content: 'Sĩ Tử có tối đa 3 Tim sinh mệnh trong mỗi lượt đấu sinh tử ở Trường Thi. Mỗi câu làm sai sẽ bị phạt khấu trừ 1 Tim sinh mệnh của con.'
+    category: 'Trường Thi & Khoa Cử',
+    title: 'Số Lượt Làm Bài & Trái Tim',
+    content: 'Sĩ Tử có tối đa 3 Trái tim trong mỗi lượt làm bài khảo thí ở Trường Thi. Mỗi câu làm sai sẽ bị khấu trừ 1 Trái tim của con.'
   },
   {
     id: 'hb-9',
-    category: 'Trường Thi Kỳ Ngộ',
-    title: 'Luật Tẩu Hỏa Nhập Ma',
-    content: 'Hết Tim giữa trận đấu sẽ thất bại và bị khấu hao 50% số Ruby và XP kiếm được. Đồng thời Heo Maikawaii sẽ buồn bã giảm 5 điểm vui vẻ.'
+    category: 'Trường Thi & Khoa Cử',
+    title: 'Luật Phạm Quy Trường Thi',
+    content: 'Hết Trái tim giữa lượt thi sẽ thất bại và bị giảm 50% số Ruby và XP kiếm được trong lượt đó. Đồng thời Heo Maikawaii sẽ buồn bã giảm 5 điểm vui vẻ.'
   },
   {
     id: 'hb-10',
-    category: 'Giang Hồ Quy Tắc',
-    title: 'Duy Trì Chuỗi Luyện Công',
+    category: 'Học Viện Quy Củ',
+    title: 'Duy Trì Chuỗi Đèn Sách',
     content: 'Con cần chăm chỉ học tập mỗi ngày để duy trì Chuỗi học tập (Streak) của bản thân. Chuỗi học tập tăng giúp rèn luyện thói quen và nhận thưởng lớn.'
   },
   {
     id: 'hb-11',
-    category: 'Giang Hồ Quy Tắc',
-    title: 'Luật Chuỗi Tinh Tấn',
+    category: 'Học Viện Quy Củ',
+    title: 'Luật Chuyên Cần',
     content: 'Giữ chuỗi càng lâu thưởng càng lớn: ngày 2 được +10 Ruby, ngày 3 +20 Ruby, từ ngày 4 mỗi ngày +30 Ruby. Bỏ quá 24 giờ không học thì chuỗi reset về 0 (không bị trừ điểm) và phải leo lại từ đầu.'
   },
   {
     id: 'hb-12',
-    category: 'Giang Hồ Quy Tắc',
+    category: 'Học Viện Quy Củ',
     title: 'Thử Thách Bất Ngờ',
     content: 'Khi ôn luyện hoặc đăng nhập, con có 5% cơ hội gặp Thử Thách Bất Ngờ để nhận +100 Năng Lượng hoặc một bài kiểm tra từ Trợ Giáo MIKA.'
   }
