@@ -167,7 +167,7 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice, onNavigateToF
                     <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-orbitron font-bold text-[10px] uppercase ${
                       isUnicorn ? 'border-violet-200 bg-violet-50/70 text-violet-700' : 'border-synth-cyan/30 bg-synth-cyan/10 text-synth-cyan'
                     }`}>
-                      👨‍🏫 {t('Lớp', 'Class')}: {activeLink.parent_name || activeLink.parent_email || t('Chưa rõ tên', 'Unknown')}
+                      👨‍🏫 {t('Lớp', 'Class')}: {activeLink.tutor_name || activeLink.tutor_email || t('Chưa rõ tên', 'Unknown')}
                     </div>
                   ) : (
                     <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-dashed font-orbitron font-bold text-[10px] uppercase ${
@@ -307,7 +307,7 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice, onNavigateToF
                     }`}>
                       <p className={`text-xs font-semibold ${isLight ? 'text-violet-800' : 'text-white'}`}>
                         {t('Giáo viên ', 'Teacher ')}
-                        <span className="text-synth-cyan">{invite.parent_name || invite.parent_email}</span>
+                        <span className="text-synth-cyan">{invite.tutor_name || invite.tutor_email}</span>
                         {t(' mời bạn vào lớp', ' invited you to their class')}
                       </p>
                       <div className="flex gap-2">
@@ -332,8 +332,8 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice, onNavigateToF
                 }`}>
                   <div className="space-y-0.5">
                     <p className="text-[10px] uppercase font-bold text-slate-400">{t('Đang học lớp của:', 'Currently in class of:')}</p>
-                    <p className={`font-bold ${isLight ? 'text-violet-900' : 'text-white'}`}>{activeLink.parent_name || t('Chưa rõ tên', 'Unknown')}</p>
-                    <p className="text-[10px] opacity-70">({activeLink.parent_email})</p>
+                    <p className={`font-bold ${isLight ? 'text-violet-900' : 'text-white'}`}>{activeLink.tutor_name || t('Chưa rõ tên', 'Unknown')}</p>
+                    <p className="text-[10px] opacity-70">({activeLink.tutor_email})</p>
                   </div>
                   <button
                     onClick={async () => {
@@ -358,8 +358,8 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice, onNavigateToF
                 }`}>
                   <div className="space-y-0.5">
                     <p className="text-[10px] uppercase font-bold text-slate-400">{t('Đang chờ phản hồi kết nối:', 'Awaiting connection response:')}</p>
-                    <p className={`font-bold ${isLight ? 'text-amber-900' : 'text-white'}`}>{pendingLink.parent_name || t('Chưa rõ tên', 'Unknown')}</p>
-                    <p className="text-[10px] opacity-70">({pendingLink.parent_email})</p>
+                    <p className={`font-bold ${isLight ? 'text-amber-900' : 'text-white'}`}>{pendingLink.tutor_name || t('Chưa rõ tên', 'Unknown')}</p>
+                    <p className="text-[10px] opacity-70">({pendingLink.tutor_email})</p>
                   </div>
                   <button
                     onClick={async () => {

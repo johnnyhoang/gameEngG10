@@ -42,7 +42,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
       const links = adminLinks.filter(l => l.student_id === student.id && l.status === 'active');
       
       links.forEach(link => {
-        const teacherId = link.parent_id;
+        const teacherId = link.tutor_id;
         if (!map.has(teacherId)) {
           map.set(teacherId, []);
         }
@@ -57,13 +57,13 @@ export const OrgChart: React.FC<OrgChartProps> = ({
   }, [allStudents, adminLinks]);
 
   // 3. Tìm Phó Chủ Nhiệm (Secondary Parent) gắn với Chủ Nhiệm Chính
-  // Theo DB: parent_id = Primary Parent, student_id = Secondary Parent, link_type = 'secondary'
+  // Theo DB: tutor_id = Primary Tutor, student_id = Secondary Tutor, link_type = 'secondary'
   const secondaryTeachersByPrimary = useMemo(() => {
     const map = new Map<string, any[]>();
     
     adminLinks.forEach(link => {
       if (link.link_type === 'secondary' && link.status === 'active') {
-        const primaryId = link.parent_id;
+        const primaryId = link.tutor_id;
         const secondaryId = link.student_id;
         
         const secondaryUser = secondaryTeachers.find(u => u.id === secondaryId);

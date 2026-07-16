@@ -235,9 +235,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     <div className="space-y-0.5">
                       <p className="text-[10px] uppercase font-bold text-slate-400">{t('Đang học lớp của:', 'Currently in class of:')}</p>
                       <p className={`font-bold ${isLight ? 'text-violet-900' : 'text-white'}`}>
-                        {activeLink.parent_name || t('Chưa rõ tên', 'Unknown')}
+                        {activeLink.tutor_name || t('Chưa rõ tên', 'Unknown')}
                       </p>
-                      <p className="text-[10px] opacity-70">({activeLink.parent_email})</p>
+                      <p className="text-[10px] opacity-70">({activeLink.tutor_email})</p>
                     </div>
                     <button
                       onClick={async () => {
@@ -265,9 +265,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     <div className="space-y-0.5">
                       <p className="text-[10px] uppercase font-bold text-slate-400">{t('Đang chờ phản hồi kết nối:', 'Awaiting connection response:')}</p>
                       <p className={`font-bold ${isLight ? 'text-amber-900' : 'text-white'}`}>
-                        {pendingLink.parent_name || t('Chưa rõ tên', 'Unknown')}
+                        {pendingLink.tutor_name || t('Chưa rõ tên', 'Unknown')}
                       </p>
-                      <p className="text-[10px] opacity-70">({pendingLink.parent_email})</p>
+                      <p className="text-[10px] opacity-70">({pendingLink.tutor_email})</p>
                     </div>
                     <button
                       onClick={async () => {
@@ -344,7 +344,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                         isLight ? 'border-pink-200 bg-pink-50/50' : 'border-synth-magenta/30 bg-synth-magenta/5'
                       }`}>
                         <div className="text-[10px] leading-relaxed">
-                          {t('Thầy/Cô', 'Teacher')} <strong className={isLight ? 'text-pink-700' : 'text-synth-cyan'}>{link.parent_name || t('Chưa rõ tên', 'Unknown')}</strong> ({link.parent_email}) {t('muốn nhận bạn vào lớp.', 'wants to add you to their class.')}
+                          {t('Thầy/Cô', 'Teacher')} <strong className={isLight ? 'text-pink-700' : 'text-synth-cyan'}>{link.tutor_name || t('Chưa rõ tên', 'Unknown')}</strong> ({link.tutor_email}) {t('muốn nhận bạn vào lớp.', 'wants to add you to their class.')}
                         </div>
                         <div className="flex gap-1.5 shrink-0 ml-2">
                           <button

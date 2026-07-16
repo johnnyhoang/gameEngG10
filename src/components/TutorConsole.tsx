@@ -309,7 +309,7 @@ export const TutorConsole: React.FC = () => {
                     </h4>
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {classLinks.filter(l => l.status === 'active' && l.parent_id === currentUser?.id).map((link: any) => {
+                    {classLinks.filter(l => l.status === 'active' && l.tutor_id === currentUser?.id).map((link: any) => {
                       const student = adminStudents.find((s: any) => s.id === link.student_id);
                       return (
                         <button
@@ -370,7 +370,7 @@ export const TutorConsole: React.FC = () => {
                         </button>
                       );
                     })}
-                    {classLinks.filter(l => l.status === 'active' && l.parent_id === currentUser?.id).length === 0 && (
+                    {classLinks.filter(l => l.status === 'active' && l.tutor_id === currentUser?.id).length === 0 && (
                       <p className="text-xs text-synth-text-muted italic py-4 col-span-3 text-center">
                         Chưa có tài khoản học sinh nào kết nối vào lớp học.
                       </p>

@@ -37,7 +37,7 @@ export const StudentDirectory: React.FC<StudentDirectoryProps> = ({
     const map = new Map<string, string>();
     (adminLinks || [])
       .filter((l: any) => l.link_type === 'primary' && l.status === 'active')
-      .forEach((l: any) => map.set(l.student_id, l.parent_name || 'Chủ nhiệm'));
+      .forEach((l: any) => map.set(l.student_id, l.tutor_name || 'Chủ nhiệm'));
     return map;
   }, [adminLinks]);
 

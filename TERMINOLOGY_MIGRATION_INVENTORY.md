@@ -1,6 +1,6 @@
 # Inventory Chuẩn Hóa Thuật Ngữ
 
-Ngày rà soát: **2026-07-13**
+Ngày rà soát: **2026-07-16** *(cập nhật: đổi parent→tutor)*
 Nguồn chuẩn: [SUB_SPEC_TERMINOLOGY.md](./SUB_SPEC_TERMINOLOGY.md)
 
 ## 1. Nguyên tắc migration
@@ -31,6 +31,7 @@ Nguồn chuẩn: [SUB_SPEC_TERMINOLOGY.md](./SUB_SPEC_TERMINOLOGY.md)
 | Tài nguyên | Chân Khí → **Năng Lượng** | `SUB_SPEC_ENERGY.md`, `TopHUD.tsx`, student/admin energy controls, store/player types | Display + docs; giữ `energy/maxEnergy/resetHours` |
 | Currency | NP/coins → **Ruby** | 55+ file frontend/backend/schema; xem backlog T2A | Domain/API/DB migration đã triển khai trong code |
 | Sự kiện/hành động | Kỳ Ngộ Học Đường → **Thử Thách Bất Ngờ**; Logout → **Rời Học Viện**; skip punishment → **Bỏ qua** | `CORE_SPECS.md`, `SUB_SPEC_ENERGY.md`, handbook, `MienPhatDialog.tsx`, `PlayArea.tsx`, admin slice | Display + behavior; Bỏ qua đã đổi không trừ Ruby, giới hạn 3/ngày |
+| **[CONTRACT — KHÔNG REVERT]** DB column & API field: `parent_id/parent_name/parent_email/parent_avatar` → **`tutor_id/tutor_name/tutor_email/tutor_avatar`** trong `ge10_class_links`; status `pending_parent` → **`pending_tutor`**; role `parent` → **`tutor`** | `backend/migrations/20260716_rename_parent_to_tutor.sql`, `src/types/game.ts` (`ClassLink`), `AcademyTab.tsx`, `ProfilePage.tsx`, `WorldMap.tsx`, `TutorConsole.tsx`, `TutorConsole/ClassLinksManager.tsx`, `TutorConsole/OrgChart.tsx`, `TutorConsole/SettingsManager.tsx`, `TutorConsole/StudentDirectory.tsx` | **DB/API/type contract đã deploy** — migration 2026-07-16 merge dữ liệu `ge10_parent_rewards` → `ge10_tutor_rewards` rồi drop bảng cũ. Không được đưa `parent_*` về lại bất kỳ layer nào. |
 
 ## 3. Feature/function đang ẩn hoặc chưa enable
 

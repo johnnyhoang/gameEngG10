@@ -61,10 +61,11 @@ export interface GameSettings {
 
 export interface ClassLink {
   id: string;
-  status: 'pending_student' | 'pending_parent' | 'active';
-  parent_id?: string;
-  parent_name?: string;
-  parent_email?: string;
+  status: 'pending_student' | 'pending_tutor' | 'active';
+  tutor_id?: string;
+  tutor_name?: string;
+  tutor_email?: string;
+  tutor_avatar?: string;
   student_id?: string;
   student_name?: string;
   student_email?: string;

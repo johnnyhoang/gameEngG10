@@ -1,4 +1,4 @@
-﻿import { useMemo, useEffect } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { toast } from '../utils/toast';
 import {
@@ -164,7 +164,7 @@ export function WorldMap({
                 <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-orbitron font-bold text-[10px] uppercase ${
                   isUnicorn ? 'border-violet-200 bg-violet-50/70 text-violet-700' : 'border-synth-cyan/30 bg-synth-cyan/10 text-synth-cyan'
                 }`}>
-                  🎓 {t('Lớp', 'Class')}: {activeLink.parent_name || activeLink.parent_email || t('Chưa rõ tên', 'Unknown')}
+                  🎓 {t('Lớp', 'Class')}: {activeLink.tutor_name || activeLink.tutor_email || t('Chưa rõ tên', 'Unknown')}
                 </div>
               ) : (
                 <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-dashed font-orbitron font-bold text-[10px] uppercase ${

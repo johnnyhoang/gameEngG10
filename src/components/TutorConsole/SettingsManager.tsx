@@ -114,7 +114,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
   const myClassStudents = useMemo(() => {
     if (isCallerAdmin) return allStudents;
     const studentIds = (adminLinks || [])
-      .filter((l: any) => l.parent_id === currentUser?.id && l.link_type === 'primary')
+      .filter((l: any) => l.tutor_id === currentUser?.id && l.link_type === 'primary')
       .map((l: any) => l.student_id);
     return allStudents.filter((s: any) => studentIds.includes(s.id));
   }, [allStudents, adminLinks, currentUser?.id, isCallerAdmin]);
@@ -122,7 +122,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
   const coManagedClassStudents = useMemo(() => {
     if (isCallerAdmin) return [];
     const studentIds = (adminLinks || [])
-      .filter((l: any) => l.parent_id === currentUser?.id && l.link_type === 'secondary')
+      .filter((l: any) => l.tutor_id === currentUser?.id && l.link_type === 'secondary')
       .map((l: any) => l.student_id);
     return allStudents.filter((s: any) => studentIds.includes(s.id));
   }, [allStudents, adminLinks, currentUser?.id, isCallerAdmin]);
@@ -143,8 +143,8 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
     if (isCallerAdmin) return list;
     const studentIds = [...myClassStudents, ...coManagedClassStudents].map(s => s.id);
     const parentIds = (adminLinks || [])
-      .filter(l => studentIds.includes(l.student_id) && l.parent_role === 'tutor')
-      .map(l => l.parent_id);
+      .filter(l => studentIds.includes(l.student_id) && l.tutor_role === 'tutor')
+      .map(l => l.tutor_id);
     return list.filter(u => parentIds.includes(u.id) || u.id === currentUser?.id);
   }, [adminStudents, isCallerAdmin, myClassStudents, coManagedClassStudents, adminLinks, currentUser?.id]);
 
@@ -153,8 +153,8 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
     if (isCallerAdmin) return list;
     const studentIds = [...myClassStudents, ...coManagedClassStudents].map(s => s.id);
     const parentIds = (adminLinks || [])
-      .filter(l => studentIds.includes(l.student_id) && l.parent_role === 'secondary_tutor')
-      .map(l => l.parent_id);
+      .filter(l => studentIds.includes(l.student_id) && l.tutor_role === 'secondary_tutor')
+      .map(l => l.tutor_id);
     return list.filter(u => parentIds.includes(u.id) || u.id === currentUser?.id);
   }, [adminStudents, isCallerAdmin, myClassStudents, coManagedClassStudents, adminLinks, currentUser?.id]);
 
@@ -166,15 +166,15 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
   const getStudentCoManagers = (studentId: string) => {
     const links = (adminLinks || []).filter(l => l.student_id === studentId);
     const managers = links.map(l => {
-      const roleName = l.parent_role === 'tutor' ? 'Chủ Nhiệm Chính' : 'Chủ Nhiệm Phụ';
-      return `${l.parent_name} (${roleName})`;
+      const roleName = l.tutor_role === 'tutor' ? 'Chủ Nhiệm Chính' : 'Chủ Nhiệm Phụ';
+      return `${l.tutor_name} (${roleName})`;
     });
     return managers.length > 0 ? managers.join(', ') : 'Chưa nhận lớp';
   };
 
   const getTeacherManagedStudents = (teacherId: string, linkType: 'primary' | 'secondary') => {
     const studentIds = (adminLinks || [])
-      .filter(l => l.parent_id === teacherId && l.link_type === linkType)
+      .filter(l => l.tutor_id === teacherId && l.link_type === linkType)
       .map(l => l.student_id);
     const names = adminStudents
       .filter(s => s.role === 'student' && studentIds.includes(s.id))

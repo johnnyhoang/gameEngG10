@@ -87,7 +87,7 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
   const isSecondaryTeacher = currentUser?.role === 'secondary_tutor';
 
   const vicePrincipalApplication = classLinks.find(
-    l => l.link_type === 'vice_principal' && l.parent_id === currentUser?.id
+    l => l.link_type === 'vice_principal' && l.tutor_id === currentUser?.id
   );
 
   const handleApplyVicePrincipal = async () => {
@@ -244,16 +244,16 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                 {incomingTeacherRequests.map(sp => (
                   <div key={sp.id} className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/10">
                     <div className="flex items-center gap-2.5">
-                      {sp.parent_avatar ? (
-                        <img src={sp.parent_avatar} alt={sp.parent_name} className="w-8 h-8 rounded-full border border-white/10 object-cover" />
+                      {sp.tutor_avatar ? (
+                        <img src={sp.tutor_avatar} alt={sp.tutor_name} className="w-8 h-8 rounded-full border border-white/10 object-cover" />
                       ) : (
                         <div className="w-8 h-8 rounded-full bg-synth-purple/10 border border-synth-purple/30 flex items-center justify-center text-xs font-bold text-synth-purple">
-                          {sp.parent_name ? sp.parent_name.charAt(0).toUpperCase() : 'T'}
+                          {sp.tutor_name ? sp.tutor_name.charAt(0).toUpperCase() : 'T'}
                         </div>
                       )}
                       <div>
-                        <span className="text-xs text-white font-bold block">{sp.parent_name || 'Giáo viên phụ'}</span>
-                        <span className="text-[10px] text-slate-400 font-sans">{sp.parent_email}</span>
+                        <span className="text-xs text-white font-bold block">{sp.tutor_name || 'Giáo viên phụ'}</span>
+                        <span className="text-[10px] text-slate-400 font-sans">{sp.tutor_email}</span>
                       </div>
                     </div>
                     <div className="flex gap-2">
@@ -298,19 +298,19 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
             Bạn được mời làm Giáo viên phụ (Chủ Nhiệm Phụ) quản lý chung cho lớp học sau:
           </p>
           <div className="space-y-2">
-            {classLinks.filter(l => l.status === 'pending_parent' && l.link_type === 'secondary').map(link => (
+            {classLinks.filter(l => l.status === 'pending_tutor' && l.link_type === 'secondary').map(link => (
               <div key={link.id} className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/10">
                 <div className="flex items-center gap-2.5">
-                  {link.parent_avatar ? (
-                    <img src={link.parent_avatar} alt={link.parent_name} className="w-8 h-8 rounded-full border border-white/10 object-cover" />
+                  {link.tutor_avatar ? (
+                    <img src={link.tutor_avatar} alt={link.tutor_name} className="w-8 h-8 rounded-full border border-white/10 object-cover" />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-synth-cyan/10 border border-synth-cyan/30 flex items-center justify-center text-xs font-bold text-synth-cyan">
-                      {link.parent_name ? link.parent_name.charAt(0).toUpperCase() : 'T'}
+                      {link.tutor_name ? link.tutor_name.charAt(0).toUpperCase() : 'T'}
                     </div>
                   )}
                   <div>
-                    <span className="text-xs text-white font-bold block">Lớp của Thầy/Cô: {link.parent_name || 'Giáo viên'}</span>
-                    <span className="text-[10px] text-slate-400 font-mono">{link.parent_email}</span>
+                    <span className="text-xs text-white font-bold block">Lớp của Thầy/Cô: {link.tutor_name || 'Giáo viên'}</span>
+                    <span className="text-[10px] text-slate-400 font-mono">{link.tutor_email}</span>
                   </div>
                 </div>
                 <div className="flex gap-2">
@@ -451,7 +451,7 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                     ⏳ Chờ giáo viên chấp nhận ({outgoingTeacherInvites.length})
                   </span>
                   {outgoingTeacherInvites.map(sp =>
-                    renderOutgoingInvite(sp.id, sp.parent_name || 'Giáo viên phụ', sp.parent_email)
+                    renderOutgoingInvite(sp.id, sp.tutor_name || 'Giáo viên phụ', sp.tutor_email)
                   )}
                 </div>
               )}
@@ -503,7 +503,7 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                   ⏳ Chờ giáo viên chính duyệt ({outgoingCoTeachRequests.length})
                 </span>
                 {outgoingCoTeachRequests.map(sp =>
-                  renderOutgoingInvite(sp.id, sp.parent_name || 'Giáo viên chính', sp.parent_email)
+                  renderOutgoingInvite(sp.id, sp.tutor_name || 'Giáo viên chính', sp.tutor_email)
                 )}
               </div>
             )}
@@ -582,16 +582,16 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                     <tr key={sp.id} className="hover:bg-white/5 transition-colors">
                       <td className="py-3 px-3">
                         <div className="flex items-center gap-2">
-                          {sp.parent_avatar ? (
-                            <img src={sp.parent_avatar} alt={sp.parent_name} className="w-6 h-6 rounded-full object-cover" />
+                          {sp.tutor_avatar ? (
+                            <img src={sp.tutor_avatar} alt={sp.tutor_name} className="w-6 h-6 rounded-full object-cover" />
                           ) : (
                             <div className="w-6 h-6 rounded-full bg-synth-purple/10 border border-synth-purple/25 flex items-center justify-center text-[10px] font-bold text-synth-purple">
-                              {sp.parent_name ? sp.parent_name.charAt(0).toUpperCase() : 'T'}
+                              {sp.tutor_name ? sp.tutor_name.charAt(0).toUpperCase() : 'T'}
                             </div>
                           )}
                           <div>
-                            <span className="font-bold text-white block">{sp.parent_name || 'Giáo viên phụ'}</span>
-                            <span className="text-[10px] text-slate-400">{sp.parent_email}</span>
+                            <span className="font-bold text-white block">{sp.tutor_name || 'Giáo viên phụ'}</span>
+                            <span className="text-[10px] text-slate-400">{sp.tutor_email}</span>
                           </div>
                         </div>
                       </td>
@@ -622,7 +622,7 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                       <td className="py-3 px-3 text-right">
                         <button
                           disabled={processingIds[sp.id]}
-                          onClick={() => handleLeaveClass(sp.id, `Bạn có chắc muốn mời Giáo viên phụ ${sp.parent_name || sp.parent_email} ra khỏi lớp không?`, 'Đã xóa Giáo viên phụ khỏi lớp.')}
+                          onClick={() => handleLeaveClass(sp.id, `Bạn có chắc muốn mời Giáo viên phụ ${sp.tutor_name || sp.tutor_email} ra khỏi lớp không?`, 'Đã xóa Giáo viên phụ khỏi lớp.')}
                           className="px-2 py-1 text-[9px] border border-red-500/30 hover:border-red-500/60 bg-red-500/10 text-red-400 rounded uppercase font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[100px]"
                         >
                           {processingIds[sp.id] ? (
@@ -655,16 +655,16 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
             {secondaryParents.filter(sp => sp.status === 'active').map((sp: any) => (
               <div key={sp.id} className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/5">
                 <div className="flex items-center gap-2.5">
-                  {sp.parent_avatar ? (
-                    <img src={sp.parent_avatar} alt={sp.parent_name} className="w-8 h-8 rounded-full border border-white/10 object-cover" />
+                  {sp.tutor_avatar ? (
+                    <img src={sp.tutor_avatar} alt={sp.tutor_name} className="w-8 h-8 rounded-full border border-white/10 object-cover" />
                   ) : (
                     <div className="w-8 h-8 rounded-full bg-synth-cyan/10 border border-synth-cyan/30 flex items-center justify-center text-xs font-bold text-synth-cyan">
-                      {sp.parent_name ? sp.parent_name.charAt(0).toUpperCase() : 'T'}
+                      {sp.tutor_name ? sp.tutor_name.charAt(0).toUpperCase() : 'T'}
                     </div>
                   )}
                   <div>
-                    <span className="text-xs text-white font-bold block">Giáo Viên Chính: {sp.parent_name}</span>
-                    <span className="text-[10px] text-slate-400">{sp.parent_email}</span>
+                    <span className="text-xs text-white font-bold block">Giáo Viên Chính: {sp.tutor_name}</span>
+                    <span className="text-[10px] text-slate-400">{sp.tutor_email}</span>
                   </div>
                 </div>
                 <button
