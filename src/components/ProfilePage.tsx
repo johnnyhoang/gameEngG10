@@ -9,6 +9,7 @@ import { AcademyHandbook } from './AcademyHandbook';
 import { ActivityLog } from './ActivityLog';
 import { RubyConfirmModal } from './Common/RubyConfirmModal';
 import { SearchSuggest } from './Common/SearchSuggest';
+import { useTranslate } from '../hooks/useTranslate';
 
 interface ProfilePageProps {
   currentUser: UserProfile;
@@ -24,6 +25,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   onNavigate
 }) => {
   const player = useGameState(state => state.player);
+  const { t } = useTranslate();
 
   const [isCamNangOpen, setIsCamNangOpen] = useState(false);
   const [confirmModal, setConfirmModal] = useState<{
@@ -106,7 +108,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   : 'border-white/10 bg-white/5 text-white/70'
               }`}>
                 <Palette className={`h-3.5 w-3.5 ${isUnicorn ? 'text-fuchsia-500' : ''}`} />
-                Học tịch hồ sơ
+                {t('Học tịch hồ sơ', 'Student Profile')}
               </p>
               {isEditingName ? (
                 <div className="flex items-center gap-2 mt-1">
@@ -125,13 +127,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     disabled={isRenaming}
                     className="px-3 py-1 rounded bg-synth-green text-black font-orbitron font-bold text-xs cursor-pointer hover:opacity-80"
                   >
-                    {isRenaming ? '...' : 'Lưu'}
+                    {isRenaming ? '...' : t('Lưu', 'Save')}
                   </button>
                   <button
                     onClick={() => { setIsEditingName(false); setTempName(currentUser.name); }}
                     className="px-3 py-1 rounded bg-white/10 text-xs text-white cursor-pointer hover:bg-white/20"
                   >
-                    Hủy
+                    {t('Hủy', 'Cancel')}
                   </button>
                 </div>
               ) : (
@@ -140,7 +142,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                   <button
                     onClick={() => setIsEditingName(true)}
                     className="p-1 rounded text-slate-400 hover:text-white transition-colors cursor-pointer text-xs"
-                    title="Đổi tên gọi"
+                    title={t('Đổi tên gọi', 'Rename')}
                   >
                     ✏️
                   </button>
@@ -164,24 +166,24 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             {currentUser.role === 'student' && (
               <div className="grid grid-cols-2 gap-4 bg-white/5 p-5 rounded-2xl border border-white/5 text-xs">
                 <div className="p-3.5 rounded-xl border border-white/5 bg-white/5">
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron mb-1">Danh hiệu học tập</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron mb-1">{t('Danh hiệu học tập', 'Academic Title')}</span>
                   <span className="font-orbitron font-black text-synth-cyan text-sm leading-snug flex items-center gap-1">
                     <span>{getStudentRankForLevel(player.level).icon}</span>
                     <span>{getStudentRankForLevel(player.level).name}</span>
                   </span>
-                  <span className="block text-[10px] text-slate-400 font-semibold mt-1">Cấp {player.level}</span>
+                  <span className="block text-[10px] text-slate-400 font-semibold mt-1">{t('Cấp', 'Level')} {player.level}</span>
                 </div>
                 <div className="p-3.5 rounded-xl border border-white/5 bg-white/5">
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron mb-1">Tích lũy điểm số</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron mb-1">{t('Tích lũy điểm số', 'Accumulated Points')}</span>
                   <span className="font-orbitron font-black text-synth-magenta text-sm">{player.xp} XP</span>
                 </div>
                 <div className="p-3.5 rounded-xl border border-white/5 bg-white/5">
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron mb-1">Ruby tích lũy</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron mb-1">{t('Ruby tích lũy', 'Accumulated Ruby')}</span>
                   <span className="font-orbitron font-black text-synth-orange text-sm">{player.ruby} Ruby</span>
                 </div>
                 <div className="p-3.5 rounded-xl border border-white/5 bg-white/5">
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron mb-1">Chuỗi học tập</span>
-                  <span className="font-orbitron font-black text-synth-green text-sm">{player.streak} Ngày</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron mb-1">{t('Chuỗi học tập', 'Learning Streak')}</span>
+                  <span className="font-orbitron font-black text-synth-green text-sm">{player.streak} {t('Ngày', 'Days')}</span>
                 </div>
               </div>
             )}
@@ -194,7 +196,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             }`}>
               <div className="flex items-center gap-2">
                 <Sparkles className={`h-4 w-4 ${isLight ? 'text-fuchsia-500' : 'text-synth-cyan'}`} />
-                <span className="font-semibold font-orbitron text-xs">Phong Cách Học Đường đang dùng</span>
+                <span className="font-semibold font-orbitron text-xs">{t('Phong Cách Học Đường đang dùng', 'Current School Style')}</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-lg">{activeTheme.iconSet[0]}</span>
@@ -212,7 +214,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                         : 'border-synth-cyan/30 bg-synth-cyan/5 text-synth-cyan hover:bg-synth-cyan/15'
                     }`}
                   >
-                    Đổi Phong Cách 👘
+                    {t('Đổi Phong Cách', 'Change Style')} 👘
                   </button>
                 </div>
               )}
@@ -222,7 +224,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             {currentUser.role === 'student' && (
               <div className={`p-5 rounded-2xl border ${isLight ? 'border-violet-200/50 bg-violet-50/20' : 'border-white/10 bg-white/5'} space-y-4`}>
                 <h3 className={`font-orbitron font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 ${isLight ? 'text-violet-800' : 'text-synth-cyan'}`}>
-                  <span>🎓</span> Lớp Chủ Nhiệm & Kết Nối Giáo Viên
+                  <span>🎓</span> {t('Lớp Chủ Nhiệm & Kết Nối Giáo Viên', 'Homeroom Class & Teacher Connection')}
                 </h3>
                 
                 {/* 2.1 Active class connection status */}
@@ -231,9 +233,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     isLight ? 'border-violet-200/50 bg-white/80 text-violet-800' : 'border-synth-cyan/20 bg-black/30 text-synth-cyan'
                   }`}>
                     <div className="space-y-0.5">
-                      <p className="text-[10px] uppercase font-bold text-slate-400">Đang học lớp của:</p>
+                      <p className="text-[10px] uppercase font-bold text-slate-400">{t('Đang học lớp của:', 'Currently in class of:')}</p>
                       <p className={`font-bold ${isLight ? 'text-violet-900' : 'text-white'}`}>
-                        {activeLink.parent_name || 'Chưa rõ tên'}
+                        {activeLink.parent_name || t('Chưa rõ tên', 'Unknown')}
                       </p>
                       <p className="text-[10px] opacity-70">({activeLink.parent_email})</p>
                     </div>
@@ -250,7 +252,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                           : 'border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20'
                       }`}
                     >
-                      Rời Lớp 🚪
+                      {t('Rời Lớp', 'Leave Class')} 🚪
                     </button>
                   </div>
                 )}
@@ -261,9 +263,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                     isLight ? 'border-amber-200/50 bg-amber-50/50 text-amber-800' : 'border-synth-orange/20 bg-black/30 text-synth-orange'
                   }`}>
                     <div className="space-y-0.5">
-                      <p className="text-[10px] uppercase font-bold text-slate-400">Đang chờ phản hồi kết nối:</p>
+                      <p className="text-[10px] uppercase font-bold text-slate-400">{t('Đang chờ phản hồi kết nối:', 'Awaiting connection response:')}</p>
                       <p className={`font-bold ${isLight ? 'text-amber-900' : 'text-white'}`}>
-                        {pendingLink.parent_name || 'Chưa rõ tên'}
+                        {pendingLink.parent_name || t('Chưa rõ tên', 'Unknown')}
                       </p>
                       <p className="text-[10px] opacity-70">({pendingLink.parent_email})</p>
                     </div>
@@ -280,7 +282,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                           : 'border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20'
                       }`}
                     >
-                      Hủy Yêu Cầu
+                      {t('Hủy Yêu Cầu', 'Cancel Request')}
                     </button>
                   </div>
                 )}
@@ -291,15 +293,15 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 }`}>
                   <div className="space-y-0.5 shrink-0 flex-1 min-w-[180px]">
                     <p className={`font-bold text-xs flex items-center gap-1.5 ${isLight ? 'text-violet-800' : 'text-synth-cyan'}`}>
-                      <span>🎓</span> {(activeLink || pendingLink) ? 'Chuyển Lớp Thầy/Cô' : 'Gia Nhập Lớp Mới'}
+                      <span>🎓</span> {(activeLink || pendingLink) ? t('Chuyển Lớp Thầy/Cô', 'Switch Class') : t('Gia Nhập Lớp Mới', 'Join New Class')}
                     </p>
                     <p className="text-[10px] leading-normal text-slate-400">
-                      Nhập Email Google của Thầy/Cô để kết nối lớp.
+                      {t('Nhập Email Google của Thầy/Cô để kết nối lớp.', "Enter your teacher's Google Email to connect to class.")}
                     </p>
                   </div>
                   <div className="flex items-center gap-2 flex-1 max-w-sm w-full">
                     <SearchSuggest
-                      placeholder="Email Thầy/Cô..."
+                      placeholder={t('Email Thầy/Cô...', "Teacher's Email...")}
                       roleFilter="tutor"
                       value={inviteEmail}
                       onChange={setInviteEmail}
@@ -326,7 +328,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                           : 'bg-synth-cyan hover:bg-synth-cyan/80 text-black disabled:opacity-50'
                       }`}
                     >
-                      {isInviting ? 'Gửi...' : (activeLink || pendingLink) ? 'Chuyển' : 'Kết nối'}
+                      {isInviting ? t('Gửi...', 'Sending...') : (activeLink || pendingLink) ? t('Chuyển', 'Switch') : t('Kết nối', 'Connect')}
                     </button>
                   </div>
                 </div>
@@ -335,14 +337,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 {pendingStudentInvites.length > 0 && (
                   <div className="pt-2 border-t border-white/5 space-y-2">
                     <p className="font-bold text-synth-magenta flex items-center gap-1.5 text-[10px] uppercase tracking-wider">
-                      <span>💌</span> Lời mời gia nhập lớp từ Thầy/Cô:
+                      <span>💌</span> {t('Lời mời gia nhập lớp từ Thầy/Cô:', 'Class invitations from Teacher:')}
                     </p>
                     {pendingStudentInvites.map((link: any) => (
                       <div key={link.id} className={`flex items-center justify-between p-3 rounded-xl border ${
                         isLight ? 'border-pink-200 bg-pink-50/50' : 'border-synth-magenta/30 bg-synth-magenta/5'
                       }`}>
                         <div className="text-[10px] leading-relaxed">
-                          Thầy/Cô <strong className={isLight ? 'text-pink-700' : 'text-synth-cyan'}>{link.parent_name || 'Chưa rõ tên'}</strong> ({link.parent_email}) muốn nhận bạn vào lớp.
+                          {t('Thầy/Cô', 'Teacher')} <strong className={isLight ? 'text-pink-700' : 'text-synth-cyan'}>{link.parent_name || t('Chưa rõ tên', 'Unknown')}</strong> ({link.parent_email}) {t('muốn nhận bạn vào lớp.', 'wants to add you to their class.')}
                         </div>
                         <div className="flex gap-1.5 shrink-0 ml-2">
                           <button
@@ -354,7 +356,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                               isLight ? 'bg-pink-600 text-white hover:bg-pink-700' : 'bg-synth-cyan text-black hover:bg-synth-cyan/80'
                             }`}
                           >
-                            Đồng ý
+                            {t('Đồng ý', 'Accept')}
                           </button>
                           <button
                             onClick={async () => {
@@ -365,7 +367,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                               isLight ? 'bg-white border border-pink-200 text-pink-700 hover:bg-pink-50' : 'bg-white/10 border border-white/20 text-white hover:bg-white/20'
                             }`}
                           >
-                            Từ chối
+                            {t('Từ chối', 'Decline')}
                           </button>
                         </div>
                       </div>
@@ -380,15 +382,15 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               <div className="flex items-center gap-3">
                 <span className="text-3xl">📖</span>
                 <div>
-                  <h4 className="text-sm font-bold text-amber-100 font-serif">Cẩm Nang Học Tập</h4>
-                  <p className="text-xs text-slate-300 font-serif">Nội quy học tập, điều kiện thăng cấp và kinh nghiệm.</p>
+                  <h4 className="text-sm font-bold text-amber-100 font-serif">{t('Cẩm Nang Học Tập', 'Study Handbook')}</h4>
+                  <p className="text-xs text-slate-300 font-serif">{t('Nội quy học tập, điều kiện thăng cấp và kinh nghiệm.', 'Learning rules, level-up conditions and experience.')}</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsCamNangOpen(true)}
                 className="w-full sm:w-auto px-5 py-2.5 bg-amber-900 hover:bg-amber-800 text-amber-100 font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer border border-amber-800/30 hover:scale-[1.02] shadow-lg shadow-amber-950/40"
               >
-                Mở Cẩm Nang 📖
+                {t('Mở Cẩm Nang', 'Open Handbook')} 📖
               </button>
             </div>
 
@@ -404,7 +406,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           <div className="lg:col-span-5 space-y-6">
             <div className={`p-5 rounded-2xl border ${isLight ? 'border-violet-200/35 bg-white/60' : 'border-white/10 bg-slate-950/40'} flex flex-col h-full max-h-[600px] overflow-hidden`}>
               <h3 className={`font-orbitron font-bold text-xs uppercase tracking-wider mb-4 flex items-center gap-1.5 ${isLight ? 'text-violet-800' : 'text-synth-cyan'}`}>
-                <span>📊</span> Nhật Ký Hoạt Động Sĩ Tử
+                <span>📊</span> {t('Nhật Ký Hoạt Động Sĩ Tử', 'Student Activity Log')}
               </h3>
               <div className="flex-1 overflow-y-auto pr-1">
                 <ActivityLog />

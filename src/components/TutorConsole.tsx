@@ -1,11 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
+﻿import React, { useState, useEffect, useMemo } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { isAdmin, isParentRole } from '../utils/roleHelpers';
 import { toast } from '../utils/toast';
+import { useTranslate } from '../hooks/useTranslate';
 
 // Import child managers
 import { AdminConnectionManager } from './TutorConsole/AdminConnectionManager';
-import { ProfilePage } from './ProfilePage';
+
 import { ClassLinksManager } from './TutorConsole/ClassLinksManager';
 import { SettingsManager } from './TutorConsole/SettingsManager';
 import { StudentProfileView } from './TutorConsole/StudentProfileView';
@@ -17,6 +18,7 @@ import { RoleManager } from './TutorConsole/RoleManager';
 import { VicePrincipalApplicationsManager } from './TutorConsole/VicePrincipalApplicationsManager';
 
 export const TutorConsole: React.FC = () => {
+  const { t } = useTranslate();
   const markRewardDelivered = useGameState(state => state.markRewardDelivered);
   const cancelRedemption = useGameState(state => state.cancelRedemption);
   const addTutorReward = useGameState(state => state.addTutorReward);
@@ -64,7 +66,7 @@ export const TutorConsole: React.FC = () => {
   const leaveClass = useGameState(state => state.leaveClass);
   const applyVicePrincipal = useGameState(state => state.applyVicePrincipal);
   const inviteAdminConnection = useGameState(state => state.inviteAdminConnection);
-  const uiTheme = useGameState(state => state.uiTheme);
+  
 
   // Tab chính đọc từ store — nav chính nằm trên TopHUD (thanh MIKAWAII), không còn nav riêng trong trang
   const activeTab = useGameState(state => state.tutorConsoleTab);
@@ -156,7 +158,7 @@ export const TutorConsole: React.FC = () => {
     setViewingStudentId(studentId);
     try {
       await fetchStudentProfile(studentId);
-      setActiveTab('than_phan');
+      
     } finally {
       setInspectLoading(false);
     }
@@ -182,34 +184,7 @@ export const TutorConsole: React.FC = () => {
     <div className="space-y-6 pb-20 md:pb-6">
       {/* Nav chính đã dời lên TopHUD (thanh MIKAWAII); tiêu đề trang do heading từng tab đảm nhiệm */}
 
-      {/* Inspected Student Banner — ẩn ở tab than_phan vì header hồ sơ đã hiển thị đủ danh tính + nút đổi học sinh */}
-      {viewingStudentId && selectedStudentProfile && activeTab !== 'than_phan' && (
-        <div className="glass-panel rounded-xl border border-synth-cyan/30 p-4 flex justify-between items-center bg-gradient-to-r from-synth-cyan/5 to-transparent">
-          <div className="flex items-center gap-3">
-            <img 
-              src={selectedStudentProfile.studentUser?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'} 
-              alt={selectedStudentProfile.studentUser?.name}
-              className="w-9 h-9 rounded-full border border-synth-cyan/40"
-            />
-            <div>
-              <span className="text-[10px] text-synth-cyan uppercase font-bold tracking-wider font-orbitron">Đang quản lý tài khoản</span>
-              <h4 className="font-bold text-white text-sm leading-tight mt-0.5">
-                {selectedStudentProfile.studentUser?.name} ({selectedStudentProfile.studentUser?.email})
-              </h4>
-            </div>
-          </div>
-          <button
-            onClick={() => {
-              setViewingStudentId(null);
-              setActiveTab('phong_hieu_truong');
-              toast.success('Đã quay lại danh sách học sinh');
-            }}
-            className="px-3 py-1.5 rounded bg-synth-gray/30 border border-white/10 text-xs text-white hover:bg-white/10 font-bold cursor-pointer transition-colors"
-          >
-            Đổi học sinh khác
-          </button>
-        </div>
-      )}
+      
 
       {/* Tab Panels */}
       <div className="glass-panel rounded-2xl border border-white/5 p-5">
@@ -446,49 +421,7 @@ export const TutorConsole: React.FC = () => {
           </div>
         )}
 
-        {activeTab === 'than_phan' && (
-          viewingStudentId ? (
-            <StudentProfileView
-              currentUser={currentUser}
-              selectedStudentProfile={selectedStudentProfile}
-              gameSettings={gameSettings}
-              canApproveReward={!!canApproveReward}
-              canManageEnergy={!!canManageEnergy}
-              canCreateMission={!!canCreateMission}
-              skipReviews={skipReviews}
-              adminMarkRewardDelivered={adminMarkRewardDelivered as any}
-              adminCancelRedemption={adminCancelRedemption as any}
-              adminSetEnergy={adminSetEnergy as any}
-              adminSetEnergyConfig={adminSetEnergyConfig as any}
-              fetchSkipReviews={fetchSkipReviews}
-              resolveSkipReview={resolveSkipReview}
-              onSwitchStudent={() => {
-                setViewingStudentId(null);
-                setActiveTab('phong_hieu_truong');
-                toast.success('Đã quay lại danh sách học sinh');
-              }}
-              // Reward props
-              activeRewardCatalog={activeRewardCatalog}
-              activeRedemptions={activeRedemptions}
-              addTutorReward={addTutorReward as any}
-              deleteTutorReward={deleteTutorReward as any}
-              markRewardDelivered={markRewardDelivered as any}
-              cancelRedemption={cancelRedemption as any}
-              // Quest props
-              tutorQuests={tutorQuests}
-              addTutorQuest={addTutorQuest as any}
-              completeTutorQuest={completeTutorQuest as any}
-              deleteTutorQuest={deleteTutorQuest as any}
-            />
-          ) : (
-            <ProfilePage
-              currentUser={currentUser!}
-              currentTheme={uiTheme}
-            />
-          )
-        )}
-
-        {activeTab === 'van_quyen_cac' && (
+                {activeTab === 'van_quyen_cac' && (
           <QuestionBankManager
             questions={questions}
             deleteQuestion={deleteQuestion}
@@ -503,65 +436,108 @@ export const TutorConsole: React.FC = () => {
         )}
       </div>
 
-      {/* Mobile Admin Bottom Navigation Bar — cùng thứ tự với top nav desktop */}
-      <nav className={`md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-2 py-2 pb-3 grid ${viewingStudentId ? 'grid-cols-5' : 'grid-cols-4'} gap-1 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)] text-center`}>
-        <button
-          onClick={() => {
-            setActiveTab('phong_hieu_truong');
-            fetchAdminStudents();
-          }}
-          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-            activeTab === 'phong_hieu_truong' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
-          }`}
-        >
-          <span className="text-base">⚙️</span>
-          <span>Hiệu Trưởng</span>
-        </button>
+      {/* Student Profile Modal Overlay */}
+      {viewingStudentId && selectedStudentProfile && (
+        <div className="fixed inset-0 z-[150] bg-synth-bg/95 backdrop-blur-md flex flex-col p-4 md:p-6 overflow-auto animate-fade-in">
+          <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col space-y-4">
+            {/* Header Modal */}
+            <div className="flex justify-between items-center border-b border-white/10 pb-4">
+              <div className="flex items-center gap-3">
+                <img 
+                  src={selectedStudentProfile.studentUser?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'} 
+                  alt={selectedStudentProfile.studentUser?.name}
+                  className="w-10 h-10 rounded-2xl border border-synth-cyan/40 object-cover"
+                />
+                <div>
+                  <span className="text-[10px] text-synth-cyan uppercase font-bold tracking-wider font-orbitron">
+                    {t('Quản lý hồ sơ Sĩ Tử', 'Student Profile Management')}
+                  </span>
+                  <h3 className="font-bold text-white text-base leading-tight mt-0.5">
+                    {selectedStudentProfile.studentUser?.name} ({selectedStudentProfile.studentUser?.email})
+                  </h3>
+                </div>
+              </div>
+              <button
+                onClick={() => setViewingStudentId(null)}
+                className="px-4 py-2 rounded-xl bg-synth-gray/30 border border-white/10 text-xs text-white hover:bg-white/10 hover:border-white/20 font-bold font-orbitron cursor-pointer transition-colors"
+              >
+                {t('Đóng Hồ Sơ', 'Close Profile')}
+              </button>
+            </div>
 
-        <button
-          onClick={() => setActiveTab('van_quyen_cac')}
-          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-            activeTab === 'van_quyen_cac' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
-          }`}
-        >
-          <span className="text-base">📚</span>
-          <span>Đề Thi</span>
-        </button>
+            {/* Profile Content */}
+            <div className="flex-1 min-h-0 overflow-auto">
+              <StudentProfileView
+                currentUser={currentUser}
+                selectedStudentProfile={selectedStudentProfile}
+                gameSettings={gameSettings}
+                canApproveReward={!!canApproveReward}
+                canManageEnergy={!!canManageEnergy}
+                canCreateMission={!!canCreateMission}
+                skipReviews={skipReviews}
+                adminMarkRewardDelivered={adminMarkRewardDelivered as any}
+                adminCancelRedemption={adminCancelRedemption as any}
+                adminSetEnergy={adminSetEnergy as any}
+                adminSetEnergyConfig={adminSetEnergyConfig as any}
+                fetchSkipReviews={fetchSkipReviews}
+                resolveSkipReview={resolveSkipReview}
+                onSwitchStudent={() => {
+                  setViewingStudentId(null);
+                  toast.success(t('Đã quay lại danh sách', 'Returned to directory'));
+                }}
+                activeRewardCatalog={activeRewardCatalog}
+                activeRedemptions={activeRedemptions}
+                addTutorReward={addTutorReward as any}
+                deleteTutorReward={deleteTutorReward as any}
+                markRewardDelivered={markRewardDelivered as any}
+                cancelRedemption={cancelRedemption as any}
+                tutorQuests={tutorQuests}
+                addTutorQuest={addTutorQuest as any}
+                completeTutorQuest={completeTutorQuest as any}
+                deleteTutorQuest={deleteTutorQuest as any}
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
-        <button
-          onClick={() => setActiveTab('tang_kinh_cac')}
-          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-            activeTab === 'tang_kinh_cac' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
-          }`}
-        >
-          <span className="text-base">📖</span>
-          <span>Bài Giảng</span>
-        </button>
-
-        <button
-          onClick={() => setActiveTab('than_phan')}
-          className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-            activeTab === 'than_phan' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
-          }`}
-        >
-          <span className="text-base">👤</span>
-          <span>{viewingStudentId ? 'Hồ Sơ HS' : 'Hồ Sơ'}</span>
-        </button>
-
-        {viewingStudentId && (
+            {/* Mobile Admin Bottom Navigation Bar — 3 tabs */}
+      {currentUser && (isParentRole(currentUser.role) || isAdmin(currentUser.role)) && (
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-2 py-2 pb-3 grid grid-cols-3 gap-1 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)] text-center">
           <button
             onClick={() => {
-              setViewingStudentId(null);
               setActiveTab('phong_hieu_truong');
-              toast.success('Đã quay lại danh sách học sinh');
+              fetchAdminStudents();
             }}
-            className="flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider text-red-400 hover:text-red-300 transition-colors cursor-pointer"
+            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
+              activeTab === 'phong_hieu_truong' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
+            }`}
           >
-            <span className="text-base">🔄</span>
-            <span>Đổi Học Sinh</span>
+            <span className="text-base">🏫</span>
+            <span>{t('Hiệu Trưởng', 'Homeroom')}</span>
           </button>
-        )}
-      </nav>
+
+          <button
+            onClick={() => setActiveTab('tang_kinh_cac')}
+            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
+              activeTab === 'tang_kinh_cac' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
+            }`}
+          >
+            <span className="text-base">📖</span>
+            <span>{t('Bài Giảng', 'Lectures')}</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('van_quyen_cac')}
+            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
+              activeTab === 'van_quyen_cac' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
+            }`}
+          >
+            <span className="text-base">📚</span>
+            <span>{t('Đề Thi', 'Questions')}</span>
+          </button>
+        </nav>
+      )}
       {inspectLoading && (
         <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-synth-cyan mb-3"></div>

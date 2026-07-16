@@ -1,5 +1,4 @@
 import { isParentRole, isAdmin } from './utils/roleHelpers';
-import { filterLessonsInScope } from './utils/learningScope';
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useGameState } from './hooks/useGameState';
 import { TopHUD } from './components/TopHUD';
@@ -8,7 +7,6 @@ import type { Session, AuthChangeEvent } from '@supabase/supabase-js';
 import { useSect } from './contexts/SectContext';
 import { PetStableOverlay } from './components/PetStableOverlay';
 import { LevelUpCelebration } from './components/LevelUpCelebration';
-import { WorldMap } from './components/WorldMap';
 import { PlayArea } from './components/PlayArea';
 import { TutorConsole } from './components/TutorConsole';
 import { GoogleLoginScreen } from './components/GoogleLoginScreen';
@@ -17,6 +15,7 @@ import { GlobalSectModal } from './components/GlobalSectModal';
 import { LogoutConfirmModal } from './components/Common/LogoutConfirmModal';
 import { getSubjectToolIds } from './subject-modules/registry';
 import { recordMissionEvent } from './services/missionLedgerService';
+import { AcademyHub, type AcademyTabId } from './components/AcademyHub';
 
 // Helper decorator to encapsulate Suspense for each lazy component individually, avoiding app-wide unmount loops
 const withSuspense = <P extends object>(
@@ -37,16 +36,9 @@ const withSuspense = <P extends object>(
   );
 };
 
-const PetSanctuary = withSuspense(lazy(() => import('./components/PetSanctuary').then(m => ({ default: m.PetSanctuary }))));
-const Arena = withSuspense(lazy(() => import('./components/Arena').then(m => ({ default: m.Arena }))));
-const ItemShop = withSuspense(lazy(() => import('./components/ItemShop').then(m => ({ default: m.ItemShop }))));
-const ProfilePage = withSuspense(lazy(() => import('./components/ProfilePage').then(m => ({ default: m.ProfilePage }))));
 const AcademyHandbook = withSuspense(lazy(() => import('./components/AcademyHandbook').then(m => ({ default: m.AcademyHandbook }))), null);
-const PracticeHall = withSuspense(lazy(() => import('./components/PracticeHall').then(m => ({ default: m.PracticeHall }))));
 const SubjectWorkshopPage = withSuspense(lazy(() => import('./components/SubjectWorkshopPage').then(m => ({ default: m.SubjectWorkshopPage }))));
-const DesktopCentralNav = withSuspense(lazy(() => import('./components/DesktopCentralNav').then(m => ({ default: m.DesktopCentralNav }))), null);
 const LessonStudyView = withSuspense(lazy(() => import('./components/LessonStudyView').then(m => ({ default: m.LessonStudyView }))));
-const RelaxationZone = withSuspense(lazy(() => import('./components/RelaxationZone').then(m => ({ default: m.RelaxationZone }))));
 const GeometryApp = withSuspense(lazy(() => import('./miniapps/geometry').then(m => ({ default: m.GeometryApp }))));
 const GraphHandbook = withSuspense(lazy(() => import('./components/GraphHandbook').then(m => ({ default: m.GraphHandbook }))));
 
@@ -67,9 +59,30 @@ function App() {
   const isSwitchingContext = useGameState(state => state.isSwitchingContext);
   const classLinks = useGameState(state => state.classLinks);
 
-  // Screen routing state
-  const [screen, setScreen] = useState<'map' | 'arena' | 'play' | 'shop' | 'tutor' | 'pet' | 'logs' | 'practice' | 'workshop-3d' | 'workshop-plane' | 'workshop-graph' | 'lesson-study' | 'relax' | 'profile'>(
-    () => (localStorage.getItem('cyber-app-screen') as any) || 'map'
+  // Screen routing state — only for transient full-screen overlays
+  const [screen, setScreen] = useState<'academy' | 'play' | 'tutor' | 'workshop-3d' | 'workshop-plane' | 'workshop-graph' | 'lesson-study'>(
+    () => {
+      const saved = localStorage.getItem('cyber-app-screen') as any;
+      // Migrate legacy screen values to new 'academy'
+      const legacyScreens = ['map', 'arena', 'shop', 'pet', 'profile', 'practice', 'relax', 'logs'];
+      if (legacyScreens.includes(saved)) return 'academy';
+      return saved || 'academy';
+    }
+  );
+
+  // Tab state for AcademyHub
+  const [activeTab, setActiveTab] = useState<AcademyTabId>(
+    () => {
+      const saved = localStorage.getItem('cyber-app-tab') as AcademyTabId | null;
+      if (saved && ['academy','knowledge','challenge','adventure','funzone'].includes(saved)) return saved;
+      // Migrate legacy screen → tab
+      const legacyScreen = localStorage.getItem('cyber-app-screen');
+      const legacyMap: Record<string, AcademyTabId> = {
+        map: 'academy', profile: 'academy', arena: 'challenge',
+        practice: 'knowledge', relax: 'adventure', pet: 'funzone', shop: 'funzone'
+      };
+      return legacyMap[legacyScreen ?? ''] ?? 'academy';
+    }
   );
 
   useEffect(() => {
@@ -77,9 +90,14 @@ function App() {
   }, [screen]);
 
   useEffect(() => {
+    localStorage.setItem('cyber-app-tab', activeTab);
+  }, [activeTab]);
+
+  useEffect(() => {
     const mathOnlyScreens = new Set(['workshop-3d', 'workshop-plane', 'workshop-graph']);
     if (getSubjectToolIds(activeSectId).length === 0 && mathOnlyScreens.has(screen)) {
-      setScreen('practice');
+      setScreen('academy');
+      setActiveTab('knowledge');
     }
   }, [activeSectId, screen]);
 
@@ -92,7 +110,7 @@ function App() {
     learningContextRef.current = contextKey;
     setSelectedLessonId(null);
     setBossId(undefined);
-    setScreen(current => (current === 'lesson-study' || current === 'play') ? 'map' : current);
+    setScreen(current => (current === 'lesson-study' || current === 'play') ? 'academy' : current);
   }, [activeSectId, activeGradeTier]);
 
   useEffect(() => {
@@ -145,8 +163,7 @@ function App() {
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
   const masterLesson = useGameState(state => state.masterLesson);
   const [bossId, setBossId] = useState<string | undefined>(undefined);
-  // Track where to return after a lesson study (map or hang)
-  const [lessonBackTarget, setLessonBackTarget] = useState<'map' | 'practice' | 'arena'>('practice');
+  const [_lessonBackTarget, setLessonBackTarget] = useState<'map' | 'practice' | 'academy'>('academy');
   const [authLoading, setAuthLoading] = useState(true);
 
   const logout = useGameState(state => state.logout);
@@ -158,18 +175,13 @@ function App() {
     setShowLogoutConfirm(true);
   };
 
-  // Auto-switch screen for admin/parent users on login & show handbook on student login
+  // Auto-switch screen for admin/parent users on login
   useEffect(() => {
     if (currentUser) {
-      const savedScreen = localStorage.getItem('cyber-app-screen');
-      if (savedScreen) {
-        setScreen(savedScreen as any);
-        return;
-      }
       if (isParentRole(currentUser.role) || isAdmin(currentUser.role)) {
         setScreen('tutor');
       } else if (currentUser.role === 'student') {
-        setScreen('map');
+        setScreen('academy');
       }
     }
   }, [currentUser]);
@@ -184,7 +196,7 @@ function App() {
       }
     } else if (role === 'student') {
       if (screen === 'tutor') {
-        setScreen('map');
+        setScreen('academy');
       }
     }
   }, [screen, currentUser]);
@@ -199,17 +211,21 @@ function App() {
     onConfirm?: () => void;
   } | null>(null);
 
-  const navigateWithWarning = (targetScreen: typeof screen) => {
+  const navigateWithWarning = (targetScreen: typeof screen, targetTab?: AcademyTabId) => {
     if (screen === 'play') {
       setModalData({
         isOpen: true,
         type: 'warning',
         message: 'Nếu con không hoàn tất, vài hôm nữa khu vực này sẽ bị sương mù che phủ lại đấy!',
         buttonText: 'Vẫn thoát',
-        onConfirm: () => setScreen(targetScreen)
+        onConfirm: () => {
+          setScreen(targetScreen);
+          if (targetTab) setActiveTab(targetTab);
+        }
       });
     } else {
       setScreen(targetScreen);
+      if (targetTab) setActiveTab(targetTab);
     }
   };
 
@@ -349,9 +365,7 @@ function App() {
     backTarget?: 'map' | 'arena' | 'practice'
   ) => {
     setPlayMode(mode);
-    if (backTarget) {
-      setLessonBackTarget(backTarget);
-    }
+      setLessonBackTarget(backTarget === 'arena' ? 'academy' : (backTarget ?? 'academy'));
     if (mode === 'lesson') {
       setSelectedLessonId(id || null);
       setBossId(undefined);
@@ -363,22 +377,26 @@ function App() {
 
   const handleStudyLessonFromMap = (lessonId: string) => {
     setSelectedLessonId(lessonId);
-    setLessonBackTarget('map');
     setScreen('lesson-study');
   };
 
   const handleStartLessonPracticeFromMap = (lessonId: string) => {
-    setLessonBackTarget('map');
     handleStartPlay('lesson', lessonId);
   };
 
   const isDungeonScreen = screen === 'play';
 
-  // Key remount theo môn+lớp: đổi ngữ cảnh là toàn bộ màn hình học tập remount sạch,
-  // không còn state cục bộ nào của môn cũ sống sót bên trong component.
+  // Key remount theo môn+lớp
   const learningContextKey = `${activeSectId}-${activeGradeTier}`;
   const isWorkshopScreen = screen === 'workshop-3d' || screen === 'workshop-plane' || screen === 'workshop-graph';
-  const topHudScreen = (isWorkshopScreen || screen === 'lesson-study') ? 'practice' : (screen === 'relax' ? 'map' : screen);
+  // Map activeTab/screen → topHUD screen prop
+  const topHudTabToScreen: Record<AcademyTabId, 'map'|'arena'|'practice'|'shop'|'pet'|'profile'> = {
+    academy: 'map', knowledge: 'practice', challenge: 'arena',
+    adventure: 'map', funzone: 'shop'
+  };
+  const topHudScreen = (screen === 'play' || screen === 'lesson-study' || isWorkshopScreen) ? 'play'
+    : screen === 'tutor' ? 'tutor'
+    : topHudTabToScreen[activeTab] ?? 'map';
 
   return (
     <div className="app-shell min-h-screen flex flex-col text-slate-100" data-theme={uiTheme}>
@@ -386,45 +404,22 @@ function App() {
       {/* Top Header HUD */}
       <TopHUD
         onOpenParent={() => navigateWithWarning('tutor')}
-        onOpenShop={() => navigateWithWarning('shop')}
-        onOpenPet={() => navigateWithWarning('pet')}
-        onOpenProfile={() => navigateWithWarning('profile')}
-        onBackToMap={() => navigateWithWarning('map')}
+        onOpenShop={() => { navigateWithWarning('academy'); setActiveTab('funzone'); }}
+        onOpenPet={() => { navigateWithWarning('academy'); setActiveTab('funzone'); }}
+        onOpenProfile={() => navigateWithWarning('academy')}
+        onBackToMap={() => navigateWithWarning('academy')}
         onLogout={handleLogoutIntercept}
         currentScreen={topHudScreen}
       />
 
-
-
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:py-8 flex flex-col lg:flex-row gap-6 items-stretch pb-20 lg:pb-8">
-        
-        {/* Dynamic Center Stage */}
+      <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:py-8 flex flex-col gap-0 items-stretch pb-20 lg:pb-8">
         <section className="flex-1 min-w-0">
-          
-          {/* Desktop Central Navigation Hub - only on study screens */}
-          {['arena', 'practice', 'relax'].includes(screen) && !isDungeonScreen && !isWorkshopScreen && !isAdmin(currentUser?.role) && (
-            <DesktopCentralNav currentScreen={screen} onNavigate={(s) => setScreen(s)} />
-          )}
 
-          {screen === 'map' && (
-            <WorldMap
-              key={learningContextKey}
-              onOpenArena={() => setScreen('arena')}
-              onOpenPracticeHall={() => setScreen('practice')}
-              onOpenRelax={() => setScreen('relax')}
-              onStudyLesson={handleStudyLessonFromMap}
-              onStartLessonPractice={handleStartLessonPracticeFromMap}
-            />
-          )}
+          {/* ── Tutor Console (admin/teacher) ── */}
+          {screen === 'tutor' && <TutorConsole />}
 
-          {screen === 'arena' && (
-            <Arena
-              key={learningContextKey}
-              onStartPlay={handleStartPlay}
-            />
-          )}
-
+          {/* ── Play Area (dungeon) ── */}
           {screen === 'play' && (
             <PlayArea
               key={learningContextKey}
@@ -433,122 +428,92 @@ function App() {
               lessonId={selectedLessonId || undefined}
               onFinish={async (result) => {
                 if (playMode === 'lesson' && selectedLessonId) {
-                  // Only award mastery + fog unlock when the run actually passed
                   if (result.passed) {
                     await masterLesson(selectedLessonId, result.accuracyRatio);
                   }
-                  setScreen(lessonBackTarget || 'practice');
+                  setScreen('academy');
                 } else {
-                  setScreen('map');
+                  setScreen('academy');
                 }
               }}
             />
           )}
 
-          {screen === 'shop' && <ItemShop onSpinWheel={triggerSpinWheel} />}
-
-          {screen === 'tutor' && <TutorConsole />}
-
-          {screen === 'practice' && (
-            <PracticeHall
-              key={learningContextKey}
-              onStartPractice={() => {
-                closeHelp();
-                // Find first uncompleted lesson of selected subject, or default to first
-                const lessonsList = useGameState.getState().lessons;
-                const progress = useGameState.getState().lessonsProgress;
-                const gradeTier = useGameState.getState().activeGradeTier;
-                const subLessons = filterLessonsInScope(lessonsList, activeSectId as any, gradeTier);
-                const uncompleted = subLessons.find(l => !progress[l.id]);
-                const targetLesson = uncompleted || subLessons[0];
-                if (targetLesson) {
-                  setSelectedLessonId(targetLesson.id);
-                  setScreen('lesson-study');
-                } else {
-                  handleStartPlay('mixed');
-                }
-              }}
-              onStudyLesson={(lessonId) => {
-                setSelectedLessonId(lessonId);
-                setLessonBackTarget('practice');
-                setScreen('lesson-study');
-              }}
-              onOpenWorkshop3D={() => setScreen('workshop-3d')}
-              onOpenWorkshopPlane={() => setScreen('workshop-plane')}
-              onOpenWorkshopGraph={() => setScreen('workshop-graph')}
-              onStartLessonPractice={handleStartLessonPracticeFromMap}
-            />
-          )}
-
+          {/* ── Lesson Study View ── */}
           {screen === 'lesson-study' && selectedLessonId && (
             <LessonStudyView
               lessonId={selectedLessonId}
               onStartPractice={(lessonId) => handleStartPlay('lesson', lessonId)}
-              onBack={() => setScreen(lessonBackTarget)}
+              onBack={() => setScreen('academy')}
             />
           )}
 
-          {screen === 'workshop-3d' && (
-            <SubjectWorkshopPage
-              kind="3d"
-              title="Xưởng Toán Hình 3D"
-              subtitle="Không gian riêng cho hình học không gian lớp 9: dựng hình, xoay 360°, chọn góc nhìn và phân tích từng bước mà không bị bó hẹp trong layout chung."
-              onBack={() => setScreen('practice')}
-              onSwitchTo3D={() => setScreen('workshop-3d')}
-              onSwitchToPlane={() => setScreen('workshop-plane')}
-              onSwitchToGraph={() => setScreen('workshop-graph')}
-            >
-              <GeometryApp mode="studio" dimension="3d" problemText="" />
-            </SubjectWorkshopPage>
-          )}
-
-          {screen === 'workshop-plane' && (
-            <SubjectWorkshopPage
-              kind="plane"
-              title="Xưởng Toán Hình"
-              subtitle="Không gian riêng cho tam giác, tứ giác, đường tròn và các đường phụ. Board rộng hơn để kéo thả, nối cạnh, dựng đường cao và đọc lời giải rõ ràng."
-              onBack={() => setScreen('practice')}
-              onSwitchTo3D={() => setScreen('workshop-3d')}
-              onSwitchToPlane={() => setScreen('workshop-plane')}
-              onSwitchToGraph={() => setScreen('workshop-graph')}
-            >
-              <GeometryApp mode="studio" dimension="2d" problemText="" />
-            </SubjectWorkshopPage>
-          )}
-
-
-          {screen === 'workshop-graph' && (
-            <SubjectWorkshopPage
-              kind="graph"
-              title="Xưởng Toán Đồ Thị"
-              subtitle="Không gian riêng cho bậc nhất và bậc hai, slider hệ số, giao điểm, đỉnh và trục đối xứng. AI sẽ phân tích đề và điều khiển đồ thị theo lệnh."
-              onBack={() => setScreen('practice')}
-              onSwitchTo3D={() => setScreen('workshop-3d')}
-              onSwitchToPlane={() => setScreen('workshop-plane')}
-              onSwitchToGraph={() => setScreen('workshop-graph')}
-            >
-              <GraphHandbook problemText="" />
-            </SubjectWorkshopPage>
-          )}
-
-          {screen === 'relax' && (
-            <RelaxationZone key={learningContextKey} onBack={() => setScreen('map')} />
-          )}
-
-          {screen === 'pet' && (
-            <PetSanctuary variant="full" />
-          )}
-
-          {screen === 'profile' && currentUser && (
-            <ProfilePage
-              currentUser={currentUser}
-              currentTheme={uiTheme}
-              onNavigate={setScreen}
+          {/* ── Student Academy Hub (5-tab) ── */}
+          {screen === 'academy' && currentUser?.role === 'student' && (
+            <AcademyHub
+              key={learningContextKey}
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              onStartPlay={handleStartPlay}
+              onStudyLesson={handleStudyLessonFromMap}
+              onStartLessonPractice={handleStartLessonPracticeFromMap}
+              onSpinWheel={triggerSpinWheel}
+              onOpenWorkshop3D={() => setScreen('workshop-3d')}
+              onOpenWorkshopPlane={() => setScreen('workshop-plane')}
+              onOpenWorkshopGraph={() => setScreen('workshop-graph')}
+              learningContextKey={learningContextKey}
             />
           )}
 
         </section>
       </main>
+
+      {/* ── Workshop Modals ── */}
+      {isWorkshopScreen && (
+        <div className="fixed inset-0 z-[200] bg-synth-bg/98 backdrop-blur-sm flex flex-col">
+          <div className="flex-1 overflow-auto">
+            {screen === 'workshop-3d' && (
+              <SubjectWorkshopPage
+                kind="3d"
+                title="Xưởng Toán Hình 3D"
+                subtitle="Không gian riêng cho hình học không gian lớp 9: dựng hình, xoay 360°, chọn góc nhìn và phân tích từng bước."
+                onBack={() => setScreen('academy')}
+                onSwitchTo3D={() => setScreen('workshop-3d')}
+                onSwitchToPlane={() => setScreen('workshop-plane')}
+                onSwitchToGraph={() => setScreen('workshop-graph')}
+              >
+                <GeometryApp mode="studio" dimension="3d" problemText="" />
+              </SubjectWorkshopPage>
+            )}
+            {screen === 'workshop-plane' && (
+              <SubjectWorkshopPage
+                kind="plane"
+                title="Xưởng Toán Hình"
+                subtitle="Không gian riêng cho tam giác, tứ giác, đường tròn và các đường phụ."
+                onBack={() => setScreen('academy')}
+                onSwitchTo3D={() => setScreen('workshop-3d')}
+                onSwitchToPlane={() => setScreen('workshop-plane')}
+                onSwitchToGraph={() => setScreen('workshop-graph')}
+              >
+                <GeometryApp mode="studio" dimension="2d" problemText="" />
+              </SubjectWorkshopPage>
+            )}
+            {screen === 'workshop-graph' && (
+              <SubjectWorkshopPage
+                kind="graph"
+                title="Xưởng Toán Đồ Thị"
+                subtitle="Không gian riêng cho bậc nhất và bậc hai, slider hệ số, giao điểm và đỉnh."
+                onBack={() => setScreen('academy')}
+                onSwitchTo3D={() => setScreen('workshop-3d')}
+                onSwitchToPlane={() => setScreen('workshop-plane')}
+                onSwitchToGraph={() => setScreen('workshop-graph')}
+              >
+                <GraphHandbook problemText="" />
+              </SubjectWorkshopPage>
+            )}
+          </div>
+        </div>
+      )}
 
 
       {/* Reward/Notification Modal */}
@@ -597,55 +562,33 @@ function App() {
 
 
 
-      {/* Mobile Bottom Navigation Bar (Chỉ hiển thị cho Học sinh) */}
-      {currentUser && currentUser.role === 'student' && screen !== 'play' && !isWorkshopScreen && (
-        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-cyan/20 px-3 py-2.5 pb-3 flex justify-around items-center z-50 shadow-[0_-4px_20px_rgba(0,240,255,0.15)]">
-          <button
-            onClick={() => setScreen('map')}
-            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
-              screen === 'map' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
-            }`}
-          >
-            <span className="text-lg">🗺️</span>
-            <span>Bản đồ</span>
-          </button>
-
-          <button
-            onClick={() => setScreen('shop')}
-            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
-              screen === 'shop' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
-            }`}
-          >
-            <span className="text-lg">🏮</span>
-            <span>Bách Hóa</span>
-          </button>
-
-          <button
-            onClick={() => setScreen('pet')}
-            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
-              screen === 'pet' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
-            }`}
-          >
-            <span className="text-lg">🐷</span>
-            <span>Sân Thú</span>
-          </button>
-
-          <button
-            onClick={() => setScreen('profile')}
-            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[9px] uppercase tracking-wider transition-colors cursor-pointer ${
-              screen === 'profile' ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
-            }`}
-          >
-            <span className="text-lg">👑</span>
-            <span>Học tịch</span>
-          </button>
+      {/* Mobile Bottom Navigation Bar — 5 tabs (Chỉ hiển thị cho Học sinh) */}
+      {currentUser && currentUser.role === 'student' && screen === 'academy' && (
+        <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-cyan/20 px-2 py-2 pb-3 flex justify-around items-center z-50 shadow-[0_-4px_20px_rgba(0,240,255,0.15)]">
+          {([
+            { id: 'academy',   icon: '🏫', label: 'Học Viện' },
+            { id: 'knowledge', icon: '📚', label: 'Hang Luyện' },
+            { id: 'challenge', icon: '⚔️', label: 'Thi' },
+            { id: 'adventure', icon: '🧭', label: 'Thám Hiểm' },
+            { id: 'funzone',   icon: '🎮', label: 'Funzone' },
+          ] as { id: AcademyTabId; icon: string; label: string }[]).map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
+                activeTab === tab.id ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
+              }`}
+            >
+              <span className="text-lg">{tab.icon}</span>
+              <span>{tab.label}</span>
+            </button>
+          ))}
         </nav>
       )}
 
-      {/* Các tính năng chỉ dành cho Học sinh */}
       {currentUser && currentUser.role === 'student' && (
         <>
-          <PetStableOverlay isDungeonScreen={isDungeonScreen || isWorkshopScreen || screen === 'pet'} />
+          <PetStableOverlay isDungeonScreen={isDungeonScreen || isWorkshopScreen} />
           <LevelUpCelebration />
         </>
       )}

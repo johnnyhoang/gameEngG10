@@ -1,4 +1,4 @@
-import { useMemo, useEffect } from 'react';
+﻿import { useMemo, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { toast } from '../utils/toast';
 import {
@@ -11,6 +11,7 @@ import { SUBJECTS_CONFIG, DEFAULT_GRADE_TIER } from '../types/game';
 import { filterLessonsInScope } from '../utils/learningScope';
 import { isLightTheme } from '../theme/uiThemes';
 import { LearningLedger } from './LearningLedger';
+import { useTranslate } from '../hooks/useTranslate';
 
 const getHamForPage = (pageId: string) => {
   const ham = pageId.split('-').at(-1);
@@ -30,6 +31,7 @@ interface WorldMapProps {
 export function WorldMap({
   onOpenArena, onOpenPracticeHall, onOpenRelax, onStudyLesson, onStartLessonPractice
 }: WorldMapProps) {
+  const { t, isEnglish } = useTranslate();
   const { activeSectId, activeGradeTier } = useSect();
   const uiTheme = useGameState(state => state.uiTheme);
   const categoryStats = useGameState(state => state.categoryStats);
@@ -51,10 +53,10 @@ export function WorldMap({
 
   const getGreeting = () => {
     const hour = new Date().getHours();
-    if (hour < 11) return 'Chào buổi sáng';
-    if (hour < 13) return 'Chào buổi trưa';
-    if (hour < 18) return 'Chào buổi chiều';
-    return 'Chào buổi tối';
+    if (hour < 11) return t('Chào buổi sáng', 'Good morning');
+    if (hour < 13) return t('Chào buổi trưa', 'Good afternoon');
+    if (hour < 18) return t('Chào buổi chiều', 'Good afternoon');
+    return t('Chào buổi tối', 'Good evening');
   };
 
   const pageExplorationStates = useGameState(state => state.pageExplorationStates || {});
@@ -128,10 +130,10 @@ export function WorldMap({
             {/* Greeting + Name */}
             <div className="space-y-1">
               <p className={`text-xs font-orbitron font-bold uppercase tracking-[0.2em] ${isUnicorn ? 'text-violet-500' : 'text-synth-cyan/70'}`}>
-                {getGreeting()}, Sĩ Tử
+                {getGreeting()}, {t('Sĩ Tử', 'Scholar')}
               </p>
               <h1 className={`font-orbitron font-black text-2xl md:text-3xl uppercase tracking-wide ${isUnicorn ? 'text-violet-900' : 'text-white'}`}>
-                {currentUser?.name || 'Sĩ Tử mới'} 👋
+                {currentUser?.name || t('Sĩ Tử mới', 'New Scholar')} 👋
               </h1>
             </div>
 
@@ -143,32 +145,32 @@ export function WorldMap({
                   : (isUnicorn ? 'border-slate-200 bg-slate-50 text-slate-400' : 'border-white/10 bg-white/5 text-slate-500')
               }`}>
                 <Flame className={`w-3.5 h-3.5 ${player.streak > 0 ? 'fill-current' : ''}`} />
-                {player.streak > 0 ? `${player.streak} ngày liên tiếp 🔥` : 'Bắt đầu chuỗi hôm nay!'}
+                {player.streak > 0 ? t(`${player.streak} ngày liên tiếp 🔥`, `${player.streak} days streak 🔥`) : t('Bắt đầu chuỗi hôm nay!', 'Start your streak today!')}
               </div>
               <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-orbitron font-bold text-[10px] uppercase ${
                 isUnicorn ? 'border-violet-200 bg-violet-50 text-violet-700' : 'border-synth-purple/40 bg-synth-purple/10 text-synth-purple'
               }`}>
                 <Star className="w-3.5 h-3.5" />
-                Cấp {player.level}
+                {t('Cấp', 'Level')} {player.level}
               </div>
               <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-orbitron font-bold text-[10px] uppercase ${
                 isUnicorn ? 'border-cyan-200 bg-cyan-50 text-cyan-700' : 'border-synth-cyan/30 bg-synth-cyan/10 text-synth-cyan'
               }`}>
                 <span>{activeSubjectConfig?.icon}</span>
-                Môn: {activeSubjectConfig?.name}
+                {t('Môn', 'Subject')}: {isEnglish ? 'English' : activeSubjectConfig?.name}
               </div>
               {/* Badge Giáo viên chủ nhiệm tĩnh */}
               {activeLink ? (
                 <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-orbitron font-bold text-[10px] uppercase ${
                   isUnicorn ? 'border-violet-200 bg-violet-50/70 text-violet-700' : 'border-synth-cyan/30 bg-synth-cyan/10 text-synth-cyan'
                 }`}>
-                  🎓 Lớp: {activeLink.parent_name || activeLink.parent_email || 'Chưa rõ tên'}
+                  🎓 {t('Lớp', 'Class')}: {activeLink.parent_name || activeLink.parent_email || t('Chưa rõ tên', 'Unknown')}
                 </div>
               ) : (
                 <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-dashed font-orbitron font-bold text-[10px] uppercase ${
                   isUnicorn ? 'border-slate-200 bg-slate-50 text-slate-400' : 'border-white/10 bg-white/5 text-slate-500'
                 }`}>
-                  🎓 Chưa kết nối lớp
+                  🎓 {t('Chưa kết nối lớp', 'No class connected')}
                 </div>
               )}
             </div>
@@ -204,25 +206,25 @@ export function WorldMap({
         </div>
       </section>
 
-      {/* Sổ Tu Học của sĩ tử - hiển thị mở rộng ngay đầu trang */}
-      {currentUser?.role === 'student' && (
-        <div className="-mt-1">
-          <LearningLedger defaultExpanded={true} />
-        </div>
-      )}
+      {currentUser?.role === 'student' && <LearningLedger compact={false} defaultExpanded={false} />}
 
-      {/* ─── SECTION 3: AI TRỢ GIẢNG (chỉ hiện khi có điểm yếu) ─── */}
       {weakLesson && (
         <section className="glass-panel rounded-2xl border border-amber-400/30 bg-gradient-to-r from-amber-400/10 via-orange-400/5 to-transparent p-4 flex flex-col md:flex-row items-start md:items-center gap-4">
           <div className="flex items-center gap-3 shrink-0">
             <div className="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/25 flex items-center justify-center">
               <BrainCircuit className="w-5 h-5 text-amber-400" />
             </div>
-            <span className="font-orbitron font-bold text-xs uppercase text-amber-300 tracking-wider">Thư Viện · AI Trợ Giảng</span>
+            <span className="font-orbitron font-bold text-xs uppercase text-amber-300 tracking-wider">
+              {t("Thư Viện · AI Trợ Giảng", "Library · AI Tutor")}
+            </span>
           </div>
           <p className="text-xs text-slate-300 flex-1 leading-relaxed">
-            Bạn đang yếu ở chuyên đề <span className="text-amber-300 font-bold">{weakLesson.title}</span> (chỉ{' '}
-            {Math.round(weakAccuracy * 100)}% chính xác). Ôn lại ngay, đừng để lỗ hổng phình ra.
+            {t("Bạn đang yếu ở chuyên đề ", "You are weak in topic ")}
+            <span className="text-amber-300 font-bold">{weakLesson.title}</span>
+            {t(
+              ` (chỉ ${Math.round(weakAccuracy * 100)}% chính xác). Ôn lại ngay, đừng để lỗ hổng phình ra.`,
+              ` (only ${Math.round(weakAccuracy * 100)}% accuracy). Review now to fill this learning gap.`
+            )}
           </p>
           <div className="flex gap-2 shrink-0">
             {onStudyLesson && (
@@ -230,7 +232,7 @@ export function WorldMap({
                 onClick={() => onStudyLesson(weakLesson.id)}
                 className="px-3 py-2 rounded-lg border border-amber-400/30 bg-amber-400/10 text-amber-300 text-[10px] font-bold uppercase tracking-wider hover:bg-amber-400/20 transition-colors cursor-pointer"
               >
-                Xem bài giảng 📖
+                {t("Xem bài giảng 📖", "View Lecture 📖")}
               </button>
             )}
             {onStartLessonPractice && (
@@ -238,7 +240,7 @@ export function WorldMap({
                 onClick={() => onStartLessonPractice(weakLesson.id)}
                 className="px-3 py-2 rounded-lg bg-amber-400 text-black text-[10px] font-bold uppercase tracking-wider hover:bg-amber-300 transition-colors cursor-pointer"
               >
-                Luyện tập 📚
+                {t("Luyện tập 📚", "Practice 📚")}
               </button>
             )}
           </div>
@@ -251,7 +253,7 @@ export function WorldMap({
           <div className="flex items-center gap-2">
             <span className="text-xl">📜</span>
             <h3 className="font-orbitron font-black text-xs uppercase tracking-wider text-synth-magenta">
-              Nhiệm Vụ Chủ Nhiệm Giao
+              {t("Nhiệm Vụ Chủ Nhiệm Giao", "Tutor Quests")}
             </h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -268,7 +270,7 @@ export function WorldMap({
                         ? 'bg-synth-green/10 border border-synth-green/20 text-synth-green'
                         : 'bg-white/5 border border-white/10 text-slate-400'
                     }`}>
-                      {quest.status === 'completed' ? 'Xong (Chờ nhận)' : 'Đang làm'}
+                      {quest.status === 'completed' ? t('Xong (Chờ nhận)', 'Done (Claim)') : t('Đang làm', 'In Progress')}
                     </span>
                   </div>
                   <p className="text-[10px] text-slate-400 leading-relaxed">{quest.description}</p>
@@ -280,11 +282,11 @@ export function WorldMap({
                   <button
                     onClick={() => {
                       claimTutorQuest(quest.id);
-                      toast.success(`Nhận thưởng thành công: +${quest.rewardRuby} Ruby! 🥳`);
+                      toast.success(t(`Nhận thưởng thành công: +${quest.rewardRuby} Ruby! 🥳`, `Reward claimed: +${quest.rewardRuby} Ruby! 🥳`));
                     }}
                     className="px-3 py-1.5 rounded-lg bg-synth-magenta text-white font-orbitron font-bold text-[9px] uppercase tracking-wider cursor-pointer hover:synth-glow-magenta shadow-md"
                   >
-                    Nhận Quà 🎁
+                    {t("Nhận Quà 🎁", "Claim Reward 🎁")}
                   </button>
                 )}
               </div>
@@ -293,15 +295,18 @@ export function WorldMap({
         </section>
       )}
 
-      {/* ─── SECTION 5: KHU HỌC LUYỆN — 3 card to + 2 card nhỏ ─── */}
+      {/* ─── SECTION 5: KHU HỌC LUYỆN — 3 card to ─── */}
       <div className="space-y-3">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
           <div>
             <h2 className={`font-orbitron font-black text-base uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-              🗺️ Bản Đồ Học Viện
+              🗺️ {t("Bản Đồ Học Viện", "Academy Map")}
             </h2>
             <p className={`text-[11px] mt-0.5 ${isUnicorn ? 'text-violet-500' : 'text-slate-400'}`}>
-              Chọn khu vực để bắt đầu — {completedLessons}/{subjectLessons.length} chuyên đề đã lĩnh ngộ môn {activeSubjectConfig?.name}
+              {t(
+                `Chọn khu vực để bắt đầu — ${completedLessons}/${subjectLessons.length} chuyên đề đã lĩnh ngộ môn ${activeSubjectConfig?.name}`,
+                `Choose a zone to start — ${completedLessons}/${subjectLessons.length} topics mastered in English`
+              )}
             </p>
           </div>
         </div>
@@ -320,19 +325,24 @@ export function WorldMap({
                 </div>
                 <div className="flex flex-col items-end gap-1">
                   <span className="text-[8px] font-bold font-orbitron uppercase tracking-wider text-synth-magenta bg-synth-magenta/10 border border-synth-magenta/20 px-2 py-0.5 rounded-full">
-                    Luyện thi chính
+                    {t("Luyện thi chính", "Main Exam")}
                   </span>
                 </div>
               </div>
               <div>
-                <h3 className="font-orbitron font-black text-base text-white uppercase tracking-wide">⚡ Trường Thi</h3>
+                <h3 className="font-orbitron font-black text-base text-white uppercase tracking-wide">
+                  ⚡ {t("Trường Thi", "Arena")}
+                </h3>
                 <p className="text-xs text-slate-300 leading-relaxed mt-1.5">
-                  4 phòng chiến đấu: <strong className="text-synth-magenta">Mixed</strong>, <strong className="text-synth-purple">Sinh Tồn</strong>, <strong className="text-synth-cyan">Boss</strong> và <strong className="text-synth-orange">Truy Tìm Lỗi Sai</strong>. Luyện phản xạ thi cử như thật.
+                  {t(
+                    "4 phòng chiến đấu: Mixed, Sinh Tồn, Boss và Truy Tìm Lỗi Sai. Luyện phản xạ thi cử như thật.",
+                    "4 combat rooms: Mixed, Survival, Boss, and Find Mistakes. Build test reflexes."
+                  )}
                 </p>
               </div>
             </div>
             <div className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-synth-magenta group-hover:gap-3 transition-all">
-              Vào Trường Thi <ArrowRight className="w-3.5 h-3.5" />
+              {t("Vào Trường Thi", "Enter Arena")} <ArrowRight className="w-3.5 h-3.5" />
             </div>
           </button>
 
@@ -347,18 +357,23 @@ export function WorldMap({
                   <Mountain className="w-6 h-6" />
                 </div>
                 <span className="text-[8px] font-bold font-orbitron uppercase tracking-wider text-synth-cyan bg-synth-cyan/10 border border-synth-cyan/20 px-2 py-0.5 rounded-full">
-                  {completedLessons}/{subjectLessons.length} lĩnh hội
+                  {t(`${completedLessons}/${subjectLessons.length} lĩnh hội`, `${completedLessons}/${subjectLessons.length} mastered`)}
                 </span>
               </div>
               <div>
-                <h3 className="font-orbitron font-black text-base text-white uppercase tracking-wide">📚 Học Đường</h3>
+                <h3 className="font-orbitron font-black text-base text-white uppercase tracking-wide">
+                  📚 {t("Học Đường", "Practice Hall")}
+                </h3>
                 <p className="text-xs text-slate-300 leading-relaxed mt-1.5">
-                  Tự học theo chuyên đề, sổ tay lỗi sai và Xưởng Toán tương tác 3D. Nắm lý thuyết trước, ứng thí sau.
+                  {t(
+                    "Tự học theo chuyên đề, sổ tay lỗi sai và Xưởng Toán tương tác 3D. Nắm lý thuyết trước, ứng thí sau.",
+                    "Self-study by topic, mistake book, and interactive workshops. Master theory first."
+                  )}
                 </p>
               </div>
             </div>
             <div className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-synth-cyan group-hover:gap-3 transition-all">
-              Vào Học Đường <ArrowRight className="w-3.5 h-3.5" />
+              {t("Vào Học Đường", "Enter Practice Hall")} <ArrowRight className="w-3.5 h-3.5" />
             </div>
           </button>
 
@@ -373,23 +388,26 @@ export function WorldMap({
                   <Palmtree className="w-6 h-6" />
                 </div>
                 <span className="text-[8px] font-bold font-orbitron uppercase tracking-wider text-fuchsia-300 bg-fuchsia-400/10 border border-fuchsia-400/20 px-2 py-0.5 rounded-full">
-                  Thư giãn
+                  {t("Thư giãn", "Relaxation")}
                 </span>
               </div>
               <div>
-                <h3 className="font-orbitron font-black text-base text-white uppercase tracking-wide">🦄 Công Viên Thư Giãn</h3>
+                <h3 className="font-orbitron font-black text-base text-white uppercase tracking-wide">
+                  🦄 {t("Công Viên Thư Giãn", "Relaxation Park")}
+                </h3>
                 <p className="text-xs text-slate-300 leading-relaxed mt-1.5">
-                  Minigame nhẹ nhàng: ghép cặp từ vựng, sơ đồ tư duy, học qua cốt truyện kể chuyện.
+                  {t(
+                    "Minigame nhẹ nhàng: ghép cặp từ vựng, sơ đồ tư duy, học qua cốt truyện kể chuyện.",
+                    "Light minigames: matching vocabulary, mind mapping, and story-based learning."
+                  )}
                 </p>
               </div>
             </div>
             <div className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-fuchsia-300 group-hover:gap-3 transition-all">
-              Ghé Công Viên <ArrowRight className="w-3.5 h-3.5" />
+              {t("Ghé Công Viên", "Visit Park")} <ArrowRight className="w-3.5 h-3.5" />
             </div>
           </button>
         </div>
-
-
       </div>
 
 

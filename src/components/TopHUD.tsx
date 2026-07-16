@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
+import { useTranslate } from '../hooks/useTranslate';
 import { Zap, Coins, Flame, Shield, LogOut, ChevronDown } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
 
@@ -18,6 +19,7 @@ interface TopHUDProps {
 export const TopHUD: React.FC<TopHUDProps> = ({
   currentScreen, onOpenShop, onOpenParent: _onOpenParent, onOpenPet, onOpenProfile, onBackToMap, onLogout
 }) => {
+  const { t } = useTranslate();
   const player = useGameState(state => state.player);
   const currentUser = useGameState(state => state.currentUser);
   const logout = useGameState(state => state.logout);
@@ -69,7 +71,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
 
   return (
     <header className={headerClass}>
-      <div className="max-w-7xl mx-auto flex flex-wrap md:flex-nowrap items-center justify-between gap-2.5">
+      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2.5 w-full">
         {/* Logo */}
         <span
           onClick={onBackToMap}
@@ -267,10 +269,9 @@ export const TopHUD: React.FC<TopHUDProps> = ({
           {isConsoleUser && currentScreen === 'tutor' && (
             <>
               {([
-                { tab: 'phong_hieu_truong', icon: '⚙️', label: 'Hiệu Trưởng', title: 'Phòng Hiệu Trưởng — Trung tâm quản trị' },
-                { tab: 'van_quyen_cac', icon: '📚', label: 'Đề Thi', title: 'Ngân Hàng Đề Thi' },
-                { tab: 'tang_kinh_cac', icon: '📖', label: 'Bài Giảng', title: 'Thư Viện Bài Giảng' },
-                { tab: 'than_phan', icon: '👤', label: 'Hồ Sơ', title: 'Hồ Sơ Của Tôi' },
+                { tab: 'phong_hieu_truong', icon: '🏫', label: t('Hiệu Trưởng', 'Principal'), title: t('Phòng Giáo Viên / Phòng Hiệu Trưởng ✦ Trung tâm quản trị', 'Homeroom / Principal Office ✦ Admin Center') },
+                { tab: 'tang_kinh_cac', icon: '📖', label: t('Bài Giảng', 'Lectures'), title: t('Phòng Quản Lý Knowledge ✦ Tàng Kinh Các', 'Knowledge Room ✦ Lecture Bank') },
+                { tab: 'van_quyen_cac', icon: '📚', label: t('Đề Thi', 'Questions'), title: t('Ngân Hàng Đề Thi ✦ Văn Quyển Các', 'Question Bank ✦ Exam Vault') },
               ] as const).map(item => (
                 <button
                   key={item.tab}

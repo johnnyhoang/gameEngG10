@@ -779,3 +779,10 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
     - Thêm Quầy Vòng Quay May Mắn chỉ mở vào cuối tuần vào trong Cửa hàng.
     - Truyền prop `onSpinWheel` từ App.tsx và gọi khi sĩ tử nhấn quay.
 
+- [ ] **T10.5 — Gộp thông tin TopHUD vào 1 khung duy nhất và dịch thuật 100% tiếng Anh cho môn Tiếng Anh**
+  - *Mục tiêu:* Tối ưu hóa UI mobile của TopHUD và quốc tế hóa giao diện học tập.
+  - *Phải làm:*
+    - Viết hook `useTranslate.ts` để dịch linh hoạt theo môn.
+    - Sửa `TopHUD.tsx`, `WorldMap.tsx`, `LearningLedger.tsx`, `ItemShop.tsx`, `ProfilePage.tsx` để tích hợp `useTranslate`.
+
+
