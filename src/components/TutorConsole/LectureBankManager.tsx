@@ -224,7 +224,7 @@ export const LectureBankManager: React.FC = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
         <div>
           <h3 className="font-orbitron font-bold text-lg text-synth-cyan uppercase tracking-wider flex items-center gap-2">
-            📚 Tàng Kinh Các — Quản lý Ngân Hàng Bài Giảng
+            📚 Kho Bài Giảng — Quản lý Ngân Hàng Bài Giảng
           </h3>
           <p className="text-xs text-slate-400 mt-1">
             Soạn thảo, hiệu đính lý thuyết cho các chương mục luyện tập trong Học Đường.
@@ -267,7 +267,7 @@ export const LectureBankManager: React.FC = () => {
       {loading ? (
         <div className="text-center py-12">
           <RefreshCw className="w-8 h-8 text-synth-cyan animate-spin mx-auto mb-2" />
-          <p className="text-xs text-slate-400">Đang lục tìm cổ tịch từ Tàng Kinh Các...</p>
+          <p className="text-xs text-slate-400">Đang tìm kiếm tài liệu từ Kho Bài Giảng...</p>
         </div>
       ) : filteredLessons.length === 0 ? (
         <div className="text-center py-12 bg-white/5 border border-white/5 rounded-2xl">

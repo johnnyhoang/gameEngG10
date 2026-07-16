@@ -149,7 +149,7 @@ Hệ thống quản lý, giám sát và cung cấp tài nguyên, được phân 
 *   🏛️ **Sổ Danh Bộ:** Trung tâm quyền lực và phân quyền. Quản lý tài khoản Sĩ Tử, thăng cấp/hạ cấp vai trò. Đây là nơi quản lý học sinh ở quy mô toàn viện (không chia theo môn phái).
 *   📖 **Phòng Học Vụ:** Nơi lưu trữ thông tin, báo cáo, cơ mật của toàn viện. Dashboard tổng quan thống kê kết quả học tập của Sĩ Tử, số lượng câu hỏi, bài học và hiệu quả tu học chung của toàn bộ môn phái.
 *   📚 **Kho Đề Thi:** Kho tri thức và quản lý đề thi (CRUD, nạp đề thi bằng AI). Viện Trưởng bắt buộc phải chọn ngữ cảnh môn phái cụ thể tại mỗi thời điểm quản lý.
-*   📖 **Tàng Kinh Các (Lecture Bank):** Nơi quản lý ngân hàng bài giảng lý thuyết. Soạn thảo, hiệu đính lý thuyết cho các chuyên đề của Học Đường.
+*   📖 **Kho Bài Giảng (Lecture Bank):** Nơi quản lý ngân hàng bài giảng lý thuyết. Soạn thảo, hiệu đính lý thuyết cho các chuyên đề của Học Đường.
     *   **Paging & Lazy Load:** Tương tự Kho Đề Thi, danh sách bài giảng hiển thị 10 bài đầu tiên và tự động lazy load thêm 10 bài tiếp theo khi scroll xuống dưới.
     *   **Thêm & Sửa qua Modal:** Biểu mẫu Thêm mới hoặc Hiệu đính bài giảng được hiển thị dưới dạng **Hộp thoại Modal** nổi trên màn hình, tách biệt hoàn toàn khỏi layout trang chính.
     *   **Quy tắc Đạt Chuẩn (is_standard):** Modal hỗ trợ nút "Đạt Chuẩn 🏆" và "Chưa Đạt Chuẩn ❌". Bài giảng đạt chuẩn sẽ hiển thị badge đạt chuẩn và có một icon tick xanh lá nhỏ `✔️` tuyệt đối góc trái trên. Trong giao diện đọc lý thuyết của Sĩ Tử (`LessonStudyView`), bài giảng đạt chuẩn hiển thị kèm icon tick xanh `✓` cạnh tiêu đề.
