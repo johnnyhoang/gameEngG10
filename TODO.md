@@ -745,3 +745,37 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
     - Cập nhật store frontend (`createPlayerSlice.ts`) để gọi API này khi đổi môn/lớp và lưu vào store state cục bộ.
     - Loại bỏ danh mục static import khổng lồ của `questions.ts` khỏi app shell chính.
   - *Thời điểm triển khai:* Nên làm khi ngân hàng đề thi phình to (từ vài nghìn câu trở lên) để giảm tải payload tải về ban đầu và loại hẳn lớp lọc phức tạp ở client.
+
+## T10 — Refactor Tối giản hóa và Tối ưu hóa UI Sĩ Tử
+
+- [ ] **T10.1 — Cấu trúc lại Sổ Tu Học (Learning Ledger)**
+  - *Mục tiêu:* Cho phép mở sẵn sổ tu học khi học sinh ở trang Bản Đồ.
+  - *Phải sửa:* `src/components/LearningLedger.tsx`
+  - *Phải làm:* Thêm prop `defaultExpanded` và khởi tạo state `expanded` từ prop này.
+
+- [ ] **T10.2 — Đưa Sổ Tu Học vào Bản Đồ Học Viện và ẩn Vòng Quay, Shop, Pet ở cuối bản đồ**
+  - *Mục tiêu:* Bố cục gọn gàng cho Bản Đồ Học Viện, hiển thị ngay nhiệm vụ tu học khi đăng nhập.
+  - *Phải sửa:* `src/components/WorldMap.tsx`
+  - *Phải làm:*
+    - Nhúng `<LearningLedger defaultExpanded={true} />` ở phần trên cùng.
+    - Xóa Weekend Teaser (Vòng quay).
+    - Xóa badge hiển thị môn học kế bên tiêu đề Bản đồ.
+    - Xóa 2 box liên kết Shop Học Cụ và Sân Thú Nuôi ở cuối trang.
+    - Chuyển giao diện tương tác lớp học thành thông tin tĩnh (chỉ hiển thị lớp chủ nhiệm, không cho kết nối/rời lớp hay duyệt lời mời ở đây).
+
+- [ ] **T10.3 — Di chuyển tính năng kết nối giáo viên vào Học Tịch, gộp Học Tịch thành 1 trang**
+  - *Mục tiêu:* Dễ dàng quản lý thông tin sĩ tử, học lực và kết nối lớp học tại một nơi duy nhất không cần tab.
+  - *Phải sửa:* `src/components/ProfilePage.tsx`
+  - *Phải làm:*
+    - Loại bỏ hệ thống Tab cũ.
+    - Chuyển toàn bộ logic Class Connection từ WorldMap vào cột trái của Học Tịch.
+    - Hiển thị trực tiếp ActivityLog ở cột phải.
+    - Trưng bày Theme hiện tại kèm nút hướng dẫn người dùng đi tới Shop để đổi theme.
+
+- [ ] **T10.4 — Di chuyển Vòng Quay May Mắn vào Shop Học Cụ**
+  - *Mục tiêu:* Gộp các tính năng tiêu dùng Ruby và nhận quà may mắn vào Shop Học Cụ.
+  - *Phải sửa:* `src/components/ItemShop.tsx`, `src/App.tsx`
+  - *Phải làm:*
+    - Thêm Quầy Vòng Quay May Mắn chỉ mở vào cuối tuần vào trong Cửa hàng.
+    - Truyền prop `onSpinWheel` từ App.tsx và gọi khi sĩ tử nhấn quay.
+

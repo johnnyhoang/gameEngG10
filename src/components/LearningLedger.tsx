@@ -3,14 +3,17 @@ import { BookOpenCheck, ChevronDown, ChevronUp, RefreshCw } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
 import { fetchMissionLedger, type MissionAssignment } from '../services/missionLedgerService';
 
-interface LearningLedgerProps { compact?: boolean }
+interface LearningLedgerProps {
+  compact?: boolean;
+  defaultExpanded?: boolean;
+}
 
-export function LearningLedger({ compact = false }: LearningLedgerProps) {
+export function LearningLedger({ compact = false, defaultExpanded = false }: LearningLedgerProps) {
   const profileId = useGameState(state => state.currentUser?.id);
   const gradeTier = useGameState(state => state.activeGradeTier);
   const player = useGameState(state => state.player);
   const [missions, setMissions] = useState<MissionAssignment[]>([]);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(defaultExpanded);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 

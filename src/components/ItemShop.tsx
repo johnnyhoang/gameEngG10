@@ -6,7 +6,11 @@ import { UI_THEMES, isLightTheme } from '../theme/uiThemes';
 import { FogCard } from './FogCard';
 import { RubyConfirmModal } from './Common/RubyConfirmModal';
 
-export const ItemShop: React.FC = () => {
+interface ItemShopProps {
+  onSpinWheel?: () => void;
+}
+
+export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
   const player = useGameState(state => state.player);
   const rewards = useGameState(state => state.rewards);
   const rewardRedemptions = useGameState(state => state.rewardRedemptions);
@@ -43,6 +47,17 @@ export const ItemShop: React.FC = () => {
 
   const [classRewardsLoading, setClassRewardsLoading] = useState(true);
   const [cancellingIds, setCancellingIds] = useState<Record<string, boolean>>({});
+
+  const isWeekend = () => {
+    const day = new Date().getDay();
+    return day === 0 || day === 6;
+  };
+
+  const daysUntilWeekend = () => {
+    const day = new Date().getDay();
+    if (day === 0 || day === 6) return 0;
+    return day <= 5 ? 6 - day : 1;
+  };
 
   useEffect(() => {
     setClassRewardsLoading(true);
@@ -260,6 +275,50 @@ export const ItemShop: React.FC = () => {
               </div>
             </FogCard>
           </div>
+        </div>
+      </div>
+
+      {/* QUẦY: VÒNG QUAY MAY MẮN */}
+      <div className={`rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'bg-amber-50/40 border-violet-200/40' : 'bg-synth-orange/5 border-synth-orange/10'}`}>
+        <div className="space-y-0.5">
+          <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
+            🎡 Vòng Quay May Mắn (Cuối Tuần)
+          </h3>
+          <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}`}>
+            Quay để nhận phần quà ngẫu nhiên từ học viện vào mỗi dịp cuối tuần!
+          </p>
+        </div>
+        
+        <div className={`glass-panel rounded-2xl p-5 flex flex-col md:flex-row justify-between items-center gap-4 ${isUnicorn ? 'border-violet-200/35 bg-gradient-to-tr from-white/85 via-amber-50/70 to-fuchsia-50/70' : 'border-synth-orange/20 bg-gradient-to-tr from-synth-orange/5 to-transparent'}`}>
+          <div className="flex gap-4 items-center">
+            <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-3xl border shrink-0 ${isWeekend() ? 'animate-spin-slow' : 'opacity-40 grayscale'} ${isUnicorn ? 'bg-amber-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-orange/30'}`}>
+              🎡
+            </div>
+            <div className="space-y-1">
+              <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
+                {isWeekend() ? 'Vòng Quay Đang Mở!' : 'Vòng Quay Đang Khóa'}
+              </h4>
+              <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>
+                {isWeekend() ? 'Hãy thử vận may để nhận Ruby, năng lượng hoặc các phần thưởng bất ngờ!' : `Vòng quay sẽ mở vào Thứ Bảy & Chủ Nhật. Còn lại ${daysUntilWeekend()} ngày.`}
+              </p>
+            </div>
+          </div>
+          
+          {isWeekend() ? (
+            <button
+              onClick={onSpinWheel}
+              className={`px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${isUnicorn ? 'bg-gradient-to-r from-amber-300 to-orange-300 text-violet-900 shadow-md hover:brightness-105' : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.4)]'}`}
+            >
+              Quay Ngay 🎁
+            </button>
+          ) : (
+            <button
+              disabled
+              className="px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider shrink-0 bg-white/5 border border-white/10 text-slate-500 cursor-not-allowed"
+            >
+              Đóng (Chờ Cuối Tuần)
+            </button>
+          )}
         </div>
       </div>
 

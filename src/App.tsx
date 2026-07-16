@@ -16,7 +16,6 @@ import { ProfileSelectionScreen } from './components/ProfileSelectionScreen';
 import { GlobalSectModal } from './components/GlobalSectModal';
 import { LogoutConfirmModal } from './components/Common/LogoutConfirmModal';
 import { getSubjectToolIds } from './subject-modules/registry';
-import { LearningLedger } from './components/LearningLedger';
 import { recordMissionEvent } from './services/missionLedgerService';
 
 // Helper decorator to encapsulate Suspense for each lazy component individually, avoiding app-wide unmount loops
@@ -63,7 +62,6 @@ function App() {
   const helpPageId = useGameState(state => state.helpPageId);
   const closeHelp = useGameState(state => state.closeHelp);
   const uiTheme = useGameState(state => state.uiTheme);
-  const setUiTheme = useGameState(state => state.setUiTheme);
   
   const { activeSectId, activeGradeTier } = useSect();
   const isSwitchingContext = useGameState(state => state.isSwitchingContext);
@@ -396,9 +394,7 @@ function App() {
         currentScreen={topHudScreen}
       />
 
-      {!isAdmin(currentUser?.role) && !isParentRole(currentUser?.role) && (
-        <LearningLedger compact={screen === 'play'} />
-      )}
+
 
       {/* Main Container */}
       <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:py-8 flex flex-col lg:flex-row gap-6 items-stretch pb-20 lg:pb-8">
@@ -417,9 +413,6 @@ function App() {
               onOpenArena={() => setScreen('arena')}
               onOpenPracticeHall={() => setScreen('practice')}
               onOpenRelax={() => setScreen('relax')}
-              onOpenShop={() => setScreen('shop')}
-              onOpenPet={() => setScreen('pet')}
-              onSpinWheel={triggerSpinWheel}
               onStudyLesson={handleStudyLessonFromMap}
               onStartLessonPractice={handleStartLessonPracticeFromMap}
             />
@@ -452,7 +445,7 @@ function App() {
             />
           )}
 
-          {screen === 'shop' && <ItemShop />}
+          {screen === 'shop' && <ItemShop onSpinWheel={triggerSpinWheel} />}
 
           {screen === 'tutor' && <TutorConsole />}
 
@@ -550,7 +543,7 @@ function App() {
             <ProfilePage
               currentUser={currentUser}
               currentTheme={uiTheme}
-              onSelectTheme={setUiTheme}
+              onNavigate={setScreen}
             />
           )}
 

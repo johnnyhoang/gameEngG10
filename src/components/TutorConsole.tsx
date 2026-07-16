@@ -65,7 +65,6 @@ export const TutorConsole: React.FC = () => {
   const applyVicePrincipal = useGameState(state => state.applyVicePrincipal);
   const inviteAdminConnection = useGameState(state => state.inviteAdminConnection);
   const uiTheme = useGameState(state => state.uiTheme);
-  const setUiTheme = useGameState(state => state.setUiTheme);
 
   // Tab chính đọc từ store — nav chính nằm trên TopHUD (thanh MIKAWAII), không còn nav riêng trong trang
   const activeTab = useGameState(state => state.tutorConsoleTab);
@@ -485,7 +484,6 @@ export const TutorConsole: React.FC = () => {
             <ProfilePage
               currentUser={currentUser!}
               currentTheme={uiTheme}
-              onSelectTheme={setUiTheme}
             />
           )
         )}

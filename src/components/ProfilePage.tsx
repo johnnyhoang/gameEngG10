@@ -1,96 +1,30 @@
 import React, { useState } from 'react';
-import { CheckCircle2, Palette, Sparkles } from 'lucide-react';
-import { UI_THEMES, type UiThemeConfig } from '../theme/uiThemes';
+import { Palette, Sparkles } from 'lucide-react';
+import { UI_THEMES } from '../theme/uiThemes';
 import type { UiThemeId, UserProfile } from '../types/game';
-import { useGameState, THEME_UNLOCK_COST } from '../hooks/useGameState';
+import { useGameState } from '../hooks/useGameState';
 import { getStudentRankForLevel } from '../types/game';
 import { toast } from '../utils/toast';
 import { AcademyHandbook } from './AcademyHandbook';
 import { ActivityLog } from './ActivityLog';
 import { RubyConfirmModal } from './Common/RubyConfirmModal';
+import { SearchSuggest } from './Common/SearchSuggest';
 
 interface ProfilePageProps {
   currentUser: UserProfile;
   currentTheme: UiThemeId;
-  onSelectTheme: (themeId: UiThemeId) => void;
+  onNavigate?: (screen: any) => void;
 }
-
-const getThemeCardClass = (themeId: UiThemeId, isActive: boolean) => {
-  const base = 'relative overflow-hidden rounded-3xl border p-4 text-left transition-all duration-300 cursor-pointer';
-
-  const variants: Record<UiThemeId, string> = {
-    current: 'border-cyan-300/30 bg-gradient-to-br from-cyan-500/10 via-slate-900/80 to-fuchsia-500/10',
-    'cute-pink-pastel': 'border-pink-200/50 bg-gradient-to-br from-pink-100 via-fuchsia-50 to-rose-100',
-    'space-adventure': 'border-cyan-300/30 bg-gradient-to-br from-slate-950 via-indigo-950 to-cyan-900/40',
-    'fantasy-forest': 'border-emerald-200/40 bg-gradient-to-br from-lime-50 via-amber-50 to-green-100',
-    'pixel-arcade': 'border-lime-300/40 bg-gradient-to-br from-slate-950 via-slate-900 to-green-900/40',
-    'unicorn-dream': 'border-violet-200/60 bg-gradient-to-br from-fuchsia-50 via-white to-cyan-50'
-  };
-
-  return `${base} ${variants[themeId]} ${isActive ? 'ring-2 ring-offset-2 ring-offset-slate-950 ring-white/70 scale-[1.01]' : 'hover:-translate-y-1'}`;
-};
-
-const getTextToneClass = (themeId: UiThemeId) => {
-  switch (themeId) {
-    case 'cute-pink-pastel':
-      return 'text-fuchsia-700';
-    case 'space-adventure':
-      return 'text-cyan-200';
-    case 'fantasy-forest':
-      return 'text-emerald-900';
-    case 'pixel-arcade':
-      return 'text-lime-300';
-    case 'unicorn-dream':
-      return 'text-violet-700';
-    default:
-      return 'text-cyan-200';
-  }
-};
-
-const ThemePreview: React.FC<{ theme: UiThemeConfig }> = ({ theme }) => {
-  const isUnicorn = theme.id === 'unicorn-dream';
-
-  return (
-    <div className="relative flex items-center justify-between gap-3 overflow-hidden rounded-2xl border border-white/15 bg-white/50 px-4 py-3 backdrop-blur-sm">
-      {isUnicorn && (
-        <>
-          <div className="unicorn-rainbow-strip absolute inset-x-0 top-0 h-1.5 opacity-90" />
-          <div className="absolute -left-4 -top-4 h-12 w-12 rounded-full bg-fuchsia-200/40 blur-xl unicorn-cloud" />
-          <div className="absolute -right-3 bottom-[-0.8rem] h-10 w-10 rounded-full bg-cyan-200/40 blur-xl unicorn-cloud" />
-        </>
-      )}
-
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="grid h-10 w-10 place-items-center rounded-2xl bg-white/80 text-lg shadow-sm">
-          <span className={isUnicorn ? 'unicorn-twinkle' : ''}>{theme.iconSet[0]}</span>
-        </div>
-        <div className="min-w-0">
-          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-slate-500">
-            {theme.shortName}
-          </p>
-          <p className="truncate text-sm font-bold text-slate-900">{theme.name}</p>
-        </div>
-      </div>
-      {theme.recommended && (
-        <span className="shrink-0 rounded-full bg-white px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-fuchsia-600 shadow-sm">
-          Gợi ý
-        </span>
-      )}
-    </div>
-  );
-};
 
 import { isLightTheme } from '../theme/uiThemes';
 
 export const ProfilePage: React.FC<ProfilePageProps> = ({
   currentUser,
   currentTheme,
-  onSelectTheme
+  onNavigate
 }) => {
   const player = useGameState(state => state.player);
-  const buyTheme = useGameState(state => state.buyTheme);
 
-  const [activeTab, setActiveTab] = useState<'identity' | 'themes' | 'logs'>('identity');
   const [isCamNangOpen, setIsCamNangOpen] = useState(false);
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -103,6 +37,19 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
     actionDescription: '',
     onConfirm: () => {},
   });
+
+  // Class Connection state & functions
+  const classLinks = useGameState(state => state.classLinks);
+  const respondClassInvite = useGameState(state => state.respondClassInvite);
+  const leaveClass = useGameState(state => state.leaveClass);
+  const sendClassInvite = useGameState(state => state.sendClassInvite);
+
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [isInviting, setIsInviting] = useState(false);
+
+  const activeLink = classLinks.find((l: any) => l.status === 'active');
+  const pendingLink = classLinks.find((l: any) => l.status === 'pending_parent' && l.student_id === currentUser.id);
+  const pendingStudentInvites = classLinks.filter((l: any) => l.status === 'pending_student');
 
   // States for Profile Renaming
   const renameProfile = useGameState(state => state.renameProfile);
@@ -205,101 +152,243 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </div>
           </div>
 
-          <div className={`relative z-10 grid gap-2 rounded-3xl border p-4 text-sm ${
-            isUnicorn
-              ? 'border-violet-200/40 bg-white/80 text-violet-700'
-              : 'border-white/10 bg-white/5 text-white/75'
-          }`}>
-            <div className="flex items-center gap-2">
-              <Sparkles className={`h-4 w-4 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-cyan'}`} />
-              <span className="font-semibold font-orbitron">Phong Cách Học Đường đang dùng</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-lg">{activeTheme.iconSet[0]}</span>
-              <span className="font-bold text-white">{activeTheme.name}</span>
-            </div>
-            <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-white/55'}`}>{activeTheme.tagline}</p>
-          </div>
         </div>
 
-        {/* Sub-tab Navigation */}
-        <div className="flex gap-2 border-b border-white/10 pb-4 mb-6">
-          <button
-            onClick={() => setActiveTab('identity')}
-            className={`px-4 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
-              activeTab === 'identity'
-                ? 'bg-synth-magenta border border-synth-magenta text-black shadow-[0_0_8px_#ff007f]'
-                : 'bg-white/5 border border-white/5 text-slate-400 hover:text-white'
-            }`}
-          >
-            👑 Học Tích & Học Vấn
-          </button>
-          <button
-            onClick={() => setActiveTab('themes')}
-            className={`px-4 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
-              activeTab === 'themes'
-                ? 'bg-synth-magenta border border-synth-magenta text-black shadow-[0_0_8px_#ff007f]'
-                : 'bg-white/5 border border-white/5 text-slate-400 hover:text-white'
-            }`}
-          >
-            🎨 Cá Tính & Phong Cách Học Đường
-          </button>
-          <button
-            onClick={() => setActiveTab('logs')}
-            className={`px-4 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider transition-all cursor-pointer ${
-              activeTab === 'logs'
-                ? 'bg-synth-magenta border border-synth-magenta text-black shadow-[0_0_8px_#ff007f]'
-                : 'bg-white/5 border border-white/5 text-slate-400 hover:text-white'
-            }`}
-          >
-            📊 Dòng Hoạt Động
-          </button>
-        </div>
-
-
-        {/* TAB 1: HỌC TÍCH & HỌC TẬP */}
-        {activeTab === 'identity' && (
-          <div className="space-y-6">
-            {/* General Stats Header (Chỉ hiển thị cho Học Sinh) */}
+        {/* Bố cục 1 trang duy nhất gộp mọi thông tin học tịch */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 relative z-10">
+          
+          {/* CỘT TRÁI: Học Tích & Giáo Viên (col-span-7) */}
+          <div className="lg:col-span-7 space-y-6">
+            
+            {/* 1. Chỉ số học tập (General Stats) */}
             {currentUser.role === 'student' && (
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-white/5 p-4 rounded-2xl border border-white/5 text-xs">
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Danh hiệu học tập</span>
-                  <span className="font-orbitron font-black text-synth-cyan text-base">
-                    {getStudentRankForLevel(player.level).icon} {getStudentRankForLevel(player.level).name}
+              <div className="grid grid-cols-2 gap-4 bg-white/5 p-5 rounded-2xl border border-white/5 text-xs">
+                <div className="p-3.5 rounded-xl border border-white/5 bg-white/5">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron mb-1">Danh hiệu học tập</span>
+                  <span className="font-orbitron font-black text-synth-cyan text-sm leading-snug flex items-center gap-1">
+                    <span>{getStudentRankForLevel(player.level).icon}</span>
+                    <span>{getStudentRankForLevel(player.level).name}</span>
                   </span>
-                  <span className="block text-[10px] text-slate-400 font-semibold">Level {player.level}</span>
+                  <span className="block text-[10px] text-slate-400 font-semibold mt-1">Cấp {player.level}</span>
                 </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Tích lũy điểm số</span>
-                  <span className="font-orbitron font-black text-synth-magenta text-base">{player.xp} XP</span>
+                <div className="p-3.5 rounded-xl border border-white/5 bg-white/5">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron mb-1">Tích lũy điểm số</span>
+                  <span className="font-orbitron font-black text-synth-magenta text-sm">{player.xp} XP</span>
                 </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Ruby</span>
-                  <span className="font-orbitron font-black text-synth-orange text-base">{player.ruby} Ruby</span>
+                <div className="p-3.5 rounded-xl border border-white/5 bg-white/5">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron mb-1">Ruby tích lũy</span>
+                  <span className="font-orbitron font-black text-synth-orange text-sm">{player.ruby} Ruby</span>
                 </div>
-                <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron">Chuỗi học tập</span>
-                  <span className="font-orbitron font-black text-synth-green text-base">{player.streak} Ngày</span>
+                <div className="p-3.5 rounded-xl border border-white/5 bg-white/5">
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron mb-1">Chuỗi học tập</span>
+                  <span className="font-orbitron font-black text-synth-green text-sm">{player.streak} Ngày</span>
                 </div>
               </div>
             )}
 
+            {/* 1.2. Phong Cách Học Đường đang dùng */}
+            <div className={`relative z-10 grid gap-2 rounded-2xl border p-4 text-sm ${
+              isLight
+                ? 'border-violet-200/40 bg-white/80 text-violet-700'
+                : 'border-white/10 bg-white/5 text-white/75'
+            }`}>
+              <div className="flex items-center gap-2">
+                <Sparkles className={`h-4 w-4 ${isLight ? 'text-fuchsia-500' : 'text-synth-cyan'}`} />
+                <span className="font-semibold font-orbitron text-xs">Phong Cách Học Đường đang dùng</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{activeTheme.iconSet[0]}</span>
+                <span className={`font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>{activeTheme.name}</span>
+              </div>
+              <p className={`text-[11px] ${isLight ? 'text-slate-500' : 'text-white/55'}`}>{activeTheme.tagline}</p>
+              
+              {onNavigate && (
+                <div className="mt-2 pt-2 border-t border-white/10 flex justify-end">
+                  <button
+                    onClick={() => onNavigate('shop')}
+                    className={`px-3 py-1.5 rounded-lg border text-[10px] font-orbitron font-bold uppercase tracking-wider cursor-pointer transition-all ${
+                      isLight
+                        ? 'border-violet-300 bg-violet-50 text-violet-700 hover:bg-violet-100'
+                        : 'border-synth-cyan/30 bg-synth-cyan/5 text-synth-cyan hover:bg-synth-cyan/15'
+                    }`}
+                  >
+                    Đổi Phong Cách 👘
+                  </button>
+                </div>
+              )}
+            </div>
 
-            {/* Cẩm Nang Học Tập Banner */}
+            {/* 2. Lớp chủ nhiệm & kết nối giáo viên (Class Connection) */}
+            {currentUser.role === 'student' && (
+              <div className={`p-5 rounded-2xl border ${isLight ? 'border-violet-200/50 bg-violet-50/20' : 'border-white/10 bg-white/5'} space-y-4`}>
+                <h3 className={`font-orbitron font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 ${isLight ? 'text-violet-800' : 'text-synth-cyan'}`}>
+                  <span>🎓</span> Lớp Chủ Nhiệm & Kết Nối Giáo Viên
+                </h3>
+                
+                {/* 2.1 Active class connection status */}
+                {activeLink && (
+                  <div className={`flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl border ${
+                    isLight ? 'border-violet-200/50 bg-white/80 text-violet-800' : 'border-synth-cyan/20 bg-black/30 text-synth-cyan'
+                  }`}>
+                    <div className="space-y-0.5">
+                      <p className="text-[10px] uppercase font-bold text-slate-400">Đang học lớp của:</p>
+                      <p className={`font-bold ${isLight ? 'text-violet-900' : 'text-white'}`}>
+                        {activeLink.parent_name || 'Chưa rõ tên'}
+                      </p>
+                      <p className="text-[10px] opacity-70">({activeLink.parent_email})</p>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        if (window.confirm('Bạn có chắc muốn rời khỏi lớp của Chủ Nhiệm này không?')) {
+                          const success = await leaveClass(activeLink.id);
+                          if (success) toast.success('Đã rời Lớp Chủ Nhiệm');
+                        }
+                      }}
+                      className={`px-3 py-1.5 rounded-lg border text-[9px] uppercase font-black tracking-wide cursor-pointer transition-colors ${
+                        isLight
+                          ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100'
+                          : 'border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                      }`}
+                    >
+                      Rời Lớp 🚪
+                    </button>
+                  </div>
+                )}
+
+                {/* 2.2 Pending connection request status */}
+                {pendingLink && (
+                  <div className={`flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl border ${
+                    isLight ? 'border-amber-200/50 bg-amber-50/50 text-amber-800' : 'border-synth-orange/20 bg-black/30 text-synth-orange'
+                  }`}>
+                    <div className="space-y-0.5">
+                      <p className="text-[10px] uppercase font-bold text-slate-400">Đang chờ phản hồi kết nối:</p>
+                      <p className={`font-bold ${isLight ? 'text-amber-900' : 'text-white'}`}>
+                        {pendingLink.parent_name || 'Chưa rõ tên'}
+                      </p>
+                      <p className="text-[10px] opacity-70">({pendingLink.parent_email})</p>
+                    </div>
+                    <button
+                      onClick={async () => {
+                        if (window.confirm('Bạn có chắc muốn hủy yêu cầu kết nối này không?')) {
+                          const ok = await leaveClass(pendingLink.id);
+                          if (ok) toast.success('Đã hủy yêu cầu kết nối.');
+                        }
+                      }}
+                      className={`px-3 py-1.5 rounded-lg border text-[9px] uppercase font-black tracking-wide cursor-pointer transition-colors ${
+                        isLight
+                          ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100'
+                          : 'border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20'
+                      }`}
+                    >
+                      Hủy Yêu Cầu
+                    </button>
+                  </div>
+                )}
+
+                {/* 2.3 Connection input form (Always visible to allow class switching/joining) */}
+                <div className={`flex flex-col sm:flex-row sm:items-center gap-3 p-3.5 rounded-xl border ${
+                  isLight ? 'border-violet-200/40 bg-white/60' : 'border-white/5 bg-black/20'
+                }`}>
+                  <div className="space-y-0.5 shrink-0 flex-1 min-w-[180px]">
+                    <p className={`font-bold text-xs flex items-center gap-1.5 ${isLight ? 'text-violet-800' : 'text-synth-cyan'}`}>
+                      <span>🎓</span> {(activeLink || pendingLink) ? 'Chuyển Lớp Thầy/Cô' : 'Gia Nhập Lớp Mới'}
+                    </p>
+                    <p className="text-[10px] leading-normal text-slate-400">
+                      Nhập Email Google của Thầy/Cô để kết nối lớp.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 flex-1 max-w-sm w-full">
+                    <SearchSuggest
+                      placeholder="Email Thầy/Cô..."
+                      roleFilter="tutor"
+                      value={inviteEmail}
+                      onChange={setInviteEmail}
+                      onSelect={user => setInviteEmail(user.email)}
+                      className="flex-1"
+                    />
+                    <button
+                      onClick={async () => {
+                        if (!inviteEmail.trim()) return;
+                        setIsInviting(true);
+                        const result = await sendClassInvite(inviteEmail.trim());
+                        if (result.success) {
+                          toast.success('Đã gửi yêu cầu kết nối thành công! Vui lòng chờ Thầy/Cô phê duyệt.');
+                          setInviteEmail('');
+                        } else {
+                          toast.error(result.error || 'Gửi yêu cầu thất bại.');
+                        }
+                        setIsInviting(false);
+                      }}
+                      disabled={isInviting || !inviteEmail.trim()}
+                      className={`px-3.5 py-2 rounded-lg font-orbitron font-bold text-[9px] uppercase tracking-wider cursor-pointer transition-all ${
+                        isLight
+                          ? 'bg-violet-600 hover:bg-violet-700 text-white disabled:bg-violet-200'
+                          : 'bg-synth-cyan hover:bg-synth-cyan/80 text-black disabled:opacity-50'
+                      }`}
+                    >
+                      {isInviting ? 'Gửi...' : (activeLink || pendingLink) ? 'Chuyển' : 'Kết nối'}
+                    </button>
+                  </div>
+                </div>
+
+                {/* 2.4 Lời mời kết nối từ thầy cô gửi tới */}
+                {pendingStudentInvites.length > 0 && (
+                  <div className="pt-2 border-t border-white/5 space-y-2">
+                    <p className="font-bold text-synth-magenta flex items-center gap-1.5 text-[10px] uppercase tracking-wider">
+                      <span>💌</span> Lời mời gia nhập lớp từ Thầy/Cô:
+                    </p>
+                    {pendingStudentInvites.map((link: any) => (
+                      <div key={link.id} className={`flex items-center justify-between p-3 rounded-xl border ${
+                        isLight ? 'border-pink-200 bg-pink-50/50' : 'border-synth-magenta/30 bg-synth-magenta/5'
+                      }`}>
+                        <div className="text-[10px] leading-relaxed">
+                          Thầy/Cô <strong className={isLight ? 'text-pink-700' : 'text-synth-cyan'}>{link.parent_name || 'Chưa rõ tên'}</strong> ({link.parent_email}) muốn nhận bạn vào lớp.
+                        </div>
+                        <div className="flex gap-1.5 shrink-0 ml-2">
+                          <button
+                            onClick={async () => {
+                              const success = await respondClassInvite(link.id, true);
+                              if (success) toast.success('Đã đồng ý kết nối!');
+                            }}
+                            className={`px-2.5 py-1 rounded text-[9px] font-bold uppercase cursor-pointer ${
+                              isLight ? 'bg-pink-600 text-white hover:bg-pink-700' : 'bg-synth-cyan text-black hover:bg-synth-cyan/80'
+                            }`}
+                          >
+                            Đồng ý
+                          </button>
+                          <button
+                            onClick={async () => {
+                              const success = await respondClassInvite(link.id, false);
+                              if (success) toast.success('Đã từ chối kết nối');
+                            }}
+                            className={`px-2.5 py-1 rounded text-[9px] font-bold uppercase cursor-pointer ${
+                              isLight ? 'bg-white border border-pink-200 text-pink-700 hover:bg-pink-50' : 'bg-white/10 border border-white/20 text-white hover:bg-white/20'
+                            }`}
+                          >
+                            Từ chối
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 3. Cẩm Nang Học Tập Banner */}
             <div className="flex flex-col sm:flex-row justify-between items-center bg-gradient-to-r from-amber-950/60 to-stone-900/60 p-4 rounded-2xl border border-amber-800/25 gap-4">
               <div className="flex items-center gap-3">
                 <span className="text-3xl">📖</span>
                 <div>
                   <h4 className="text-sm font-bold text-amber-100 font-serif">Cẩm Nang Học Tập</h4>
-                  <p className="text-xs text-slate-300 font-serif">Sổ tay tra cứu nội quy học tập, điều kiện thăng cấp và kinh nghiệm học viện.</p>
+                  <p className="text-xs text-slate-300 font-serif">Nội quy học tập, điều kiện thăng cấp và kinh nghiệm.</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsCamNangOpen(true)}
-                className="w-full sm:w-auto px-5 py-2.5 bg-amber-900 hover:bg-amber-800 text-amber-100 font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer shadow-lg shadow-amber-950/50 border border-amber-800/30 hover:scale-[1.02]"
+                className="w-full sm:w-auto px-5 py-2.5 bg-amber-900 hover:bg-amber-800 text-amber-100 font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer border border-amber-800/30 hover:scale-[1.02] shadow-lg shadow-amber-950/40"
               >
-                MỞ CẨM NANG 📖
+                Mở Cẩm Nang 📖
               </button>
             </div>
 
@@ -309,164 +398,21 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 onClose={() => setIsCamNangOpen(false)}
               />
             )}
-
-            {/* Nhật Ký Học Tập (Chỉ cho Học Sinh) */}
-            {currentUser.role === 'student' && (
-              <div className="flex flex-col sm:flex-row justify-between items-center bg-white/5 p-4 rounded-2xl border border-white/10 gap-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl">📊</span>
-                  <div>
-                    <h4 className="text-sm font-bold text-white">Nhật Ký Học Tập</h4>
-                    <p className="text-xs text-slate-400">Xem lại lịch sử hoạt động và rèn luyện của môn học đang chọn.</p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setActiveTab('logs')}
-                  className="w-full sm:w-auto px-5 py-2.5 bg-white/10 hover:bg-white/15 text-white font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer border border-white/10 hover:scale-[1.02]"
-                >
-                  Xem Nhật Ký 📊
-                </button>
-              </div>
-
-            )}
-
           </div>
-        )}
 
-        {/* TAB 2: CÀI ĐẶT THEME */}
-        {activeTab === 'themes' && (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {UI_THEMES.map(theme => {
-              const isActive = theme.id === currentTheme;
-              const toneClass = getTextToneClass(theme.id);
-              const isUnicornTheme = theme.id === 'unicorn-dream';
-              const isUnlocked = theme.id === 'current' || (player.unlockedThemes || ['current']).includes(theme.id);
-
-              return (
-                <button
-                  key={theme.id}
-                  onClick={() => {
-                    if (isUnlocked) {
-                      onSelectTheme(theme.id);
-                      return;
-                    }
-                    if (player.ruby < THEME_UNLOCK_COST) {
-                      toast.error(`Không đủ Ruby. Cần ${THEME_UNLOCK_COST} Ruby để mở khóa Phong Cách Học Đường này.`);
-                      return;
-                    }
-                    setConfirmModal({
-                      isOpen: true,
-                      cost: THEME_UNLOCK_COST,
-                      actionDescription: `mở khóa Phong Cách Học Đường "${theme.name}"`,
-                      onConfirm: () => {
-                        const bought = buyTheme(theme.id);
-                        if (bought) {
-                          toast.success(`Đã mở khóa "${theme.name}" (-${THEME_UNLOCK_COST} Ruby)! Đang áp dụng...`);
-                          onSelectTheme(theme.id);
-                        }
-                        setConfirmModal(prev => ({ ...prev, isOpen: false }));
-                      }
-                    });
-                  }}
-                  className={`${getThemeCardClass(theme.id, isActive)} ${!isUnlocked ? 'opacity-80' : ''}`}
-                >
-                  <div className={`absolute right-4 top-4 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.2em] shadow-sm ${
-                    isUnicornTheme ? 'bg-white/90 text-violet-700' : 'bg-white/85 text-slate-600'
-                  }`}>
-                    {theme.iconSet.join(' ')}
-                  </div>
-
-                  {isActive && (
-                    <div className={`absolute left-4 top-4 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-sm ${
-                      isUnicornTheme ? 'bg-gradient-to-r from-fuchsia-500 via-violet-500 to-cyan-400' : 'bg-emerald-500'
-                    }`}>
-                      <CheckCircle2 className="h-3.5 w-3.5" />
-                      Đang dùng
-                    </div>
-                  )}
-
-                  {!isActive && !isUnlocked && (
-                    <div className="absolute left-4 top-4 flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-sm bg-slate-800/90">
-                      🔒 {THEME_UNLOCK_COST} Ruby
-                    </div>
-                  )}
-
-                  <div className="mt-10 space-y-3">
-                    {isUnicornTheme && (
-                      <div className="unicorn-rainbow-strip h-1.5 rounded-full opacity-90" />
-                    )}
-                    <div className="space-y-1">
-                      <p className={`text-[10px] font-black uppercase tracking-[0.28em] ${toneClass} opacity-80`}>
-                        {theme.shortName}
-                      </p>
-                      <h3 className={`text-xl font-black ${theme.id === 'pixel-arcade' ? 'font-mono' : ''} ${theme.id === 'cute-pink-pastel' ? 'tracking-tight' : ''} ${toneClass}`}>
-                        {theme.name}
-                      </h3>
-                      <p className="text-sm leading-relaxed text-black/70">
-                        {theme.description}
-                      </p>
-                    </div>
-
-                    <div className={`space-y-2 rounded-2xl p-3 ${
-                      isUnicornTheme ? 'bg-white/70 border border-violet-200/40' : 'bg-white/55'
-                    }`}>
-                      <div className="flex items-center justify-between gap-3 text-xs font-semibold text-black/65">
-                        <span>Phong cách</span>
-                        <span className="text-right font-black text-black">{theme.mood}</span>
-                      </div>
-                      <div className="flex items-center justify-between gap-3 text-xs font-semibold text-black/65">
-                        <span>Màu chủ đạo</span>
-                        <span className="text-right font-black text-black">{theme.accentLabel}</span>
-                      </div>
-                      <div className="flex items-center justify-between gap-3 text-xs font-semibold text-black/65">
-                        <span>Font</span>
-                        <span className="text-right font-black text-black">{theme.fontLabel}</span>
-                      </div>
-                    </div>
-
-                    <ThemePreview theme={theme} />
-
-                    {isUnicornTheme && (
-                      <div className="flex items-center justify-between rounded-2xl border border-violet-200/35 bg-white/65 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.22em] text-violet-700">
-                        <span className="inline-flex items-center gap-1">
-                          <span className="unicorn-twinkle">✨</span>
-                          Magical cozy mode
-                        </span>
-                        <span className="inline-flex items-center gap-1">
-                          <span className="unicorn-cloud">☁️</span>
-                          Soft sparkles
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-
-            {/* Todo card for future school themes and features */}
-            <div className="relative overflow-hidden rounded-3xl border border-dashed border-stone-700/50 bg-stone-900/10 p-5 flex flex-col justify-between text-left h-[260px]">
-              <div>
-                <div className="inline-block text-[9px] font-black bg-stone-800 text-stone-400 px-2 py-0.5 rounded-full mb-3 uppercase tracking-wider font-mono">
-                  Đang thiết kế 🛠️
-                </div>
-                <h4 className="text-sm font-bold text-slate-200">Mở Rộng Cá Tính & Giao Diện</h4>
-                <ul className="text-xs text-stone-400 space-y-2 mt-3 list-disc list-inside">
-                  <li>🌅 **Giao diện Hoàng Hôn** (cam vàng - Đang nghiên cứu)</li>
-                  <li>🌊 **Giao diện Thương Hải** (xanh đại dương - Đang nghiên cứu)</li>
-                  <li>🥋 **Trang phục học sinh** (Cá nhân hóa nhân vật)</li>
-                  <li>🧬 **Huy hiệu học tập** (Huy hiệu đồng hành)</li>
-                </ul>
+          {/* CỘT PHẢI: Nhật Ký Hoạt Động (col-span-5) */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className={`p-5 rounded-2xl border ${isLight ? 'border-violet-200/35 bg-white/60' : 'border-white/10 bg-slate-950/40'} flex flex-col h-full max-h-[600px] overflow-hidden`}>
+              <h3 className={`font-orbitron font-bold text-xs uppercase tracking-wider mb-4 flex items-center gap-1.5 ${isLight ? 'text-violet-800' : 'text-synth-cyan'}`}>
+                <span>📊</span> Nhật Ký Hoạt Động Sĩ Tử
+              </h3>
+              <div className="flex-1 overflow-y-auto pr-1">
+                <ActivityLog />
               </div>
-              <p className="text-[10px] text-slate-500 italic">Hệ thống đang thiết kế thêm các giao diện bổ sung, bạn hãy đón chờ!</p>
             </div>
           </div>
-        )}
 
-        {activeTab === 'logs' && (
-          <div className="space-y-4 max-w-3xl mx-auto">
-            <ActivityLog />
-          </div>
-        )}
+        </div>
       </div>
       <RubyConfirmModal
         isOpen={confirmModal.isOpen}
