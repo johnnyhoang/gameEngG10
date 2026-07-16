@@ -1,4 +1,4 @@
-﻿import React, { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useTranslate } from '../hooks/useTranslate';
 import { Zap, Coins, Flame, Shield, LogOut, ChevronDown } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
@@ -267,7 +267,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
 
           {/* Nav chính Phòng Điều Hành cho Giáo viên / Ban Giám Hiệu — cùng vị trí với nav học sinh */}
           {isConsoleUser && currentScreen === 'tutor' && (
-            <>
+            <div className="hidden md:flex items-center gap-2">
               {([
                 { tab: 'management', icon: '🏫', label: t('Hiệu Trưởng', 'Principal'), title: t('Phòng Giáo Viên / Phòng Hiệu Trưởng ✦ Trung tâm quản trị', 'Homeroom / Principal Office ✦ Admin Center') },
                 { tab: 'lectures', icon: '📖', label: t('Bài Giảng', 'Lectures'), title: t('Phòng Quản Lý Knowledge ✦ Tàng Kinh Các', 'Knowledge Room ✦ Lecture Bank') },
@@ -287,7 +287,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                   <span className="hidden lg:inline">{item.label}</span>
                 </button>
               ))}
-            </>
+            </div>
           )}
 
           {currentUser && (
