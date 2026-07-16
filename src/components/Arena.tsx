@@ -161,12 +161,104 @@ export function Arena({ onStartPlay }: ArenaProps) {
         </div>
       )}
 
-      {/* CẢNH 1: TRƯỜNG THI XẾP HẠNG (Level 2 Section) */}
+      {/* THI THEO BÀI (Lazy Load / Load More) */}
+      <div className={`rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'bg-blue-50/40 border-blue-200/40' : 'bg-synth-cyan/5 border-synth-cyan/10'}`}>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-2">
+          <div className="space-y-0.5">
+            <h3 className={`font-orbitron font-black text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
+              📝 Thi theo Bài học
+            </h3>
+            <p className="text-[10px] text-slate-400">Hệ thống bài thi chuẩn hóa theo SGK, sắp xếp tuần tự</p>
+          </div>
+          <span className="text-[10px] font-orbitron font-bold text-slate-400">
+            Tổng cộng: {subjectLessonsSorted.length} bài
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {subjectLessonsSorted.length === 0 ? (
+            <div className="col-span-2 glass-panel rounded-2xl border border-dashed border-white/10 p-6 text-center text-xs text-slate-400">
+              📭 Chưa có bài học nào được nạp cho môn học này.
+            </div>
+          ) : (
+            subjectLessonsSorted
+              .slice(0, visibleLessonsCount)
+              .map(lesson => {
+                const isCompleted = lessonsProgress[lesson.id] || false;
+                const cost = challengeEnergyCosts[1] ?? 30;
+                const dungeonConfig = getDungeonConfig(lesson.hamNguyenTo || 'thach', activeSectId);
+
+                return (
+                  <div key={lesson.id} className="relative">
+                    <FogCard
+                      pageId={`arena-lesson-${lesson.id}`}
+                      requiredCompletions={1}
+                      decayDays={7}
+                      label="Thử thách chưa mở khóa"
+                      onOpenLevel3={() => handleLaunchZone('lesson', cost, lesson.id, 'arena')}
+                    >
+                      <div
+                        onClick={(e) => { e.stopPropagation(); handleLaunchZone('lesson', cost, lesson.id, 'arena'); }}
+                        className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full"
+                      >
+                        <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white z-10">
+                          <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {cost}
+                        </div>
+                        <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
+                          <BookOpen className="w-8 h-8 text-synth-cyan" />
+                        </div>
+                        <div className="space-y-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="font-orbitron font-black text-sm text-synth-cyan">
+                              {lesson.bai ? `Bài ${lesson.bai}: ` : ''}{lesson.title}
+                            </h4>
+                            {isCompleted && (
+                              <span className="text-[9px] font-orbitron font-bold bg-synth-green/20 text-synth-green border border-synth-green/30 px-1.5 py-0.5 rounded">
+                                ĐÃ HOÀN THÀNH
+                              </span>
+                            )}
+                          </div>
+                          <div className={`text-[9px] font-bold uppercase tracking-[0.24em] ${
+                            lesson.loai === 'Chưa phân loại SGK' ? 'text-red-400 font-black' : 'text-slate-400'
+                          }`}>
+                            {lesson.loai === 'Chưa phân loại SGK' 
+                              ? '⚠️ LỖI: CHƯA PHÂN LOẠI SGK' 
+                              : `${dungeonConfig.label} • ${lesson.loai || 'Luyện thi theo bài'}`}
+                          </div>
+                          <p className="text-xs text-slate-300 leading-relaxed line-clamp-2">
+                            Luyện đề thi thử chuẩn cấu trúc cho nội dung bài học này để tích lũy kiến thức thực chiến.
+                          </p>
+                          <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
+                            Phần thưởng: <span className="text-white">+15 XP / +5 Ruby</span>
+                          </div>
+                        </div>
+                      </div>
+                    </FogCard>
+                  </div>
+                );
+              })
+          )}
+        </div>
+
+        {/* Nút Xem thêm (Load More) */}
+        {visibleLessonsCount < subjectLessonsSorted.length && (
+          <div className="flex justify-center pt-2">
+            <button
+              onClick={() => setVisibleLessonsCount(prev => prev + 6)}
+              className="px-6 py-2 rounded-xl border border-synth-cyan/30 hover:border-synth-cyan bg-synth-cyan/10 hover:bg-synth-cyan/20 text-synth-cyan font-orbitron font-bold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer"
+            >
+              Xem thêm bài thi ⚔️
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* CẢNH 1: THI NÂNG CAO (Level 2 Section) */}
       <div className={`rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'bg-pink-50/40 border-pink-200/40' : 'bg-synth-magenta/5 border-synth-magenta/10'}`}>
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
             <h3 className={`font-orbitron font-black text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-              🏅 Trường Thi Xếp Hạng
+              🏅 Thi Nâng Cao
             </h3>
             <p className="text-[10px] text-slate-400">Rèn luyện phản xạ và tốc độ theo các kỹ năng/dạng bài chuyên sâu</p>
           </div>
@@ -268,98 +360,6 @@ export function Arena({ onStartPlay }: ArenaProps) {
             </FogCard>
           </div>
         </div>
-      </div>
-
-      {/* THI THEO BÀI (Lazy Load / Load More) */}
-      <div className={`rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'bg-blue-50/40 border-blue-200/40' : 'bg-synth-cyan/5 border-synth-cyan/10'}`}>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-2">
-          <div className="space-y-0.5">
-            <h3 className={`font-orbitron font-black text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-              📝 Thi theo Bài học
-            </h3>
-            <p className="text-[10px] text-slate-400">Hệ thống bài thi chuẩn hóa theo SGK, sắp xếp tuần tự</p>
-          </div>
-          <span className="text-[10px] font-orbitron font-bold text-slate-400">
-            Tổng cộng: {subjectLessonsSorted.length} bài
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {subjectLessonsSorted.length === 0 ? (
-            <div className="col-span-2 glass-panel rounded-2xl border border-dashed border-white/10 p-6 text-center text-xs text-slate-400">
-              📭 Chưa có bài học nào được nạp cho môn học này.
-            </div>
-          ) : (
-            subjectLessonsSorted
-              .slice(0, visibleLessonsCount)
-              .map(lesson => {
-                const isCompleted = lessonsProgress[lesson.id] || false;
-                const cost = challengeEnergyCosts[1] ?? 30;
-                const dungeonConfig = getDungeonConfig(lesson.hamNguyenTo || 'thach', activeSectId);
-
-                return (
-                  <div key={lesson.id} className="relative">
-                    <FogCard
-                      pageId={`arena-lesson-${lesson.id}`}
-                      requiredCompletions={1}
-                      decayDays={7}
-                      label="Thử thách chưa mở khóa"
-                      onOpenLevel3={() => handleLaunchZone('lesson', cost, lesson.id, 'arena')}
-                    >
-                      <div
-                        onClick={(e) => { e.stopPropagation(); handleLaunchZone('lesson', cost, lesson.id, 'arena'); }}
-                        className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full"
-                      >
-                        <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white z-10">
-                          <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {cost}
-                        </div>
-                        <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
-                          <BookOpen className="w-8 h-8 text-synth-cyan" />
-                        </div>
-                        <div className="space-y-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="font-orbitron font-black text-sm text-synth-cyan">
-                              {lesson.bai ? `Bài ${lesson.bai}: ` : ''}{lesson.title}
-                            </h4>
-                            {isCompleted && (
-                              <span className="text-[9px] font-orbitron font-bold bg-synth-green/20 text-synth-green border border-synth-green/30 px-1.5 py-0.5 rounded">
-                                ĐÃ HOÀN THÀNH
-                              </span>
-                            )}
-                          </div>
-                          <div className={`text-[9px] font-bold uppercase tracking-[0.24em] ${
-                            lesson.loai === 'Chưa phân loại SGK' ? 'text-red-400 font-black' : 'text-slate-400'
-                          }`}>
-                            {lesson.loai === 'Chưa phân loại SGK' 
-                              ? '⚠️ LỖI: CHƯA PHÂN LOẠI SGK' 
-                              : `${dungeonConfig.label} • ${lesson.loai || 'Luyện thi theo bài'}`}
-                          </div>
-                          <p className="text-xs text-slate-300 leading-relaxed line-clamp-2">
-                            Luyện đề thi thử chuẩn cấu trúc cho nội dung bài học này để tích lũy kiến thức thực chiến.
-                          </p>
-                          <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
-                            Phần thưởng: <span className="text-white">+15 XP / +5 Ruby</span>
-                          </div>
-                        </div>
-                      </div>
-                    </FogCard>
-                  </div>
-                );
-              })
-          )}
-        </div>
-
-        {/* Nút Xem thêm (Load More) */}
-        {visibleLessonsCount < subjectLessonsSorted.length && (
-          <div className="flex justify-center pt-2">
-            <button
-              onClick={() => setVisibleLessonsCount(prev => prev + 6)}
-              className="px-6 py-2 rounded-xl border border-synth-cyan/30 hover:border-synth-cyan bg-synth-cyan/10 hover:bg-synth-cyan/20 text-synth-cyan font-orbitron font-bold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer"
-            >
-              Xem thêm bài thi ⚔️
-            </button>
-          </div>
-        )}
       </div>
 
       {/* CẢNH 2: LÔI ĐÀI THẦN THÚ (Level 2 Section) */}
