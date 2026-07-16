@@ -55,7 +55,7 @@ function App() {
   const helpPageId = useGameState(state => state.helpPageId);
   const closeHelp = useGameState(state => state.closeHelp);
   const uiTheme = useGameState(state => state.uiTheme);
-  
+
   const { activeSectId, activeGradeTier } = useSect();
   const isSwitchingContext = useGameState(state => state.isSwitchingContext);
   const classLinks = useGameState(state => state.classLinks);
@@ -75,7 +75,7 @@ function App() {
   const [activeTab, setActiveTab] = useState<AcademyTabId>(
     () => {
       const saved = localStorage.getItem('cyber-app-tab') as AcademyTabId | null;
-      if (saved && ['academy','knowledge','challenge','adventure','funzone'].includes(saved)) return saved;
+      if (saved && ['academy', 'knowledge', 'challenge', 'adventure', 'funzone'].includes(saved)) return saved;
       // Migrate legacy screen → tab
       const legacyScreen = localStorage.getItem('cyber-app-screen');
       const legacyMap: Record<string, AcademyTabId> = {
@@ -323,7 +323,7 @@ function App() {
         <div className="text-center space-y-4">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-synth-cyan mx-auto"></div>
           <p className="font-orbitron text-xs text-synth-cyan font-bold tracking-widest uppercase animate-pulse">
-            Đang tiến vào Thế Giới Học Tập...
+            Welcome to Maikawaii academy...
           </p>
         </div>
       </div>
@@ -366,7 +366,7 @@ function App() {
     backTarget?: 'map' | 'arena' | 'practice'
   ) => {
     setPlayMode(mode);
-      setLessonBackTarget(backTarget === 'arena' ? 'academy' : (backTarget ?? 'academy'));
+    setLessonBackTarget(backTarget === 'arena' ? 'academy' : (backTarget ?? 'academy'));
     if (mode === 'lesson') {
       setSelectedLessonId(id || null);
       setBossId(undefined);
@@ -391,13 +391,13 @@ function App() {
   const learningContextKey = `${activeSectId}-${activeGradeTier}`;
   const isWorkshopScreen = screen === 'workshop-3d' || screen === 'workshop-plane' || screen === 'workshop-graph';
   // Map activeTab/screen → topHUD screen prop
-  const topHudTabToScreen: Record<AcademyTabId, 'map'|'arena'|'practice'|'shop'|'pet'|'profile'> = {
+  const topHudTabToScreen: Record<AcademyTabId, 'map' | 'arena' | 'practice' | 'shop' | 'pet' | 'profile'> = {
     academy: 'map', knowledge: 'practice', challenge: 'arena',
     adventure: 'map', funzone: 'shop'
   };
   const topHudScreen = (screen === 'play' || screen === 'lesson-study' || isWorkshopScreen) ? 'play'
     : screen === 'tutor' ? 'tutor'
-    : topHudTabToScreen[activeTab] ?? 'map';
+      : topHudTabToScreen[activeTab] ?? 'map';
 
   return (
     <div className="app-shell min-h-screen flex flex-col text-slate-100" data-theme={uiTheme}>
@@ -420,7 +420,7 @@ function App() {
           {/* ── Tutor Console (admin/teacher) ── */}
           {screen === 'tutor' && <TutorConsole />}
 
-          
+
 
           {/* ── Student Academy Hub (5-tab) ── */}
           {screen === 'academy' && currentUser?.role === 'student' && (
@@ -443,10 +443,10 @@ function App() {
       </main>
 
       {/* ── Workshop Modals ── */}
-            {/* ─── Play Area Modal ─── */}
+      {/* ─── Play Area Modal ─── */}
       <FullscreenModal
         isOpen={screen === 'play'}
-        onClose={() => {}}
+        onClose={() => { }}
         hideHeader={true}
         bodyClassName="p-0"
       >
@@ -589,18 +589,17 @@ function App() {
       {currentUser && currentUser.role === 'student' && screen === 'academy' && (
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-cyan/20 px-2 py-2 pb-3 flex justify-around items-center z-50 shadow-[0_-4px_20px_rgba(0,240,255,0.15)]">
           {([
-            { id: 'academy',   icon: '🏫', label: 'Học Viện' },
+            { id: 'academy', icon: '🏫', label: 'Học Viện' },
             { id: 'knowledge', icon: '📚', label: 'Hang Luyện' },
             { id: 'challenge', icon: '⚔️', label: 'Thi' },
             { id: 'adventure', icon: '🧭', label: 'Thám Hiểm' },
-            { id: 'funzone',   icon: '🎮', label: 'Funzone' },
+            { id: 'funzone', icon: '🎮', label: 'Funzone' },
           ] as { id: AcademyTabId; icon: string; label: string }[]).map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-                activeTab === tab.id ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
-              }`}
+              className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${activeTab === tab.id ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
+                }`}
             >
               <span className="text-lg">{tab.icon}</span>
               <span>{tab.label}</span>
