@@ -7,7 +7,7 @@ import type { SubjectId } from '../types/game';
 
 interface DesktopCentralNavProps {
   currentScreen: string;
-  onNavigate: (screen: 'map' | 'arena' | 'hang' | 'shop' | 'relax' | 'pet' | 'profile') => void;
+  onNavigate: (screen: 'map' | 'arena' | 'practice' | 'shop' | 'relax' | 'pet' | 'profile') => void;
 }
 
 export const DesktopCentralNav: React.FC<DesktopCentralNavProps> = ({ currentScreen, onNavigate }) => {
@@ -19,8 +19,8 @@ export const DesktopCentralNav: React.FC<DesktopCentralNavProps> = ({ currentScr
 
   const gates = [
     { id: 'arena', icon: '⚡', label: 'Trường Thi' },
-    { id: 'hang', icon: '📚', label: 'Hang Luyện' },
-    { id: 'relax', icon: '🦄', label: 'Sơn Trang' }
+    { id: 'practice', icon: '📚', label: 'Học Đường' },
+    { id: 'relax', icon: '🦄', label: 'Thư Giãn' }
   ];
 
   return (

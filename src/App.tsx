@@ -70,7 +70,7 @@ function App() {
   const classLinks = useGameState(state => state.classLinks);
 
   // Screen routing state
-  const [screen, setScreen] = useState<'map' | 'arena' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang' | 'hang-3d' | 'hang-plane' | 'hang-graph' | 'lesson-study' | 'relax' | 'profile'>(
+  const [screen, setScreen] = useState<'map' | 'arena' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'practice' | 'workshop-3d' | 'workshop-plane' | 'workshop-graph' | 'lesson-study' | 'relax' | 'profile'>(
     () => (localStorage.getItem('cyber-app-screen') as any) || 'map'
   );
 
@@ -79,9 +79,9 @@ function App() {
   }, [screen]);
 
   useEffect(() => {
-    const mathOnlyScreens = new Set(['hang-3d', 'hang-plane', 'hang-graph']);
+    const mathOnlyScreens = new Set(['workshop-3d', 'workshop-plane', 'workshop-graph']);
     if (getSubjectToolIds(activeSectId).length === 0 && mathOnlyScreens.has(screen)) {
-      setScreen('hang');
+      setScreen('practice');
     }
   }, [activeSectId, screen]);
 
@@ -113,7 +113,7 @@ function App() {
   }, [activeGradeTier, activeSectId, currentUser?.id, classLinks]);
 
   useEffect(() => {
-    if (screen !== 'hang-3d' || !currentUser?.id) return;
+    if (screen !== 'workshop-3d' || !currentUser?.id) return;
     void recordMissionEvent({
       profileId: currentUser.id,
       idempotencyKey: 'feature-opened:math-3d-studio',
@@ -148,7 +148,7 @@ function App() {
   const masterLesson = useGameState(state => state.masterLesson);
   const [bossId, setBossId] = useState<string | undefined>(undefined);
   // Track where to return after a lesson study (map or hang)
-  const [lessonBackTarget, setLessonBackTarget] = useState<'map' | 'hang' | 'arena'>('hang');
+  const [lessonBackTarget, setLessonBackTarget] = useState<'map' | 'practice' | 'arena'>('practice');
   const [authLoading, setAuthLoading] = useState(true);
 
   const logout = useGameState(state => state.logout);
@@ -348,7 +348,7 @@ function App() {
   const handleStartPlay = (
     mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'lesson' | 'survival',
     id?: string,
-    backTarget?: 'map' | 'arena' | 'hang'
+    backTarget?: 'map' | 'arena' | 'practice'
   ) => {
     setPlayMode(mode);
     if (backTarget) {
@@ -379,8 +379,8 @@ function App() {
   // Key remount theo môn+lớp: đổi ngữ cảnh là toàn bộ màn hình học tập remount sạch,
   // không còn state cục bộ nào của môn cũ sống sót bên trong component.
   const learningContextKey = `${activeSectId}-${activeGradeTier}`;
-  const isHangMatterScreen = screen === 'hang-3d' || screen === 'hang-plane' || screen === 'hang-graph';
-  const topHudScreen = (isHangMatterScreen || screen === 'lesson-study') ? 'hang' : (screen === 'relax' ? 'map' : screen);
+  const isWorkshopScreen = screen === 'workshop-3d' || screen === 'workshop-plane' || screen === 'workshop-graph';
+  const topHudScreen = (isWorkshopScreen || screen === 'lesson-study') ? 'practice' : (screen === 'relax' ? 'map' : screen);
 
   return (
     <div className="app-shell min-h-screen flex flex-col text-slate-100" data-theme={uiTheme}>
@@ -407,7 +407,7 @@ function App() {
         <section className="flex-1 min-w-0">
           
           {/* Desktop Central Navigation Hub - only on study screens */}
-          {['arena', 'hang', 'relax'].includes(screen) && !isDungeonScreen && !isHangMatterScreen && !isAdmin(currentUser?.role) && (
+          {['arena', 'practice', 'relax'].includes(screen) && !isDungeonScreen && !isWorkshopScreen && !isAdmin(currentUser?.role) && (
             <DesktopCentralNav currentScreen={screen} onNavigate={(s) => setScreen(s)} />
           )}
 
@@ -415,7 +415,7 @@ function App() {
             <WorldMap
               key={learningContextKey}
               onOpenArena={() => setScreen('arena')}
-              onOpenPracticeHall={() => setScreen('hang')}
+              onOpenPracticeHall={() => setScreen('practice')}
               onOpenRelax={() => setScreen('relax')}
               onOpenShop={() => setScreen('shop')}
               onOpenPet={() => setScreen('pet')}
@@ -444,7 +444,7 @@ function App() {
                   if (result.passed) {
                     await masterLesson(selectedLessonId, result.accuracyRatio);
                   }
-                  setScreen(lessonBackTarget || 'hang');
+                  setScreen(lessonBackTarget || 'practice');
                 } else {
                   setScreen('map');
                 }
@@ -456,7 +456,7 @@ function App() {
 
           {screen === 'parent' && <ParentConsole />}
 
-          {screen === 'hang' && (
+          {screen === 'practice' && (
             <PracticeHall
               key={learningContextKey}
               onStartPractice={() => {
@@ -477,12 +477,12 @@ function App() {
               }}
               onStudyLesson={(lessonId) => {
                 setSelectedLessonId(lessonId);
-                setLessonBackTarget('hang');
+                setLessonBackTarget('practice');
                 setScreen('lesson-study');
               }}
-              onOpenWorkshop3D={() => setScreen('hang-3d')}
-              onOpenWorkshopPlane={() => setScreen('hang-plane')}
-              onOpenWorkshopGraph={() => setScreen('hang-graph')}
+              onOpenWorkshop3D={() => setScreen('workshop-3d')}
+              onOpenWorkshopPlane={() => setScreen('workshop-plane')}
+              onOpenWorkshopGraph={() => setScreen('workshop-graph')}
               onStartLessonPractice={handleStartLessonPracticeFromMap}
             />
           )}
@@ -495,44 +495,44 @@ function App() {
             />
           )}
 
-          {screen === 'hang-3d' && (
+          {screen === 'workshop-3d' && (
             <SubjectWorkshopPage
               kind="3d"
               title="Xưởng Toán Hình 3D"
               subtitle="Không gian riêng cho hình học không gian lớp 9: dựng hình, xoay 360°, chọn góc nhìn và phân tích từng bước mà không bị bó hẹp trong layout chung."
-              onBack={() => setScreen('hang')}
-              onSwitchTo3D={() => setScreen('hang-3d')}
-              onSwitchToPlane={() => setScreen('hang-plane')}
-              onSwitchToGraph={() => setScreen('hang-graph')}
+              onBack={() => setScreen('practice')}
+              onSwitchTo3D={() => setScreen('workshop-3d')}
+              onSwitchToPlane={() => setScreen('workshop-plane')}
+              onSwitchToGraph={() => setScreen('workshop-graph')}
             >
               <GeometryApp mode="studio" dimension="3d" problemText="" />
             </SubjectWorkshopPage>
           )}
 
-          {screen === 'hang-plane' && (
+          {screen === 'workshop-plane' && (
             <SubjectWorkshopPage
               kind="plane"
               title="Xưởng Toán Hình"
               subtitle="Không gian riêng cho tam giác, tứ giác, đường tròn và các đường phụ. Board rộng hơn để kéo thả, nối cạnh, dựng đường cao và đọc lời giải rõ ràng."
-              onBack={() => setScreen('hang')}
-              onSwitchTo3D={() => setScreen('hang-3d')}
-              onSwitchToPlane={() => setScreen('hang-plane')}
-              onSwitchToGraph={() => setScreen('hang-graph')}
+              onBack={() => setScreen('practice')}
+              onSwitchTo3D={() => setScreen('workshop-3d')}
+              onSwitchToPlane={() => setScreen('workshop-plane')}
+              onSwitchToGraph={() => setScreen('workshop-graph')}
             >
               <GeometryApp mode="studio" dimension="2d" problemText="" />
             </SubjectWorkshopPage>
           )}
 
 
-          {screen === 'hang-graph' && (
+          {screen === 'workshop-graph' && (
             <SubjectWorkshopPage
               kind="graph"
               title="Xưởng Toán Đồ Thị"
               subtitle="Không gian riêng cho bậc nhất và bậc hai, slider hệ số, giao điểm, đỉnh và trục đối xứng. AI sẽ phân tích đề và điều khiển đồ thị theo lệnh."
-              onBack={() => setScreen('hang')}
-              onSwitchTo3D={() => setScreen('hang-3d')}
-              onSwitchToPlane={() => setScreen('hang-plane')}
-              onSwitchToGraph={() => setScreen('hang-graph')}
+              onBack={() => setScreen('practice')}
+              onSwitchTo3D={() => setScreen('workshop-3d')}
+              onSwitchToPlane={() => setScreen('workshop-plane')}
+              onSwitchToGraph={() => setScreen('workshop-graph')}
             >
               <BikiDoThiHamSo problemText="" />
             </SubjectWorkshopPage>
@@ -605,7 +605,7 @@ function App() {
 
 
       {/* Mobile Bottom Navigation Bar (Chỉ hiển thị cho Học sinh) */}
-      {currentUser && currentUser.role === 'student' && screen !== 'play' && !isHangMatterScreen && (
+      {currentUser && currentUser.role === 'student' && screen !== 'play' && !isWorkshopScreen && (
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-cyan/20 px-3 py-2.5 pb-3 flex justify-around items-center z-50 shadow-[0_-4px_20px_rgba(0,240,255,0.15)]">
           <button
             onClick={() => setScreen('map')}
@@ -652,7 +652,7 @@ function App() {
       {/* Các tính năng chỉ dành cho Học sinh */}
       {currentUser && currentUser.role === 'student' && (
         <>
-          <PetStableOverlay isDungeonScreen={isDungeonScreen || isHangMatterScreen || screen === 'pet'} />
+          <PetStableOverlay isDungeonScreen={isDungeonScreen || isWorkshopScreen || screen === 'pet'} />
           <LevelUpCelebration />
         </>
       )}

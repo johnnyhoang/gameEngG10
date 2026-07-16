@@ -1,34 +1,34 @@
 import type { SubjectId } from '../types/game';
 
-export type HangSubjectId = SubjectId;
+export type PracticeSubjectId = SubjectId;
 
-export interface HangTopic {
+export interface PracticeTopic {
   title: string;
   summary: string;
   focus: string[];
 }
 
-export interface HangFlashcard {
-  subject: HangSubjectId;
+export interface PracticeFlashcard {
+  subject: PracticeSubjectId;
   front: string;
   back: string;
   note: string;
 }
 
-export interface HangTool {
+export interface PracticeTool {
   id: string;
   title: string;
   description: string;
   actionLabel: string;
 }
 
-export interface HangSource {
+export interface PracticeSource {
   label: string;
   url: string;
   note: string;
 }
 
-export const HANG_TRACKS: Partial<Record<HangSubjectId, HangTopic[]>> = {
+export const PRACTICE_TRACKS: Partial<Record<PracticeSubjectId, PracticeTopic[]>> = {
   english: [
     {
       title: 'Ngữ pháp lõi',
@@ -154,7 +154,7 @@ export const HANG_TRACKS: Partial<Record<HangSubjectId, HangTopic[]>> = {
   ]
 };
 
-export const HANG_FLASHCARDS: HangFlashcard[] = [
+export const PRACTICE_FLASHCARDS: PracticeFlashcard[] = [
   {
     subject: 'english',
     front: 'Thì hiện tại hoàn thành thường đi với dấu hiệu nào?',
@@ -193,7 +193,7 @@ export const HANG_FLASHCARDS: HangFlashcard[] = [
   }
 ];
 
-export const HANG_TOOLS: HangTool[] = [
+export const PRACTICE_TOOLS: PracticeTool[] = [
   {
     id: 'map',
     title: 'Bản đồ kiến thức',
@@ -232,7 +232,7 @@ export const HANG_TOOLS: HangTool[] = [
   }
 ];
 
-export const HANG_SOURCES: Partial<Record<HangSubjectId, HangSource[]>> = {
+export const PRACTICE_SOURCES: Partial<Record<PracticeSubjectId, PracticeSource[]>> = {
   english: [
     {
       label: 'MOET - Tiếng Anh mới: học sinh phải tự học nhiều hơn',

@@ -6,7 +6,7 @@ import { getStudentRankForLevel, SUBJECTS_CONFIG, getGradeTierConfig } from '../
 import { isLightTheme } from '../theme/uiThemes';
 
 interface TopHUDProps {
-  currentScreen: 'map' | 'arena' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'hang' | 'profile';
+  currentScreen: 'map' | 'arena' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'practice' | 'profile';
   onOpenShop: () => void;
   onOpenParent: () => void;
   onOpenPet: () => void;

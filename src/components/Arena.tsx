@@ -20,7 +20,7 @@ interface ArenaProps {
   onStartPlay: (
     mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'survival' | 'lesson',
     bossId?: string,
-    backTarget?: 'map' | 'arena' | 'hang'
+    backTarget?: 'map' | 'arena' | 'practice'
   ) => void;
 }
 
@@ -69,7 +69,7 @@ export function Arena({ onStartPlay }: ArenaProps) {
     mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'survival' | 'lesson',
     energyCost: number,
     bossId?: string,
-    backTarget?: 'map' | 'arena' | 'hang'
+    backTarget?: 'map' | 'arena' | 'practice'
   ) => {
     if (subjectQuestionCount === 0) {
       toast.error(`Viện Trưởng chưa nạp đề cho môn ${activeSubjectConfig.name}, thử chọn môn khác hoặc quay lại sau.`);

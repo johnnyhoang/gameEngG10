@@ -15,8 +15,8 @@ import {
    CheckCircle2
 } from 'lucide-react';
 import {
-   HANG_SOURCES
-} from '../data/hangLuyenCong';
+   PRACTICE_SOURCES
+} from '../data/practiceHall';
 import { SUBJECTS_CONFIG } from '../types/game';
 import type { SubjectId, HamNguyenTo } from '../types/game';
 import { useSect } from '../contexts/SectContext';
@@ -42,7 +42,7 @@ interface PracticeHallProps {
    onStartLessonPractice?: (lessonId: string) => void;
 }
 
-type HangSubjectId = SubjectId;
+type PracticeSubjectId = SubjectId;
 
 const MAT_THAT_CARDS = [
   {
@@ -150,7 +150,7 @@ const DEFAULT_TRACK = {
   notePlaceholder: 'Ghi chép đèn sách của con sau buổi học này...'
 };
 
-const SUBJECT_TRACKS: Partial<Record<HangSubjectId, {
+const SUBJECT_TRACKS: Partial<Record<PracticeSubjectId, {
   tag: string;
   title: string;
   description: string;
@@ -357,7 +357,7 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
     localStorage.setItem(`gameengg10-hang-notes:${currentUser.id}`, noteText);
   }, [currentUser?.id, noteText]);
 
-  const selectedSubject: HangSubjectId = activeSectId as HangSubjectId;
+  const selectedSubject: PracticeSubjectId = activeSectId as PracticeSubjectId;
   const subjectToolIds = getSubjectToolIds(selectedSubject);
 
   const subjectQuestions = useMemo(() => {
@@ -717,7 +717,7 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
 
             <div className="space-y-2 pt-1">
               {(() => {
-                const sources = HANG_SOURCES[selectedSubject] || [];
+                const sources = PRACTICE_SOURCES[selectedSubject as keyof typeof PRACTICE_SOURCES] || [];
                 if (sources.length === 0) {
                   return (
                     <div className="text-[10px] text-slate-500 italic py-2 text-center border border-dashed border-white/5 rounded-xl">
