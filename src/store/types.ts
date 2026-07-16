@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   UserProfile, PlayerProfile, Question, CategoryStat, PetState, TutorReward, RewardRedemption,
   ClassReward, ClassRewardRedemption,
   Challenge, HistoryLog,
@@ -10,7 +10,7 @@ import type {
 import type { Lesson } from '../data/lessons';
 
 /** Các tab chính của Phòng Điều Hành (TutorConsole) — nav đặt trên TopHUD */
-export type TutorConsoleTab = 'phong_hieu_truong' | 'van_quyen_cac' | 'tang_kinh_cac';
+export type TutorConsoleTab = 'management' | 'questions' | 'lectures';
 
 
 export interface StoreState {

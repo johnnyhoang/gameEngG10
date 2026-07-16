@@ -142,7 +142,7 @@ export const TutorConsole: React.FC = () => {
   }, [activeTab]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (activeTab === 'phong_hieu_truong' && isAdmin(currentUser?.role)) {
+    if (activeTab === 'management' && isAdmin(currentUser?.role)) {
       useGameState.getState().fetchAuditLogs();
     }
   }, [activeTab, currentUser?.role]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -188,7 +188,7 @@ export const TutorConsole: React.FC = () => {
 
       {/* Tab Panels */}
       <div className="glass-panel rounded-2xl border border-white/5 p-5">
-        {activeTab === 'phong_hieu_truong' && (
+        {activeTab === 'management' && (
           <div className="space-y-6">
             {/* Welcome & Dashboard: gọn một khối — lời chào ngắn + chỉ số + bảng vàng */}
             <div className="glass-panel rounded-2xl border border-synth-cyan/30 p-5 bg-gradient-to-r from-synth-cyan/10 via-transparent to-synth-magenta/5 relative overflow-hidden shadow-lg space-y-4">
@@ -421,7 +421,7 @@ export const TutorConsole: React.FC = () => {
           </div>
         )}
 
-                {activeTab === 'van_quyen_cac' && (
+                {activeTab === 'questions' && (
           <QuestionBankManager
             questions={questions}
             deleteQuestion={deleteQuestion}
@@ -431,7 +431,7 @@ export const TutorConsole: React.FC = () => {
           />
         )}
 
-        {activeTab === 'tang_kinh_cac' && (
+        {activeTab === 'lectures' && (
           <LectureBankManager />
         )}
       </div>
@@ -506,11 +506,11 @@ export const TutorConsole: React.FC = () => {
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-2 py-2 pb-3 grid grid-cols-3 gap-1 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)] text-center">
           <button
             onClick={() => {
-              setActiveTab('phong_hieu_truong');
+              setActiveTab('management');
               fetchAdminStudents();
             }}
             className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-              activeTab === 'phong_hieu_truong' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
+              activeTab === 'management' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
             }`}
           >
             <span className="text-base">🏫</span>
@@ -518,9 +518,9 @@ export const TutorConsole: React.FC = () => {
           </button>
 
           <button
-            onClick={() => setActiveTab('tang_kinh_cac')}
+            onClick={() => setActiveTab('lectures')}
             className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-              activeTab === 'tang_kinh_cac' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
+              activeTab === 'lectures' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
             }`}
           >
             <span className="text-base">📖</span>
@@ -528,9 +528,9 @@ export const TutorConsole: React.FC = () => {
           </button>
 
           <button
-            onClick={() => setActiveTab('van_quyen_cac')}
+            onClick={() => setActiveTab('questions')}
             className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-              activeTab === 'van_quyen_cac' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
+              activeTab === 'questions' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
             }`}
           >
             <span className="text-base">📚</span>

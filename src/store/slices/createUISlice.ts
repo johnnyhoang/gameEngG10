@@ -1,4 +1,4 @@
-// @ts-nocheck
+﻿// @ts-nocheck
 import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
 import type { HandbookPage, GradeTier, LearningContext, SubjectId, UiThemeId } from '../../types/game';
@@ -29,7 +29,7 @@ export const createUISlice: StateCreator<
   uiThemesByUser: {},
   helpPageId: null,
   handbookPages: ALL_HANDBOOK_PAGES,
-  tutorConsoleTab: 'phong_hieu_truong',
+  tutorConsoleTab: 'management',
 
   setSectModalOpen: (open) => set({ isSectModalOpen: open }),
 

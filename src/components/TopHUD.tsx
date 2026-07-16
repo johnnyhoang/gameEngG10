@@ -269,9 +269,9 @@ export const TopHUD: React.FC<TopHUDProps> = ({
           {isConsoleUser && currentScreen === 'tutor' && (
             <>
               {([
-                { tab: 'phong_hieu_truong', icon: '🏫', label: t('Hiệu Trưởng', 'Principal'), title: t('Phòng Giáo Viên / Phòng Hiệu Trưởng ✦ Trung tâm quản trị', 'Homeroom / Principal Office ✦ Admin Center') },
-                { tab: 'tang_kinh_cac', icon: '📖', label: t('Bài Giảng', 'Lectures'), title: t('Phòng Quản Lý Knowledge ✦ Tàng Kinh Các', 'Knowledge Room ✦ Lecture Bank') },
-                { tab: 'van_quyen_cac', icon: '📚', label: t('Đề Thi', 'Questions'), title: t('Ngân Hàng Đề Thi ✦ Văn Quyển Các', 'Question Bank ✦ Exam Vault') },
+                { tab: 'management', icon: '🏫', label: t('Hiệu Trưởng', 'Principal'), title: t('Phòng Giáo Viên / Phòng Hiệu Trưởng ✦ Trung tâm quản trị', 'Homeroom / Principal Office ✦ Admin Center') },
+                { tab: 'lectures', icon: '📖', label: t('Bài Giảng', 'Lectures'), title: t('Phòng Quản Lý Knowledge ✦ Tàng Kinh Các', 'Knowledge Room ✦ Lecture Bank') },
+                { tab: 'questions', icon: '📚', label: t('Đề Thi', 'Questions'), title: t('Ngân Hàng Đề Thi ✦ Văn Quyển Các', 'Question Bank ✦ Exam Vault') },
               ] as const).map(item => (
                 <button
                   key={item.tab}
