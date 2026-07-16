@@ -207,22 +207,22 @@ export const PRACTICE_TOOLS: PracticeTool[] = [
     actionLabel: 'Vào luyện'
   },
   {
-    id: 'biki3d',
-    title: 'Bí kíp 3D',
+    id: 'handbook3d',
+    title: 'Cẩm nang 3D',
     description: 'Dựng hình học không gian lớp 9, xoay 360°, tô mặt, đánh dấu vuông góc và phát lời giải từng bước.',
-    actionLabel: 'Mở Bí kíp'
+    actionLabel: 'Mở Cẩm nang'
   },
   {
-    id: 'bikiplane',
-    title: 'Bí kíp Hình học phẳng',
+    id: 'handbookplane',
+    title: 'Cẩm nang Hình học phẳng',
     description: 'Dựng tam giác, tứ giác, đường tròn; kéo thả điểm, kẻ đường cao, trung tuyến và kiểm tra quan hệ hình học.',
-    actionLabel: 'Mở Bí kíp'
+    actionLabel: 'Mở Cẩm nang'
   },
   {
-    id: 'bikigraph',
-    title: 'Bí kíp Đồ thị hàm số',
+    id: 'handbookgraph',
+    title: 'Cẩm nang Đồ thị hàm số',
     description: 'Vẽ hàm số bậc nhất, bậc hai với slider hệ số, xem giao điểm, đỉnh, trục đối xứng và phân tích từng bước.',
-    actionLabel: 'Mở Bí kíp'
+    actionLabel: 'Mở Cẩm nang'
   },
   {
     id: 'notes',

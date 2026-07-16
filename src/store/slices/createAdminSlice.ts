@@ -1,7 +1,7 @@
 // @ts-nocheck
 import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
-import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS, INITIAL_CHALLENGES, DEFAULT_REWARDS } from '../initialState';
+import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS, INITIAL_CHALLENGES, DEFAULT_TUTOR_REWARDS } from '../initialState';
 import { INITIAL_QUESTIONS } from '../../data/questions';
 import { INITIAL_LESSONS } from '../../data/lessons';
 import { DEFAULT_UI_THEME } from '../../theme/uiThemes';
@@ -18,7 +18,7 @@ export const createAdminSlice: StateCreator<
   [],
   [],
   Pick<StoreState, 
-    'adminStudents' | 'adminLinks' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'parentQuests' | 'markRewardDelivered' | 'cancelRedemption' | 'addParentReward' | 'deleteParentReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'addQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'adminSetEnergyConfig' | 'updateGameSettings' | 'addParentQuest' | 'completeParentQuest' | 'deleteParentQuest' | 'claimParentQuest' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
+    'adminStudents' | 'adminLinks' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'tutorQuests' | 'markRewardDelivered' | 'cancelRedemption' | 'addTutorReward' | 'deleteTutorReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'addQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'adminSetEnergyConfig' | 'updateGameSettings' | 'addTutorQuest' | 'completeTutorQuest' | 'deleteTutorQuest' | 'claimTutorQuest' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
   >
 > = (set, get) => ({
   adminStudents: [],
@@ -30,7 +30,7 @@ export const createAdminSlice: StateCreator<
 
   recentlyPlayedQuestionIds: [],
 
-  parentQuests: [],
+  tutorQuests: [],
 
   auditLogs: [],
 
@@ -106,9 +106,9 @@ export const createAdminSlice: StateCreator<
           logActivity(get, set, 'parent_approve', 'Hoàn trả Ruby', `Hủy lượt đổi "${redemption.rewardTitle}". Đã hoàn lại ${redemption.costRuby} Ruby`, redemption.costRuby, 0);
         },
 
-  addParentReward: (title, costRuby, quantity) => {
+  addTutorReward: (title, costRuby, quantity) => {
           const safeQuantity = Math.max(1, Math.round(quantity));
-          const newReward: ParentReward = {
+          const newReward: TutorReward = {
             id: `r-${Date.now()}`,
             title,
             costRuby,
@@ -122,7 +122,7 @@ export const createAdminSlice: StateCreator<
           logActivity(get, set, 'parent_approve', 'Thêm Quà Khuyến Học', `Quà mới: "${title}" trị giá ${costRuby} Ruby, số lượng ${safeQuantity}`, 0, 0);
         },
 
-  deleteParentReward: (rewardId) => {
+  deleteTutorReward: (rewardId) => {
           set((state: any) => ({
             rewards: state.rewards.filter(r => r.id !== rewardId)
           }));
@@ -263,7 +263,7 @@ export const createAdminSlice: StateCreator<
         }
       }));
 
-      logActivity(get, set, 'exercise', 'Miễn Phạt', `Đã gác lại câu hỏi mã số ${question.id} (Lý do: ${reason || 'Không rõ'}). Không trừ Ruby.`, 0, 0);
+      logActivity(get, set, 'exercise', 'Bỏ qua', `Đã gác lại câu hỏi mã số ${question.id} (Lý do: ${reason || 'Không rõ'}). Không trừ Ruby.`, 0, 0);
       return true;
     } catch (error) {
       console.error('Error flagging question:', error);
@@ -376,10 +376,10 @@ export const createAdminSlice: StateCreator<
           }
         },
 
-  addParentQuest: (title, description, rewardRuby) => {
+  addTutorQuest: (title, description, rewardRuby) => {
           set((state: any) => ({
-            parentQuests: [
-              ...state.parentQuests,
+            tutorQuests: [
+              ...state.tutorQuests,
               {
                 id: `pq-${Date.now()}`,
                 title,
@@ -392,30 +392,30 @@ export const createAdminSlice: StateCreator<
           }));
         },
 
-  completeParentQuest: (questId) => {
+  completeTutorQuest: (questId) => {
           set((state: any) => ({
-            parentQuests: state.parentQuests.map(q => 
+            tutorQuests: state.tutorQuests.map(q => 
               q.id === questId ? { ...q, status: 'completed' } : q
             )
           }));
         },
 
-  deleteParentQuest: (questId) => {
+  deleteTutorQuest: (questId) => {
           set((state: any) => ({
-            parentQuests: state.parentQuests.filter(q => q.id !== questId)
+            tutorQuests: state.tutorQuests.filter(q => q.id !== questId)
           }));
         },
 
-  claimParentQuest: (questId) => {
+  claimTutorQuest: (questId) => {
           let rubyReward = 0;
           let qTitle = '';
           set((state: any) => {
-            const quest = state.parentQuests.find(q => q.id === questId);
+            const quest = state.tutorQuests.find(q => q.id === questId);
             if (!quest || quest.status !== 'completed') return {};
             rubyReward = quest.rewardRuby;
             qTitle = quest.title;
             return {
-              parentQuests: state.parentQuests.map(q =>
+              tutorQuests: state.tutorQuests.map(q =>
                 q.id === questId ? { ...q, status: 'claimed' } : q
               ),
               player: {

@@ -92,7 +92,7 @@ export interface CylinderEvidence {
   sectionArea?: number;
 }
 
-export interface Biki3DStudioProps {
+export interface GeometryWorkshop3DProps {
   problemText: string;
 }
 

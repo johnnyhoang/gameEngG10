@@ -12,7 +12,7 @@ import { Scratchpad } from './Scratchpad';
 const GeometryApp = lazy(() => import('../miniapps/geometry').then(m => ({ default: m.GeometryApp })));
 import { ArrowRight, Award } from 'lucide-react';
 
-import { MienPhatDialog } from './MienPhatDialog';
+import { SkipDialog } from './SkipDialog';
 import { RubyConfirmModal } from './Common/RubyConfirmModal';
 import { sound } from '../utils/sound';
 import { toast } from '../utils/toast';
@@ -98,7 +98,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const [hintUsed, setHintUsed] = useState(false);
   const [revealedHint, setRevealedHint] = useState('');
   const [showScratchpad, setShowScratchpad] = useState(false);
-  const [showBikiBoard, setShowBikiBoard] = useState(false);
+  const [showHandbookBoard, setShowBikiBoard] = useState(false);
   const [isMuted, setIsMuted] = useState(sound.isMuted());
 
   const toggleMute = () => {
@@ -1064,19 +1064,19 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
             <div className="border border-synth-cyan/20 rounded-xl bg-synth-gray/10 overflow-hidden transition-all duration-300">
               <button
                 type="button"
-                onClick={() => setShowBikiBoard(!showBikiBoard)}
+                onClick={() => setShowBikiBoard(!showHandbookBoard)}
                 className="w-full px-4 py-2.5 bg-synth-cyan/10 hover:bg-synth-cyan/15 flex items-center justify-between text-xs font-orbitron font-bold text-synth-cyan uppercase tracking-wider cursor-pointer text-left"
               >
                 <span className="flex items-center gap-2">
                   📐 Bảng Vẽ Hình Học (Phẳng & Không Gian)
                   <span className="text-[10px] text-synth-text-muted lowercase font-normal italic">
-                    (Nhấp để {showBikiBoard ? 'thu gọn' : 'mở rộng'})
+                    (Nhấp để {showHandbookBoard ? 'thu gọn' : 'mở rộng'})
                   </span>
                 </span>
-                <span>{showBikiBoard ? '▼' : '▲'}</span>
+                <span>{showHandbookBoard ? '▼' : '▲'}</span>
               </button>
               
-              {showBikiBoard && (
+              {showHandbookBoard && (
                 <div className="p-3 border-t border-synth-cyan/15 bg-black/25 space-y-4">
                   <Suspense fallback={<div className="flex items-center justify-center h-32"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-synth-cyan"></div></div>}>
                     <GeometryApp
@@ -1175,9 +1175,9 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                 onClick={handleSkipConfused}
                 disabled={isBlocked || isAiGrading}
                 className="px-4 py-2.5 rounded-xl border border-red-500/40 hover:bg-red-500/10 text-red-400 font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 text-center flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
-                title={`Lượt Miễn Phạt hôm nay: ${remainingSkips}/3`}
+                title={`Lượt Bỏ qua hôm nay: ${remainingSkips}/3`}
               >
-                Miễn Phạt (Còn {remainingSkips}/3) 🧠
+                Bỏ qua (Còn {remainingSkips}/3) 🧠
               </button>
             );
           })()}
@@ -1185,7 +1185,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       </div>
 
       {isSkipDialogOpen && (
-        <MienPhatDialog
+        <SkipDialog
           onConfirm={handleConfirmSkip}
           onCancel={() => setIsSkipDialogOpen(false)}
         />

@@ -31,17 +31,17 @@ router.get('/admin/users', authMiddleware, async (req: any, res) => {
       `);
 
       const linksRes = await pool.query(`
-        SELECT l.id, l.parent_id, l.student_id, l.link_type, l.status,
-               u_parent.name as parent_name, u_parent.role as parent_role,
+        SELECT l.id, l.tutor_id, l.student_id, l.link_type, l.status,
+               u_parent.name as tutor_name, u_parent.role as tutor_role,
                u_student.name as student_name, u_student.role as student_role
         FROM ge10_class_links l
-        JOIN ge10_users u_parent ON l.parent_id = u_parent.id
+        JOIN ge10_users u_parent ON l.tutor_id = u_parent.id
         JOIN ge10_users u_student ON l.student_id = u_student.id
         WHERE l.status = 'active'
       `);
 
       return res.json({ users: usersRes.rows, links: linksRes.rows });
-    } else if (callerRole === 'parent' || callerRole === 'secondary_parent') {
+    } else if (callerRole === 'tutor' || callerRole === 'secondary_tutor') {
       // 2. Giáo viên: Chỉ lấy thông tin liên quan đến lớp của mình
       const studentsRes = await pool.query(`
         SELECT DISTINCT u.id, u.name, u.email, u.avatar_url, u.role,
@@ -49,7 +49,7 @@ router.get('/admin/users', authMiddleware, async (req: any, res) => {
         FROM ge10_users u
         JOIN ge10_class_links l ON u.id = l.student_id
         LEFT JOIN ge10_player_profiles p ON u.id = p.user_id
-        WHERE l.parent_id = $1 AND l.status = 'active' AND u.is_active = TRUE
+        WHERE l.tutor_id = $1 AND l.status = 'active' AND u.is_active = TRUE
       `, [callerProfileId]);
 
       const studentIds = studentsRes.rows.map(s => s.id);
@@ -72,7 +72,7 @@ router.get('/admin/users', authMiddleware, async (req: any, res) => {
         const coTeachersRes = await pool.query(`
           SELECT DISTINCT u.id, u.name, u.email, u.avatar_url, u.role
           FROM ge10_users u
-          JOIN ge10_class_links l ON u.id = l.parent_id
+          JOIN ge10_class_links l ON u.id = l.tutor_id
           WHERE l.student_id = ANY($1) AND l.status = 'active' AND u.id != $2 AND u.is_active = TRUE
         `, [studentIds, callerProfileId]);
 
@@ -88,11 +88,11 @@ router.get('/admin/users', authMiddleware, async (req: any, res) => {
 
         // Lấy tất cả links kết nối liên quan đến các học sinh này
         const linksRes = await pool.query(`
-          SELECT l.id, l.parent_id, l.student_id, l.link_type, l.status,
-                 u_parent.name as parent_name, u_parent.role as parent_role,
+          SELECT l.id, l.tutor_id, l.student_id, l.link_type, l.status,
+                 u_parent.name as tutor_name, u_parent.role as tutor_role,
                  u_student.name as student_name, u_student.role as student_role
           FROM ge10_class_links l
-          JOIN ge10_users u_parent ON l.parent_id = u_parent.id
+          JOIN ge10_users u_parent ON l.tutor_id = u_parent.id
           JOIN ge10_users u_student ON l.student_id = u_student.id
           WHERE l.student_id = ANY($1) AND l.status = 'active'
         `, [studentIds]);
@@ -193,7 +193,7 @@ router.post('/admin/update-user-role', authMiddleware, async (req: any, res) => 
         let roleSuffix = '';
         if (roleKey === 'truong_vien') roleSuffix = 'Viện Trưởng';
         else if (roleKey === 'pho_vien') roleSuffix = 'Phó Viện Trưởng';
-        else if (roleKey === 'parent') roleSuffix = 'Chủ Nhiệm Chính';
+        else if (roleKey === 'tutor') roleSuffix = 'Chủ Nhiệm Chính';
         else if (roleKey === 'student') roleSuffix = 'Học Sinh';
         
         const finalName = roleSuffix ? `${cleanName} (${roleSuffix})` : cleanName;
@@ -239,7 +239,7 @@ router.get('/admin/vice-principal-applications', authMiddleware, async (req: any
       SELECT l.id, l.status, l.created_at, 
              u.id as teacher_id, u.name as teacher_name, u.email as teacher_email, u.avatar_url as teacher_avatar, u.account_id as teacher_account_id
       FROM ge10_class_links l
-      JOIN ge10_users u ON l.parent_id = u.id
+      JOIN ge10_users u ON l.tutor_id = u.id
       WHERE l.link_type = 'vice_principal' AND l.status = 'pending'
       ORDER BY l.created_at DESC
     `);
@@ -276,7 +276,7 @@ router.post('/admin/respond-vice-principal', authMiddleware, async (req: any, re
       return res.status(404).json({ error: 'Đơn ứng tuyển không tồn tại hoặc đã được xử lý.' });
     }
     const appRow = appCheck.rows[0];
-    const teacherProfileId = appRow.parent_id;
+    const teacherProfileId = appRow.tutor_id;
 
     // 2. Lấy thông tin tài khoản giáo viên
     const teacherRes = await pool.query(
@@ -332,7 +332,7 @@ router.post('/admin/respond-vice-principal', authMiddleware, async (req: any, re
   }
 });
 
-// GET /api/admin/audit-logs: Fetches all admin/parent audit logs (only for truong_vien)
+// GET /api/admin/audit-logs: Fetches all admin/Tutor Audit Logs (only for truong_vien)
 router.get('/admin/audit-logs', authMiddleware, async (req: any, res) => {
   const adminId = req.profile.id;
   try {
@@ -393,7 +393,7 @@ router.post('/admin/deliver-reward', authMiddleware, async (req: any, res) => {
           logId,
           studentUserId,
           Date.now(),
-          'parent_approve',
+          'tutor_approve',
           'Đã Trao Quà',
           `Viện Trưởng xác nhận đã trao "${reward_title}" ngoài đời.`,
           0,
@@ -452,7 +452,7 @@ router.post('/admin/cancel-redemption', authMiddleware, async (req: any, res) =>
 
       if (reward_id) {
         await client.query(
-          'UPDATE ge10_parent_rewards SET remaining_quantity = remaining_quantity + 1 WHERE id = $1',
+          'UPDATE ge10_tutor_rewards SET remaining_quantity = remaining_quantity + 1 WHERE id = $1',
           [reward_id]
         );
       }
@@ -465,7 +465,7 @@ router.post('/admin/cancel-redemption', authMiddleware, async (req: any, res) =>
           logId,
           studentUserId,
           Date.now(),
-          'parent_approve',
+          'tutor_approve',
           'Viện Trưởng hoàn trả Ruby',
           `Hủy lượt đổi "${reward_title}". Đã hoàn lại ${cost_ruby} Ruby`,
           cost_ruby,
@@ -487,7 +487,7 @@ router.post('/admin/cancel-redemption', authMiddleware, async (req: any, res) =>
   }
 });
 
-// POST /api/admin/refill-energy: Sets a student's energy to a percentage of the max when parent clicks "⚡ Nạp Năng Lượng"
+// POST /api/admin/refill-energy: Sets a student's energy to a percentage of the max when tutor clicks "⚡ Nạp Năng Lượng"
 router.post('/admin/refill-energy', authMiddleware, async (req: any, res: any) => {
   const adminId = req.profile.id;
   try {
@@ -682,7 +682,7 @@ router.get('/admin/student-profile', authMiddleware, async (req: any, res) => {
     const statsRes = await pool.query('SELECT * FROM ge10_category_stats WHERE user_id = $1', [studentUserId]);
     const logsRes = await pool.query('SELECT * FROM ge10_history_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 100', [studentUserId]);
     await ensureDefaultRewards(studentUserId as string);
-    const rewardsRes = await pool.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [studentUserId]);
+    const rewardsRes = await pool.query('SELECT * FROM ge10_tutor_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [studentUserId]);
     const redemptionsRes = await pool.query('SELECT * FROM ge10_reward_redemptions WHERE user_id = $1 ORDER BY timestamp DESC', [studentUserId]);
 
     const categoryStats: any = {};
@@ -767,7 +767,7 @@ router.get('/admin/lessons', authMiddleware, async (req: any, res) => {
   if (![6, 7, 8, 9, 10, 11, 12].includes(gradeTier)) return res.status(400).json({ error: 'gradeTier is required.' });
   try {
     const check = await pool.query(
-      "SELECT id FROM ge10_users WHERE id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien')",
+      "SELECT id FROM ge10_users WHERE id = $1 AND is_active = TRUE AND role IN ('tutor', 'secondary_tutor', 'truong_vien', 'pho_vien')",
       [accountId]
     );
     if (check.rowCount === 0) {
@@ -792,7 +792,7 @@ router.post('/admin/lessons', authMiddleware, async (req: any, res) => {
 
   try {
     const check = await pool.query(
-      "SELECT id, role FROM ge10_users WHERE id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien') LIMIT 1",
+      "SELECT id, role FROM ge10_users WHERE id = $1 AND is_active = TRUE AND role IN ('tutor', 'secondary_tutor', 'truong_vien', 'pho_vien') LIMIT 1",
       [accountId]
     );
     if (check.rowCount === 0) {
@@ -827,7 +827,7 @@ router.put('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) => 
 
   try {
     const check = await pool.query(
-      "SELECT id, role FROM ge10_users WHERE id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien') LIMIT 1",
+      "SELECT id, role FROM ge10_users WHERE id = $1 AND is_active = TRUE AND role IN ('tutor', 'secondary_tutor', 'truong_vien', 'pho_vien') LIMIT 1",
       [accountId]
     );
     if (check.rowCount === 0) {
@@ -861,7 +861,7 @@ router.delete('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) 
 
   try {
     const check = await pool.query(
-      "SELECT id, role FROM ge10_users WHERE id = $1 AND is_active = TRUE AND role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien') LIMIT 1",
+      "SELECT id, role FROM ge10_users WHERE id = $1 AND is_active = TRUE AND role IN ('tutor', 'secondary_tutor', 'truong_vien', 'pho_vien') LIMIT 1",
       [accountId]
     );
     if (check.rowCount === 0) {

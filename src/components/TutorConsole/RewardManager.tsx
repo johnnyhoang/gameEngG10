@@ -9,8 +9,8 @@ interface RewardManagerProps {
   activeRewardCatalog: any[];
   activeRedemptions: any[];
   canApproveReward: boolean;
-  addParentReward: (title: string, costRuby: number, quantity: number) => void;
-  deleteParentReward: (rewardId: string) => void;
+  addTutorReward: (title: string, costRuby: number, quantity: number) => void;
+  deleteTutorReward: (rewardId: string) => void;
   markRewardDelivered: (redemptionId: string) => void;
   cancelRedemption: (redemptionId: string) => void;
   adminMarkRewardDelivered: (studentId: string, redemptionId: string) => Promise<void>;
@@ -22,8 +22,8 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
   activeRewardCatalog,
   activeRedemptions,
   canApproveReward,
-  addParentReward,
-  deleteParentReward,
+  addTutorReward,
+  deleteTutorReward,
   markRewardDelivered,
   cancelRedemption,
   adminMarkRewardDelivered,
@@ -128,7 +128,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
     e.preventDefault();
     if (!rewardTitle.trim()) { toast.error('Vui lòng điền tên phần quà!'); return; }
     if (rewardCost <= 0 || rewardQuantity <= 0) { toast.error('Chi phí và số lượng phải lớn hơn 0!'); return; }
-    addParentReward(rewardTitle.trim(), rewardCost, rewardQuantity);
+    addTutorReward(rewardTitle.trim(), rewardCost, rewardQuantity);
     toast.success('Đã tạo phần quà mới thành công!');
     setRewardTitle(''); setRewardCost(200); setRewardQuantity(5);
     setIsPersonalFormOpen(false);
@@ -375,7 +375,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                             {reward.costRuby} Ruby · Còn {reward.remainingQuantity}/{reward.quantity}
                           </span>
                           {canApproveReward && (
-                            <button onClick={() => deleteParentReward(reward.id)} className="text-synth-magenta hover:opacity-70 cursor-pointer">
+                            <button onClick={() => deleteTutorReward(reward.id)} className="text-synth-magenta hover:opacity-70 cursor-pointer">
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
                           )}

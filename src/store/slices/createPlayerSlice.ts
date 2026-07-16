@@ -1,7 +1,7 @@
 // @ts-nocheck
 import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
-import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS, INITIAL_CHALLENGES, DEFAULT_REWARDS, THEME_UNLOCK_COST, FREE_UI_THEME } from '../initialState';
+import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS, INITIAL_CHALLENGES, DEFAULT_TUTOR_REWARDS, THEME_UNLOCK_COST, FREE_UI_THEME } from '../initialState';
 import { INITIAL_QUESTIONS } from '../../data/questions';
 import { INITIAL_LESSONS } from '../../data/lessons';
 import { DEFAULT_UI_THEME, UI_THEMES } from '../../theme/uiThemes';
@@ -44,7 +44,7 @@ export const createPlayerSlice: StateCreator<
 
   categoryStats: {},
 
-  rewards: DEFAULT_REWARDS,
+  rewards: DEFAULT_TUTOR_REWARDS,
 
   rewardRedemptions: [],
 

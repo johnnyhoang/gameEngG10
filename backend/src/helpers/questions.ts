@@ -61,7 +61,7 @@ export const persistCustomQuestion = async (userId: string, question: any) => {
 };
 
 export const ensureDefaultRewards = async (userId: string) => {
-  const rewardsRes = await pool.query('SELECT id FROM ge10_parent_rewards WHERE user_id = $1', [userId]);
+  const rewardsRes = await pool.query('SELECT id FROM ge10_tutor_rewards WHERE user_id = $1', [userId]);
   if (rewardsRes.rowCount === 0) {
     const defaultRewards = [
       { id: `default-rew-1-${userId}`, title: '15 phút chơi game', cost_ruby: 150, quantity: 999999 },
@@ -73,7 +73,7 @@ export const ensureDefaultRewards = async (userId: string) => {
 
     for (const dr of defaultRewards) {
       await pool.query(
-        `INSERT INTO ge10_parent_rewards (id, user_id, title, cost_ruby, quantity, remaining_quantity, timestamp)
+        `INSERT INTO ge10_tutor_rewards (id, user_id, title, cost_ruby, quantity, remaining_quantity, timestamp)
          VALUES ($1, $2, $3, $4, $5, $6, $7)
          ON CONFLICT (id) DO NOTHING`,
         [dr.id, userId, dr.title, dr.cost_ruby, dr.quantity, dr.quantity, Date.now()]

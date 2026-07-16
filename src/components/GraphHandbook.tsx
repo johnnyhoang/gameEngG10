@@ -37,7 +37,7 @@ interface GraphAiResult {
   warnings: string[];
 }
 
-interface BikiDoThiHamSoProps {
+interface GraphHandbookProps {
   problemText?: string;
 }
 
@@ -93,7 +93,7 @@ function toScreenPoint(x: number, y: number, viewport: { xMin: number; xMax: num
   };
 }
 
-export function BikiDoThiHamSo({ problemText = '' }: BikiDoThiHamSoProps) {
+export function GraphHandbook({ problemText = '' }: GraphHandbookProps) {
   const svgRef = useRef<SVGSVGElement | null>(null);
   const [prompt, setPrompt] = useState(problemText);
   const [commandText, setCommandText] = useState('');

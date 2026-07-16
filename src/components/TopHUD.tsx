@@ -6,7 +6,7 @@ import { getStudentRankForLevel, SUBJECTS_CONFIG, getGradeTierConfig } from '../
 import { isLightTheme } from '../theme/uiThemes';
 
 interface TopHUDProps {
-  currentScreen: 'map' | 'arena' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'practice' | 'profile';
+  currentScreen: 'map' | 'arena' | 'play' | 'shop' | 'tutor' | 'pet' | 'logs' | 'practice' | 'profile';
   onOpenShop: () => void;
   onOpenParent: () => void;
   onOpenPet: () => void;
@@ -25,8 +25,8 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   const tickEnergyRegen = useGameState(state => state.tickEnergyRegen);
   const uiTheme = useGameState(state => state.uiTheme);
   const classLinks = useGameState(state => state.classLinks);
-  const parentConsoleTab = useGameState(state => state.parentConsoleTab);
-  const setParentConsoleTab = useGameState(state => state.setParentConsoleTab);
+  const tutorConsoleTab = useGameState(state => state.tutorConsoleTab);
+  const setTutorConsoleTab = useGameState(state => state.setTutorConsoleTab);
   const currentSubject = useGameState(state => state.currentSubject);
   const activeGradeTier = useGameState(state => state.activeGradeTier);
   const setSectModalOpen = useGameState(state => state.setSectModalOpen);
@@ -123,12 +123,12 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                 <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase font-orbitron shrink-0 ${
                   currentUser?.role === 'truong_vien' ? 'bg-synth-magenta/30 text-synth-magenta border border-synth-magenta/20' :
                   currentUser?.role === 'pho_vien' ? 'bg-purple-500/30 text-purple-400 border border-purple-500/20' :
-                  currentUser?.role === 'parent' ? 'bg-synth-orange/30 text-synth-orange border border-synth-orange/20' :
+                  currentUser?.role === 'tutor' ? 'bg-synth-orange/30 text-synth-orange border border-synth-orange/20' :
                   'bg-pink-500/30 text-pink-400 border border-pink-500/20'
                 }`}>
                   {currentUser?.role === 'truong_vien' ? 'Viện Trưởng 👑' :
                    currentUser?.role === 'pho_vien' ? 'Phó Viện Trưởng 🛡️' :
-                   currentUser?.role === 'parent' ? 'Chủ Nhiệm Chính 📋' : 'Chủ Nhiệm Phụ 📋'}
+                   currentUser?.role === 'tutor' ? 'Chủ Nhiệm Chính 📋' : 'Chủ Nhiệm Phụ 📋'}
                 </span>
               )}
             </div>
@@ -264,7 +264,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
           )}
 
           {/* Nav chính Phòng Điều Hành cho Giáo viên / Ban Giám Hiệu — cùng vị trí với nav học sinh */}
-          {isConsoleUser && currentScreen === 'parent' && (
+          {isConsoleUser && currentScreen === 'tutor' && (
             <>
               {([
                 { tab: 'phong_hieu_truong', icon: '⚙️', label: 'Hiệu Trưởng', title: 'Phòng Hiệu Trưởng — Trung tâm quản trị' },
@@ -274,10 +274,10 @@ export const TopHUD: React.FC<TopHUDProps> = ({
               ] as const).map(item => (
                 <button
                   key={item.tab}
-                  onClick={() => setParentConsoleTab(item.tab)}
+                  onClick={() => setTutorConsoleTab(item.tab)}
                   title={item.title}
                   className={navBtnClass(
-                    parentConsoleTab === item.tab,
+                    tutorConsoleTab === item.tab,
                     isUnicorn ? 'bg-gradient-to-r from-fuchsia-400 to-cyan-300 border-violet-200 text-violet-900 shadow-[0_0_10px_rgba(192,132,252,0.2)]' : 'bg-synth-cyan border-synth-cyan text-black shadow-[0_0_12px_#00f0ff]',
                     isUnicorn ? 'bg-white/50 border-violet-200/50 text-violet-700 hover:bg-white/80' : 'bg-transparent border-synth-cyan/50 text-synth-cyan hover:bg-synth-cyan/10'
                   )}

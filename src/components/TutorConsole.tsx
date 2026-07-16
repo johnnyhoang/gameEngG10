@@ -4,23 +4,23 @@ import { isAdmin, isParentRole } from '../utils/roleHelpers';
 import { toast } from '../utils/toast';
 
 // Import child managers
-import { AdminConnectionManager } from './ParentConsole/AdminConnectionManager';
+import { AdminConnectionManager } from './TutorConsole/AdminConnectionManager';
 import { ProfilePage } from './ProfilePage';
-import { ClassLinksManager } from './ParentConsole/ClassLinksManager';
-import { SettingsManager } from './ParentConsole/SettingsManager';
-import { StudentProfileView } from './ParentConsole/StudentProfileView';
-import { QuestionBankManager } from './ParentConsole/QuestionBankManager';
-import { LectureBankManager } from './ParentConsole/LectureBankManager';
-import { OrgChart } from './ParentConsole/OrgChart';
-import { StudentDirectory } from './ParentConsole/StudentDirectory';
-import { RoleManager } from './ParentConsole/RoleManager';
-import { VicePrincipalApplicationsManager } from './ParentConsole/VicePrincipalApplicationsManager';
+import { ClassLinksManager } from './TutorConsole/ClassLinksManager';
+import { SettingsManager } from './TutorConsole/SettingsManager';
+import { StudentProfileView } from './TutorConsole/StudentProfileView';
+import { QuestionBankManager } from './TutorConsole/QuestionBankManager';
+import { LectureBankManager } from './TutorConsole/LectureBankManager';
+import { OrgChart } from './TutorConsole/OrgChart';
+import { StudentDirectory } from './TutorConsole/StudentDirectory';
+import { RoleManager } from './TutorConsole/RoleManager';
+import { VicePrincipalApplicationsManager } from './TutorConsole/VicePrincipalApplicationsManager';
 
-export const ParentConsole: React.FC = () => {
+export const TutorConsole: React.FC = () => {
   const markRewardDelivered = useGameState(state => state.markRewardDelivered);
   const cancelRedemption = useGameState(state => state.cancelRedemption);
-  const addParentReward = useGameState(state => state.addParentReward);
-  const deleteParentReward = useGameState(state => state.deleteParentReward);
+  const addTutorReward = useGameState(state => state.addTutorReward);
+  const deleteTutorReward = useGameState(state => state.deleteTutorReward);
 
   // Admin and member management states
   const currentUser = useGameState(state => state.currentUser);
@@ -43,10 +43,10 @@ export const ParentConsole: React.FC = () => {
   const addQuestion = useGameState(state => state.addQuestion);
   const addHandbookPage = useGameState(state => state.addHandbookPage);
 
-  const parentQuests = useGameState(state => state.parentQuests || []);
-  const addParentQuest = useGameState(state => state.addParentQuest);
-  const completeParentQuest = useGameState(state => state.completeParentQuest);
-  const deleteParentQuest = useGameState(state => state.deleteParentQuest);
+  const tutorQuests = useGameState(state => state.tutorQuests || []);
+  const addTutorQuest = useGameState(state => state.addTutorQuest);
+  const completeTutorQuest = useGameState(state => state.completeTutorQuest);
+  const deleteTutorQuest = useGameState(state => state.deleteTutorQuest);
   const auditLogs = useGameState(state => state.auditLogs || []);
   const fetchAuditLogs = useGameState(state => state.fetchAuditLogs);
   const skipReviews = useGameState(state => state.skipReviews || []);
@@ -68,8 +68,8 @@ export const ParentConsole: React.FC = () => {
   const setUiTheme = useGameState(state => state.setUiTheme);
 
   // Tab chính đọc từ store — nav chính nằm trên TopHUD (thanh MIKAWAII), không còn nav riêng trong trang
-  const activeTab = useGameState(state => state.parentConsoleTab);
-  const setActiveTab = useGameState(state => state.setParentConsoleTab);
+  const activeTab = useGameState(state => state.tutorConsoleTab);
+  const setActiveTab = useGameState(state => state.setTutorConsoleTab);
   const [thienCoSubTab, setThienCoSubTab] = useState<'dashboard' | 'org_chart' | 'staff' | 'settings'>('dashboard');
   const [viewingStudentId, setViewingStudentId] = useState<string | null>(null);
 
@@ -471,15 +471,15 @@ export const ParentConsole: React.FC = () => {
               // Reward props
               activeRewardCatalog={activeRewardCatalog}
               activeRedemptions={activeRedemptions}
-              addParentReward={addParentReward as any}
-              deleteParentReward={deleteParentReward as any}
+              addTutorReward={addTutorReward as any}
+              deleteTutorReward={deleteTutorReward as any}
               markRewardDelivered={markRewardDelivered as any}
               cancelRedemption={cancelRedemption as any}
               // Quest props
-              parentQuests={parentQuests}
-              addParentQuest={addParentQuest as any}
-              completeParentQuest={completeParentQuest as any}
-              deleteParentQuest={deleteParentQuest as any}
+              tutorQuests={tutorQuests}
+              addTutorQuest={addTutorQuest as any}
+              completeTutorQuest={completeTutorQuest as any}
+              deleteTutorQuest={deleteTutorQuest as any}
             />
           ) : (
             <ProfilePage

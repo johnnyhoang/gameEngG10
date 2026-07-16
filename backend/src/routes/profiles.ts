@@ -52,7 +52,7 @@ router.post('/profiles/quick-start', authMiddleware, async (req: any, res) => {
   const { role } = req.body;
 
   if (!accountId) return res.status(401).json({ error: 'Unauthorized: missing accountId' });
-  if (!role || (role !== 'student' && role !== 'parent')) {
+  if (!role || (role !== 'student' && role !== 'tutor')) {
     return res.status(400).json({ error: 'Invalid or missing role' });
   }
 
@@ -85,7 +85,7 @@ router.post('/profiles/quick-start', authMiddleware, async (req: any, res) => {
     await pool.query(`INSERT INTO ge10_pet_states (user_id) VALUES ($1)`, [profileId]);
     
     // Ensure default rewards exist for parent
-    if (role === 'parent') {
+    if (role === 'tutor') {
       await ensureDefaultRewards(profileId);
     }
 
@@ -152,7 +152,7 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
     const logsRes = await pool.query('SELECT * FROM ge10_history_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 200', [userId]);
     // 6. Fetch reward catalog (Danh Mục Quà Khuyến Học — CORE_SPECS §3.2)
     await ensureDefaultRewards(userId);
-    const rewardsRes = await pool.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
+    const rewardsRes = await pool.query('SELECT * FROM ge10_tutor_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
     // 6b. Fetch lượt đổi quà (RewardRedemption)
     const redemptionsRes = await pool.query('SELECT * FROM ge10_reward_redemptions WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
     // 7. Fetch challenges
@@ -449,7 +449,7 @@ router.post('/profile/:id/sync', authMiddleware, activeProfileMiddleware, async 
           const petRes = await client.query('SELECT * FROM ge10_pet_states WHERE user_id = $1', [userId]);
           const statsRes = await client.query('SELECT * FROM ge10_category_stats WHERE user_id = $1', [userId]);
           const logsRes = await client.query('SELECT * FROM ge10_history_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 200', [userId]);
-          const rewardsRes = await client.query('SELECT * FROM ge10_parent_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
+          const rewardsRes = await client.query('SELECT * FROM ge10_tutor_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
           const redemptionsRes = await client.query('SELECT * FROM ge10_reward_redemptions WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
           const challengesRes = await client.query('SELECT * FROM ge10_user_challenges WHERE user_id = $1', [userId]);
           const progressRes = await client.query('SELECT * FROM ge10_user_lessons_progress WHERE user_id = $1', [userId]);
@@ -672,7 +672,7 @@ router.post('/profile/:id/sync', authMiddleware, activeProfileMiddleware, async 
         values.push(r.id, userId, r.title, r.costRuby, r.quantity, r.remainingQuantity, r.timestamp);
       });
       await client.query(
-        `INSERT INTO ge10_parent_rewards (id, user_id, title, cost_ruby, quantity, remaining_quantity, timestamp)
+        `INSERT INTO ge10_tutor_rewards (id, user_id, title, cost_ruby, quantity, remaining_quantity, timestamp)
          VALUES ${placeholders.join(', ')}
          ON CONFLICT (id) DO UPDATE SET
            title = EXCLUDED.title,

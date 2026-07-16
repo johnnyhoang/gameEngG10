@@ -8,11 +8,11 @@ export const ProfileSelectionScreen: React.FC = () => {
   const quickStartProfile = useGameState(state => state.quickStartProfile);
   const logout = useGameState(state => state.logout);
   const profilesLoading = useGameState(state => state.profilesLoading);
-  const [quickStarting, setQuickStarting] = useState<'student' | 'parent' | null>(null);
+  const [quickStarting, setQuickStarting] = useState<'student' | 'tutor' | null>(null);
   const [selectingProfileId, setSelectingProfileId] = useState<string | null>(null);
 
   const existingStudent = availableProfiles.find((p: any) => p.role === 'student');
-  const existingParent = availableProfiles.find((p: any) => p.role === 'parent' || p.role === 'secondary_parent');
+  const existingParent = availableProfiles.find((p: any) => p.role === 'tutor' || p.role === 'secondary_tutor');
   const existingHieuPho = availableProfiles.find((p: any) => p.role === 'pho_vien');
   const existingHieuTruong = availableProfiles.find((p: any) => p.role === 'truong_vien');
 
@@ -24,7 +24,7 @@ export const ProfileSelectionScreen: React.FC = () => {
     }
   };
 
-  const handleSelectRole = async (role: 'student' | 'parent' | 'pho_vien' | 'truong_vien') => {
+  const handleSelectRole = async (role: 'student' | 'tutor' | 'pho_vien' | 'truong_vien') => {
     if (selectingProfileId || quickStarting) return;
 
     if (role === 'student') {
@@ -43,7 +43,7 @@ export const ProfileSelectionScreen: React.FC = () => {
           setQuickStarting(null);
         }
       }
-    } else if (role === 'parent') {
+    } else if (role === 'tutor') {
       if (existingParent) {
         setSelectingProfileId(existingParent.id);
         try {
@@ -52,9 +52,9 @@ export const ProfileSelectionScreen: React.FC = () => {
           setSelectingProfileId(null);
         }
       } else {
-        setQuickStarting('parent');
+        setQuickStarting('tutor');
         try {
-          await quickStartProfile('parent');
+          await quickStartProfile('tutor');
         } finally {
           setQuickStarting(null);
         }
@@ -91,14 +91,14 @@ export const ProfileSelectionScreen: React.FC = () => {
       theme: existingStudent?.uiTheme || 'current',
     },
     {
-      key: 'parent',
+      key: 'tutor',
       label: 'Giáo Viên 📋',
       icon: <Users className="w-5 h-5 text-synth-orange" />,
       colorClass: 'border-synth-orange/30 hover:border-synth-orange hover:bg-synth-orange/5 text-synth-orange shadow-[0_0_15px_rgba(255,159,28,0.03)]',
       exists: !!existingParent,
       name: existingParent?.name || 'Chưa khởi tạo',
       desc: 'Quản lý lớp, phê duyệt quà & nhiệm vụ',
-      isLoading: quickStarting === 'parent',
+      isLoading: quickStarting === 'tutor',
       isSelecting: selectingProfileId === existingParent?.id,
       theme: existingParent?.uiTheme || 'current',
     },

@@ -3,7 +3,7 @@ import { useGameState } from '../../hooks/useGameState';
 
 interface SearchSuggestProps {
   placeholder: string;
-  roleFilter?: 'student' | 'parent' | 'secondary_parent' | 'admin_board';
+  roleFilter?: 'student' | 'tutor' | 'secondary_tutor' | 'admin_board';
   onSelect: (user: { id: string; name: string; email: string; avatar_url?: string }) => void;
   className?: string;
   value?: string;
@@ -162,7 +162,7 @@ export const SearchSuggest: React.FC<SearchSuggestProps> = ({
                 <span className="block text-[10px] text-slate-400 truncate">{item.email}</span>
               </div>
               <span className="text-[9px] uppercase px-1.5 py-0.5 rounded font-orbitron bg-white/5 border border-white/10 text-slate-400">
-                {item.role === 'parent' || item.role === 'secondary_parent' ? 'Giáo Viên' : 'Học Sinh'}
+                {item.role === 'tutor' || item.role === 'secondary_tutor' ? 'Giáo Viên' : 'Học Sinh'}
               </span>
             </div>
           ))}

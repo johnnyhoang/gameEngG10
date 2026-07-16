@@ -1,7 +1,7 @@
 // @ts-nocheck
 import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
-import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS, INITIAL_CHALLENGES, DEFAULT_REWARDS } from '../initialState';
+import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS, INITIAL_CHALLENGES, DEFAULT_TUTOR_REWARDS } from '../initialState';
 import { INITIAL_QUESTIONS } from '../../data/questions';
 import { INITIAL_LESSONS } from '../../data/lessons';
 import { DEFAULT_UI_THEME } from '../../theme/uiThemes';
@@ -62,7 +62,7 @@ export const createAuthSlice: StateCreator<
         activityProgress: {},
         explorationProgress: {},
         pageExplorationStates: {},
-        rewards: DEFAULT_REWARDS,
+        rewards: DEFAULT_TUTOR_REWARDS,
         rewardRedemptions: [],
         classRewards: [],
         classRewardRedemptions: [],
@@ -110,7 +110,7 @@ export const createAuthSlice: StateCreator<
         player: data.player || INITIAL_PLAYER,
         pet: data.pet || INITIAL_PET,
         categoryStats: data.categoryStats || {},
-        rewards: data.rewards || DEFAULT_REWARDS,
+        rewards: data.rewards || DEFAULT_TUTOR_REWARDS,
         rewardRedemptions: data.rewardRedemptions || [],
         challenges: data.challenges || INITIAL_CHALLENGES,
         lessonsProgress: data.lessonsProgress || {},
@@ -144,7 +144,7 @@ export const createAuthSlice: StateCreator<
     }
   },
 
-  createProfile: async (role: 'student' | 'parent', name: string) => {
+  createProfile: async (role: 'student' | 'tutor', name: string) => {
     try {
       await authService.createProfile(role, name);
       await get().fetchProfiles();
@@ -153,7 +153,7 @@ export const createAuthSlice: StateCreator<
     }
   },
 
-  quickStartProfile: async (role: 'student' | 'parent') => {
+  quickStartProfile: async (role: 'student' | 'tutor') => {
     try {
       const data = await authService.quickStartProfile(role);
       if (data.profile?.id) {
@@ -408,7 +408,7 @@ export const createAuthSlice: StateCreator<
           activityProgress: {},
           explorationProgress: {},
           pageExplorationStates: {},
-          rewards: DEFAULT_REWARDS,
+          rewards: DEFAULT_TUTOR_REWARDS,
           rewardRedemptions: [],
           classRewards: [],
           classRewardRedemptions: [],
@@ -422,7 +422,7 @@ export const createAuthSlice: StateCreator<
           selectedStudentProfile: null,
           failedQuestionIds: [],
           recentlyPlayedQuestionIds: [],
-          parentQuests: [],
+          tutorQuests: [],
           helpPageId: null,
           uiTheme: DEFAULT_UI_THEME as any,
           currentSubject: 'english',

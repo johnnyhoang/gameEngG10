@@ -70,7 +70,7 @@ export const ExplanationBox: React.FC<ExplanationBoxProps> = ({
 
         {aiSuggestions && aiSuggestions.length > 0 && (
           <div className="text-theme-text-highlight/95 space-y-1 mt-2">
-            <p className="font-bold uppercase tracking-wider text-[10px] text-theme-text-info">Bí kíp sửa bài</p>
+            <p className="font-bold uppercase tracking-wider text-[10px] text-theme-text-info">Cẩm nang sửa bài</p>
             <ul className="list-disc pl-4 space-y-0.5 text-theme-text-highlight/80">
               {aiSuggestions.map((item, idx) => (
                 <li key={idx}>{item}</li>

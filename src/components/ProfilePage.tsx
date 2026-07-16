@@ -5,7 +5,7 @@ import type { UiThemeId, UserProfile } from '../types/game';
 import { useGameState, THEME_UNLOCK_COST } from '../hooks/useGameState';
 import { getStudentRankForLevel } from '../types/game';
 import { toast } from '../utils/toast';
-import { GiangHoCamNang } from './GiangHoCamNang';
+import { AcademyHandbook } from './AcademyHandbook';
 import { ActivityLog } from './ActivityLog';
 import { RubyConfirmModal } from './Common/RubyConfirmModal';
 
@@ -304,7 +304,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </div>
 
             {isCamNangOpen && (
-              <GiangHoCamNang
+              <AcademyHandbook
                 isOpen={isCamNangOpen}
                 onClose={() => setIsCamNangOpen(false)}
               />

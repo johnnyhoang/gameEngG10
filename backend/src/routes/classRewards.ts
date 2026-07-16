@@ -8,7 +8,7 @@ import { ensureDefaultClassRewards } from '../helpers/questions.js';
 const router = express.Router();
 router.use(authMiddleware, activeProfileMiddleware);
 
-const TEACHER_ROLES = ['parent', 'secondary_parent', 'truong_vien', 'pho_vien'];
+const TEACHER_ROLES = ['tutor', 'secondary_tutor', 'truong_vien', 'pho_vien'];
 
 async function getUserRole(profileId: string): Promise<string | null> {
   const res = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [profileId]);
@@ -55,10 +55,10 @@ router.get('/class-rewards', async (req: any, res) => {
 
     // Student: check if in a class
     const linksRes = await pool.query(
-      `SELECT parent_id FROM ge10_class_links WHERE student_id = $1 AND status = 'active'`,
+      `SELECT tutor_id FROM ge10_class_links WHERE student_id = $1 AND status = 'active'`,
       [profileId]
     );
-    const teacherIds = linksRes.rows.map((r: any) => r.parent_id);
+    const teacherIds = linksRes.rows.map((r: any) => r.tutor_id);
 
     if (teacherIds.length === 0) {
       return res.json({ rewards: [], redemptions: [], isOrphan: true });
@@ -174,7 +174,7 @@ router.post('/class-rewards/:id/redeem', async (req: any, res) => {
 
     // Verify student is linked to this teacher
     const linkCheck = await pool.query(
-      `SELECT id FROM ge10_class_links WHERE student_id = $1 AND parent_id = $2 AND status = 'active'`,
+      `SELECT id FROM ge10_class_links WHERE student_id = $1 AND tutor_id = $2 AND status = 'active'`,
       [profileId, reward.teacher_id]
     );
     if (linkCheck.rows.length === 0) {

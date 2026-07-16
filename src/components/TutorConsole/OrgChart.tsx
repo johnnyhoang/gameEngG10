@@ -22,11 +22,11 @@ export const OrgChart: React.FC<OrgChartProps> = ({
   }, [adminStudents]);
 
   const primaryTeachers = useMemo(() => {
-    return adminStudents.filter(u => u.role === 'parent');
+    return adminStudents.filter(u => u.role === 'tutor');
   }, [adminStudents]);
 
   const secondaryTeachers = useMemo(() => {
-    return adminStudents.filter(u => u.role === 'secondary_parent');
+    return adminStudents.filter(u => u.role === 'secondary_tutor');
   }, [adminStudents]);
 
   const allStudents = useMemo(() => {

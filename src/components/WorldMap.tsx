@@ -47,8 +47,8 @@ export function WorldMap({
     syncWithServer();
   }, [syncWithServer]);
 
-  const parentQuests = useGameState(state => state.parentQuests || []);
-  const claimParentQuest = useGameState(state => state.claimParentQuest);
+  const tutorQuests = useGameState(state => state.tutorQuests || []);
+  const claimTutorQuest = useGameState(state => state.claimTutorQuest);
   
   const classLinks = useGameState(state => state.classLinks);
   const respondClassInvite = useGameState(state => state.respondClassInvite);
@@ -267,7 +267,7 @@ export function WorldMap({
                   <div className="flex items-center gap-2 flex-1 max-w-sm w-full">
                     <SearchSuggest
                       placeholder="Email Thầy/Cô..."
-                      roleFilter="parent"
+                      roleFilter="tutor"
                       value={inviteEmail}
                       onChange={setInviteEmail}
                       onSelect={user => setInviteEmail(user.email)}
@@ -438,7 +438,7 @@ export function WorldMap({
       )}
 
       {/* ─── SECTION 4: PARENT QUESTS (nếu có) ─── */}
-      {parentQuests.filter((q: any) => q.status !== 'claimed').length > 0 && (
+      {tutorQuests.filter((q: any) => q.status !== 'claimed').length > 0 && (
         <section className="glass-panel rounded-2xl border border-synth-magenta/30 bg-black/40 p-4 space-y-3">
           <div className="flex items-center gap-2">
             <span className="text-xl">📜</span>
@@ -447,7 +447,7 @@ export function WorldMap({
             </h3>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            {parentQuests.filter((q: any) => q.status !== 'claimed').map((quest: any) => (
+            {tutorQuests.filter((q: any) => q.status !== 'claimed').map((quest: any) => (
               <div
                 key={quest.id}
                 className="p-3.5 rounded-xl border border-white/5 bg-white/5 flex justify-between items-center gap-4 transition-all hover:bg-white/10"
@@ -471,7 +471,7 @@ export function WorldMap({
                 {quest.status === 'completed' && (
                   <button
                     onClick={() => {
-                      claimParentQuest(quest.id);
+                      claimTutorQuest(quest.id);
                       toast.success(`Nhận thưởng thành công: +${quest.rewardRuby} Ruby! 🥳`);
                     }}
                     className="px-3 py-1.5 rounded-lg bg-synth-magenta text-white font-orbitron font-bold text-[9px] uppercase tracking-wider cursor-pointer hover:synth-glow-magenta shadow-md"

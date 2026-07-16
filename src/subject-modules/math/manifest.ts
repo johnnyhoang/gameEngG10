@@ -5,9 +5,9 @@ export const mathSubjectModule: SubjectModule = {
   lang: 'vi-VN',
   supportsShortAnswer: true,
   tools: [
-    { id: 'biki3d', title: 'Xưởng Toán Hình 3D', surface: 'learning-hall' },
-    { id: 'bikiplane', title: 'Xưởng Toán Hình', surface: 'learning-hall' },
-    { id: 'bikigraph', title: 'Xưởng Toán Đồ Thị', surface: 'learning-hall' },
+    { id: 'handbook3d', title: 'Xưởng Toán Hình 3D', surface: 'learning-hall' },
+    { id: 'handbookplane', title: 'Xưởng Toán Hình', surface: 'learning-hall' },
+    { id: 'handbookgraph', title: 'Xưởng Toán Đồ Thị', surface: 'learning-hall' },
   ],
   utilities: ['scratchpad'],
   activities: [

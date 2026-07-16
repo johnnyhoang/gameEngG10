@@ -63,7 +63,7 @@ router.post('/questions/confused', async (req: any, res) => {
 });
 
 // PUT /api/questions/custom/:questionId: Updates a custom question owned by the signed-in user
-router.put('/questions/custom/:questionId', requireProfileRoles('parent', 'secondary_parent', 'truong_vien', 'pho_vien'), async (req: any, res) => {
+router.put('/questions/custom/:questionId', requireProfileRoles('tutor', 'secondary_tutor', 'truong_vien', 'pho_vien'), async (req: any, res) => {
   const userId = req.profile.id;
   const { questionId } = req.params;
   try {
@@ -86,7 +86,7 @@ router.put('/questions/custom/:questionId', requireProfileRoles('parent', 'secon
 });
 
 // DELETE /api/questions/custom/:questionId: Deletes a custom question owned by the signed-in user
-router.delete('/questions/custom/:questionId', requireProfileRoles('parent', 'secondary_parent', 'truong_vien', 'pho_vien'), async (req: any, res) => {
+router.delete('/questions/custom/:questionId', requireProfileRoles('tutor', 'secondary_tutor', 'truong_vien', 'pho_vien'), async (req: any, res) => {
   const userId = req.profile.id;
   const { questionId } = req.params;
   try {

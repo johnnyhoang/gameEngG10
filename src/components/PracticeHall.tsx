@@ -46,19 +46,19 @@ type PracticeSubjectId = SubjectId;
 
 const MAT_THAT_CARDS = [
   {
-    id: 'biki3d',
+    id: 'handbook3d',
     title: 'Xưởng Toán Hình 3D',
     description: 'Dựng hình không gian, xoay 360°, chọn góc nhìn và đọc lời giải từng bước.',
     icon: <Move3D className="w-5 h-5" />
   },
   {
-    id: 'bikiplane',
+    id: 'handbookplane',
     title: 'Xưởng Toán Hình',
     description: 'Dựng tam giác, đường tròn, đường cao, trung tuyến và các dấu hiệu chứng minh.',
     icon: <Layers3 className="w-5 h-5" />
   },
   {
-    id: 'bikigraph',
+    id: 'handbookgraph',
     title: 'Xưởng Toán Đồ Thị',
     description: 'Slider hệ số, đỉnh parabol, giao điểm và trục đối xứng theo thời gian thực.',
     icon: <LineChart className="w-5 h-5" />
@@ -469,9 +469,9 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {MAT_THAT_CARDS.filter(card => subjectToolIds.includes(card.id)).map(card => {
-                  const onOpen = card.id === 'biki3d'
+                  const onOpen = card.id === 'handbook3d'
                     ? onOpenWorkshop3D
-                    : card.id === 'bikiplane'
+                    : card.id === 'handbookplane'
                       ? onOpenWorkshopPlane
                       : onOpenWorkshopGraph;
                   return (

@@ -34,16 +34,16 @@ export const hasPermission = (
 
     case 'REFILL_ENERGY':
     case 'SET_ENERGY_CONFIG':
-      return role === 'truong_vien' || role === 'pho_vien' || role === 'parent' || role === 'secondary_parent';
+      return role === 'truong_vien' || role === 'pho_vien' || role === 'tutor' || role === 'secondary_tutor';
 
     case 'APPROVE_REWARD':
-      return role === 'pho_vien' || role === 'parent' || role === 'secondary_parent';
+      return role === 'pho_vien' || role === 'tutor' || role === 'secondary_tutor';
 
     case 'CREATE_MISSION':
-      return role === 'pho_vien' || role === 'parent' || role === 'secondary_parent';
+      return role === 'pho_vien' || role === 'tutor' || role === 'secondary_tutor';
 
     case 'VIEW_STUDENT_PROFILE':
-      return role === 'pho_vien' || role === 'parent' || role === 'secondary_parent';
+      return role === 'pho_vien' || role === 'tutor' || role === 'secondary_tutor';
 
     default:
       return false;
@@ -76,17 +76,17 @@ export const checkStudentManagementPermission = async (
       if (hasPermission(role, permissionAction)) return true;
     }
 
-    if (role === 'parent') {
+    if (role === 'tutor') {
       const linkCheck = await pool.query(
-        "SELECT id FROM ge10_class_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'primary' AND status = 'active'",
+        "SELECT id FROM ge10_class_links WHERE tutor_id = $1 AND student_id = $2 AND link_type = 'primary' AND status = 'active'",
         [profileId, studentUserId]
       );
       if (linkCheck.rows.length > 0 && hasPermission(role, permissionAction)) return true;
     }
 
-    if (role === 'secondary_parent') {
+    if (role === 'secondary_tutor') {
       const linkCheck = await pool.query(
-        "SELECT secondary_permissions FROM ge10_class_links WHERE parent_id = $1 AND student_id = $2 AND link_type = 'secondary' AND status = 'active'",
+        "SELECT secondary_permissions FROM ge10_class_links WHERE tutor_id = $1 AND student_id = $2 AND link_type = 'secondary' AND status = 'active'",
         [profileId, studentUserId]
       );
       if (linkCheck.rows.length > 0) {

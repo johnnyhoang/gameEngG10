@@ -83,8 +83,8 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
     }
   };
 
-  const isPrimaryTeacher = currentUser?.role === 'parent';
-  const isSecondaryTeacher = currentUser?.role === 'secondary_parent';
+  const isPrimaryTeacher = currentUser?.role === 'tutor';
+  const isSecondaryTeacher = currentUser?.role === 'secondary_tutor';
 
   const vicePrincipalApplication = classLinks.find(
     l => l.link_type === 'vice_principal' && l.parent_id === currentUser?.id
@@ -420,7 +420,7 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
               <div className="flex gap-2">
                 <SearchSuggest
                   placeholder="Tìm giáo viên theo tên/email..."
-                  roleFilter="parent"
+                  roleFilter="tutor"
                   value={inviteTeacherEmail}
                   onChange={setInviteTeacherEmail}
                   onSelect={user => setInviteTeacherEmail(user.email)}
@@ -470,7 +470,7 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
             <div className="flex gap-2">
               <SearchSuggest
                 placeholder="Nhập email Giáo viên chính..."
-                roleFilter="parent"
+                roleFilter="tutor"
                 value={requestClassEmail}
                 onChange={setRequestClassEmail}
                 onSelect={user => setRequestClassEmail(user.email)}

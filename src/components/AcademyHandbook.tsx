@@ -3,13 +3,13 @@ import React, { useEffect } from 'react';
 import { X, Sparkles, Feather } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
 
-interface GiangHoCamNangProps {
+interface AcademyHandbookProps {
   isOpen: boolean;
   onClose: () => void;
   initialPageId?: string;
 }
 
-export const GiangHoCamNang: React.FC<GiangHoCamNangProps> = ({
+export const AcademyHandbook: React.FC<AcademyHandbookProps> = ({
   isOpen,
   onClose,
   initialPageId

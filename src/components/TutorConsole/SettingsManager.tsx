@@ -139,21 +139,21 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
 
   // Other personnel lists
   const primaryTeachers = useMemo(() => {
-    const list = adminStudents.filter((u: any) => u.role === 'parent');
+    const list = adminStudents.filter((u: any) => u.role === 'tutor');
     if (isCallerAdmin) return list;
     const studentIds = [...myClassStudents, ...coManagedClassStudents].map(s => s.id);
     const parentIds = (adminLinks || [])
-      .filter(l => studentIds.includes(l.student_id) && l.parent_role === 'parent')
+      .filter(l => studentIds.includes(l.student_id) && l.parent_role === 'tutor')
       .map(l => l.parent_id);
     return list.filter(u => parentIds.includes(u.id) || u.id === currentUser?.id);
   }, [adminStudents, isCallerAdmin, myClassStudents, coManagedClassStudents, adminLinks, currentUser?.id]);
 
   const secondaryTeachers = useMemo(() => {
-    const list = adminStudents.filter((u: any) => u.role === 'secondary_parent');
+    const list = adminStudents.filter((u: any) => u.role === 'secondary_tutor');
     if (isCallerAdmin) return list;
     const studentIds = [...myClassStudents, ...coManagedClassStudents].map(s => s.id);
     const parentIds = (adminLinks || [])
-      .filter(l => studentIds.includes(l.student_id) && l.parent_role === 'secondary_parent')
+      .filter(l => studentIds.includes(l.student_id) && l.parent_role === 'secondary_tutor')
       .map(l => l.parent_id);
     return list.filter(u => parentIds.includes(u.id) || u.id === currentUser?.id);
   }, [adminStudents, isCallerAdmin, myClassStudents, coManagedClassStudents, adminLinks, currentUser?.id]);
@@ -166,7 +166,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
   const getStudentCoManagers = (studentId: string) => {
     const links = (adminLinks || []).filter(l => l.student_id === studentId);
     const managers = links.map(l => {
-      const roleName = l.parent_role === 'parent' ? 'Chủ Nhiệm Chính' : 'Chủ Nhiệm Phụ';
+      const roleName = l.parent_role === 'tutor' ? 'Chủ Nhiệm Chính' : 'Chủ Nhiệm Phụ';
       return `${l.parent_name} (${roleName})`;
     });
     return managers.length > 0 ? managers.join(', ') : 'Chưa nhận lớp';
@@ -302,7 +302,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
                     required
                     value={hbCategory}
                     onChange={(e) => setHbCategory(e.target.value)}
-                    placeholder="Ví dụ: Quy định, Bí kíp"
+                    placeholder="Ví dụ: Quy định, Cẩm nang"
                     className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-magenta text-xs"
                   />
                 </label>
@@ -646,7 +646,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
                       } else if (log.action === 'refill_energy') {
                         detailText = `Nạp đầy Năng Lượng lên ${p.targetEnergy}%`;
                       } else if (log.action === 'promote_user') {
-                        detailText = `Bổ nhiệm vai trò mới: ${p.targetRole === 'pho_vien' ? 'Phó Viện Trưởng 🛡️' : p.targetRole === 'parent' ? 'Chủ Nhiệm Chính' : 'Sĩ Tử'}`;
+                        detailText = `Bổ nhiệm vai trò mới: ${p.targetRole === 'pho_vien' ? 'Phó Viện Trưởng 🛡️' : p.targetRole === 'tutor' ? 'Chủ Nhiệm Chính' : 'Sĩ Tử'}`;
                       } else if (log.action === 'invite_secondary_parent') {
                         detailText = 'Gửi thư mời làm Chủ nhiệm Phụ cùng quản lý';
                       } else if (log.action === 'update_secondary_permissions') {

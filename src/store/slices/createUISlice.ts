@@ -17,7 +17,7 @@ export const createUISlice: StateCreator<
     'isSwitchingContext' | 'learningContextVersion' |
     'setSectModalOpen' | 'setLearningContext' | 'setSubject' | 'setGradeTier' | 'setUiTheme' |
     'showHelp' | 'closeHelp' | 'initEventSubscriptions' | 'addHandbookPage' |
-    'parentConsoleTab' | 'setParentConsoleTab'
+    'tutorConsoleTab' | 'setTutorConsoleTab'
   >
 > = (set, get) => ({
   isSectModalOpen: false,
@@ -29,11 +29,11 @@ export const createUISlice: StateCreator<
   uiThemesByUser: {},
   helpPageId: null,
   handbookPages: ALL_HANDBOOK_PAGES,
-  parentConsoleTab: 'phong_hieu_truong',
+  tutorConsoleTab: 'phong_hieu_truong',
 
   setSectModalOpen: (open) => set({ isSectModalOpen: open }),
 
-  setParentConsoleTab: (tab) => set({ parentConsoleTab: tab }),
+  setTutorConsoleTab: (tab) => set({ tutorConsoleTab: tab }),
 
   setLearningContext: (context: LearningContext) => {
     const version = (get().learningContextVersion ?? 0) + 1;

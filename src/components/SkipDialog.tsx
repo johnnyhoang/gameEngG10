@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
 
-interface MienPhatDialogProps {
+interface SkipDialogProps {
   onConfirm: (reason: 'quá khó' | 'quá dài' | 'quá khùng', severity: number) => void;
   onCancel: () => void;
 }
 
-export const MienPhatDialog: React.FC<MienPhatDialogProps> = ({ onConfirm, onCancel }) => {
+export const SkipDialog: React.FC<SkipDialogProps> = ({ onConfirm, onCancel }) => {
   const [reason, setReason] = useState<'quá khó' | 'quá dài' | 'quá khùng' | null>(null);
   const [severity, setSeverity] = useState<number>(3);
   
@@ -18,7 +18,7 @@ export const MienPhatDialog: React.FC<MienPhatDialogProps> = ({ onConfirm, onCan
             <ShieldCheck className="w-8 h-8 text-red-500" />
           </div>
           <h2 className="text-xl font-black font-orbitron text-red-500 uppercase tracking-wider text-center">
-            Miễn Phạt
+            Bỏ qua
           </h2>
           <p className="text-xs text-red-400 font-semibold uppercase tracking-widest mt-1">
             Không trừ Ruby · Tối đa 3 lượt mỗi ngày
@@ -83,7 +83,7 @@ export const MienPhatDialog: React.FC<MienPhatDialogProps> = ({ onConfirm, onCan
                 disabled={!reason}
                 className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 disabled:bg-slate-800 disabled:text-slate-600 disabled:border-slate-800 disabled:cursor-not-allowed text-white font-bold uppercase text-xs tracking-wider transition-colors shadow-[0_0_15px_rgba(239,68,68,0.3)] cursor-pointer"
               >
-                Xác nhận Miễn Phạt
+                Xác nhận Bỏ qua
               </button>
             </div>
         </div>

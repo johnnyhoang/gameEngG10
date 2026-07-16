@@ -1,6 +1,6 @@
 export const isAdmin = (role?: string) => role === 'truong_vien' || role === 'pho_vien';
 export const isSuperAdmin = (role?: string) => role === 'truong_vien' || role === 'pho_vien';
-export const isParentRole = (role?: string) => role === 'parent' || role === 'secondary_parent';
+export const isParentRole = (role?: string) => role === 'tutor' || role === 'secondary_tutor';
 
 export type PermissionAction =
   | 'VIEW_AUDIT_LOGS'
@@ -16,7 +16,7 @@ export type PermissionAction =
 export const canPromoteTo = (actorRole: string, targetRole: string): boolean => {
   if (actorRole === 'truong_vien') return true;
   if (actorRole === 'pho_vien') {
-    return targetRole === 'student' || targetRole === 'parent';
+    return targetRole === 'student' || targetRole === 'tutor';
   }
   return false;
 };
@@ -54,16 +54,16 @@ export const hasPermission = (
 
     case 'REFILL_ENERGY':
     case 'SET_ENERGY_CONFIG':
-      return role === 'truong_vien' || role === 'pho_vien' || role === 'parent';
+      return role === 'truong_vien' || role === 'pho_vien' || role === 'tutor';
 
     case 'APPROVE_REWARD':
-      return role === 'pho_vien' || role === 'parent' || role === 'secondary_parent';
+      return role === 'pho_vien' || role === 'tutor' || role === 'secondary_tutor';
 
     case 'CREATE_MISSION':
-      return role === 'pho_vien' || role === 'parent' || role === 'secondary_parent';
+      return role === 'pho_vien' || role === 'tutor' || role === 'secondary_tutor';
 
     case 'VIEW_STUDENT_PROFILE':
-      return role === 'pho_vien' || role === 'parent' || role === 'secondary_parent';
+      return role === 'pho_vien' || role === 'tutor' || role === 'secondary_tutor';
 
     default:
       return false;

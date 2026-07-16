@@ -456,7 +456,7 @@ export const LectureBankManager: React.FC = () => {
               </div>
 
               <label className="space-y-1 block">
-                <span className="text-slate-400 font-semibold">Nội dung Lý Thuyết / Bí kíp truyền thụ (Theory - Markdown / Text)</span>
+                <span className="text-slate-400 font-semibold">Nội dung Lý Thuyết / Cẩm nang truyền thụ (Theory - Markdown / Text)</span>
                 <textarea
                   required
                   value={formTheory}

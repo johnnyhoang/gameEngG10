@@ -10,7 +10,7 @@ import { PetStableOverlay } from './components/PetStableOverlay';
 import { LevelUpCelebration } from './components/LevelUpCelebration';
 import { WorldMap } from './components/WorldMap';
 import { PlayArea } from './components/PlayArea';
-import { ParentConsole } from './components/ParentConsole';
+import { TutorConsole } from './components/TutorConsole';
 import { GoogleLoginScreen } from './components/GoogleLoginScreen';
 import { ProfileSelectionScreen } from './components/ProfileSelectionScreen';
 import { GlobalSectModal } from './components/GlobalSectModal';
@@ -42,14 +42,14 @@ const PetSanctuary = withSuspense(lazy(() => import('./components/PetSanctuary')
 const Arena = withSuspense(lazy(() => import('./components/Arena').then(m => ({ default: m.Arena }))));
 const ItemShop = withSuspense(lazy(() => import('./components/ItemShop').then(m => ({ default: m.ItemShop }))));
 const ProfilePage = withSuspense(lazy(() => import('./components/ProfilePage').then(m => ({ default: m.ProfilePage }))));
-const GiangHoCamNang = withSuspense(lazy(() => import('./components/GiangHoCamNang').then(m => ({ default: m.GiangHoCamNang }))), null);
+const AcademyHandbook = withSuspense(lazy(() => import('./components/AcademyHandbook').then(m => ({ default: m.AcademyHandbook }))), null);
 const PracticeHall = withSuspense(lazy(() => import('./components/PracticeHall').then(m => ({ default: m.PracticeHall }))));
 const SubjectWorkshopPage = withSuspense(lazy(() => import('./components/SubjectWorkshopPage').then(m => ({ default: m.SubjectWorkshopPage }))));
 const DesktopCentralNav = withSuspense(lazy(() => import('./components/DesktopCentralNav').then(m => ({ default: m.DesktopCentralNav }))), null);
 const LessonStudyView = withSuspense(lazy(() => import('./components/LessonStudyView').then(m => ({ default: m.LessonStudyView }))));
 const RelaxationZone = withSuspense(lazy(() => import('./components/RelaxationZone').then(m => ({ default: m.RelaxationZone }))));
 const GeometryApp = withSuspense(lazy(() => import('./miniapps/geometry').then(m => ({ default: m.GeometryApp }))));
-const BikiDoThiHamSo = withSuspense(lazy(() => import('./components/BikiDoThiHamSo').then(m => ({ default: m.BikiDoThiHamSo }))));
+const GraphHandbook = withSuspense(lazy(() => import('./components/GraphHandbook').then(m => ({ default: m.GraphHandbook }))));
 
 const APP_VERSION = 'fd44bc2';
 const APP_PUSH_TIME = 'Tue, 7 Jul 2026 12:05 ICT';
@@ -70,7 +70,7 @@ function App() {
   const classLinks = useGameState(state => state.classLinks);
 
   // Screen routing state
-  const [screen, setScreen] = useState<'map' | 'arena' | 'play' | 'shop' | 'parent' | 'pet' | 'logs' | 'practice' | 'workshop-3d' | 'workshop-plane' | 'workshop-graph' | 'lesson-study' | 'relax' | 'profile'>(
+  const [screen, setScreen] = useState<'map' | 'arena' | 'play' | 'shop' | 'tutor' | 'pet' | 'logs' | 'practice' | 'workshop-3d' | 'workshop-plane' | 'workshop-graph' | 'lesson-study' | 'relax' | 'profile'>(
     () => (localStorage.getItem('cyber-app-screen') as any) || 'map'
   );
 
@@ -169,7 +169,7 @@ function App() {
         return;
       }
       if (isParentRole(currentUser.role) || isAdmin(currentUser.role)) {
-        setScreen('parent');
+        setScreen('tutor');
       } else if (currentUser.role === 'student') {
         setScreen('map');
       }
@@ -181,11 +181,11 @@ function App() {
     if (!currentUser) return;
     const role = currentUser.role;
     if (isParentRole(role) || isAdmin(role)) {
-      if (screen !== 'parent') {
-        setScreen('parent');
+      if (screen !== 'tutor') {
+        setScreen('tutor');
       }
     } else if (role === 'student') {
-      if (screen === 'parent') {
+      if (screen === 'tutor') {
         setScreen('map');
       }
     }
@@ -387,7 +387,7 @@ function App() {
 
       {/* Top Header HUD */}
       <TopHUD
-        onOpenParent={() => navigateWithWarning('parent')}
+        onOpenParent={() => navigateWithWarning('tutor')}
         onOpenShop={() => navigateWithWarning('shop')}
         onOpenPet={() => navigateWithWarning('pet')}
         onOpenProfile={() => navigateWithWarning('profile')}
@@ -454,7 +454,7 @@ function App() {
 
           {screen === 'shop' && <ItemShop />}
 
-          {screen === 'parent' && <ParentConsole />}
+          {screen === 'tutor' && <TutorConsole />}
 
           {screen === 'practice' && (
             <PracticeHall
@@ -534,7 +534,7 @@ function App() {
               onSwitchToPlane={() => setScreen('workshop-plane')}
               onSwitchToGraph={() => setScreen('workshop-graph')}
             >
-              <BikiDoThiHamSo problemText="" />
+              <GraphHandbook problemText="" />
             </SubjectWorkshopPage>
           )}
 
@@ -595,7 +595,7 @@ function App() {
 
       {/* Mọi "?" trong app đều mở thẳng trang tương ứng trong Cẩm Nang Học Đường — cốt lõi Cẩm Nang là help/guide (CORE_SPECS §2.7) */}
       {helpPageId && (
-        <GiangHoCamNang
+        <AcademyHandbook
           isOpen={true}
           initialPageId={helpPageId}
           onClose={closeHelp}

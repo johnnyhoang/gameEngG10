@@ -1,5 +1,5 @@
 import type {
-  UserProfile, PlayerProfile, Question, CategoryStat, PetState, ParentReward, RewardRedemption,
+  UserProfile, PlayerProfile, Question, CategoryStat, PetState, TutorReward, RewardRedemption,
   ClassReward, ClassRewardRedemption,
   Challenge, HistoryLog,
   HandbookPage, ParentQuest, GradeTier, SubjectId, UiThemeId, GameSettings, ClassLink, LearningContext,
@@ -9,8 +9,8 @@ import type {
 // We might need to import Lesson and ExplorationProgress from their correct files.
 import type { Lesson } from '../data/lessons';
 
-/** Các tab chính của Phòng Điều Hành (ParentConsole) — nav đặt trên TopHUD */
-export type ParentConsoleTab = 'phong_hieu_truong' | 'van_quyen_cac' | 'tang_kinh_cac' | 'ngan_cac' | 'than_phan';
+/** Các tab chính của Phòng Điều Hành (TutorConsole) — nav đặt trên TopHUD */
+export type TutorConsoleTab = 'phong_hieu_truong' | 'van_quyen_cac' | 'tang_kinh_cac' | 'ngan_cac' | 'than_phan';
 
 
 export interface StoreState {
@@ -22,8 +22,8 @@ export interface StoreState {
   setSessionAccountId: (accountId: string) => void;
   fetchProfiles: () => Promise<void>;
   selectProfile: (profileId: string) => Promise<void>;
-  createProfile: (role: 'student' | 'parent', name: string) => Promise<void>;
-  quickStartProfile: (role: 'student' | 'parent') => Promise<void>;
+  createProfile: (role: 'student' | 'tutor', name: string) => Promise<void>;
+  quickStartProfile: (role: 'student' | 'tutor') => Promise<void>;
   login: (user: UserProfile) => Promise<void>;
   logout: () => Promise<void>;
   renameProfile: (newName: string) => Promise<boolean>;
@@ -43,7 +43,7 @@ export interface StoreState {
   pageExplorationStates: Record<string, PageExplorationState>;
   categoryStats: Record<string, CategoryStat>;
   topicStats: Record<string, CategoryStat>;
-  rewards: ParentReward[];
+  rewards: TutorReward[];
   rewardRedemptions: RewardRedemption[];
   /** Phần thưởng lớp học do giáo viên tạo. Học sinh trong lớp thấy; orphan student thấy rewards thường. */
   classRewards: ClassReward[];
@@ -103,7 +103,7 @@ export interface StoreState {
   selectedStudentProfile: any | null;
   failedQuestionIds: string[];
   recentlyPlayedQuestionIds: string[];
-  parentQuests: ParentQuest[];
+  tutorQuests: ParentQuest[];
   
   auditLogs: any[];
   fetchAuditLogs: () => Promise<void>;
@@ -114,8 +114,8 @@ export interface StoreState {
   markRewardDelivered: (redemptionId: string) => void;
   /** Hủy lượt đổi: hoàn Ruby + trả lại remainingQuantity cho catalog item (thay "từ chối" cũ). */
   cancelRedemption: (redemptionId: string) => void;
-  addParentReward: (title: string, costRuby: number, quantity: number) => void;
-  deleteParentReward: (rewardId: string) => void;
+  addTutorReward: (title: string, costRuby: number, quantity: number) => void;
+  deleteTutorReward: (rewardId: string) => void;
 
   // === CLASS REWARDS (Quà Khuyến Học) ===
   fetchClassRewards: () => Promise<void>;
@@ -143,10 +143,10 @@ export interface StoreState {
     baseXP?: number;
     baseRuby?: number;
   }) => Promise<void>;
-  addParentQuest: (title: string, description: string, rewardRuby: number) => void;
-  completeParentQuest: (questId: string) => void;
-  deleteParentQuest: (questId: string) => void;
-  claimParentQuest: (questId: string) => void;
+  addTutorQuest: (title: string, description: string, rewardRuby: number) => void;
+  completeTutorQuest: (questId: string) => void;
+  deleteTutorQuest: (questId: string) => void;
+  claimTutorQuest: (questId: string) => void;
 
   // === CLASS LINKS SLICE ===
   classLinks: ClassLink[];
@@ -175,11 +175,11 @@ export interface StoreState {
   uiThemesByUser: Record<string, UiThemeId>;
   gameSettings: GameSettings;
   helpPageId: string | null;
-  /** Tab đang mở trong Phòng Điều Hành — chia sẻ giữa TopHUD (nav chính) và ParentConsole */
-  parentConsoleTab: ParentConsoleTab;
+  /** Tab đang mở trong Phòng Điều Hành — chia sẻ giữa TopHUD (nav chính) và TutorConsole */
+  tutorConsoleTab: TutorConsoleTab;
 
   addHandbookPage: (page: Omit<HandbookPage, 'id'>) => void;
-  setParentConsoleTab: (tab: ParentConsoleTab) => void;
+  setTutorConsoleTab: (tab: TutorConsoleTab) => void;
   setSectModalOpen: (open: boolean) => void;
   setLearningContext: (context: LearningContext) => void;
   setSubject: (subject: SubjectId) => void;

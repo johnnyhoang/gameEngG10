@@ -89,7 +89,7 @@ export interface UserProfile {
 export interface PlayerProfile {
   id: string;
   name: string;
-  role: 'student' | 'parent' | 'secondary_parent' | 'pho_vien' | 'truong_vien';
+  role: 'student' | 'tutor' | 'secondary_tutor' | 'pho_vien' | 'truong_vien';
   level: number;
   xp: number;
   ruby: number;
@@ -218,7 +218,7 @@ export interface PetState {
  * Do chủ nhiệm tự tạo, định giá bằng Ruby, có SỐ LƯỢNG GIỚI HẠN. App không quản lý tiền —
  * đây chỉ là một catalog item, không phải một lượt đổi (xem RewardRedemption bên dưới).
  */
-export interface ParentReward {
+export interface TutorReward {
   id: string;
   title: string;
   /** Giá Ruby cho một lượt đổi. */

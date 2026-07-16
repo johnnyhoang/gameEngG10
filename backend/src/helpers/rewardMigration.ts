@@ -100,7 +100,7 @@ export const migratePendingClaims = async (studentId: string, newTeacherId: stri
       for (const row of classRedemptionsRes.rows) {
         // Find matching school reward
         const schoolRewardRes = await client.query(
-          "SELECT id FROM ge10_parent_rewards WHERE user_id = $1 AND LOWER(title) = LOWER($2)",
+          "SELECT id FROM ge10_tutor_rewards WHERE user_id = $1 AND LOWER(title) = LOWER($2)",
           [studentId, row.reward_title]
         );
 
@@ -111,7 +111,7 @@ export const migratePendingClaims = async (studentId: string, newTeacherId: stri
           // Auto-create a school reward for this student
           schoolRewardId = crypto.randomUUID();
           await client.query(
-            `INSERT INTO ge10_parent_rewards (id, user_id, title, cost_ruby, quantity, remaining_quantity, timestamp)
+            `INSERT INTO ge10_tutor_rewards (id, user_id, title, cost_ruby, quantity, remaining_quantity, timestamp)
              VALUES ($1, $2, $3, $4, $5, $6, $7)`,
             [schoolRewardId, studentId, row.reward_title, row.cost_ruby, 999999, 999999, Date.now()]
           );

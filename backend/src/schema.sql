@@ -20,17 +20,17 @@ ALTER TABLE ge10_users DROP COLUMN IF EXISTS family_id;
 ALTER TABLE ge10_users ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE;
 
 
--- Class Links Table (Multi-Profile & Secondary Parents/Teachers)
+-- Class Links Table (Multi-Profile & Secondary Tutors/Teachers)
 CREATE TABLE IF NOT EXISTS ge10_class_links (
     id VARCHAR(255) PRIMARY KEY,
-    parent_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
+    tutor_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
     student_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
-    status VARCHAR(50) DEFAULT 'pending', -- 'pending_student', 'pending_parent', 'active'
+    status VARCHAR(50) DEFAULT 'pending', -- 'pending_student', 'pending_tutor', 'active'
     link_type VARCHAR(20) DEFAULT 'primary', -- 'primary', 'secondary'
     secondary_permissions JSONB DEFAULT '{"can_approve_rewards": false, "can_create_missions": false, "read_only": true}'::jsonb,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(parent_id, student_id)
+    UNIQUE(tutor_id, student_id)
 );
 
 -- Player Profiles Table
@@ -117,7 +117,7 @@ CREATE TABLE IF NOT EXISTS ge10_history_logs (
 
 -- Danh Mục Quà Khuyến Học (Reward Catalog) — CORE_SPECS §3.2. Do chủ nhiệm tự tạo, định giá Ruby,
 -- có số lượng giới hạn. Đây CHỈ là catalog item — một lượt đổi cụ thể nằm ở ge10_reward_redemptions.
-CREATE TABLE IF NOT EXISTS ge10_parent_rewards (
+CREATE TABLE IF NOT EXISTS ge10_tutor_rewards (
     id VARCHAR(255) PRIMARY KEY,
     user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
     title VARCHAR(255) NOT NULL,
@@ -129,16 +129,16 @@ CREATE TABLE IF NOT EXISTS ge10_parent_rewards (
 );
 
 -- App không quản lý tiền nữa (CORE_SPECS §3.2) — bỏ tỷ giá cash_value_vnd + status (chuyển sang bảng redemptions).
-ALTER TABLE ge10_parent_rewards DROP COLUMN IF EXISTS cash_value_vnd;
-ALTER TABLE ge10_parent_rewards DROP COLUMN IF EXISTS status;
-ALTER TABLE ge10_parent_rewards ADD COLUMN IF NOT EXISTS quantity INTEGER NOT NULL DEFAULT 1;
-ALTER TABLE ge10_parent_rewards ADD COLUMN IF NOT EXISTS remaining_quantity INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE ge10_tutor_rewards DROP COLUMN IF EXISTS cash_value_vnd;
+ALTER TABLE ge10_tutor_rewards DROP COLUMN IF EXISTS status;
+ALTER TABLE ge10_tutor_rewards ADD COLUMN IF NOT EXISTS quantity INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE ge10_tutor_rewards ADD COLUMN IF NOT EXISTS remaining_quantity INTEGER NOT NULL DEFAULT 1;
 
 -- Một lượt đổi quà cụ thể — trừ Ruby ngay, chờ chủ nhiệm xác nhận "Đã Trao" ngoài đời (CORE_SPECS §3.2).
 CREATE TABLE IF NOT EXISTS ge10_reward_redemptions (
     id VARCHAR(255) PRIMARY KEY,
     user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
-    reward_id VARCHAR(255) REFERENCES ge10_parent_rewards(id) ON DELETE SET NULL,
+    reward_id VARCHAR(255) REFERENCES ge10_tutor_rewards(id) ON DELETE SET NULL,
     reward_title VARCHAR(255) NOT NULL,
     cost_ruby INTEGER NOT NULL,
     cost_coins INTEGER, -- legacy compatibility
@@ -310,7 +310,7 @@ CREATE TABLE IF NOT EXISTS ge10_riddle_history (
 CREATE INDEX IF NOT EXISTS idx_riddle_history_profile_mode_used
   ON ge10_riddle_history(profile_id, mode, used_at DESC);
 
--- Admin & Parent Audit Logs (Sprint 3)
+-- Admin & Tutor Audit Logs (Sprint 3)
 CREATE TABLE IF NOT EXISTS ge10_audit_logs (
     id VARCHAR(255) PRIMARY KEY,
     actor_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE SET NULL,

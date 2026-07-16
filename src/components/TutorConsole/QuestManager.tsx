@@ -4,19 +4,19 @@ import { toast } from '../../utils/toast';
 import { SideDrawer } from '../Common/SideDrawer';
 
 interface QuestManagerProps {
-  parentQuests: any[];
+  tutorQuests: any[];
   canCreateMission: boolean;
-  addParentQuest: (title: string, description: string, rewardRuby: number) => void;
-  completeParentQuest: (questId: string) => void;
-  deleteParentQuest: (questId: string) => void;
+  addTutorQuest: (title: string, description: string, rewardRuby: number) => void;
+  completeTutorQuest: (questId: string) => void;
+  deleteTutorQuest: (questId: string) => void;
 }
 
 export const QuestManager: React.FC<QuestManagerProps> = ({
-  parentQuests,
+  tutorQuests,
   canCreateMission,
-  addParentQuest,
-  completeParentQuest,
-  deleteParentQuest
+  addTutorQuest,
+  completeTutorQuest,
+  deleteTutorQuest
 }) => {
   const [questTitle, setQuestTitle] = useState('');
   const [questDesc, setQuestDesc] = useState('');
@@ -29,7 +29,7 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
       toast.error('Vui lòng điền tiêu đề và mô tả nhiệm vụ!');
       return;
     }
-    addParentQuest(questTitle.trim(), questDesc.trim(), questRuby);
+    addTutorQuest(questTitle.trim(), questDesc.trim(), questRuby);
     toast.success('Giao nhiệm vụ chủ nhiệm giao thành công! 🎯');
     setQuestTitle('');
     setQuestDesc('');
@@ -112,11 +112,11 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
       {/* List of parent quests */}
       <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-4">
           <h4 className="text-xs font-bold text-synth-text-muted uppercase tracking-wider">
-            Nhiệm vụ đang giao ({parentQuests.length})
+            Nhiệm vụ đang giao ({tutorQuests.length})
           </h4>
           <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
-            {parentQuests.length > 0 ? (
-              parentQuests.map((quest: any) => (
+            {tutorQuests.length > 0 ? (
+              tutorQuests.map((quest: any) => (
                 <div key={quest.id} className="p-4 rounded-xl border border-white/5 bg-synth-gray/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                   <div>
                     <div className="flex items-center gap-2">
@@ -140,7 +140,7 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
                     {quest.status === 'pending' && canCreateMission && (
                       <button
                         onClick={() => {
-                          completeParentQuest(quest.id);
+                          completeTutorQuest(quest.id);
                           toast.success('Đã xác nhận hoàn thành nhiệm vụ! Con có thể nhận thưởng.');
                         }}
                         className="px-3 py-1.5 rounded-lg bg-synth-green text-black font-orbitron font-bold text-[10px] uppercase cursor-pointer hover:synth-glow-green"
@@ -151,7 +151,7 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
                     {canCreateMission && (
                       <button
                         onClick={() => {
-                          deleteParentQuest(quest.id);
+                          deleteTutorQuest(quest.id);
                           toast.success('Đã xoá nhiệm vụ giao.');
                         }}
                         className="p-1.5 rounded-lg border border-synth-magenta text-synth-magenta cursor-pointer hover:bg-synth-magenta/10"

@@ -2,7 +2,7 @@
 // Đặt ở đây (module lá, không import ngược từ '../hooks/useGameState' hay './index') để
 // tránh vòng lặp import: slice -> hooks/useGameState -> store/index -> slice (từng gây
 // ReferenceError "Cannot access 'INITIAL_PLAYER' before initialization" khi load app).
-import type { PlayerProfile, PetState, Challenge, ParentReward, GameSettings, UiThemeId } from '../types/game';
+import type { PlayerProfile, PetState, Challenge, TutorReward, GameSettings, UiThemeId } from '../types/game';
 
 // Năng Lượng v2 (SUB_SPEC_ENERGY §2): maxEnergy giờ là cấu hình RIÊNG từng con (PlayerProfile.maxEnergy),
 // không còn nằm trong GameSettings global. Hằng số này chỉ còn là giá trị mặc định khi tạo hồ sơ mới.
@@ -50,7 +50,7 @@ export const INITIAL_PET: PetState = {
 };
 
 // Danh Mục Quà Khuyến Học mặc định (CORE_SPECS §3.2) — mỗi món có số lượng giới hạn do chủ nhiệm nạp lại khi hết.
-export const DEFAULT_REWARDS: ParentReward[] = [
+export const DEFAULT_TUTOR_REWARDS: TutorReward[] = [
   { id: 'r-1', title: '15 phút chơi game', costRuby: 150, quantity: 10, remainingQuantity: 10, timestamp: Date.now() },
   { id: 'r-2', title: 'Ly trà sữa đặc biệt', costRuby: 400, quantity: 4, remainingQuantity: 4, timestamp: Date.now() },
   { id: 'r-3', title: 'Bao lì xì 20.000đ', costRuby: 500, quantity: 5, remainingQuantity: 5, timestamp: Date.now() },

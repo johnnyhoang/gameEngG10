@@ -36,7 +36,7 @@ export const authService = {
     throw new Error(`Failed to load profile details for ${profileId}`);
   },
 
-  createProfile: async (role: 'student' | 'parent', name: string): Promise<any> => {
+  createProfile: async (role: 'student' | 'tutor', name: string): Promise<any> => {
     const sessionRes = await supabase.auth.getSession();
     const token = sessionRes.data.session?.access_token;
     const user = sessionRes.data.session?.user;
@@ -58,7 +58,7 @@ export const authService = {
     throw new Error('Failed to create new profile');
   },
 
-  quickStartProfile: async (role: 'student' | 'parent'): Promise<any> => {
+  quickStartProfile: async (role: 'student' | 'tutor'): Promise<any> => {
     const token = await authService.getAccessToken();
     if (!token) throw new Error('No token found');
 

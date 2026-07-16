@@ -26,15 +26,15 @@ interface StudentProfileViewProps {
   // Reward props
   activeRewardCatalog: any[];
   activeRedemptions: any[];
-  addParentReward: (title: string, costRuby: number, quantity: number) => void;
-  deleteParentReward: (rewardId: string) => void;
+  addTutorReward: (title: string, costRuby: number, quantity: number) => void;
+  deleteTutorReward: (rewardId: string) => void;
   markRewardDelivered: (redemptionId: string) => void;
   cancelRedemption: (redemptionId: string) => void;
   // Quest props
-  parentQuests: any[];
-  addParentQuest: (title: string, description: string, rewardRuby: number) => void;
-  completeParentQuest: (questId: string) => void;
-  deleteParentQuest: (questId: string) => void;
+  tutorQuests: any[];
+  addTutorQuest: (title: string, description: string, rewardRuby: number) => void;
+  completeTutorQuest: (questId: string) => void;
+  deleteTutorQuest: (questId: string) => void;
 }
 
 export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
@@ -53,14 +53,14 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
   onSwitchStudent,
   activeRewardCatalog,
   activeRedemptions,
-  addParentReward,
-  deleteParentReward,
+  addTutorReward,
+  deleteTutorReward,
   markRewardDelivered,
   cancelRedemption,
-  parentQuests,
-  addParentQuest,
-  completeParentQuest,
-  deleteParentQuest
+  tutorQuests,
+  addTutorQuest,
+  completeTutorQuest,
+  deleteTutorQuest
 }) => {
   // Năng Lượng v2 (SUB_SPEC_ENERGY §2): maxEnergy/resetHours là cấu hình RIÊNG của con này, không còn đọc gameSettings global.
   const maxE = selectedStudentProfile?.player?.maxEnergy ?? 100;
@@ -310,8 +310,8 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
           activeRewardCatalog={activeRewardCatalog}
           activeRedemptions={activeRedemptions}
           canApproveReward={canApproveReward}
-          addParentReward={addParentReward}
-          deleteParentReward={deleteParentReward}
+          addTutorReward={addTutorReward}
+          deleteTutorReward={deleteTutorReward}
           markRewardDelivered={markRewardDelivered}
           cancelRedemption={cancelRedemption}
           adminMarkRewardDelivered={adminMarkRewardDelivered}
@@ -323,11 +323,11 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
       {studentUser?.id && (
         <div className="glass-panel rounded-2xl border border-white/5 p-5">
           <QuestManager
-            parentQuests={parentQuests}
+            tutorQuests={tutorQuests}
             canCreateMission={canCreateMission}
-            addParentQuest={addParentQuest}
-            completeParentQuest={completeParentQuest}
-            deleteParentQuest={deleteParentQuest}
+            addTutorQuest={addTutorQuest}
+            completeTutorQuest={completeTutorQuest}
+            deleteTutorQuest={deleteTutorQuest}
           />
         </div>
       )}

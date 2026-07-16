@@ -108,6 +108,12 @@ const initDB = async () => {
     } else {
       throw new Error(`Missing required rename family to class migration: ${renameFamilyToClassPath}`);
     }
+    const renameParentToTutorPath = path.join(__dirname, '..', 'migrations', '20260716_rename_parent_to_tutor.sql');
+    if (fs.existsSync(renameParentToTutorPath)) {
+      await pool.query(fs.readFileSync(renameParentToTutorPath, 'utf8'));
+    } else {
+      throw new Error(`Missing required rename parent to tutor migration: ${renameParentToTutorPath}`);
+    }
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS subject VARCHAR(50) DEFAULT 'english';`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS image_url TEXT;`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;`);
@@ -149,12 +155,12 @@ const initDB = async () => {
     // Migration: Seed default classroom rewards for all existing active teachers
     console.log('=== Khởi chạy migration Quà Khuyến Học cho Chủ Nhiệm ===');
     const teachersRes = await pool.query(
-      `SELECT DISTINCT parent_id FROM ge10_class_links 
+      `SELECT DISTINCT tutor_id FROM ge10_class_links 
        WHERE status = 'active' 
-         AND parent_id IN (SELECT id FROM ge10_users WHERE role IN ('parent', 'secondary_parent', 'truong_vien', 'pho_vien'))`
+         AND tutor_id IN (SELECT id FROM ge10_users WHERE role IN ('tutor', 'secondary_tutor', 'truong_vien', 'pho_vien'))`
     );
     for (const row of teachersRes.rows) {
-      await ensureDefaultClassRewards(row.parent_id);
+      await ensureDefaultClassRewards(row.tutor_id);
     }
     console.log(`=== Hoàn tất migration Quà Khuyến Học cho ${teachersRes.rows.length} Chủ Nhiệm ===`);
   } catch (error) {
