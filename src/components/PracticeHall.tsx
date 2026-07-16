@@ -33,12 +33,12 @@ const getElementalDungeon = (lesson: Lesson): HamNguyenTo => {
   return enrichTextbookAttributes(lesson.id, lesson.category, lesson.subject).hamNguyenTo;
 };
 
-interface HangLuyenCongProps {
+interface PracticeHallProps {
    onStartPractice: () => void;
    onStudyLesson: (lessonId: string) => void;
-   onOpenMatThat3D: () => void;
-   onOpenMatThatPlane: () => void;
-   onOpenMatThatGraph: () => void;
+   onOpenWorkshop3D: () => void;
+   onOpenWorkshopPlane: () => void;
+   onOpenWorkshopGraph: () => void;
    onStartLessonPractice?: (lessonId: string) => void;
 }
 
@@ -328,12 +328,12 @@ const SUBJECT_TRACKS: Partial<Record<HangSubjectId, {
   }
 };
 
-export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
+export const PracticeHall: React.FC<PracticeHallProps> = ({
   onStartPractice,
   onStudyLesson,
-  onOpenMatThat3D,
-  onOpenMatThatPlane,
-  onOpenMatThatGraph,
+  onOpenWorkshop3D,
+  onOpenWorkshopPlane,
+  onOpenWorkshopGraph,
   onStartLessonPractice
 }) => {
   const { activeSectId, activeGradeTier } = useSect();
@@ -470,10 +470,10 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                 {MAT_THAT_CARDS.filter(card => subjectToolIds.includes(card.id)).map(card => {
                   const onOpen = card.id === 'biki3d'
-                    ? onOpenMatThat3D
+                    ? onOpenWorkshop3D
                     : card.id === 'bikiplane'
-                      ? onOpenMatThatPlane
-                      : onOpenMatThatGraph;
+                      ? onOpenWorkshopPlane
+                      : onOpenWorkshopGraph;
                   return (
                     <button
                       key={card.id}

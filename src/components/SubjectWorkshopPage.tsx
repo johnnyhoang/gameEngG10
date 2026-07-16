@@ -3,7 +3,7 @@ import { ArrowLeft, BookOpenText, HelpCircle, Layers3, LineChart, Move3D, Sparkl
 
 type MatThatKind = '3d' | 'plane' | 'graph';
 
-interface HangMatThatPageProps {
+interface SubjectWorkshopPageProps {
   kind: MatThatKind;
   title: string;
   subtitle: string;
@@ -42,7 +42,7 @@ const KIND_META: Record<MatThatKind, {
   }
 };
 
-export function HangMatThatPage({
+export function SubjectWorkshopPage({
   kind,
   title,
   subtitle,
@@ -51,7 +51,7 @@ export function HangMatThatPage({
   onSwitchToPlane,
   onSwitchToGraph,
   children
-}: HangMatThatPageProps) {
+}: SubjectWorkshopPageProps) {
   const meta = KIND_META[kind];
   const [guideOpen, setGuideOpen] = useState(false);
 

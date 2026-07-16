@@ -43,8 +43,8 @@ const Arena = withSuspense(lazy(() => import('./components/Arena').then(m => ({ 
 const ItemShop = withSuspense(lazy(() => import('./components/ItemShop').then(m => ({ default: m.ItemShop }))));
 const ProfilePage = withSuspense(lazy(() => import('./components/ProfilePage').then(m => ({ default: m.ProfilePage }))));
 const GiangHoCamNang = withSuspense(lazy(() => import('./components/GiangHoCamNang').then(m => ({ default: m.GiangHoCamNang }))), null);
-const HangLuyenCong = withSuspense(lazy(() => import('./components/HangLuyenCong').then(m => ({ default: m.HangLuyenCong }))));
-const HangMatThatPage = withSuspense(lazy(() => import('./components/HangMatThatPage').then(m => ({ default: m.HangMatThatPage }))));
+const PracticeHall = withSuspense(lazy(() => import('./components/PracticeHall').then(m => ({ default: m.PracticeHall }))));
+const SubjectWorkshopPage = withSuspense(lazy(() => import('./components/SubjectWorkshopPage').then(m => ({ default: m.SubjectWorkshopPage }))));
 const DesktopCentralNav = withSuspense(lazy(() => import('./components/DesktopCentralNav').then(m => ({ default: m.DesktopCentralNav }))), null);
 const LessonStudyView = withSuspense(lazy(() => import('./components/LessonStudyView').then(m => ({ default: m.LessonStudyView }))));
 const RelaxationZone = withSuspense(lazy(() => import('./components/RelaxationZone').then(m => ({ default: m.RelaxationZone }))));
@@ -415,7 +415,7 @@ function App() {
             <WorldMap
               key={learningContextKey}
               onOpenArena={() => setScreen('arena')}
-              onOpenHang={() => setScreen('hang')}
+              onOpenPracticeHall={() => setScreen('hang')}
               onOpenRelax={() => setScreen('relax')}
               onOpenShop={() => setScreen('shop')}
               onOpenPet={() => setScreen('pet')}
@@ -457,7 +457,7 @@ function App() {
           {screen === 'parent' && <ParentConsole />}
 
           {screen === 'hang' && (
-            <HangLuyenCong
+            <PracticeHall
               key={learningContextKey}
               onStartPractice={() => {
                 closeHelp();
@@ -480,9 +480,9 @@ function App() {
                 setLessonBackTarget('hang');
                 setScreen('lesson-study');
               }}
-              onOpenMatThat3D={() => setScreen('hang-3d')}
-              onOpenMatThatPlane={() => setScreen('hang-plane')}
-              onOpenMatThatGraph={() => setScreen('hang-graph')}
+              onOpenWorkshop3D={() => setScreen('hang-3d')}
+              onOpenWorkshopPlane={() => setScreen('hang-plane')}
+              onOpenWorkshopGraph={() => setScreen('hang-graph')}
               onStartLessonPractice={handleStartLessonPracticeFromMap}
             />
           )}
@@ -496,7 +496,7 @@ function App() {
           )}
 
           {screen === 'hang-3d' && (
-            <HangMatThatPage
+            <SubjectWorkshopPage
               kind="3d"
               title="Xưởng Toán Hình 3D"
               subtitle="Không gian riêng cho hình học không gian lớp 9: dựng hình, xoay 360°, chọn góc nhìn và phân tích từng bước mà không bị bó hẹp trong layout chung."
@@ -506,11 +506,11 @@ function App() {
               onSwitchToGraph={() => setScreen('hang-graph')}
             >
               <GeometryApp mode="studio" dimension="3d" problemText="" />
-            </HangMatThatPage>
+            </SubjectWorkshopPage>
           )}
 
           {screen === 'hang-plane' && (
-            <HangMatThatPage
+            <SubjectWorkshopPage
               kind="plane"
               title="Xưởng Toán Hình"
               subtitle="Không gian riêng cho tam giác, tứ giác, đường tròn và các đường phụ. Board rộng hơn để kéo thả, nối cạnh, dựng đường cao và đọc lời giải rõ ràng."
@@ -520,12 +520,12 @@ function App() {
               onSwitchToGraph={() => setScreen('hang-graph')}
             >
               <GeometryApp mode="studio" dimension="2d" problemText="" />
-            </HangMatThatPage>
+            </SubjectWorkshopPage>
           )}
 
 
           {screen === 'hang-graph' && (
-            <HangMatThatPage
+            <SubjectWorkshopPage
               kind="graph"
               title="Xưởng Toán Đồ Thị"
               subtitle="Không gian riêng cho bậc nhất và bậc hai, slider hệ số, giao điểm, đỉnh và trục đối xứng. AI sẽ phân tích đề và điều khiển đồ thị theo lệnh."
@@ -535,7 +535,7 @@ function App() {
               onSwitchToGraph={() => setScreen('hang-graph')}
             >
               <BikiDoThiHamSo problemText="" />
-            </HangMatThatPage>
+            </SubjectWorkshopPage>
           )}
 
           {screen === 'relax' && (

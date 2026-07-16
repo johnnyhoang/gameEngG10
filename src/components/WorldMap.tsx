@@ -19,7 +19,7 @@ const getHamForPage = (pageId: string) => {
 
 interface WorldMapProps {
   onOpenArena: () => void;
-  onOpenHang: () => void;
+  onOpenPracticeHall: () => void;
   onOpenRelax: () => void;
   onOpenShop: () => void;
   onOpenPet: () => void;
@@ -31,7 +31,7 @@ interface WorldMapProps {
 // Worldmap hub (CORE_SPECS §2.1): 5 module chính ngang hàng cho Sĩ Tử —
 // Trường Thi, Học Đường, Công Viên Thư Giãn, Shop Học Cụ, Sân Thú Nuôi.
 export function WorldMap({
-  onOpenArena, onOpenHang, onOpenRelax, onOpenShop, onOpenPet,
+  onOpenArena, onOpenPracticeHall, onOpenRelax, onOpenShop, onOpenPet,
   onSpinWheel, onStudyLesson, onStartLessonPractice
 }: WorldMapProps) {
   const { activeSectId, activeGradeTier } = useSect();
@@ -535,7 +535,7 @@ export function WorldMap({
 
           {/* Học Đường */}
           <button
-            onClick={onOpenHang}
+            onClick={onOpenPracticeHall}
             className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/25 bg-gradient-to-br from-synth-cyan/12 via-synth-purple/8 to-transparent p-5 flex flex-col justify-between gap-4 text-left cursor-pointer transition-all duration-300 hover:border-synth-cyan/45 hover:shadow-[0_0_20px_rgba(0,240,255,0.12)] group"
           >
             <div className="space-y-3">
