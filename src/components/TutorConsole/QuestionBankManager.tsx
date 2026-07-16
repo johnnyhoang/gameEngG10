@@ -369,34 +369,17 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
   return (
     <div className="space-y-6">
       <div className="space-y-6">
-          {/* Header context info */}
-          <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-white/5 bg-synth-gray/10">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">{SUBJECTS_CONFIG[selectedSect].icon}</span>
-              <div>
-                <span className="block text-xs font-black uppercase font-orbitron text-white">
-                  Môn phái đang quản lý: {SUBJECTS_CONFIG[selectedSect].name}
-                </span>
-                <span className="block text-[10px] text-synth-text-muted">
-                  Ngữ cảnh được cô lập để tránh trộn lẫn ngân hàng câu hỏi.
-                </span>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
+          <div id="question-bank-tools" className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5 scroll-mt-24">
+            <div className="flex items-center justify-between">
+              <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
+                <Database className="w-4 h-4" /> Ngân hàng câu hỏi hiện có
+              </h4>
               <button
                 onClick={startAddNew}
                 className="text-[10px] px-3 py-1.5 rounded-lg bg-synth-cyan text-black hover:opacity-85 uppercase font-black font-orbitron cursor-pointer flex items-center gap-1"
               >
                 <Plus className="w-3.5 h-3.5" /> Thêm Câu Hỏi
               </button>
-            </div>
-          </div>
-
-          <div id="question-bank-tools" className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5 scroll-mt-24">
-            <div className="flex items-center justify-between">
-              <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
-                <Database className="w-4 h-4" /> Ngân hàng câu hỏi hiện có
-              </h4>
             </div>
 
             <div className="flex flex-col gap-6">
@@ -523,7 +506,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
               {/* Row 3: List of Questions (Full Width) */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center text-xs text-synth-text-muted">
-                  <span>Đang tải: <strong>{Math.min(visibleCount, filteredQuestions.length)}</strong> / {filteredQuestions.length} câu (Tổng {sectQuestions.length})</span>
+                  <span>Hiển thị: <strong>{Math.min(visibleCount, filteredQuestions.length)}</strong> / {filteredQuestions.length} câu (Tổng {sectQuestions.length})</span>
                 </div>
 
                 <div 
@@ -693,14 +676,16 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {coreCoverage.byHam.map(item => {
                       const details = DUNGEONS_CONFIG[item.ham];
                       const label = details ? details.label : item.ham;
                       return (
-                        <div key={item.ham} className="rounded-xl border border-white/5 bg-white/5 p-3 space-y-2">
+                        <div key={item.ham} className="flex-auto w-full sm:w-[180px] max-w-xs rounded-xl border border-white/5 bg-white/5 p-3 space-y-2">
                           <div className="flex items-center justify-between text-[10px] font-bold">
-                            <span className="text-synth-text-muted">{label}</span>
+                            <span className="text-synth-text-muted flex items-center gap-1.5">
+                              {label}
+                            </span>
                             <span className="text-white">{item.percent}%</span>
                           </div>
                           <div className="h-1.5 rounded-full bg-black/30 overflow-hidden">

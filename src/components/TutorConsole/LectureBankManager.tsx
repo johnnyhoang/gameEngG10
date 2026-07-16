@@ -268,9 +268,19 @@ export const LectureBankManager: React.FC = () => {
 
       {/* Filters bar */}
       <div className="bg-synth-gray/10 rounded-xl p-4 space-y-3">
-        <div className="flex items-center justify-between border-b border-white/5 pb-2">
-          <span className="text-[10px] uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">Bộ lọc bài giảng</span>
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4">
+          <div className="relative flex-1 w-full lg:max-w-2xl">
+            <Search className="w-4 h-4 text-synth-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Tìm tiêu đề, nội dung..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
+            />
+          </div>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <span className="text-[10px] uppercase font-orbitron font-bold text-synth-text-muted tracking-wider hidden sm:inline-block">Bộ lọc bài giảng</span>
             <button
               onClick={() => {
                 setCategoryFilter('all');
@@ -278,21 +288,21 @@ export const LectureBankManager: React.FC = () => {
                 setStandardFilter('all');
                 setSearchQuery('');
               }}
-              className="text-[9px] px-2 py-1 rounded bg-white/5 border border-white/10 font-bold uppercase hover:bg-white/10 text-white cursor-pointer transition-colors"
+              className="text-[9px] px-2 py-1.5 rounded bg-white/5 border border-white/10 font-bold uppercase hover:bg-white/10 text-white cursor-pointer transition-colors whitespace-nowrap"
             >
               Xóa lọc
             </button>
             <button
               onClick={fetchLessons}
               disabled={loading}
-              className="text-[9px] px-2 py-1 flex items-center gap-1 rounded bg-white/5 border border-white/10 font-bold uppercase hover:bg-white/10 text-white cursor-pointer transition-colors disabled:opacity-50"
+              className="text-[9px] px-2 py-1.5 flex items-center gap-1 rounded bg-white/5 border border-white/10 font-bold uppercase hover:bg-white/10 text-white cursor-pointer transition-colors disabled:opacity-50 whitespace-nowrap"
             >
               <RefreshCw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} /> Làm mới
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           <label className="space-y-1 text-[10px] block">
             <span className="uppercase font-orbitron font-bold text-synth-text-muted">Nhóm (Category)</span>
             <select
@@ -332,20 +342,6 @@ export const LectureBankManager: React.FC = () => {
               <option value="standard">🏆 Đạt chuẩn</option>
               <option value="non_standard">Chưa đạt chuẩn</option>
             </select>
-          </label>
-
-          <label className="space-y-1 text-[10px] block">
-            <span className="uppercase font-orbitron font-bold text-synth-text-muted">Tìm kiếm</span>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <input
-                type="text"
-                placeholder="Tìm tiêu đề, nội dung..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
-              />
-            </div>
           </label>
         </div>
       </div>
