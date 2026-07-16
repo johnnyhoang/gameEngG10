@@ -65,7 +65,7 @@ export const VicePrincipalApplicationsManager: React.FC<VicePrincipalApplication
   if (!isAdmin(currentUser?.role)) return null;
 
   return (
-    <div className="glass-panel rounded-2xl border border-synth-magenta/30 p-5 space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-1.5">
           🛡️ Duyệt Đơn Ứng Tuyển Phó Viện Trưởng ({apps.length})

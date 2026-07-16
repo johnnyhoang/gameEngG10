@@ -80,7 +80,6 @@ function renderGame(
   const lockedStatus = status === 'shadowed';
 
   const props = {
-    currentStudentId: currentUser?.id || 'mock-student',
     activeSectId: currentSubject,
     gradeTier,
     difficulty: (isEasy ? 'easy' : 'hard') as 'easy' | 'hard',

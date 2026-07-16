@@ -6,7 +6,6 @@ import { useTranslate } from '../hooks/useTranslate';
 
 // Import child managers
 import { AdminConnectionManager } from './TutorConsole/AdminConnectionManager';
-
 import { ClassLinksManager } from './TutorConsole/ClassLinksManager';
 import { SettingsManager } from './TutorConsole/SettingsManager';
 import { StudentProfileView } from './TutorConsole/StudentProfileView';
@@ -16,6 +15,7 @@ import { OrgChart } from './TutorConsole/OrgChart';
 import { MemberRoster } from './TutorConsole/MemberRoster';
 import { RoleManager } from './TutorConsole/RoleManager';
 import { VicePrincipalApplicationsManager } from './TutorConsole/VicePrincipalApplicationsManager';
+import { AuditLogsManager } from './TutorConsole/AuditLogsManager';
 
 export const TutorConsole: React.FC = () => {
   const { t } = useTranslate();
@@ -204,11 +204,21 @@ export const TutorConsole: React.FC = () => {
                     ?
                   </button>
                 </h3>
-                <p className="text-xs text-synth-text-muted leading-relaxed max-w-4xl">
-                  {isAdmin(currentUser?.role)
-                    ? 'Theo dõi toàn bộ học sinh và cán bộ trong viện, quản lý liên kết lớp học, cấu hình quy tắc thưởng (Ruby) và xem lịch sử hoạt động.'
-                    : 'Theo dõi học sinh lớp bạn phụ trách, quản lý liên kết lớp học, giao nhiệm vụ và duyệt đổi quà khuyến học.'}
-                </p>
+                <div className="text-xs text-synth-text-muted leading-relaxed max-w-4xl space-y-1">
+                  {isAdmin(currentUser?.role) ? (
+                    <p>Theo dõi toàn bộ học sinh và cán bộ trong viện, quản lý liên kết lớp học, cấu hình quy tắc thưởng (Ruby) và xem lịch sử hoạt động.</p>
+                  ) : (
+                    <>
+                      <p>
+                        Vai trò hiện tại:{' '}
+                        <span className="font-bold text-synth-magenta uppercase font-orbitron">
+                          {currentUser?.role === 'tutor' ? 'Chủ Nhiệm Chính' : 'Phó chủ nhiệm'}
+                        </span>
+                      </p>
+                      <p>Theo dõi học sinh lớp bạn phụ trách, quản lý liên kết lớp học, giao nhiệm vụ và duyệt đổi quà khuyến học.</p>
+                    </>
+                  )}
+                </div>
               </div>
 
               {/* Quick Stats Grid — chỉ hiện chỉ số có ý nghĩa với vai trò hiện tại */}
@@ -267,8 +277,6 @@ export const TutorConsole: React.FC = () => {
                 currentUser={currentUser}
                 adminStudents={adminStudents}
                 adminLinks={adminLinks}
-                auditLogs={auditLogs}
-                fetchAuditLogs={fetchAuditLogs}
                 onInspectStudent={handleInspectStudent}
                 inspectLoading={inspectLoading}
               />
@@ -293,14 +301,18 @@ export const TutorConsole: React.FC = () => {
 
               {isAdmin(currentUser?.role) && (
                 <div className="space-y-6">
-                  <AdminConnectionManager
-                    currentUser={currentUser}
-                    classLinks={classLinks}
-                    respondClassInvite={respondClassInvite}
-                    leaveClass={leaveClass}
-                    inviteAdminConnection={inviteAdminConnection}
-                  />
-                  <VicePrincipalApplicationsManager currentUser={currentUser} />
+                  <div className="glass-panel rounded-2xl border border-synth-magenta/30 p-5 space-y-6">
+                    <AdminConnectionManager
+                      currentUser={currentUser}
+                      classLinks={classLinks}
+                      respondClassInvite={respondClassInvite}
+                      leaveClass={leaveClass}
+                      inviteAdminConnection={inviteAdminConnection}
+                    />
+                    <div className="border-t border-white/5 pt-6">
+                      <VicePrincipalApplicationsManager currentUser={currentUser} />
+                    </div>
+                  </div>
                   <RoleManager currentUser={currentUser} />
                 </div>
               )}
@@ -310,6 +322,13 @@ export const TutorConsole: React.FC = () => {
                 adminStudents={adminStudents}
                 adminLinks={adminLinks}
               />
+
+              {isAdmin(currentUser?.role) && (
+                <AuditLogsManager
+                  auditLogs={auditLogs}
+                  fetchAuditLogs={fetchAuditLogs}
+                />
+              )}
             </div>
           </div>
         )}

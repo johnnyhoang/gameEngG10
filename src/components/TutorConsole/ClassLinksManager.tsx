@@ -167,17 +167,6 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-4">
-        <div>
-          <h3 className="font-orbitron font-bold text-lg text-synth-cyan uppercase tracking-wider flex items-center gap-2">
-            🏫 Quản Lý Lớp Học & Đội Ngũ Chủ Nhiệm
-          </h3>
-          <p className="text-xs text-slate-400 mt-1">
-            Vai trò hiện tại: <span className="font-bold text-synth-magenta uppercase font-orbitron">{isPrimaryTeacher ? 'Chủ Nhiệm Chính' : 'Phó chủ nhiệm'}</span>
-          </p>
-        </div>
-      </div>
-
       {/* ================= SECTION 1: INCOMING REQUESTS FOR PRIMARY TEACHER ================= */}
       {isPrimaryTeacher && (incomingStudentRequests.length > 0 || incomingTeacherRequests.length > 0) && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -353,7 +342,6 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
               <p className="text-[10px] text-slate-400 mt-1">Tìm kiếm và mời học sinh gia nhập lớp học của bạn để quản lý và học tập.</p>
             </div>
             <div className="space-y-2">
-              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Mời Học Sinh Gia Nhập</span>
               <div className="flex gap-2">
                 <SearchSuggest
                   placeholder="Tìm học sinh theo tên/email..."
@@ -416,7 +404,6 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
               <p className="text-[10px] text-slate-400 mt-1">Mời đồng nghiệp làm Chủ Nhiệm Phụ cùng quản lý và hỗ trợ học sinh trong lớp.</p>
             </div>
             <div className="space-y-2">
-              <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Mời Giáo Viên Phụ Đồng Hành</span>
               <div className="flex gap-2">
                 <SearchSuggest
                   placeholder="Tìm giáo viên theo tên/email..."
@@ -466,7 +453,6 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
             <p className="text-[10px] text-slate-400 mt-1">Xin làm Chủ Nhiệm Phụ hỗ trợ quản lý học sinh cho lớp của đồng nghiệp. Nhập email của họ.</p>
           </div>
           <div className="space-y-2">
-            <span className="block text-[10px] text-slate-400 font-bold uppercase tracking-wider">Email Giáo Viên Chính</span>
             <div className="flex gap-2">
               <SearchSuggest
                 placeholder="Nhập email Giáo viên chính..."
@@ -541,13 +527,13 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                 </button>
               </div>
             ) : (
-              <div className="flex justify-start">
+              <div className="flex justify-end mt-2">
                 <button
                   disabled={isApplyingVicePrincipal}
                   onClick={handleApplyVicePrincipal}
-                  className="w-full px-4 py-2 bg-synth-magenta text-black font-bold font-orbitron text-xs uppercase rounded-lg hover:synth-glow-magenta transition-all cursor-pointer disabled:opacity-50"
+                  className="w-auto px-2.5 py-1 bg-synth-magenta text-black font-bold font-orbitron text-[10px] uppercase rounded hover:synth-glow-magenta transition-all cursor-pointer disabled:opacity-50"
                 >
-                  {isApplyingVicePrincipal ? 'Đang gửi...' : 'Gửi Yêu Cầu Ứng Tuyển 🛡️'}
+                  {isApplyingVicePrincipal ? '...' : 'Ứng Tuyển'}
                 </button>
               </div>
             )}

@@ -104,9 +104,6 @@ export const OrgChart: React.FC<OrgChartProps> = ({
         <h4 className="font-orbitron font-black text-white text-sm uppercase tracking-widest flex items-center justify-center gap-1.5">
           🌳 SƠ ĐỒ NHÂN SỰ & HỌC VIÊN
         </h4>
-        <p className="text-[10px] text-slate-400">
-          Di chuột vào từng thành viên để xem thông tin chi tiết. Nhãn màu vàng hiển thị tài khoản của bạn.
-        </p>
       </div>
 
       {/* TẤT CẢ BIỂU ĐỒ TRÊN CÂY (Có hỗ trợ cuộn dọc/ngang tối đa) */}

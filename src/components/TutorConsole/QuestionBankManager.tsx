@@ -392,170 +392,6 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
             </div>
           </div>
 
-          {/* Coverage chuyên đề cốt lõi — CORE_SPECS §9.6 */}
-          {coreCoverage && (
-            <div className="rounded-2xl border border-white/5 bg-synth-gray/10 overflow-hidden">
-              <button
-                type="button"
-                onClick={() => setIsCoverageExpanded(!isCoverageExpanded)}
-                className="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 transition-colors text-left cursor-pointer outline-none"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="text-xl leading-none">{SUBJECTS_CONFIG[selectedSect].icon}</span>
-                  <div>
-                    <span className="block text-xs font-black uppercase font-orbitron text-white">
-                      Độ phủ chuyên đề cốt lõi ({coreCoverage.percent}%)
-                    </span>
-                    <span className="block text-[10px] text-synth-text-muted">
-                      {coreCoverage.current.toLocaleString()} / {coreCoverage.required.toLocaleString()} câu theo định mức
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  {!isCoverageExpanded && (
-                    <div className="hidden sm:block w-32 h-1.5 rounded-full bg-black/30 overflow-hidden">
-                      <div className="h-full bg-synth-cyan transition-all" style={{ width: `${Math.min(coreCoverage.percent, 100)}%` }} />
-                    </div>
-                  )}
-                  <span className="text-synth-cyan text-[10px] font-bold uppercase font-orbitron">
-                    {isCoverageExpanded ? 'Thu gọn ▲' : 'Xem chi tiết ▼'}
-                  </span>
-                </div>
-              </button>
-
-              {isCoverageExpanded && (
-                <div className="p-4 space-y-4 border-t border-white/5 bg-synth-gray/5 animate-in slide-in-from-top-2 duration-200">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">
-                        Độ phủ chuyên đề cốt lõi — {SUBJECTS_CONFIG[selectedSect].name}
-                      </span>
-                      <p className="text-[10px] text-synth-text-muted mt-1">
-                        {coreCoverage.current.toLocaleString()} / {coreCoverage.required.toLocaleString()} câu theo định mức
-                      </p>
-                    </div>
-                    <span className="text-lg font-orbitron font-black text-synth-cyan">{coreCoverage.percent}%</span>
-                  </div>
-                  <div className="h-2.5 rounded-full bg-black/30 overflow-hidden border border-white/5">
-                    <div
-                      className="h-full bg-gradient-to-r from-synth-cyan to-synth-green transition-all"
-                      style={{ width: `${Math.min(coreCoverage.percent, 100)}%` }}
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                    {coreCoverage.byHam.map(item => {
-                      const details = DUNGEONS_CONFIG[item.ham];
-                      const label = details ? details.label : item.ham;
-                      return (
-                        <div key={item.ham} className="rounded-xl border border-white/5 bg-white/5 p-3 space-y-2">
-                          <div className="flex items-center justify-between text-[10px] font-bold">
-                            <span className="text-synth-text-muted">{label}</span>
-                            <span className="text-white">{item.percent}%</span>
-                          </div>
-                          <div className="h-1.5 rounded-full bg-black/30 overflow-hidden">
-                            <div className="h-full bg-synth-cyan" style={{ width: `${Math.min(item.percent, 100)}%` }} />
-                          </div>
-                          <span className="block text-[9px] text-synth-text-muted">{item.current} / {item.required} câu</span>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {coreCoverage.highPriorityGaps.length > 0 ? (
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-red-400">
-                        <AlertTriangle className="w-3.5 h-3.5" />
-                        {coreCoverage.highPriorityGaps.length} chuyên đề ưu tiên cao đang thiếu câu
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-2">
-                        {coreCoverage.highPriorityGaps.map(item => {
-                          const severity = item.ratio < 0.5 ? 'red' : 'yellow';
-                          return (
-                            <button
-                              key={item.id}
-                              onClick={() => {
-                                setTopicFilter(item.id);
-                                document.getElementById('question-bank-tools')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                              }}
-                              className={`rounded-xl border p-3 text-left cursor-pointer transition-colors ${
-                                severity === 'red'
-                                  ? 'border-red-500/30 bg-red-500/5 hover:bg-red-500/10'
-                                  : 'border-yellow-500/30 bg-yellow-500/5 hover:bg-yellow-500/10'
-                              }`}
-                              title="Lọc ngân hàng theo chuyên đề này"
-                            >
-                              <span className="block text-[10px] font-bold text-white line-clamp-2">{item.label}</span>
-                              <span className={`block mt-1 text-[10px] font-orbitron font-black ${severity === 'red' ? 'text-red-400' : 'text-yellow-400'}`}>
-                                {item.count} / {item.minQuestions} câu
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-synth-green">
-                      <ShieldCheck className="w-3.5 h-3.5" /> Đủ định mức cho mọi chuyên đề ưu tiên cao
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Thống kê câu đố (CORE_SPECS §9.5) — số câu đủ điều kiện theo Hầm nguyên tố */}
-          <div className="rounded-2xl border border-white/5 bg-synth-gray/10 overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setIsRiddleExpanded(!isRiddleExpanded)}
-              className="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 transition-colors text-left cursor-pointer outline-none"
-            >
-              <div className="flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-synth-cyan" />
-                <div>
-                  <span className="block text-xs font-black uppercase font-orbitron text-white">
-                    Thống kê câu đố ({riddleStats[selectedSect]?.eligible || 0} câu đủ điều kiện)
-                  </span>
-                  <span className="block text-[10px] text-synth-text-muted">
-                    Tổng: {riddleStats[selectedSect]?.eligible || 0} / {riddleStats[selectedSect]?.total || 0} câu của môn phái {SUBJECTS_CONFIG[selectedSect].name}
-                  </span>
-                </div>
-              </div>
-              <span className="text-synth-cyan text-[10px] font-bold uppercase font-orbitron">
-                {isRiddleExpanded ? 'Thu gọn ▲' : 'Xem chi tiết ▼'}
-              </span>
-            </button>
-
-            {isRiddleExpanded && (
-              <div className="p-4 space-y-3 border-t border-white/5 bg-synth-gray/5 animate-in slide-in-from-top-2 duration-200">
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-                  {coreCoverage?.byHam.map(hamItem => {
-                    const ham = hamItem.ham;
-                    const details = DUNGEONS_CONFIG[ham];
-                    const label = details ? details.label : ham;
-                    const count = riddleStats[selectedSect]?.byHam[ham] || 0;
-                    const isLow = count === 0;
-                    return (
-                      <div
-                        key={ham}
-                        className={`rounded-xl border p-3 text-center ${isLow ? 'border-red-500/30 bg-red-500/5' : 'border-white/5 bg-white/5'}`}
-                      >
-                        <span className="block text-[10px] text-synth-text-muted uppercase font-bold">{label}</span>
-                        <span className={`block text-lg font-orbitron font-black ${isLow ? 'text-red-400' : 'text-white'}`}>{count}</span>
-                        {isLow && (
-                          <span className="flex items-center justify-center gap-1 text-[9px] text-red-400 mt-1">
-                            <AlertTriangle className="w-3 h-3" /> Thiếu câu
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-          </div>
-
           <div id="question-bank-tools" className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5 scroll-mt-24">
             <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-4">
               <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
@@ -578,7 +414,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
 
             <div className="flex flex-col gap-6">
               {/* Row 1: Filters */}
-              <div className="rounded-2xl border border-white/5 bg-synth-gray/10 p-4 space-y-3">
+              <div className="bg-synth-gray/10 rounded-xl p-4 space-y-3">
                 <div className="flex items-center justify-between border-b border-white/5 pb-2">
                   <span className="text-[10px] uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">Bộ lọc câu hỏi</span>
                   <button
@@ -685,7 +521,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
               </div>
 
               {/* Row 2: AI Ingest tool (Full Width) */}
-              <div className="rounded-2xl border border-white/5 bg-synth-gray/10 overflow-hidden">
+              <div className="bg-synth-gray/10 rounded-xl overflow-hidden">
                 <button
                   type="button"
                   onClick={() => setIsAiIngestExpanded(!isAiIngestExpanded)}
@@ -909,7 +745,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                       );
                     })
                   ) : (
-                    <div className="rounded-2xl border border-dashed border-white/10 bg-white/5 p-8 text-center text-xs text-synth-text-muted">
+                    <div className="bg-white/5 rounded-xl p-8 text-center text-xs text-synth-text-muted">
                       Không có câu hỏi nào khớp bộ lọc.
                     </div>
                   )}
@@ -917,6 +753,173 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
               </div>
             </div>
           </div>
+          {/* Coverage chuyên đề cốt lõi — CORE_SPECS §9.6 */}
+          {coreCoverage && (
+            <div className="rounded-2xl border border-white/5 bg-synth-gray/10 overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setIsCoverageExpanded(!isCoverageExpanded)}
+                className="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 transition-colors text-left cursor-pointer outline-none"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-xl leading-none">{SUBJECTS_CONFIG[selectedSect].icon}</span>
+                  <div>
+                    <span className="block text-xs font-black uppercase font-orbitron text-white">
+                      Độ phủ chuyên đề cốt lõi ({coreCoverage.percent}%)
+                    </span>
+                    <span className="block text-[10px] text-synth-text-muted">
+                      {coreCoverage.current.toLocaleString()} / {coreCoverage.required.toLocaleString()} câu theo định mức
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  {!isCoverageExpanded && (
+                    <div className="hidden sm:block w-32 h-1.5 rounded-full bg-black/30 overflow-hidden">
+                      <div className="h-full bg-synth-cyan transition-all" style={{ width: `${Math.min(coreCoverage.percent, 100)}%` }} />
+                    </div>
+                  )}
+                  <span className="text-synth-cyan text-[10px] font-bold uppercase font-orbitron">
+                    {isCoverageExpanded ? 'Thu gọn ▲' : 'Xem chi tiết ▼'}
+                  </span>
+                </div>
+              </button>
+
+              {isCoverageExpanded && (
+                <div className="p-4 space-y-4 border-t border-white/5 bg-synth-gray/5 animate-in slide-in-from-top-2 duration-200">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <span className="text-[10px] uppercase font-orbitron font-bold text-synth-text-muted tracking-wider">
+                        Độ phủ chuyên đề cốt lõi — {SUBJECTS_CONFIG[selectedSect].name}
+                      </span>
+                      <p className="text-[10px] text-synth-text-muted mt-1">
+                        {coreCoverage.current.toLocaleString()} / {coreCoverage.required.toLocaleString()} câu theo định mức
+                      </p>
+                    </div>
+                    <span className="text-lg font-orbitron font-black text-synth-cyan">{coreCoverage.percent}%</span>
+                  </div>
+                  <div className="h-2.5 rounded-full bg-black/30 overflow-hidden border border-white/5">
+                    <div
+                      className="h-full bg-gradient-to-r from-synth-cyan to-synth-green transition-all"
+                      style={{ width: `${Math.min(coreCoverage.percent, 100)}%` }}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {coreCoverage.byHam.map(item => {
+                      const details = DUNGEONS_CONFIG[item.ham];
+                      const label = details ? details.label : item.ham;
+                      return (
+                        <div key={item.ham} className="rounded-xl border border-white/5 bg-white/5 p-3 space-y-2">
+                          <div className="flex items-center justify-between text-[10px] font-bold">
+                            <span className="text-synth-text-muted">{label}</span>
+                            <span className="text-white">{item.percent}%</span>
+                          </div>
+                          <div className="h-1.5 rounded-full bg-black/30 overflow-hidden">
+                            <div className="h-full bg-synth-cyan" style={{ width: `${Math.min(item.percent, 100)}%` }} />
+                          </div>
+                          <span className="block text-[9px] text-synth-text-muted">{item.current} / {item.required} câu</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {coreCoverage.highPriorityGaps.length > 0 ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-red-400">
+                        <AlertTriangle className="w-3.5 h-3.5" />
+                        {coreCoverage.highPriorityGaps.length} chuyên đề ưu tiên cao đang thiếu câu
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {coreCoverage.highPriorityGaps.map(item => {
+                          const severity = item.ratio < 0.5 ? 'red' : 'yellow';
+                          return (
+                            <button
+                              key={item.id}
+                              onClick={() => {
+                                setTopicFilter(item.id);
+                                document.getElementById('question-bank-tools')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              }}
+                              className={`flex-none rounded border px-2 py-1 cursor-pointer transition-colors ${
+                                severity === 'red'
+                                  ? 'border-red-500/30 bg-red-500/5 hover:bg-red-500/10 text-red-400'
+                                  : 'border-yellow-500/30 bg-yellow-500/5 hover:bg-yellow-500/10 text-yellow-400'
+                              }`}
+                              title="Lọc ngân hàng theo chuyên đề này"
+                            >
+                              <div className="flex items-center gap-1.5">
+                                <span className="block text-[10px] font-bold text-white truncate max-w-[150px]">{item.label}</span>
+                                <span className="block text-[9px] font-orbitron font-black">
+                                  ({item.count}/{item.minQuestions})
+                                </span>
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase text-synth-green">
+                      <ShieldCheck className="w-3.5 h-3.5" /> Đủ định mức cho mọi chuyên đề ưu tiên cao
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Thống kê câu đố (CORE_SPECS §9.5) — số câu đủ điều kiện theo Hầm nguyên tố */}
+          <div className="rounded-2xl border border-white/5 bg-synth-gray/10 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setIsRiddleExpanded(!isRiddleExpanded)}
+              className="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 transition-colors text-left cursor-pointer outline-none"
+            >
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-synth-cyan" />
+                <div>
+                  <span className="block text-xs font-black uppercase font-orbitron text-white">
+                    Thống kê câu đố ({riddleStats[selectedSect]?.eligible || 0} câu đủ điều kiện)
+                  </span>
+                  <span className="block text-[10px] text-synth-text-muted">
+                    Tổng: {riddleStats[selectedSect]?.eligible || 0} / {riddleStats[selectedSect]?.total || 0} câu của môn phái {SUBJECTS_CONFIG[selectedSect].name}
+                  </span>
+                </div>
+              </div>
+              <span className="text-synth-cyan text-[10px] font-bold uppercase font-orbitron">
+                {isRiddleExpanded ? 'Thu gọn ▲' : 'Xem chi tiết ▼'}
+              </span>
+            </button>
+
+            {isRiddleExpanded && (
+              <div className="p-4 space-y-3 border-t border-white/5 bg-synth-gray/5 animate-in slide-in-from-top-2 duration-200">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {coreCoverage?.byHam.map(hamItem => {
+                    const ham = hamItem.ham;
+                    const details = DUNGEONS_CONFIG[ham];
+                    const label = details ? details.label : ham;
+                    const count = riddleStats[selectedSect]?.byHam[ham] || 0;
+                    const isLow = count === 0;
+                    return (
+                      <div
+                        key={ham}
+                        className={`rounded-xl border p-3 text-center ${isLow ? 'border-red-500/30 bg-red-500/5' : 'border-white/5 bg-white/5'}`}
+                      >
+                        <span className="block text-[10px] text-synth-text-muted uppercase font-bold">{label}</span>
+                        <span className={`block text-lg font-orbitron font-black ${isLow ? 'text-red-400' : 'text-white'}`}>{count}</span>
+                        {isLow && (
+                          <span className="flex items-center justify-center gap-1 text-[9px] text-red-400 mt-1">
+                            <AlertTriangle className="w-3 h-3" /> Thiếu câu
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+
         </div>
       <QuestionFormModal
         isOpen={isAddingNew || !!editingQuestion}

@@ -102,21 +102,7 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
   };
 
   return (
-    <div className="glass-panel rounded-2xl border border-synth-magenta/30 p-5 space-y-4">
-      {/* Header gọn: tên khối + đếm + nút tải lại (vai trò đã hiển thị trên TopHUD) */}
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-1.5">
-          🤝 Ban Giám Hiệu Đồng Hành ({activeConnections.length})
-        </h3>
-        <button
-          onClick={handleRefresh}
-          className="p-1 rounded hover:bg-white/5 text-slate-400 hover:text-white transition-colors cursor-pointer"
-          title="Tải lại danh sách"
-          disabled={loading}
-        >
-          <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-        </button>
-      </div>
+    <div className="space-y-6">
 
       {/* Mời kết nối: một hàng duy nhất */}
       {inviteAdminConnection && (
@@ -235,12 +221,22 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
       )}
 
       {/* ================= SECTION 4: ACTIVE ADMIN CONNECTIONS ================= */}
-      <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-4">
-        <div>
-          <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-2">
-            🤝 Ban Giám Hiệu Đồng Hành ({activeConnections.length})
-          </h4>
-          <p className="text-[11px] text-slate-400 mt-1">Các thành viên Ban Giám Hiệu cùng cộng tác quản lý trong học viện.</p>
+      <div className="space-y-4 pt-4 border-t border-white/5">
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-2">
+              🤝 Ban Giám Hiệu Đồng Hành ({activeConnections.length})
+            </h4>
+            <p className="text-[11px] text-slate-400 mt-1">Các thành viên Ban Giám Hiệu cùng cộng tác quản lý trong học viện.</p>
+          </div>
+          <button
+            onClick={handleRefresh}
+            className="p-1 rounded hover:bg-white/5 text-slate-400 hover:text-white transition-colors cursor-pointer"
+            title="Tải lại danh sách"
+            disabled={loading}
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
 
         {activeConnections.length === 0 ? (
