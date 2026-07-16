@@ -1,7 +1,7 @@
 import { useMemo, useEffect, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { toast } from '../utils/toast';
-import { BrainCircuit, Zap, Star, Flame, Sparkles } from 'lucide-react';
+import { BrainCircuit, Zap, Star, Flame } from 'lucide-react';
 import { CORE_KNOWLEDGE_TOPICS, inferTopicId } from '../data/coreKnowledge';
 import { useSect } from '../contexts/SectContext';
 import { SUBJECTS_CONFIG, DEFAULT_GRADE_TIER } from '../types/game';
@@ -24,7 +24,7 @@ interface AcademyTabProps {
   onNavigateToFunzone?: () => void;
 }
 
-export function AcademyTab({ onStudyLesson, onStartLessonPractice, onNavigateToFunzone }: AcademyTabProps) {
+export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabProps) {
   const { t, isEnglish } = useTranslate();
   const { activeSectId, activeGradeTier } = useSect();
   const uiTheme = useGameState(state => state.uiTheme);
@@ -112,9 +112,6 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice, onNavigateToF
   return (
     <div className="space-y-5">
 
-      {/* ══ Sổ Tu Học (Learning Ledger) — full width, đầu trang ══ */}
-      <LearningLedger compact={false} defaultExpanded={true} />
-
       {/* ══ 2-column layout ══ */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
 
@@ -176,6 +173,13 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice, onNavigateToF
                       👨‍🏫 {t('Chưa kết nối lớp', 'No class connected')}
                     </div>
                   )}
+                  {/* Badge hiển thị phong cách học đường hiện tại */}
+                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-orbitron font-bold text-[10px] uppercase ${
+                    isUnicorn ? 'border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700' : 'border-synth-magenta/30 bg-synth-magenta/10 text-synth-magenta'
+                  }`}>
+                    <span>🎨</span>
+                    {t('Phong Cách', 'Style')}: {activeTheme.name.replace(/[🎨✨🌙🌸⭐🎋🍁❄️]/g, '').trim()} {activeTheme.iconSet[0]}
+                  </div>
                 </div>
               </div>
 
@@ -206,6 +210,11 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice, onNavigateToF
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Sổ Tu Học (Learning Ledger) tích hợp gọn gàng ở đây dưới dạng compact & collapsed */}
+            <div className="mt-4 pt-4 border-t border-white/5 relative z-10">
+              <LearningLedger compact={true} defaultExpanded={false} />
             </div>
           </section>
 
@@ -425,33 +434,6 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice, onNavigateToF
             </section>
           )}
 
-          {/* SECTION: Current Theme */}
-          <div className={`relative z-10 grid gap-2 rounded-2xl border p-4 text-sm ${
-            isLight ? 'border-violet-200/40 bg-white/80 text-violet-700' : 'border-white/10 bg-white/5 text-white/75'
-          }`}>
-            <div className="flex items-center gap-2">
-              <Sparkles className={`h-4 w-4 ${isLight ? 'text-fuchsia-500' : 'text-synth-cyan'}`} />
-              <span className="font-semibold font-orbitron text-xs">{t('Phong Cách Học Đường Đang Dùng', 'Current School Style')}</span>
-            </div>
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{activeTheme.iconSet[0]}</span>
-                <span className={`font-bold ${isLight ? 'text-slate-800' : 'text-white'}`}>{activeTheme.name}</span>
-              </div>
-              {onNavigateToFunzone && (
-                <button
-                  onClick={onNavigateToFunzone}
-                  className={`px-3 py-1.5 rounded-lg border text-[10px] font-orbitron font-bold uppercase tracking-wider cursor-pointer transition-all ${
-                    isLight
-                      ? 'border-violet-300 bg-violet-50 text-violet-700 hover:bg-violet-100'
-                      : 'border-synth-cyan/30 bg-synth-cyan/5 text-synth-cyan hover:bg-synth-cyan/15'
-                  }`}
-                >
-                  {t('Đổi Phong Cách 🎨', 'Change Style 🎨')}
-                </button>
-              )}
-            </div>
-          </div>
 
         </div>
 

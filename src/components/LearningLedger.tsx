@@ -109,7 +109,7 @@ function MissionGroup({ title, items }: { title: string; items: MissionAssignmen
   return (
     <div className="rounded-xl border border-white/5 bg-white/5 p-3">
       <h3 className="mb-2 font-orbitron text-[10px] font-black uppercase text-synth-cyan">{title}</h3>
-      <div className="max-h-52 space-y-2 overflow-y-auto pr-1">
+      <div className="max-h-none md:max-h-52 space-y-2 overflow-y-visible md:overflow-y-auto pr-1">
         {items.map(item => {
           const percent = Math.min(100, Math.round(item.current / item.target * 100));
           return (

@@ -52,7 +52,7 @@ Hệ thống được thiết kế phân tách rõ ràng thành hai môi trườ
 
 Môi trường dành cho học sinh tập trung vào trải nghiệm học tập, học tập và rèn luyện kỹ năng thông qua bản đồ game worldmap (`WorldMap`) — hub trung tâm dẫn vào 5 module chính bên dưới:
 
-Mọi trang Sĩ Tử cùng dùng **Sổ Tu Học** đặt trong app shell ngay dưới TopHUD. Sổ gồm **Nhập Môn** (cột mốc một lần theo profile), **Nhiệm Vụ Hôm Nay** (mục tiêu reset theo ngày) và **Tiến Độ Tu Học** (Level, XP, chuỗi học và tổng quan tiến trình). Tiến độ được backend tính từ domain event idempotent, không do UI tự cộng và không dùng JSON blob làm nguồn sự thật. Contract chi tiết xem **[SUB_SPEC_MISSION_LEDGER.md](./SUB_SPEC_MISSION_LEDGER.md)**.
+Mọi trang Sĩ Tử cùng dùng **Sổ Tu Học** tích hợp gọn gàng bên trong khối Chào đầu trang của trang Học Viện. Sổ gồm **Nhập Môn** (cột mốc một lần theo profile), **Nhiệm Vụ Hôm Nay** (mục tiêu reset theo ngày) và **Tiến Độ Tu Học** (Level, XP, chuỗi học và tổng quan tiến trình). Tiến độ được backend tính từ domain event idempotent, không do UI tự cộng và không dùng JSON blob làm nguồn sự thật. Contract chi tiết xem **[SUB_SPEC_MISSION_LEDGER.md](./SUB_SPEC_MISSION_LEDGER.md)**.
 
 #### A. Năm Module Chính
 
@@ -178,7 +178,7 @@ Toàn bộ hệ thống giao diện của GameEngG10 đã được tái cấu tr
 
 ### 2.8.1 Môi trường Học Sinh: 1 Trang 5 Tab (AcademyHub)
 Học sinh khi đăng nhập sẽ chỉ tương tác trên giao diện duy nhất 5 tab tại [AcademyHub](./src/components/AcademyHub.tsx):
-1. **Học Viện (Academy)**: Tích hợp Sổ Tu Học (`LearningLedger`) hiển thị mở rộng ngay đầu trang, Lời chào Sĩ tử, gợi ý điểm yếu từ Trợ giảng AI (`weakLesson`) và Bảng Nhiệm Vụ Quest. Cột bên phải hiển thị profile rút gọn và nhật ký hoạt động (`ActivityLog`).
+1. **Học Viện (`Academy`)**: Tích hợp Sổ Tu Học (`LearningLedger`) dưới dạng panel thu gọn mặc định bên trong khối Chào đầu trang (Hero Greeting), lời chào Sĩ tử, gợi ý điểm yếu từ Trợ giảng AI (`weakLesson`), các chỉ số và badge Phong cách hiện tại của Sĩ tử, và Bảng Nhiệm Vụ Quest. Cột bên phải hiển thị profile rút gọn và nhật ký hoạt động (`ActivityLog`).
 2. **Hang Luyện (Knowledge Hall)**: Trang tự học chuyên đề (`PracticeHall.tsx`) kết hợp sổ tay lỗi sai và bài giảng lý thuyết.
 3. **Trường Thi (Challenge Hall)**: Đấu trường rèn luyện thi cử (`Arena.tsx`) với 4 phòng luyện tập thi đấu.
 4. **Khu Thám Hiểm (Adventure Zone)**: Khu minigame thư giãn trí tuệ (`RelaxationZone.tsx`).
