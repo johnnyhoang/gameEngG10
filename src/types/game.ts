@@ -310,7 +310,7 @@ export interface HandbookPage {
   gradeTier?: number;
 }
 
-export interface ParentQuest {
+export interface TutorQuest {
   id: string;
   title: string;
   description: string;

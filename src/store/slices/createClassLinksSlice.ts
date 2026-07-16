@@ -8,11 +8,11 @@ export const createClassLinksSlice: StateCreator<
   [],
   [],
   Pick<StoreState, 
-    'classLinks' | 'secondaryParents' | 'fetchClassLinks' | 'sendClassInvite' | 'inviteSecondary' | 'inviteSecondaryRequest' | 'searchUsers' | 'updateSecondaryPermissions' | 'respondClassInvite' | 'leaveClass' | 'applyVicePrincipal' | 'inviteAdminConnection'
+    'classLinks' | 'secondaryTutors' | 'fetchClassLinks' | 'sendClassInvite' | 'inviteSecondary' | 'inviteSecondaryRequest' | 'searchUsers' | 'updateSecondaryPermissions' | 'respondClassInvite' | 'leaveClass' | 'applyVicePrincipal' | 'inviteAdminConnection'
   >
 > = (set, get) => ({
   classLinks: [],
-  secondaryParents: [],
+  secondaryTutors: [],
 
   fetchClassLinks: async () => {
     const state = get();
@@ -22,7 +22,7 @@ export const createClassLinksSlice: StateCreator<
       const data = await classLinksService.fetchClassLinks(pId);
       set({ 
         classLinks: data.links || [],
-        secondaryParents: data.secondaryParents || []
+        secondaryTutors: data.secondaryTutors || []
       });
     } catch (e) {
       console.error('Lỗi lấy dữ liệu liên kết lớp', e);

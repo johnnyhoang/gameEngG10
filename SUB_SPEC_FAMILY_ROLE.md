@@ -52,7 +52,7 @@ Hệ thống chia thành **3 tầng chức năng** với **5 vai trò cụ thể
 
 ### Tầng 2: Người Đồng Hành Gia Đình
 
-#### 👨‍👩‍👧 Chủ Nhiệm Chính (Primary Parent)
+#### 👨‍👩‍👧 Chủ Nhiệm Chính (Primary Tutor)
 - **Code value:** `'tutor'`
 - **Thuật ngữ UI:** Chủ Nhiệm Chính 👨‍👩‍👧
 - Đóng vai trò người ra quyết định chính trong một Lớp Chủ Nhiệm.
@@ -67,7 +67,7 @@ Hệ thống chia thành **3 tầng chức năng** với **5 vai trò cụ thể
   - "Rời con" (kick Học Sinh khỏi lớp chủ nhiệm).
 - **Không được phép:** Quản lý ngân hàng câu hỏi, xem học sinh ngoài gia đình mình.
 
-#### 👤 Chủ Nhiệm Phụ (Secondary Parent)
+#### 👤 Chủ Nhiệm Phụ (Secondary Tutor)
 - **Code value:** `'secondary_tutor'`
 - **Thuật ngữ UI:** Chủ Nhiệm Phụ (hiển thị chung Phòng Điều Hành, badge màu khác)
 - Là người đồng hành cùng Chủ nhiệm Chính. Được Chủ nhiệm Chính mời vào Lớp Chủ Nhiệm.
@@ -77,7 +77,7 @@ Hệ thống chia thành **3 tầng chức năng** với **5 vai trò cụ thể
   - Được phép tạo Nhiệm vụ mới (on/off — mặc định: off).
   - Chỉ được xem báo cáo (Read-only — mặc định: on).
 - **Luôn không được phép:** Kick Học Sinh, mời Chủ nhiệm Phụ khác, cấu hình Energy.
-- **Lưu trữ:** `ge10_family_links.link_type = 'secondary'` + permissions JSON
+- **Lưu trữ:** `ge10_class_links.link_type = 'secondary'` + permissions JSON
 
 ---
 
@@ -201,7 +201,7 @@ Nằm trong **Phòng Hiệu Trưởng** (`phong_hieu_truong`), sơ đồ tổ ch
 
 ## 4. Ma Trận Phân Quyền Tổng Hợp
 
-| Hành Động | student | parent | secondary_parent | pho_vien | truong_vien |
+| Hành Động | student | tutor | secondary_tutor | pho_vien | truong_vien |
 |:---|:---:|:---:|:---:|:---:|:---:|
 | Chơi game / học bài | ✅ | — | — | — | — |
 | Xem báo cáo con mình | — | ✅ | ✅ | — | — |
@@ -234,7 +234,7 @@ Nằm trong **Phòng Hiệu Trưởng** (`phong_hieu_truong`), sơ đồ tổ ch
 4. UI TutorConsole: phân biệt badge Viện Trưởng vs. Phó Viện Trưởng, thêm nút "Bổ nhiệm Phó Viện Trưởng".
 
 ### Sprint 2 — Chủ Nhiệm Phụ
-1. Thêm `link_type` và `secondary_permissions` vào `ge10_family_links`.
+1. Thêm `link_type` và `secondary_permissions` vào `ge10_class_links`.
 2. API: invite secondary parent, manage permissions.
 3. UI: Chủ nhiệm Chính manage Chủ nhiệm Phụ trong TutorConsole.
 

@@ -12,7 +12,7 @@ export const ProfileSelectionScreen: React.FC = () => {
   const [selectingProfileId, setSelectingProfileId] = useState<string | null>(null);
 
   const existingStudent = availableProfiles.find((p: any) => p.role === 'student');
-  const existingParent = availableProfiles.find((p: any) => p.role === 'tutor' || p.role === 'secondary_tutor');
+  const existingTutor = availableProfiles.find((p: any) => p.role === 'tutor' || p.role === 'secondary_tutor');
   const existingHieuPho = availableProfiles.find((p: any) => p.role === 'pho_vien');
   const existingHieuTruong = availableProfiles.find((p: any) => p.role === 'truong_vien');
 
@@ -44,10 +44,10 @@ export const ProfileSelectionScreen: React.FC = () => {
         }
       }
     } else if (role === 'tutor') {
-      if (existingParent) {
-        setSelectingProfileId(existingParent.id);
+      if (existingTutor) {
+        setSelectingProfileId(existingTutor.id);
         try {
-          await selectProfile(existingParent.id);
+          await selectProfile(existingTutor.id);
         } finally {
           setSelectingProfileId(null);
         }
@@ -95,12 +95,12 @@ export const ProfileSelectionScreen: React.FC = () => {
       label: 'Giáo Viên 📋',
       icon: <Users className="w-5 h-5 text-synth-orange" />,
       colorClass: 'border-synth-orange/30 hover:border-synth-orange hover:bg-synth-orange/5 text-synth-orange shadow-[0_0_15px_rgba(255,159,28,0.03)]',
-      exists: !!existingParent,
-      name: existingParent?.name || 'Chưa khởi tạo',
+      exists: !!existingTutor,
+      name: existingTutor?.name || 'Chưa khởi tạo',
       desc: 'Quản lý lớp, phê duyệt quà & nhiệm vụ',
       isLoading: quickStarting === 'tutor',
-      isSelecting: selectingProfileId === existingParent?.id,
-      theme: existingParent?.uiTheme || 'current',
+      isSelecting: selectingProfileId === existingTutor?.id,
+      theme: existingTutor?.uiTheme || 'current',
     },
   ];
 

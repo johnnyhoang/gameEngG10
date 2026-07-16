@@ -14,7 +14,7 @@ export const classLinksService = {
     return sessionRes.data.session?.access_token || null;
   },
 
-  fetchClassLinks: async (profileId: string): Promise<{ links: any[]; secondaryParents: any[] }> => {
+  fetchClassLinks: async (profileId: string): Promise<{ links: any[]; secondaryTutors: any[] }> => {
     const token = await classLinksService.getAccessToken();
     if (!token) throw new Error('No access token');
 
@@ -25,7 +25,7 @@ export const classLinksService = {
       const data = await res.json();
       return {
         links: data.links || [],
-        secondaryParents: data.secondaryParents || []
+        secondaryTutors: data.secondaryTutors || []
       };
     }
     throw new Error('Failed to fetch class links data');

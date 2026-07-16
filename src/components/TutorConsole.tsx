@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useGameState } from '../hooks/useGameState';
-import { isAdmin, isParentRole } from '../utils/roleHelpers';
+import { isAdmin, isTutorRole } from '../utils/roleHelpers';
 import { toast } from '../utils/toast';
 import { useTranslate } from '../hooks/useTranslate';
 
@@ -57,7 +57,7 @@ export const TutorConsole: React.FC = () => {
 
   // Class Links Management
   const classLinks = useGameState(state => state.classLinks);
-  const secondaryParents = useGameState(state => state.secondaryParents);
+  const secondaryTutors = useGameState(state => state.secondaryTutors);
   const sendClassInvite = useGameState(state => state.sendClassInvite);
   const respondClassInvite = useGameState(state => state.respondClassInvite);
   const inviteSecondary = useGameState(state => state.inviteSecondary);
@@ -130,7 +130,7 @@ export const TutorConsole: React.FC = () => {
     if (isAdmin(currentUser?.role)) {
       fetchAdm();
     }
-    if (isParentRole(currentUser?.role) || isAdmin(currentUser?.role)) {
+    if (isTutorRole(currentUser?.role) || isAdmin(currentUser?.role)) {
       fetchClass();
     }
   }, [currentUser?.role]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -148,7 +148,7 @@ export const TutorConsole: React.FC = () => {
   }, [activeTab, currentUser?.role]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    if (viewingStudentId && isParentRole(currentUser?.role)) {
+    if (viewingStudentId && isTutorRole(currentUser?.role)) {
       useGameState.getState().fetchSkipReviews(viewingStudentId);
     }
   }, [viewingStudentId, currentUser?.role]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -382,7 +382,7 @@ export const TutorConsole: React.FC = () => {
                 <ClassLinksManager
                   currentUser={currentUser}
                   classLinks={classLinks}
-                  secondaryParents={secondaryParents}
+                  secondaryTutors={secondaryTutors}
                   sendClassInvite={sendClassInvite}
                   respondClassInvite={respondClassInvite}
                   inviteSecondary={inviteSecondary}
@@ -502,7 +502,7 @@ export const TutorConsole: React.FC = () => {
       )}
 
             {/* Mobile Admin Bottom Navigation Bar — 3 tabs */}
-      {currentUser && (isParentRole(currentUser.role) || isAdmin(currentUser.role)) && (
+      {currentUser && (isTutorRole(currentUser.role) || isAdmin(currentUser.role)) && (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-2 py-2 pb-3 grid grid-cols-3 gap-1 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)] text-center">
           <button
             onClick={() => {

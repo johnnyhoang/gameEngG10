@@ -50,7 +50,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [isInviting, setIsInviting] = useState(false);
 
   const activeLink = classLinks.find((l: any) => l.status === 'active');
-  const pendingLink = classLinks.find((l: any) => l.status === 'pending_parent' && l.student_id === currentUser.id);
+  const pendingLink = classLinks.find((l: any) => l.status === 'pending_tutor' && l.student_id === currentUser.id);
   const pendingStudentInvites = classLinks.filter((l: any) => l.status === 'pending_student');
 
   // States for Profile Renaming

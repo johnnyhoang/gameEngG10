@@ -129,7 +129,7 @@ router.get('/class-links/:profileId', authMiddleware, async (req: any, res) => {
       return res.json({ 
         role: 'tutor', 
         links: studentLinks.rows,
-        classSecondaryLinks: classSecondaryLinks.rows
+        secondaryTutors: classSecondaryLinks.rows
       });
     } else if (myRole === 'secondary_tutor') {
       const studentLinks = await pool.query(`
@@ -149,7 +149,7 @@ router.get('/class-links/:profileId', authMiddleware, async (req: any, res) => {
       return res.json({
         role: 'secondary_tutor',
         links: studentLinks.rows,
-        classSecondaryLinks: classSecondaryLinks.rows
+        secondaryTutors: classSecondaryLinks.rows
       });
     } else if (myRole === 'truong_vien' || myRole === 'pho_vien') {
       const adminLinks = await pool.query(`

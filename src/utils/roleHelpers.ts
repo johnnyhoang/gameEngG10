@@ -1,6 +1,6 @@
 export const isAdmin = (role?: string) => role === 'truong_vien' || role === 'pho_vien';
 export const isSuperAdmin = (role?: string) => role === 'truong_vien' || role === 'pho_vien';
-export const isParentRole = (role?: string) => role === 'tutor' || role === 'secondary_tutor';
+export const isTutorRole = (role?: string) => role === 'tutor' || role === 'secondary_tutor';
 
 export type PermissionAction =
   | 'VIEW_AUDIT_LOGS'
@@ -25,7 +25,7 @@ export const canPromoteTo = (actorRole: string, targetRole: string): boolean => 
  * Kiểm tra quyền hạn của User đối với một action cụ thể (Dùng chung cho UI và API check).
  * @param role Thân phận của người dùng
  * @param action Hành động muốn thực hiện
- * @param secondaryPermissions Quyền phụ (dành cho Secondary Parent)
+ * @param secondaryPermissions Quyền phụ (dành cho Secondary Tutor)
  * @returns boolean
  */
 export const hasPermission = (

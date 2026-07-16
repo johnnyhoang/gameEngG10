@@ -44,7 +44,7 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice, onNavigateToF
   const [isInviting, setIsInviting] = useState(false);
 
   const activeLink = classLinks.find((l: any) => l.status === 'active');
-  const pendingLink = classLinks.find((l: any) => l.status === 'pending_parent' && l.student_id === currentUser?.id);
+  const pendingLink = classLinks.find((l: any) => l.status === 'pending_tutor' && l.student_id === currentUser?.id);
   const pendingStudentInvites = classLinks.filter((l: any) => l.status === 'pending_student');
 
   // Quests

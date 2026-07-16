@@ -1,4 +1,4 @@
-﻿import { isParentRole, isAdmin } from './utils/roleHelpers';
+import { isTutorRole, isAdmin } from './utils/roleHelpers';
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useGameState } from './hooks/useGameState';
 import { TopHUD } from './components/TopHUD';
@@ -179,7 +179,7 @@ function App() {
   // Auto-switch screen for admin/parent users on login
   useEffect(() => {
     if (currentUser) {
-      if (isParentRole(currentUser.role) || isAdmin(currentUser.role)) {
+      if (isTutorRole(currentUser.role) || isAdmin(currentUser.role)) {
         setScreen('tutor');
       } else if (currentUser.role === 'student') {
         setScreen('academy');
@@ -191,7 +191,7 @@ function App() {
   useEffect(() => {
     if (!currentUser) return;
     const role = currentUser.role;
-    if (isParentRole(role) || isAdmin(role)) {
+    if (isTutorRole(role) || isAdmin(role)) {
       if (screen !== 'tutor') {
         setScreen('tutor');
       }

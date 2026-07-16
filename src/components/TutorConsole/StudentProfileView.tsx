@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { isParentRole } from '../../utils/roleHelpers';
+import { isTutorRole } from '../../utils/roleHelpers';
 import { toast } from '../../utils/toast';
 import { RewardManager } from './RewardManager';
 import { QuestManager } from './QuestManager';
@@ -190,7 +190,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
       {/* 3. Nhật Ký Hoạt Động & Hàng Đợi Skip Reviews — việc cần theo dõi/xử lý, ngay sau tiến độ */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Hàng đợi Phản hồi Skip (Closed-loop Review) */}
-        {isParentRole(currentUser?.role) ? (
+        {isTutorRole(currentUser?.role) ? (
           <div className="glass-panel rounded-2xl border border-white/5 p-5 flex flex-col h-[350px]">
             <div className="flex justify-between items-center mb-4">
               <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider flex items-center gap-1.5">

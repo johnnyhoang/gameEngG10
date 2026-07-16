@@ -5,7 +5,7 @@ import { SearchSuggest } from '../Common/SearchSuggest';
 interface ClassLinksManagerProps {
   currentUser: any;
   classLinks: any[];
-  secondaryParents: any[];
+  secondaryTutors: any[];
   sendClassInvite: (targetEmail: string, connectAsSecondary?: boolean) => Promise<{ success: boolean; conflictCode?: string; error?: string }>;
   respondClassInvite: (linkId: string, accept: boolean) => Promise<boolean>;
   inviteSecondary: (email: string) => Promise<boolean>;
@@ -18,7 +18,7 @@ interface ClassLinksManagerProps {
 export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
   currentUser,
   classLinks,
-  secondaryParents,
+  secondaryTutors,
   sendClassInvite,
   respondClassInvite,
   inviteSecondary,
@@ -113,13 +113,13 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
   // Active students under this teacher
   const activeStudents = classLinks.filter(l => l.status === 'active');
   
-  // Incoming requests from students trying to join class (Primary Link & pending_parent)
+  // Incoming requests from students trying to join class (Primary Link & pending_tutor)
   const incomingStudentRequests = classLinks.filter(
-    l => l.status === 'pending_parent' && l.link_type === 'primary'
+    l => l.status === 'pending_tutor' && l.link_type === 'primary'
   );
 
   // Incoming requests from other teachers wanting to join my class as Secondary Teacher
-  const incomingTeacherRequests = secondaryParents.filter(
+  const incomingTeacherRequests = secondaryTutors.filter(
     sp => sp.status === 'pending_primary'
   );
 
@@ -129,19 +129,19 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
   );
 
   // Outgoing invitations sent to secondary teachers
-  const outgoingTeacherInvites = secondaryParents.filter(
-    sp => sp.status === 'pending_parent'
+  const outgoingTeacherInvites = secondaryTutors.filter(
+    sp => sp.status === 'pending_tutor'
   );
 
   // Active secondary teachers connected to my class
-  const activeSecondaryTeachers = secondaryParents.filter(
+  const activeSecondaryTeachers = secondaryTutors.filter(
     sp => sp.status === 'active'
   );
 
   // Với Chủ Nhiệm Phụ: các đơn "xin đồng hành" mình đã gửi đi, đang chờ giáo viên chính duyệt
   // (cùng status pending_primary nhưng ngược chiều với incomingTeacherRequests của Chủ Nhiệm Chính)
   const outgoingCoTeachRequests = isSecondaryTeacher
-    ? secondaryParents.filter(sp => sp.status === 'pending_primary')
+    ? secondaryTutors.filter(sp => sp.status === 'pending_primary')
     : [];
 
   // Dòng "yêu cầu đã gửi, đang chờ" hiển thị ngay trong box đã tạo ra nó
@@ -289,7 +289,7 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
       )}
 
       {/* ================= SECTION 2: INCOMING CLASS INVITATIONS FOR SECONDARY TEACHER ================= */}
-      {isSecondaryTeacher && classLinks.filter(l => l.status === 'pending_parent' && l.link_type === 'secondary').length > 0 && (
+      {isSecondaryTeacher && classLinks.filter(l => l.status === 'pending_tutor' && l.link_type === 'secondary').length > 0 && (
         <div className="rounded-2xl border border-synth-magenta/20 bg-synth-magenta/5 p-4 space-y-3">
           <h4 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-2">
              📩 Lời Mời Đồng Hành Từ Giáo Viên Chính
@@ -652,7 +652,7 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
           </div>
 
           <div className="space-y-3">
-            {secondaryParents.filter(sp => sp.status === 'active').map((sp: any) => (
+            {secondaryTutors.filter(sp => sp.status === 'active').map((sp: any) => (
               <div key={sp.id} className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/5">
                 <div className="flex items-center gap-2.5">
                   {sp.tutor_avatar ? (

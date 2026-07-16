@@ -1,8 +1,8 @@
-﻿import type {
+import type {
   UserProfile, PlayerProfile, Question, CategoryStat, PetState, TutorReward, RewardRedemption,
   ClassReward, ClassRewardRedemption,
   Challenge, HistoryLog,
-  HandbookPage, ParentQuest, GradeTier, SubjectId, UiThemeId, GameSettings, ClassLink, LearningContext,
+  HandbookPage, TutorQuest, GradeTier, SubjectId, UiThemeId, GameSettings, ClassLink, LearningContext,
   PageExplorationState, ExplorationProgress
 } from '../types/game';
 
@@ -97,13 +97,13 @@ export interface StoreState {
   syncWithServer: () => Promise<void>;
   pullServerState: (serverData: any) => void;
 
-  // === ADMIN & PARENT SLICE ===
+  // === ADMIN & TUTOR SLICE ===
   adminStudents: any[];
   adminLinks: any[];
   selectedStudentProfile: any | null;
   failedQuestionIds: string[];
   recentlyPlayedQuestionIds: string[];
-  tutorQuests: ParentQuest[];
+  tutorQuests: TutorQuest[];
   
   auditLogs: any[];
   fetchAuditLogs: () => Promise<void>;
@@ -150,7 +150,7 @@ export interface StoreState {
 
   // === CLASS LINKS SLICE ===
   classLinks: ClassLink[];
-  secondaryParents: any[];
+  secondaryTutors: any[];
   fetchClassLinks: () => Promise<void>;
   sendClassInvite: (targetEmail: string, connectAsSecondary?: boolean) => Promise<{ success: boolean; conflictCode?: string; error?: string }>;
   inviteSecondary: (targetEmail: string) => Promise<boolean>;
