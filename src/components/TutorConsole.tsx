@@ -75,6 +75,7 @@ export const TutorConsole: React.FC = () => {
   const setActiveTab = useGameState(state => state.setTutorConsoleTab);
   const [thienCoSubTab, setThienCoSubTab] = useState<'dashboard' | 'org_chart' | 'staff' | 'settings'>('dashboard');
   const [viewingStudentId, setViewingStudentId] = useState<string | null>(null);
+  const [isDashboardStatsExpanded, setIsDashboardStatsExpanded] = useState(false);
 
   // Filter students strictly by role for stats
   const allStudents = useMemo(() => {
@@ -192,72 +193,97 @@ export const TutorConsole: React.FC = () => {
         {activeTab === 'management' && (
           <div className="space-y-6">
             {/* Welcome & Dashboard: gọn một khối — lời chào ngắn + chỉ số + bảng vàng */}
-            <div className="glass-panel rounded-2xl border border-synth-cyan/30 p-5 bg-gradient-to-r from-synth-cyan/10 via-transparent to-synth-magenta/5 relative overflow-hidden shadow-lg space-y-4">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-synth-cyan/5 rounded-full blur-2xl pointer-events-none"></div>
-              <div className="relative z-10 space-y-1">
-                <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
-                  ⚙️ PHÒNG HIỆU TRƯỞNG — TRUNG TÂM QUẢN TRỊ HỌC VIỆN
-                  <button
-                    onClick={() => showHelp('parent-console')}
-                    className="w-5 h-5 rounded-full bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta text-[10px] font-black flex items-center justify-center hover:bg-synth-magenta/40 cursor-pointer transition-colors shrink-0"
-                    title="Xem hướng dẫn sử dụng"
-                  >
-                    ?
-                  </button>
-                </h3>
-                <p className="text-xs text-synth-text-muted leading-relaxed max-w-4xl">
-                  {isAdmin(currentUser?.role)
-                    ? 'Theo dõi toàn bộ học sinh và cán bộ trong viện, quản lý liên kết lớp học, cấu hình quy tắc thưởng (Ruby) và xem lịch sử hoạt động.'
-                    : 'Theo dõi học sinh lớp bạn phụ trách, quản lý liên kết lớp học, giao nhiệm vụ và duyệt đổi quà khuyến học.'}
-                </p>
-              </div>
-
-              {/* Quick Stats Grid — chỉ hiện chỉ số có ý nghĩa với vai trò hiện tại */}
-              <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-3">
-                <div className="glass-panel border border-white/5 rounded-2xl p-3.5 flex flex-col justify-between hover:border-synth-cyan/30 transition-all duration-300 group bg-white/3">
-                  <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-cyan transition-colors">👥 Tổng Số Học Sinh</span>
-                  <span className="text-2xl font-black text-synth-cyan font-orbitron mt-1">{totalStudents}</span>
-                </div>
-                <div className="glass-panel border border-white/5 rounded-2xl p-3.5 flex flex-col justify-between hover:border-synth-magenta/30 transition-all duration-300 group bg-white/3">
-                  <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-magenta transition-colors">🔥 Cấp Độ Trung Bình</span>
-                  <span className="text-2xl font-black text-synth-magenta font-orbitron mt-1">LV.{avgLevel}</span>
-                </div>
-                <div className="glass-panel border border-white/5 rounded-2xl p-3.5 flex flex-col justify-between hover:border-synth-green/30 transition-all duration-300 group bg-white/3">
-                  <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-green transition-colors">⚡ XP Trung Bình {scopeLabel}</span>
-                  <span className="text-2xl font-black text-synth-green font-orbitron mt-1">{avgXP.toLocaleString()}</span>
-                </div>
-                <div className="glass-panel border border-white/5 rounded-2xl p-3.5 flex flex-col justify-between hover:border-synth-orange/30 transition-all duration-300 group bg-white/3">
-                  <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-orange transition-colors">💎 Ruby Trung Bình {scopeLabel}</span>
-                  <span className="text-2xl font-black text-synth-orange font-orbitron mt-1">{avgRuby.toLocaleString()}</span>
-                </div>
-              </div>
-
-              {/* Bảng Vàng: top học sinh theo XP */}
-              {topStudentsByXP.length > 0 && (
-                <div className="relative z-10 rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-3.5">
-                  <h4 className="font-orbitron font-bold text-[10px] text-yellow-400 uppercase tracking-wider mb-2.5">
-                    🏆 Bảng Vàng {scopeLabel} (theo XP)
-                  </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                    {topStudentsByXP.map((s: any, idx: number) => (
-                      <div key={s.id} className="flex items-center gap-2.5 rounded-xl bg-black/20 border border-white/5 px-3 py-2">
-                        <span className="text-lg shrink-0">{['🥇', '🥈', '🥉'][idx]}</span>
-                        {s.avatar_url ? (
-                          <img src={s.avatar_url} alt="" className="w-7 h-7 rounded-full border border-white/10 object-cover shrink-0" />
-                        ) : (
-                          <span className="w-7 h-7 rounded-full bg-synth-purple/25 border border-white/10 flex items-center justify-center text-[10px] font-black text-white shrink-0">
-                            {(s.name || '?').trim().charAt(0).toUpperCase()}
-                          </span>
-                        )}
-                        <div className="min-w-0 flex-1">
-                          <span className="font-bold text-white text-xs truncate block">{s.name}</span>
-                          <span className="text-[9px] font-orbitron text-slate-400">
-                            LV.{s.level ?? 1} · {(s.xp ?? 0).toLocaleString()} XP · 💎 {(s.ruby ?? 0).toLocaleString()}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
+            <div className="glass-panel rounded-2xl border border-synth-cyan/30 overflow-hidden bg-gradient-to-r from-synth-cyan/10 via-transparent to-synth-magenta/5 relative shadow-lg">
+              <button
+                type="button"
+                onClick={() => setIsDashboardStatsExpanded(!isDashboardStatsExpanded)}
+                className="w-full flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 transition-colors text-left cursor-pointer outline-none"
+              >
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">📊</span>
+                  <div>
+                    <span className="block text-xs font-black uppercase font-orbitron text-white">
+                      Bảng điều khiển lớp học — {isAdmin(currentUser?.role) ? 'Toàn Viện' : 'Lớp Chủ Nhiệm'}
+                    </span>
+                    <span className="block text-[10px] text-synth-text-muted">
+                      Sĩ số: {totalStudents} sĩ tử | Cấp TB: LV.{avgLevel} | XP TB: {avgXP.toLocaleString()} | Ruby TB: {avgRuby.toLocaleString()}
+                    </span>
                   </div>
+                </div>
+                <span className="text-synth-cyan text-[10px] font-bold uppercase font-orbitron">
+                  {isDashboardStatsExpanded ? 'Thu gọn ▲' : 'Xem thống kê & bảng vàng ▼'}
+                </span>
+              </button>
+
+              {isDashboardStatsExpanded && (
+                <div className="p-5 space-y-4 border-t border-synth-cyan/20 animate-in slide-in-from-top-2 duration-200">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-synth-cyan/5 rounded-full blur-2xl pointer-events-none"></div>
+                  <div className="relative z-10 space-y-1">
+                    <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
+                      ⚙️ PHÒNG HIỆU TRƯỞNG — TRUNG TÂM QUẢN TRỊ HỌC VIỆN
+                      <button
+                        onClick={() => showHelp('parent-console')}
+                        className="w-5 h-5 rounded-full bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta text-[10px] font-black flex items-center justify-center hover:bg-synth-magenta/40 cursor-pointer transition-colors shrink-0"
+                        title="Xem hướng dẫn sử dụng"
+                      >
+                        ?
+                      </button>
+                    </h3>
+                    <p className="text-xs text-synth-text-muted leading-relaxed max-w-4xl">
+                      {isAdmin(currentUser?.role)
+                        ? 'Theo dõi toàn bộ học sinh và cán bộ trong viện, quản lý liên kết lớp học, cấu hình quy tắc thưởng (Ruby) và xem lịch sử hoạt động.'
+                        : 'Theo dõi học sinh lớp bạn phụ trách, quản lý liên kết lớp học, giao nhiệm vụ và duyệt đổi quà khuyến học.'}
+                    </p>
+                  </div>
+
+                  {/* Quick Stats Grid — chỉ hiện chỉ số có ý nghĩa với vai trò hiện tại */}
+                  <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div className="glass-panel border border-white/5 rounded-2xl p-3.5 flex flex-col justify-between hover:border-synth-cyan/30 transition-all duration-300 group bg-white/3">
+                      <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-cyan transition-colors">👥 Tổng Số Học Sinh</span>
+                      <span className="text-2xl font-black text-synth-cyan font-orbitron mt-1">{totalStudents}</span>
+                    </div>
+                    <div className="glass-panel border border-white/5 rounded-2xl p-3.5 flex flex-col justify-between hover:border-synth-magenta/30 transition-all duration-300 group bg-white/3">
+                      <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-magenta transition-colors">🔥 Cấp Độ Trung Bình</span>
+                      <span className="text-2xl font-black text-synth-magenta font-orbitron mt-1">LV.{avgLevel}</span>
+                    </div>
+                    <div className="glass-panel border border-white/5 rounded-2xl p-3.5 flex flex-col justify-between hover:border-synth-green/30 transition-all duration-300 group bg-white/3">
+                      <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-green transition-colors">⚡ XP Trung Bình {scopeLabel}</span>
+                      <span className="text-2xl font-black text-synth-green font-orbitron mt-1">{avgXP.toLocaleString()}</span>
+                    </div>
+                    <div className="glass-panel border border-white/5 rounded-2xl p-3.5 flex flex-col justify-between hover:border-synth-orange/30 transition-all duration-300 group bg-white/3">
+                      <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-orange transition-colors">💎 Ruby Trung Bình {scopeLabel}</span>
+                      <span className="text-2xl font-black text-synth-orange font-orbitron mt-1">{avgRuby.toLocaleString()}</span>
+                    </div>
+                  </div>
+
+                  {/* Bảng Vàng: top học sinh theo XP */}
+                  {topStudentsByXP.length > 0 && (
+                    <div className="relative z-10 rounded-2xl border border-yellow-500/20 bg-yellow-500/5 p-3.5">
+                      <h4 className="font-orbitron font-bold text-[10px] text-yellow-400 uppercase tracking-wider mb-2.5">
+                        🏆 Bảng Vàng {scopeLabel} (theo XP)
+                      </h4>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        {topStudentsByXP.map((s: any, idx: number) => (
+                          <div key={s.id} className="flex items-center gap-2.5 rounded-xl bg-black/20 border border-white/5 px-3 py-2">
+                            <span className="text-lg shrink-0">{['🥇', '🥈', '🥉'][idx]}</span>
+                            {s.avatar_url ? (
+                              <img src={s.avatar_url} alt="" className="w-7 h-7 rounded-full border border-white/10 object-cover shrink-0" />
+                            ) : (
+                              <span className="w-7 h-7 rounded-full bg-synth-purple/25 border border-white/10 flex items-center justify-center text-[10px] font-black text-white shrink-0">
+                                {(s.name || '?').trim().charAt(0).toUpperCase()}
+                              </span>
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <span className="font-bold text-white text-xs truncate block">{s.name}</span>
+                              <span className="text-[9px] font-orbitron text-slate-400">
+                                LV.{s.level ?? 1} · {(s.xp ?? 0).toLocaleString()} XP · 💎 {(s.ruby ?? 0).toLocaleString()}
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

@@ -779,11 +779,12 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
     - Thêm Quầy Vòng Quay May Mắn chỉ mở vào cuối tuần vào trong Cửa hàng.
     - Truyền prop `onSpinWheel` từ App.tsx và gọi khi sĩ tử nhấn quay.
 
-- [ ] **T10.5 — Tối ưu hóa UI TopHUD trên Mobile và tinh gọn quản lý đề thi**
-  - *Mục tiêu:* Tối ưu responsive trên mobile cho TopHUD, đồng thời tinh gọn giao diện quản lý câu hỏi của Giáo viên (giảm thiểu chiều dài cuộn trang).
-  - *Phải sửa:* `src/components/TopHUD.tsx`, `src/components/TutorConsole/QuestionBankManager.tsx`
+- [ ] **T10.5 — Tối ưu hóa UI TopHUD và tinh gọn giao diện quản lý của Giáo viên**
+  - *Mục tiêu:* Tối ưu responsive trên mobile cho TopHUD, đồng thời tinh gọn giao diện quản lý câu hỏi và lớp học của Giáo viên (giảm thiểu chiều dài cuộn trang).
+  - *Phải sửa:* `src/components/TopHUD.tsx`, `src/components/TutorConsole/QuestionBankManager.tsx`, `src/components/TutorConsole.tsx`
   - *Phải làm:*
     - [x] Cấu hình flex-wrap cho container của TopHUD trên mobile, gộp thông tin và ẩn điều hướng nhanh.
-    - [ ] Sửa `QuestionBankManager.tsx` để đưa các phần thống kê (Độ phủ chuyên đề, Thống kê câu đố) và công cụ AI Ingest vào các Accordions (Collapsible Panels) mặc định thu gọn, giúp hiển thị ngay phần Tìm kiếm, Bộ lọc và Danh sách câu hỏi (CRUD) lên trên đầu.
+    - [x] Sửa `QuestionBankManager.tsx` để đưa các phần thống kê (Độ phủ chuyên đề, Thống kê câu đố) và công cụ AI Ingest vào các Accordions mặc định thu gọn.
+    - [ ] Sửa `TutorConsole.tsx` để đưa phần Welcome Dashboard, Quick Stats Grid và Bảng Vàng của lớp học vào một Accordion mặc định thu gọn.
 
 

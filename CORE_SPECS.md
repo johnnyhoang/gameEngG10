@@ -186,7 +186,7 @@ Học sinh khi đăng nhập sẽ chỉ tương tác trên giao diện duy nhấ
 
 ### 2.8.2 Môi trường Giáo viên / Viện Trưởng: 3 Tab Tinh Giản (TutorConsole)
 Giao diện quản trị của giáo viên được rút gọn còn 3 tab chính tại [TutorConsole](./src/components/TutorConsole.tsx):
-1. **Phòng Hiệu Trưởng / Giáo Viên (`phong_hieu_truong`)**: Trung tâm quản trị tích hợp Sơ đồ tổ chức (`OrgChart`), danh sách học sinh liên kết/toàn trường, danh sách nhân sự phân quyền và Cấu hình hệ thống game (`SettingsManager`) dưới dạng các sub-tab con.
+1. **Phòng Hiệu Trưởng / Giáo Viên (`phong_hieu_truong`)**: Trung tâm quản trị tích hợp Sơ đồ tổ chức (`OrgChart`), danh sách học sinh liên kết/toàn trường, danh sách nhân sự phân quyền và Cấu hình hệ thống game (`SettingsManager`) dưới dạng các sub-tab con. Các phần thống kê tổng quát, lời chào và Bảng Vàng (Leaderboard) được bọc trong một Accordion (Collapsible Panel) mặc định thu gọn để tối ưu hóa không gian cuộn trang.
 2. **Bài Giảng (`tang_kinh_cac`)**: Phòng quản lý thư viện bài giảng lý thuyết (`LectureBankManager`).
 3. **Đề Thi (`van_quyen_cac`)**: Ngân hàng câu hỏi trắc nghiệm của học viện (`QuestionBankManager`).
 
