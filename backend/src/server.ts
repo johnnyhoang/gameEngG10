@@ -150,6 +150,9 @@ const initDB = async () => {
     // Seed data-driven Topics and Activities
     await seedTopicsAndActivities(pool);
 
+    // Seed mock data for local development
+    await seedDevMockData(pool);
+
     console.log('Database initialized and lessons seeded successfully.');
     
     // Migration: Seed default classroom rewards for all existing active teachers
@@ -192,6 +195,73 @@ if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`CyberEnglish API Server booting on port ${PORT}...`);
   });
+}
+
+async function seedDevMockData(pool: any) {
+  // Only seed in non-production environments
+  if (process.env.NODE_ENV === 'production') return;
+  
+  console.log('=== Seed dữ liệu Mock Dev cho Local Development ===');
+  
+  const mockUsers = [
+    { id: 'mock-dev-truong-vien', accountId: 'mock-dev-truong-vien', name: 'Dev Viện Chủ', email: 'mock-dev-truong-vien@local.test', role: 'truong_vien' },
+    { id: 'mock-dev-pho-vien', accountId: 'mock-dev-pho-vien', name: 'Dev Phó Viện Trưởng', email: 'mock-dev-pho-vien@local.test', role: 'pho_vien' },
+    { id: 'mock-dev-student', accountId: 'mock-dev-student', name: 'Dev Sĩ Tử', email: 'mock-dev-student@local.test', role: 'student' },
+    { id: 'mock-student-1', accountId: 'mock-student-1', name: 'Nguyễn Văn An', email: 'student1@local.test', role: 'student' },
+    { id: 'mock-student-2', accountId: 'mock-student-2', name: 'Trần Thị Bình', email: 'student2@local.test', role: 'student' },
+    { id: 'mock-student-3', accountId: 'mock-student-3', name: 'Lê Văn Cường', email: 'student3@local.test', role: 'student' }
+  ];
+
+  for (const u of mockUsers) {
+    // Insert user
+    await pool.query(
+      `INSERT INTO ge10_users (id, account_id, name, email, role, is_active)
+       VALUES ($1, $2, $3, $4, $5, TRUE)
+       ON CONFLICT (id) DO UPDATE SET role = $5, name = $3`,
+      [u.id, u.accountId, u.name, u.email, u.role]
+    );
+
+    // Insert player profile if it's a student (or even for others, keeping it safe)
+    const isStudent = u.role === 'student';
+    const initialRuby = isStudent ? (u.id === 'mock-dev-student' ? 350 : (u.id === 'mock-student-1' ? 150 : 210)) : 200;
+    const initialXP = isStudent ? (u.id === 'mock-dev-student' ? 450 : (u.id === 'mock-student-1' ? 120 : 280)) : 0;
+    const initialLevel = isStudent ? (u.id === 'mock-dev-student' ? 5 : (u.id === 'mock-student-1' ? 2 : 3)) : 1;
+
+    await pool.query(
+      `INSERT INTO ge10_player_profiles (user_id, level, xp, ruby, energy)
+       VALUES ($1, $2, $3, $4, 100)
+       ON CONFLICT (user_id) DO NOTHING`,
+      [u.id, initialLevel, initialXP, initialRuby]
+    );
+
+    // Insert pet state
+    await pool.query(
+      `INSERT INTO ge10_pet_states (user_id, name, stage, level)
+       VALUES ($1, 'Heo Con', 'egg', 1)
+       ON CONFLICT (user_id) DO NOTHING`,
+      [u.id]
+    );
+  }
+
+  // Seed class links
+  const mockLinks = [
+    { id: 'link-dev-1', tutorId: 'mock-dev-truong-vien', studentId: 'mock-dev-student', type: 'primary' },
+    { id: 'link-dev-2', tutorId: 'mock-dev-truong-vien', studentId: 'mock-student-1', type: 'primary' },
+    { id: 'link-dev-3', tutorId: 'mock-dev-truong-vien', studentId: 'mock-student-2', type: 'secondary' },
+    { id: 'link-dev-4', tutorId: 'mock-dev-pho-vien', studentId: 'mock-student-2', type: 'primary' },
+    { id: 'link-dev-5', tutorId: 'mock-dev-pho-vien', studentId: 'mock-student-3', type: 'primary' }
+  ];
+
+  for (const l of mockLinks) {
+    await pool.query(
+      `INSERT INTO ge10_class_links (id, tutor_id, student_id, status, link_type)
+       VALUES ($1, $2, $3, 'active', $4)
+       ON CONFLICT (tutor_id, student_id) DO UPDATE SET status = 'active', link_type = $4`,
+      [l.id, l.tutorId, l.studentId, l.type]
+    );
+  }
+
+  console.log('=== Hoàn tất seed dữ liệu Mock Dev ===');
 }
 
 export default app;

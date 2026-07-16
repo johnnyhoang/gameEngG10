@@ -1,9 +1,20 @@
 -- Migration: Rename parent to tutor/mentor
 DO $$
 BEGIN
-    -- 1. Rename table ge10_parent_rewards if exists
+    -- 1. Rename table ge10_parent_rewards if exists or merge data if both exist
     IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'ge10_parent_rewards') THEN
-        ALTER TABLE ge10_parent_rewards RENAME TO ge10_tutor_rewards;
+        IF EXISTS (SELECT FROM pg_tables WHERE schemaname = 'public' AND tablename = 'ge10_tutor_rewards') THEN
+            -- Merge parent rewards data to tutor rewards (avoiding duplicates on ID)
+            INSERT INTO ge10_tutor_rewards (id, user_id, title, cost_ruby, cost_coins, quantity, remaining_quantity, timestamp)
+            SELECT id, user_id, title, cost_ruby, cost_coins, quantity, remaining_quantity, timestamp
+            FROM ge10_parent_rewards
+            ON CONFLICT (id) DO NOTHING;
+            
+            -- Drop the old table
+            DROP TABLE ge10_parent_rewards;
+        ELSE
+            ALTER TABLE ge10_parent_rewards RENAME TO ge10_tutor_rewards;
+        END IF;
     END IF;
 
     -- 2. Rename column parent_id in ge10_class_links if exists

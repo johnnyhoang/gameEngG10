@@ -13,6 +13,19 @@ export const authMiddleware = async (req: any, res: any, next: any) => {
   }
 
   const token = authHeader.split(' ')[1];
+  
+  // Dev backdoor support: bypass JWT verification for mock-dev tokens
+  if (token.startsWith('mock-dev-')) {
+    req.user = {
+      sub: token,
+      email: `${token}@local.test`,
+      user_metadata: {
+        full_name: token.replace('mock-dev-', 'Dev ').replace(/-/g, ' ')
+      }
+    };
+    return next();
+  }
+
   try {
     const { payload } = await jwtVerify(token, JWKS, {
       issuer: `${supabaseUrl}/auth/v1`,

@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { isAdmin, isParentRole } from '../utils/roleHelpers';
 import { toast } from '../utils/toast';
@@ -83,7 +83,7 @@ export const TutorConsole: React.FC = () => {
   const myClassStudents = useMemo(() => {
     if (isAdmin(currentUser?.role)) return allStudents;
     const studentIds = (adminLinks || [])
-      .filter((l: any) => l.parent_id === currentUser?.id && l.link_type === 'primary')
+      .filter((l: any) => l.tutor_id === currentUser?.id && l.link_type === 'primary')
       .map((l: any) => l.student_id);
     return allStudents.filter((s: any) => studentIds.includes(s.id));
   }, [allStudents, adminLinks, currentUser?.id, currentUser?.role]);
@@ -91,7 +91,7 @@ export const TutorConsole: React.FC = () => {
   const coManagedClassStudents = useMemo(() => {
     if (isAdmin(currentUser?.role)) return [];
     const studentIds = (adminLinks || [])
-      .filter((l: any) => l.parent_id === currentUser?.id && l.link_type === 'secondary')
+      .filter((l: any) => l.tutor_id === currentUser?.id && l.link_type === 'secondary')
       .map((l: any) => l.student_id);
     return allStudents.filter((s: any) => studentIds.includes(s.id));
   }, [allStudents, adminLinks, currentUser?.id, currentUser?.role]);
