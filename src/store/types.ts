@@ -10,7 +10,7 @@ import type {
 import type { Lesson } from '../data/lessons';
 
 /** Các tab chính của Phòng Điều Hành (TutorConsole) — nav đặt trên TopHUD */
-export type TutorConsoleTab = 'management' | 'questions' | 'lectures';
+export type TutorConsoleTab = 'management' | 'questions' | 'lectures' | 'settings';
 
 
 export interface StoreState {

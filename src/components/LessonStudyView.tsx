@@ -1,6 +1,5 @@
 import React, { useMemo } from 'react';
 import { useGameState } from '../hooks/useGameState';
-import { INITIAL_LESSONS } from '../data/lessons';
 import { lessonInScope } from '../utils/learningScope';
 import { SUBJECTS_CONFIG } from '../types/game';
 import type { SubjectId } from '../types/game';
@@ -56,7 +55,7 @@ export const LessonStudyView: React.FC<LessonStudyViewProps> = ({
   const activeGradeTier = useGameState(state => state.activeGradeTier);
 
   const lesson = useMemo(() => {
-    return lessons.find(l => l.id === lessonId) || INITIAL_LESSONS.find(l => l.id === lessonId);
+    return lessons.find(l => l.id === lessonId);
   }, [lessons, lessonId]);
 
   // Chốt chặn: lessonId có thể là ID cũ còn sót sau khi đổi môn/lớp —

@@ -14,6 +14,7 @@ import { QuestionBankManager } from './TutorConsole/QuestionBankManager';
 import { LectureBankManager } from './TutorConsole/LectureBankManager';
 import { OrgChart } from './TutorConsole/OrgChart';
 import { StudentDirectory } from './TutorConsole/StudentDirectory';
+import { MemberRoster } from './TutorConsole/MemberRoster';
 import { RoleManager } from './TutorConsole/RoleManager';
 import { VicePrincipalApplicationsManager } from './TutorConsole/VicePrincipalApplicationsManager';
 
@@ -68,12 +69,11 @@ export const TutorConsole: React.FC = () => {
   const leaveClass = useGameState(state => state.leaveClass);
   const applyVicePrincipal = useGameState(state => state.applyVicePrincipal);
   const inviteAdminConnection = useGameState(state => state.inviteAdminConnection);
-  
+
 
   // Tab chính đọc từ store — nav chính nằm trên TopHUD (thanh MIKAWAII), không còn nav riêng trong trang
   const activeTab = useGameState(state => state.tutorConsoleTab);
   const setActiveTab = useGameState(state => state.setTutorConsoleTab);
-  const [thienCoSubTab, setThienCoSubTab] = useState<'dashboard' | 'org_chart' | 'staff' | 'settings'>('dashboard');
   const [viewingStudentId, setViewingStudentId] = useState<string | null>(null);
   const [isDashboardStatsExpanded, setIsDashboardStatsExpanded] = useState(false);
 
@@ -161,7 +161,7 @@ export const TutorConsole: React.FC = () => {
     setViewingStudentId(studentId);
     try {
       await fetchStudentProfile(studentId);
-      
+
     } finally {
       setInspectLoading(false);
     }
@@ -186,7 +186,7 @@ export const TutorConsole: React.FC = () => {
     <div className="space-y-6 pb-20 md:pb-6">
       {/* Nav chính đã dời lên TopHUD (thanh MIKAWAII); tiêu đề trang do heading từng tab đảm nhiệm */}
 
-      
+
 
       {/* Tab Panels */}
       <div className="glass-panel rounded-2xl border border-white/5 p-5">
@@ -203,7 +203,7 @@ export const TutorConsole: React.FC = () => {
                   <span className="text-xl">📊</span>
                   <div>
                     <span className="block text-xs font-black uppercase font-orbitron text-white">
-                      Bảng điều khiển lớp học — {isAdmin(currentUser?.role) ? 'Toàn Viện' : 'Lớp Chủ Nhiệm'}
+                      Thông tin — {isAdmin(currentUser?.role) ? 'Toàn Viện' : 'Lớp Chủ Nhiệm'}
                     </span>
                     <span className="block text-[10px] text-synth-text-muted">
                       Sĩ số: {totalStudents} sĩ tử | Cấp TB: LV.{avgLevel} | XP TB: {avgXP.toLocaleString()} | Ruby TB: {avgRuby.toLocaleString()}
@@ -288,37 +288,15 @@ export const TutorConsole: React.FC = () => {
               )}
             </div>
 
-            {/* Sub-Tab Control inside Phòng Hiệu Trưởng — tab Nhân Sự & Phân Quyền chỉ dành cho Ban Giám Hiệu */}
-            <div className="flex flex-wrap gap-2 border-b border-white/5 pb-3">
-              {([
-                { key: 'dashboard', label: '👥 Học Sinh & Liên Kết' },
-                { key: 'org_chart', label: '🌳 Sơ Đồ Tổ Chức' },
-                ...(isAdmin(currentUser?.role) ? [{ key: 'staff', label: '🛡️ Nhân Sự & Phân Quyền' }] : []),
-                { key: 'settings', label: '⚙️ Cấu Hình & Học Viện' },
-              ] as { key: typeof thienCoSubTab; label: string }[]).map(tab => (
-                <button
-                  key={tab.key}
-                  onClick={() => setThienCoSubTab(tab.key)}
-                  className={`px-4 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider border cursor-pointer transition-all duration-300 ${
-                    thienCoSubTab === tab.key
-                      ? 'bg-synth-cyan border-synth-cyan text-black shadow-[0_0_8px_#00f0ff]'
-                      : 'bg-transparent border-white/10 text-synth-text-muted hover:text-white hover:border-white/30'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            {/* Sub-Tab Contents */}
-            {thienCoSubTab === 'org_chart' ? (
+            {/* Nội dung Trang Chính */}
+            <div className="space-y-6">
               <OrgChart
                 currentUser={currentUser}
                 adminStudents={adminStudents}
                 adminLinks={adminLinks}
               />
-            ) : thienCoSubTab === 'dashboard' ? (
-              isAdmin(currentUser?.role) ? (
+
+              {isAdmin(currentUser?.role) ? (
                 /* Viện Trưởng / Phó: sổ danh bộ TOÀN TRƯỜNG — kể cả học sinh chưa vào lớp nào */
                 <StudentDirectory
                   students={allStudents}
@@ -327,128 +305,134 @@ export const TutorConsole: React.FC = () => {
                   onInspect={handleInspectStudent}
                 />
               ) : (
-              <div className="space-y-6">
-                {/* List of students for parent/admin viewing */}
-                <div className="rounded-2xl border border-white/5 bg-white/5 p-5 space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
-                      👥 Danh sách Học Sinh liên kết
-                    </h4>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    {classLinks.filter(l => l.status === 'active' && l.tutor_id === currentUser?.id).map((link: any) => {
-                      const student = adminStudents.find((s: any) => s.id === link.student_id);
-                      return (
-                        <button
-                          key={link.student_id}
-                          disabled={inspectLoading}
-                          onClick={() => handleInspectStudent(link.student_id)}
-                          title="Bấm để xem hoạt động, tiến độ và báo cáo của học sinh"
-                          className="text-left p-3.5 rounded-xl bg-synth-gray/20 border border-white/5 hover:border-synth-cyan/40 hover:bg-white/[0.06] transition-all cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          {/* Hàng 1: avatar + tên + email + chevron */}
-                          <div className="flex items-center gap-3">
-                            {student?.avatar_url ? (
-                              <img src={student.avatar_url} alt="" className="w-10 h-10 rounded-full border border-white/10 object-cover shrink-0" />
-                            ) : (
-                              <span className="w-10 h-10 rounded-full bg-synth-purple/25 border border-white/10 flex items-center justify-center text-sm font-black text-white shrink-0">
-                                {(link.student_name || link.student_email || '?').trim().charAt(0).toUpperCase()}
-                              </span>
-                            )}
-                            <div className="min-w-0 flex-1">
-                              <div className="flex items-center gap-1.5">
-                                <span className="font-bold text-white text-sm truncate">{link.student_name || link.student_email || 'Học sinh'}</span>
-                                <span
-                                  className={`px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded shrink-0 ${
-                                    link.link_type === 'primary'
-                                      ? 'bg-synth-cyan/20 border border-synth-cyan/40 text-synth-cyan'
-                                      : 'bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta'
-                                  }`}
-                                  title={link.link_type === 'primary' ? 'Bạn là Chủ Nhiệm Chính của lớp này' : 'Bạn là Chủ nhiệm phụ hỗ trợ lớp này'}
-                                >
-                                  {link.link_type === 'primary' ? 'CN Chính' : 'CN Phụ'}
+                <div className="space-y-6">
+                  {/* List of students for parent/admin viewing */}
+                  <div className="rounded-2xl border border-white/5 bg-white/5 p-5 space-y-4">
+                    <div className="flex justify-between items-center">
+                      <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider">
+                        👥 Danh sách Học Sinh liên kết
+                      </h4>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      {classLinks.filter(l => l.status === 'active' && l.tutor_id === currentUser?.id).map((link: any) => {
+                        const student = adminStudents.find((s: any) => s.id === link.student_id);
+                        return (
+                          <button
+                            key={link.student_id}
+                            disabled={inspectLoading}
+                            onClick={() => handleInspectStudent(link.student_id)}
+                            title="Bấm để xem hoạt động, tiến độ và báo cáo của học sinh"
+                            className="text-left p-3.5 rounded-xl bg-synth-gray/20 border border-white/5 hover:border-synth-cyan/40 hover:bg-white/[0.06] transition-all cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {/* Hàng 1: avatar + tên + email + chevron */}
+                            <div className="flex items-center gap-3">
+                              {student?.avatar_url ? (
+                                <img src={student.avatar_url} alt="" className="w-10 h-10 rounded-full border border-white/10 object-cover shrink-0" />
+                              ) : (
+                                <span className="w-10 h-10 rounded-full bg-synth-purple/25 border border-white/10 flex items-center justify-center text-sm font-black text-white shrink-0">
+                                  {(link.student_name || link.student_email || '?').trim().charAt(0).toUpperCase()}
                                 </span>
+                              )}
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="font-bold text-white text-sm truncate">{link.student_name || link.student_email || 'Học sinh'}</span>
+                                  <span
+                                    className={`px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded shrink-0 ${link.link_type === 'primary'
+                                        ? 'bg-synth-cyan/20 border border-synth-cyan/40 text-synth-cyan'
+                                        : 'bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta'
+                                      }`}
+                                    title={link.link_type === 'primary' ? 'Bạn là Chủ Nhiệm Chính của lớp này' : 'Bạn là Chủ nhiệm phụ hỗ trợ lớp này'}
+                                  >
+                                    {link.link_type === 'primary' ? 'CN Chính' : 'CN Phụ'}
+                                  </span>
+                                </div>
+                                <span className="text-[10px] text-synth-text-muted truncate block">{link.student_email}</span>
                               </div>
-                              <span className="text-[10px] text-synth-text-muted truncate block">{link.student_email}</span>
+                              <span className="text-lg text-slate-500 group-hover:text-synth-cyan group-hover:translate-x-0.5 transition-all shrink-0 font-bold">
+                                {inspectLoading ? '…' : '›'}
+                              </span>
                             </div>
-                            <span className="text-lg text-slate-500 group-hover:text-synth-cyan group-hover:translate-x-0.5 transition-all shrink-0 font-bold">
-                              {inspectLoading ? '…' : '›'}
-                            </span>
-                          </div>
 
-                          {/* Hàng 2: chỉ số nhanh của học sinh */}
-                          <div className="flex items-center gap-1.5 mt-3 flex-wrap">
-                            <span className="px-1.5 py-0.5 rounded bg-synth-purple/15 border border-synth-purple/30 text-[9px] font-bold font-orbitron text-white">
-                              👑 LV.{student?.level ?? 1}
-                            </span>
-                            <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold font-orbitron text-slate-300">
-                              {student?.xp ?? 0} XP
-                            </span>
-                            <span className="px-1.5 py-0.5 rounded bg-synth-orange/10 border border-synth-orange/30 text-[9px] font-bold font-orbitron text-synth-orange">
-                              💎 {student?.ruby ?? 0}
-                            </span>
-                            <span className="px-1.5 py-0.5 rounded bg-synth-cyan/10 border border-synth-cyan/25 text-[9px] font-bold font-orbitron text-synth-cyan">
-                              ⚡ {student?.energy ?? 0}/{student?.max_energy ?? 100}
-                            </span>
-                            <span className="px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-[9px] font-bold font-orbitron text-red-400">
-                              🔥 {student?.streak ?? 0} ngày
-                            </span>
-                          </div>
-                        </button>
-                      );
-                    })}
-                    {classLinks.filter(l => l.status === 'active' && l.tutor_id === currentUser?.id).length === 0 && (
-                      <p className="text-xs text-synth-text-muted italic py-4 col-span-3 text-center">
-                        Chưa có tài khoản học sinh nào kết nối vào lớp học.
-                      </p>
-                    )}
+                            {/* Hàng 2: chỉ số nhanh của học sinh */}
+                            <div className="flex items-center gap-1.5 mt-3 flex-wrap">
+                              <span className="px-1.5 py-0.5 rounded bg-synth-purple/15 border border-synth-purple/30 text-[9px] font-bold font-orbitron text-white">
+                                👑 LV.{student?.level ?? 1}
+                              </span>
+                              <span className="px-1.5 py-0.5 rounded bg-white/5 border border-white/10 text-[9px] font-bold font-orbitron text-slate-300">
+                                {student?.xp ?? 0} XP
+                              </span>
+                              <span className="px-1.5 py-0.5 rounded bg-synth-orange/10 border border-synth-orange/30 text-[9px] font-bold font-orbitron text-synth-orange">
+                                💎 {student?.ruby ?? 0}
+                              </span>
+                              <span className="px-1.5 py-0.5 rounded bg-synth-cyan/10 border border-synth-cyan/25 text-[9px] font-bold font-orbitron text-synth-cyan">
+                                ⚡ {student?.energy ?? 0}/{student?.max_energy ?? 100}
+                              </span>
+                              <span className="px-1.5 py-0.5 rounded bg-red-500/10 border border-red-500/25 text-[9px] font-bold font-orbitron text-red-400">
+                                🔥 {student?.streak ?? 0} ngày
+                              </span>
+                            </div>
+                          </button>
+                        );
+                      })}
+                      {classLinks.filter(l => l.status === 'active' && l.tutor_id === currentUser?.id).length === 0 && (
+                        <p className="text-xs text-synth-text-muted italic py-4 col-span-3 text-center">
+                          Chưa có tài khoản học sinh nào kết nối vào lớp học.
+                        </p>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                {/* Quản lý liên kết lớp của giáo viên */}
-                <ClassLinksManager
-                  currentUser={currentUser}
-                  classLinks={classLinks}
-                  secondaryTutors={secondaryTutors}
-                  sendClassInvite={sendClassInvite}
-                  respondClassInvite={respondClassInvite}
-                  inviteSecondary={inviteSecondary}
-                  inviteSecondaryRequest={inviteSecondaryRequest}
-                  updateSecondaryPermissions={updateSecondaryPermissions}
-                  leaveClass={leaveClass}
-                  applyVicePrincipal={applyVicePrincipal}
-                />
-              </div>
-              )
-            ) : thienCoSubTab === 'staff' ? (
-              /* Nhân Sự & Phân Quyền: kết nối Ban Giám Hiệu + duyệt ứng tuyển Phó Viện + cấp/thu hồi quyền toàn viện */
-              <div className="space-y-6">
-                <AdminConnectionManager
-                  currentUser={currentUser}
-                  classLinks={classLinks}
-                  respondClassInvite={respondClassInvite}
-                  leaveClass={leaveClass}
-                  inviteAdminConnection={inviteAdminConnection}
-                />
-                <VicePrincipalApplicationsManager currentUser={currentUser} />
-                <RoleManager currentUser={currentUser} />
-              </div>
-            ) : (
-              <SettingsManager
+                  {/* Quản lý liên kết lớp của giáo viên */}
+                  <ClassLinksManager
+                    currentUser={currentUser}
+                    classLinks={classLinks}
+                    secondaryTutors={secondaryTutors}
+                    sendClassInvite={sendClassInvite}
+                    respondClassInvite={respondClassInvite}
+                    inviteSecondary={inviteSecondary}
+                    inviteSecondaryRequest={inviteSecondaryRequest}
+                    updateSecondaryPermissions={updateSecondaryPermissions}
+                    leaveClass={leaveClass}
+                    applyVicePrincipal={applyVicePrincipal}
+                  />
+                </div>
+              )}
+
+              <MemberRoster
                 currentUser={currentUser}
                 adminStudents={adminStudents}
                 adminLinks={adminLinks}
-                gameSettings={gameSettings}
-                updateGameSettings={updateGameSettings as any}
-                addHandbookPage={addHandbookPage as any}
                 auditLogs={auditLogs}
                 fetchAuditLogs={fetchAuditLogs}
               />
-            )}
+
+              {isAdmin(currentUser?.role) && (
+                <div className="space-y-6">
+                  <AdminConnectionManager
+                    currentUser={currentUser}
+                    classLinks={classLinks}
+                    respondClassInvite={respondClassInvite}
+                    leaveClass={leaveClass}
+                    inviteAdminConnection={inviteAdminConnection}
+                  />
+                  <VicePrincipalApplicationsManager currentUser={currentUser} />
+                  <RoleManager currentUser={currentUser} />
+                </div>
+              )}
+            </div>
           </div>
         )}
 
-                {activeTab === 'questions' && (
+        {activeTab === 'settings' && (
+          <SettingsManager
+            currentUser={currentUser}
+            gameSettings={gameSettings}
+            updateGameSettings={updateGameSettings as any}
+            addHandbookPage={addHandbookPage as any}
+          />
+        )}
+
+        {activeTab === 'questions' && (
           <QuestionBankManager
             questions={questions}
             deleteQuestion={deleteQuestion}
@@ -470,8 +454,8 @@ export const TutorConsole: React.FC = () => {
             {/* Header Modal */}
             <div className="flex justify-between items-center border-b border-white/10 pb-4">
               <div className="flex items-center gap-3">
-                <img 
-                  src={selectedStudentProfile.studentUser?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'} 
+                <img
+                  src={selectedStudentProfile.studentUser?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}
                   alt={selectedStudentProfile.studentUser?.name}
                   className="w-10 h-10 rounded-2xl border border-synth-cyan/40 object-cover"
                 />
@@ -529,7 +513,7 @@ export const TutorConsole: React.FC = () => {
         </div>
       )}
 
-            {/* Mobile Admin Bottom Navigation Bar — 3 tabs */}
+      {/* Mobile Admin Bottom Navigation Bar — 3 tabs */}
       {currentUser && (isTutorRole(currentUser.role) || isAdmin(currentUser.role)) && (
         <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-magenta/25 px-2 py-2 pb-3 grid grid-cols-3 gap-1 items-center z-50 shadow-[0_-4px_20px_rgba(255,0,127,0.15)] text-center">
           <button
@@ -537,9 +521,8 @@ export const TutorConsole: React.FC = () => {
               setActiveTab('management');
               fetchAdminStudents();
             }}
-            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-              activeTab === 'management' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
-            }`}
+            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${activeTab === 'management' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
+              }`}
           >
             <span className="text-base">🏫</span>
             <span>{t('Hiệu Trưởng', 'Homeroom')}</span>
@@ -547,9 +530,8 @@ export const TutorConsole: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('lectures')}
-            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-              activeTab === 'lectures' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
-            }`}
+            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${activeTab === 'lectures' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
+              }`}
           >
             <span className="text-base">📖</span>
             <span>{t('Bài Giảng', 'Lectures')}</span>
@@ -557,9 +539,8 @@ export const TutorConsole: React.FC = () => {
 
           <button
             onClick={() => setActiveTab('questions')}
-            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${
-              activeTab === 'questions' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
-            }`}
+            className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${activeTab === 'questions' ? 'text-synth-magenta font-black' : 'text-synth-text-muted hover:text-white'
+              }`}
           >
             <span className="text-base">📚</span>
             <span>{t('Đề Thi', 'Questions')}</span>

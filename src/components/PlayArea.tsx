@@ -4,7 +4,6 @@ import { useSect } from '../contexts/SectContext';
 import type { Question } from '../types/game';
 import { SUBJECTS_CONFIG } from '../types/game';
 import { devWarnOutOfScope, questionInScope } from '../utils/learningScope';
-import { INITIAL_LESSONS } from '../data/lessons';
 import { ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../data/englishExamBlueprint';
 import { MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
 import { getAssessmentProvider, getQuestionPresentation, getSubjectHint, getSubjectActivities, getSubjectModule } from '../subject-modules/registry';
@@ -40,6 +39,7 @@ interface PlayAreaProps {
 export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFinish }) => {
   const getQuestionByWeight = useGameState(state => state.getQuestionByWeight);
   const questions = useGameState(state => state.questions);
+  const lessons = useGameState(state => state.lessons);
   const player = useGameState(state => state.player);
   const activeCombo = useGameState(state => state.activeCombo);
   const answerQuestion = useGameState(state => state.answerQuestion);
@@ -108,6 +108,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   };
 
   const questionsRef = useRef(questions);
+  const lessonsRef = useRef(lessons);
   const failedQuestionIdsRef = useRef(failedQuestionIds);
   const playerIdRef = useRef(player.id);
   const getQuestionByWeightRef = useRef(getQuestionByWeight);
@@ -115,11 +116,12 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
 
   useEffect(() => {
     questionsRef.current = questions;
+    lessonsRef.current = lessons;
     failedQuestionIdsRef.current = failedQuestionIds;
     playerIdRef.current = player.id;
     getQuestionByWeightRef.current = getQuestionByWeight;
     currentQuestionIdRef.current = currentQuestions[currentIndex]?.id;
-  }, [questions, failedQuestionIds, player.id, getQuestionByWeight, currentQuestions[currentIndex]?.id]);
+  }, [questions, lessons, failedQuestionIds, player.id, getQuestionByWeight, currentQuestions[currentIndex]?.id]);
 
   // Reset question-specific states when question ID changes
   useEffect(() => {
@@ -238,7 +240,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       } else if (mode === 'revenge') {
         pool = subjectQuestions.filter(q => failedQuestionIdsRef.current.includes(q.id));
       } else if (mode === 'lesson') {
-        const lesson = INITIAL_LESSONS.find(l => l.id === lessonId);
+        const lesson = lessonsRef.current.find(l => l.id === lessonId);
         if (lesson) {
           pool = fallbackQuestions.filter(q => (q as any).lessonId === lessonId || q.category === lesson.category);
           pool = pool.slice(0, 3);
