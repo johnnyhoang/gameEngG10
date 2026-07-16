@@ -339,13 +339,13 @@ export interface GradeTierConfig {
 }
 
 export const GRADE_TIERS: GradeTierConfig[] = [
-  { tier: 6, name: 'Tầng Lớp 6', icon: '🏯', description: 'Nội dung học tập Lớp 6.' },
-  { tier: 7, name: 'Tầng Lớp 7', icon: '⛩️', description: 'Nội dung học tập Lớp 7.' },
-  { tier: 8, name: 'Tầng Lớp 8', icon: '🏔️', description: 'Nội dung học tập Lớp 8.' },
-  { tier: 9, name: 'Tầng Lớp 9', icon: '🗼', description: 'Nội dung học tập Lớp 9.' },
-  { tier: 10, name: 'Tầng Lớp 10', icon: '🌋', description: 'Nội dung học tập Lớp 10.' },
-  { tier: 11, name: 'Tầng Lớp 11', icon: '🌌', description: 'Nội dung học tập Lớp 11.' },
-  { tier: 12, name: 'Tầng Lớp 12', icon: '☄️', description: 'Nội dung học tập Lớp 12.' },
+  { tier: 6, name: 'Lớp 6', icon: '🏯', description: 'Nội dung học tập Lớp 6.' },
+  { tier: 7, name: 'Lớp 7', icon: '⛩️', description: 'Nội dung học tập Lớp 7.' },
+  { tier: 8, name: 'Lớp 8', icon: '🏔️', description: 'Nội dung học tập Lớp 8.' },
+  { tier: 9, name: 'Lớp 9', icon: '🗼', description: 'Nội dung học tập Lớp 9.' },
+  { tier: 10, name: 'Lớp 10', icon: '🌋', description: 'Nội dung học tập Lớp 10.' },
+  { tier: 11, name: 'Lớp 11', icon: '🌌', description: 'Nội dung học tập Lớp 11.' },
+  { tier: 12, name: 'Lớp 12', icon: '☄️', description: 'Nội dung học tập Lớp 12.' },
   { tier: 13, name: 'Đại học - CS', icon: '🎓', description: 'Đại học – Computer Science' }
 ];
 

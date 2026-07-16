@@ -1,4 +1,4 @@
-import { isParentRole, isAdmin } from './utils/roleHelpers';
+﻿import { isParentRole, isAdmin } from './utils/roleHelpers';
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useGameState } from './hooks/useGameState';
 import { TopHUD } from './components/TopHUD';
@@ -16,6 +16,7 @@ import { LogoutConfirmModal } from './components/Common/LogoutConfirmModal';
 import { getSubjectToolIds } from './subject-modules/registry';
 import { recordMissionEvent } from './services/missionLedgerService';
 import { AcademyHub, type AcademyTabId } from './components/AcademyHub';
+import { FullscreenModal } from './components/Common/FullscreenModal';
 
 // Helper decorator to encapsulate Suspense for each lazy component individually, avoiding app-wide unmount loops
 const withSuspense = <P extends object>(
@@ -419,34 +420,7 @@ function App() {
           {/* ── Tutor Console (admin/teacher) ── */}
           {screen === 'tutor' && <TutorConsole />}
 
-          {/* ── Play Area (dungeon) ── */}
-          {screen === 'play' && (
-            <PlayArea
-              key={learningContextKey}
-              mode={playMode}
-              bossId={bossId}
-              lessonId={selectedLessonId || undefined}
-              onFinish={async (result) => {
-                if (playMode === 'lesson' && selectedLessonId) {
-                  if (result.passed) {
-                    await masterLesson(selectedLessonId, result.accuracyRatio);
-                  }
-                  setScreen('academy');
-                } else {
-                  setScreen('academy');
-                }
-              }}
-            />
-          )}
-
-          {/* ── Lesson Study View ── */}
-          {screen === 'lesson-study' && selectedLessonId && (
-            <LessonStudyView
-              lessonId={selectedLessonId}
-              onStartPractice={(lessonId) => handleStartPlay('lesson', lessonId)}
-              onBack={() => setScreen('academy')}
-            />
-          )}
+          
 
           {/* ── Student Academy Hub (5-tab) ── */}
           {screen === 'academy' && currentUser?.role === 'student' && (
@@ -469,9 +443,58 @@ function App() {
       </main>
 
       {/* ── Workshop Modals ── */}
-      {isWorkshopScreen && (
-        <div className="fixed inset-0 z-[200] bg-synth-bg/98 backdrop-blur-sm flex flex-col">
-          <div className="flex-1 overflow-auto">
+            {/* ─── Play Area Modal ─── */}
+      <FullscreenModal
+        isOpen={screen === 'play'}
+        onClose={() => {}}
+        hideHeader={true}
+        bodyClassName="p-0"
+      >
+        {screen === 'play' && (
+          <PlayArea
+            key={learningContextKey}
+            mode={playMode}
+            bossId={bossId}
+            lessonId={selectedLessonId || undefined}
+            onFinish={async (result) => {
+              if (playMode === 'lesson' && selectedLessonId) {
+                if (result.passed) {
+                  await masterLesson(selectedLessonId, result.accuracyRatio);
+                }
+                setScreen('academy');
+              } else {
+                setScreen('academy');
+              }
+            }}
+          />
+        )}
+      </FullscreenModal>
+
+      {/* ─── Lesson Study View Modal ─── */}
+      <FullscreenModal
+        isOpen={screen === 'lesson-study'}
+        onClose={() => setScreen('academy')}
+        hideHeader={true}
+        bodyClassName="p-0"
+      >
+        {screen === 'lesson-study' && selectedLessonId && (
+          <LessonStudyView
+            lessonId={selectedLessonId}
+            onStartPractice={(lessonId) => handleStartPlay('lesson', lessonId)}
+            onBack={() => setScreen('academy')}
+          />
+        )}
+      </FullscreenModal>
+
+      {/* ─── Workshop Modals ─── */}
+      <FullscreenModal
+        isOpen={isWorkshopScreen}
+        onClose={() => setScreen('academy')}
+        hideHeader={true}
+        bodyClassName="p-0"
+      >
+        {isWorkshopScreen && (
+          <div className="flex-1 flex flex-col h-full overflow-auto">
             {screen === 'workshop-3d' && (
               <SubjectWorkshopPage
                 kind="3d"
@@ -512,8 +535,8 @@ function App() {
               </SubjectWorkshopPage>
             )}
           </div>
-        </div>
-      )}
+        )}
+      </FullscreenModal>
 
 
       {/* Reward/Notification Modal */}
