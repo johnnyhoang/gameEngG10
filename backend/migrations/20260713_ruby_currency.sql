@@ -23,9 +23,16 @@ ALTER TABLE ge10_history_logs ADD COLUMN IF NOT EXISTS ruby_changed INTEGER;
 UPDATE ge10_history_logs SET ruby_changed = COALESCE(ruby_changed, coins_changed, 0);
 ALTER TABLE ge10_history_logs ALTER COLUMN ruby_changed SET DEFAULT 0;
 
-ALTER TABLE ge10_parent_rewards ADD COLUMN IF NOT EXISTS cost_ruby INTEGER;
-UPDATE ge10_parent_rewards SET cost_ruby = COALESCE(cost_ruby, cost_coins);
-ALTER TABLE ge10_parent_rewards ALTER COLUMN cost_ruby SET NOT NULL;
+-- ge10_parent_rewards đã được đổi tên thành ge10_tutor_rewards (xem 20260716_rename_parent_to_tutor.sql).
+-- Guard bằng to_regclass để migration cũ này vẫn idempotent trên DB đã chạy rename.
+DO $$
+BEGIN
+  IF to_regclass('public.ge10_parent_rewards') IS NOT NULL THEN
+    ALTER TABLE ge10_parent_rewards ADD COLUMN IF NOT EXISTS cost_ruby INTEGER;
+    UPDATE ge10_parent_rewards SET cost_ruby = COALESCE(cost_ruby, cost_coins);
+    ALTER TABLE ge10_parent_rewards ALTER COLUMN cost_ruby SET NOT NULL;
+  END IF;
+END $$;
 
 ALTER TABLE ge10_reward_redemptions ADD COLUMN IF NOT EXISTS cost_ruby INTEGER;
 UPDATE ge10_reward_redemptions SET cost_ruby = COALESCE(cost_ruby, cost_coins);
@@ -152,9 +159,14 @@ $$ LANGUAGE plpgsql;
 DROP TRIGGER IF EXISTS trg_ge10_history_ruby_legacy ON ge10_history_logs;
 CREATE TRIGGER trg_ge10_history_ruby_legacy BEFORE INSERT OR UPDATE ON ge10_history_logs
 FOR EACH ROW EXECUTE FUNCTION ge10_sync_ruby_pair();
-DROP TRIGGER IF EXISTS trg_ge10_parent_reward_ruby_legacy ON ge10_parent_rewards;
-CREATE TRIGGER trg_ge10_parent_reward_ruby_legacy BEFORE INSERT OR UPDATE ON ge10_parent_rewards
-FOR EACH ROW EXECUTE FUNCTION ge10_sync_ruby_pair();
+DO $$
+BEGIN
+  IF to_regclass('public.ge10_parent_rewards') IS NOT NULL THEN
+    DROP TRIGGER IF EXISTS trg_ge10_parent_reward_ruby_legacy ON ge10_parent_rewards;
+    CREATE TRIGGER trg_ge10_parent_reward_ruby_legacy BEFORE INSERT OR UPDATE ON ge10_parent_rewards
+    FOR EACH ROW EXECUTE FUNCTION ge10_sync_ruby_pair();
+  END IF;
+END $$;
 DROP TRIGGER IF EXISTS trg_ge10_redemption_ruby_legacy ON ge10_reward_redemptions;
 CREATE TRIGGER trg_ge10_redemption_ruby_legacy BEFORE INSERT OR UPDATE ON ge10_reward_redemptions
 FOR EACH ROW EXECUTE FUNCTION ge10_sync_ruby_pair();

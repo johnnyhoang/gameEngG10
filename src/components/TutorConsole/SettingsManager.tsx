@@ -83,6 +83,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
   const [challengeCost4, setChallengeCost4] = useState(gameSettings?.challengeEnergyCosts?.[3] ?? 30);
   const [baseXPVal, setBaseXPVal] = useState(gameSettings?.baseXP ?? 15);
   const [baseRubyVal, setBaseRubyVal] = useState(gameSettings?.baseRuby ?? 5);
+  const [themeUnlockCostVal, setThemeUnlockCostVal] = useState(gameSettings?.themeUnlockCost ?? 200);
 
   // Cẩm Nang Học Đường
   const [hbCategory, setHbCategory] = useState('Dặn Dò của Viện Trưởng');
@@ -95,7 +96,8 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
       bossCompletionBonusRuby: [bossBonusEasy, bossBonusMedium, bossBonusHard],
       challengeEnergyCosts: [challengeCost1, challengeCost2, challengeCost3, challengeCost4],
       baseXP: baseXPVal,
-      baseRuby: baseRubyVal
+      baseRuby: baseRubyVal,
+      themeUnlockCost: themeUnlockCostVal
     });
     toast.success('Đã lưu cấu hình hoạt động của game thành công!');
   };
@@ -252,6 +254,17 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
             </p>
             <SettingRow label="XP cơ bản" unit="XP" value={baseXPVal} onChange={setBaseXPVal} min={1} />
             <SettingRow label="Ruby cơ bản" unit="Ruby" value={baseRubyVal} onChange={setBaseRubyVal} min={1} />
+          </div>
+
+          {/* Nhóm 4: Giá mở khóa Phong Cách Học Đường */}
+          <div className="rounded-xl border border-white/5 bg-white/5 p-4">
+            <h4 className="text-[10px] font-orbitron font-bold uppercase tracking-wider text-synth-cyan">
+              🎨 Phong Cách Học Đường
+            </h4>
+            <p className="text-[10px] text-synth-text-muted mt-0.5 mb-2">
+              Giá Ruby để mở khóa một giao diện (theme) mới trong Cửa Hàng.
+            </p>
+            <SettingRow label="Giá mở khóa" unit="Ruby" value={themeUnlockCostVal} onChange={setThemeUnlockCostVal} step={50} min={1} />
           </div>
         </div>
 

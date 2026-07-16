@@ -115,30 +115,24 @@ CREATE TABLE IF NOT EXISTS ge10_history_logs (
     wallet_changed INTEGER DEFAULT 0
 );
 
--- Danh Mục Quà Khuyến Học (Reward Catalog) — CORE_SPECS §3.2. Do chủ nhiệm tự tạo, định giá Ruby,
--- có số lượng giới hạn. Đây CHỈ là catalog item — một lượt đổi cụ thể nằm ở ge10_reward_redemptions.
-CREATE TABLE IF NOT EXISTS ge10_tutor_rewards (
+-- Danh Mục Quà Khuyến Học CHUNG của trường (CORE_SPECS §3.2) — MỘT danh sách duy nhất cho
+-- toàn viện, Viện Trưởng/Phó Viện Trưởng quản lý qua /api/admin/school-rewards. Giáo viên có
+-- danh mục riêng (ge10_class_rewards, clone từ đây khi hồ sơ giáo viên được tạo); học sinh mồ côi
+-- (không có giáo viên) đọc thẳng bảng này. Không có user_id vì đây không phải bản sao theo từng người.
+CREATE TABLE IF NOT EXISTS ge10_school_reward_templates (
     id VARCHAR(255) PRIMARY KEY,
-    user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
-    title VARCHAR(255) NOT NULL,
+    title VARCHAR(500) NOT NULL,
     cost_ruby INTEGER NOT NULL,
-    cost_coins INTEGER, -- legacy compatibility
     quantity INTEGER NOT NULL DEFAULT 1,
     remaining_quantity INTEGER NOT NULL DEFAULT 1,
-    timestamp BIGINT NOT NULL
+    created_at BIGINT NOT NULL
 );
 
--- App không quản lý tiền nữa (CORE_SPECS §3.2) — bỏ tỷ giá cash_value_vnd + status (chuyển sang bảng redemptions).
-ALTER TABLE ge10_tutor_rewards DROP COLUMN IF EXISTS cash_value_vnd;
-ALTER TABLE ge10_tutor_rewards DROP COLUMN IF EXISTS status;
-ALTER TABLE ge10_tutor_rewards ADD COLUMN IF NOT EXISTS quantity INTEGER NOT NULL DEFAULT 1;
-ALTER TABLE ge10_tutor_rewards ADD COLUMN IF NOT EXISTS remaining_quantity INTEGER NOT NULL DEFAULT 1;
-
--- Một lượt đổi quà cụ thể — trừ Ruby ngay, chờ chủ nhiệm xác nhận "Đã Trao" ngoài đời (CORE_SPECS §3.2).
+-- Một lượt đổi quà cụ thể — trừ Ruby ngay, chờ Viện Trưởng xác nhận "Đã Trao" ngoài đời (CORE_SPECS §3.2).
 CREATE TABLE IF NOT EXISTS ge10_reward_redemptions (
     id VARCHAR(255) PRIMARY KEY,
     user_id VARCHAR(255) REFERENCES ge10_users(id) ON DELETE CASCADE,
-    reward_id VARCHAR(255) REFERENCES ge10_tutor_rewards(id) ON DELETE SET NULL,
+    reward_id VARCHAR(255) REFERENCES ge10_school_reward_templates(id) ON DELETE SET NULL,
     reward_title VARCHAR(255) NOT NULL,
     cost_ruby INTEGER NOT NULL,
     cost_coins INTEGER, -- legacy compatibility
@@ -233,9 +227,6 @@ CREATE TABLE IF NOT EXISTS ge10_student_question_performance (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(student_id, question_id)
 );
-
--- Force promote hoang.hoa@gmail.com to admin (in case they pre-existed in DB as student)
-UPDATE ge10_users SET role = 'truong_vien' WHERE email = 'hoang.hoa@gmail.com';
 
 -- Lessons Table
 CREATE TABLE IF NOT EXISTS ge10_lessons (

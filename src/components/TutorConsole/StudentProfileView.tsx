@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SlidersHorizontal } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { isTutorRole } from '../../utils/roleHelpers';
+import { isTutorRole, isAdmin } from '../../utils/roleHelpers';
 import { toast } from '../../utils/toast';
 import { RewardManager } from './RewardManager';
 import { QuestManager } from './QuestManager';
@@ -24,10 +24,11 @@ interface StudentProfileViewProps {
   /** Quay lại danh sách học sinh (hiện nút "Đổi học sinh khác" trên header khi được truyền) */
   onSwitchStudent?: () => void;
   // Reward props
-  activeRewardCatalog: any[];
   activeRedemptions: any[];
-  addTutorReward: (title: string, costRuby: number, quantity: number) => void;
-  deleteTutorReward: (rewardId: string) => void;
+  schoolRewards: any[];
+  fetchSchoolRewards: () => Promise<void>;
+  createSchoolReward: (title: string, costRuby: number, quantity: number) => Promise<boolean>;
+  deleteSchoolReward: (rewardId: string) => Promise<boolean>;
   markRewardDelivered: (redemptionId: string) => void;
   cancelRedemption: (redemptionId: string) => void;
   // Quest props
@@ -51,10 +52,11 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
   fetchSkipReviews,
   resolveSkipReview,
   onSwitchStudent,
-  activeRewardCatalog,
   activeRedemptions,
-  addTutorReward,
-  deleteTutorReward,
+  schoolRewards,
+  fetchSchoolRewards,
+  createSchoolReward,
+  deleteSchoolReward,
   markRewardDelivered,
   cancelRedemption,
   tutorQuests,
@@ -307,11 +309,13 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
       <div className="glass-panel rounded-2xl border border-white/5 p-5">
         <RewardManager
           viewingStudentId={studentUser?.id}
-          activeRewardCatalog={activeRewardCatalog}
           activeRedemptions={activeRedemptions}
           canApproveReward={canApproveReward}
-          addTutorReward={addTutorReward}
-          deleteTutorReward={deleteTutorReward}
+          isSchoolAdmin={isAdmin(currentUser?.role)}
+          schoolRewards={schoolRewards}
+          fetchSchoolRewards={fetchSchoolRewards}
+          createSchoolReward={createSchoolReward}
+          deleteSchoolReward={deleteSchoolReward}
           markRewardDelivered={markRewardDelivered}
           cancelRedemption={cancelRedemption}
           adminMarkRewardDelivered={adminMarkRewardDelivered}

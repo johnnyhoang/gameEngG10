@@ -1,9 +1,7 @@
 // @ts-nocheck
 import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
-import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS, INITIAL_CHALLENGES, DEFAULT_TUTOR_REWARDS, THEME_UNLOCK_COST, FREE_UI_THEME } from '../initialState';
-import { INITIAL_QUESTIONS } from '../../data/questions';
-import { INITIAL_LESSONS } from '../../data/lessons';
+import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS, FREE_UI_THEME } from '../initialState';
 import { DEFAULT_UI_THEME, UI_THEMES } from '../../theme/uiThemes';
 import type { RewardRedemption } from '../../types/game';
 import { questionInScope } from '../../utils/learningScope';
@@ -22,16 +20,16 @@ export const createPlayerSlice: StateCreator<
   [],
   [],
   Pick<StoreState, 
-    'player' | 'pet' | 'questions' | 'lessons' | 'lessonsProgress' | 'explorationProgress' | 'pageExplorationStates' | 'categoryStats' | 'rewards' | 'rewardRedemptions' | 'challenges' | 'logs' | 'activeCombo' | 'maxCombo' | 'lastSyncTime' | 'profiles' | 'petStates' | 'categoryStatsAll' | 'answerQuestion' | 'useEnergy' | 'addEnergy' | 'tickEnergyRegen' | 'ratchetMasteryRank' | 'buyStreakShield' | 'buyHint' | 'buyTheme' | 'redeemReward' | 'feedPet' | 'spinWheel' | 'openMysteryBox' | 'masterLesson' | 'applyDefeatPenalty' | 'completeBossVictory' | 'completeLevel3Page' | 'awardRubyAndXp' | 'clearExploration' | 'resetProgress' | 'checkDailyReset' | 'getAdaptiveQuestion' | 'getQuestionByWeight' | 'syncSessionResult' | 'syncWithServer' | 'pullServerState'
+    'player' | 'pet' | 'questions' | 'lessons' | 'lessonsProgress' | 'explorationProgress' | 'pageExplorationStates' | 'categoryStats' | 'rewards' | 'rewardRedemptions' | 'challenges' | 'challengeTemplates' | 'logs' | 'activeCombo' | 'maxCombo' | 'lastSyncTime' | 'profiles' | 'petStates' | 'categoryStatsAll' | 'answerQuestion' | 'useEnergy' | 'addEnergy' | 'tickEnergyRegen' | 'ratchetMasteryRank' | 'buyStreakShield' | 'buyHint' | 'buyTheme' | 'redeemReward' | 'feedPet' | 'spinWheel' | 'openMysteryBox' | 'masterLesson' | 'applyDefeatPenalty' | 'completeBossVictory' | 'completeLevel3Page' | 'awardRubyAndXp' | 'clearExploration' | 'resetProgress' | 'checkDailyReset' | 'getAdaptiveQuestion' | 'getQuestionByWeight' | 'syncSessionResult' | 'syncWithServer' | 'pullServerState'
   >
 > = (set, get) => ({
   player: INITIAL_PLAYER,
 
   pet: INITIAL_PET,
 
-  questions: INITIAL_QUESTIONS,
+  questions: [],
 
-  lessons: INITIAL_LESSONS,
+  lessons: [],
 
   lessonsProgress: {},
   topics: [],
@@ -44,11 +42,13 @@ export const createPlayerSlice: StateCreator<
 
   categoryStats: {},
 
-  rewards: DEFAULT_TUTOR_REWARDS,
+  rewards: [],
 
   rewardRedemptions: [],
 
-  challenges: INITIAL_CHALLENGES,
+  challenges: [],
+
+  challengeTemplates: [],
 
 
   logs: [],
@@ -353,18 +353,19 @@ export const createPlayerSlice: StateCreator<
           const state = get();
           const unlocked = state.player.unlockedThemes || [FREE_UI_THEME];
           if (themeId === FREE_UI_THEME || unlocked.includes(themeId)) return false;
-          if (state.player.ruby < THEME_UNLOCK_COST) return false;
+          const themeUnlockCost = state.gameSettings.themeUnlockCost ?? 200;
+          if (state.player.ruby < themeUnlockCost) return false;
 
           set({
             player: {
               ...state.player,
-              ruby: state.player.ruby - THEME_UNLOCK_COST,
+              ruby: state.player.ruby - themeUnlockCost,
               unlockedThemes: [...unlocked, themeId]
             }
           });
 
           const themeConfig = UI_THEMES.find(t => t.id === themeId);
-          logActivity(get, set, 'shop', 'Mở khóa Phong Cách Học Đường', `Đã lĩnh ngộ Phong Cách Học Đường "${themeConfig?.name || themeId}" mới.`, -THEME_UNLOCK_COST, 0);
+          logActivity(get, set, 'shop', 'Mở khóa Phong Cách Học Đường', `Đã lĩnh ngộ Phong Cách Học Đường "${themeConfig?.name || themeId}" mới.`, -themeUnlockCost, 0);
           return true;
         },
 
@@ -544,7 +545,7 @@ export const createPlayerSlice: StateCreator<
 
   masterLesson: async (lessonId, accuracyRatio) => {
           const state = get();
-          const lesson = state.lessons.find(l => l.id === lessonId) || INITIAL_LESSONS.find(l => l.id === lessonId);
+          const lesson = state.lessons.find(l => l.id === lessonId);
           if (!lesson) return;
 
           const learningDate = new Intl.DateTimeFormat('en-CA', {
@@ -793,13 +794,14 @@ export const createPlayerSlice: StateCreator<
         },
 
   resetProgress: () => {
+          const state = get();
           set({
             player: INITIAL_PLAYER,
             pet: INITIAL_PET,
             categoryStats: {},
             activeCombo: 0,
             maxCombo: 0,
-            challenges: INITIAL_CHALLENGES.map(ch => ({ ...ch, currentCount: 0, completed: false })),
+            challenges: state.challengeTemplates.map(ch => ({ ...ch, currentCount: 0, completed: false })),
             logs: []
           });
           logActivity(get, set, 'parent_approve', 'Khởi tạo lại tiến độ', 'Đã reset toàn bộ tiến độ.', 0, 0);

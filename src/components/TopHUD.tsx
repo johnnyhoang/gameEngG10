@@ -71,7 +71,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
 
   return (
     <header className={headerClass}>
-      <div className="max-w-7xl mx-auto flex items-center justify-between gap-2.5 w-full">
+      <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2.5 w-full">
         {/* Logo */}
         <span
           onClick={onBackToMap}
@@ -80,133 +80,274 @@ export const TopHUD: React.FC<TopHUDProps> = ({
           MIKAWAII
         </span>
 
-        {/* Cụm 1: Thẻ định danh — avatar + tên + rank/vai trò + thanh EXP + Năng Lượng, gộp làm 1 box duy nhất */}
-        <div className={`${groupBoxClass} order-1 md:order-none w-full sm:w-auto`}>
-          {currentUser && (
-            <div className="relative shrink-0">
-              <img
-                src={currentUser.avatar}
-                alt={currentUser.name}
-                className="w-8 h-8 rounded-full border border-synth-cyan/40 cursor-pointer hover:border-synth-magenta transition-colors"
-                title={
-                  isStudent
-                    ? `${currentUser.name} (${currentUser.email}) - ${isConnected ? 'Đã kết nối Lớp Chủ nhiệm' : 'Chưa gia nhập Lớp Chủ nhiệm'} - Nhấp để Đổi Hồ Sơ Sĩ Tử`
-                    : `${currentUser.name} (${currentUser.email}) - Nhấp để Đổi Hồ Sơ`
-                }
-                onClick={() => {
-                  useGameState.setState({ currentUser: null });
-                  localStorage.removeItem('ge10_selected_profile_id');
-                }}
-              />
-              {isStudent && (
-                <span
-                  className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-slate-950 ${
-                    isConnected ? 'bg-synth-green' : 'bg-amber-500 animate-pulse'
-                  }`}
-                  title={isConnected ? 'Đã kết nối Lớp Chủ nhiệm 🎓' : 'Chưa kết nối Lớp Chủ nhiệm ⚠️'}
+        {/* ── Trên Desktop (>= md): Hiển thị 2 box riêng biệt như cũ ── */}
+        <div className="hidden md:flex items-center gap-2.5 md:order-none">
+          {/* Cụm 1: Thẻ định danh — avatar + tên + rank/vai trò + thanh EXP + Năng Lượng, gộp làm 1 box duy nhất */}
+          <div className={`${groupBoxClass} w-full sm:w-auto`}>
+            {currentUser && (
+              <div className="relative shrink-0">
+                <img
+                  src={currentUser.avatar}
+                  alt={currentUser.name}
+                  className="w-8 h-8 rounded-full border border-synth-cyan/40 cursor-pointer hover:border-synth-magenta transition-colors"
+                  title={
+                    isStudent
+                      ? `${currentUser.name} (${currentUser.email}) - ${isConnected ? 'Đã kết nối Lớp Chủ nhiệm' : 'Chưa gia nhập Lớp Chủ nhiệm'} - Nhấp để Đổi Hồ Sơ Sĩ Tử`
+                      : `${currentUser.name} (${currentUser.email}) - Nhấp để Đổi Hồ Sơ`
+                  }
+                  onClick={() => {
+                    useGameState.setState({ currentUser: null });
+                    localStorage.removeItem('ge10_selected_profile_id');
+                  }}
                 />
-              )}
-            </div>
-          )}
-          <div className="flex flex-col min-w-0 gap-0.5">
-            <div className="flex items-center gap-1.5 min-w-0">
-              <span className="text-[11px] font-black text-white font-orbitron tracking-wide max-w-[90px] truncate">
-                {currentUser ? currentUser.name : 'Con yêu'}
-              </span>
-              {isStudent ? (
-                <span
-                  onClick={() => showHelp('xp')}
-                  className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-synth-purple/30 text-synth-cyan border border-synth-cyan/20 uppercase font-orbitron cursor-pointer hover:bg-synth-purple/50 shrink-0"
-                  title={`Danh hiệu: ${getStudentRankForLevel(player.level).name} — Cấp độ ${player.level}. Nhấp để xem hướng dẫn.`}
-                >
-                  {getStudentRankForLevel(player.level).icon} Lvl.{player.level}
-                </span>
-              ) : (
-                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase font-orbitron shrink-0 ${
-                  currentUser?.role === 'truong_vien' ? 'bg-synth-magenta/30 text-synth-magenta border border-synth-magenta/20' :
-                  currentUser?.role === 'pho_vien' ? 'bg-purple-500/30 text-purple-400 border border-purple-500/20' :
-                  currentUser?.role === 'tutor' ? 'bg-synth-orange/30 text-synth-orange border border-synth-orange/20' :
-                  'bg-pink-500/30 text-pink-400 border border-pink-500/20'
-                }`}>
-                  {currentUser?.role === 'truong_vien' ? 'Viện Trưởng 👑' :
-                   currentUser?.role === 'pho_vien' ? 'Phó Viện Trưởng 🛡️' :
-                   currentUser?.role === 'tutor' ? 'Chủ Nhiệm Chính 📋' : 'Chủ Nhiệm Phụ 📋'}
-                </span>
-              )}
-            </div>
-            {isStudent && (
-              <div className="w-24 sm:w-28 h-1.5 bg-synth-gray rounded-full overflow-hidden border border-synth-cyan/10">
-                <div
-                  className="h-full bg-gradient-to-r from-synth-cyan to-synth-purple"
-                  style={{ width: `${xpPercent}%` }}
-                  title={`EXP ${player.xp}/${xpNeeded}`}
-                />
+                {isStudent && (
+                  <span
+                    className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-slate-950 ${
+                      isConnected ? 'bg-synth-green' : 'bg-amber-500 animate-pulse'
+                    }`}
+                    title={isConnected ? 'Đã kết nối Lớp Chủ nhiệm 🎓' : 'Chưa kết nối Lớp Chủ nhiệm ⚠️'}
+                  />
+                )}
               </div>
+            )}
+            <div className="flex flex-col min-w-0 gap-0.5">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <span className="text-[11px] font-black text-white font-orbitron tracking-wide max-w-[90px] truncate">
+                  {currentUser ? currentUser.name : 'Con yêu'}
+                </span>
+                {isStudent ? (
+                  <span
+                    onClick={() => showHelp('xp')}
+                    className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-synth-purple/30 text-synth-cyan border border-synth-cyan/20 uppercase font-orbitron cursor-pointer hover:bg-synth-purple/50 shrink-0"
+                    title={`Danh hiệu: ${getStudentRankForLevel(player.level).name} — Cấp độ ${player.level}. Nhấp để xem hướng dẫn.`}
+                  >
+                    {getStudentRankForLevel(player.level).icon} Lvl.{player.level}
+                  </span>
+                ) : (
+                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase font-orbitron shrink-0 ${
+                    currentUser?.role === 'truong_vien' ? 'bg-synth-magenta/30 text-synth-magenta border border-synth-magenta/20' :
+                    currentUser?.role === 'pho_vien' ? 'bg-purple-500/30 text-purple-400 border border-purple-500/20' :
+                    currentUser?.role === 'tutor' ? 'bg-synth-orange/30 text-synth-orange border border-synth-orange/20' :
+                    'bg-pink-500/30 text-pink-400 border border-pink-500/20'
+                  }`}>
+                    {currentUser?.role === 'truong_vien' ? 'Viện Trưởng 👑' :
+                     currentUser?.role === 'pho_vien' ? 'Phó Viện Trưởng 🛡️' :
+                     currentUser?.role === 'tutor' ? 'Chủ Nhiệm Chính 📋' : 'Chủ Nhiệm Phụ 📋'}
+                  </span>
+                )}
+              </div>
+              {isStudent && (
+                <div className="w-24 sm:w-28 h-1.5 bg-synth-gray rounded-full overflow-hidden border border-synth-cyan/10">
+                  <div
+                    className="h-full bg-gradient-to-r from-synth-cyan to-synth-purple"
+                    style={{ width: `${xpPercent}%` }}
+                    title={`EXP ${player.xp}/${xpNeeded}`}
+                  />
+                </div>
+              )}
+            </div>
+
+            {isStudent && (
+              <>
+                <div className="w-px h-8 bg-white/10 shrink-0" />
+                <div
+                  className={statItemClass}
+                  onClick={() => showHelp('energy')}
+                  title={isEnergyDepleted ? `Hết Năng Lượng — hồi đầy lúc ${energyResetLabel}` : 'Năng Lượng — Nhấp để xem hướng dẫn'}
+                >
+                  <Zap className={`w-4 h-4 shrink-0 ${isEnergyDepleted ? 'text-red-400 fill-red-400' : 'text-synth-cyan fill-synth-cyan animate-pulse'}`} />
+                  <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${isEnergyDepleted ? 'text-red-400' : 'text-white'}`}>
+                    {isEnergyDepleted ? `Hồi lúc ${energyResetLabel}` : `${player.energy}/${player.maxEnergy ?? 100}`}
+                  </span>
+                </div>
+              </>
             )}
           </div>
 
+          {/* Cụm 2: Dải tài nguyên — Môn học + Lớp (cho cả học sinh và giáo viên/viện chủ) */}
+          {(isStudent || isConsoleUser) && (
+            <div className={`${groupBoxClass} w-full sm:w-auto justify-between sm:justify-start overflow-x-auto`}>
+              {/* Cửa đổi môn DUY NHẤT trên top nav — mở GlobalSectModal */}
+              <button
+                onClick={() => setSectModalOpen(true)}
+                className={statItemClass}
+                title={`Đang học: ${activeSubjectConfig?.name || currentSubject} — ${getGradeTierConfig(activeGradeTier).name}. Nhấp để chuyển môn.`}
+              >
+                <span className="text-sm leading-none shrink-0">{activeSubjectConfig?.icon || '📚'}</span>
+                <span className="text-xs font-semibold font-orbitron whitespace-nowrap text-white max-w-[180px] truncate">
+                  {activeSubjectConfig?.name || currentSubject} - {getGradeTierConfig(activeGradeTier).name}
+                </span>
+                <ChevronDown className="w-3 h-3 text-synth-cyan shrink-0" />
+              </button>
+
+              {isStudent && (
+                <>
+                  <div className="w-px h-8 bg-white/10 shrink-0" />
+
+                  <div className={statItemClass} onClick={() => showHelp('nanite')} title={player.ruby < 0 ? 'Ruby đang ÂM — trả nợ bằng cách rèn luyện thêm!' : 'Ruby — Nhấp để xem hướng dẫn'}>
+                    <Coins className={`w-4 h-4 shrink-0 ${player.ruby < 0 ? 'text-red-400 fill-red-400' : 'text-synth-orange fill-synth-orange'}`} />
+                    <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${player.ruby < 0 ? 'text-red-400' : 'text-white'}`}>{player.ruby}</span>
+                  </div>
+
+                  <div className="w-px h-8 bg-white/10 shrink-0" />
+
+                  <div className={statItemClass} onClick={() => showHelp('streak')} title="Chuỗi học tập — Nhấp để xem hướng dẫn">
+                    <Flame className={`w-4 h-4 shrink-0 ${player.streak > 0 ? 'text-orange-500 fill-orange-500' : 'text-synth-gray'}`} />
+                    <span className="text-xs font-semibold font-orbitron text-white whitespace-nowrap">{player.streak}d</span>
+                    {hasShield && (
+                      <span title="Thẻ Chuyên Cần đang bảo vệ Chuỗi học tập!">
+                        <Shield className="w-3.5 h-3.5 text-synth-cyan fill-synth-cyan/20 shrink-0" />
+                      </span>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ── Trên Mobile (< md): Gộp Khối Định Danh & Khối Tài Nguyên vào 1 Box duy nhất ── */}
+        <div className="flex md:hidden flex-col w-full gap-2 order-3">
           {isStudent && (
-            <>
-              <div className="w-px h-8 bg-white/10 shrink-0" />
+            <div className={`${groupBoxClass.replace('h-14', 'min-h-14 py-2 px-3')} flex-wrap justify-center w-full gap-y-2 gap-x-4`}>
+              {/* Thẻ định danh: Avatar, Tên, Cấp độ, EXP */}
+              <div className="flex items-center gap-2">
+                {currentUser && (
+                  <div className="relative shrink-0">
+                    <img
+                      src={currentUser.avatar}
+                      alt={currentUser.name}
+                      className="w-8 h-8 rounded-full border border-synth-cyan/40 cursor-pointer hover:border-synth-magenta transition-colors"
+                      title={currentUser.name}
+                      onClick={() => {
+                        useGameState.setState({ currentUser: null });
+                        localStorage.removeItem('ge10_selected_profile_id');
+                      }}
+                    />
+                    <span
+                      className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-slate-950 ${
+                        isConnected ? 'bg-synth-green' : 'bg-amber-500 animate-pulse'
+                      }`}
+                    />
+                  </div>
+                )}
+                <div className="flex flex-col min-w-0 gap-0.5">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <span className="text-[11px] font-black text-white font-orbitron tracking-wide max-w-[90px] truncate">
+                      {currentUser ? currentUser.name : 'Con yêu'}
+                    </span>
+                    <span
+                      onClick={() => showHelp('xp')}
+                      className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-synth-purple/30 text-synth-cyan border border-synth-cyan/20 uppercase font-orbitron cursor-pointer hover:bg-synth-purple/50 shrink-0"
+                    >
+                      {getStudentRankForLevel(player.level).icon} Lvl.{player.level}
+                    </span>
+                  </div>
+                  <div className="w-20 sm:w-24 h-1.5 bg-synth-gray rounded-full overflow-hidden border border-synth-cyan/10">
+                    <div
+                      className="h-full bg-gradient-to-r from-synth-cyan to-synth-purple"
+                      style={{ width: `${xpPercent}%` }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Năng Lượng */}
               <div
                 className={statItemClass}
                 onClick={() => showHelp('energy')}
-                title={isEnergyDepleted ? `Hết Năng Lượng — hồi đầy lúc ${energyResetLabel}` : 'Năng Lượng — Nhấp để xem hướng dẫn'}
+                title={isEnergyDepleted ? `Hết Năng Lượng — hồi đầy lúc ${energyResetLabel}` : 'Năng Lượng'}
               >
                 <Zap className={`w-4 h-4 shrink-0 ${isEnergyDepleted ? 'text-red-400 fill-red-400' : 'text-synth-cyan fill-synth-cyan animate-pulse'}`} />
                 <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${isEnergyDepleted ? 'text-red-400' : 'text-white'}`}>
                   {isEnergyDepleted ? `Hồi lúc ${energyResetLabel}` : `${player.energy}/${player.maxEnergy ?? 100}`}
                 </span>
               </div>
-            </>
+
+              {/* Môn Học - Lớp */}
+              <button
+                onClick={() => setSectModalOpen(true)}
+                className={statItemClass}
+                title={`Đang học: ${activeSubjectConfig?.name || currentSubject} — ${getGradeTierConfig(activeGradeTier).name}. Nhấp để chuyển môn.`}
+              >
+                <span className="text-sm leading-none shrink-0">{activeSubjectConfig?.icon || '📚'}</span>
+                <span className="text-xs font-semibold font-orbitron whitespace-nowrap text-white max-w-[150px] truncate">
+                  {activeSubjectConfig?.name || currentSubject} - {getGradeTierConfig(activeGradeTier).name}
+                </span>
+                <ChevronDown className="w-3 h-3 text-synth-cyan shrink-0" />
+              </button>
+
+              {/* Ruby */}
+              <div className={statItemClass} onClick={() => showHelp('nanite')} title="Ruby">
+                <Coins className={`w-4 h-4 shrink-0 ${player.ruby < 0 ? 'text-red-400 fill-red-400' : 'text-synth-orange fill-synth-orange'}`} />
+                <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${player.ruby < 0 ? 'text-red-400' : 'text-white'}`}>{player.ruby}</span>
+              </div>
+
+              {/* Streak */}
+              <div className={statItemClass} onClick={() => showHelp('streak')} title="Chuỗi học tập">
+                <Flame className={`w-4 h-4 shrink-0 ${player.streak > 0 ? 'text-orange-500 fill-orange-500' : 'text-synth-gray'}`} />
+                <span className="text-xs font-semibold font-orbitron text-white whitespace-nowrap">{player.streak}d</span>
+                {hasShield && (
+                  <span title="Thẻ Chuyên Cần đang bảo vệ Chuỗi học tập!">
+                    <Shield className="w-3.5 h-3.5 text-synth-cyan fill-synth-cyan/20 shrink-0" />
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
+
+          {isConsoleUser && (
+            <div className={`${groupBoxClass.replace('h-14', 'min-h-14 py-2 px-3')} flex-wrap justify-center w-full gap-y-2 gap-x-4`}>
+              {/* Avatar + Tên + Vai trò */}
+              <div className="flex items-center gap-2">
+                {currentUser && (
+                  <img
+                    src={currentUser.avatar}
+                    alt={currentUser.name}
+                    className="w-8 h-8 rounded-full border border-synth-cyan/40 cursor-pointer hover:border-synth-magenta transition-colors"
+                    onClick={() => {
+                      useGameState.setState({ currentUser: null });
+                      localStorage.removeItem('ge10_selected_profile_id');
+                    }}
+                  />
+                )}
+                <div className="flex flex-col min-w-0 gap-0.5">
+                  <span className="text-[11px] font-black text-white font-orbitron tracking-wide max-w-[90px] truncate">
+                    {currentUser ? currentUser.name : 'Ban quản trị'}
+                  </span>
+                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase font-orbitron shrink-0 ${
+                    currentUser?.role === 'truong_vien' ? 'bg-synth-magenta/30 text-synth-magenta border border-synth-magenta/20' :
+                    currentUser?.role === 'pho_vien' ? 'bg-purple-500/30 text-purple-400 border border-purple-500/20' :
+                    currentUser?.role === 'tutor' ? 'bg-synth-orange/30 text-synth-orange border border-synth-orange/20' :
+                    'bg-pink-500/30 text-pink-400 border border-pink-500/20'
+                  }`}>
+                    {currentUser?.role === 'truong_vien' ? 'Viện Trưởng 👑' :
+                     currentUser?.role === 'pho_vien' ? 'Phó Viện Trưởng 🛡️' :
+                     currentUser?.role === 'tutor' ? 'Chủ Nhiệm Chính 📋' : 'Chủ Nhiệm Phụ 📋'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Môn Học - Lớp */}
+              <button
+                onClick={() => setSectModalOpen(true)}
+                className={statItemClass}
+                title={`Đang học: ${activeSubjectConfig?.name || currentSubject} — ${getGradeTierConfig(activeGradeTier).name}. Nhấp để chuyển môn.`}
+              >
+                <span className="text-sm leading-none shrink-0">{activeSubjectConfig?.icon || '📚'}</span>
+                <span className="text-xs font-semibold font-orbitron whitespace-nowrap text-white max-w-[150px] truncate">
+                  {activeSubjectConfig?.name || currentSubject} - {getGradeTierConfig(activeGradeTier).name}
+                </span>
+                <ChevronDown className="w-3 h-3 text-synth-cyan shrink-0" />
+              </button>
+            </div>
           )}
         </div>
 
-        {/* Cụm 2: Dải tài nguyên — Môn học + Lớp (cho cả học sinh và giáo viên/viện chủ) */}
-        {(isStudent || isConsoleUser) && (
-          <div className={`${groupBoxClass} order-2 md:order-none w-full sm:w-auto justify-between sm:justify-start overflow-x-auto`}>
-            {/* Cửa đổi môn DUY NHẤT trên top nav — mở GlobalSectModal */}
-            <button
-              onClick={() => setSectModalOpen(true)}
-              className={statItemClass}
-              title={`Đang học: ${activeSubjectConfig?.name || currentSubject} — ${getGradeTierConfig(activeGradeTier).name}. Nhấp để chuyển môn.`}
-            >
-              <span className="text-sm leading-none shrink-0">{activeSubjectConfig?.icon || '📚'}</span>
-              <span className="text-xs font-semibold font-orbitron whitespace-nowrap text-white max-w-[180px] truncate">
-                {activeSubjectConfig?.name || currentSubject} - {getGradeTierConfig(activeGradeTier).name}
-              </span>
-              <ChevronDown className="w-3 h-3 text-synth-cyan shrink-0" />
-            </button>
-
-            {isStudent && (
-              <>
-                <div className="w-px h-8 bg-white/10 shrink-0" />
-
-                <div className={statItemClass} onClick={() => showHelp('nanite')} title={player.ruby < 0 ? 'Ruby đang ÂM — trả nợ bằng cách rèn luyện thêm!' : 'Ruby — Nhấp để xem hướng dẫn'}>
-                  <Coins className={`w-4 h-4 shrink-0 ${player.ruby < 0 ? 'text-red-400 fill-red-400' : 'text-synth-orange fill-synth-orange'}`} />
-                  <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${player.ruby < 0 ? 'text-red-400' : 'text-white'}`}>{player.ruby}</span>
-                </div>
-
-                <div className="w-px h-8 bg-white/10 shrink-0" />
-
-                <div className={statItemClass} onClick={() => showHelp('streak')} title="Chuỗi học tập — Nhấp để xem hướng dẫn">
-                  <Flame className={`w-4 h-4 shrink-0 ${player.streak > 0 ? 'text-orange-500 fill-orange-500' : 'text-synth-gray'}`} />
-                  <span className="text-xs font-semibold font-orbitron text-white whitespace-nowrap">{player.streak}d</span>
-                  {hasShield && (
-                    <span title="Thẻ Chuyên Cần đang bảo vệ Chuỗi học tập!">
-                      <Shield className="w-3.5 h-3.5 text-synth-cyan fill-synth-cyan/20 shrink-0" />
-                    </span>
-                  )}
-                </div>
-              </>
-            )}
-          </div>
-        )}
-
         {/* Cụm 3: Điều hướng nhanh + Hồ Sơ Sĩ Tử + Thoái Ẩn */}
-        <div className="flex items-center gap-2 order-3 md:order-none ml-auto">
+        <div className="flex items-center gap-2 order-2 md:order-none ml-auto">
           {isStudent && (
-            <>
+            <div className="hidden lg:flex items-center gap-2">
               {/* Bản đồ */}
               <button
                 onClick={onBackToMap}
@@ -262,7 +403,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                 <span>👑</span>
                 <span className="hidden lg:inline">Học tịch</span>
               </button>
-            </>
+            </div>
           )}
 
           {/* Nav chính Phòng Điều Hành cho Giáo viên / Ban Giám Hiệu — cùng vị trí với nav học sinh */}

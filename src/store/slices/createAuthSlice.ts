@@ -1,9 +1,7 @@
 // @ts-nocheck
 import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
-import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS, INITIAL_CHALLENGES, DEFAULT_TUTOR_REWARDS } from '../initialState';
-import { INITIAL_QUESTIONS } from '../../data/questions';
-import { INITIAL_LESSONS } from '../../data/lessons';
+import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS } from '../initialState';
 import { DEFAULT_UI_THEME } from '../../theme/uiThemes';
 import { supabase } from '../../utils/supabaseClient';
 import { logActivity } from '../helpers';
@@ -62,65 +60,57 @@ export const createAuthSlice: StateCreator<
         activityProgress: {},
         explorationProgress: {},
         pageExplorationStates: {},
-        rewards: DEFAULT_TUTOR_REWARDS,
+        rewards: [],
         rewardRedemptions: [],
         classRewards: [],
         classRewardRedemptions: [],
-        challenges: INITIAL_CHALLENGES,
+        challenges: [],
         logs: [],
         activeCombo: 0,
         maxCombo: 0,
         failedQuestionIds: [],
         recentlyPlayedQuestionIds: [],
         selectedStudentProfile: null,
-        questions: [...INITIAL_QUESTIONS],
-        lessons: [...INITIAL_LESSONS]
+        questions: [],
+        lessons: []
       });
       const data = normalizeRubyPayload(await authService.selectProfile(profileId));
+      if (!data.player || !data.pet) {
+        // Hồ sơ player_profiles/pet_states lẽ ra luôn được tạo cùng lúc với ge10_users
+        // (xem backend routes/profiles.ts). Thiếu ở đây nghĩa là dữ liệu server bị lỗi —
+        // báo rõ thay vì âm thầm dựng nhân vật giả.
+        throw new Error('Thiếu dữ liệu hồ sơ nhân vật (player/pet) trên máy chủ cho hồ sơ này.');
+      }
       const resolvedTheme = data.player?.uiTheme || (get().uiThemesByUser[profileId] || DEFAULT_UI_THEME) as any;
-      const mergedQuestions = [...INITIAL_QUESTIONS];
-      const idMap = new Map<string, number>();
-      mergedQuestions.forEach((q, idx) => {
-        if (q.id) idMap.set(q.id, idx);
-      });
-      const promptSet = new Set<string>();
-      mergedQuestions.forEach(q => {
-        if (q.prompt) promptSet.add(q.prompt);
-      });
-
-      (data.customQuestions || []).forEach((q: any) => {
-        if (!q) return;
+      // Ngân hàng câu hỏi (gốc + do giáo viên/admin tạo) đều nằm trong ge10_custom_questions,
+      // server đã trả về đầy đủ trong data.customQuestions — không còn trộn với mảng hardcode.
+      const enrichedQuestions = (data.customQuestions || []).map((q: any) => {
         const textbook = enrichTextbookAttributes(q.topicId, q.category, q.subject);
-        const enrichedQ = {
-          ...q,
-          loai: q.loai || textbook.loai,
-          bai: q.bai || textbook.bai
-        };
-        const idx = enrichedQ.id ? idMap.get(enrichedQ.id) : undefined;
-        if (idx !== undefined && idx !== -1) {
-          mergedQuestions[idx] = enrichedQ;
-        } else if (enrichedQ.prompt && !promptSet.has(enrichedQ.prompt)) {
-          mergedQuestions.push(enrichedQ);
-          promptSet.add(enrichedQ.prompt);
-          if (enrichedQ.id) idMap.set(enrichedQ.id, mergedQuestions.length - 1);
-        }
+        return { ...q, loai: q.loai || textbook.loai, bai: q.bai || textbook.bai };
       });
+      if (enrichedQuestions.length === 0) {
+        console.warn('[selectProfile] Server trả về ngân hàng câu hỏi rỗng — cần kiểm tra seed ge10_custom_questions.');
+      }
+      if (!data.lessons || data.lessons.length === 0) {
+        console.warn('[selectProfile] Server trả về danh sách bài giảng rỗng — cần kiểm tra seed ge10_lessons.');
+      }
       set({
         currentUser: data.currentUser,
-        player: data.player || INITIAL_PLAYER,
-        pet: data.pet || INITIAL_PET,
+        player: data.player,
+        pet: data.pet,
         categoryStats: data.categoryStats || {},
-        rewards: data.rewards || DEFAULT_TUTOR_REWARDS,
+        rewards: data.rewards || [],
         rewardRedemptions: data.rewardRedemptions || [],
-        challenges: data.challenges || INITIAL_CHALLENGES,
+        challenges: data.challenges || [],
+        challengeTemplates: data.challengeTemplates || [],
         lessonsProgress: data.lessonsProgress || {},
         topics: data.topics || [],
         activities: data.activities || [],
         activityProgress: data.activityProgress || {},
         explorationProgress: data.explorationProgress || {},
         logs: data.logs || [],
-        questions: mergedQuestions,
-        lessons: (data.lessons || INITIAL_LESSONS).map((l: any) => {
+        questions: enrichedQuestions,
+        lessons: (data.lessons || []).map((l: any) => {
           const textbook = enrichTextbookAttributes(l.id, l.category, l.subject);
           return {
             ...l,
@@ -141,6 +131,7 @@ export const createAuthSlice: StateCreator<
       if(state.fetchClassLinks) await state.fetchClassLinks();
     } catch (e) {
       console.error('selectProfile error', e);
+      toast.error('Không tải được hồ sơ. Vui lòng thử lại hoặc liên hệ quản trị viên.');
     }
   },
 
@@ -210,14 +201,9 @@ export const createAuthSlice: StateCreator<
           uiTheme: resolvedTheme
         };
       });
-      // Dev backdoor: backend nhận mock-dev-* làm token + X-Profile-Id nên set header profile
-      // để các API dùng activeProfileHeaders() không tham số hoạt động được khi test local.
-      if (user.id.startsWith('mock-dev-')) {
-        localStorage.setItem('ge10_selected_profile_id', user.id);
-        const state = get();
-        if (state.fetchClassLinks) void state.fetchClassLinks();
-        if (state.fetchClassRewards) void state.fetchClassRewards();
-      }
+      // TODO(dev-tooling): dev backdoor login (nhánh mock-* phía trên) chỉ set state cục bộ
+      // trong trình duyệt, không tạo/đụng tới bất kỳ record nào trong DB. Xoá bỏ hoàn toàn
+      // khi không còn cần test nhanh không cần tài khoản Google thật.
       logActivity(get, set, 'energy_refill', 'Đã vào sân', `Chào mừng ${user.name}. Sân học đã mở.`);
       return;
     }
@@ -226,70 +212,43 @@ export const createAuthSlice: StateCreator<
     try {
       await authService.syncUser();
       const data = normalizeRubyPayload(await authService.fetchCurrentProfile());
-      const dbCustomQs = data.customQuestions || [];
+      if (!data.player || !data.pet) {
+        // Hồ sơ player_profiles/pet_states lẽ ra luôn được tạo cùng lúc với ge10_users
+        // (xem backend routes/profiles.ts). Thiếu ở đây nghĩa là dữ liệu server bị lỗi —
+        // báo rõ thay vì âm thầm dựng nhân vật giả.
+        throw new Error('Thiếu dữ liệu hồ sơ nhân vật (player/pet) trên máy chủ cho tài khoản này.');
+      }
+      // Ngân hàng câu hỏi (gốc + do giáo viên/admin tạo) đều nằm trong ge10_custom_questions,
+      // server đã trả về đầy đủ trong data.customQuestions — không còn trộn với mảng hardcode.
+      const enrichedQuestions = (data.customQuestions || []).map((q: any) => {
+        const textbook = enrichTextbookAttributes(q.topicId, q.category, q.subject);
+        return { ...q, loai: q.loai || textbook.loai, bai: q.bai || textbook.bai };
+      });
+      if (enrichedQuestions.length === 0) {
+        console.warn('[login] Server trả về ngân hàng câu hỏi rỗng — cần kiểm tra seed ge10_custom_questions.');
+      }
       const resolvedTheme = data.player?.uiTheme || (get().uiThemesByUser[data.currentUser?.id || user.id] || DEFAULT_UI_THEME) as any;
+      if (!data.lessons || data.lessons.length === 0) {
+        console.warn('[login] Server trả về danh sách bài giảng rỗng — cần kiểm tra seed ge10_lessons.');
+      }
 
       set(_state => {
-        const mergedQuestions = [...INITIAL_QUESTIONS];
-        const idMap = new Map<string, number>();
-        mergedQuestions.forEach((q, idx) => {
-          if (q.id) idMap.set(q.id, idx);
-        });
-        const promptSet = new Set<string>();
-        mergedQuestions.forEach(q => {
-          if (q.prompt) promptSet.add(q.prompt);
-        });
-
-        dbCustomQs.forEach((q: any) => {
-          if (!q) return;
-          const idx = q.id ? idMap.get(q.id) : undefined;
-          if (idx !== undefined && idx !== -1) {
-            mergedQuestions[idx] = q;
-          } else if (q.prompt && !promptSet.has(q.prompt)) {
-            mergedQuestions.push(q);
-            promptSet.add(q.prompt);
-            if (q.id) idMap.set(q.id, mergedQuestions.length - 1);
-          }
-        });
-
         return {
           currentUser: data.currentUser || user,
           uiTheme: resolvedTheme,
           currentSubject: data.player?.activeSubject || 'english',
           activeGradeTier: data.player?.activeGradeTier || DEFAULT_GRADE_TIER,
-          player: data.player || {
-            id: user.id,
-            name: user.name,
-            role: (data.currentUser?.role || 'student') as any,
-            level: 1,
-            xp: 0,
-            ruby: 200,
-            streak: 0,
-            energy: 100,
-            maxEnergy: 100,
-            resetHours: 3,
-            energyDepletedAt: null,
-            hearts: 3,
-            lastActive: new Date().toISOString(),
-            badges: []
-          },
-          pet: data.pet || {
-            name: 'Heo Maikawaii',
-            stage: 'egg',
-            level: 1,
-            exp: 0,
-            energy: 100,
-            mood: 'neutral',
-            lastFed: new Date().toISOString()
-          },
+          player: data.player,
+          pet: data.pet,
           categoryStats: data.categoryStats || {},
           logs: data.logs || [],
           rewards: data.rewards || [],
           rewardRedemptions: data.rewardRedemptions || [],
-          challenges: data.challenges || INITIAL_CHALLENGES,
+          challenges: data.challenges || [],
+          challengeTemplates: data.challengeTemplates || [],
           gameSettings: data.gameSettings || DEFAULT_GAME_SETTINGS,
-          questions: mergedQuestions,
-          lessons: (data.lessons || INITIAL_LESSONS).map((l: any) => {
+          questions: enrichedQuestions,
+          lessons: (data.lessons || []).map((l: any) => {
             const textbook = enrichTextbookAttributes(l.id, l.category, l.subject);
             return {
               ...l,
@@ -308,38 +267,9 @@ export const createAuthSlice: StateCreator<
       logActivity(get, set, 'energy_refill', 'Đồng bộ Đám mây', `Dữ liệu học tập đã được kéo về cho ${user.name}!`);
     } catch (e) {
       console.error('Lỗi khi tải thông tin từ backend Supabase:', e);
-      // Fallback to local profile if offline
-      set((state: any) => {
-        const updatedUser = {
-          ...user,
-          role: user.email === 'hoang.hoa@gmail.com' ? 'truong_vien' : 'student'
-        };
-        const resolvedTheme = state.uiThemesByUser[user.id] || DEFAULT_UI_THEME;
-        const newPlayer = state.profiles[user.id] || {
-          id: user.id,
-          name: user.name,
-          role: updatedUser.role as any,
-          level: 1,
-          xp: 0,
-          ruby: 200,
-          streak: 0,
-          energy: 100,
-          maxEnergy: 100,
-          resetHours: 3,
-          energyDepletedAt: null,
-          hearts: 3,
-          lastActive: new Date().toISOString(),
-          badges: []
-        };
-        return {
-          currentUser: updatedUser,
-          player: newPlayer,
-          uiTheme: resolvedTheme,
-          currentSubject: newPlayer.activeSubject || 'english',
-          activeGradeTier: newPlayer.activeGradeTier || DEFAULT_GRADE_TIER,
-          gameSettings: state.gameSettings || DEFAULT_GAME_SETTINGS
-        };
-      });
+      // Không tạo hồ sơ/vai trò giả khi không tải được dữ liệu thật — báo lỗi rõ ràng
+      // và giữ nguyên trạng thái hiện có (currentUser vẫn null → màn hình đăng nhập).
+      toast.error('Không thể tải hồ sơ từ máy chủ. Vui lòng kiểm tra kết nối và thử đăng nhập lại.');
     }
   },
 
@@ -416,12 +346,12 @@ export const createAuthSlice: StateCreator<
           activityProgress: {},
           explorationProgress: {},
           pageExplorationStates: {},
-          rewards: DEFAULT_TUTOR_REWARDS,
+          rewards: [],
           rewardRedemptions: [],
           classRewards: [],
           classRewardRedemptions: [],
           isOrphanStudent: true,
-          challenges: INITIAL_CHALLENGES,
+          challenges: [],
           logs: [],
           activeCombo: 0,
           maxCombo: 0,

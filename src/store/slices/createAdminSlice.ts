@@ -1,9 +1,6 @@
 // @ts-nocheck
 import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
-import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS, INITIAL_CHALLENGES, DEFAULT_TUTOR_REWARDS } from '../initialState';
-import { INITIAL_QUESTIONS } from '../../data/questions';
-import { INITIAL_LESSONS } from '../../data/lessons';
 import { DEFAULT_UI_THEME } from '../../theme/uiThemes';
 import { logActivity, checkLevelUp } from '../helpers';
 import { eventBus } from '../../utils/EventBus';
@@ -18,7 +15,7 @@ export const createAdminSlice: StateCreator<
   [],
   [],
   Pick<StoreState, 
-    'adminStudents' | 'adminLinks' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'tutorQuests' | 'markRewardDelivered' | 'cancelRedemption' | 'addTutorReward' | 'deleteTutorReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'addQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'adminSetEnergyConfig' | 'updateGameSettings' | 'addTutorQuest' | 'completeTutorQuest' | 'deleteTutorQuest' | 'claimTutorQuest' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
+    'adminStudents' | 'adminLinks' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'tutorQuests' | 'markRewardDelivered' | 'cancelRedemption' | 'schoolRewards' | 'fetchSchoolRewards' | 'createSchoolReward' | 'deleteSchoolReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'addQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'adminSetEnergyConfig' | 'updateGameSettings' | 'addTutorQuest' | 'completeTutorQuest' | 'deleteTutorQuest' | 'claimTutorQuest' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
   >
 > = (set, get) => ({
   adminStudents: [],
@@ -106,27 +103,40 @@ export const createAdminSlice: StateCreator<
           logActivity(get, set, 'parent_approve', 'Hoàn trả Ruby', `Hủy lượt đổi "${redemption.rewardTitle}". Đã hoàn lại ${redemption.costRuby} Ruby`, redemption.costRuby, 0);
         },
 
-  addTutorReward: (title, costRuby, quantity) => {
-          const safeQuantity = Math.max(1, Math.round(quantity));
-          const newReward: TutorReward = {
-            id: `r-${Date.now()}`,
-            title,
-            costRuby,
-            quantity: safeQuantity,
-            remainingQuantity: safeQuantity,
-            timestamp: Date.now()
-          };
-          set((state: any) => ({
-            rewards: [...state.rewards, newReward]
-          }));
-          logActivity(get, set, 'parent_approve', 'Thêm Quà Khuyến Học', `Quà mới: "${title}" trị giá ${costRuby} Ruby, số lượng ${safeQuantity}`, 0, 0);
-        },
+  schoolRewards: [],
 
-  deleteTutorReward: (rewardId) => {
-          set((state: any) => ({
-            rewards: state.rewards.filter(r => r.id !== rewardId)
-          }));
-        },
+  fetchSchoolRewards: async () => {
+    try {
+      const rewards = await adminService.fetchSchoolRewards();
+      set({ schoolRewards: rewards.map((row: any) => ({
+        id: row.id,
+        title: row.title,
+        costRuby: row.cost_ruby,
+        quantity: row.quantity,
+        remainingQuantity: row.remaining_quantity,
+        timestamp: Number(row.created_at)
+      })) });
+    } catch (e) {
+      console.error('Error fetching school reward templates:', e);
+    }
+  },
+
+  createSchoolReward: async (title, costRuby, quantity) => {
+    const ok = await adminService.createSchoolReward(title, costRuby, Math.max(1, Math.round(quantity)));
+    if (ok) {
+      await get().fetchSchoolRewards();
+      logActivity(get, set, 'parent_approve', 'Thêm Quà Khuyến Học của trường', `Quà mới: "${title}" trị giá ${costRuby} Ruby, số lượng ${quantity}`, 0, 0);
+    }
+    return ok;
+  },
+
+  deleteSchoolReward: async (rewardId) => {
+    const ok = await adminService.deleteSchoolReward(rewardId);
+    if (ok) {
+      set((state: any) => ({ schoolRewards: state.schoolRewards.filter((r: any) => r.id !== rewardId) }));
+    }
+    return ok;
+  },
 
   importQuestions: (importedQuestions) => {
           set((state: any) => {

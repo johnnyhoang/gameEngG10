@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useGameState, THEME_UNLOCK_COST } from '../hooks/useGameState';
+import { useGameState } from '../hooks/useGameState';
 import { Shield, Coins, Gift, Palette, RotateCcw } from 'lucide-react';
 import { toast } from '../utils/toast';
 import { UI_THEMES, isLightTheme } from '../theme/uiThemes';
@@ -14,6 +14,7 @@ interface ItemShopProps {
 export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
   const { t } = useTranslate();
   const player = useGameState(state => state.player);
+  const THEME_UNLOCK_COST = useGameState(state => state.gameSettings.themeUnlockCost ?? 200);
   const rewards = useGameState(state => state.rewards);
   const rewardRedemptions = useGameState(state => state.rewardRedemptions);
   const buyStreakShield = useGameState(state => state.buyStreakShield);

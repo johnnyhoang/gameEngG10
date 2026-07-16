@@ -1,4 +1,5 @@
 import { pool } from '../db.js';
+import crypto from 'crypto';
 
 export const persistCustomQuestion = async (userId: string, question: any) => {
   const gradeTier = Number(question.gradeTier ?? question.grade);
@@ -60,45 +61,25 @@ export const persistCustomQuestion = async (userId: string, question: any) => {
   );
 };
 
-export const ensureDefaultRewards = async (userId: string) => {
-  const rewardsRes = await pool.query('SELECT id FROM ge10_tutor_rewards WHERE user_id = $1', [userId]);
-  if (rewardsRes.rowCount === 0) {
-    const defaultRewards = [
-      { id: `default-rew-1-${userId}`, title: '15 phút chơi game', cost_ruby: 150, quantity: 999999 },
-      { id: `default-rew-2-${userId}`, title: 'Ly trà sữa đặc biệt', cost_ruby: 400, quantity: 999999 },
-      { id: `default-rew-3-${userId}`, title: 'Bao lì xì 20.000đ', cost_ruby: 500, quantity: 999999 },
-      { id: `default-rew-4-${userId}`, title: 'Bao lì xì 50.000đ', cost_ruby: 1000, quantity: 999999 },
-      { id: `default-rew-5-${userId}`, title: 'Bao lì xì 100.000đ', cost_ruby: 1800, quantity: 999999 }
-    ];
-
-    for (const dr of defaultRewards) {
-      await pool.query(
-        `INSERT INTO ge10_tutor_rewards (id, user_id, title, cost_ruby, quantity, remaining_quantity, timestamp)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
-         ON CONFLICT (id) DO NOTHING`,
-        [dr.id, userId, dr.title, dr.cost_ruby, dr.quantity, dr.quantity, Date.now()]
-      );
-    }
-  }
-};
-
+/**
+ * Nhân bản Danh Mục Quà Khuyến Học của TRƯỜNG (ge10_school_reward_templates — bảng dùng
+ * chung toàn viện, quản lý qua /api/admin/school-rewards) vào danh mục riêng của một
+ * giáo viên (ge10_class_rewards). Gọi khi hồ sơ giáo viên được tạo (routes/profiles.ts);
+ * cũng an toàn để gọi lại nhiều lần (chỉ clone khi giáo viên đó chưa có quà nào).
+ */
 export const ensureDefaultClassRewards = async (teacherId: string) => {
   const rewardsRes = await pool.query('SELECT id FROM ge10_class_rewards WHERE teacher_id = $1', [teacherId]);
   if (rewardsRes.rowCount === 0) {
-    const defaultRewards = [
-      { id: `default-cls-rew-1-${teacherId}`, title: '15 phút chơi game', cost_ruby: 150, quantity: 1 },
-      { id: `default-cls-rew-2-${teacherId}`, title: 'Ly trà sữa đặc biệt', cost_ruby: 400, quantity: 1 },
-      { id: `default-cls-rew-3-${teacherId}`, title: 'Bao lì xì 20.000đ', cost_ruby: 500, quantity: 1 },
-      { id: `default-cls-rew-4-${teacherId}`, title: 'Bao lì xì 50.000đ', cost_ruby: 1000, quantity: 1 },
-      { id: `default-cls-rew-5-${teacherId}`, title: 'Bao lì xì 100.000đ', cost_ruby: 1800, quantity: 1 }
-    ];
-
-    for (const dr of defaultRewards) {
+    const templatesRes = await pool.query(
+      'SELECT title, cost_ruby, quantity FROM ge10_school_reward_templates ORDER BY created_at'
+    );
+    for (const t of templatesRes.rows) {
+      const id = `cls-rew-${teacherId}-${crypto.randomUUID()}`;
       await pool.query(
         `INSERT INTO ge10_class_rewards (id, teacher_id, title, cost_ruby, quantity, remaining, created_at)
          VALUES ($1, $2, $3, $4, $5, $6, $7)
          ON CONFLICT (id) DO NOTHING`,
-        [dr.id, teacherId, dr.title, dr.cost_ruby, dr.quantity, dr.quantity, Date.now()]
+        [id, teacherId, t.title, t.cost_ruby, t.quantity, t.quantity, Date.now()]
       );
     }
   }

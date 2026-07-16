@@ -779,10 +779,12 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
     - Thêm Quầy Vòng Quay May Mắn chỉ mở vào cuối tuần vào trong Cửa hàng.
     - Truyền prop `onSpinWheel` từ App.tsx và gọi khi sĩ tử nhấn quay.
 
-- [ ] **T10.5 — Gộp thông tin TopHUD vào 1 khung duy nhất và dịch thuật 100% tiếng Anh cho môn Tiếng Anh**
-  - *Mục tiêu:* Tối ưu hóa UI mobile của TopHUD và quốc tế hóa giao diện học tập.
+- [ ] **T10.5 — Tối ưu hóa UI TopHUD trên Mobile và gộp thông tin**
+  - *Mục tiêu:* Tối ưu responsive trên mobile cho TopHUD, gộp thông tin sĩ tử vào 1 box chung tự wrap, khóa Logo/Logout trên cùng hàng để không bị khuất Logout.
+  - *Phải sửa:* `src/components/TopHUD.tsx`
   - *Phải làm:*
-    - Viết hook `useTranslate.ts` để dịch linh hoạt theo môn.
-    - Sửa `TopHUD.tsx`, `WorldMap.tsx`, `LearningLedger.tsx`, `ItemShop.tsx`, `ProfilePage.tsx` để tích hợp `useTranslate`.
+    - Cấu hình flex-wrap cho container của TopHUD trên mobile để Logo ở bên trái, Logout ở bên phải luôn nằm ở hàng đầu tiên.
+    - Ẩn các nút điều hướng nhanh Bản đồ, Cửa hàng, Sân thú, Học tịch của học sinh trên mobile (`lg:hidden`).
+    - Trên mobile (`md:hidden`), gộp Khối Định Danh và Khối Tài Nguyên của học sinh thành một box chung duy nhất, tự wrap các item và luôn căn giữa, ẩn các vạch phân cách dọc.
 
 

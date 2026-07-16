@@ -9,6 +9,8 @@ const DEV_AVATAR = 'data:image/svg+xml;utf8,' + encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect width="40" height="40" rx="8" fill="#0b0c10"/><text x="20" y="27" font-size="18" text-anchor="middle">🐷</text></svg>'
 );
 
+// TODO(dev-tooling): backdoor đăng nhập giả cho test local, không tạo/đụng DB (xem login()
+// trong createAuthSlice.ts). Xoá bỏ hoàn toàn khi không còn cần test nhanh không cần Google thật.
 const DEV_BACKDOOR_ROLES = [
   { role: 'student', label: 'Sĩ Tử (Học sinh)', id: 'mock-dev-student', name: 'Dev Sĩ Tử' },
   { role: 'pho_vien', label: 'Phó Viện Trưởng', id: 'mock-dev-pho-vien', name: 'Dev Phó Viện Trưởng' },

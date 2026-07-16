@@ -1,15 +1,10 @@
 import { supabase } from '../utils/supabaseClient';
 import { activeProfileHeaders } from './profileHeaders';
-import { useGameState } from '../hooks/useGameState';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
 
 export const adminService = {
   getAccessToken: async (): Promise<string | null> => {
-    const state = useGameState.getState();
-    if (state.currentUser?.id?.startsWith('mock-dev-')) {
-      return state.currentUser.id;
-    }
     const sessionRes = await supabase.auth.getSession();
     return sessionRes.data.session?.access_token || null;
   },
@@ -94,6 +89,41 @@ export const adminService = {
       return await res.json();
     }
     throw new Error('Failed to fetch admin students list');
+  },
+
+  // Danh Mục Quà Khuyến Học CHUNG của trường — CRUD chỉ dành cho truong_vien/pho_vien.
+  fetchSchoolRewards: async (): Promise<any[]> => {
+    const token = await adminService.getAccessToken();
+    if (!token) return [];
+    const res = await fetch(`${backendUrl}/api/admin/school-rewards`, {
+      headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders() }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.rewards || [];
+    }
+    throw new Error('Failed to fetch school reward templates');
+  },
+
+  createSchoolReward: async (title: string, costRuby: number, quantity: number): Promise<boolean> => {
+    const token = await adminService.getAccessToken();
+    if (!token) return false;
+    const res = await fetch(`${backendUrl}/api/admin/school-rewards`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
+      body: JSON.stringify({ title, costRuby, quantity })
+    });
+    return res.ok;
+  },
+
+  deleteSchoolReward: async (rewardId: string): Promise<boolean> => {
+    const token = await adminService.getAccessToken();
+    if (!token) return false;
+    const res = await fetch(`${backendUrl}/api/admin/school-rewards/${rewardId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders() }
+    });
+    return res.ok;
   },
 
   promoteUser: async (targetUserId: string, newRole: string): Promise<boolean> => {

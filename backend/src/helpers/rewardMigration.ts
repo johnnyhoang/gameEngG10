@@ -1,6 +1,6 @@
 import { pool } from '../db.js';
 import crypto from 'crypto';
-import { ensureDefaultClassRewards, ensureDefaultRewards } from './questions.js';
+import { ensureDefaultClassRewards } from './questions.js';
 
 export const migratePendingClaims = async (studentId: string, newTeacherId: string | null) => {
   const client = await pool.connect();
@@ -88,8 +88,8 @@ export const migratePendingClaims = async (studentId: string, newTeacherId: stri
 
     } else {
       // --- CASE 3: LEAVING ALL CLASSES (BECOMING FREE STUDENT) ---
-      // Ensure default school rewards are seeded for the student
-      await ensureDefaultRewards(studentId);
+      // Không còn seed catalog riêng cho học sinh — ge10_school_reward_templates là danh
+      // sách DÙNG CHUNG toàn viện, học sinh mồ côi đọc thẳng bảng đó (không cần ensure gì).
 
       // Move all pending class redemptions back to school redemptions
       const classRedemptionsRes = await client.query(
@@ -98,24 +98,13 @@ export const migratePendingClaims = async (studentId: string, newTeacherId: stri
       );
 
       for (const row of classRedemptionsRes.rows) {
-        // Find matching school reward
+        // Tìm quà tương ứng trong danh sách CHUNG của trường theo tiêu đề — reward_title/cost_ruby
+        // đã được lưu trực tiếp trên redemption nên không mất thông tin hiển thị nếu không khớp.
         const schoolRewardRes = await client.query(
-          "SELECT id FROM ge10_tutor_rewards WHERE user_id = $1 AND LOWER(title) = LOWER($2)",
-          [studentId, row.reward_title]
+          "SELECT id FROM ge10_school_reward_templates WHERE LOWER(title) = LOWER($1)",
+          [row.reward_title]
         );
-
-        let schoolRewardId: string;
-        if (schoolRewardRes.rowCount && schoolRewardRes.rowCount > 0) {
-          schoolRewardId = schoolRewardRes.rows[0].id;
-        } else {
-          // Auto-create a school reward for this student
-          schoolRewardId = crypto.randomUUID();
-          await client.query(
-            `INSERT INTO ge10_tutor_rewards (id, user_id, title, cost_ruby, quantity, remaining_quantity, timestamp)
-             VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-            [schoolRewardId, studentId, row.reward_title, row.cost_ruby, 999999, 999999, Date.now()]
-          );
-        }
+        const schoolRewardId: string | null = schoolRewardRes.rows[0]?.id ?? null;
 
         // Insert into school redemptions
         await client.query(

@@ -14,6 +14,9 @@ export const authMiddleware = async (req: any, res: any, next: any) => {
 
   const token = authHeader.split(' ')[1];
   
+  // TODO(dev-tooling): cùng nhóm dev backdoor (xem GoogleLoginScreen.tsx) — nhánh này hiện
+  // không có tác dụng thực tế vì không còn user mock-dev-* nào trong DB (activeProfileMiddleware
+  // sẽ luôn 403). Giữ tạm, xoá cùng lúc dọn toàn bộ dev backdoor.
   // Dev backdoor support: bypass JWT verification for mock-dev tokens
   if (token.startsWith('mock-dev-')) {
     req.user = {

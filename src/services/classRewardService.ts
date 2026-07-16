@@ -1,15 +1,10 @@
 import { supabase } from '../utils/supabaseClient';
 import type { ClassReward, ClassRewardRedemption } from '../types/game';
 import { activeProfileHeaders } from './profileHeaders';
-import { useGameState } from '../hooks/useGameState';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
 
 async function getToken(): Promise<string | null> {
-  const state = useGameState.getState();
-  if (state.currentUser?.id?.startsWith('mock-dev-')) {
-    return state.currentUser.id;
-  }
   const sessionRes = await supabase.auth.getSession();
   return sessionRes.data.session?.access_token || null;
 }

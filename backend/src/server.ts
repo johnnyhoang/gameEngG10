@@ -114,6 +114,18 @@ const initDB = async () => {
     } else {
       throw new Error(`Missing required rename parent to tutor migration: ${renameParentToTutorPath}`);
     }
+    const schoolRewardTemplatesPath = path.join(__dirname, '..', 'migrations', '20260717_school_reward_templates.sql');
+    if (fs.existsSync(schoolRewardTemplatesPath)) {
+      await pool.query(fs.readFileSync(schoolRewardTemplatesPath, 'utf8'));
+    } else {
+      throw new Error(`Missing required school reward templates migration: ${schoolRewardTemplatesPath}`);
+    }
+    const gameSettingsAndChallengesPath = path.join(__dirname, '..', 'migrations', '20260717_seed_game_settings_and_challenges.sql');
+    if (fs.existsSync(gameSettingsAndChallengesPath)) {
+      await pool.query(fs.readFileSync(gameSettingsAndChallengesPath, 'utf8'));
+    } else {
+      throw new Error(`Missing required game settings and challenges seed migration: ${gameSettingsAndChallengesPath}`);
+    }
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS subject VARCHAR(50) DEFAULT 'english';`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS image_url TEXT;`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;`);
@@ -136,6 +148,37 @@ const initDB = async () => {
       );
     }
 
+    // Seed ngân hàng câu hỏi gốc (trước đây hardcode trong src/data/questions.ts phía frontend,
+    // mỗi client tự trộn vào bộ nhớ) — nay là dữ liệu hệ thống thật trong DB (user_id = NULL),
+    // trả về cho MỌI hồ sơ qua GET /api/profile/:id (WHERE user_id IS NULL đã có sẵn).
+    const seedQuestionsPath = path.join(__dirname, 'questionsData.json');
+    if (!fs.existsSync(seedQuestionsPath)) {
+      throw new Error(`Missing required base question bank seed: ${seedQuestionsPath}`);
+    }
+    const seedQuestions: any[] = JSON.parse(fs.readFileSync(seedQuestionsPath, 'utf8'));
+    const QUESTION_BATCH_SIZE = 500;
+    for (let i = 0; i < seedQuestions.length; i += QUESTION_BATCH_SIZE) {
+      const batch = seedQuestions.slice(i, i + QUESTION_BATCH_SIZE);
+      const values: any[] = [];
+      const placeholders: string[] = [];
+      batch.forEach((q, idx) => {
+        const o = idx * 13;
+        placeholders.push(`($${o + 1}, $${o + 2}, $${o + 3}, $${o + 4}, $${o + 5}, $${o + 6}, $${o + 7}, $${o + 8}, $${o + 9}, $${o + 10}, $${o + 11}, $${o + 12}, $${o + 13})`);
+        values.push(
+          q.id, q.type, q.category, q.topicId, q.prompt, q.options, q.correctAnswer,
+          q.explanation, q.difficulty, q.source, q.subject, q.gradeTier,
+          q.metadata ? JSON.stringify(q.metadata) : null
+        );
+      });
+      await pool.query(
+        `INSERT INTO ge10_custom_questions
+           (id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, metadata)
+         VALUES ${placeholders.join(', ')}
+         ON CONFLICT (id) DO NOTHING`,
+        values
+      );
+    }
+
     // Auto-link existing questions to their lessons by category.
     await pool.query(
       `UPDATE ge10_custom_questions
@@ -149,9 +192,6 @@ const initDB = async () => {
 
     // Seed data-driven Topics and Activities
     await seedTopicsAndActivities(pool);
-
-    // Seed mock data for local development
-    await seedDevMockData(pool);
 
     console.log('Database initialized and lessons seeded successfully.');
     
@@ -195,73 +235,6 @@ if (!process.env.VERCEL) {
   app.listen(PORT, () => {
     console.log(`CyberEnglish API Server booting on port ${PORT}...`);
   });
-}
-
-async function seedDevMockData(pool: any) {
-  // Only seed in non-production environments
-  if (process.env.NODE_ENV === 'production') return;
-  
-  console.log('=== Seed dữ liệu Mock Dev cho Local Development ===');
-  
-  const mockUsers = [
-    { id: 'mock-dev-truong-vien', accountId: 'mock-dev-truong-vien', name: 'Dev Viện Chủ', email: 'mock-dev-truong-vien@local.test', role: 'truong_vien' },
-    { id: 'mock-dev-pho-vien', accountId: 'mock-dev-pho-vien', name: 'Dev Phó Viện Trưởng', email: 'mock-dev-pho-vien@local.test', role: 'pho_vien' },
-    { id: 'mock-dev-student', accountId: 'mock-dev-student', name: 'Dev Sĩ Tử', email: 'mock-dev-student@local.test', role: 'student' },
-    { id: 'mock-student-1', accountId: 'mock-student-1', name: 'Nguyễn Văn An', email: 'student1@local.test', role: 'student' },
-    { id: 'mock-student-2', accountId: 'mock-student-2', name: 'Trần Thị Bình', email: 'student2@local.test', role: 'student' },
-    { id: 'mock-student-3', accountId: 'mock-student-3', name: 'Lê Văn Cường', email: 'student3@local.test', role: 'student' }
-  ];
-
-  for (const u of mockUsers) {
-    // Insert user
-    await pool.query(
-      `INSERT INTO ge10_users (id, account_id, name, email, role, is_active)
-       VALUES ($1, $2, $3, $4, $5, TRUE)
-       ON CONFLICT (id) DO UPDATE SET role = $5, name = $3`,
-      [u.id, u.accountId, u.name, u.email, u.role]
-    );
-
-    // Insert player profile if it's a student (or even for others, keeping it safe)
-    const isStudent = u.role === 'student';
-    const initialRuby = isStudent ? (u.id === 'mock-dev-student' ? 350 : (u.id === 'mock-student-1' ? 150 : 210)) : 200;
-    const initialXP = isStudent ? (u.id === 'mock-dev-student' ? 450 : (u.id === 'mock-student-1' ? 120 : 280)) : 0;
-    const initialLevel = isStudent ? (u.id === 'mock-dev-student' ? 5 : (u.id === 'mock-student-1' ? 2 : 3)) : 1;
-
-    await pool.query(
-      `INSERT INTO ge10_player_profiles (user_id, level, xp, ruby, energy)
-       VALUES ($1, $2, $3, $4, 100)
-       ON CONFLICT (user_id) DO NOTHING`,
-      [u.id, initialLevel, initialXP, initialRuby]
-    );
-
-    // Insert pet state
-    await pool.query(
-      `INSERT INTO ge10_pet_states (user_id, name, stage, level)
-       VALUES ($1, 'Heo Con', 'egg', 1)
-       ON CONFLICT (user_id) DO NOTHING`,
-      [u.id]
-    );
-  }
-
-  // Seed class links
-  const mockLinks = [
-    { id: 'link-dev-1', tutorId: 'mock-dev-truong-vien', studentId: 'mock-dev-student', type: 'primary' },
-    { id: 'link-dev-2', tutorId: 'mock-dev-truong-vien', studentId: 'mock-student-1', type: 'primary' },
-    { id: 'link-dev-3', tutorId: 'mock-dev-truong-vien', studentId: 'mock-student-2', type: 'secondary' },
-    { id: 'link-dev-4', tutorId: 'mock-dev-pho-vien', studentId: 'mock-student-2', type: 'primary' },
-    { id: 'link-dev-5', tutorId: 'mock-dev-pho-vien', studentId: 'mock-student-3', type: 'primary' }
-  ];
-
-  for (const l of mockLinks) {
-    await pool.query(
-      `INSERT INTO ge10_class_links (id, tutor_id, student_id, status, link_type)
-       VALUES ($1, $2, $3, 'active', $4)
-       ON CONFLICT (tutor_id, student_id) DO UPDATE SET status = 'active', link_type = $4`,
-      [l.id, l.tutorId, l.studentId, l.type]
-    );
-  }
-
-  console.log('=== Hoàn tất seed dữ liệu Mock Dev ===');
 }
 
 export default app;

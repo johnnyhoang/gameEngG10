@@ -52,6 +52,8 @@ export interface StoreState {
   /** true nếu student chưa vào lớp nào → hiện school rewards thay vì class rewards. */
   isOrphanStudent: boolean;
   challenges: Challenge[];
+  /** Mẫu nhiệm vụ từ DB (ge10_challenge_templates) — dùng để reset/khởi tạo lại challenges, thay INITIAL_CHALLENGES hardcode cũ. */
+  challengeTemplates: Challenge[];
   logs: HistoryLog[];
   activeCombo: number;
   maxCombo: number;
@@ -114,8 +116,11 @@ export interface StoreState {
   markRewardDelivered: (redemptionId: string) => void;
   /** Hủy lượt đổi: hoàn Ruby + trả lại remainingQuantity cho catalog item (thay "từ chối" cũ). */
   cancelRedemption: (redemptionId: string) => void;
-  addTutorReward: (title: string, costRuby: number, quantity: number) => void;
-  deleteTutorReward: (rewardId: string) => void;
+  /** Danh Mục Quà Khuyến Học CHUNG của trường — CRUD chỉ dành cho truong_vien/pho_vien. */
+  schoolRewards: TutorReward[];
+  fetchSchoolRewards: () => Promise<void>;
+  createSchoolReward: (title: string, costRuby: number, quantity: number) => Promise<boolean>;
+  deleteSchoolReward: (rewardId: string) => Promise<boolean>;
 
   // === CLASS REWARDS (Quà Khuyến Học) ===
   fetchClassRewards: () => Promise<void>;

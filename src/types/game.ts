@@ -56,6 +56,8 @@ export interface GameSettings {
   challengeEnergyCosts: [number, number, number, number];
   baseXP?: number;
   baseRuby?: number;
+  /** Giá Ruby để mở khóa một Phong Cách Học Đường (UI theme) — do Viện Trưởng/Phó Viện Trưởng cấu hình. */
+  themeUnlockCost?: number;
   updatedAt: number;
 }
 

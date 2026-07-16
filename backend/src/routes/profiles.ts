@@ -1,13 +1,16 @@
 import express from 'express';
 import { pool } from '../db.js';
 import { activeProfileMiddleware, authMiddleware } from '../middleware/auth.js';
-import { ensureDefaultRewards } from '../helpers/questions.js';
+import { ensureDefaultClassRewards } from '../helpers/questions.js';
 import {
   loadBossCompletionBonusRuby,
   loadChallengeEnergyCosts,
   loadMaxEnergy,
   loadBaseXP,
-  loadBaseRuby
+  loadBaseRuby,
+  loadThemeUnlockCost,
+  loadChallengeTemplates,
+  ensureInitialChallenges
 } from '../helpers/gameSettings.js';
 
 const router = express.Router();
@@ -84,9 +87,11 @@ router.post('/profiles/quick-start', authMiddleware, async (req: any, res) => {
     await pool.query(`INSERT INTO ge10_player_profiles (user_id) VALUES ($1)`, [profileId]);
     await pool.query(`INSERT INTO ge10_pet_states (user_id) VALUES ($1)`, [profileId]);
     
-    // Ensure default rewards exist for parent
-    if (role === 'tutor') {
-      await ensureDefaultRewards(profileId);
+    // Giáo viên mới → clone Danh Mục Quà Khuyến Học của trường thành danh mục riêng của họ.
+    if (role === 'tutor' || role === 'secondary_tutor') {
+      await ensureDefaultClassRewards(profileId);
+    } else {
+      await ensureInitialChallenges(profileId);
     }
 
     const newProfile = { id: profileId, account_id: accountId, name, email, avatar_url: avatarUrl, role, is_active: true };
@@ -117,7 +122,14 @@ router.post('/profiles', authMiddleware, async (req: any, res) => {
     
     await pool.query(`INSERT INTO ge10_player_profiles (user_id) VALUES ($1)`, [profileId]);
     await pool.query(`INSERT INTO ge10_pet_states (user_id) VALUES ($1)`, [profileId]);
-    
+
+    // Giáo viên mới → clone Danh Mục Quà Khuyến Học của trường thành danh mục riêng của họ.
+    if (role === 'tutor' || role === 'secondary_tutor') {
+      await ensureDefaultClassRewards(profileId);
+    } else {
+      await ensureInitialChallenges(profileId);
+    }
+
     res.json({ success: true, profile: { id: profileId, account_id: accountId, name, email, avatar_url: finalAvatar, role, is_active: true } });
   } catch (err) {
     console.error(err);
@@ -150,9 +162,10 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
     const statsRes = await pool.query('SELECT * FROM ge10_category_stats WHERE user_id = $1', [userId]);
     // 5. Fetch logs (last 200)
     const logsRes = await pool.query('SELECT * FROM ge10_history_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 200', [userId]);
-    // 6. Fetch reward catalog (Danh Mục Quà Khuyến Học — CORE_SPECS §3.2)
-    await ensureDefaultRewards(userId);
-    const rewardsRes = await pool.query('SELECT * FROM ge10_tutor_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
+    // 6. Fetch reward catalog — Danh Mục Quà Khuyến Học CHUNG của trường (CORE_SPECS §3.2).
+    // Một danh sách duy nhất cho toàn viện; client chỉ hiển thị khi học sinh mồ côi
+    // (xem isOrphanStudent từ /api/class-rewards). Không nhân bản theo user nữa.
+    const rewardsRes = await pool.query('SELECT * FROM ge10_school_reward_templates ORDER BY created_at DESC');
     // 6b. Fetch lượt đổi quà (RewardRedemption)
     const redemptionsRes = await pool.query('SELECT * FROM ge10_reward_redemptions WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
     // 7. Fetch challenges
@@ -205,6 +218,8 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
     const maxEnergy = await loadMaxEnergy();
     const baseXP = await loadBaseXP();
     const baseRuby = await loadBaseRuby();
+    const themeUnlockCost = await loadThemeUnlockCost();
+    const challengeTemplates = await loadChallengeTemplates();
 
     // Format category stats array into record mapping
     const categoryStats: any = {};
@@ -319,6 +334,7 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
       rewards,
       rewardRedemptions,
       challenges,
+      challengeTemplates,
       gameSettings: {
         bossCompletionBonusRuby,
         bossCompletionBonusNP: bossCompletionBonusRuby,
@@ -326,7 +342,8 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
         maxEnergy,
         baseXP,
         baseRuby,
-        baseCoins: baseRuby
+        baseCoins: baseRuby,
+        themeUnlockCost
       },
       customQuestions,
       lessons: lessonsRes.rows.map((row: any) => ({
@@ -390,7 +407,6 @@ router.post('/profile/:id/sync', authMiddleware, activeProfileMiddleware, async 
     pet,
     categoryStats,
     logs: rawLogs,
-    rewards: rawRewards,
     rewardRedemptions: rawRewardRedemptions,
     challenges: rawChallenges,
     lessonsProgress
@@ -399,9 +415,6 @@ router.post('/profile/:id/sync', authMiddleware, activeProfileMiddleware, async 
   const logs = Array.isArray(rawLogs)
     ? rawLogs.map((log: any) => ({ ...log, rubyChanged: log.rubyChanged ?? log.coinsChanged ?? 0 }))
     : rawLogs;
-  const rewards = Array.isArray(rawRewards)
-    ? rawRewards.map((reward: any) => ({ ...reward, costRuby: reward.costRuby ?? reward.costCoins }))
-    : rawRewards;
   const rewardRedemptions = Array.isArray(rawRewardRedemptions)
     ? rawRewardRedemptions.map((redemption: any) => ({
         ...redemption,
@@ -449,7 +462,7 @@ router.post('/profile/:id/sync', authMiddleware, activeProfileMiddleware, async 
           const petRes = await client.query('SELECT * FROM ge10_pet_states WHERE user_id = $1', [userId]);
           const statsRes = await client.query('SELECT * FROM ge10_category_stats WHERE user_id = $1', [userId]);
           const logsRes = await client.query('SELECT * FROM ge10_history_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 200', [userId]);
-          const rewardsRes = await client.query('SELECT * FROM ge10_tutor_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
+          const rewardsRes = await client.query('SELECT * FROM ge10_school_reward_templates ORDER BY created_at DESC');
           const redemptionsRes = await client.query('SELECT * FROM ge10_reward_redemptions WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
           const challengesRes = await client.query('SELECT * FROM ge10_user_challenges WHERE user_id = $1', [userId]);
           const progressRes = await client.query('SELECT * FROM ge10_user_lessons_progress WHERE user_id = $1', [userId]);
@@ -662,26 +675,10 @@ router.post('/profile/:id/sync', authMiddleware, activeProfileMiddleware, async 
       );
     }
 
-    // 5. Sync reward catalog (Batch INSERT)
-    if (rewards && Array.isArray(rewards) && rewards.length > 0) {
-      const values: any[] = [];
-      const placeholders: string[] = [];
-      rewards.forEach((r, index) => {
-        const offset = index * 7;
-        placeholders.push(`($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7})`);
-        values.push(r.id, userId, r.title, r.costRuby, r.quantity, r.remainingQuantity, r.timestamp);
-      });
-      await client.query(
-        `INSERT INTO ge10_tutor_rewards (id, user_id, title, cost_ruby, quantity, remaining_quantity, timestamp)
-         VALUES ${placeholders.join(', ')}
-         ON CONFLICT (id) DO UPDATE SET
-           title = EXCLUDED.title,
-           cost_ruby = EXCLUDED.cost_ruby,
-           quantity = EXCLUDED.quantity,
-           remaining_quantity = EXCLUDED.remaining_quantity`,
-        values
-      );
-    }
+    // 5. Danh Mục Quà Khuyến Học của trường (ge10_school_reward_templates) là bảng DÙNG CHUNG
+    // toàn viện — KHÔNG ghi đè từ sync của từng học sinh nữa (trước đây mỗi user có bản
+    // clone riêng nên sync trực tiếp an toàn; giờ chỉ Viện Trưởng/Phó Viện Trưởng được sửa,
+    // qua /api/admin/school-rewards). `rewards` trong payload sync bị bỏ qua có chủ đích.
 
     // 5b. Sync reward redemptions (Batch INSERT)
     if (rewardRedemptions && Array.isArray(rewardRedemptions) && rewardRedemptions.length > 0) {

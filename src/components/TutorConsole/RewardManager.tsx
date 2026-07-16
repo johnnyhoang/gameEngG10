@@ -6,11 +6,14 @@ import { SideDrawer } from '../Common/SideDrawer';
 
 interface RewardManagerProps {
   viewingStudentId: string | null;
-  activeRewardCatalog: any[];
   activeRedemptions: any[];
   canApproveReward: boolean;
-  addTutorReward: (title: string, costRuby: number, quantity: number) => void;
-  deleteTutorReward: (rewardId: string) => void;
+  /** Chỉ truong_vien/pho_vien được sửa Danh Mục Quà Khuyến Học CHUNG của trường. */
+  isSchoolAdmin: boolean;
+  schoolRewards: any[];
+  fetchSchoolRewards: () => Promise<void>;
+  createSchoolReward: (title: string, costRuby: number, quantity: number) => Promise<boolean>;
+  deleteSchoolReward: (rewardId: string) => Promise<boolean>;
   markRewardDelivered: (redemptionId: string) => void;
   cancelRedemption: (redemptionId: string) => void;
   adminMarkRewardDelivered: (studentId: string, redemptionId: string) => Promise<void>;
@@ -19,11 +22,13 @@ interface RewardManagerProps {
 
 export const RewardManager: React.FC<RewardManagerProps> = ({
   viewingStudentId,
-  activeRewardCatalog,
   activeRedemptions,
   canApproveReward,
-  addTutorReward,
-  deleteTutorReward,
+  isSchoolAdmin,
+  schoolRewards,
+  fetchSchoolRewards,
+  createSchoolReward,
+  deleteSchoolReward,
   markRewardDelivered,
   cancelRedemption,
   adminMarkRewardDelivered,
@@ -100,14 +105,16 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
     }
   };
 
-  // ── Per-student (old) form state ─────────────────────────
+  // ── Danh Mục Quà Khuyến Học CHUNG của trường (form state) ──
   const [rewardTitle, setRewardTitle] = useState('');
   const [rewardCost, setRewardCost] = useState(200);
-  const [rewardQuantity, setRewardQuantity] = useState(5);
+  const [rewardQuantity, setRewardQuantity] = useState(999999);
+  const [isCreatingSchoolReward, setIsCreatingSchoolReward] = useState(false);
 
   useEffect(() => {
     fetchClassRewards();
-  }, []);
+    if (isSchoolAdmin) fetchSchoolRewards();
+  }, [isSchoolAdmin]);
 
   const pendingRedemptions = classRewardRedemptions.filter(r => r.status === 'pending');
   const displayRedemptions = showPendingOnly
@@ -124,14 +131,26 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
     setIsCreating(false);
   };
 
-  const handleCreateOldReward = (e: React.FormEvent) => {
+  const handleCreateSchoolReward = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!rewardTitle.trim()) { toast.error('Vui lòng điền tên phần quà!'); return; }
     if (rewardCost <= 0 || rewardQuantity <= 0) { toast.error('Chi phí và số lượng phải lớn hơn 0!'); return; }
-    addTutorReward(rewardTitle.trim(), rewardCost, rewardQuantity);
-    toast.success('Đã tạo phần quà mới thành công!');
-    setRewardTitle(''); setRewardCost(200); setRewardQuantity(5);
-    setIsPersonalFormOpen(false);
+    setIsCreatingSchoolReward(true);
+    const ok = await createSchoolReward(rewardTitle.trim(), rewardCost, rewardQuantity);
+    if (ok) {
+      toast.success('Đã tạo Quà Khuyến Học của trường thành công!');
+      setRewardTitle(''); setRewardCost(200); setRewardQuantity(999999);
+      setIsPersonalFormOpen(false);
+    } else {
+      toast.error('Tạo Quà Khuyến Học thất bại.');
+    }
+    setIsCreatingSchoolReward(false);
+  };
+
+  const handleDeleteSchoolReward = async (rewardId: string) => {
+    if (!window.confirm('Xóa Quà Khuyến Học này khỏi danh mục CHUNG của trường?')) return;
+    const ok = await deleteSchoolReward(rewardId);
+    if (!ok) toast.error('Xóa thất bại.');
   };
 
   return (
@@ -325,75 +344,84 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
       </div>
 
       {/* ═══════════════════════════════════════════════════════
-          SECTION 2: PHÚC LỢI CÁ NHÂN (Admin only, cần chọn học sinh)
+          SECTION 2A: DANH MỤC QUÀ CHUNG CỦA TRƯỜNG (chỉ truong_vien/pho_vien sửa)
+          Một danh sách duy nhất cho toàn viện — học sinh mồ côi (không có giáo viên) thấy
+          danh sách này; giáo viên mới clone danh sách này khi hồ sơ được tạo.
+          ═══════════════════════════════════════════════════════ */}
+      {isSchoolAdmin && (
+        <div className="space-y-4 pt-2 border-t border-white/5">
+          <div className="flex items-center gap-2">
+            <h4 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase tracking-wider">
+              🏛️ Quà Khuyến Học Của Trường
+            </h4>
+            <span className="text-[10px] text-synth-text-muted/60">— Danh sách CHUNG toàn viện. Học sinh chưa vào lớp (orphan) thấy danh sách này.</span>
+          </div>
+
+          <div className="glass-panel rounded-2xl border border-synth-text-muted/20 p-5">
+            <div className="flex items-center justify-between gap-2 mb-4">
+              <h5 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase tracking-wider flex items-center gap-1.5">
+                🏛️ Danh Mục Quà Của Trường
+              </h5>
+              <button
+                onClick={() => setIsPersonalFormOpen(true)}
+                className="px-3 py-1.5 rounded-lg bg-synth-cyan text-black font-orbitron font-bold text-[10px] uppercase tracking-wider hover:synth-glow-cyan cursor-pointer transition-all flex items-center gap-1 shrink-0"
+              >
+                <Plus className="w-3.5 h-3.5" /> Thêm Quà
+              </button>
+            </div>
+            {schoolRewards.length === 0 && (
+              <div className="text-center py-6 text-xs text-synth-text-muted border border-dashed border-white/10 rounded-xl">
+                Chưa có Quà Khuyến Học nào của trường.
+              </div>
+            )}
+
+            {schoolRewards.length > 0 && (
+              <div className="space-y-1.5">
+                <div className="space-y-1 max-h-52 overflow-y-auto">
+                  {schoolRewards.map((reward: any) => (
+                    <div key={reward.id} className="flex justify-between items-center text-xs bg-white/5 rounded-lg px-3 py-2">
+                      <span className="text-white truncate">{reward.title}</span>
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-synth-cyan font-bold font-orbitron text-[10px]">
+                          {reward.costRuby} Ruby · Còn {reward.remainingQuantity}/{reward.quantity}
+                        </span>
+                        <button onClick={() => handleDeleteSchoolReward(reward.id)} className="text-synth-magenta hover:opacity-70 cursor-pointer">
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ═══════════════════════════════════════════════════════
+          SECTION 2B: NHẬT KÝ ĐỔI QUÀ CÁ NHÂN (cần chọn học sinh)
           ═══════════════════════════════════════════════════════ */}
       <div className="space-y-4 pt-2 border-t border-white/5">
         <div className="flex items-center gap-2">
           <h4 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase tracking-wider">
-            👤 Quà Khuyến Học Cá Nhân
+            👤 Nhật Ký Đổi Quà Cá Nhân
           </h4>
-          <span className="text-[10px] text-synth-text-muted/60">— Dành cho học sinh chưa vào lớp (orphan) hoặc thưởng đặc biệt</span>
+          <span className="text-[10px] text-synth-text-muted/60">— Lượt đổi quà trường của học sinh đang xem (khi mồ côi)</span>
         </div>
 
         {!viewingStudentId ? (
           <div className="glass-panel rounded-2xl border border-white/5 p-6 text-center">
             <p className="text-xs text-synth-text-muted">
-              Chọn tài khoản học sinh tại tab <strong className="text-synth-magenta">👥 Học Sinh & Liên Kết</strong> → "Xem Hoạt Động" để thiết lập phúc lợi cá nhân.
+              Chọn tài khoản học sinh tại tab <strong className="text-synth-magenta">👥 Học Sinh & Liên Kết</strong> → "Xem Hoạt Động" để xem lịch sử đổi quà.
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {/* Danh mục quà cá nhân + nút mở drawer tạo mới */}
-            <div className="glass-panel rounded-2xl border border-synth-text-muted/20 p-5 h-fit">
-              <div className="flex items-center justify-between gap-2 mb-4">
-                <h5 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase tracking-wider flex items-center gap-1.5">
-                  👤 Quà Cho Sĩ Tử Này
-                </h5>
-                <button
-                  onClick={() => setIsPersonalFormOpen(true)}
-                  disabled={!canApproveReward}
-                  className="px-3 py-1.5 rounded-lg bg-synth-cyan text-black font-orbitron font-bold text-[10px] uppercase tracking-wider hover:synth-glow-cyan cursor-pointer transition-all flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Thêm Quà
-                </button>
-              </div>
-              {activeRewardCatalog.length === 0 && (
-                <div className="text-center py-6 text-xs text-synth-text-muted border border-dashed border-white/10 rounded-xl">
-                  Chưa có phần quà cá nhân nào.
-                </div>
-              )}
-
-              {activeRewardCatalog.length > 0 && (
-                <div className="mt-4 pt-3 border-t border-white/5 space-y-1.5">
-                  <h6 className="text-[10px] text-synth-text-muted uppercase font-bold tracking-wider">Danh mục hiện có</h6>
-                  <div className="space-y-1 max-h-36 overflow-y-auto">
-                    {activeRewardCatalog.map((reward: any) => (
-                      <div key={reward.id} className="flex justify-between items-center text-xs bg-white/5 rounded-lg px-3 py-2">
-                        <span className="text-white truncate">{reward.title}</span>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <span className="text-synth-cyan font-bold font-orbitron text-[10px]">
-                            {reward.costRuby} Ruby · Còn {reward.remainingQuantity}/{reward.quantity}
-                          </span>
-                          {canApproveReward && (
-                            <button onClick={() => deleteTutorReward(reward.id)} className="text-synth-magenta hover:opacity-70 cursor-pointer">
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Nhật ký đổi quà cá nhân */}
-            <div className="glass-panel rounded-2xl border border-white/5 p-5 md:col-span-2 space-y-4">
-              <h5 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
-                <Award className="w-3.5 h-3.5" /> Nhật Ký Đổi Quà Cá Nhân
-              </h5>
-              <div className="space-y-2 max-h-72 overflow-y-auto">
-                {activeRedemptions.length > 0 ? activeRedemptions.map((redemption: any) => (
+          <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-4">
+            <h5 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
+              <Award className="w-3.5 h-3.5" /> Nhật Ký Đổi Quà Cá Nhân
+            </h5>
+            <div className="space-y-2 max-h-72 overflow-y-auto">
+              {activeRedemptions.length > 0 ? activeRedemptions.map((redemption: any) => (
                   <div key={redemption.id} className="bg-synth-gray/20 rounded-xl p-4 border border-white/5 flex justify-between items-center">
                     <div>
                       <h6 className="text-sm font-bold text-white">{redemption.rewardTitle}</h6>
@@ -442,7 +470,6 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                 )) : (
                   <div className="text-center py-8 text-xs text-synth-text-muted">Chưa có lượt đổi quà nào.</div>
                 )}
-              </div>
             </div>
           </div>
         )}
@@ -508,25 +535,25 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
         </form>
       </SideDrawer>
 
-      {/* Drawer: Tạo Quà Khuyến Học cá nhân */}
+      {/* Drawer: Tạo Quà Khuyến Học của trường */}
       <SideDrawer
         isOpen={isPersonalFormOpen}
         onClose={() => setIsPersonalFormOpen(false)}
         widthClass="max-w-md"
         title={
           <span className="text-synth-cyan flex items-center gap-1.5">
-            <Plus className="w-4 h-4" /> Thêm Quà Khuyến Học Cho Sĩ Tử Này
+            <Plus className="w-4 h-4" /> Thêm Quà Khuyến Học Của Trường
           </span>
         }
       >
-        <form onSubmit={handleCreateOldReward} className="p-5 space-y-3">
+        <form onSubmit={handleCreateSchoolReward} className="p-5 space-y-3">
           <div className="flex flex-col gap-1">
             <label className="text-[10px] text-synth-text-muted uppercase">Tên Quà</label>
             <input
               type="text"
               value={rewardTitle}
               onChange={e => setRewardTitle(e.target.value)}
-              disabled={!canApproveReward}
+              disabled={isCreatingSchoolReward}
               placeholder="Ví dụ: Ly trà sữa, 1h chơi iPad"
               className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-cyan disabled:opacity-50"
             />
@@ -535,24 +562,24 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
             <div className="flex flex-col gap-1">
               <label className="text-[10px] text-synth-text-muted uppercase">Giá (Ruby)</label>
               <input type="number" value={rewardCost} onChange={e => setRewardCost(Number(e.target.value))}
-                disabled={!canApproveReward}
+                disabled={isCreatingSchoolReward}
                 className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-cyan disabled:opacity-50"
               />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-[10px] text-synth-text-muted uppercase">Số lượng</label>
               <input type="number" min={1} value={rewardQuantity} onChange={e => setRewardQuantity(Number(e.target.value))}
-                disabled={!canApproveReward}
+                disabled={isCreatingSchoolReward}
                 className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-cyan disabled:opacity-50"
               />
             </div>
           </div>
           <button
             type="submit"
-            disabled={!canApproveReward}
+            disabled={isCreatingSchoolReward}
             className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Tạo Quà Khuyến Học Cá Nhân
+            Tạo Quà Khuyến Học Của Trường
           </button>
         </form>
       </SideDrawer>

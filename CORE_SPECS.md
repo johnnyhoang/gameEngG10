@@ -1,4 +1,4 @@
-﻿# Core Specification: GameEngG10 (Trường Thi Tuyển Sinh 10)
+# Core Specification: GameEngG10 (Trường Thi Tuyển Sinh 10)
 
 Tài liệu đặc tả này định hình ý tưởng cốt lõi, kiến trúc chức năng, luồng vận hành kinh tế và tích hợp AI của ứng dụng **GameEngG10**. Mục tiêu là thiết lập một bộ khung định hướng nhất quán để tất cả các đợt phát triển tiếp theo bám sát, tránh việc bổ sung tính năng lan man làm loãng trải nghiệm học tập và sẵn sàng cho việc mở rộng quy mô.
 
@@ -309,6 +309,7 @@ Khi học sinh làm câu nghị luận xã hội/nghị luận văn học (hoặ
     *   *Điều hướng nhanh:* Nút vào Shop Học Cụ và Học Đường dùng icon gọn (ẩn chữ ở màn hình hẹp, chỉ hiện icon + tooltip).
     *   *Nút Hồ Sơ Sĩ Tử:* Mang theo 1 chấm màu nhỏ theo màu môn phái đang hoạt động (xem §1.3 Global Switch) — đây là nơi duy nhất để đổi môn phái, HUD không có dropdown môn phái riêng.
     *   *Nút Rời Học Viện:* Tên gọi cho hành động Đăng xuất (logout) — thay tên cũ "Thoái Ẩn". Bấm vào sẽ kích hoạt Logout Gate của Heo Maikawaii (§2.5) trước khi hoàn tất đăng xuất.
+    *   *Giao diện Responsive trên Mobile:* Để tránh khuất nút Đăng xuất trên màn hình nhỏ: (1) Ẩn các nút điều hướng nhanh của học sinh (đã có ở Bottom Nav); (2) Gom Khối Định Danh và Khối Tài Nguyên thành 1 box chung duy nhất tự xuống dòng và luôn căn giữa; (3) Khóa cố định Logo và Đăng xuất trên cùng hàng đầu tiên để bảo đảm nút Đăng xuất luôn hiển thị đầy đủ và dễ thao tác.
 *   **Bố cục "Chuồng Heo" thay thế cột thú cố định**: Cột trái `aside w-72` chiếm chỗ Heo Maikawaii thường trực trên desktop bị loại bỏ. Thay vào đó:
     *   *Chuồng Heo:* một nút/avatar nhỏ neo cố định ở góc màn hình (không chiếm luồng layout chính, `position: fixed`), luôn hiện diện làm điểm triệu hồi thủ công.
     *   *Overlay Heo:* khi xuất hiện (gác cổng đăng nhập/đăng xuất, idle, đói), heo hiển thị dạng lớp phủ (modal/overlay) đè lên toàn bộ layout hiện tại, nền sau mờ nhẹ — không chiếm không gian cố định, không đẩy lệch bố cục các trang khác.

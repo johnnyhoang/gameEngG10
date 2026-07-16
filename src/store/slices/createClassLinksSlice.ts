@@ -17,8 +17,7 @@ export const createClassLinksSlice: StateCreator<
   fetchClassLinks: async () => {
     const state = get();
     const pId = state.currentUser?.id;
-    // mock-dev-* (dev backdoor) được backend hỗ trợ thật — chỉ chặn các mock id legacy khác
-    if (!pId || (pId.startsWith('mock-') && !pId.startsWith('mock-dev-'))) return;
+    if (!pId || pId.startsWith('mock-')) return;
     try {
       const data = await classLinksService.fetchClassLinks(pId);
       set({ 

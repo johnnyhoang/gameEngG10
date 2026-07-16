@@ -2,12 +2,12 @@ import express from 'express';
 import { pool } from '../db.js';
 import { activeProfileMiddleware, authMiddleware } from '../middleware/auth.js';
 import { checkStudentManagementPermission, logAuditEvent } from '../helpers/permissions.js';
-import { ensureDefaultRewards } from '../helpers/questions.js';
 import {
   saveBossCompletionBonusRuby,
   saveChallengeEnergyCosts,
   saveBaseXP,
-  saveBaseRuby
+  saveBaseRuby,
+  saveThemeUnlockCost
 } from '../helpers/gameSettings.js';
 
 const router = express.Router();
@@ -452,7 +452,7 @@ router.post('/admin/cancel-redemption', authMiddleware, async (req: any, res) =>
 
       if (reward_id) {
         await client.query(
-          'UPDATE ge10_tutor_rewards SET remaining_quantity = remaining_quantity + 1 WHERE id = $1',
+          'UPDATE ge10_school_reward_templates SET remaining_quantity = remaining_quantity + 1 WHERE id = $1',
           [reward_id]
         );
       }
@@ -650,6 +650,16 @@ router.put('/admin/game-settings', authMiddleware, async (req: any, res: any) =>
       response.baseCoins = val;
     }
 
+    const themeUnlockCost = req.body?.themeUnlockCost;
+    if (themeUnlockCost !== undefined) {
+      const val = Math.max(1, Math.round(Number(themeUnlockCost)));
+      if (!Number.isFinite(val)) {
+        return res.status(400).json({ error: 'Invalid themeUnlockCost value.' });
+      }
+      await saveThemeUnlockCost(val);
+      response.themeUnlockCost = val;
+    }
+
     res.json(response);
   } catch (error: any) {
     console.error('Error updating game settings:', error.message);
@@ -681,8 +691,7 @@ router.get('/admin/student-profile', authMiddleware, async (req: any, res) => {
     const petRes = await pool.query('SELECT * FROM ge10_pet_states WHERE user_id = $1', [studentUserId]);
     const statsRes = await pool.query('SELECT * FROM ge10_category_stats WHERE user_id = $1', [studentUserId]);
     const logsRes = await pool.query('SELECT * FROM ge10_history_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 100', [studentUserId]);
-    await ensureDefaultRewards(studentUserId as string);
-    const rewardsRes = await pool.query('SELECT * FROM ge10_tutor_rewards WHERE user_id = $1 ORDER BY timestamp DESC', [studentUserId]);
+    const rewardsRes = await pool.query('SELECT * FROM ge10_school_reward_templates ORDER BY created_at DESC');
     const redemptionsRes = await pool.query('SELECT * FROM ge10_reward_redemptions WHERE user_id = $1 ORDER BY timestamp DESC', [studentUserId]);
 
     const categoryStats: any = {};
@@ -879,6 +888,96 @@ router.delete('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) 
   } catch (error: any) {
     console.error('Error deleting lesson:', error);
     res.status(500).json({ error: 'Không thể xóa bài giảng.', details: error.message });
+  }
+});
+
+// ─────────────────────────────────────────────
+// Danh Mục Quà Khuyến Học CHUNG của trường (ge10_school_reward_templates) — CRUD chỉ dành
+// cho Viện Trưởng/Phó Viện Trưởng. Đây là nguồn duy nhất (không còn hardcode trong code):
+// giáo viên mới clone từ đây khi tạo hồ sơ; học sinh mồ côi đọc thẳng bảng này.
+// ─────────────────────────────────────────────
+async function requireAcademyAdmin(req: any, res: any): Promise<boolean> {
+  const role = req.profile?.role;
+  if (role !== 'truong_vien' && role !== 'pho_vien') {
+    res.status(403).json({ error: 'Forbidden: Chỉ Viện Trưởng/Phó Viện Trưởng được quản lý Danh Mục Quà của trường.' });
+    return false;
+  }
+  return true;
+}
+
+// GET /api/admin/school-rewards
+router.get('/admin/school-rewards', async (req: any, res) => {
+  if (!(await requireAcademyAdmin(req, res))) return;
+  try {
+    const result = await pool.query('SELECT * FROM ge10_school_reward_templates ORDER BY created_at DESC');
+    res.json({ rewards: result.rows });
+  } catch (error: any) {
+    console.error('Error fetching school reward templates:', error.message);
+    res.status(500).json({ error: 'Failed to fetch school reward templates.' });
+  }
+});
+
+// POST /api/admin/school-rewards
+router.post('/admin/school-rewards', async (req: any, res) => {
+  if (!(await requireAcademyAdmin(req, res))) return;
+  const { title, quantity } = req.body;
+  const costRuby = req.body.costRuby;
+  if (!title?.trim() || !costRuby || !quantity || costRuby <= 0 || quantity <= 0) {
+    return res.status(400).json({ error: 'Missing or invalid fields: title, costRuby, quantity' });
+  }
+  try {
+    const id = `sch-rew-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
+    await pool.query(
+      `INSERT INTO ge10_school_reward_templates (id, title, cost_ruby, quantity, remaining_quantity, created_at)
+       VALUES ($1, $2, $3, $4, $4, $5)`,
+      [id, title.trim(), costRuby, quantity, Date.now()]
+    );
+    await logAuditEvent(req.profile.id, 'create_school_reward', id, { title, costRuby, quantity });
+    res.json({ success: true, id });
+  } catch (error: any) {
+    console.error('Error creating school reward template:', error.message);
+    res.status(500).json({ error: 'Failed to create school reward template.' });
+  }
+});
+
+// PUT /api/admin/school-rewards/:id
+router.put('/admin/school-rewards/:id', async (req: any, res) => {
+  if (!(await requireAcademyAdmin(req, res))) return;
+  const { id } = req.params;
+  const { title, quantity, remainingQuantity } = req.body;
+  const costRuby = req.body.costRuby;
+  try {
+    const result = await pool.query(
+      `UPDATE ge10_school_reward_templates
+       SET title = COALESCE($1, title),
+           cost_ruby = COALESCE($2, cost_ruby),
+           quantity = COALESCE($3, quantity),
+           remaining_quantity = COALESCE($4, remaining_quantity)
+       WHERE id = $5
+       RETURNING id`,
+      [title?.trim() || null, costRuby || null, quantity || null, remainingQuantity ?? null, id]
+    );
+    if (result.rowCount === 0) return res.status(404).json({ error: 'Reward template not found.' });
+    await logAuditEvent(req.profile.id, 'update_school_reward', id, req.body);
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Error updating school reward template:', error.message);
+    res.status(500).json({ error: 'Failed to update school reward template.' });
+  }
+});
+
+// DELETE /api/admin/school-rewards/:id
+router.delete('/admin/school-rewards/:id', async (req: any, res) => {
+  if (!(await requireAcademyAdmin(req, res))) return;
+  const { id } = req.params;
+  try {
+    const result = await pool.query('DELETE FROM ge10_school_reward_templates WHERE id = $1', [id]);
+    if (result.rowCount === 0) return res.status(404).json({ error: 'Reward template not found.' });
+    await logAuditEvent(req.profile.id, 'delete_school_reward', id, {});
+    res.json({ success: true });
+  } catch (error: any) {
+    console.error('Error deleting school reward template:', error.message);
+    res.status(500).json({ error: 'Failed to delete school reward template.' });
   }
 });
 

@@ -21,8 +21,10 @@ export const TutorConsole: React.FC = () => {
   const { t } = useTranslate();
   const markRewardDelivered = useGameState(state => state.markRewardDelivered);
   const cancelRedemption = useGameState(state => state.cancelRedemption);
-  const addTutorReward = useGameState(state => state.addTutorReward);
-  const deleteTutorReward = useGameState(state => state.deleteTutorReward);
+  const schoolRewards = useGameState(state => state.schoolRewards);
+  const fetchSchoolRewards = useGameState(state => state.fetchSchoolRewards);
+  const createSchoolReward = useGameState(state => state.createSchoolReward);
+  const deleteSchoolReward = useGameState(state => state.deleteSchoolReward);
 
   // Admin and member management states
   const currentUser = useGameState(state => state.currentUser);
@@ -177,7 +179,6 @@ export const TutorConsole: React.FC = () => {
   );
   const canManageEnergy = isAdmin(currentUser?.role) || isPrimaryLink;
 
-  const activeRewardCatalog = selectedStudentProfile?.rewards || [];
   const activeRedemptions = selectedStudentProfile?.rewardRedemptions || [];
 
   return (
@@ -485,10 +486,11 @@ export const TutorConsole: React.FC = () => {
                   setViewingStudentId(null);
                   toast.success(t('Đã quay lại danh sách', 'Returned to directory'));
                 }}
-                activeRewardCatalog={activeRewardCatalog}
                 activeRedemptions={activeRedemptions}
-                addTutorReward={addTutorReward as any}
-                deleteTutorReward={deleteTutorReward as any}
+                schoolRewards={schoolRewards}
+                fetchSchoolRewards={fetchSchoolRewards}
+                createSchoolReward={createSchoolReward as any}
+                deleteSchoolReward={deleteSchoolReward as any}
                 markRewardDelivered={markRewardDelivered as any}
                 cancelRedemption={cancelRedemption as any}
                 tutorQuests={tutorQuests}
