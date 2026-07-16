@@ -4,7 +4,7 @@ import { toast } from '../utils/toast';
 import { BrainCircuit, Zap, Star, Flame, Sparkles } from 'lucide-react';
 import { CORE_KNOWLEDGE_TOPICS, inferTopicId } from '../data/coreKnowledge';
 import { useSect } from '../contexts/SectContext';
-import { SUBJECTS_CONFIG, DEFAULT_GRADE_TIER, getStudentRankForLevel } from '../types/game';
+import { SUBJECTS_CONFIG, DEFAULT_GRADE_TIER } from '../types/game';
 import { filterLessonsInScope } from '../utils/learningScope';
 import { isLightTheme } from '../theme/uiThemes';
 import { LearningLedger } from './LearningLedger';
@@ -458,35 +458,6 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice, onNavigateToF
         {/* ── Right: ActivityLog + Missions ── */}
         <div className="lg:col-span-1 space-y-5">
 
-          {/* Profile summary card */}
-          <div className={`glass-panel rounded-2xl border p-4 space-y-3 ${
-            isUnicorn ? 'border-violet-200/35 bg-white/60' : 'border-white/10 bg-black/30'
-          }`}>
-            <div className="flex items-center gap-3">
-              {currentUser?.avatar && (
-                <img src={currentUser.avatar} alt={currentUser.name} className="h-12 w-12 rounded-2xl border border-white/15 object-cover" />
-              )}
-              <div>
-                <p className={`font-orbitron font-black text-sm ${isUnicorn ? 'text-violet-900' : 'text-white'}`}>{currentUser?.name}</p>
-                <p className={`text-[10px] font-orbitron font-bold flex items-center gap-1 ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-cyan'}`}>
-                  {getStudentRankForLevel(player.level).icon} {getStudentRankForLevel(player.level).name}
-                </p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {[
-                { label: t('Cấp độ', 'Level'), value: player.level, color: 'text-synth-purple' },
-                { label: 'XP', value: `${player.xp}`, color: 'text-synth-magenta' },
-                { label: 'Ruby', value: `${player.ruby} 💎`, color: 'text-synth-orange' },
-                { label: t('Chuỗi', 'Streak'), value: `${player.streak} ${t('ngày', 'days')}`, color: 'text-synth-green' },
-              ].map(item => (
-                <div key={item.label} className={`p-2.5 rounded-xl border ${isUnicorn ? 'border-violet-200/40 bg-white/50' : 'border-white/5 bg-white/5'}`}>
-                  <span className={`block text-[9px] font-orbitron font-bold uppercase tracking-wider ${isUnicorn ? 'text-slate-400' : 'text-slate-400'}`}>{item.label}</span>
-                  <span className={`font-orbitron font-black text-sm ${item.color}`}>{item.value}</span>
-                </div>
-              ))}
-            </div>
-          </div>
 
           {/* ActivityLog */}
           <ActivityLog />
