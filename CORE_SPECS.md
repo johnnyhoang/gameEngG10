@@ -268,6 +268,7 @@ AI đóng vai trò là xương sống trong việc chấm điểm tự luận, d
 ### 4.1.2 Quy tắc Quản Lý & Đạt Chuẩn Ngân Hàng Câu Hỏi (CRUD & Standard Rules)
 *   **Lazy Load & Paging:** Danh sách câu hỏi hiển thị tối đa 10 câu ban đầu. Khi scroll xuống đáy danh sách, hệ thống tự động tải tiếp 10 câu tiếp theo (vô hạn scroll) giúp tối ưu hóa hiệu năng frontend.
 *   **UX CRUD Tinh Gọn:**
+    *   **Bố cục Accordion Tinh Gọn:** Các cấu phần phụ trợ và thống kê chiếm nhiều diện tích (Độ phủ chuyên đề, Thống kê câu đố, Công cụ AI Ingest) được bọc trong các Accordion (Collapsible Panels) mặc định đóng. Việc này giúp đưa thanh Tìm kiếm, các Bộ lọc và Danh sách câu hỏi (nơi thực hiện các hành vi CRUD chính) lên vị trí trên cùng màn hình làm việc của giáo viên mà không cần cuộn trang.
     *   **Click-to-edit:** Nhấp trực tiếp vào thẻ câu hỏi bất kỳ để mở Form sửa đổi ngay tức khắc thay vì bấm nút "Sửa" nhỏ.
     *   **Nút Thêm mới (+):** Đặt nút "Thêm Câu Hỏi" ở header quản lý môn học, click để mở form trống, đổi nút submit thành "Tạo câu hỏi mới 💾".
     *   **Nút Xóa nhanh (X):** Khi hover vào thẻ câu hỏi xuất hiện nút X đỏ góc trên bên phải, bắt buộc hiển thị hộp thoại xác nhận (Delete Confirmation) chi tiết trước khi tiến hành xóa vĩnh viễn khỏi Database.
