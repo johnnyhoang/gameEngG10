@@ -73,11 +73,11 @@ Tài liệu này lưu trữ định hướng phát triển các tính năng họ
 
 - [x] **Duyệt `SUB_SPEC_TERMINOLOGY.md` và chuyển entry từ `PROVISIONAL` sang `APPROVED`**
   - *Mục tiêu:* Chốt một hệ ngôn ngữ thống nhất theo trường học, học phủ và giáo dục truyền thống Việt Nam.
-  - *Phải làm:* Chốt tên Việt/Anh, technical term, định nghĩa, công dụng; xử lý trước xung đột `Hiệu Trưởng` đang dùng cho cả `truong_vien` và `parent`; lập bảng tên cũ → tên mới.
+  - *Phải làm:* Chốt tên Việt/Anh, technical term, định nghĩa, công dụng; xử lý trước xung đột `Hiệu Trưởng` đang dùng cho cả `truong_vien` và `tutor`; lập bảng tên cũ → tên mới.
   - *Impact:* Toàn bộ tài liệu, role label, navigation, UI copy, AI prompt và báo cáo.
   - *Rủi ro:* Đổi tên role thiếu kiểm soát có thể làm người dùng hiểu sai quyền; không đổi DB/code value trong task này.
   - *Acceptance:* Không còn hai khái niệm khác nhau dùng cùng một tên Việt; mọi entry có đủ trường và trạng thái `APPROVED`.
-  - *Kết quả 2026-07-13:* Đã duyệt toàn bộ tự điển. Nhóm cuối: `energy` → **Năng Lượng**, currency → **Ruby**, `randomEvent` → **Thử Thách Bất Ngờ**, logout → **Rời Học Viện**, `skipPunishment` → **Miễn Phạt**. Ruby là domain term mới cần migration riêng; các code value khác được giữ nguyên.
+  - *Kết quả 2026-07-13:* Đã duyệt toàn bộ tự điển. Nhóm cuối: `energy` → **Năng Lượng**, currency → **Ruby**, `randomEvent` → **Thử Thách Bất Ngờ**, logout → **Rời Học Viện**, `skipPunishment` → **Bỏ qua**. Ruby là domain term mới cần migration riêng; các code value khác được giữ nguyên.
 
 ### T2A — Migration currency `NP/coins` → `Ruby`
 
@@ -116,9 +116,9 @@ Tài liệu này lưu trữ định hướng phát triển các tính năng họ
   - *Acceptance:* `npm run build` đạt; test giao dịch và rollback đạt; không tự drop cột hoặc xóa alias.
   - *Kết quả:* Frontend/backend build đạt. Migration production commit thành công lúc `2026-07-13T04:46:29Z`; DB parity và dual-write đều đạt. Legacy alias/cột tiếp tục được giữ; việc xóa cần telemetry và xác nhận riêng.
 
-- [x] **Chốt hành vi `Miễn Phạt`**
+- [x] **Chốt hành vi `Bỏ qua`**
   - *Hiện trạng:* Luồng `skipPunishment` đang trừ 10 NP và có giới hạn bỏ qua.
-  - *Cần quyết định:* “Miễn Phạt” chỉ là tên mới cho quyền bỏ qua có tốn Ruby, hay miễn hoàn toàn khoản trừ/phạt.
+  - *Cần quyết định:* “Bỏ qua” chỉ là tên mới cho quyền bỏ qua có tốn Ruby, hay miễn hoàn toàn khoản trừ/phạt.
   - *Impact:* `MienPhatDialog`, `createAdminSlice`, log hoạt động, balance và message.
   - *Acceptance:* Spec nêu rõ điều kiện, chi phí Ruby, giới hạn và message trước khi sửa hành vi.
   - *Quyết định 2026-07-13:* Không trừ Ruby khi bỏ qua; vẫn giữ giới hạn lượt bỏ qua theo ngày.
@@ -642,14 +642,14 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
 
 - [x] **PHT1 — Cấu hình phòng Hiệu Trưởng và Sơ Đồ Tổ Chức**
   - *Mục tiêu:* Đổi tên Phòng Ban điều hành thành Phòng Hiệu Trưởng; thêm tab Sơ Đồ Tổ Chức hiển thị diagram cây phân cấp (Viện chủ -> Phó viện chủ -> Chủ nhiệm chính -> Phó chủ nhiệm -> Sĩ tử).
-  - *Phải sửa:* `src/components/ParentConsole.tsx`, `SUB_SPEC_TERMINOLOGY.md`, `SUB_SPEC_FAMILY_ROLE.md`.
+  - *Phải sửa:* `src/components/TutorConsole.tsx`, `SUB_SPEC_TERMINOLOGY.md`, `SUB_SPEC_FAMILY_ROLE.md`.
   - *Phải làm:* Đổi tên tab `thien_co_cac` và banner chào mừng; thêm sub-tab `org_chart`; tích hợp component `<OrgChart />`.
   - *Rủi ro:* Bố cục bị tràn trên màn hình nhỏ; lọc sai các mối liên kết hoặc hiển thị sai vai trò.
   - *Acceptance:* Nhãn tab, banner và các text đồng bộ; build pass không có lỗi biên dịch.
 
 - [x] **PHT2 — Xây dựng Component vẽ Sơ Đồ Tổ Chức**
-  - *Mục tiêu:* Tạo component `src/components/ParentConsole/OrgChart.tsx` hiển thị diagram cây phân cấp mượt mà, đầy đủ các liên kết.
-  - *Phải sửa:* `src/components/ParentConsole/OrgChart.tsx` (Mới).
+  - *Mục tiêu:* Tạo component `src/components/TutorConsole/OrgChart.tsx` hiển thị diagram cây phân cấp mượt mà, đầy đủ các liên kết.
+  - *Phải sửa:* `src/components/TutorConsole/OrgChart.tsx` (Mới).
   - *Phải làm:* 
     - Lọc dữ liệu từ `adminStudents` và `adminLinks` thành 5 tầng rõ ràng.
     - Vẽ cây phân cấp trực quan bằng CSS Flexbox/Grid và đường SVG mỏng.

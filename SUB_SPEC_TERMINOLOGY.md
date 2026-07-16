@@ -34,8 +34,8 @@ Quy trình thêm hoặc đổi thuật ngữ:
 | :--- | :--- | :--- | :--- | :--- | :---: |
 | **Viện Trưởng** 👑 | Institute Head / Super Admin | `truong_vien` | Role | Người quản trị cao nhất của toàn học viện. | APPROVED |
 | **Phó Viện Trưởng** 🛡️ | Deputy Institute Head / Moderator | `pho_vien` | Role | Người được Viện Trưởng ủy quyền quản trị trong phạm vi cho phép. | APPROVED |
-| **Chủ Nhiệm Chính** 👨‍👩‍👧 | Primary Teacher / Primary Parent | `parent` | Role | Người chịu trách nhiệm chính cho lớp hoặc nhóm học sinh. | APPROVED |
-| **Chủ Nhiệm Phụ** 👤 | Supporting Teacher / Secondary Parent | `secondary_parent` | Role | Người hỗ trợ lớp với quyền do Chủ Nhiệm Chính ủy quyền. | APPROVED |
+| **Chủ Nhiệm Chính** 👨‍👩‍👧 | Primary Teacher / Primary Parent | `tutor` | Role | Người chịu trách nhiệm chính cho lớp hoặc nhóm học sinh. | APPROVED |
+| **Chủ Nhiệm Phụ** 👤 | Supporting Teacher / Secondary Parent | `secondary_tutor` | Role | Người hỗ trợ lớp với quyền do Chủ Nhiệm Chính ủy quyền. | APPROVED |
 | **Giảng Sư** 📖 | Teacher / Content Creator | `teacher` | Role (future) | Người giảng dạy, biên soạn và hướng dẫn học liệu. | APPROVED |
 | **Khảo Quan** 📝 | Examiner / Grader | `grader` | Role (future) | Người chấm và đánh giá bài làm. | APPROVED |
 | **Trợ Giáo MIKA** 🤖 | MIKA AI Teaching Assistant | `aiCompanion`, `ai_teacher`, `Gemini` | Character/service | Trợ giáo AI hướng dẫn Sĩ Tử; không thay thế vai trò quyết định của Giảng Sư. | APPROVED |
@@ -50,7 +50,7 @@ Quy trình thêm hoặc đổi thuật ngữ:
 | **Kho Nền Tảng** 🔮 | Foundation Hub | `BikiStudios`, `biki` | Module | Nơi tập hợp các công cụ nền tảng và xưởng Toán học tương tác của Biki. | APPROVED |
 | **Xưởng Toán Hình 3D** | 3D Geometry Workshop | `Biki3DStudio`, `hang-3d` | Tool | Mô phỏng và thao tác hình học không gian ba chiều. | APPROVED |
 | **Xưởng Toán Hình** | Geometry Workshop | `BikiHinhHocPhang`, `hang-graph` | Tool | Dựng và thao tác hình học phẳng. | APPROVED |
-| **Xưởng Toán Đồ Thị** | Function Graph Workshop | `BikiDoThiHamSo`, `hang-plane` | Tool | Vẽ và khảo sát đồ thị hàm số. | APPROVED |
+| **Xưởng Toán Đồ Thị** | Function Graph Workshop | `GraphHandbook`, `hang-plane` | Tool | Vẽ và khảo sát đồ thị hàm số. | APPROVED |
 | **Phrase Valley** | Phrase Valley | `phrase-valley` | English-only mini-app | Không gian luyện collocation, phrasal verbs và cụm từ theo ngữ cảnh; chỉ hiển thị khi môn đang chọn là Tiếng Anh. Tên UI luôn giữ nguyên tiếng Anh. | APPROVED |
 | **Conversation Town** | Conversation Town | `conversation-town` | English-only mini-app | Không gian luyện phản xạ hội thoại và đáp lời theo tình huống; chỉ hiển thị khi môn đang chọn là Tiếng Anh. Tên UI luôn giữ nguyên tiếng Anh. | APPROVED |
 | **Writing Pavilion** | Writing Pavilion | `writing-pavilion` | English-only mini-app | Không gian luyện viết câu, nối câu, viết lại câu và đoạn văn theo rubric; chỉ hiển thị khi môn đang chọn là Tiếng Anh. Tên UI luôn giữ nguyên tiếng Anh. | APPROVED |
@@ -66,31 +66,31 @@ Quy trình thêm hoặc đổi thuật ngữ:
 | **Hoạt Động Chuyên Môn** | Subject Activity | `SubjectActivityContribution`, `subject-activity` | Activity contribution | Luồng luyện tập có nghiệp vụ riêng của môn, ví dụ Đọc hiểu hoặc Viết nghị luận Văn. | APPROVED |
 | **Bộ Đánh Giá Chuyên Môn** | Assessment Provider | `AssessmentProviderContribution`, `assessment-provider` | Service contribution | Bộ nhận diện và chấm một dạng bài đặc thù, ví dụ chấm bài Văn theo rubric. | APPROVED |
 | **Bộ Hiển Thị Câu Hỏi Chuyên Môn** | Question Renderer | `QuestionRendererContribution`, `question-renderer` | UI contribution | Quy tắc trình bày câu hỏi đặc thù như tách ngữ liệu đọc hiểu khỏi yêu cầu trả lời. | APPROVED |
-| **Danh Mục Quà Khuyến Học** 🎁 | Learning Reward Catalog | `parentReward`, `rewardQuantity`, `markRewardDelivered` | Feature | Danh mục quà ngoài đời do người quản lý tạo, định lượng và xác nhận trao. | APPROVED |
+| **Danh Mục Quà Khuyến Học** 🎁 | Learning Reward Catalog | `tutorReward`, `rewardQuantity`, `markTutorRewardDelivered` | Feature | Danh mục quà ngoài đời do người quản lý tạo, định lượng và xác nhận trao. | APPROVED |
 | **Phút Đèn Sách** ⏱️ | Learning Minutes | `learningMinutes`, `estimatedMinutes` | Metric | Tổng thời gian học, chỉ số North Star. | APPROVED |
-| **Bảng Bài Tập** 📜 | Assigned Learning Tasks | `parentQuest` | Feature | Nhiệm vụ học tập do người quản lý giao cho Sĩ Tử. | APPROVED |
+| **Bảng Bài Tập** 📜 | Assigned Learning Tasks | `tutorQuest` | Feature | Nhiệm vụ học tập do người quản lý giao cho Sĩ Tử. | APPROVED |
 | **Sổ Tu Học** 📖 | Learning Journey Ledger | `LearningLedger`, `mission-ledger` | Global module | Module chung dưới TopHUD, hiển thị Nhập Môn, Nhiệm Vụ Hôm Nay và Tiến Độ Tu Học trên mọi trang Sĩ Tử. | APPROVED |
 | **Nhập Môn** 🌱 | Onboarding Journey | `onboarding` | Mission group | Chuỗi cột mốc chỉ hoàn thành một lần trong đời profile để khám phá và làm quen với học viện. | APPROVED |
 | **Nhiệm Vụ Hôm Nay** 📋 | Daily Missions | `daily` | Mission group | Mục tiêu học tập theo ngày, sinh từ capability và nội dung thật của profile; reset theo timezone học viện. | APPROVED |
 | **Tiến Độ Tu Học** 📈 | Learning Progress | `learning-progress` | Progress summary | Tóm tắt Level, XP, chuỗi học, bài hoàn thành và cột mốc kế tiếp của profile. | APPROVED |
 | **Phong Cách Học Đường** 🎭 | School Style / Appearance Theme | `uiTheme`, `UiThemeId`, `ProfileThemeModal` | Feature | Giao diện cá nhân hóa theo hồ sơ. | APPROVED |
-| **Quà Khuyến Học** 🎁 | Learning Reward | `rewards`, `ParentReward`, `claimParentReward` | Feature | Món quà thực tế mà Sĩ Tử có thể xem, đổi và chờ xác nhận trao. | APPROVED |
+| **Quà Khuyến Học** 🎁 | Learning Reward | `rewards`, `TutorReward`, `claimTutorReward` | Feature | Món quà thực tế mà Sĩ Tử có thể xem, đổi và chờ xác nhận trao. | APPROVED |
 | **Nhà Của MIKA** 🐷 | MIKA's Home / Pet Sanctuary | `PetSanctuary`, `pet` | Module | Nơi chăm sóc và tương tác với Heo Maikawaii. | APPROVED |
 | **Nhật Ký MIKA** | MIKA Memory Journal | `petAlbum`, `memoryAlbum` | Feature | Lưu hình ảnh và nhật ký hành trình của MIKA. | APPROVED |
 | **Hồ Sơ Sĩ Tử** 👑 | Student Profile | `ProfileThemeModal`, `isProfileOpen` | Module | Quản lý hồ sơ, danh hiệu, phong cách và môn học của Sĩ Tử. | APPROVED |
-| **Phòng Điều Hành** | Administration Console | `ParentConsole`, `parent` | Module | Không gian quản lý dành cho Viện Trưởng, Phó Viện Trưởng, Chủ Nhiệm Chính và Chủ Nhiệm Phụ theo quyền. | APPROVED |
+| **Phòng Điều Hành** | Administration Console | `TutorConsole`, `tutor` | Module | Không gian quản lý dành cho Viện Trưởng, Phó Viện Trưởng, Chủ Nhiệm Chính và Chủ Nhiệm Phụ theo quyền. | APPROVED |
 | **Sổ Danh Bộ** 🏛️ | Member Register | `chinh_dien` | Module | Quản lý danh sách, hồ sơ và vai trò thành viên. | APPROVED |
 | **Phòng Hiệu Trưởng** 📖 | Principal's Room / Academic Affairs | `phong_hieu_truong` | Module | Nơi Hiệu Trưởng/Viện Trưởng quản lý học viện, xem báo cáo, thống kê và sơ đồ tổ chức. | APPROVED |
 | **Kho Đề Thi** 📚 | Question Bank | `van_quyen_cac`, `QuestionBank` | Module | Quản lý câu hỏi, đề thi và quy trình import đề. | APPROVED |
 | **Phòng Tài Vụ** 💰 | Resources & Rewards Administration | `ngan_cac` | Module | Quản lý tài nguyên, cấu hình gameplay và quà khuyến học. | APPROVED |
-| **Cẩm Nang Học Đường** 📖 | School Handbook | `GiangHoCamNang`, `handbookPages` | Feature | Hướng dẫn sử dụng và giải thích quy tắc trong ứng dụng. | APPROVED |
+| **Cẩm Nang Học Đường** 📖 | School Handbook | `AcademyHandbook`, `handbookPages` | Feature | Hướng dẫn sử dụng và giải thích quy tắc trong ứng dụng. | APPROVED |
 | **Năng Lượng** ⚡ | Energy | `energy`, `maxEnergy`, `resetHours` | Resource | Tài nguyên tiêu hao khi học/chơi; xem `SUB_SPEC_ENERGY.md`. | APPROVED |
 | **Ruby** 💎 | Ruby | `ruby`, `rubyChanged`, `costRuby`; legacy: `coins`, `coinsChanged`, `costCoins`, `NP` | Resource | Đơn vị tích lũy dùng để đổi học cụ, phong cách và quà khuyến học. Ruby là tên hiển thị và domain term chuẩn; các tên legacy chỉ tồn tại trong giai đoạn migration tương thích. | APPROVED |
 | **Thử Thách Bất Ngờ** | Random Challenge | `randomEvent` | Feature | Thử thách xuất hiện ngẫu nhiên trong các luồng học tập. | APPROVED |
 | **Đố Vui Nhận Ruby** | Ruby Riddle | `ruby-riddle`, `RubyRiddleGame` | Mini-game | Trò một câu MCQ thường trực tại Trường Thi; đúng nhận Ruby, sai không bị phạt. | APPROVED |
 | **Tốc Chiến Kỳ Ngộ** | Encounter Sprint | `encounter-sprint`, `EncounterSprintGame` | Mini-game | Lượt nhanh 3 câu MCQ trong tổng 60 giây tại Trường Thi. | APPROVED |
 | **Rời Học Viện** 🚪 | Logout | `onLogout`, `logout` | Action | Đăng xuất khỏi ứng dụng. | APPROVED |
-| **Miễn Phạt** ⚖️ | Penalty Exemption | `skipPunishment`, `MonChuHoiToi` | Action/flow | Cho phép bỏ qua câu hỏi mà không bị trừ Ruby; vẫn áp dụng giới hạn lượt bỏ qua theo ngày. | APPROVED |
+| **Bỏ qua** ⚖️ | Penalty Exemption | `skipPunishment`, `MonChuHoiToi` | Action/flow | Cho phép bỏ qua câu hỏi mà không bị trừ Ruby; vẫn áp dụng giới hạn lượt bỏ qua theo ngày. | APPROVED |
 
 ## 4. Message và hành động
 
