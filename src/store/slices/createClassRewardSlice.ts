@@ -26,7 +26,8 @@ export const createClassRewardSlice: StateCreator<
 
   fetchClassRewards: async () => {
     const { currentUser } = get();
-    if (!currentUser?.id || currentUser.id.startsWith('mock-')) return;
+    // mock-dev-* (dev backdoor) được backend hỗ trợ thật — chỉ chặn các mock id legacy khác
+    if (!currentUser?.id || (currentUser.id.startsWith('mock-') && !currentUser.id.startsWith('mock-dev-'))) return;
     try {
       const data = await classRewardService.fetch();
       set({

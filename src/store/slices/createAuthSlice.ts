@@ -210,6 +210,14 @@ export const createAuthSlice: StateCreator<
           uiTheme: resolvedTheme
         };
       });
+      // Dev backdoor: backend nhận mock-dev-* làm token + X-Profile-Id nên set header profile
+      // để các API dùng activeProfileHeaders() không tham số hoạt động được khi test local.
+      if (user.id.startsWith('mock-dev-')) {
+        localStorage.setItem('ge10_selected_profile_id', user.id);
+        const state = get();
+        if (state.fetchClassLinks) void state.fetchClassLinks();
+        if (state.fetchClassRewards) void state.fetchClassRewards();
+      }
       logActivity(get, set, 'energy_refill', 'Đã vào sân', `Chào mừng ${user.name}. Sân học đã mở.`);
       return;
     }
