@@ -260,7 +260,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
           </div>
         ) : (
           <div className="glass-panel rounded-2xl border border-white/5 p-5 flex flex-col h-[350px] items-center justify-center text-center text-xs text-slate-400">
-            <span>🔒 Chỉ phụ huynh mới xem được hàng đợi Skip Reviews.</span>
+            <span>🔒 Chỉ trưởng bối mới xem được hàng đợi Skip Reviews.</span>
           </div>
         )}
 

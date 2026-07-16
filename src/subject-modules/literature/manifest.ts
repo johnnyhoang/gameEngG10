@@ -14,7 +14,7 @@ export const literatureSubjectModule: SubjectModule = {
       categories: ['literature-reading-poetry', 'literature-reading-prose', 'literature-reading-argument'],
       legacyMode: 'reading',
       modeKey: 'reading',
-      label: 'Ải Đọc Hiểu',
+      label: 'Phòng Đọc Hiểu',
       icon: 'Compass',
       topicIds: ['lit-reading-poetry', 'lit-reading-prose']
     },
@@ -24,7 +24,7 @@ export const literatureSubjectModule: SubjectModule = {
       categories: ['literature-vietnamese'],
       legacyMode: 'grammar',
       modeKey: 'grammar',
-      label: 'Ải Tiếng Việt',
+      label: 'Phòng Tiếng Việt',
       icon: 'BookOpen',
       topicIds: ['lit-rhetoric-device']
     },
@@ -34,7 +34,7 @@ export const literatureSubjectModule: SubjectModule = {
       categories: ['literature-writing'],
       legacyMode: 'vocabulary',
       modeKey: 'vocabulary',
-      label: 'Ải Viết Nghị Luận',
+      label: 'Phòng Viết Nghị Luận',
       icon: 'BookMarked',
       topicIds: ['lit-social-essay']
     },
@@ -44,7 +44,7 @@ export const literatureSubjectModule: SubjectModule = {
       categories: ['literature-writing'],
       legacyMode: 'mixed',
       modeKey: 'mixed',
-      label: 'Ải Nghị Luận Văn Học',
+      label: 'Phòng Nghị Luận Văn Học',
       icon: 'Star',
       topicIds: ['lit-literary-essay']
     },

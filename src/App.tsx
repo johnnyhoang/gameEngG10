@@ -85,7 +85,7 @@ function App() {
     }
   }, [activeSectId, screen]);
 
-  // Đổi môn/lớp: dọn sạch state gắn với môn cũ (bài giảng đang mở, ải đang làm)
+  // Đổi môn/lớp: dọn sạch state gắn với môn cũ (bài giảng đang mở, phòng đang làm)
   // để không render nhầm nội dung môn cũ sau khi chuyển.
   const learningContextRef = useRef(`${activeSectId}::${activeGradeTier}`);
   useEffect(() => {

@@ -128,7 +128,7 @@ const HELP_HANDBOOK_PAGES: HandbookPage[] = [
       '• Heo Maikawaii lớn lên theo tiến trình tu luyện của con.',
       '• Cho Heo Maikawaii ăn chỉ tốn 10 Ruby và 5 XP mỗi lần — cho ăn thoải mái nhé!',
       '• Hết Ruby thì Heo tự về chuồng ngủ, cày thêm Ruby ở Học Đường rồi cho ăn tiếp.',
-      '• Muốn Heo Maikawaii khôn lớn, con phải học đều chứ không được bỏ ải.'
+      '• Muốn Heo Maikawaii khôn lớn, con phải học đều chứ không được bỏ phòng.'
     ]
   },
   {

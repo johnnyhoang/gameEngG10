@@ -159,7 +159,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
   const [timeLeft, setTimeLeft] = useState(0);
   const timerRef = useRef<any>(null);
 
-  // Đã nạp xong pool câu hỏi cho ải này chưa (phân biệt "đang tải" với "pool rỗng")
+  // Đã nạp xong pool câu hỏi cho phòng này chưa (phân biệt "đang tải" với "pool rỗng")
   const [initDone, setInitDone] = useState(false);
 
   // Initialize questions for this run
@@ -879,7 +879,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       );
     }
     if (!initDone) {
-      return <div className="text-center py-10 font-orbitron text-theme-text-info">Đang rút câu vào ải...</div>;
+      return <div className="text-center py-10 font-orbitron text-theme-text-info">Đang rút câu vào phòng...</div>;
     }
     // Pool đã nạp xong nhưng rỗng: môn/lớp này chưa đủ câu hỏi — không mượn nội dung môn/lớp khác
     return (
@@ -889,8 +889,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           CHƯA CÓ ĐỀ PHÙ HỢP 📭
         </h2>
         <p className="text-sm text-synth-text-muted leading-relaxed">
-          Ngân hàng câu hỏi của môn và lớp đang chọn chưa đủ đề cho ải này.
-          Hãy nhờ Thầy/Cô nạp thêm câu hỏi, hoặc thử ải khác nhé!
+          Ngân hàng câu hỏi của môn và lớp đang chọn chưa đủ đề cho phòng này.
+          Hãy nhờ Thầy/Cô nạp thêm câu hỏi, hoặc thử phòng khác nhé!
         </p>
         <button
           onClick={handleEscape}
@@ -1162,7 +1162,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
             onClick={handleEscape}
             className="px-4 py-2.5 rounded-xl border border-synth-gray hover:bg-synth-gray/20 text-synth-text-muted font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 text-center"
           >
-            Rút khỏi ải
+            Rút khỏi phòng 
           </button>
 
           {!checked && (() => {

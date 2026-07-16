@@ -497,8 +497,8 @@ export const SUBJECTS_CONFIG: Record<SubjectId, SubjectConfig> = {
   cs_robotics_engineering: { id: 'cs_robotics_engineering', name: 'Robotics Engineering', icon: '📐', color: '#f59e0b', group: 'chuyen_sau' }
 };
 
-// ==================== WUXIA RANK DEFINITIONS ====================
-export type StudentRankId = 'tan-de-tu' | 'de-tu' | 'thieu-hiep' | 'cao-thu' | 'dai-hiep' | 'tong-su';
+// ==================== ACADEMIC RANK DEFINITIONS ====================
+export type StudentRankId = 'tan-sinh' | 'tu-tai' | 'cu-nhan' | 'tien-si' | 'trang-nguyen' | 'hoc-si';
 
 export interface StudentRank {
   id: StudentRankId;
@@ -509,12 +509,12 @@ export interface StudentRank {
 }
 
 export const STUDENT_RANKS: StudentRank[] = [
-  { id: 'tan-de-tu', name: 'Tân Đệ Tử', icon: '🌱', minLevel: 1, description: 'Mới nhập môn kiến thức học viện, làm quen với các khái niệm căn bản.' },
-  { id: 'de-tu', name: 'Đệ Tử', icon: '🥋', minLevel: 5, description: 'Đã bắt đầu tu học kiến thức chuyên sâu của các môn phái.' },
-  { id: 'thieu-hiep', name: 'Sĩ Tử', icon: '⚔️', minLevel: 15, description: 'Có nền tảng vững vàng, đã tự mình vượt qua nhiều thử thách.' },
-  { id: 'cao-thu', name: 'Cao Thủ', icon: '⭐', minLevel: 30, description: 'Đạt được những thành tích nổi bật và độ chính xác cao khi giải bài.' },
-  { id: 'dai-hiep', name: 'Đại Hiệp', icon: '🐉', minLevel: 50, description: 'Võ công thượng thừa, nằm trong danh sách các Sĩ Tử đứng đầu môn phái.' },
-  { id: 'tong-su', name: 'Tông Sư', icon: '👑', minLevel: 80, description: 'Đỉnh phong kiến thức, danh hiệu cao nhất chỉ dành cho rất ít người xuất chúng.' }
+  { id: 'tan-sinh', name: 'Tân Sinh', icon: '🌱', minLevel: 1, description: 'Mới nhập học viện, làm quen với các khái niệm căn bản.' },
+  { id: 'tu-tai', name: 'Tú Tài', icon: '🥋', minLevel: 5, description: 'Đã bắt đầu học tập kiến thức chuyên sâu của các môn học.' },
+  { id: 'cu-nhan', name: 'Cử Nhân', icon: '📖', minLevel: 15, description: 'Có nền tảng vững vàng, đã tự mình vượt qua nhiều thử thách.' },
+  { id: 'tien-si', name: 'Tiến Sĩ', icon: '⭐', minLevel: 30, description: 'Đạt được những thành tích nổi bật và độ chính xác cao khi giải bài.' },
+  { id: 'trang-nguyen', name: 'Trạng Nguyên', icon: '🎓', minLevel: 50, description: 'Học vấn thượng thừa, nằm trong danh sách các Sĩ Tử đứng đầu học viện.' },
+  { id: 'hoc-si', name: 'Học Sĩ', icon: '👑', minLevel: 80, description: 'Đỉnh phong kiến thức, danh hiệu cao nhất chỉ dành cho rất ít người xuất chúng.' }
 ];
 
 export function getStudentRankForLevel(level: number): StudentRank {

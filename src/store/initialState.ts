@@ -14,7 +14,7 @@ export const FREE_UI_THEME: UiThemeId = 'current';
 export const DEFAULT_GAME_SETTINGS: GameSettings = {
   // Bonus Điểm (Ruby) khi hạ Boss — quảng bá trên Boss Card, thay hoàn toàn thưởng VND cũ (CORE_SPECS §2.1).
   bossCompletionBonusRuby: [100, 150, 200],
-  // Hao tổn Năng Lượng (SUB_SPEC_ENERGY): ải thường tiêu 30 Năng Lượng mỗi lượt.
+  // Hao tổn Năng Lượng (SUB_SPEC_ENERGY): phòng thường tiêu 30 Năng Lượng mỗi lượt.
   challengeEnergyCosts: [30, 30, 30, 30],
   baseXP: 15,
   baseRuby: 5,

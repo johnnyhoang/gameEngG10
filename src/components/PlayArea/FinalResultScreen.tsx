@@ -73,13 +73,13 @@ export const FinalResultScreen: React.FC<FinalResultScreenProps> = ({
   } else if (passed) {
     statusTitle = mode === 'lesson' ? 'ẢI HOÀN THÀNH 🏆' : 'CHINH PHỤC THÀNH CÔNG 🎖️';
     statusSubtitle = mode === 'lesson'
-      ? 'Hoàn thành ải bài học. Tiến độ đã được ghi nhận.'
+      ? 'Hoàn thành phòng bài học. Tiến độ đã được ghi nhận.'
       : isBossSurvival
         ? 'Đánh bại toàn bộ thử thách. Tiến độ đã được ghi nhận.'
         : 'Vượt qua ngưỡng yêu cầu. Tiến độ đã được ghi nhận.';
   } else {
     statusTitle = 'CHƯA ĐẠT YÊU CẦU ❌';
-    statusSubtitle = `Cần độ chính xác tối thiểu ${minAcc}% để hoàn thành ải này. Lần này không tính vào tiến độ.`;
+    statusSubtitle = `Cần độ chính xác tối thiểu ${minAcc}% để hoàn thành phòng này. Lần này không tính vào tiến độ.`;
   }
 
   return (

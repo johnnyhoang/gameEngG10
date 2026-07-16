@@ -12,7 +12,7 @@ export interface SubjectActivityContribution {
   categories: readonly string[];
   legacyMode?: string;
   modeKey?: string;      // legacy mode mapping alias ('grammar', 'reading', ...)
-  label?: string;        // Vietnamese learning name (e.g. 'Ải Đại Số')
+  label?: string;        // Vietnamese learning name (e.g. 'Phòng Đại Số')
   topicIds?: readonly string[]; // topicIds from coreKnowledge
   icon?: string;         // optional lucide icon name
 }

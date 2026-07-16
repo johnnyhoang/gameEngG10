@@ -47,7 +47,7 @@ export const StoryApp: React.FC<StoryAppProps> = ({ uiTheme, gradeTier, onReward
     if (!activeStoryQuest) return;
     const correctAnsStr = Array.isArray(activeStoryQuest.correctAnswer) ? activeStoryQuest.correctAnswer[0] : activeStoryQuest.correctAnswer;
     if (selectedOption.trim().toLowerCase() === correctAnsStr.trim().toLowerCase()) {
-      toast.success('Chuẩn, bạn qua ải này rồi.');
+      toast.success('Chuẩn, bạn vượt qua thử thách này rồi.');
       if (storyStep === 1) { setStoryInventory(prev => [...prev, '🔑 Chìa Khóa Vàng']); setStoryStep(2); initStoryQuest('english'); }
       else if (storyStep === 2) { setStoryInventory(prev => [...prev, '🧭 La Bàn Cổ']); setStoryStep(3); initStoryQuest('literature'); }
       else if (storyStep === 3) { 

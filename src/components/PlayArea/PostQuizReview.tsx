@@ -114,7 +114,7 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
         }`}>
           <div className="flex items-center justify-between border-b border-white/10 pb-3">
             <h3 className="font-orbitron font-bold text-sm uppercase tracking-wider text-synth-cyan flex items-center gap-2">
-              <List className="w-4 h-4" /> Bảng Thống Kê Chi Tiết Ải
+              <List className="w-4 h-4" /> Bảng Thống Kê Chi Tiết Phòng 
             </h3>
             <span className="text-[11px] text-synth-text-muted font-orbitron">
               Tổng số câu: {currentQuestions.length}

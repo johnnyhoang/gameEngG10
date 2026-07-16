@@ -28,7 +28,7 @@ export const ExplanationBox: React.FC<ExplanationBoxProps> = ({
       <div className="space-y-2 flex-1">
         <h5 className="font-bold uppercase tracking-wider mb-1">
           {isWriting
-            ? isLastCorrect ? 'Bài viết qua ải rubric' : 'Bài viết còn hở rubric'
+            ? isLastCorrect ? 'Bài viết vượt qua thử thách rubric' : 'Bài viết còn hở rubric'
             : isLastCorrect ? 'Chuẩn xác, khá đấy.' : 'Lệch nhịp rồi. Sửa tay đi.'}
         </h5>
         

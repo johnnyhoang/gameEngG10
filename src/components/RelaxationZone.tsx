@@ -53,7 +53,7 @@ const CANH_NUI_RUNG: GameCard[] = [
 ];
 
 const CANH_THAC_HO: GameCard[] = [
-  { id: 'story', icon: '🎭', title: 'Tình Huống RPG', desc: 'Phiêu lưu giải cứu Heo Maikawaii qua 3 ải tri thức', reward: '+60 Ruby, +50 XP', color: 'synth-purple', pageId: 'relax-story' },
+  { id: 'story', icon: '🎭', title: 'Tình Huống RPG', desc: 'Phiêu lưu giải cứu Heo Maikawaii qua 3 phòng tri thức', reward: '+60 Ruby, +50 XP', color: 'synth-purple', pageId: 'relax-story' },
   { id: 'explain', icon: '✍️', title: 'Giảng Cho AI', desc: 'Đóng vai giáo viên dạy AI — Phương pháp Feynman', reward: '+15 Ruby, +30 XP', color: 'synth-purple', pageId: 'relax-explain' },
   { id: 'dragdiagram', icon: '🧱', title: 'Ghép Sơ Đồ', desc: 'Lắp ghép nhãn dán vào sơ đồ kiến thức', reward: '+30 Ruby, +35 XP', color: 'synth-cyan', pageId: 'relax-dragdiagram' },
 ];

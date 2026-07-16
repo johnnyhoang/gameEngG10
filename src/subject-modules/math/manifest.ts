@@ -13,10 +13,10 @@ export const mathSubjectModule: SubjectModule = {
   activities: [
     {
       id: 'math-grammar',
-      title: 'Ải Đại Số',
+      title: 'Phòng Đại Số',
       categories: [],
       modeKey: 'grammar',
-      label: 'Ải Đại Số',
+      label: 'Phòng Đại Số',
       icon: 'BookOpen',
       topicIds: [
         'math-quadratic-function',
@@ -30,10 +30,10 @@ export const mathSubjectModule: SubjectModule = {
     },
     {
       id: 'math-reading',
-      title: 'Ải Hình Học',
+      title: 'Phòng Hình Học',
       categories: [],
       modeKey: 'reading',
-      label: 'Ải Hình Học',
+      label: 'Phòng Hình Học',
       icon: 'Compass',
       topicIds: [
         'math-plane-geometry-circle',
@@ -46,10 +46,10 @@ export const mathSubjectModule: SubjectModule = {
     },
     {
       id: 'math-vocabulary',
-      title: 'Ải Toán Thực Tế',
+      title: 'Phòng Toán Thực Tế',
       categories: [],
       modeKey: 'vocabulary',
-      label: 'Ải Toán Thực Tế',
+      label: 'Phòng Toán Thực Tế',
       icon: 'BookMarked',
       topicIds: [
         'math-real-world-algebra',

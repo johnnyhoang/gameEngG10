@@ -410,7 +410,7 @@ export const createPlayerSlice: StateCreator<
           const state = get();
           if (state.pet.mood === 'happy' && state.pet.energy >= 100) return false;
 
-          // Luật "Lực Bất Tòng Tâm" (CORE_SPECS §3.B): cho Pet ăn tốn 10 Ruby và 5 XP của Thiếu Hiệp.
+          // Luật "Lực Bất Tòng Tâm" (CORE_SPECS §3.B): cho Pet ăn tốn 10 Ruby và 5 XP của Cử Nhân.
           const rubyCost = 10;
           const xpCost = 5;
           if (state.player.ruby < rubyCost) return false;
@@ -571,7 +571,7 @@ export const createPlayerSlice: StateCreator<
           get().completeLevel3Page(lessonId);
 
           const expGained = 50;
-          // Rương Báu Ải (CORE_SPECS §3.A): đạt độ chính xác từ 90% trở lên khi hoàn thành ải mới nhận thêm +20 Ruby.
+          // Rương Khuyến Học (CORE_SPECS §3.A): đạt độ chính xác từ 90% trở lên khi hoàn thành phòng mới nhận thêm +20 Ruby.
           const hitTreasureChest = (accuracyRatio ?? 0) >= 0.9;
           const rubyGained = hitTreasureChest ? 20 : 0;
 

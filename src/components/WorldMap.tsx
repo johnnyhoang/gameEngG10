@@ -524,7 +524,7 @@ export function WorldMap({
               <div>
                 <h3 className="font-orbitron font-black text-base text-white uppercase tracking-wide">⚡ Trường Thi</h3>
                 <p className="text-xs text-slate-300 leading-relaxed mt-1.5">
-                  4 ải chiến đấu: <strong className="text-synth-magenta">Mixed</strong>, <strong className="text-synth-purple">Sinh Tồn</strong>, <strong className="text-synth-cyan">Boss</strong> và <strong className="text-synth-orange">Truy Tìm Lỗi Sai</strong>. Luyện phản xạ thi cử như thật.
+                  4 phòng chiến đấu: <strong className="text-synth-magenta">Mixed</strong>, <strong className="text-synth-purple">Sinh Tồn</strong>, <strong className="text-synth-cyan">Boss</strong> và <strong className="text-synth-orange">Truy Tìm Lỗi Sai</strong>. Luyện phản xạ thi cử như thật.
                 </p>
               </div>
             </div>
