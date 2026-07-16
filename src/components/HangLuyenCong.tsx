@@ -493,7 +493,7 @@ export const HangLuyenCong: React.FC<HangLuyenCongProps> = ({
                         </p>
                       </div>
                       <div className="mt-3 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-synth-cyan group-hover:translate-x-0.5 transition-transform">
-                        Khám phá mật thất <ArrowRight className="w-3 h-3" />
+                        Khám phá Xưởng Toán <ArrowRight className="w-3 h-3" />
                       </div>
                     </button>
                   );

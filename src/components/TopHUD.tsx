@@ -191,7 +191,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                   <Flame className={`w-4 h-4 shrink-0 ${player.streak > 0 ? 'text-orange-500 fill-orange-500' : 'text-synth-gray'}`} />
                   <span className="text-xs font-semibold font-orbitron text-white whitespace-nowrap">{player.streak}d</span>
                   {hasShield && (
-                    <span title="Khiên Bảo Vệ đang bảo vệ Chuỗi học tập!">
+                    <span title="Thẻ Chuyên Cần đang bảo vệ Chuỗi học tập!">
                       <Shield className="w-3.5 h-3.5 text-synth-cyan fill-synth-cyan/20 shrink-0" />
                     </span>
                   )}

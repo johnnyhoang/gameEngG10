@@ -73,21 +73,21 @@ export const ItemShop: React.FC = () => {
 
   const handleBuyShield = () => {
     if (hasStreakShield) {
-      toast.error('Khiên Bảo Vệ Chuỗi đã sẵn sàng rồi.');
+      toast.error('Thẻ Chuyên Cần đã sẵn sàng rồi.');
       return;
     }
     if (player.ruby < 150) {
-      toast.error('Thiếu Ruby. Cần 150 Ruby để mua Khiên Bảo Vệ Chuỗi.');
+      toast.error('Thiếu Ruby. Cần 150 Ruby để mua Thẻ Chuyên Cần.');
       return;
     }
     setConfirmModal({
       isOpen: true,
       cost: 150,
-      actionDescription: 'mua Khiên Bảo Vệ để bảo toàn Chuỗi Học Tập',
+      actionDescription: 'mua Thẻ Chuyên Cần để bảo toàn Chuỗi Học Tập',
       onConfirm: () => {
         const success = buyStreakShield();
         if (success) {
-          toast.success('✅ Mua Khiên Bảo Vệ thành công! Chuỗi học tập được bảo vệ.');
+          toast.success('✅ Mua Thẻ Chuyên Cần thành công! Chuỗi học tập được bảo vệ.');
         }
         setConfirmModal(prev => ({ ...prev, isOpen: false }));
       }
@@ -231,8 +231,8 @@ export const ItemShop: React.FC = () => {
                 <div className="flex gap-4 items-center">
                   <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl border shrink-0 ${isUnicorn ? 'bg-cyan-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-cyan/30'}`}>🛡️</div>
                   <div className="space-y-1">
-                    <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>Khiên Bảo Vệ Chuỗi</h4>
-                    <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>Bảo vệ chuỗi học tập khi lỡ bỏ một ngày rèn luyện, tránh bị phạt ngắt chuỗi.</p>
+                    <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>Thẻ Chuyên Cần</h4>
+                    <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>Bảo vệ chuỗi học tập khi lỡ bỏ một ngày đèn sách, tránh bị phạt ngắt chuỗi.</p>
                     {hasStreakShield && <span className="text-[9px] font-bold text-synth-cyan border border-synth-cyan/40 px-1.5 py-0.5 rounded font-orbitron inline-block">Đang kích hoạt ✓</span>}
                   </div>
                 </div>

@@ -76,7 +76,7 @@ export function Arena({ onStartPlay }: ArenaProps) {
       return;
     }
     if (player.energy < energyCost) {
-      toast.error('Hết năng lượng rồi. Nghỉ một nhịp hoặc đánh tiếp ải khác.');
+      toast.error('Hết năng lượng rồi. Nghỉ một nhịp hoặc rèn luyện ở phòng khác.');
       return;
     }
     consumeEnergy(energyCost);
@@ -157,7 +157,7 @@ export function Arena({ onStartPlay }: ArenaProps) {
 
       {subjectQuestionCount === 0 && (
         <div className="glass-panel rounded-2xl border border-dashed border-white/15 bg-white/5 p-4 text-xs text-slate-300">
-          Viện Trưởng chưa nạp đề cho môn {activeSubjectConfig.name}. Các ải bên dưới sẽ tạm chưa mở được — quay lại sau khi có đề.
+          Viện Trưởng chưa nạp đề cho môn {activeSubjectConfig.name}. Các phòng thi bên dưới sẽ tạm chưa mở được — quay lại sau khi có đề.
         </div>
       )}
 
@@ -366,15 +366,15 @@ export function Arena({ onStartPlay }: ArenaProps) {
       <div className={`rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'bg-violet-50/40 border-violet-200/40' : 'bg-synth-purple/5 border-synth-purple/10'}`}>
         <div className="space-y-0.5">
           <h3 className={`font-orbitron font-black text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-            🐗 Lôi Đài Thần Thú (Boss Battle)
+            🏛️ Khoa Thi (Đề Thi Chính Thức)
           </h3>
-          <p className="text-[10px] text-slate-400">Khảo hạch 5 câu trích từ đề thi thật tuyển sinh/học kỳ các năm trước, trong 20 phút</p>
+          <p className="text-[10px] text-slate-400">Khảo thí 5 câu trích từ đề thi thật tuyển sinh/học kỳ các năm trước, trong 20 phút</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {bosses.length === 0 ? (
             <div className="col-span-3 glass-panel rounded-2xl border border-dashed border-white/10 p-6 text-center text-xs text-slate-400">
-              📭 Môn học này chưa thiết lập Quyết Đấu Boss.
+              📭 Môn học này chưa thiết lập Khoa Thi.
             </div>
           ) : (
             bosses.map((boss, index) => (
@@ -404,15 +404,15 @@ export function Arena({ onStartPlay }: ArenaProps) {
                       <span className={`text-[9px] font-bold font-orbitron px-2 py-0.5 rounded uppercase ${
                         isUnicorn ? 'bg-fuchsia-100/80 text-violet-700 border border-violet-200/40' : 'bg-synth-magenta/15 text-synth-magenta border border-synth-magenta/30'
                       }`}>
-                        Độ Khó: Boss
+                        Học Vị: Khoa Thi
                       </span>
                       <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
                         {boss.name}
                       </h4>
                       <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'} leading-relaxed`}>
                         {isChuyenSau
-                          ? `Đề thi chuẩn cấu trúc sở GD HCMC năm ${boss.tag}. 5 câu trích đề, sai 3 câu là thua!`
-                          : `Đề thi ${boss.tag === 'HK1' ? 'Học Kỳ 1' : 'Học Kỳ 2'} lớp 9. 5 câu trích đề, sai 3 câu là thua!`}
+                          ? `Đề thi chuẩn cấu trúc sở GD HCMC năm ${boss.tag}. 5 câu trích đề, phạm 3 lỗi là kết thúc!`
+                          : `Đề thi ${boss.tag === 'HK1' ? 'Học Kỳ 1' : 'Học Kỳ 2'} lớp 9. 5 câu trích đề, phạm 3 lỗi là kết thúc!`}
                       </p>
                     </div>
 

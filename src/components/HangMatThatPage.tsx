@@ -67,7 +67,7 @@ export function HangMatThatPage({
         {
           title: '2. Ý nghĩa từng khu vực',
           bullets: [
-            'Tiêu đề trên cùng: cho biết đây là Xưởng Toán Hình 3D, đồng thời cho phép chuyển sang mật thất phẳng hoặc đồ thị hàm số.',
+            'Tiêu đề trên cùng: cho biết đây là Xưởng Toán Hình 3D, đồng thời cho phép chuyển sang xưởng phẳng hoặc đồ thị hàm số.',
             'Nút quay lại: trở về Học Đường mà không mất ngữ cảnh của bài học.',
             'Bảng vẽ lớn: nơi hiển thị mô hình 3D, có thể xoay, zoom và pan để quan sát hình.',
             'Ô đề bài: nơi dán nguyên văn đề bài để AI đọc và dựng hình đúng theo giả thiết.',
@@ -79,7 +79,7 @@ export function HangMatThatPage({
         {
           title: '3. Ý nghĩa các nút và công cụ',
           bullets: [
-            '3D / Phẳng / Hàm số: chuyển qua lại giữa ba mật thất mà không phải quay về phòng luyện.',
+            '3D / Phẳng / Hàm số: chuyển qua lại giữa ba Xưởng Toán mà không phải quay về Học Đường.',
             'Các nút dựng nhanh trên board: tạo thao tác cơ bản như nối đỉnh, nối đỉnh với cạnh, dựng đường cao, đánh dấu vuông góc, đánh dấu song song và đánh dấu trung điểm.',
             'Phân tích AI: gửi nguyên văn đề bài lên AI để lấy về mô hình, giả thiết và hướng giải phù hợp.',
             'Nút trợ giúp `?`: mở sách hướng dẫn hiện tại để xem cách dùng và ý nghĩa từng thành phần.'

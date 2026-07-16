@@ -544,22 +544,22 @@ export function WorldMap({
                   <Mountain className="w-6 h-6" />
                 </div>
                 <span className="text-[8px] font-bold font-orbitron uppercase tracking-wider text-synth-cyan bg-synth-cyan/10 border border-synth-cyan/20 px-2 py-0.5 rounded-full">
-                  {completedLessons}/{subjectLessons.length} lĩnh ngộ
+                  {completedLessons}/{subjectLessons.length} lĩnh hội
                 </span>
               </div>
               <div>
                 <h3 className="font-orbitron font-black text-base text-white uppercase tracking-wide">📚 Học Đường</h3>
                 <p className="text-xs text-slate-300 leading-relaxed mt-1.5">
-                  Tự học theo chuyên đề, sổ tay lỗi sai và Mật Thất tương tác 3D. Nắm lý thuyết trước, chiến sau.
+                  Tự học theo chuyên đề, sổ tay lỗi sai và Xưởng Toán tương tác 3D. Nắm lý thuyết trước, ứng thí sau.
                 </p>
               </div>
             </div>
             <div className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-synth-cyan group-hover:gap-3 transition-all">
-              Vào Hang Luyện <ArrowRight className="w-3.5 h-3.5" />
+              Vào Học Đường <ArrowRight className="w-3.5 h-3.5" />
             </div>
           </button>
 
-          {/* Sơn Trang */}
+          {/* Công Viên Thư Giãn */}
           <button
             onClick={onOpenRelax}
             className="glass-panel glass-panel-hover rounded-2xl border border-fuchsia-400/25 bg-gradient-to-br from-fuchsia-400/12 via-synth-purple/8 to-transparent p-5 flex flex-col justify-between gap-4 text-left cursor-pointer transition-all duration-300 hover:border-fuchsia-400/45 hover:shadow-[0_0_20px_rgba(192,132,252,0.12)] group"
@@ -574,14 +574,14 @@ export function WorldMap({
                 </span>
               </div>
               <div>
-                <h3 className="font-orbitron font-black text-base text-white uppercase tracking-wide">🦄 Sơn Trang</h3>
+                <h3 className="font-orbitron font-black text-base text-white uppercase tracking-wide">🦄 Công Viên Thư Giãn</h3>
                 <p className="text-xs text-slate-300 leading-relaxed mt-1.5">
                   Minigame nhẹ nhàng: ghép cặp từ vựng, sơ đồ tư duy, học qua cốt truyện kể chuyện.
                 </p>
               </div>
             </div>
             <div className="inline-flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider text-fuchsia-300 group-hover:gap-3 transition-all">
-              Ghé Sơn Trang <ArrowRight className="w-3.5 h-3.5" />
+              Ghé Công Viên <ArrowRight className="w-3.5 h-3.5" />
             </div>
           </button>
         </div>

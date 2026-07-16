@@ -384,7 +384,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
       >
         <div className="p-5 space-y-4">
           <p className="text-xs text-slate-300">
-            Nạp đầy năng lượng để học sinh hoàn thành các đảo thử thách học tập.
+            Nạp đầy năng lượng để học sinh hoàn thành các thử thách học tập tại Trường Thi.
           </p>
 
           {/* Visual Progress Bar showing exact current level */}

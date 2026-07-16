@@ -211,32 +211,32 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          {/* Nhóm 1: Bonus phá đảo Boss */}
+          {/* Nhóm 1: Thưởng Hoàn Thành Khoa Thi */}
           <div className="rounded-xl border border-white/5 bg-white/5 p-4">
             <h4 className="text-[10px] font-orbitron font-bold uppercase tracking-wider text-synth-orange">
-              🏆 Bonus Phá Đảo Boss
+              🏆 Thưởng Hoàn Thành Khoa Thi
             </h4>
             <p className="text-[10px] text-synth-text-muted mt-0.5 mb-2">
-              Ruby thưởng thêm khi hoàn thành ải Boss, theo độ khó đề.
+              Ruby thưởng thêm khi hoàn thành Khoa Thi, theo độ khó đề.
             </p>
             <SettingRow label="Đề Dễ" unit="Ruby" value={bossBonusEasy} onChange={setBossBonusEasy} step={10} />
             <SettingRow label="Đề Trung Bình" unit="Ruby" value={bossBonusMedium} onChange={setBossBonusMedium} step={10} />
             <SettingRow label="Đề Khó" unit="Ruby" value={bossBonusHard} onChange={setBossBonusHard} step={10} />
           </div>
 
-          {/* Nhóm 2: Chi phí năng lượng theo Đảo */}
+          {/* Nhóm 2: Chi phí năng lượng */}
           <div className="rounded-xl border border-white/5 bg-white/5 p-4">
             <h4 className="text-[10px] font-orbitron font-bold uppercase tracking-wider text-synth-cyan">
-              ⚡ Chi Phí Vào Đảo Thử Thách
+              ⚡ Chi Phí Vào Trường Thi
             </h4>
             <p className="text-[10px] text-synth-text-muted mt-0.5 mb-2">
-              Năng Lượng học sinh phải trả cho mỗi lượt vào từng Đảo.
+              Năng Lượng học sinh phải trả cho mỗi lượt vào Trường Thi.
             </p>
             {[
-              { label: 'Đảo 1', value: challengeCost1, setter: setChallengeCost1 },
-              { label: 'Đảo 2', value: challengeCost2, setter: setChallengeCost2 },
-              { label: 'Đảo 3', value: challengeCost3, setter: setChallengeCost3 },
-              { label: 'Đảo 4', value: challengeCost4, setter: setChallengeCost4 }
+              { label: 'Cấp độ 1', value: challengeCost1, setter: setChallengeCost1 },
+              { label: 'Cấp độ 2', value: challengeCost2, setter: setChallengeCost2 },
+              { label: 'Cấp độ 3', value: challengeCost3, setter: setChallengeCost3 },
+              { label: 'Cấp độ 4', value: challengeCost4, setter: setChallengeCost4 }
             ].map(item => (
               <SettingRow key={item.label} label={item.label} unit="⚡ NL" value={item.value} onChange={item.setter} />
             ))}
@@ -257,7 +257,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
 
         <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between bg-white/5 rounded-xl border border-white/5 p-4">
           <p className="text-[10px] text-synth-text-muted leading-relaxed">
-            Các cấu hình này áp dụng chung cho tất cả học sinh (Đảo thử thách và lượng điểm nhận được). Riêng Năng Lượng Tối Đa + giờ hồi thì chỉnh RIÊNG cho từng học sinh: vào ⚙️ Phòng Hiệu Trưởng → 👥 Học Sinh & Liên Kết → bấm vào học sinh cần chỉnh.
+            Các cấu hình này áp dụng chung cho tất cả học sinh (Cấp độ thử thách và lượng điểm nhận được). Riêng Năng Lượng Tối Đa + giờ hồi thì chỉnh RIÊNG cho từng học sinh: vào ⚙️ Phòng Hiệu Trưởng → 👥 Học Sinh & Liên Kết → bấm vào học sinh cần chỉnh.
           </p>
           <button
             onClick={handleSaveSettings}

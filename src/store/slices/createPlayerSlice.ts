@@ -502,7 +502,7 @@ export const createPlayerSlice: StateCreator<
             { type: 'ruby', amount: 100, message: 'Nhận ngay +100 Ruby!' },
             { type: 'ruby', amount: 200, message: 'Nhận ngay +200 Ruby!' },
             { type: 'ruby', amount: 150, message: 'Nhận gói +150 Ruby!' },
-            { type: 'shield', amount: 1, message: 'Nhận được 1 Khiên bảo vệ Streak!' },
+            { type: 'shield', amount: 1, message: 'Nhận được 1 Thẻ Chuyên Cần bảo vệ chuỗi học tập!' },
             { type: 'empty', amount: 0, message: 'Rương trống rỗng, chúc con may mắn lần sau!' }
           ];
 
@@ -519,7 +519,7 @@ export const createPlayerSlice: StateCreator<
               set({ player: { ...state.player, badges: [...state.player.badges, 'Streak Shield'] } });
             }
             logActivity(get, set, 'box_open', 'Mở Hòm Bí Mật', reward.message, 0, 0);
-            toast.success(`🎁 Hòm Bí Mật: Nhận được 1 Khiên Chuyên Cần bảo vệ Streak! 🛡️`);
+            toast.success(`🎁 Hòm Bí Mật: Nhận được 1 Thẻ Chuyên Cần bảo vệ chuỗi học tập! 🛡️`);
           } else {
             logActivity(get, set, 'box_open', 'Mở Hòm Bí Mật', reward.message, 0, 0);
             toast.info(`🎁 Hòm Bí Mật: ${reward.message}`);
@@ -858,7 +858,7 @@ export const createPlayerSlice: StateCreator<
                   badges: state.player.badges.filter(b => b !== 'Streak Shield')
                 }
               });
-              logActivity(get, set, 'shop', 'Kích hoạt Khiên', 'Khiên đã nổ để giữ chuỗi.', 0, 0);
+              logActivity(get, set, 'shop', 'Kích hoạt Thẻ Chuyên Cần', 'Thẻ Chuyên Cần đã được dùng để giữ chuỗi.', 0, 0);
             } else {
               streakBroken = true;
               newStreak = 0;
