@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Sparkles, Lock } from 'lucide-react';
+import { ArrowLeft, Sparkles } from 'lucide-react';
 import { useSect } from '../contexts/SectContext';
 import { useGameState } from '../hooks/useGameState';
 import { FogCard, getFogStatus } from './FogCard';
@@ -232,11 +232,6 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
           <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
             Khu trò chơi trí tuệ — thư giãn bổ ích bằng cách vận dụng kho kiến thức.
           </p>
-        </div>
-
-        <div className={`flex items-center gap-2 px-4 py-2 rounded-xl border text-[10px] font-bold font-orbitron uppercase ${isUnicorn ? 'bg-violet-50 border-violet-200 text-violet-700' : 'bg-synth-gray/20 border-white/10 text-synth-cyan'}`}>
-          <Lock className="w-3.5 h-3.5" />
-          Click card để vào — sương mù tan khi chơi đủ
         </div>
       </div>
 
