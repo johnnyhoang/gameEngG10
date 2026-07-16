@@ -6,7 +6,7 @@ Tài liệu này quy định chi tiết Ruby và điểm kinh nghiệm (XP) tron
 - **Luật Bất Cảm:** Điểm Kinh Nghiệm (XP) là thước đo nỗ lực học tập của Sĩ Tử. **XP chỉ có thể tăng hoặc đứng im, KHÔNG BAO GIỜ bị trừ** trong bất kỳ tình huống nào (kể cả khi bị phạt, chăm pet, hay bỏ học).
 - Cấp độ (Level) được tính toán dựa trên tổng XP tích lũy. XP không bao giờ giảm đồng nghĩa Level không bao giờ tụt.
 
-### 1.1 Các mốc nhận XP (Võ học Tinh tấn)
+### 1.1 Các mốc nhận XP (học văn Tinh tấn)
 | Hành động | Lượng XP nhận được | Ghi chú |
 | :--- | :--- | :--- |
 | Trả lời đúng 1 câu hỏi thường | +15 XP | Áp dụng tại Học Đường & Trường Thi |
@@ -17,10 +17,10 @@ Tài liệu này quy định chi tiết Ruby và điểm kinh nghiệm (XP) tron
 | Ghép cặp / Mini-game khác | +20 XP/game | Thưởng khi clear 1 ván mini-game |
 
 ### 1.2 Ngưỡng Cấp độ & Danh hiệu — MỘT bảng duy nhất
-Bảng định nghĩa **duy nhất** cho quan hệ XP → Level → Danh hiệu nằm tại **CORE_SPECS §7.2** (6 danh hiệu: Tân Đệ Tử → Tông Sư). Không tồn tại bảng thứ hai.
+Bảng định nghĩa **duy nhất** cho quan hệ XP → Level → Danh hiệu nằm tại **CORE_SPECS §7.2** (6 danh hiệu: Tân Sinh → Học Sĩ). Không tồn tại bảng thứ hai.
 - **Công thức lên cấp (theo code hiện hành):** từ Level *n* lên Level *n+1* cần **n × 200 XP**.
 - Khi vượt ngưỡng: hệ thống hiển thị **chúc mừng thăng cấp**, ghi log truyền công; chạm mốc danh hiệu (Level 5/15/30/50/80) thì tặng badge + thưởng đột biến (CORE_SPECS §7.3).
-- *(Bảng cũ "Cấp 1–5: Tân Đệ Tử / Đệ Tử / Sĩ Tử / Đại Hiệp / Chưởng Môn theo mốc XP thô" đã bị **bãi bỏ** vì trùng lặp và lệch tên gọi với §7.2.)*
+- *(Bảng cũ "Cấp 1–5: Tân Sinh / Tú Tài / Sĩ Tử / Trạng Nguyên / Chưởng Môn theo mốc XP thô" đã bị **bãi bỏ** vì trùng lặp và lệch tên gọi với §7.2.)*
 
 ---
 
@@ -32,12 +32,12 @@ Bảng định nghĩa **duy nhất** cho quan hệ XP → Level → Danh hiệu 
 | Hành động | Lượng Ruby nhận được | Ghi chú |
 | :--- | :--- | :--- |
 | Trả lời đúng 1 câu hỏi thường | +5 Ruby | |
-| Độ chính xác > 90% mỗi Ải | +20 Ruby | Rương Báu Ải (Bonus) |
+| Độ chính xác > 90% mỗi Ải | +20 Ruby | Rương Khuyến Học (Bonus) |
 | Chuỗi đúng (Combo 3 câu) | x1.2 / x1.5 / x2.0 | Hệ số nhân Ruby cho câu trả lời đúng tiếp theo |
 | Giải mã cổng Sương mù đúng | +10 Ruby | Giải nhanh câu hỏi Gatekeeper của Pet |
 | Làm Pet vui (Thọt lét) | +2 Ruby/lần | Giới hạn tối đa 5 lần/ngày để tránh spam click |
 | Cất heo về chuồng tại Login Gate | +5 Ruby | Lần đầu tiên trong ngày — kế thừa thưởng của nút "Đã Lĩnh Ngộ" cũ (đã bỏ nút) |
-| Hoàn thành Nhiệm vụ Phụ huynh | +100 - 500 Ruby | Tùy cấu hình của Viện Chủ |
+| Hoàn thành Nhiệm vụ Trưởng bối / Người quản lý | +100 - 500 Ruby | Tùy cấu hình của Viện Chủ |
 | Hoàn thành lượt Boss | Bonus lớn theo Boss Card | Mức bonus do Chủ Viện / Phó Viện quy định, quảng bá trước ngay trên card (không thưởng tiền) |
 | Giữ chuỗi ngày thứ 2 | +10 Ruby | Luật Chuỗi Tinh Tấn — thưởng leo thang theo ngày |
 | Giữ chuỗi ngày thứ 3 | +20 Ruby | |

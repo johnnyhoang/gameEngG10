@@ -18,8 +18,8 @@ Nguồn chuẩn: [SUB_SPEC_TERMINOLOGY.md](./SUB_SPEC_TERMINOLOGY.md)
 | Role chủ nhiệm | Hiệu Trưởng/Primary Parent → **Chủ Nhiệm Chính**; Chủ Nhiệm Phụ giữ nguyên | `SUB_SPEC_FAMILY_ROLE.md`, `TutorConsole.tsx`, `FamilyManager.tsx`, `QuestManager.tsx`, `SettingsManager.tsx`, modal nhiệm vụ | Display + docs; giữ `tutor`, `secondary_tutor` |
 | Học vụ | Đạo Sư → **Giảng Sư**; Khảo Quan giữ nguyên; Linh Sư → **Trợ Giáo MIKA**; Môn Sinh → **Sĩ Tử**; Môn Chủ → **Giám Học** | `CORE_SPECS.md`, `SUB_SPEC_XP_NP.md`, `src/types/game.ts`, `handbookPages.ts`, `GoogleLoginScreen.tsx`, `WorldMap.tsx`, `PlayArea/ExplanationBox.tsx` | Display + AI/message |
 | Khảo thí | Đấu Trường → **Trường Thi**; Practice → **Ôn Luyện**; Survival → **Khảo Thí Liên Hoàn**; Boss → **Khoa Thi**; Revenge → **Sửa Bài Sai** | `Arena.tsx`, `PlayArea*`, `WorldMap.tsx`, `DesktopCentralNav.tsx`, `manifest.json`, handbook và mini-app result copy | Display + mode label; giữ enum `practice/survival/boss/revenge` |
-| Tự học | Học Đường → **Học Đường**; Mật thất Biki → **Kho Nền Tảng** | `App.tsx`, `HangLuyenCong.tsx`, `HangMatThatPage.tsx`, `LessonStudyView.tsx`, `WorldMap.tsx`, `gatekeeper.ts`, lecture manager/modals | Display + route label; giữ screen/page IDs |
-| Xưởng Biki | Mật thất 3D → **Xưởng Toán Hình 3D**; Hình học phẳng → **Xưởng Toán Hình**; Đồ thị → **Xưởng Toán Đồ Thị** | `HangMatThatPage.tsx`, `HangLuyenCong.tsx`, ba component Biki và route state trong `App.tsx` | Display; giữ component/page IDs |
+| Tự học | Học Đường → **Học Đường**; xưởng toán Biki → **Kho Nền Tảng** | `App.tsx`, `HangLuyenCong.tsx`, `HangMatThatPage.tsx`, `LessonStudyView.tsx`, `WorldMap.tsx`, `gatekeeper.ts`, lecture manager/modals | Display + route label; giữ screen/page IDs |
+| Xưởng Biki | xưởng toán 3D → **Xưởng Toán Hình 3D**; Hình học phẳng → **Xưởng Toán Hình**; Đồ thị → **Xưởng Toán Đồ Thị** | `HangMatThatPage.tsx`, `HangLuyenCong.tsx`, ba component Biki và route state trong `App.tsx` | Display; giữ component/page IDs |
 | Không gian phụ trợ | RelaxationZone → **Công Viên Thư Giãn**; ItemShop → **Shop Học Cụ** | `RelaxationZone.tsx`, `ItemShop.tsx`, `WorldMap.tsx`, `TopHUD.tsx`, docs/UI rules | Display; giữ component/route IDs |
 | Học cụ | Khai Ngộ Quyển → **Thẻ Nhắc Bài**; Hộ Tâm Phù → **Thẻ Chuyên Cần** | `ItemShop.tsx`, `PlayArea.tsx`, `createPlayerSlice.ts`, `handbookPages.ts`, `WorldMap.tsx` | Display + log/message; giữ action names ở phase display |
 | Bối cảnh | Tầng Thế Giới → **Bậc Học**; Phút Học Tập → **Phút Đèn Sách**; Bảng Cáo Thị → **Bảng Bài Tập** | `src/types/game.ts`, `ProfilePage.tsx`, `useGameState.ts`, `WorldMap.tsx`, reports và Core Specs | Display + docs; giữ `gradeTier`, `learningMinutes`, `tutorQuest` |
@@ -30,7 +30,7 @@ Nguồn chuẩn: [SUB_SPEC_TERMINOLOGY.md](./SUB_SPEC_TERMINOLOGY.md)
 | Hướng dẫn | Cẩm Nang Bí Lục → **Cẩm Nang Học Đường** | `App.tsx`, `AcademyHandbook.tsx`, `PetStableOverlay.tsx`, `handbookPages.ts`, CSS | Display; component rename để backlog implementation quyết định |
 | Tài nguyên | Chân Khí → **Năng Lượng** | `SUB_SPEC_ENERGY.md`, `TopHUD.tsx`, student/admin energy controls, store/player types | Display + docs; giữ `energy/maxEnergy/resetHours` |
 | Currency | NP/coins → **Ruby** | 55+ file frontend/backend/schema; xem backlog T2A | Domain/API/DB migration đã triển khai trong code |
-| Sự kiện/hành động | Kỳ Ngộ Giang Hồ → **Thử Thách Bất Ngờ**; Logout → **Rời Học Viện**; skip punishment → **Bỏ qua** | `CORE_SPECS.md`, `SUB_SPEC_ENERGY.md`, handbook, `MienPhatDialog.tsx`, `PlayArea.tsx`, admin slice | Display + behavior; Bỏ qua đã đổi không trừ Ruby, giới hạn 3/ngày |
+| Sự kiện/hành động | Kỳ Ngộ Học Đường → **Thử Thách Bất Ngờ**; Logout → **Rời Học Viện**; skip punishment → **Bỏ qua** | `CORE_SPECS.md`, `SUB_SPEC_ENERGY.md`, handbook, `MienPhatDialog.tsx`, `PlayArea.tsx`, admin slice | Display + behavior; Bỏ qua đã đổi không trừ Ruby, giới hạn 3/ngày |
 
 ## 3. Feature/function đang ẩn hoặc chưa enable
 

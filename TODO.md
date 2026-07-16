@@ -608,7 +608,7 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
 # Bổ sung Toast Thông Báo cho mọi sự kiện thay đổi Dữ Liệu Sĩ Tử (2026-07-13)
 
 - [x] **TS1 — Tích hợp Toast thay đổi tài nguyên và năng lượng trong Player Slice**
-  - *Mục tiêu:* Cộng/trừ Ruby, XP, Năng lượng, quay số, mở hòm, thắng boss, cho thú nuôi ăn, và qua ải đều có Toast báo.
+  - *Mục tiêu:* Cộng/trừ Ruby, XP, Năng lượng, quay số, mở hòm, thắng boss, cho thú nuôi ăn, và vượt qua thử thách đều có Toast báo.
   - *Phải sửa:* `src/store/slices/createPlayerSlice.ts`.
   - *Acceptance:* Đúng nội dung, loại Toast phù hợp.
 
@@ -681,7 +681,7 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
 # Giữ Trang Khi F5 Refresh (2026-07-14)
 
 - [x] **F51 — Giữ nguyên trang cũ (active screen) sau khi F5 refresh**
-  - *Mục tiêu:* Đảm bảo khi học sinh bấm F5 refresh trình duyệt, giao diện không bị quay về trang mặc định (WorldMap) mà được khôi phục chính xác về trang đang mở trước đó (Luyện công, Cửa hàng, v.v.).
+  - *Mục tiêu:* Đảm bảo khi học sinh bấm F5 refresh trình duyệt, giao diện không bị quay về trang mặc định (WorldMap) mà được khôi phục chính xác về trang đang mở trước đó (rèn luyện, Cửa hàng, v.v.).
   - *Phải sửa:* `src/App.tsx`, `src/store/slices/createAuthSlice.ts`.
   - *Phải làm:* Lưu trạng thái `screen` vào LocalStorage với key `cyber-app-screen`, đọc khôi phục lại khi khởi chạy và ngăn chặn effect tự động set mặc định về `map` ghi đè nếu đã có trạng thái cũ; tự động clear key này khi người dùng click đăng xuất (logout).
   - *Acceptance:* Bấm F5 khôi phục đúng screen đang làm việc; đổi tài khoản hoặc đăng xuất thì xoá sạch; build pass.
