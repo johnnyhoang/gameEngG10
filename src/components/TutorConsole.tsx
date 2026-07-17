@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useGameState } from '../hooks/useGameState';
-import { isAdmin, isTutorRole } from '../utils/roleHelpers';
+import { isAdmin, isTutorRole, isSuperAdmin } from '../utils/roleHelpers';
 import { toast } from '../utils/toast';
 import { useTranslate } from '../hooks/useTranslate';
 
@@ -313,8 +313,12 @@ export const TutorConsole: React.FC = () => {
                     <div className="border-t border-white/5 pt-6">
                       <VicePrincipalApplicationsManager currentUser={currentUser} />
                     </div>
+                    {isSuperAdmin(currentUser?.role) && (
+                      <div className="border-t border-white/5 pt-6">
+                        <RoleManager currentUser={currentUser} />
+                      </div>
+                    )}
                   </div>
-                  <RoleManager currentUser={currentUser} />
                 </div>
               )}
 

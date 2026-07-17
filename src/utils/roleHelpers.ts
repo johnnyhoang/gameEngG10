@@ -1,5 +1,5 @@
 export const isAdmin = (role?: string) => role === 'truong_vien' || role === 'pho_vien';
-export const isSuperAdmin = (role?: string) => role === 'truong_vien' || role === 'pho_vien';
+export const isSuperAdmin = (role?: string) => role === 'truong_vien';
 export const isTutorRole = (role?: string) => role === 'tutor' || role === 'secondary_tutor';
 
 export type PermissionAction =

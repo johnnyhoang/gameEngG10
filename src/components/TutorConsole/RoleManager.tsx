@@ -114,7 +114,7 @@ export const RoleManager: React.FC<RoleManagerProps> = ({ currentUser }) => {
   if (!isSuperAdmin(currentUser?.role)) return null;
 
   return (
-    <div className="glass-panel rounded-2xl border border-synth-magenta/30 p-5 space-y-4">
+    <div className="space-y-4">
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <Shield className="w-4 h-4 text-synth-magenta" />
