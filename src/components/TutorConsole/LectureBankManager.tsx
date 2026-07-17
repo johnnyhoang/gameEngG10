@@ -248,22 +248,25 @@ export const LectureBankManager: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-4">
-        <div>
-          <h3 className="font-orbitron font-bold text-lg text-synth-cyan uppercase tracking-wider flex items-center gap-2">
-            📚 Kho Bài Giảng
-          </h3>
-          <p className="text-xs text-slate-400 mt-1">
-            Soạn thảo, hiệu đính lý thuyết cho các chương mục luyện tập trong Học Đường.
-          </p>
+      {/* Banner */}
+      <div className="glass-panel rounded-2xl border border-synth-cyan/30 overflow-hidden bg-gradient-to-r from-synth-cyan/10 via-transparent to-synth-magenta/5 relative shadow-lg p-5 mb-6">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-synth-cyan/5 rounded-full blur-2xl pointer-events-none"></div>
+        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
+              📚 KHO BÀI GIẢNG
+            </h3>
+            <div className="text-xs text-synth-text-muted leading-relaxed max-w-4xl space-y-1">
+              <p>Soạn thảo, hiệu đính lý thuyết cho các chương mục luyện tập trong Học Đường.</p>
+            </div>
+          </div>
+          <button
+            onClick={handleOpenCreateModal}
+            className="px-4 py-2 bg-synth-cyan text-black font-bold font-orbitron text-xs uppercase rounded-lg hover:synth-glow-cyan transition-all flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+          >
+            <Plus className="w-4 h-4" /> Nạp Bài Giảng Mới
+          </button>
         </div>
-        <button
-          onClick={handleOpenCreateModal}
-          className="px-4 py-2 bg-synth-cyan text-black font-bold font-orbitron text-xs uppercase rounded-lg hover:synth-glow-cyan transition-all flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
-        >
-          <Plus className="w-4 h-4" /> Nạp Bài Giảng Mới
-        </button>
       </div>
 
       {/* Filters bar */}

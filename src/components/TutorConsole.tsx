@@ -190,38 +190,41 @@ export const TutorConsole: React.FC = () => {
       <div className="glass-panel rounded-2xl border border-white/5 p-5">
         {activeTab === 'management' && (
           <div className="space-y-6">
-            {/* Welcome & Dashboard: gọn một khối — lời chào ngắn + chỉ số + bảng vàng */}
-            <div className="glass-panel rounded-2xl border border-synth-cyan/30 overflow-hidden bg-gradient-to-r from-synth-cyan/10 via-transparent to-synth-magenta/5 relative shadow-lg p-5 space-y-4">
+            {/* Welcome & Dashboard */}
+            <div className="glass-panel rounded-2xl border border-synth-cyan/30 overflow-hidden bg-gradient-to-r from-synth-cyan/10 via-transparent to-synth-magenta/5 relative shadow-lg p-5 mb-6">
               <div className="absolute top-0 right-0 w-32 h-32 bg-synth-cyan/5 rounded-full blur-2xl pointer-events-none"></div>
-              <div className="relative z-10 space-y-1">
-                <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
-                  ⚙️ {isAdmin(currentUser?.role) ? 'BAN GIÁM HIỆU' : 'LỚP CHỦ NHIỆM'}
-                  <button
-                    onClick={() => showHelp('parent-console')}
-                    className="w-5 h-5 rounded-full bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta text-[10px] font-black flex items-center justify-center hover:bg-synth-magenta/40 cursor-pointer transition-colors shrink-0"
-                    title="Xem hướng dẫn sử dụng"
-                  >
-                    ?
-                  </button>
-                </h3>
-                <div className="text-xs text-synth-text-muted leading-relaxed max-w-4xl space-y-1">
-                  {isAdmin(currentUser?.role) ? (
-                    <p>Theo dõi toàn bộ học sinh và cán bộ trong viện, quản lý liên kết lớp học, cấu hình quy tắc thưởng (Ruby) và xem lịch sử hoạt động.</p>
-                  ) : (
-                    <>
-                      <p>
-                        Vai trò hiện tại:{' '}
-                        <span className="font-bold text-synth-magenta uppercase font-orbitron">
-                          {currentUser?.role === 'tutor' ? 'Chủ Nhiệm Chính' : 'Phó chủ nhiệm'}
-                        </span>
-                      </p>
-                      <p>Theo dõi học sinh lớp bạn phụ trách, quản lý liên kết lớp học, giao nhiệm vụ và duyệt đổi quà khuyến học.</p>
-                    </>
-                  )}
+              <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
+                    ⚙️ {isAdmin(currentUser?.role) ? 'BAN GIÁM HIỆU' : 'LỚP CHỦ NHIỆM'}
+                    <button
+                      onClick={() => showHelp('parent-console')}
+                      className="w-5 h-5 rounded-full bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta text-[10px] font-black flex items-center justify-center hover:bg-synth-magenta/40 cursor-pointer transition-colors shrink-0"
+                      title="Xem hướng dẫn sử dụng"
+                    >
+                      ?
+                    </button>
+                  </h3>
+                  <div className="text-xs text-synth-text-muted leading-relaxed max-w-4xl space-y-1">
+                    {isAdmin(currentUser?.role) ? (
+                      <p>Theo dõi toàn bộ học sinh và cán bộ trong viện, quản lý liên kết lớp học, cấu hình quy tắc thưởng (Ruby) và xem lịch sử hoạt động.</p>
+                    ) : (
+                      <>
+                        <p>
+                          Vai trò hiện tại:{' '}
+                          <span className="font-bold text-synth-magenta uppercase font-orbitron">
+                            {currentUser?.role === 'tutor' ? 'Chủ Nhiệm Chính' : 'Phó chủ nhiệm'}
+                          </span>
+                        </p>
+                        <p>Theo dõi học sinh lớp bạn phụ trách, quản lý liên kết lớp học, giao nhiệm vụ và duyệt đổi quà khuyến học.</p>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
+            </div>
 
-              {/* Quick Stats Grid — chỉ hiện chỉ số có ý nghĩa với vai trò hiện tại */}
+            {/* Quick Stats Grid — chỉ hiện chỉ số có ý nghĩa với vai trò hiện tại */}
               <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="glass-panel border border-white/5 rounded-2xl p-3.5 flex flex-col justify-between hover:border-synth-cyan/30 transition-all duration-300 group bg-white/3">
                   <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-cyan transition-colors">👥 Tổng Số Học Sinh</span>
@@ -269,8 +272,6 @@ export const TutorConsole: React.FC = () => {
                   </div>
                 </div>
               )}
-            </div>
-
             {/* Nội dung Trang Chính */}
             <div className="space-y-6">
               <MemberRoster

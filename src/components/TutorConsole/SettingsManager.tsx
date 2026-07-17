@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SlidersHorizontal, BookOpen } from 'lucide-react';
+import { BookOpen } from 'lucide-react';
 import { isAdmin } from '../../utils/roleHelpers';
 import { toast } from '../../utils/toast';
 import { SideDrawer } from '../Common/SideDrawer';
@@ -113,14 +113,21 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Banner */}
+      <div className="glass-panel rounded-2xl border border-synth-cyan/30 overflow-hidden bg-gradient-to-r from-synth-cyan/10 via-transparent to-synth-magenta/5 relative shadow-lg p-5 mb-6">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-synth-cyan/5 rounded-full blur-2xl pointer-events-none"></div>
+        <div className="relative z-10 space-y-1">
+          <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
+            ⚙️ QUY TẮC HOẠT ĐỘNG
+          </h3>
+          <div className="text-xs text-synth-text-muted leading-relaxed max-w-4xl space-y-1">
+            <p>Cấu hình thông số quy tắc thưởng và cẩm nang học đường cho toàn viện.</p>
+          </div>
+        </div>
+      </div>
+
       {/* 1. Cấu hình game settings (Phòng Hiệu Trưởng — CORE_SPECS §2.1) */}
       <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5">
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal className="w-4 h-4 text-synth-cyan" />
-          <h3 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
-            ⚙️ Quy Tắc Hoạt Động
-          </h3>
-        </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Nhóm 1: Thưởng Hoàn Thành Khoa Thi */}
