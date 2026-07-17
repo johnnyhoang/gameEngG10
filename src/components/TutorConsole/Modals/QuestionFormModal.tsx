@@ -58,10 +58,11 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
   const [editCorrectAnswer, setEditCorrectAnswer] = useState('');
   const [editSource, setEditSource] = useState('');
   const [editImageUrl, setEditImageUrl] = useState('');
-  const [editSubject, setEditSubject] = useState<SubjectId>('english');
+  const [editSubject, setEditSubject] = useState<SubjectId>(selectedSect || 'english');
   const [editLoai, setEditLoai] = useState('');
   const [editBai, setEditBai] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [formAttempted, setFormAttempted] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -79,6 +80,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
         setEditSubject(selectedSect || 'english');
         setEditLoai('');
         setEditBai('');
+        setFormAttempted(false);
       } else if (editingQuestion) {
         const q = editingQuestion;
         setEditType(q.type);
@@ -94,6 +96,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
         setEditSubject(q.subject || 'english');
         setEditLoai(q.loai || '');
         setEditBai(q.bai !== undefined ? String(q.bai) : '');
+        setFormAttempted(false);
       }
     }
   }, [isOpen, isAddingNew, editingQuestion, selectedSect]);
@@ -112,8 +115,13 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
 
   const handleSubmit = async (e: React.FormEvent, forceStandard = false) => {
     e.preventDefault();
+    setFormAttempted(true);
     if (!editPrompt.trim()) {
       toast.error('Vui lòng điền đề bài câu hỏi.');
+      return;
+    }
+    if (!editTopicId) {
+      toast.error('Vui lòng chọn Topic Lõi (Core Knowledge).');
       return;
     }
 
@@ -287,13 +295,13 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
           </div>
 
           <label className="space-y-1 block">
-            <span className="text-slate-400 font-semibold">Đề bài</span>
+            <span className="text-slate-400 font-semibold">Đề bài (Có thể chứa Markdown/HTML) <span className="text-red-500">*</span></span>
             <textarea
               required
               value={editPrompt}
               onChange={(e) => setEditPrompt(e.target.value)}
-              className="w-full p-2.5 rounded-lg border border-white/10 bg-black/40 text-xs text-white h-20 resize-none"
-              placeholder="Ví dụ: Hai tam giác đồng dạng khi nào?"
+              className={`w-full p-2.5 rounded-lg border ${formAttempted && !editPrompt.trim() ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-black/40 focus:border-synth-cyan'} text-xs text-white h-24 resize-none`}
+              placeholder="Nhập nội dung câu hỏi..."
             />
           </label>
 
@@ -319,11 +327,12 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
               />
             </label>
             <label className="space-y-1 block">
-              <span className="text-slate-400 font-semibold">Topic Lõi (Core Knowledge)</span>
+              <span className="text-slate-400 font-semibold">Topic Lõi (Core Knowledge) <span className="text-red-500">*</span></span>
               <select
+                required
                 value={editTopicId}
                 onChange={(e) => setEditTopicId(e.target.value)}
-                className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white cursor-pointer"
+                className={`w-full p-2 rounded-lg border ${formAttempted && !editTopicId ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-black/40 focus:border-synth-cyan'} text-xs text-white cursor-pointer`}
               >
                 <option value="">-- Chưa chọn topic --</option>
                 {CORE_KNOWLEDGE_TOPICS.filter(t => t.subjectId === editSubject).map(t => {
@@ -390,21 +399,23 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
           {editType === 'mcq' && (
             <div className="space-y-2">
               <label className="space-y-1 block">
-                <span className="text-slate-400 font-semibold">Các lựa chọn (Mỗi lựa chọn 1 dòng)</span>
+                <span className="text-slate-400 font-semibold">Các lựa chọn (Mỗi lựa chọn 1 dòng) <span className="text-red-500">*</span></span>
                 <textarea
+                  required
                   value={editOptions}
                   onChange={(e) => setEditOptions(e.target.value)}
                   placeholder="Lựa chọn A&#10;Lựa chọn B&#10;Lựa chọn C&#10;Lựa chọn D"
-                  className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white h-20 resize-none font-mono"
+                  className={`w-full p-2 rounded-lg border ${formAttempted && !editOptions.trim() ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-black/40 focus:border-synth-cyan'} text-xs text-white h-20 resize-none font-mono`}
                 />
               </label>
               <label className="space-y-1 block">
-                <span className="text-slate-400 font-semibold">Đáp án đúng (Khớp với một trong các lựa chọn)</span>
+                <span className="text-slate-400 font-semibold">Đáp án đúng (Khớp với một trong các lựa chọn) <span className="text-red-500">*</span></span>
                 <input
+                  required
                   type="text"
                   value={editCorrectAnswer}
                   onChange={(e) => setEditCorrectAnswer(e.target.value)}
-                  className="w-full p-2 rounded-lg border border-white/10 bg-black/40 text-xs text-white"
+                  className={`w-full p-2 rounded-lg border ${formAttempted && !editCorrectAnswer.trim() ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-black/40 focus:border-synth-cyan'} text-xs text-white`}
                 />
               </label>
             </div>

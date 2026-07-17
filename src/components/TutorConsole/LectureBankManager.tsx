@@ -51,6 +51,7 @@ export const LectureBankManager: React.FC = () => {
   const [formBai, setFormBai] = useState('');
   const [formHamNguyenTo, setFormHamNguyenTo] = useState<HamNguyenTo>('thach');
   const [isSaving, setIsSaving] = useState(false);
+  const [formAttempted, setFormAttempted] = useState(false);
   const [deletingIds, setDeletingIds] = useState<Record<string, boolean>>({});
 
   // Lazy Load Paging (Page Size 6)
@@ -99,6 +100,7 @@ export const LectureBankManager: React.FC = () => {
     setFormLoai('');
     setFormBai('');
     setFormHamNguyenTo('thach');
+    setFormAttempted(false);
     setIsModalOpen(true);
   };
 
@@ -113,11 +115,13 @@ export const LectureBankManager: React.FC = () => {
     setFormLoai(lesson.loai || '');
     setFormBai(lesson.bai !== undefined ? String(lesson.bai) : '');
     setFormHamNguyenTo(lesson.hamNguyenTo || 'thach');
+    setFormAttempted(false);
     setIsModalOpen(true);
   };
 
   const handleSaveLesson = async (e: React.FormEvent, isStandardOverride?: boolean) => {
     if (e) e.preventDefault();
+    setFormAttempted(true);
     if (!formSubject || !formCategory.trim() || !formTopic.trim() || !formTitle.trim() || !formTheory.trim()) {
       toast.error('Vui lòng điền đầy đủ tất cả các trường.');
       return;
@@ -470,8 +474,8 @@ export const LectureBankManager: React.FC = () => {
                     required
                     value={formCategory}
                     onChange={(e) => setFormCategory(e.target.value)}
-                    placeholder="to-infinitive, linear-equations..."
-                    className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                    placeholder="Ví dụ: Reading, Ngữ pháp, Đại số..."
+                    className={`w-full p-2.5 rounded-lg border ${formAttempted && !formCategory.trim() ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-synth-gray/20 focus:border-synth-cyan'} text-white outline-none`}
                   />
                 </label>
               </div>
@@ -485,7 +489,7 @@ export const LectureBankManager: React.FC = () => {
                     value={formTopic}
                     onChange={(e) => setFormTopic(e.target.value)}
                     placeholder="Ví dụ: Cấu trúc động từ đi kèm, Đồ thị hàm số..."
-                    className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                    className={`w-full p-2.5 rounded-lg border ${formAttempted && !formTopic.trim() ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-synth-gray/20 focus:border-synth-cyan'} text-white outline-none`}
                   />
                 </label>
 
@@ -497,7 +501,7 @@ export const LectureBankManager: React.FC = () => {
                     value={formTitle}
                     onChange={(e) => setFormTitle(e.target.value)}
                     placeholder="Ví dụ: Động từ đi kèm To-Infinitive và Gerund, Cách vẽ đồ thị bậc 1..."
-                    className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan"
+                    className={`w-full p-2.5 rounded-lg border ${formAttempted && !formTitle.trim() ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-synth-gray/20 focus:border-synth-cyan'} text-white outline-none`}
                   />
                 </label>
               </div>
@@ -548,7 +552,7 @@ export const LectureBankManager: React.FC = () => {
                   value={formTheory}
                   onChange={(e) => setFormTheory(e.target.value)}
                   placeholder="Nhập nội dung lý thuyết chi tiết để học sinh đọc học tại Học Đường..."
-                  className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan h-44 resize-none font-mono leading-relaxed"
+                  className={`w-full p-2.5 rounded-lg border ${formAttempted && !formTheory.trim() ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-synth-gray/20 focus:border-synth-cyan'} text-white outline-none h-44 resize-none font-mono leading-relaxed`}
                 />
               </label>
 

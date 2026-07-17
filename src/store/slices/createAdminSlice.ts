@@ -33,7 +33,7 @@ export const createAdminSlice: StateCreator<
 
   fetchAuditLogs: async () => {
     const state = get();
-    if (state.currentUser?.role !== 'truong_vien') return;
+    if (state.currentUser?.role !== 'truong_vien' && state.currentUser?.role !== 'pho_vien') return;
     try {
       const logs = await adminService.fetchAuditLogs();
       set({ auditLogs: logs || [] });
