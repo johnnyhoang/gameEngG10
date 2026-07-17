@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, Award, Check, X, Users, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Trash2, Award, Check, X, Users, ChevronDown, ChevronUp, Edit } from 'lucide-react';
 import { useGameState } from '../../hooks/useGameState';
 import { toast } from '../../utils/toast';
 import { SideDrawer } from '../Common/SideDrawer';
@@ -14,6 +14,7 @@ interface RewardManagerProps {
   fetchSchoolRewards: () => Promise<void>;
   createSchoolReward: (title: string, costRuby: number, quantity: number) => Promise<boolean>;
   deleteSchoolReward: (rewardId: string) => Promise<boolean>;
+  updateSchoolReward: (id: string, title: string, costRuby: number, quantity: number, remainingQuantity: number) => Promise<boolean>;
   markRewardDelivered: (redemptionId: string) => void;
   cancelRedemption: (redemptionId: string) => void;
   adminMarkRewardDelivered: (studentId: string, redemptionId: string) => Promise<void>;
@@ -29,6 +30,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
   fetchSchoolRewards,
   createSchoolReward,
   deleteSchoolReward,
+  updateSchoolReward,
   markRewardDelivered,
   cancelRedemption,
   adminMarkRewardDelivered,
@@ -110,6 +112,46 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
   const [rewardCost, setRewardCost] = useState(200);
   const [rewardQuantity, setRewardQuantity] = useState(999999);
   const [isCreatingSchoolReward, setIsCreatingSchoolReward] = useState(false);
+
+  // ── Sửa Quà Khuyến Học của trường ──
+  const [editRewardId, setEditRewardId] = useState('');
+  const [editRewardTitle, setEditRewardTitle] = useState('');
+  const [editRewardCost, setEditRewardCost] = useState(200);
+  const [editRewardQuantity, setEditRewardQuantity] = useState(1);
+  const [editRewardRemaining, setEditRewardRemaining] = useState(1);
+  const [isUpdatingSchoolReward, setIsUpdatingSchoolReward] = useState(false);
+  const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
+
+  const handleOpenEditDrawer = (reward: any) => {
+    setEditRewardId(reward.id);
+    setEditRewardTitle(reward.title);
+    setEditRewardCost(reward.costRuby);
+    setEditRewardQuantity(reward.quantity);
+    setEditRewardRemaining(reward.remainingQuantity);
+    setIsEditDrawerOpen(true);
+  };
+
+  const handleUpdateSchoolReward = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editRewardTitle.trim()) { toast.error('Vui lòng điền tên phần quà!'); return; }
+    if (editRewardCost <= 0 || editRewardQuantity <= 0 || editRewardRemaining < 0) {
+      toast.error('Chi phí, số lượng phải lớn hơn 0, số lượng còn lại không được âm!');
+      return;
+    }
+    if (editRewardRemaining > editRewardQuantity) {
+      toast.error('Số lượng còn lại không được lớn hơn tổng số lượng!');
+      return;
+    }
+    setIsUpdatingSchoolReward(true);
+    const ok = await updateSchoolReward(editRewardId, editRewardTitle.trim(), editRewardCost, editRewardQuantity, editRewardRemaining);
+    if (ok) {
+      toast.success('Đã cập nhật Quà Khuyến Học của trường thành công!');
+      setIsEditDrawerOpen(false);
+    } else {
+      toast.error('Cập nhật Quà Khuyến Học thất bại.');
+    }
+    setIsUpdatingSchoolReward(false);
+  };
 
   useEffect(() => {
     fetchClassRewards();
@@ -377,7 +419,10 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                         <span className="text-synth-cyan font-bold font-orbitron text-[10px]">
                           {reward.costRuby} Ruby · Còn {reward.remainingQuantity}/{reward.quantity}
                         </span>
-                        <button onClick={() => handleDeleteSchoolReward(reward.id)} className="text-synth-magenta hover:opacity-70 cursor-pointer">
+                        <button onClick={() => handleOpenEditDrawer(reward)} className="text-synth-cyan hover:opacity-70 cursor-pointer mr-1" title="Sửa quà">
+                          <Edit className="w-3.5 h-3.5" />
+                        </button>
+                        <button onClick={() => handleDeleteSchoolReward(reward.id)} className="text-synth-magenta hover:opacity-70 cursor-pointer" title="Xóa quà">
                           <Trash2 className="w-3.5 h-3.5" />
                         </button>
                       </div>
@@ -574,6 +619,62 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
             className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Tạo Quà Khuyến Học Của Trường
+          </button>
+        </form>
+      </SideDrawer>
+
+      {/* Drawer: Sửa Quà Khuyến Học của trường */}
+      <SideDrawer
+        isOpen={isEditDrawerOpen}
+        onClose={() => setIsEditDrawerOpen(false)}
+        widthClass="max-w-md"
+        title={
+          <span className="text-synth-cyan flex items-center gap-1.5">
+            <Edit className="w-4 h-4" /> Sửa Quà Khuyến Học Của Trường
+          </span>
+        }
+      >
+        <form onSubmit={handleUpdateSchoolReward} className="p-5 space-y-3">
+          <div className="flex flex-col gap-1">
+            <label className="text-[10px] text-synth-text-muted uppercase">Tên Quà</label>
+            <input
+              type="text"
+              value={editRewardTitle}
+              onChange={e => setEditRewardTitle(e.target.value)}
+              disabled={isUpdatingSchoolReward}
+              placeholder="Ví dụ: Ly trà sữa, 1h chơi iPad"
+              className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-cyan disabled:opacity-50"
+            />
+          </div>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] text-synth-text-muted uppercase">Giá (Ruby)</label>
+              <input type="number" value={editRewardCost} onChange={e => setEditRewardCost(Number(e.target.value))}
+                disabled={isUpdatingSchoolReward}
+                className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-cyan disabled:opacity-50"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] text-synth-text-muted uppercase">Số lượng</label>
+              <input type="number" min={1} value={editRewardQuantity} onChange={e => setEditRewardQuantity(Number(e.target.value))}
+                disabled={isUpdatingSchoolReward}
+                className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-cyan disabled:opacity-50"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-[10px] text-synth-text-muted uppercase">Còn lại</label>
+              <input type="number" min={0} value={editRewardRemaining} onChange={e => setEditRewardRemaining(Number(e.target.value))}
+                disabled={isUpdatingSchoolReward}
+                className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-cyan disabled:opacity-50"
+              />
+            </div>
+          </div>
+          <button
+            type="submit"
+            disabled={isUpdatingSchoolReward}
+            className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isUpdatingSchoolReward ? 'Đang cập nhật...' : 'Cập Nhật Quà Khuyến Học'}
           </button>
         </form>
       </SideDrawer>

@@ -41,7 +41,9 @@ export interface SubjectMasteryInput {
   questions: { subject?: SubjectId; grade?: number; gradeTier?: number; category: string }[];
   categoryStats: Record<string, CategoryStat>;
   lessons: { subject: SubjectId; gradeTier?: GradeTier; id: string }[];
-  lessonsProgress: Record<string, boolean>;
+  // StoreState.lessonsProgress lưu boolean (đã học xong) hoặc number (tiến độ %) tuỳ nơi ghi —
+  // chỉ dùng truthy-check bên dưới nên chấp nhận cả hai, không ép kiểu phía caller.
+  lessonsProgress: Record<string, boolean | number>;
 }
 
 // Công thức CORE_SPECS §7.4.2: 50% bài học hoàn thành + 50% tỉ lệ câu đúng (mẫu số = tổng

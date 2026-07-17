@@ -22,6 +22,8 @@ export interface StoreState {
   setSessionAccountId: (accountId: string) => void;
   fetchProfiles: () => Promise<void>;
   selectProfile: (profileId: string) => Promise<void>;
+  /** Rời khỏi profile đang xem, quay lại màn hình chọn vai trò — không đăng xuất tài khoản. */
+  deselectProfile: () => void;
   createProfile: (role: 'student' | 'tutor', name: string) => Promise<void>;
   quickStartProfile: (role: 'student' | 'tutor') => Promise<void>;
   login: (user: UserProfile) => Promise<void>;
@@ -43,7 +45,6 @@ export interface StoreState {
   explorationProgress: Record<string, ExplorationProgress>;
   pageExplorationStates: Record<string, PageExplorationState>;
   categoryStats: Record<string, CategoryStat>;
-  topicStats: Record<string, CategoryStat>;
   rewards: TutorReward[];
   rewardRedemptions: RewardRedemption[];
   /** Phần thưởng lớp học do giáo viên tạo. Học sinh trong lớp thấy; orphan student thấy rewards thường. */
@@ -122,6 +123,7 @@ export interface StoreState {
   fetchSchoolRewards: () => Promise<void>;
   createSchoolReward: (title: string, costRuby: number, quantity: number) => Promise<boolean>;
   deleteSchoolReward: (rewardId: string) => Promise<boolean>;
+  updateSchoolReward: (id: string, title: string, costRuby: number, quantity: number, remainingQuantity: number) => Promise<boolean>;
 
   // === CLASS REWARDS (Quà Khuyến Học) ===
   fetchClassRewards: () => Promise<void>;

@@ -48,6 +48,11 @@ export interface SubjectHintContext {
   mode: string;
 }
 
+export interface GeometryVisualization {
+  /** true = cần renderer 3D (Xưởng Toán Hình 3D), false = renderer 2D (Xưởng Toán Hình). */
+  is3D: boolean;
+}
+
 export interface AssessmentInput {
   question: Question;
   answer: string;
@@ -81,4 +86,6 @@ export interface SubjectModule {
   questionMetadata?: QuestionMetadataContribution;
   getHint?: (context: SubjectHintContext) => string | null;
   assessmentProviders?: readonly AssessmentProviderContribution[];
+  /** null = câu hỏi không cần hiển thị công cụ trực quan hình học (renderer 2D/3D). */
+  getGeometryVisualization?: (question: Question) => GeometryVisualization | null;
 }

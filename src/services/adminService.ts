@@ -74,9 +74,9 @@ export const adminService = {
     return res.ok;
   },
 
-  fetchAdminStudents: async (profileId?: string): Promise<any[]> => {
+  fetchAdminStudents: async (profileId?: string): Promise<{ users: any[]; links: any[] }> => {
     const token = await adminService.getAccessToken();
-    if (!token) return [];
+    if (!token) return { users: [], links: [] };
 
     const url = profileId
       ? `${backendUrl}/api/admin/users?profileId=${encodeURIComponent(profileId)}`
@@ -122,6 +122,17 @@ export const adminService = {
     const res = await fetch(`${backendUrl}/api/admin/school-rewards/${rewardId}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders() }
+    });
+    return res.ok;
+  },
+
+  updateSchoolReward: async (id: string, title: string, costRuby: number, quantity: number, remainingQuantity: number): Promise<boolean> => {
+    const token = await adminService.getAccessToken();
+    if (!token) return false;
+    const res = await fetch(`${backendUrl}/api/admin/school-rewards/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
+      body: JSON.stringify({ title, costRuby, quantity, remainingQuantity })
     });
     return res.ok;
   },

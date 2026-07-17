@@ -29,6 +29,7 @@ interface StudentProfileViewProps {
   fetchSchoolRewards: () => Promise<void>;
   createSchoolReward: (title: string, costRuby: number, quantity: number) => Promise<boolean>;
   deleteSchoolReward: (rewardId: string) => Promise<boolean>;
+  updateSchoolReward: (id: string, title: string, costRuby: number, quantity: number, remainingQuantity: number) => Promise<boolean>;
   markRewardDelivered: (redemptionId: string) => void;
   cancelRedemption: (redemptionId: string) => void;
   // Quest props
@@ -56,6 +57,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
   fetchSchoolRewards,
   createSchoolReward,
   deleteSchoolReward,
+  updateSchoolReward,
   markRewardDelivered,
   cancelRedemption,
   tutorQuests,
@@ -336,6 +338,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
           fetchSchoolRewards={fetchSchoolRewards}
           createSchoolReward={createSchoolReward}
           deleteSchoolReward={deleteSchoolReward}
+          updateSchoolReward={updateSchoolReward}
           markRewardDelivered={markRewardDelivered}
           cancelRedemption={cancelRedemption}
           adminMarkRewardDelivered={adminMarkRewardDelivered}

@@ -6,7 +6,7 @@ const router = express.Router();
 router.use(authMiddleware, activeProfileMiddleware);
 const SUPPORTED_GRADES = new Set([6, 7, 8, 9, 10, 11, 12]);
 
-function parseContext(input: Record<string, unknown>) {
+export function parseContext(input: Record<string, unknown>) {
   const gradeTier = Number(input.gradeTier);
   const rawSubject = input.subjectId ?? input.subject;
   const subjectId = typeof rawSubject === 'string' ? rawSubject.trim() : '';

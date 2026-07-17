@@ -115,6 +115,11 @@ CREATE TABLE IF NOT EXISTS ge10_history_logs (
     wallet_changed INTEGER DEFAULT 0
 );
 
+-- Phục vụ `WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 200` (chạy gần như mỗi lần load/sync
+-- profile, xem GET /profile/:id và POST /profile/:id/sync trong routes/profiles.ts) — FK không tự
+-- tạo index trên cột tham chiếu nên nếu thiếu sẽ full scan khi bảng lớn dần.
+CREATE INDEX IF NOT EXISTS idx_history_logs_user_timestamp ON ge10_history_logs(user_id, timestamp DESC);
+
 -- Danh Mục Quà Khuyến Học CHUNG của trường (CORE_SPECS §3.2) — MỘT danh sách duy nhất cho
 -- toàn viện, Viện Trưởng/Phó Viện Trưởng quản lý qua /api/admin/school-rewards. Giáo viên có
 -- danh mục riêng (ge10_class_rewards, clone từ đây khi hồ sơ giáo viên được tạo); học sinh mồ côi

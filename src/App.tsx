@@ -1,6 +1,7 @@
 import { isTutorRole, isAdmin } from './utils/roleHelpers';
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { useGameState } from './hooks/useGameState';
+import { getProfileScopedResetState } from './store/initialState';
 import { TopHUD } from './components/TopHUD';
 import { supabase } from './utils/supabaseClient';
 import type { Session, AuthChangeEvent } from '@supabase/supabase-js';
@@ -276,8 +277,10 @@ function App() {
           const state = useGameState.getState();
           if (state.sessionAccountId !== session.user.id) {
             state.setSessionAccountId(session.user.id);
-            // Clear currentUser to force profile selection when switching or logging in to a new account
-            useGameState.setState({ currentUser: null });
+            // Clear every profile-scoped value to force profile selection when switching or logging
+            // in to a new account — otherwise the previous account's player/pet/classLinks/etc. would
+            // stay visible until the new profile's fetch completes (or leak if it fails).
+            useGameState.setState(getProfileScopedResetState());
             await state.fetchProfiles();
 
             // Auto-select saved profile if available

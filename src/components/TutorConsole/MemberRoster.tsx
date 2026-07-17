@@ -46,10 +46,10 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
 
   const activeDisplayStudents = useMemo(() => {
     if (isCallerAdmin) {
-      return [...allStudents].sort((a, b) => (b.player?.xp || 0) - (a.player?.xp || 0));
+      return [...allStudents].sort((a, b) => (b.xp || 0) - (a.xp || 0));
     }
     const pool = teacherStudentTab === 'mine' ? myClassStudents : coManagedClassStudents;
-    return [...pool].sort((a, b) => (b.player?.xp || 0) - (a.player?.xp || 0));
+    return [...pool].sort((a, b) => (b.xp || 0) - (a.xp || 0));
   }, [isCallerAdmin, allStudents, teacherStudentTab, myClassStudents, coManagedClassStudents]);
 
   // Other personnel lists
@@ -81,7 +81,7 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
   const getStudentCoManagers = (studentId: string) => {
     const links = (adminLinks || []).filter(l => l.student_id === studentId);
     const managers = links.map(l => {
-      const roleName = l.tutor_role === 'tutor' ? 'Chủ Nhiệm Chính' : 'Chủ Nhiệm Phụ';
+      const roleName = l.link_type === 'primary' ? 'Chủ Nhiệm Chính' : 'Chủ Nhiệm Phụ';
       return `${l.tutor_name} (${roleName})`;
     });
     return managers.length > 0 ? managers.join(', ') : 'Chưa nhận lớp';
@@ -172,13 +172,13 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
                 <tbody>
                   {activeDisplayStudents.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="py-8 text-center text-synth-text-muted italic">
+                      <td colSpan={8} className="py-8 text-center text-synth-text-muted italic">
                         Không có Sĩ Tử nào trong danh sách.
                       </td>
                     </tr>
                   ) : (
                     activeDisplayStudents.map((stud, idx) => {
-                      const lv = stud.player?.level || 1;
+                      const lv = stud.level || 1;
                       const studentRank = getStudentRankForLevel(lv);
                       return (
                         <tr key={stud.id} className="border-b border-white/5 hover:bg-white/5 transition-colors">
@@ -198,12 +198,12 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
                           <td className="py-2.5 px-3 font-bold text-synth-orange">
                             {studentRank.icon} {studentRank.name}
                           </td>
-                          <td className="py-2.5 px-3 text-orange-400 font-semibold">{stud.player?.streak || 0} Ngày</td>
+                          <td className="py-2.5 px-3 text-orange-400 font-semibold">{stud.streak || 0} Ngày</td>
                           <td className="py-2.5 px-3 text-slate-300 max-w-[180px] truncate" title={getStudentCoManagers(stud.id)}>
                             {getStudentCoManagers(stud.id)}
                           </td>
                           <td className="py-2.5 px-3 text-right font-orbitron text-synth-green font-bold">
-                            {(stud.player?.xp || 0).toLocaleString()} XP
+                            {(stud.xp || 0).toLocaleString()} XP
                           </td>
                           <td className="py-2.5 px-3 text-right">
                             {onInspectStudent && (

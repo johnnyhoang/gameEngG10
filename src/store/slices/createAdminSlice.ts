@@ -1,12 +1,9 @@
-// @ts-nocheck
 import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
-import { DEFAULT_UI_THEME } from '../../theme/uiThemes';
-import { logActivity, checkLevelUp } from '../helpers';
-import { eventBus } from '../../utils/EventBus';
+import type { Question, TutorQuest } from '../../types/game';
+import { logActivity } from '../helpers';
 import { toast } from '../../utils/toast';
 import { adminService } from '../../services/adminService';
-import { playerService } from '../../services/playerService';
 import { enrichTextbookAttributes } from '../../utils/textbookEnricher';
 import { getHoChiMinhDateString } from '../../utils/date';
 
@@ -15,7 +12,7 @@ export const createAdminSlice: StateCreator<
   [],
   [],
   Pick<StoreState, 
-    'adminStudents' | 'adminLinks' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'tutorQuests' | 'markRewardDelivered' | 'cancelRedemption' | 'schoolRewards' | 'fetchSchoolRewards' | 'createSchoolReward' | 'deleteSchoolReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'addQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'adminSetEnergyConfig' | 'updateGameSettings' | 'addTutorQuest' | 'completeTutorQuest' | 'deleteTutorQuest' | 'claimTutorQuest' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
+    'adminStudents' | 'adminLinks' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'tutorQuests' | 'markRewardDelivered' | 'cancelRedemption' | 'schoolRewards' | 'fetchSchoolRewards' | 'createSchoolReward' | 'deleteSchoolReward' | 'updateSchoolReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'addQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'adminSetEnergyConfig' | 'updateGameSettings' | 'addTutorQuest' | 'completeTutorQuest' | 'deleteTutorQuest' | 'claimTutorQuest' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
   >
 > = (set, get) => ({
   adminStudents: [],
@@ -138,6 +135,21 @@ export const createAdminSlice: StateCreator<
     return ok;
   },
 
+  updateSchoolReward: async (id, title, costRuby, quantity, remainingQuantity) => {
+    const ok = await adminService.updateSchoolReward(
+      id,
+      title,
+      costRuby,
+      Math.max(1, Math.round(quantity)),
+      Math.max(0, Math.round(remainingQuantity))
+    );
+    if (ok) {
+      await get().fetchSchoolRewards();
+      logActivity(get, set, 'parent_approve', 'Cập nhật Quà Khuyến Học của trường', `Cập nhật quà: "${title}" trị giá ${costRuby} Ruby, số lượng còn lại ${remainingQuantity}/${quantity}`, 0, 0);
+    }
+    return ok;
+  },
+
   importQuestions: (importedQuestions) => {
           set((state: any) => {
             const existingPrompts = new Set(state.questions.map((q: any) => q.prompt));
@@ -179,14 +191,13 @@ export const createAdminSlice: StateCreator<
           }
 
           set((state: any) => ({
-            questions: state.questions.filter(q => q.id !== questionId)
+            questions: state.questions.filter((q: Question) => q.id !== questionId)
           }));
           logActivity(get, set, 'parent_approve', 'Xóa câu hỏi', `Viện Trưởng đã xóa câu hỏi mã số ${questionId}`, 0, 0);
           return true;
         },
 
   addQuestion: async (newQ) => {
-          const state = get();
           const id = 'cust-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
           const textbook = enrichTextbookAttributes(newQ.topicId, newQ.category, newQ.subject);
           const question = { id, ...newQ, source: newQ.source || 'AI Ingested', loai: textbook.loai, bai: textbook.bai } as Question;
@@ -238,7 +249,7 @@ export const createAdminSlice: StateCreator<
           }
 
           set((state: any) => ({
-            questions: state.questions.map(q => q.id === questionId ? nextQuestion : q)
+            questions: state.questions.map((q: Question) => q.id === questionId ? nextQuestion : q)
           }));
           logActivity(get, set, 'parent_approve', 'Cập nhật câu hỏi', `Viện Trưởng đã cập nhật câu hỏi mã số ${questionId}`, 0, 0);
           return true;
@@ -266,7 +277,7 @@ export const createAdminSlice: StateCreator<
       const nextSkips = { date: todayStr, count: skips.count + 1 };
 
       set((state: any) => ({
-        questions: state.questions.map(q => q.id === question.id ? nextQuestion : q),
+        questions: state.questions.map((q: Question) => q.id === question.id ? nextQuestion : q),
         player: {
           ...state.player,
           dailySkips: nextSkips
@@ -404,7 +415,7 @@ export const createAdminSlice: StateCreator<
 
   completeTutorQuest: (questId) => {
           set((state: any) => ({
-            tutorQuests: state.tutorQuests.map(q => 
+            tutorQuests: state.tutorQuests.map((q: TutorQuest) =>
               q.id === questId ? { ...q, status: 'completed' } : q
             )
           }));
@@ -412,7 +423,7 @@ export const createAdminSlice: StateCreator<
 
   deleteTutorQuest: (questId) => {
           set((state: any) => ({
-            tutorQuests: state.tutorQuests.filter(q => q.id !== questId)
+            tutorQuests: state.tutorQuests.filter((q: TutorQuest) => q.id !== questId)
           }));
         },
 
@@ -420,12 +431,12 @@ export const createAdminSlice: StateCreator<
           let rubyReward = 0;
           let qTitle = '';
           set((state: any) => {
-            const quest = state.tutorQuests.find(q => q.id === questId);
+            const quest = state.tutorQuests.find((q: TutorQuest) => q.id === questId);
             if (!quest || quest.status !== 'completed') return {};
             rubyReward = quest.rewardRuby;
             qTitle = quest.title;
             return {
-              tutorQuests: state.tutorQuests.map(q =>
+              tutorQuests: state.tutorQuests.map((q: TutorQuest) =>
                 q.id === questId ? { ...q, status: 'claimed' } : q
               ),
               player: {

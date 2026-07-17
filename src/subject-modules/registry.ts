@@ -1,5 +1,5 @@
 import type { Question, SubjectId } from '../types/game';
-import type { AssessmentProviderContribution, QuestionPresentation, SubjectModule } from './contracts';
+import type { AssessmentProviderContribution, GeometryVisualization, QuestionPresentation, SubjectModule } from './contracts';
 import { englishSubjectModule } from './english/manifest';
 import { literatureSubjectModule } from './literature/manifest';
 import { mathSubjectModule } from './math/manifest';
@@ -82,4 +82,8 @@ export function getSubjectHint(subjectId: SubjectId, question: Question, mode: s
 
 export function getAssessmentProvider(subjectId: SubjectId, question: Question): AssessmentProviderContribution | undefined {
   return getSubjectModule(subjectId)?.assessmentProviders?.find(provider => provider.matches(question));
+}
+
+export function getGeometryVisualization(subjectId: SubjectId, question: Question): GeometryVisualization | null {
+  return getSubjectModule(subjectId)?.getGeometryVisualization?.(question) ?? null;
 }

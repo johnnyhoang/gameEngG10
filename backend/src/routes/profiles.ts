@@ -865,7 +865,7 @@ router.patch('/profiles/update-avatar', authMiddleware, activeProfileMiddleware,
     }
 
     await pool.query(
-      'UPDATE ge10_users SET avatar = $1 WHERE id = $2',
+      'UPDATE ge10_users SET avatar_url = $1 WHERE id = $2',
       [newAvatar.trim(), profileId]
     );
 

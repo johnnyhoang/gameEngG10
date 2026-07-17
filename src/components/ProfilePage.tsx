@@ -19,6 +19,19 @@ interface ProfilePageProps {
 
 import { isLightTheme } from '../theme/uiThemes';
 
+const MOCK_AVATARS = [
+  'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Maikawaii1',
+  'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Maikawaii2',
+  'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Maikawaii3',
+  'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Maikawaii4',
+  'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Maikawaii5',
+  'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Maikawaii6',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=MaikawaiiRobot1',
+  'https://api.dicebear.com/7.x/bottts/svg?seed=MaikawaiiRobot2',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=MaikawaiiScholar1',
+  'https://api.dicebear.com/7.x/adventurer/svg?seed=MaikawaiiScholar2'
+];
+
 export const ProfilePage: React.FC<ProfilePageProps> = ({
   currentUser,
   currentTheme,
@@ -31,19 +44,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
   const [updatingAvatar, setUpdatingAvatar] = useState(false);
   const updateAvatar = useGameState(state => state.updateAvatar);
-
-  const MOCK_AVATARS = [
-    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Maikawaii1',
-    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Maikawaii2',
-    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Maikawaii3',
-    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Maikawaii4',
-    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Maikawaii5',
-    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Maikawaii6',
-    'https://api.dicebear.com/7.x/bottts/svg?seed=MaikawaiiRobot1',
-    'https://api.dicebear.com/7.x/bottts/svg?seed=MaikawaiiRobot2',
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=MaikawaiiScholar1',
-    'https://api.dicebear.com/7.x/adventurer/svg?seed=MaikawaiiScholar2'
-  ];
 
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;

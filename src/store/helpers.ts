@@ -3,6 +3,7 @@ import { getStudentRankForLevel } from '../types/game';
 import { eventBus } from '../utils/EventBus';
 import { recordMissionEvent } from '../services/missionLedgerService';
 import { toast } from '../utils/toast';
+import { xpNeededForLevel } from '../utils/leveling';
 
 export const logActivity = (
   get: any,
@@ -43,8 +44,8 @@ export const checkLevelUp = (
   const oldRank = getStudentRankForLevel(currentLevel);
 
   const applyLevelUps = () => {
-    while (xp >= level * 200) {
-      xp -= level * 200;
+    while (xp >= xpNeededForLevel(level)) {
+      xp -= xpNeededForLevel(level);
       level += 1;
       // Lên cấp thường không tự thưởng Ruby (chỉ mốc danh hiệu mới thưởng đột biến — CORE_SPECS §7.3);
       // log chỉ ghi nhận sự kiện, không claim số Ruby không thực sự được cộng.

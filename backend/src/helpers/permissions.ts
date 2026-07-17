@@ -34,13 +34,22 @@ export const hasPermission = (
 
     case 'REFILL_ENERGY':
     case 'SET_ENERGY_CONFIG':
-      return role === 'truong_vien' || role === 'pho_vien' || role === 'tutor' || role === 'secondary_tutor';
+      // Đòi hỏi read_only === false tường minh (không phải "khác true") — secondary_permissions
+      // thiếu/không rõ ràng phải bị coi là hạn chế, giống mặc định restrictive trong schema.sql.
+      if (role === 'secondary_tutor') return secondaryPermissions?.read_only === false;
+      return role === 'truong_vien' || role === 'pho_vien' || role === 'tutor';
 
     case 'APPROVE_REWARD':
-      return role === 'pho_vien' || role === 'tutor' || role === 'secondary_tutor';
+      if (role === 'secondary_tutor') {
+        return secondaryPermissions?.read_only !== true && secondaryPermissions?.can_approve_rewards === true;
+      }
+      return role === 'pho_vien' || role === 'tutor';
 
     case 'CREATE_MISSION':
-      return role === 'pho_vien' || role === 'tutor' || role === 'secondary_tutor';
+      if (role === 'secondary_tutor') {
+        return secondaryPermissions?.read_only !== true && secondaryPermissions?.can_create_missions === true;
+      }
+      return role === 'pho_vien' || role === 'tutor';
 
     case 'VIEW_STUDENT_PROFILE':
       return role === 'pho_vien' || role === 'tutor' || role === 'secondary_tutor';

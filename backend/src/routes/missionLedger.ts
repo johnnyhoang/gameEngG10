@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import express from 'express';
 import { pool } from '../db.js';
 import { activeProfileMiddleware, authMiddleware } from '../middleware/auth.js';
+import { applyLevelUps } from '../helpers/leveling.js';
 
 const router = express.Router();
 router.use(authMiddleware, activeProfileMiddleware);
@@ -68,12 +69,10 @@ async function grantMissionReward(client: any, profileId: string, rewardType: st
     'SELECT level, xp FROM ge10_player_profiles WHERE user_id = $1 FOR UPDATE', [profileId]
   );
   if (!profile.rowCount) return;
-  let level = profile.rows[0].level || 1;
-  let xp = (profile.rows[0].xp || 0) + amount;
-  while (xp >= level * 200) {
-    xp -= level * 200;
-    level += 1;
-  }
+  const { level, xp } = applyLevelUps(
+    (profile.rows[0].xp || 0) + amount,
+    profile.rows[0].level || 1
+  );
   await client.query(
     'UPDATE ge10_player_profiles SET level = $2, xp = $3, server_updated_at = NOW() WHERE user_id = $1',
     [profileId, level, xp]

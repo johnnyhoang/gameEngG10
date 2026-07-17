@@ -143,13 +143,8 @@ router.get('/admin/users-all', authMiddleware, async (req: any, res) => {
 
 // POST /api/admin/update-user-role: Bật/Tắt (active/deactivate/create) bất kỳ role nào trong 4 role của tài khoản
 router.post('/admin/update-user-role', authMiddleware, async (req: any, res) => {
-  const adminId = req.profile.id;
   try {
-    const adminCheck = await pool.query(
-      "SELECT role FROM ge10_users WHERE id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
-      [adminId]
-    );
-    if (adminCheck.rowCount === 0) {
+    if (req.profile.role !== 'truong_vien' && req.profile.role !== 'pho_vien') {
       return res.status(403).json({ error: 'Forbidden: Chỉ Ban Giám Hiệu mới có quyền quản lý vai trò.' });
     }
 
@@ -220,13 +215,8 @@ router.post('/admin/update-user-role', authMiddleware, async (req: any, res) => 
 
 // GET /api/admin/vice-principal-applications: Lấy tất cả yêu cầu ứng tuyển Phó Viện Trưởng đang chờ duyệt (Chỉ dành cho Viện Trưởng)
 router.get('/admin/vice-principal-applications', authMiddleware, async (req: any, res) => {
-  const adminId = req.profile.id;
   try {
-    const adminCheck = await pool.query(
-      "SELECT role FROM ge10_users WHERE id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
-      [adminId]
-    );
-    if (adminCheck.rowCount === 0) {
+    if (req.profile.role !== 'truong_vien' && req.profile.role !== 'pho_vien') {
       return res.status(403).json({ error: 'Forbidden: Chỉ Ban Giám Hiệu mới có quyền duyệt đơn ứng tuyển Phó Viện Trưởng.' });
     }
 
@@ -247,13 +237,8 @@ router.get('/admin/vice-principal-applications', authMiddleware, async (req: any
 
 // POST /api/admin/respond-vice-principal: Duyệt hoặc từ chối yêu cầu ứng tuyển Phó Viện Trưởng (Chỉ dành cho Viện Trưởng)
 router.post('/admin/respond-vice-principal', authMiddleware, async (req: any, res) => {
-  const adminId = req.profile.id;
   try {
-    const adminCheck = await pool.query(
-      "SELECT role FROM ge10_users WHERE id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
-      [adminId]
-    );
-    if (adminCheck.rowCount === 0) {
+    if (req.profile.role !== 'truong_vien' && req.profile.role !== 'pho_vien') {
       return res.status(403).json({ error: 'Forbidden: Chỉ Ban Giám Hiệu mới có quyền duyệt đơn ứng tuyển.' });
     }
 
@@ -291,28 +276,40 @@ router.post('/admin/respond-vice-principal', authMiddleware, async (req: any, re
         [targetAccountId]
       );
 
+      let targetProfileId = '';
       if (profileCheck.rows.length > 0) {
         // Đã từng có profile -> Kích hoạt lại
-        await pool.query("UPDATE ge10_users SET is_active = TRUE WHERE id = $1", [profileCheck.rows[0].id]);
+        targetProfileId = profileCheck.rows[0].id;
+        await pool.query("UPDATE ge10_users SET is_active = TRUE WHERE id = $1", [targetProfileId]);
       } else {
         // Chưa có profile -> Tạo mới profile Phó Viện Trưởng
-        const newProfileId = `u-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        targetProfileId = `u-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         const cleanName = teacherInfo.name.replace(/\s*\((?:Hiệu Trưởng|Hiệu Phó|Viện Trưởng|Phó Viện Trưởng|Chủ Nhiệm|Chủ Nhiệm Chính|Học Sinh|Sĩ Tử)\)/g, '');
         const finalName = `${cleanName} (Phó Viện Trưởng)`;
 
         await pool.query(
           `INSERT INTO ge10_users (id, account_id, name, email, avatar_url, role, is_active)
            VALUES ($1, $2, $3, $4, $5, 'pho_vien', TRUE)`,
-          [newProfileId, targetAccountId, finalName, teacherInfo.email, teacherInfo.avatar_url]
+          [targetProfileId, targetAccountId, finalName, teacherInfo.email, teacherInfo.avatar_url]
         );
 
         // Khởi tạo player_profile & pet_state
-        await pool.query(`INSERT INTO ge10_player_profiles (user_id) VALUES ($1) ON CONFLICT DO NOTHING`, [newProfileId]);
-        await pool.query(`INSERT INTO ge10_pet_states (user_id) VALUES ($1) ON CONFLICT DO NOTHING`, [newProfileId]);
+        await pool.query(`INSERT INTO ge10_player_profiles (user_id) VALUES ($1) ON CONFLICT DO NOTHING`, [targetProfileId]);
+        await pool.query(`INSERT INTO ge10_pet_states (user_id) VALUES ($1) ON CONFLICT DO NOTHING`, [targetProfileId]);
       }
 
       // Cập nhật trạng thái đơn ứng tuyển sang active
       await pool.query("UPDATE ge10_class_links SET status = 'active' WHERE id = $1", [applicationId]);
+
+      // Tự động kết nối đồng hành Ban Giám Hiệu
+      const adminConnId = `lnk-adm-${Date.now()}`;
+      await pool.query(
+        `INSERT INTO ge10_class_links (id, tutor_id, student_id, status, link_type)
+         VALUES ($1, $2, $3, 'active', 'admin_connection')
+         ON CONFLICT (tutor_id, student_id) DO UPDATE SET status = 'active'`,
+        [adminConnId, req.profile.id, targetProfileId]
+      );
+
       await logAuditEvent(teacherProfileId, 'approve_vice_principal_request', null, { applicationId });
     } else {
       // Từ chối: Xóa đơn ứng tuyển
@@ -329,13 +326,8 @@ router.post('/admin/respond-vice-principal', authMiddleware, async (req: any, re
 
 // GET /api/admin/audit-logs: Fetches all admin/Tutor Audit Logs (only for truong_vien)
 router.get('/admin/audit-logs', authMiddleware, async (req: any, res) => {
-  const adminId = req.profile.id;
   try {
-    const adminCheck = await pool.query(
-      "SELECT role FROM ge10_users WHERE id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
-      [adminId]
-    );
-    if (adminCheck.rowCount === 0) {
+    if (req.profile.role !== 'truong_vien' && req.profile.role !== 'pho_vien') {
       return res.status(403).json({ error: 'Forbidden: Ban Giám Hiệu mới có quyền truy cập nhật ký.' });
     }
 
@@ -585,13 +577,8 @@ router.post('/admin/set-energy-config', authMiddleware, async (req: any, res: an
 
 // PUT /api/admin/game-settings: Updates global game configuration parameters
 router.put('/admin/game-settings', authMiddleware, async (req: any, res: any) => {
-  const adminId = req.profile.id;
   try {
-    const adminCheck = await pool.query(
-      'SELECT role FROM ge10_users WHERE id = $1 AND role IN (\'truong_vien\', \'pho_vien\') AND is_active = TRUE',
-      [adminId]
-    );
-    if (adminCheck.rowCount === 0) {
+    if (req.profile.role !== 'truong_vien' && req.profile.role !== 'pho_vien') {
       return res.status(403).json({ error: 'Forbidden: Admin access only.' });
     }
 
@@ -795,14 +782,10 @@ router.post('/admin/lessons', authMiddleware, async (req: any, res) => {
   }
 
   try {
-    const check = await pool.query(
-      "SELECT id, role FROM ge10_users WHERE id = $1 AND is_active = TRUE AND role IN ('tutor', 'secondary_tutor', 'truong_vien', 'pho_vien') LIMIT 1",
-      [accountId]
-    );
-    if (check.rowCount === 0) {
+    if (!['tutor', 'secondary_tutor', 'truong_vien', 'pho_vien'].includes(req.profile.role)) {
       return res.status(403).json({ error: 'Forbidden: Bạn không có quyền thêm bài giảng.' });
     }
-    const actorProfileId = check.rows[0].id;
+    const actorProfileId = accountId;
 
     const lessonId = `les-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     await pool.query(
@@ -830,14 +813,10 @@ router.put('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) => 
   }
 
   try {
-    const check = await pool.query(
-      "SELECT id, role FROM ge10_users WHERE id = $1 AND is_active = TRUE AND role IN ('tutor', 'secondary_tutor', 'truong_vien', 'pho_vien') LIMIT 1",
-      [accountId]
-    );
-    if (check.rowCount === 0) {
+    if (!['tutor', 'secondary_tutor', 'truong_vien', 'pho_vien'].includes(req.profile.role)) {
       return res.status(403).json({ error: 'Forbidden: Bạn không có quyền sửa bài giảng.' });
     }
-    const actorProfileId = check.rows[0].id;
+    const actorProfileId = accountId;
 
     const updateRes = await pool.query(
       `UPDATE ge10_lessons 
@@ -864,14 +843,10 @@ router.delete('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) 
   const { lessonId } = req.params;
 
   try {
-    const check = await pool.query(
-      "SELECT id, role FROM ge10_users WHERE id = $1 AND is_active = TRUE AND role IN ('tutor', 'secondary_tutor', 'truong_vien', 'pho_vien') LIMIT 1",
-      [accountId]
-    );
-    if (check.rowCount === 0) {
+    if (!['tutor', 'secondary_tutor', 'truong_vien', 'pho_vien'].includes(req.profile.role)) {
       return res.status(403).json({ error: 'Forbidden: Bạn không có quyền xóa bài giảng.' });
     }
-    const actorProfileId = check.rows[0].id;
+    const actorProfileId = accountId;
 
     const deleteRes = await pool.query('DELETE FROM ge10_lessons WHERE id = $1', [lessonId]);
     if (deleteRes.rowCount === 0) {

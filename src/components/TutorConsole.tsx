@@ -25,6 +25,7 @@ export const TutorConsole: React.FC = () => {
   const fetchSchoolRewards = useGameState(state => state.fetchSchoolRewards);
   const createSchoolReward = useGameState(state => state.createSchoolReward);
   const deleteSchoolReward = useGameState(state => state.deleteSchoolReward);
+  const updateSchoolReward = useGameState(state => state.updateSchoolReward);
 
   // Admin and member management states
   const currentUser = useGameState(state => state.currentUser);
@@ -333,6 +334,7 @@ export const TutorConsole: React.FC = () => {
                 fetchSchoolRewards={fetchSchoolRewards}
                 createSchoolReward={createSchoolReward as any}
                 deleteSchoolReward={deleteSchoolReward as any}
+                updateSchoolReward={updateSchoolReward as any}
                 markRewardDelivered={markRewardDelivered as any}
                 cancelRedemption={cancelRedemption as any}
                 adminMarkRewardDelivered={adminMarkRewardDelivered as any}
@@ -429,6 +431,7 @@ export const TutorConsole: React.FC = () => {
                 fetchSchoolRewards={fetchSchoolRewards}
                 createSchoolReward={createSchoolReward as any}
                 deleteSchoolReward={deleteSchoolReward as any}
+                updateSchoolReward={updateSchoolReward as any}
                 markRewardDelivered={markRewardDelivered as any}
                 cancelRedemption={cancelRedemption as any}
                 tutorQuests={tutorQuests}

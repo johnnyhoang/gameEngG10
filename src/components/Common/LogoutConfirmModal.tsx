@@ -16,6 +16,7 @@ export const LogoutConfirmModal: React.FC<LogoutConfirmModalProps> = ({
 }) => {
   const uiTheme = useGameState(state => state.uiTheme);
   const currentUser = useGameState(state => state.currentUser);
+  const deselectProfile = useGameState(state => state.deselectProfile);
   const isUnicorn = isLightTheme(uiTheme);
   const [localLoggingOut, setLocalLoggingOut] = useState(false);
   const logoutState = useGameState(state => state.logoutState);
@@ -39,8 +40,7 @@ export const LogoutConfirmModal: React.FC<LogoutConfirmModalProps> = ({
   };
 
   const handleSwitchProfile = () => {
-    localStorage.removeItem('ge10_selected_profile_id');
-    useGameState.setState({ currentUser: null });
+    deselectProfile();
     onCancel();
   };
 

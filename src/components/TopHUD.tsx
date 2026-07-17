@@ -5,6 +5,7 @@ import { useGameState } from '../hooks/useGameState';
 
 import { getStudentRankForLevel, SUBJECTS_CONFIG, getGradeTierConfig } from '../types/game';
 import { isLightTheme } from '../theme/uiThemes';
+import { xpNeededForLevel } from '../utils/leveling';
 
 interface TopHUDProps {
   currentScreen: 'map' | 'arena' | 'play' | 'shop' | 'tutor' | 'pet' | 'logs' | 'practice' | 'profile';
@@ -22,6 +23,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   const player = useGameState(state => state.player);
   const currentUser = useGameState(state => state.currentUser);
   const logout = useGameState(state => state.logout);
+  const deselectProfile = useGameState(state => state.deselectProfile);
   const showHelp = useGameState(state => state.showHelp);
   const tickEnergyRegen = useGameState(state => state.tickEnergyRegen);
   const uiTheme = useGameState(state => state.uiTheme);
@@ -51,7 +53,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
     : null;
 
   // Calculate percentage of XP to next level
-  const xpNeeded = player.level * 200;
+  const xpNeeded = xpNeededForLevel(player.level);
   const xpPercent = Math.min(100, (player.xp / xpNeeded) * 100);
   const hasShield = player.badges.includes('Streak Shield');
 
@@ -134,8 +136,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                         <button
                           onClick={() => {
                             setIsProfileMenuOpen(false);
-                            useGameState.setState({ currentUser: null });
-                            localStorage.removeItem('ge10_selected_profile_id');
+                            deselectProfile();
                           }}
                           className={`w-full py-2 px-3 rounded-lg text-left transition-colors cursor-pointer ${
                             isUnicorn ? 'hover:bg-violet-50 text-violet-700' : 'hover:bg-white/5 text-synth-orange'
@@ -279,7 +280,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
 
                     {isProfileMenuOpen && (
                       <>
-                        <div className="fixed inset-0 z-45 cursor-default" onClick={() => setIsProfileMenuOpen(false)} />
+                        <div className="fixed inset-0 z-40 cursor-default" onClick={() => setIsProfileMenuOpen(false)} />
                         <div className={`absolute top-full left-0 mt-2 w-52 rounded-2xl border p-3 z-50 shadow-xl space-y-2.5 text-left font-mono ${
                           isUnicorn
                             ? 'border-violet-100 bg-white text-violet-900 shadow-[0_8px_30px_rgb(0,0,0,0.06)]'
@@ -306,8 +307,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                             <button
                               onClick={() => {
                                 setIsProfileMenuOpen(false);
-                                useGameState.setState({ currentUser: null });
-                                localStorage.removeItem('ge10_selected_profile_id');
+                                deselectProfile();
                               }}
                               className={`w-full py-2 px-3 rounded-lg text-left transition-colors cursor-pointer ${
                                 isUnicorn ? 'hover:bg-violet-50 text-violet-700' : 'hover:bg-white/5 text-synth-orange'
@@ -407,8 +407,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                     alt={currentUser.name}
                     className="w-8 h-8 rounded-full border border-synth-cyan/40 cursor-pointer hover:border-synth-magenta transition-colors"
                     onClick={() => {
-                      useGameState.setState({ currentUser: null });
-                      localStorage.removeItem('ge10_selected_profile_id');
+                      deselectProfile();
                     }}
                   />
                 )}

@@ -6,7 +6,7 @@ import { SUBJECTS_CONFIG } from '../types/game';
 import { devWarnOutOfScope, questionInScope } from '../utils/learningScope';
 import { ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../data/englishExamBlueprint';
 import { MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
-import { getAssessmentProvider, getQuestionPresentation, getSubjectHint, getSubjectActivities, getSubjectModule } from '../subject-modules/registry';
+import { getAssessmentProvider, getQuestionPresentation, getSubjectHint, getSubjectActivities, getSubjectModule, getGeometryVisualization } from '../subject-modules/registry';
 import { Scratchpad } from './Scratchpad';
 const GeometryApp = lazy(() => import('../miniapps/geometry').then(m => ({ default: m.GeometryApp })));
 import { ArrowRight, Award } from 'lucide-react';
@@ -949,27 +949,11 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, prev
   const passageText = questionPresentation.passageText;
   const questionText = questionPresentation.questionText;
 
-  const isGeometry = activeQuestion.subject === 'math' && (
-    activeQuestion.topicId?.includes('geometry') ||
-    activeQuestion.topicId?.includes('circle') ||
-    activeQuestion.topicId?.includes('trigonometry') ||
-    (activeQuestion.category || '').toLowerCase().includes('geometry') ||
-    (activeQuestion.prompt || '').toLowerCase().includes('hình học') ||
-    (activeQuestion.prompt || '').toLowerCase().includes('đường tròn')
-  );
-
-  const is3D = isGeometry && (
-    (activeQuestion.category || '').toLowerCase().includes('real-geometry') ||
-    (activeQuestion.category || '').toLowerCase().includes('space') ||
-    (activeQuestion.metadata?.mathTopic || '').toLowerCase().includes('space') ||
-    (activeQuestion.prompt || '').toLowerCase().includes('hình trụ') ||
-    (activeQuestion.prompt || '').toLowerCase().includes('hình nón') ||
-    (activeQuestion.prompt || '').toLowerCase().includes('hình cầu') ||
-    (activeQuestion.prompt || '').toLowerCase().includes('hình hộp') ||
-    (activeQuestion.prompt || '').toLowerCase().includes('lăng trụ') ||
-    (activeQuestion.prompt || '').toLowerCase().includes('tứ diện') ||
-    (activeQuestion.prompt || '').toLowerCase().includes('hình chóp')
-  );
+  // Nhận diện câu hỏi hình học 2D/3D thuộc về module Toán (src/subject-modules/math/manifest.ts),
+  // không phải logic của core component — xem getGeometryVisualization().
+  const geometryVisualization = getGeometryVisualization(activeSectId, activeQuestion);
+  const isGeometry = geometryVisualization !== null;
+  const is3D = geometryVisualization?.is3D ?? false;
 
   // Render input form matching question type
   const renderAnswerForm = () => {
@@ -1257,7 +1241,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, prev
       )}
 
       {/* Bottom Controls */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 max-w-2xl mx-auto bg-slate-950/95 backdrop-blur border-t border-white/10 p-3.5 flex flex-wrap items-center justify-between gap-2.5 shadow-[0_-5px_15px_rgba(0,0,0,0.5)] md:relative md:fixed-none md:bg-transparent md:backdrop-blur-none md:border-t md:border-synth-gray/50 md:p-0 md:pt-4 md:shadow-none">
+      <div className="fixed bottom-0 left-0 right-0 z-40 max-w-2xl mx-auto bg-slate-950/95 backdrop-blur border-t border-white/10 p-3.5 flex flex-wrap items-center justify-between gap-2.5 shadow-[0_-5px_15px_rgba(0,0,0,0.5)] md:relative md:bg-transparent md:backdrop-blur-none md:border-t md:border-synth-gray/50 md:p-0 md:pt-4 md:shadow-none">
         <div className="flex flex-wrap items-center gap-2">
           {!checked ? (
             <button

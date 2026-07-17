@@ -1,7 +1,7 @@
 // @ts-nocheck
 import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
-import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS } from '../initialState';
+import { DEFAULT_GAME_SETTINGS, getProfileScopedResetState } from '../initialState';
 import { DEFAULT_UI_THEME } from '../../theme/uiThemes';
 import { supabase } from '../../utils/supabaseClient';
 import { logActivity } from '../helpers';
@@ -17,7 +17,7 @@ export const createAuthSlice: StateCreator<
   [],
   Pick<StoreState,
     'currentUser' | 'sessionAccountId' | 'availableProfiles' | 'profilesLoading' |
-    'setSessionAccountId' | 'fetchProfiles' | 'selectProfile' |
+    'setSessionAccountId' | 'fetchProfiles' | 'selectProfile' | 'deselectProfile' |
     'createProfile' | 'quickStartProfile' | 'login' | 'logout' | 'renameProfile' |
     'logoutState'
   >
@@ -48,32 +48,7 @@ export const createAuthSlice: StateCreator<
     try {
       // Clear every profile-scoped value before loading the next profile.
       // Account/session/profile-list state intentionally remains available.
-      set({
-        currentUser: null,
-        player: INITIAL_PLAYER,
-        pet: INITIAL_PET,
-        categoryStats: {},
-        topicStats: {},
-        lessonsProgress: {},
-        topics: [],
-        activities: [],
-        activityProgress: {},
-        explorationProgress: {},
-        pageExplorationStates: {},
-        rewards: [],
-        rewardRedemptions: [],
-        classRewards: [],
-        classRewardRedemptions: [],
-        challenges: [],
-        logs: [],
-        activeCombo: 0,
-        maxCombo: 0,
-        failedQuestionIds: [],
-        recentlyPlayedQuestionIds: [],
-        selectedStudentProfile: null,
-        questions: [],
-        lessons: []
-      });
+      set(getProfileScopedResetState());
       const data = normalizeRubyPayload(await authService.selectProfile(profileId));
       if (!data.player || !data.pet) {
         // Hồ sơ player_profiles/pet_states lẽ ra luôn được tạo cùng lúc với ge10_users
@@ -133,6 +108,14 @@ export const createAuthSlice: StateCreator<
       console.error('selectProfile error', e);
       toast.error('Không tải được hồ sơ. Vui lòng thử lại hoặc liên hệ quản trị viên.');
     }
+  },
+
+  // Rời khỏi profile đang xem để quay lại màn hình chọn vai trò (KHÔNG đăng xuất tài khoản
+  // Google — availableProfiles/sessionAccountId vẫn giữ nguyên). Dùng chung reset state với
+  // selectProfile để tránh việc mỗi nơi gọi tự xoá một tập field khác nhau (xem TopHUD.tsx).
+  deselectProfile: () => {
+    set(getProfileScopedResetState());
+    localStorage.removeItem('ge10_selected_profile_id');
   },
 
   createProfile: async (role: 'student' | 'tutor', name: string) => {
@@ -350,36 +333,11 @@ export const createAuthSlice: StateCreator<
       // 2. Clear Zustand state synchronously to reset all user data
       try {
         set({
-          currentUser: null,
+          ...getProfileScopedResetState(),
           sessionAccountId: null,
           availableProfiles: [],
           profilesLoading: false,
-          classLinks: [],
-          player: INITIAL_PLAYER,
-          pet: INITIAL_PET,
-          categoryStats: {},
-          topicStats: {},
-          lessonsProgress: {},
-          topics: [],
-          activities: [],
-          activityProgress: {},
-          explorationProgress: {},
-          pageExplorationStates: {},
-          rewards: [],
-          rewardRedemptions: [],
-          classRewards: [],
-          classRewardRedemptions: [],
-          isOrphanStudent: true,
-          challenges: [],
-          logs: [],
-          activeCombo: 0,
-          maxCombo: 0,
           lastSyncTime: null,
-          adminStudents: [],
-          selectedStudentProfile: null,
-          failedQuestionIds: [],
-          recentlyPlayedQuestionIds: [],
-          tutorQuests: [],
           helpPageId: null,
           uiTheme: DEFAULT_UI_THEME as any,
           currentSubject: 'english',

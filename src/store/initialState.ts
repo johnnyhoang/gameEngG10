@@ -3,6 +3,7 @@
 // tránh vòng lặp import: slice -> hooks/useGameState -> store/index -> slice (từng gây
 // ReferenceError "Cannot access 'INITIAL_PLAYER' before initialization" khi load app).
 import type { PlayerProfile, PetState, GameSettings, UiThemeId } from '../types/game';
+import type { StoreState } from './types';
 
 // Năng Lượng v2 (SUB_SPEC_ENERGY §2): maxEnergy giờ là cấu hình RIÊNG từng con (PlayerProfile.maxEnergy),
 // không còn nằm trong GameSettings global. Hằng số này chỉ còn là giá trị mặc định khi tạo hồ sơ mới.
@@ -48,4 +49,43 @@ export const INITIAL_PET: PetState = {
   mood: 'neutral',
   lastFed: new Date().toISOString()
 };
+
+/**
+ * Toàn bộ state gắn với MỘT profile cụ thể — phải reset mỗi khi ngừng xem profile đó
+ * (đổi sang profile khác hoặc rời về màn hình chọn vai trò), để tránh dữ liệu của
+ * profile cũ lộ ra dưới profile mới. Dùng chung bởi `selectProfile` và `deselectProfile`
+ * (createAuthSlice.ts) — không tự reset lẻ tẻ từng field ở nơi khác (xem TopHUD.tsx).
+ */
+export function getProfileScopedResetState(): Partial<StoreState> {
+  return {
+    currentUser: null,
+    player: INITIAL_PLAYER,
+    pet: INITIAL_PET,
+    categoryStats: {},
+    lessonsProgress: {},
+    topics: [],
+    activities: [],
+    activityProgress: {},
+    explorationProgress: {},
+    pageExplorationStates: {},
+    rewards: [],
+    rewardRedemptions: [],
+    classRewards: [],
+    classRewardRedemptions: [],
+    classLinks: [],
+    secondaryTutors: [],
+    isOrphanStudent: true,
+    challenges: [],
+    logs: [],
+    activeCombo: 0,
+    maxCombo: 0,
+    failedQuestionIds: [],
+    recentlyPlayedQuestionIds: [],
+    selectedStudentProfile: null,
+    questions: [],
+    lessons: [],
+    adminStudents: [],
+    tutorQuests: []
+  };
+}
 

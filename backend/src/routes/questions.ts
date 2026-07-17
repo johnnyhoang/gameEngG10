@@ -2,6 +2,7 @@ import express from 'express';
 import { pool } from '../db.js';
 import { activeProfileMiddleware, authMiddleware, requireProfileRoles } from '../middleware/auth.js';
 import { persistCustomQuestion } from '../helpers/questions.js';
+import { checkStudentManagementPermission } from '../helpers/permissions.js';
 
 const router = express.Router();
 router.use(authMiddleware, activeProfileMiddleware);
@@ -153,11 +154,11 @@ router.get('/questions/stats/student/:studentId', async (req: any, res) => {
   const userId = req.profile.id;
   const { studentId } = req.params;
   try {
-    // Check if user is parent/teacher or student viewing own stats
-    const userRes = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [userId]);
-    const user = userRes.rows[0];
-
-    if (user.role !== 'truong_vien' && user.role !== 'pho_vien' && userId !== studentId) {
+    // Học sinh xem thống kê của chính mình, hoặc truong_vien/pho_vien/tutor/secondary_tutor
+    // có quan hệ (link) active với đúng học sinh này — dùng chung logic phân quyền với các
+    // route quản lý học sinh khác thay vì tự re-query role (tránh loại nhầm tutor/secondary_tutor).
+    const isSelf = userId === studentId;
+    if (!isSelf && !(await checkStudentManagementPermission(userId, studentId, 'view_profile'))) {
       return res.status(403).json({ error: 'Access denied.' });
     }
 

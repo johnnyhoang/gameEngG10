@@ -19,12 +19,21 @@ export const createClassLinksSlice: StateCreator<
     if (!pId || pId.startsWith('mock-')) return;
     try {
       const data = await classLinksService.fetchClassLinks(pId);
-      set({ 
+      // Guard against a stale response landing after the user has already switched
+      // to a different (or no) profile — applying it would leak the previous
+      // profile's class links onto the new one.
+      if (get().currentUser?.id !== pId) return;
+      set({
         classLinks: data.links || [],
         secondaryTutors: data.secondaryTutors || []
       });
     } catch (e) {
       console.error('Lỗi lấy dữ liệu liên kết lớp', e);
+      // Do not leave the previous profile's class links/secondary tutors visible
+      // under the new profile just because the refetch failed.
+      if (get().currentUser?.id === pId) {
+        set({ classLinks: [], secondaryTutors: [] });
+      }
     }
   },
 

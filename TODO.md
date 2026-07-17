@@ -793,4 +793,27 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
     - [x] Sửa `TutorConsole.tsx` để đưa phần Welcome Dashboard, Stats và Bảng Vàng của lớp học vào một Accordion mặc định thu gọn.
     - [x] Sửa `AcademyTab.tsx` để dồn Sổ Tu Học và badge Phong Cách Học Đường vào khối Hero Greeting, xóa section Đổi Phong Cách cũ.
 
+## T11 — Hạng mục kiến trúc lớn từ audit kỹ thuật 2026-07-17 (chưa triển khai, cần bàn phạm vi riêng)
+
+> Nguồn: audit Technical Lead + Technical Architect ngày 2026-07-17. Bốn mục dưới đây là refactor kiến trúc thật sự (không phải bug fix) — cố tình KHÔNG làm cùng đợt với các fix nhỏ/trung bình đã triển khai (avatar bug, rò rỉ classLinks, migration runner, secondaryPermissions, @ts-nocheck, công thức level, geometry contract, CORS, TLS, index history_logs) vì rủi ro regression cao hơn và cần thời gian riêng.
+
+- [ ] **T11.1 — Tách `PlayArea.tsx` (~1360 dòng, god-component)**
+  - *Mục tiêu:* Tách answer-rendering variants (MCQ/essay/text/split-passage/mobile-tab) và logic subject-detection ra khỏi file lõi, theo đúng pattern đã áp dụng cho `ExplanationBox`/`PostQuizReview`/`FinalResultScreen`.
+  - *Phải sửa:* `src/components/PlayArea.tsx` + thư mục `src/components/PlayArea/`.
+  - *Rủi ro:* File này đang là core render path của toàn bộ trải nghiệm làm bài — tách sai dễ vỡ nhiều luồng cùng lúc, cần test kỹ từng loại câu hỏi/môn học trước khi merge.
+
+- [ ] **T11.2 — Hoàn thiện ranh giới subject-module (không chỉ content, cả nhánh quyết định)**
+  - *Mục tiêu:* Logic AI-ingestion theo môn (`backend/src/routes/ai.ts`, nhánh `subject === 'literature'/'math'/...`) và các nhánh `activeSectId === 'english'/'math'` còn lại trong `PlayArea.tsx` (hint ladder, rubric/feedback shaping) nên chuyển hẳn vào registry (`src/subject-modules/*`, `backend/src/subjectModules/*`) thay vì rẽ nhánh ngay trong route/component chung.
+  - *Impact:* `ai.ts`, `PlayArea.tsx`, subject-module manifests.
+  - *Rủi ro:* Sai điều kiện chuyển nhánh có thể làm mất fallback chấm điểm hoặc gợi ý theo môn đang hoạt động.
+
+- [ ] **T11.3 — Chuyển content bundle tĩnh sang fetch từ server** *(trùng T9.2 đã có sẵn ở trên — chỉ nhắc lại làm mốc theo dõi từ audit)*
+  - *Mục tiêu:* `src/data/coreKnowledge.ts` + `src/data/riddleQuestions.ts` (~5400 dòng, bundle vào mọi client) nên chuyển sang fetch theo `gradeTier + subjectId` khi ngân hàng câu hỏi phình to.
+  - *Thời điểm triển khai:* Khi ngân hàng đề vượt vài nghìn câu (xem điều kiện chi tiết ở T9.2).
+
+- [ ] **T11.4 — Đánh giá chiến lược connection pooling cho môi trường serverless**
+  - *Mục tiêu:* `backend/src/db.ts` dùng `pg.Pool` mặc định (`max: 10`) không qua pooler ngoài (PgBouncer/Supabase pooler), chạy trên Vercel serverless — mỗi cold start mở pool riêng. Đây nhiều khả năng là nguyên nhân gốc của lớp lỗi deadlock/pool-exhaustion đã gặp phải với `missionLedger`/`initDB()` (xem HANDOFF.md 2026-07-17).
+  - *Phải làm:* Khảo sát dùng Supabase Session/Transaction Pooler (pgbouncer) cho connection string thay vì kết nối trực tiếp; đánh giá `max` phù hợp với giới hạn kết nối DB thật.
+  - *Rủi ro:* Đổi connection string/pooling sai có thể gây downtime toàn bộ backend — cần test kỹ ở staging trước khi áp production.
+
 

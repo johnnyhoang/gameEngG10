@@ -7,7 +7,9 @@
     "dev": "vite",
     "dev:backend": "npm run dev --workspace=gameengg10-backend",
     "build:backend": "npm run build --workspace=gameengg10-backend",
+    "migrate:backend": "npm run migrate --workspace=gameengg10-backend",
     "build": "tsc -b && vite build",
+    "test": "vitest run",
     "lint": "oxlint",
     "preview": "vite preview",
     "clean:build": "rimraf dist **/dist",
@@ -42,7 +44,8 @@
     "oxlint": "^1.71.0",
     "rimraf": "^6.1.3",
     "typescript": "~6.0.2",
-    "vite": "^8.1.1"
+    "vite": "^8.1.1",
+    "vitest": "^4.1.10"
   },
   "workspaces": [
     "backend"

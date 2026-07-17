@@ -1,15 +1,15 @@
-// @ts-nocheck
 import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
-import { INITIAL_PLAYER, INITIAL_PET, DEFAULT_GAME_SETTINGS, FREE_UI_THEME } from '../initialState';
-import { DEFAULT_UI_THEME, UI_THEMES } from '../../theme/uiThemes';
+import { INITIAL_PLAYER, INITIAL_PET, FREE_UI_THEME } from '../initialState';
+import { UI_THEMES } from '../../theme/uiThemes';
 import type { RewardRedemption } from '../../types/game';
+import { DEFAULT_GRADE_TIER } from '../../types/game';
 import { questionInScope } from '../../utils/learningScope';
-import { supabase } from '../../utils/supabaseClient';
 import { logActivity, checkLevelUp } from '../helpers';
 import { eventBus } from '../../utils/EventBus';
 import { toast } from '../../utils/toast';
 import { computeSubjectMasteryRatio, getMasteryRankByRatio } from '../../utils/masteryRank';
+import { applyLevelUps } from '../../utils/leveling';
 import { playerService } from '../../services/playerService';
 import { getSubjectActivities } from '../../subject-modules/registry';
 import { recordMissionEvent } from '../../services/missionLedgerService';
@@ -416,16 +416,8 @@ export const createPlayerSlice: StateCreator<
           if (state.player.ruby < rubyCost) return false;
 
           // Chăm sóc thú cưng được cộng 5 XP, có thể thăng cấp
-          let newLevel = state.player.level;
-          let newXp = state.player.xp + xpGain;
-          let xpNeeded = newLevel * 200;
-          let didLevelUp = false;
-          while (newXp >= xpNeeded) {
-            newXp -= xpNeeded;
-            newLevel += 1;
-            xpNeeded = newLevel * 200;
-            didLevelUp = true;
-          }
+          const { xp: newXp, level: newLevel } = applyLevelUps(state.player.xp + xpGain, state.player.level);
+          const didLevelUp = newLevel !== state.player.level;
 
           set({
             player: {

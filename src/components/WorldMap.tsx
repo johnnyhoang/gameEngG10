@@ -10,6 +10,7 @@ import { useSect } from '../contexts/SectContext';
 import { SUBJECTS_CONFIG, DEFAULT_GRADE_TIER } from '../types/game';
 import { filterLessonsInScope } from '../utils/learningScope';
 import { isLightTheme } from '../theme/uiThemes';
+import { xpNeededForLevel } from '../utils/leveling';
 import { LearningLedger } from './LearningLedger';
 import { useTranslate } from '../hooks/useTranslate';
 
@@ -184,12 +185,12 @@ export function WorldMap({
             <div className="space-y-1">
               <div className="flex justify-between text-[10px] font-orbitron font-bold uppercase">
                 <span className={isUnicorn ? 'text-violet-600' : 'text-slate-400'}>EXP</span>
-                <span className={isUnicorn ? 'text-violet-800' : 'text-white'}>{player.xp}/{player.level * 200}</span>
+                <span className={isUnicorn ? 'text-violet-800' : 'text-white'}>{player.xp}/{xpNeededForLevel(player.level)}</span>
               </div>
               <div className="h-1.5 rounded-full bg-black/20 overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-synth-cyan to-synth-purple rounded-full transition-all"
-                  style={{ width: `${Math.min(100, (player.xp / (player.level * 200)) * 100)}%` }}
+                  style={{ width: `${Math.min(100, (player.xp / xpNeededForLevel(player.level)) * 100)}%` }}
                 />
               </div>
             </div>

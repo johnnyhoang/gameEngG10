@@ -9,6 +9,7 @@ import {
   trackQuestionSkipped,
   trackStudentQuestionPerformance
 } from '../helpers/questionStats.js';
+import { applyLevelUps } from '../helpers/leveling.js';
 
 const router = express.Router();
 router.use(authMiddleware, activeProfileMiddleware);
@@ -390,10 +391,7 @@ router.post('/game/session/end', async (req: any, res) => {
     const badges = [...(player.badges || [])];
     let badgesChanged = false;
 
-    while (newXp >= newLevel * 200) {
-      newXp -= newLevel * 200;
-      newLevel += 1;
-    }
+    ({ xp: newXp, level: newLevel } = applyLevelUps(newXp, newLevel));
 
     // Check student rank up
     const oldRank = getStudentRankForLevel(player.level || 1);
@@ -405,10 +403,7 @@ router.post('/game/session/end', async (req: any, res) => {
         badgesChanged = true;
         const rankUpBonusXp = 100;
         newXp += rankUpBonusXp;
-        while (newXp >= newLevel * 200) {
-          newXp -= newLevel * 200;
-          newLevel += 1;
-        }
+        ({ xp: newXp, level: newLevel } = applyLevelUps(newXp, newLevel));
       }
     }
 

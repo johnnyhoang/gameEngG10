@@ -109,7 +109,7 @@ export const LectureBankManager: React.FC = () => {
     setIsModalOpen(true);
   };
 
-  const handleOpenEditModal = (lesson: Lesson) => {
+  const handleOpenEditModal = (lesson: Lesson, keepPreview?: boolean) => {
     setEditingLesson(lesson);
     setFormSubject(lesson.subject as SubjectId);
     setFormCategory(lesson.category);
@@ -121,7 +121,9 @@ export const LectureBankManager: React.FC = () => {
     setFormBai(lesson.bai !== undefined ? String(lesson.bai) : '');
     setFormHamNguyenTo(lesson.hamNguyenTo || 'thach');
     setFormAttempted(true);
-    setIsPreviewMode(false);
+    if (!keepPreview) {
+      setIsPreviewMode(false);
+    }
     setIsModalOpen(true);
   };
 
@@ -267,7 +269,7 @@ export const LectureBankManager: React.FC = () => {
   const handleNavigateEditing = (direction: -1 | 1) => {
     if (editingIndex < 0) return;
     const nextLesson = filteredLessons[editingIndex + direction];
-    if (nextLesson) handleOpenEditModal(nextLesson);
+    if (nextLesson) handleOpenEditModal(nextLesson, true);
   };
 
   return (
