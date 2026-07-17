@@ -100,7 +100,7 @@ export const LectureBankManager: React.FC = () => {
     setFormLoai('');
     setFormBai('');
     setFormHamNguyenTo('thach');
-    setFormAttempted(false);
+    setFormAttempted(true);
     setIsModalOpen(true);
   };
 
@@ -115,7 +115,7 @@ export const LectureBankManager: React.FC = () => {
     setFormLoai(lesson.loai || '');
     setFormBai(lesson.bai !== undefined ? String(lesson.bai) : '');
     setFormHamNguyenTo(lesson.hamNguyenTo || 'thach');
-    setFormAttempted(false);
+    setFormAttempted(true);
     setIsModalOpen(true);
   };
 

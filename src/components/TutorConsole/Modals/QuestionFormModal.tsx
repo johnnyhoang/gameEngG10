@@ -80,7 +80,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
         setEditSubject(selectedSect || 'english');
         setEditLoai('');
         setEditBai('');
-        setFormAttempted(false);
+        setFormAttempted(true);
       } else if (editingQuestion) {
         const q = editingQuestion;
         setEditType(q.type);
@@ -96,7 +96,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
         setEditSubject(q.subject || 'english');
         setEditLoai(q.loai || '');
         setEditBai(q.bai !== undefined ? String(q.bai) : '');
-        setFormAttempted(false);
+        setFormAttempted(true);
       }
     }
   }, [isOpen, isAddingNew, editingQuestion, selectedSect]);
