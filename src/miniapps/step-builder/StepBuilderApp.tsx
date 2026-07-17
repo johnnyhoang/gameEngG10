@@ -27,6 +27,13 @@ const STEP_DATA: Record<'math' | 'english' | 'literature', StepItem[]> = {
   ]
 };
 
+const GENERAL_STUDY_STEPS = [
+  { id: 's-g1', text: '1. Xem lướt toàn bộ nội dung bài học để nắm khái quát', correctOrder: 0 },
+  { id: 's-g2', text: '2. Đọc kĩ các khái niệm cốt lõi và ví dụ minh họa', correctOrder: 1 },
+  { id: 's-g3', text: '3. Thực hành làm bài tập vận dụng từ dễ đến khó', correctOrder: 2 },
+  { id: 's-g4', text: '4. Tóm tắt bài học bằng sơ đồ tư duy để khắc sâu kiến thức', correctOrder: 3 }
+];
+
 const TITLES: Record<string, string> = {
   math: 'Quy Trình Giải PT Bậc Hai',
   english: 'Quy Trình Đổi Câu Bị Động',
@@ -60,7 +67,7 @@ export const StepBuilderApp: React.FC<StepBuilderAppProps> = ({ activeSectId, ui
     return stepBuilderGame?.config?.title || '';
   }, [activeSectId]);
 
-  const hasGameData = (activeSectId && activeSectId in STEP_DATA) || !!dynamicSteps;
+  const hasGameData = !!activeSectId;
   const stepSubject = activeSectId as keyof typeof STEP_DATA;
   
   const [scrambledSteps, setScrambledSteps] = useState<StepItem[]>([]);
@@ -71,8 +78,10 @@ export const StepBuilderApp: React.FC<StepBuilderAppProps> = ({ activeSectId, ui
   }, []);
 
   const initStepGame = () => {
-    if (!hasGameData) return;
-    const baseSteps = dynamicSteps || STEP_DATA[activeSectId as keyof typeof STEP_DATA] || [];
+    if (!activeSectId) return;
+    const baseSteps = dynamicSteps 
+      || STEP_DATA[activeSectId as keyof typeof STEP_DATA] 
+      || GENERAL_STUDY_STEPS;
     setScrambledSteps([...baseSteps].sort(() => 0.5 - Math.random()));
     setStepStatus('playing');
   };
@@ -104,7 +113,7 @@ export const StepBuilderApp: React.FC<StepBuilderAppProps> = ({ activeSectId, ui
     return (
       <div className={`glass-panel rounded-3xl border p-8 text-center space-y-4 max-w-xl mx-auto ${isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-cyan/25'}`}>
         <p className="text-sm text-slate-300">
-          📭 Trò chơi Sắp xếp Trình tự chưa được thiết lập cho môn {SUBJECTS_CONFIG[activeSectId as SubjectId]?.name || activeSectId}.
+          📭 Trò chơi Sắp xếp Trình tự chưa được khởi động.
         </p>
       </div>
     );

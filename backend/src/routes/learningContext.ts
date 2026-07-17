@@ -130,4 +130,41 @@ router.post('/quizzes/submit', async (req: any, res) => {
   return res.json({ success: true, learningContext: context, score: correctCount, total: answers.length, accuracy, passed: accuracy >= 70, feedback });
 });
 
+router.get('/content/all', async (req: any, res) => {
+  const context = parseContext(req.query);
+  if (!context) return res.status(400).json({ error: 'gradeTier and subject are required.' });
+  const userId = req.profile.id;
+
+  try {
+    const [lessonsRes, questionsRes] = await Promise.all([
+      pool.query(
+        `SELECT id, subject, grade_tier AS "gradeTier", topic, title, theory, category
+         FROM ge10_lessons WHERE grade_tier = $1 AND subject = $2 ORDER BY id`,
+        [context.gradeTier, context.subjectId]
+      ),
+      pool.query(
+        `SELECT id, type, category, topic_id AS "topicId", prompt, options,
+                correct_answer AS "correctAnswer", explanation, difficulty, source,
+                subject, grade_tier AS "gradeTier", image_url AS "imageUrl", metadata
+         FROM ge10_custom_questions
+         WHERE grade_tier = $1 AND subject = $2
+           AND (user_id = $3 OR user_id IS NULL OR user_id IN
+             (SELECT id FROM ge10_users WHERE role IN ('truong_vien', 'pho_vien')))
+         ORDER BY id`,
+        [context.gradeTier, context.subjectId, userId]
+      )
+    ]);
+
+    return res.json({
+      success: true,
+      learningContext: context,
+      lessons: lessonsRes.rows,
+      questions: questionsRes.rows
+    });
+  } catch (error) {
+    console.error('Error fetching learning content:', error);
+    return res.status(500).json({ error: 'Internal server error while fetching content.' });
+  }
+});
+
 export default router;

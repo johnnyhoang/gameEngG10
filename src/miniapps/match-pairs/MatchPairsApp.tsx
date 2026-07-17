@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { RefreshCw } from 'lucide-react';
 import { toast } from '../../utils/toast';
-import type { UiThemeId, SubjectId } from '../../types/game';
-import { SUBJECTS_CONFIG } from '../../types/game';
+import type { UiThemeId } from '../../types/game';
+import { useGameState } from '../../hooks/useGameState';
 
 export interface MatchPairsAppProps {
   activeSectId?: string;
@@ -42,6 +42,14 @@ const LITERATURE_PAIRS = [
   { word: 'Tô Hoài', mean: 'Tác phẩm "Dế Mèn Phiêu Lưu Ký"' },
   { word: 'Chính Hữu', mean: 'Tác phẩm "Đồng chí"' }
 ];
+const GENERAL_PAIRS = [
+  { word: 'Phương pháp Feynman', mean: 'Học bằng cách dạy lại cho người khác' },
+  { word: 'Active Recall', mean: 'Chủ động gợi nhớ thông tin để học sâu' },
+  { word: 'Spaced Repetition', mean: 'Lặp lại ngắt quãng để chống quên' },
+  { word: 'Pomodoro', mean: 'Học tập tập trung 25 phút, nghỉ 5 phút' },
+  { word: 'Growth Mindset', mean: 'Tư duy phát triển, không ngại sai lầm' },
+  { word: 'Maikawaii', mean: 'Bé Heo linh vật siêu đáng yêu của Học Viện' }
+];
 
 export const MatchPairsApp: React.FC<MatchPairsAppProps> = ({ 
   activeSectId, 
@@ -50,20 +58,46 @@ export const MatchPairsApp: React.FC<MatchPairsAppProps> = ({
   onGameComplete 
 }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
+  const questions = useGameState(state => state.questions);
 
-  const hasGameData = activeSectId === 'english' || activeSectId === 'math' || activeSectId === 'literature';
-  const matchSubject = activeSectId as 'english' | 'math' | 'literature';
+  const matchSubject = activeSectId || 'english';
 
   const [matchCards, setMatchCards] = useState<MatchItem[]>([]);
   const [selectedCards, setSelectedCards] = useState<string[]>([]);
   const [matchStatus, setMatchStatus] = useState<'playing' | 'victory'>('playing');
 
   const initMatchGame = () => {
-    if (!hasGameData) return;
-    let source = ENGLISH_PAIRS;
-    if (matchSubject === 'math') source = MATH_PAIRS;
-    else if (matchSubject === 'literature') source = LITERATURE_PAIRS;
-    const pairs = [...source].sort(() => 0.5 - Math.random()).slice(0, 5);
+    // 1. Cố gắng lấy câu hỏi MCQ của môn học hiện tại
+    const mcqQuestions = questions.filter(q => 
+      (q.subject === activeSectId || (!q.subject && activeSectId === 'english')) &&
+      (q.type === 'mcq' || q.type === 'multiple_choice')
+    );
+
+    let pairs: { word: string; mean: string }[] = [];
+
+    if (mcqQuestions.length >= 3) {
+      pairs = mcqQuestions
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 5)
+        .map(q => {
+          const promptStr = q.prompt.replace(/\*\*.*?\*\*/g, '').trim(); // Bỏ bớt header markdown nếu có
+          const shortPrompt = promptStr.length > 55 ? promptStr.substring(0, 52) + '...' : promptStr;
+          const correctAns = Array.isArray(q.correctAnswer) ? q.correctAnswer[0] : q.correctAnswer;
+          return {
+            word: shortPrompt,
+            mean: String(correctAns ?? '')
+          };
+        });
+    } else {
+      // 2. Fallback về dữ liệu tĩnh
+      let source = GENERAL_PAIRS;
+      if (activeSectId === 'math') source = MATH_PAIRS;
+      else if (activeSectId === 'literature') source = LITERATURE_PAIRS;
+      else if (activeSectId === 'english') source = ENGLISH_PAIRS;
+      
+      pairs = [...source].sort(() => 0.5 - Math.random()).slice(0, 5);
+    }
+
     const cards: MatchItem[] = [];
     pairs.forEach((p, idx) => {
       const pairId = `pair-${idx}`;
@@ -76,16 +110,6 @@ export const MatchPairsApp: React.FC<MatchPairsAppProps> = ({
   };
 
   useEffect(() => { initMatchGame(); }, [activeSectId]);
-
-  if (!hasGameData) {
-    return (
-      <div className={`glass-panel rounded-3xl border p-8 text-center space-y-4 max-w-xl mx-auto ${isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-cyan/25'}`}>
-        <p className="text-sm text-slate-300">
-          📭 Trò chơi Ghép Cặp chưa được thiết lập cho môn {SUBJECTS_CONFIG[activeSectId as SubjectId]?.name || activeSectId}.
-        </p>
-      </div>
-    );
-  }
 
   const handleCardClick = (cardId: string) => {
     const card = matchCards.find(c => c.id === cardId);

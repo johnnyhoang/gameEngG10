@@ -14,7 +14,7 @@ export interface AdventureAppProps {
   questions?: any[];
 }
 
-export const AdventureApp: React.FC<AdventureAppProps> = ({  uiTheme, onReward, onGameComplete,   questions = [] }) => {
+export const AdventureApp: React.FC<AdventureAppProps> = ({ activeSectId, uiTheme, onReward, onGameComplete, questions = [] }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
 
   const [boardPosition, setBoardPosition] = useState(0);
@@ -49,7 +49,10 @@ export const AdventureApp: React.FC<AdventureAppProps> = ({  uiTheme, onReward, 
           toast.success('Bạn đã clear xong bản đồ du khảo! 🏆');
           onGameComplete?.({ correctAnswers: 10, timeSpent: 0, score: 100, passed: true });
         } else {
-          const mcqQuestions = questions.filter(q => q.type === 'multiple_choice' || q.type === 'mcq' || q.metadata?.answerMode === 'multiple_choice');
+          const mcqQuestions = questions.filter(q => 
+            (q.subject === activeSectId || (!q.subject && activeSectId === 'english')) &&
+            (q.type === 'multiple_choice' || q.type === 'mcq' || q.metadata?.answerMode === 'multiple_choice')
+          );
           if (mcqQuestions.length === 0) {
             toast.info('Ô này không có câu hỏi trắc nghiệm, con được tự do tiến bước! 🌸');
             setBoardStatus('idle');

@@ -44,6 +44,8 @@ Toàn bộ thế giới học đường được phân tầng theo **lớp học
 *   **Chuyển tầng duy nhất tại Hồ Sơ Sĩ Tử:** Thiếu hiệp chỉ có thể **nâng/hạ tầng** của mình trong trang Hồ Sơ Sĩ Tử (khác với đổi Môn Phái vốn có modal toàn cục §1.3). Tiến trình của mỗi tầng được bảo lưu riêng khi rời tầng và khôi phục khi quay lại.
 *   **Cơ cấu Tầng Lớp 9:** giữ nguyên 9 môn phái — 3 môn **Yêu Cầu Cao** (Toán, Văn, Anh — bám tuyển sinh 10) + 6 môn **Yêu Cầu Cơ Bản** (§1.3).
 
+> ⚠️ **Câu hỏi mở — PM Review 2026-07-17 (cần quyết định trước khi mở Tầng 10):** "Tiến trình của mỗi tầng được bảo lưu riêng" (dòng trên) mô tả rõ cho Đẳng Cấp Môn Phái (§7.4, đã có `maxAchievedMasteryRank` theo từng môn) và dữ liệu nội dung (`LearningContext`). Nhưng **Level/XP/Danh hiệu kiếm hiệp (§7.2) và Ruby lại là thuộc tính toàn cục của `PlayerProfile`, không có field nào theo `gradeTier`** — nghĩa là một Sĩ Tử đang 👑 Học Sĩ Level 80 ở Tầng 9 sẽ giữ nguyên danh hiệu đó ngay khi vừa mở khóa Tầng 10, dù chưa học một chữ nào ở tầng mới. Đây có phải hành vi mong muốn (Level là thước đo "kinh nghiệm sống" xuyên suốt hành trình, không reset theo tầng), hay Level/XP/Ruby cũng cần cô lập theo tầng như Đẳng Cấp Môn Phái? Cần chốt trước khi triển khai Tầng 10/11/12, vì ảnh hưởng trực tiếp tới thiết kế database và trải nghiệm "mở tầng mới" của Sĩ Tử.
+
 ## 2. Kiến Trúc Mô-đun & Bản Đồ Học Tập (World Map)
 
 Hệ thống được thiết kế phân tách rõ ràng thành hai môi trường hoạt động độc lập với các mô-đun chức năng cụ thể:
@@ -92,6 +94,8 @@ Các Mini-app đang có ở MVP:
 Xuất hiện tại Vùng Điều Hướng Trung Tâm (World Map Hub). Đây là nơi hiển thị các **Nhiệm vụ do Chủ nhiệm giao**.
 - Chủ nhiệm có thể tạo nhiệm vụ dựa trên tài nguyên có sẵn (Ví dụ: "Làm xong 5 bài Toán", "Đạt 100 điểm Tiếng Anh").
 - Khi học sinh hoàn thành, sẽ nhận được phần thưởng Ruby lớn (hoặc quà thực tế) do chủ nhiệm thiết lập.
+
+> ⚠️ **GAP xác nhận qua code — PM Review 2026-07-17 (chưa sửa):** `tutorQuests` (`addTutorQuest`/`completeTutorQuest`/`claimTutorQuest`, `src/store/slices/createAdminSlice.ts:400-450`) hiện là **state Zustand cục bộ thuần túy** — không gọi API, không có `studentId`/`teacherId`, không bảng DB, không đi qua `ge10_mission_definitions`/`ge10_learning_events` như phần còn lại của hệ Mission Ledger (`SUB_SPEC_MISSION_LEDGER.md`). Hệ quả: (1) nhiệm vụ do Chủ Nhiệm tạo trên thiết bị của họ **không tới được** app của Học Sinh trên thiết bị khác (trường hợp phổ biến nhất: phụ huynh dùng điện thoại, con dùng máy tính bảng riêng); (2) nếu cùng dùng chung một trình duyệt để đổi hồ sơ, dữ liệu `tutorQuests` có nguy cơ rò rỉ chéo profile, vi phạm `SUB_SPEC_AUTH_PROFILE.md §3` ("đổi profile phải reset toàn bộ state profile-scoped"); (3) `completeTutorQuest` là toggle thủ công, không có điều kiện tự động đối chiếu "Làm xong 5 bài Toán" như mô tả — toàn bộ đặc tả "dựa trên tài nguyên có sẵn" chưa từng được cài đặt. Xem TODO mục **PMR-1**.
 
 ##### 4. 🏮 Shop Học Cụ (Item Shop)
 Vận hành nền kinh tế vi mô trong học viện. Tiêu hao **Ruby** để đổi các vật phẩm và đặc quyền:
@@ -222,7 +226,9 @@ Những thay đổi cốt lõi cần lưu ý:
 
 > ❌ **Bãi bỏ:** mọi quy tắc quy đổi Ruby thành tiền thật, Ví VND và thưởng tiền mặt từ Boss. **Ruby là tài nguyên ảo trong ứng dụng, không phải tiền và không có tỷ giá tiền mặt.**
 
-Chi tiết về cơ chế hoạt động của **Quà Khuyến Học (Class Rewards)**, luồng giao dịch atomic trừ điểm/hoàn điểm, rút lại yêu cầu pending của học sinh và phê duyệt phát thưởng của Giáo viên, vui lòng xem tại đặc tả riêng **[SUB_SPEC_CLASS_REWARDS.md](./SUB_SPEC_CLASS_REWARDS.md)**.
+Chi tiết về cơ chế hoạt động của **Quà Khuyến Học (Class Rewards)**, luồng giao dịch atomic trừ điểm/hoàn điểm, rút lại yêu cầu pending của học sinh và phê duyệt phát thưởng của Giáo viên, vui lòng xem tại đặc tả riêng **SUB_SPEC_CLASS_REWARDS.md**.
+
+> ⚠️ **GAP xác nhận — PM Review 2026-07-17 (chưa sửa):** File `SUB_SPEC_CLASS_REWARDS.md` được tham chiếu ở trên **không tồn tại trong repo** — link chết trong tài liệu chuẩn. Code thực tế (`backend/src/routes/classRewards.ts`, bảng `ge10_class_rewards`/`ge10_class_reward_redemptions`, theo `teacher_id`) đã hoạt động đúng nguyên tắc atomic/pending/deliver/cancel mô tả ở trên, nhưng theo `HANDOFF.md` 2026-07-17 còn tồn tại song song một khái niệm **"Quà Khuyến Học Của Trường"** khác với "Của Lớp" (khả năng là hệ `ParentReward`/`ge10_reward_redemptions` cũ từ Task #35, chưa được xác minh còn dùng hay đã thay thế hoàn toàn) — chưa có tài liệu nào mô tả rõ 2 hệ này khác nhau ở đâu, học sinh mồ côi (Đại Sảnh Đường, §3.3) thực sự lấy quà từ nguồn nào. Xem TODO mục **PMR-2**.
 *   **Chủ nhiệm tự tạo Phần Thưởng:** Mỗi chủ nhiệm tự tạo danh mục phần thưởng riêng cho lớp mình và tự định giá bằng Ruby. Chỉ học sinh thuộc lớp của chủ nhiệm/phó chủ nhiệm đó mới nhìn thấy và đổi được. Học sinh chưa có lớp (orphan) sẽ nhìn thấy danh mục quà tặng toàn trường do Viện Trưởng/Phó tạo.
 *   **Số lượng giới hạn (khan hiếm có chủ đích):** Mỗi phần thưởng có số lượng cụ thể (`quantity`). Ai kiếm đủ điểm đổi sớm thì lấy trước; mỗi lần đổi số lượng giảm xuống, hết là thôi.
 *   **Cơ chế Rút Lại (Cancel/Refund):** Khi giáo viên chưa bấm "Phát Thưởng", học sinh có thể tự hủy yêu cầu đổi quà ngay lập tức để nhận lại 100% số Ruby đã tiêu và trả lại số lượng tồn kho cho quà tặng.

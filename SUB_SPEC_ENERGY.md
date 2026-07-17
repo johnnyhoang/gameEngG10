@@ -1,6 +1,8 @@
 # Sub-Spec: Luật Năng Lượng (Energy System)
 
-> 📌 Bản đề xuất v1 (do ClaudeCode soạn theo yêu cầu của Viện Trưởng ngày 2026-07-10). Các con số đánh dấu *(đề xuất)* cần Viện Trưởng xác nhận trước khi implement.
+> ✅ **Đã triển khai và xác nhận (Task #37, 2026-07-11)** — Viện Trưởng đã chốt Phương án A (reset trọn gói) và bộ số mặc định qua AskUserQuestion; toàn bộ mục dưới đây khớp với code hiện hành (`createPlayerSlice.ts`, `server.ts /api/admin/set-energy-config`). Các nhãn *(đề xuất)* còn sót lại bên dưới chỉ còn giá trị lịch sử (số liệu đã chốt, không còn chờ duyệt) — giữ nguyên để không mất log quyết định gốc.
+>
+> 📌 Bản đề xuất v1 gốc (do ClaudeCode soạn theo yêu cầu của Viện Trưởng ngày 2026-07-10).
 
 ## 1. Vai trò của Năng Lượng
 Năng Lượng là tài nguyên điều tiết **THỜI LƯỢNG chơi/học mỗi phiên** — công cụ để chủ nhiệm điều phối thời gian sử dụng app của con. Năng Lượng **không phải hình phạt học lực**: nó không liên quan đúng/sai, chỉ liên quan "đã chơi bao nhiêu".

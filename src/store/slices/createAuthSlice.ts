@@ -10,6 +10,7 @@ import { authService } from '../../services/authService';
 import { DEFAULT_GRADE_TIER } from '../../types/game';
 import { normalizeRubyPayload } from '../../utils/rubyCompatibility';
 import { enrichTextbookAttributes } from '../../utils/textbookEnricher';
+import { learningService } from '../../services/learningService';
 
 export const createAuthSlice: StateCreator<
   StoreState,
@@ -57,18 +58,9 @@ export const createAuthSlice: StateCreator<
         throw new Error('Thiếu dữ liệu hồ sơ nhân vật (player/pet) trên máy chủ cho hồ sơ này.');
       }
       const resolvedTheme = data.player?.uiTheme || (get().uiThemesByUser[profileId] || DEFAULT_UI_THEME) as any;
-      // Ngân hàng câu hỏi (gốc + do giáo viên/admin tạo) đều nằm trong ge10_custom_questions,
-      // server đã trả về đầy đủ trong data.customQuestions — không còn trộn với mảng hardcode.
-      const enrichedQuestions = (data.customQuestions || []).map((q: any) => {
-        const textbook = enrichTextbookAttributes(q.topicId, q.category, q.subject);
-        return { ...q, loai: q.loai || textbook.loai, bai: q.bai || textbook.bai };
-      });
-      if (enrichedQuestions.length === 0) {
-        console.warn('[selectProfile] Server trả về ngân hàng câu hỏi rỗng — cần kiểm tra seed ge10_custom_questions.');
-      }
-      if (!data.lessons || data.lessons.length === 0) {
-        console.warn('[selectProfile] Server trả về danh sách bài giảng rỗng — cần kiểm tra seed ge10_lessons.');
-      }
+      const activeSubject = data.player?.activeSubject || 'english';
+      const activeGradeTier = data.player?.activeGradeTier || DEFAULT_GRADE_TIER;
+
       set({
         currentUser: data.currentUser,
         player: data.player,
@@ -84,8 +76,20 @@ export const createAuthSlice: StateCreator<
         activityProgress: data.activityProgress || {},
         explorationProgress: data.explorationProgress || {},
         logs: data.logs || [],
-        questions: enrichedQuestions,
-        lessons: (data.lessons || []).map((l: any) => {
+        questions: [],
+        lessons: [],
+        gameSettings: data.gameSettings || DEFAULT_GAME_SETTINGS,
+        uiTheme: resolvedTheme,
+        currentSubject: activeSubject,
+        activeGradeTier: activeGradeTier,
+        lastSyncTime: new Date().toISOString(),
+      });
+      localStorage.setItem('ge10_selected_profile_id', profileId);
+
+      // Fetch dynamic content
+      try {
+        const content = await learningService.fetchContentAll(activeGradeTier, activeSubject);
+        const enrichedLessons = (content.lessons || []).map((l: any) => {
           const textbook = enrichTextbookAttributes(l.id, l.category, l.subject);
           return {
             ...l,
@@ -93,14 +97,15 @@ export const createAuthSlice: StateCreator<
             bai: l.bai || textbook.bai,
             hamNguyenTo: l.hamNguyenTo || textbook.hamNguyenTo
           };
-        }),
-        gameSettings: data.gameSettings || DEFAULT_GAME_SETTINGS,
-        uiTheme: resolvedTheme,
-        currentSubject: data.player?.activeSubject || 'english',
-        activeGradeTier: data.player?.activeGradeTier || DEFAULT_GRADE_TIER,
-        lastSyncTime: new Date().toISOString(),
-      });
-      localStorage.setItem('ge10_selected_profile_id', profileId);
+        });
+        const enrichedQuestions = (content.questions || []).map((q: any) => {
+          const textbook = enrichTextbookAttributes(q.topicId, q.category, q.subject);
+          return { ...q, loai: q.loai || textbook.loai, bai: q.bai || textbook.bai };
+        });
+        set({ questions: enrichedQuestions, lessons: enrichedLessons });
+      } catch (err) {
+        console.error('Error fetching initial content in selectProfile:', err);
+      }
       // Fetch class links data after profile is selected
       const state = get();
       if(state.fetchClassLinks) await state.fetchClassLinks();
@@ -201,26 +206,16 @@ export const createAuthSlice: StateCreator<
         // báo rõ thay vì âm thầm dựng nhân vật giả.
         throw new Error('Thiếu dữ liệu hồ sơ nhân vật (player/pet) trên máy chủ cho tài khoản này.');
       }
-      // Ngân hàng câu hỏi (gốc + do giáo viên/admin tạo) đều nằm trong ge10_custom_questions,
-      // server đã trả về đầy đủ trong data.customQuestions — không còn trộn với mảng hardcode.
-      const enrichedQuestions = (data.customQuestions || []).map((q: any) => {
-        const textbook = enrichTextbookAttributes(q.topicId, q.category, q.subject);
-        return { ...q, loai: q.loai || textbook.loai, bai: q.bai || textbook.bai };
-      });
-      if (enrichedQuestions.length === 0) {
-        console.warn('[login] Server trả về ngân hàng câu hỏi rỗng — cần kiểm tra seed ge10_custom_questions.');
-      }
       const resolvedTheme = data.player?.uiTheme || (get().uiThemesByUser[data.currentUser?.id || user.id] || DEFAULT_UI_THEME) as any;
-      if (!data.lessons || data.lessons.length === 0) {
-        console.warn('[login] Server trả về danh sách bài giảng rỗng — cần kiểm tra seed ge10_lessons.');
-      }
+      const activeSubject = data.player?.activeSubject || 'english';
+      const activeGradeTier = data.player?.activeGradeTier || DEFAULT_GRADE_TIER;
 
       set(_state => {
         return {
           currentUser: data.currentUser || user,
           uiTheme: resolvedTheme,
-          currentSubject: data.player?.activeSubject || 'english',
-          activeGradeTier: data.player?.activeGradeTier || DEFAULT_GRADE_TIER,
+          currentSubject: activeSubject,
+          activeGradeTier: activeGradeTier,
           player: data.player,
           pet: data.pet,
           categoryStats: data.categoryStats || {},
@@ -230,16 +225,8 @@ export const createAuthSlice: StateCreator<
           challenges: data.challenges || [],
           challengeTemplates: data.challengeTemplates || [],
           gameSettings: data.gameSettings || DEFAULT_GAME_SETTINGS,
-          questions: enrichedQuestions,
-          lessons: (data.lessons || []).map((l: any) => {
-            const textbook = enrichTextbookAttributes(l.id, l.category, l.subject);
-            return {
-              ...l,
-              loai: l.loai || textbook.loai,
-              bai: l.bai || textbook.bai,
-              hamNguyenTo: l.hamNguyenTo || textbook.hamNguyenTo
-            };
-          }),
+          questions: [],
+          lessons: [],
           lessonsProgress: data.lessonsProgress || {},
           topics: data.topics || [],
           activities: data.activities || [],
@@ -248,6 +235,27 @@ export const createAuthSlice: StateCreator<
         };
       });
       logActivity(get, set, 'energy_refill', 'Đồng bộ Đám mây', `Dữ liệu học tập đã được kéo về cho ${user.name}!`);
+
+      // Fetch dynamic content
+      try {
+        const content = await learningService.fetchContentAll(activeGradeTier, activeSubject);
+        const enrichedLessons = (content.lessons || []).map((l: any) => {
+          const textbook = enrichTextbookAttributes(l.id, l.category, l.subject);
+          return {
+            ...l,
+            loai: l.loai || textbook.loai,
+            bai: l.bai || textbook.bai,
+            hamNguyenTo: l.hamNguyenTo || textbook.hamNguyenTo
+          };
+        });
+        const enrichedQuestions = (content.questions || []).map((q: any) => {
+          const textbook = enrichTextbookAttributes(q.topicId, q.category, q.subject);
+          return { ...q, loai: q.loai || textbook.loai, bai: q.bai || textbook.bai };
+        });
+        set({ questions: enrichedQuestions, lessons: enrichedLessons });
+      } catch (err) {
+        console.error('Error fetching initial content in login:', err);
+      }
     } catch (e) {
       console.error('Lỗi khi tải thông tin từ backend Supabase:', e);
       // Không tạo hồ sơ/vai trò giả khi không tải được dữ liệu thật — báo lỗi rõ ràng

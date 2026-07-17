@@ -231,12 +231,21 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack: _onBack 
 
   const handleOpenGame = (game: GameCard) => {
     if (game.id === 'story') {
-      const hasMath = filterQuestionsInScope(questions, 'math', activeGradeTier).length > 0;
-      const hasEnglish = filterQuestionsInScope(questions, 'english', activeGradeTier).length > 0;
-      const hasLit = filterQuestionsInScope(questions, 'literature', activeGradeTier).length > 0;
-      if (!hasMath || !hasEnglish || !hasLit) {
-        toast.error('⚠️ Đền cổ đang thiếu đề của ít nhất một môn trong 3 môn (Toán, Anh, Văn) cho lớp này. Trò chơi chưa thể bắt đầu và năng lượng của con đã được bảo toàn.');
-        return;
+      const isCoreSubject = activeSectId === 'math' || activeSectId === 'english' || activeSectId === 'literature';
+      if (isCoreSubject) {
+        const hasMath = filterQuestionsInScope(questions, 'math', activeGradeTier).length > 0;
+        const hasEnglish = filterQuestionsInScope(questions, 'english', activeGradeTier).length > 0;
+        const hasLit = filterQuestionsInScope(questions, 'literature', activeGradeTier).length > 0;
+        if (!hasMath || !hasEnglish || !hasLit) {
+          toast.error('⚠️ Đền cổ đang thiếu đề của ít nhất một môn trong 3 môn (Toán, Anh, Văn) cho lớp này. Trò chơi chưa thể bắt đầu và năng lượng của con đã được bảo toàn.');
+          return;
+        }
+      } else {
+        const hasCurrentSubject = filterQuestionsInScope(questions, activeSectId as any, activeGradeTier).length > 0;
+        if (!hasCurrentSubject) {
+          toast.error(`⚠️ Đền cổ đang thiếu đề của môn ${SUBJECTS_CONFIG[activeSectId as SubjectId]?.name || activeSectId} cho lớp này. Trò chơi chưa thể bắt đầu và năng lượng của con đã được bảo toàn.`);
+          return;
+        }
       }
     }
     if (game.costsEnergy !== false) {

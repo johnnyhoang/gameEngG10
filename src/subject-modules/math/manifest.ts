@@ -1,5 +1,6 @@
 import type { GeometryVisualization, SubjectModule } from '../contracts';
 import type { Question } from '../../types/game';
+import { assessMathShortAnswer } from './assessment';
 
 // topicId chuẩn (khớp CORE_KNOWLEDGE_TOPICS) là tín hiệu chính xác nhất — ưu tiên trước khi
 // rơi về suy đoán theo category/prompt bên dưới (chỉ dùng cho câu hỏi cũ/nhập tay chưa gắn
@@ -103,5 +104,10 @@ export const mathSubjectModule: SubjectModule = {
       ]
     }
   ],
-  getGeometryVisualization: detectGeometryVisualization
+  getGeometryVisualization: detectGeometryVisualization,
+  assessmentProviders: [{
+    id: 'math-short-answer',
+    matches: question => question.type === 'short-answer' || question.type === 'text_input',
+    assess: assessMathShortAnswer,
+  }],
 };

@@ -5,6 +5,8 @@ import { eventBus } from '../../utils/EventBus';
 import { toast } from '../../utils/toast';
 import { DEFAULT_GRADE_TIER, getGradeTierConfig } from '../../types/game';
 import { ALL_HANDBOOK_PAGES } from '../../data/handbookPages';
+import { learningService } from '../../services/learningService';
+import { enrichTextbookAttributes } from '../../utils/textbookEnricher';
 
 export const createUISlice: StateCreator<
   StoreState,
@@ -51,11 +53,37 @@ export const createUISlice: StateCreator<
       } as any;
     });
 
+    const fetchPromise = learningService.fetchContentAll(context.gradeTier, context.subjectId)
+      .then(data => {
+        if (get().learningContextVersion === version) {
+          const enrichedLessons = (data.lessons || []).map((l: any) => {
+            const textbook = enrichTextbookAttributes(l.id, l.category, l.subject);
+            return {
+              ...l,
+              loai: l.loai || textbook.loai,
+              bai: l.bai || textbook.bai,
+              hamNguyenTo: l.hamNguyenTo || textbook.hamNguyenTo
+            };
+          });
+          const enrichedQuestions = (data.questions || []).map((q: any) => {
+            const textbook = enrichTextbookAttributes(q.topicId, q.category, q.subject);
+            return { ...q, loai: q.loai || textbook.loai, bai: q.bai || textbook.bai };
+          });
+          set({
+            questions: enrichedQuestions,
+            lessons: enrichedLessons
+          } as any);
+        }
+      })
+      .catch(err => {
+        console.error('Failed to load learning content dynamically:', err);
+      });
+
     // Spinner giữ tối thiểu 400ms cho người dùng thấy app đang nạp lại ngữ cảnh,
     // và chỉ tắt khi version chưa bị một lần chuyển mới hơn vượt qua (chống ghi trễ).
     const minDelay = new Promise(resolve => setTimeout(resolve, 400));
     const sync = Promise.resolve(get().syncWithServer?.()).catch(() => undefined);
-    void Promise.all([minDelay, sync]).then(() => {
+    void Promise.all([minDelay, sync, fetchPromise]).then(() => {
       if (get().learningContextVersion === version) {
         set({ isSwitchingContext: false } as any);
       }

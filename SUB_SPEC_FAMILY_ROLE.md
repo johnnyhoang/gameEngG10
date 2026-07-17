@@ -242,3 +242,41 @@ Nằm trong **Phòng Hiệu Trưởng** (`phong_hieu_truong`), sơ đồ tổ ch
 1. Bảng `ge10_admin_audit_log`.
 2. API `GET /api/admin/audit-log`.
 3. Notification system khi role thay đổi.
+
+---
+
+## 6. Đề xuất Quản Trị Hỗ Trợ (Production Review 2026-07-17) — *chưa duyệt, cần Viện Trưởng xác nhận từng mục*
+
+Rà soát từ góc nhìn vận hành (không phải bug code) sau khi đối chiếu §1-5 với thực tế TutorConsole/Admin Console hiện có (`MemberRoster`, `RewardManager`, `ClassLinksManager`, `OrgChart`, `SettingsManager`...). Kết luận chung: hệ phân quyền và CRUD đã khá đầy đủ, nhưng thiếu tầng **"chủ động hỗ trợ ra quyết định"** — mọi thứ hiện là danh sách tĩnh, người quản trị phải tự dò để biết việc gì cần làm.
+
+### 6.1 Thiếu kênh thông báo chủ động (Notification Gap)
+- **Hiện trạng:** Không có push/email/Telegram/Zalo nào tồn tại trong code (`backend/src` không có route/service notification nào). §6.4 của CORE_SPECS chỉ nêu ý tưởng "Cổng kết nối Viện Trưởng liên ứng dụng" ở tầng roadmap, chưa đặc tả.
+- **Hệ quả:** Chủ Nhiệm/Viện Trưởng/Phó Viện Trưởng phải tự mở app định kỳ để biết có yêu cầu đổi quà đang chờ, đơn ứng tuyển Phó Viện Trưởng mới, học sinh cạn Năng Lượng liên tục... Với mô hình "đồng hành" mà §1.1 đặt làm sứ mệnh, đây là khoảng trống lớn nhất.
+- **Câu hỏi cần Viện Trưởng quyết:** Ưu tiên kênh nào trước (email tóm tắt hàng ngày/tuần, hay in-app badge đếm số việc cần xử lý, hay tích hợp Telegram/Zalo thật)? Có cần cấu hình được tần suất không?
+
+### 6.2 Thiếu "Bảng Cần Xử Lý" tổng hợp (Actionable Dashboard)
+- **Hiện trạng:** Yêu cầu đổi quà pending, đơn ứng tuyển Phó Viện Trưởng, kết nối lớp đang chờ (`pending_student`/`pending_primary`/`pending_tutor`) đều nằm rải rác ở từng tab riêng (`RewardManager`, `VicePrincipalApplicationsManager`, `ClassLinksManager`).
+- **Đề xuất:** Một widget "Cần Xử Lý Hôm Nay" ở đầu Phòng Hiệu Trưởng/TutorConsole, gộp toàn bộ action-item đang chờ duyệt từ mọi module trên, sắp theo mức độ khẩn cấp/thời gian chờ.
+
+### 6.3 Thiếu thao tác hàng loạt cho lớp quy mô lớn (Bulk Actions)
+- **Hiện trạng:** §3 tự nêu ví dụ "lớp học có 40 học sinh", nhưng cấu hình Năng Lượng (`adminSetEnergyConfig`), giao Nhiệm vụ, duyệt đổi quà đều là thao tác **từng học sinh một**, không có "áp dụng cho cả lớp"/chọn nhiều.
+- **Đề xuất:** Cho phép chọn nhiều Sĩ Tử trong Roster rồi áp dụng cấu hình Năng Lượng mặc định hoặc giao cùng một nhiệm vụ hàng loạt.
+
+### 6.4 Rủi ro quản trị khi có nhiều Viện Trưởng ngang quyền (Governance Gap)
+- **Hiện trạng:** §2 Tầng 3 không có khái niệm "Viện Trưởng sáng lập"/bất khả xâm phạm — bất kỳ Viện Trưởng nào cũng có thể thu hồi quyền của Viện Trưởng khác (kể cả người tạo ra mình) mà không cần xác nhận thứ hai.
+- **Rủi ro:** Một tài khoản Viện Trưởng bị lộ, hoặc mâu thuẫn nội bộ giữa 2 Viện Trưởng, có thể dẫn tới khóa quyền lẫn nhau (lockout) không thể tự khôi phục trong app.
+- **Câu hỏi cần Viện Trưởng quyết:** Có cần một cơ chế bảo vệ (ví dụ: không tự thu hồi được Viện Trưởng đã tạo ra mình, hoặc yêu cầu xác nhận email/2 bước cho hành động thu hồi Viện Trưởng khác) hay chấp nhận rủi ro này vì quy mô hiện tại còn nhỏ?
+
+### 6.5 Audit Log passive, không có cảnh báo bất thường
+- **Hiện trạng:** `ge10_admin_audit_log` chỉ Viện Trưởng chủ động vào xem (`AuditLogsManager.tsx`); không có ngưỡng cảnh báo tự động (ví dụ: promote hàng loạt trong thời gian ngắn, đổi bonus Boss lệch xa mặc định).
+- **Đề xuất:** Không cần AI phức tạp — chỉ cần rule đơn giản (ví dụ >5 thao tác nhạy cảm/giờ từ một Phó Viện Trưởng) đẩy vào "Cần Xử Lý" (§6.2) để Viện Trưởng để ý.
+
+### 6.6 Học sinh mồ côi (Đại Sảnh Đường) không có auto-assign khi quy mô lớn
+- **Hiện trạng:** §3.3 giao toàn bộ học sinh chưa có lớp cho Viện Trưởng/Phó Viện Trưởng làm chủ nhiệm lâm thời thủ công — ở quy mô một trường thật (hàng trăm học sinh mới mỗi năm học), đây sẽ là điểm nghẽn.
+- **Đề xuất:** Cân nhắc cơ chế gợi ý/tự gán lớp theo sĩ số còn trống, hoặc cho phép Chủ Nhiệm tự "nhận" học sinh mồ côi từ danh sách công khai thay vì chỉ nhận qua lời mời.
+
+### 6.7 Thiếu kênh khiếu nại/tranh chấp cấp viện cho Reward Catalog
+- **Hiện trạng:** Ma trận §4 không cho Viện Trưởng/Phó Viện Trưởng quyền chỉnh sửa Reward Catalog của một Chủ Nhiệm cụ thể (đúng nguyên tắc tự trị của lớp), nhưng cũng không có đường nào để can thiệp khi phát sinh tranh chấp (Chủ Nhiệm ngừng hoạt động/không phát thưởng, học sinh khiếu nại bị từ chối oan).
+- **Câu hỏi cần Viện Trưởng quyết:** Có cần một quyền "can thiệp khẩn cấp" (ví dụ chỉ khi Chủ Nhiệm bị vô hiệu hóa `is_active=false`) để Viện Trưởng xử lý các `RewardRedemption` còn treo của lớp đó không?
+
+*(Chi tiết kỹ thuật/phạm vi triển khai từng mục xem TODO.md — mục PMR-3 đến PMR-8.)*

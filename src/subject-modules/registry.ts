@@ -51,8 +51,21 @@ export function getSubjectToolIds(subjectId: SubjectId): readonly string[] {
   return getSubjectModule(subjectId)?.tools?.map(tool => tool.id) ?? [];
 }
 
+const GLOBAL_MINI_GAMES = [
+  'flashcards',
+  'match',
+  'mindmap',
+  'adventure',
+  'stepbuilder',
+  'reading',
+  'story',
+  'explain',
+  'dragdiagram'
+];
+
 export function getSubjectMiniGameIds(subjectId: SubjectId): readonly string[] {
-  return getSubjectModule(subjectId)?.miniGames?.map(game => game.id) ?? [];
+  const specificGames = getSubjectModule(subjectId)?.miniGames?.map(game => game.id) ?? [];
+  return [...GLOBAL_MINI_GAMES, ...specificGames];
 }
 
 export function getSubjectActivities(subjectId: SubjectId) {

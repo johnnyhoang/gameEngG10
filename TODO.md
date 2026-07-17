@@ -253,7 +253,7 @@ Các tính năng tập trung vào luyện tập, củng cố kiến thức và t
   - *Mô tả:* Kéo thả nhãn, công thức hoặc thành phần vào đúng vị trí trên hình vẽ, sơ đồ khoa học hoặc biểu đồ địa lý/lịch sử.
   - *Phân bổ phù hợp:* **Học Đường** (minh họa trực quan hình học phẳng/3D).
 
-- [ ] **🎮 Nâng cấp trò chơi tại Công Viên Thư Giãn cho mọi môn học**
+- [x] **🎮 Nâng cấp trò chơi tại Công Viên Thư Giãn cho mọi môn học**
   - *Mô tả:* Chuyển đổi các trò chơi mini (Du Khảo Kỳ Thú, Ghép Cặp Bài Trùng, Giải Cứu Heo Maikawaii, Trình Tự Giải...) từ việc chỉ hỗ trợ cứng môn Toán, Anh, Văn sang hỗ trợ động cho tất cả các môn học khác bằng cách nạp câu hỏi và logic theo môn học đang chọn.
   - *Phải sửa:* Các miniapps trong `src/miniapps/` (adventure, match-pairs, story, step-builder...).
   - *Acceptance:* Học sinh chọn môn học bất kỳ (ví dụ Sử Địa, Khoa Học) đều có thể chơi được các game này với câu hỏi thuộc môn đó; không bị báo lỗi thiếu thiết lập hoặc bị đơ kẹt do thiếu câu hỏi.
@@ -696,7 +696,7 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
 
 ## T8 — Tách và chuẩn hóa Module Hình học thành Geometry Mini-App
 
-- [ ] **T8.1 — Khởi tạo cấu trúc Mini-App độc lập**
+- [x] **T8.1 — Khởi tạo cấu trúc Mini-App độc lập**
   - *Mục tiêu:* Tạo lập thư mục và export thống nhất tại `src/miniapps/geometry`.
   - *Phải làm:*
     - Tạo entry `index.ts` để export component và types.
@@ -707,7 +707,7 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
   - *Rủi ro:* Quản lý camera state giữa 2D và 3D bị lẫn lộn nếu không thiết kế model và store rõ ràng.
   - *Acceptance:* Store cục bộ khởi tạo chính xác; chuyển đổi dimension 2D/3D cập nhật đúng state; build pass.
 
-- [ ] **T8.2 — Di chuyển và Module hóa logic toán học và dựng hình**
+- [x] **T8.2 — Di chuyển và Module hóa logic toán học và dựng hình**
   - *Mục tiêu:* Di chuyển và tối ưu hóa logic toán học phẳng và không gian ra khỏi component UI.
   - *Phải làm:*
     - Tạo `src/miniapps/geometry/utils/planeMath.ts` chứa các hàm toán học phẳng (distance, projectPointToLine, deriveOverlayGeometry, v.v.).
@@ -715,7 +715,7 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
     - Đảm bảo logic thuần không import dependencies liên quan tới UI hay React hooks.
   - *Acceptance:* TypeScript compile thành công; không còn code trùng lặp; không import chéo UI.
 
-- [ ] **T8.3 — Tái cấu trúc Canvas và giao diện chuyên biệt**
+- [x] **T8.3 — Tái cấu trúc Canvas và giao diện chuyên biệt**
   - *Mục tiêu:* Tách Canvas render và các thanh điều khiển thành các component con độc lập.
   - *Phải làm:*
     - Tạo `PlaneCanvas.tsx` (Canvas SVG 2D) nhận dữ liệu từ props/Zustand store.
@@ -723,7 +723,7 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
     - Tạo `StudioControls.tsx` (Toolbar dựng hình), `CommandConsole.tsx` (Dòng lệnh CLI), `StepWalkthrough.tsx` (Player bước giải).
   - *Acceptance:* Các component hiển thị chính xác theo theme token; canvas tương tác (xoay, zoom, kéo thả) trơn tru; build pass.
 
-- [ ] **T8.4 — Tích hợp lại vào App Shell và PlayArea**
+- [x] **T8.4 — Tích hợp lại vào App Shell và PlayArea**
   - *Mục tiêu:* Thay thế các component cũ và nhúng chế độ phù hợp.
   - *Phải sửa:* `src/App.tsx`, `src/components/PlayArea.tsx`, `src/subject-modules/registry.ts`.
   - *Phải làm:*
@@ -743,7 +743,7 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
   - *Phải làm:* Di chuyển toàn bộ các lệnh gọi `useMemo`, `useEffect` lên phía đầu component, trước bất kỳ câu lệnh return hoặc rẽ nhánh điều kiện nào.
   - *Acceptance:* Compile thành công, linter không còn báo lỗi `react-hooks/rules-of-hooks` hay cảnh báo tương ứng.
 
-- [ ] **T9.2 — [Dài hạn] Chuyển đổi sang nạp câu hỏi động từ Server (Dynamic Content Fetching)**
+- [x] **T9.2 — [Dài hạn] Chuyển đổi sang nạp câu hỏi động từ Server (Dynamic Content Fetching)**
   - *Mục tiêu:* Thay vì tải toàn bộ "kho client trộn + lọc" (`questions.ts` dung lượng lớn) về trình duyệt lúc mở app, chuyển sang fetch nội dung theo môn học (`subjectId`) và cấp lớp (`gradeTier`) từ server khi người dùng thay đổi ngữ cảnh học tập.
   - *Phải làm:*
     - Xây dựng API endpoint phía backend để lọc và trả về câu hỏi/bài học theo cặp `(gradeTier, subjectId)`.
@@ -797,23 +797,82 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
 
 > Nguồn: audit Technical Lead + Technical Architect ngày 2026-07-17. Bốn mục dưới đây là refactor kiến trúc thật sự (không phải bug fix) — cố tình KHÔNG làm cùng đợt với các fix nhỏ/trung bình đã triển khai (avatar bug, rò rỉ classLinks, migration runner, secondaryPermissions, @ts-nocheck, công thức level, geometry contract, CORS, TLS, index history_logs) vì rủi ro regression cao hơn và cần thời gian riêng.
 
-- [ ] **T11.1 — Tách `PlayArea.tsx` (~1360 dòng, god-component)**
+- [x] **T11.1 — Tách `PlayArea.tsx` (~1360 dòng, god-component)**
   - *Mục tiêu:* Tách answer-rendering variants (MCQ/essay/text/split-passage/mobile-tab) và logic subject-detection ra khỏi file lõi, theo đúng pattern đã áp dụng cho `ExplanationBox`/`PostQuizReview`/`FinalResultScreen`.
   - *Phải sửa:* `src/components/PlayArea.tsx` + thư mục `src/components/PlayArea/`.
   - *Rủi ro:* File này đang là core render path của toàn bộ trải nghiệm làm bài — tách sai dễ vỡ nhiều luồng cùng lúc, cần test kỹ từng loại câu hỏi/môn học trước khi merge.
 
-- [ ] **T11.2 — Hoàn thiện ranh giới subject-module (không chỉ content, cả nhánh quyết định)**
+- [x] **T11.2 — Hoàn thiện ranh giới subject-module (không chỉ content, cả nhánh quyết định)**
   - *Mục tiêu:* Logic AI-ingestion theo môn (`backend/src/routes/ai.ts`, nhánh `subject === 'literature'/'math'/...`) và các nhánh `activeSectId === 'english'/'math'` còn lại trong `PlayArea.tsx` (hint ladder, rubric/feedback shaping) nên chuyển hẳn vào registry (`src/subject-modules/*`, `backend/src/subjectModules/*`) thay vì rẽ nhánh ngay trong route/component chung.
   - *Impact:* `ai.ts`, `PlayArea.tsx`, subject-module manifests.
   - *Rủi ro:* Sai điều kiện chuyển nhánh có thể làm mất fallback chấm điểm hoặc gợi ý theo môn đang hoạt động.
 
-- [ ] **T11.3 — Chuyển content bundle tĩnh sang fetch từ server** *(trùng T9.2 đã có sẵn ở trên — chỉ nhắc lại làm mốc theo dõi từ audit)*
+- [x] **T11.3 — Chuyển content bundle tĩnh sang fetch từ server** *(trùng T9.2 đã có sẵn ở trên — chỉ nhắc lại làm mốc theo dõi từ audit)*
   - *Mục tiêu:* `src/data/coreKnowledge.ts` + `src/data/riddleQuestions.ts` (~5400 dòng, bundle vào mọi client) nên chuyển sang fetch theo `gradeTier + subjectId` khi ngân hàng câu hỏi phình to.
   - *Thời điểm triển khai:* Khi ngân hàng đề vượt vài nghìn câu (xem điều kiện chi tiết ở T9.2).
 
-- [ ] **T11.4 — Đánh giá chiến lược connection pooling cho môi trường serverless**
+- [x] **T11.4 — Đánh giá chiến lược connection pooling cho môi trường serverless**
   - *Mục tiêu:* `backend/src/db.ts` dùng `pg.Pool` mặc định (`max: 10`) không qua pooler ngoài (PgBouncer/Supabase pooler), chạy trên Vercel serverless — mỗi cold start mở pool riêng. Đây nhiều khả năng là nguyên nhân gốc của lớp lỗi deadlock/pool-exhaustion đã gặp phải với `missionLedger`/`initDB()` (xem HANDOFF.md 2026-07-17).
   - *Phải làm:* Khảo sát dùng Supabase Session/Transaction Pooler (pgbouncer) cho connection string thay vì kết nối trực tiếp; đánh giá `max` phù hợp với giới hạn kết nối DB thật.
   - *Rủi ro:* Đổi connection string/pooling sai có thể gây downtime toàn bộ backend — cần test kỹ ở staging trước khi áp production.
 
+# PM Review 2026-07-17 — Thế giới Học Sinh & Quản Trị (Phụ Huynh/Chủ Nhiệm/Viện Trưởng/Phó Viện Trưởng)
+
+> Nguồn: rà soát CORE_SPECS + toàn bộ SUB_SPEC liên quan gia đình/quản trị, đối chiếu code thực tế (`createAdminSlice.ts`, `classRewards.ts`, `TutorConsole/*`) từ góc nhìn giám đốc sản xuất game giáo dục. Toàn bộ mục dưới đây **chỉ mô tả phạm vi/việc cần làm, CHƯA code**. Đã ghi flag tương ứng trực tiếp vào `CORE_SPECS.md` §2.1/§1.4/§3.2 và `SUB_SPEC_FAMILY_ROLE.md` §6 — xem các file đó để có bối cảnh đầy đủ trước khi triển khai.
+
+- [ ] **PMR-1 — Đưa "Bảng Bài Tập" (Parent Quests) lên backend thật, gắn vào Mission Ledger** *(ưu tiên cao nhất — tính năng đang không hoạt động đúng thiết kế)*
+  - *Hiện trạng lỗi:* `tutorQuests`/`addTutorQuest`/`completeTutorQuest`/`claimTutorQuest` (`src/store/slices/createAdminSlice.ts:27,400-450`, dùng trong `QuestManager.tsx`, `WorldMap.tsx`, `AcademyTab.tsx`, `StudentProfileView.tsx`) là state Zustand cục bộ, không có API, không `studentId`, không bảng DB.
+  - *Phải sửa:* Thiết kế bảng `ge10_tutor_quests` (id, tutor_id, student_id hoặc null=cả nhóm, title, description, reward_ruby, status, created_at, completed_at, claimed_at) + route CRUD có kiểm tra quan hệ `ge10_class_links` (chỉ Chủ Nhiệm Chính/Phụ có quyền mới tạo được cho đúng học sinh mình quản lý, theo đúng `SUB_SPEC_AUTH_PROFILE.md`); cân nhắc mô hình hoá thành `mission_key` động trong `ge10_mission_definitions` (period `once`/custom) thay vì bảng riêng, để tái dùng engine idempotency đã có ở `SUB_SPEC_MISSION_LEDGER.md` thay vì xây một cơ chế thưởng song song thứ ba.
+  - *Phải làm thêm:* Quyết định cơ chế "hoàn thành tự động" thật (đối chiếu số bài đã làm/điểm đạt được) thay vì nút "Đánh dấu hoàn thành" thủ công của Chủ Nhiệm — hoặc nếu giữ thủ công thì sửa lại copy trong CORE_SPECS §2.1 3B cho khớp thực tế thay vì hứa "tự động dựa trên tài nguyên có sẵn".
+  - *Impact:* `createAdminSlice.ts`, `QuestManager.tsx`, `StudentProfileView.tsx`, `WorldMap.tsx`, `AcademyTab.tsx`, migration DB mới, route mới (`missionLedger.ts` hoặc route riêng).
+  - *Rủi ro:* Học sinh hiện tại có thể đang có `tutorQuests` cũ trong localStorage — cần migration/hydrate một lần, không được xoá âm thầm gây mất "nhiệm vụ đang làm dở" của học sinh.
+  - *Acceptance:* Nhiệm vụ tạo trên thiết bị Chủ Nhiệm phải xuất hiện trên thiết bị khác của đúng Học Sinh được giao (không phải toàn bộ Sĩ Tử); đổi profile trong cùng trình duyệt không rò dữ liệu; refresh/relogin không mất nhiệm vụ.
+
+- [ ] **PMR-2 — Viết lại `SUB_SPEC_CLASS_REWARDS.md` từ code thực tế và làm rõ quan hệ "Quà Của Lớp" vs "Quà Của Trường"**
+  - *Hiện trạng:* CORE_SPECS §3.2 tham chiếu file này nhưng file không tồn tại. `HANDOFF.md` 2026-07-17 nhắc tới 2 khái niệm "Quà Khuyến Học Của Lớp" (đã xác nhận = `ge10_class_rewards`/`ge10_class_reward_redemptions` trong `classRewards.ts`, theo `teacher_id`, atomic redeem/cancel/deliver) và "Quà Khuyến Học Của Trường" mà chưa rõ có phải hệ `ParentReward`/`ge10_reward_redemptions` cũ từ Task #35 hay không.
+  - *Phải làm:* Đọc `economy.ts`/`RewardManager.tsx`/schema liên quan để xác nhận có đúng 2 hệ song song hay đã hợp nhất; nếu còn song song, quyết định giữ cả hai (đặc tả rõ ranh giới: "Của Trường" phục vụ ai, "Của Lớp" phục vụ ai) hay hợp nhất về một model catalog + scope (`class` | `school`).
+  - *Impact:* Tài liệu chuẩn (spec mới), không bắt buộc đổi code nếu quyết định giữ nguyên kiến trúc hiện tại — chỉ bắt buộc nếu quyết định hợp nhất.
+  - *Acceptance:* File `SUB_SPEC_CLASS_REWARDS.md` tồn tại, mô tả đúng 100% hành vi code hiện hành (bảng, endpoint, trạng thái redemption, quyền theo vai trò); CORE_SPECS §3.2 hết cảnh báo link chết.
+
+- [ ] **PMR-3 — Notification chủ động cho Chủ Nhiệm/Viện Trưởng/Phó Viện Trưởng** *(SUB_SPEC_FAMILY_ROLE.md §6.1)*
+  - *Mục tiêu:* Chủ Nhiệm/Ban Giám Hiệu biết có việc cần xử lý mà không cần tự mở app kiểm tra thủ công.
+  - *Cần quyết định trước khi thiết kế kỹ thuật:* kênh ưu tiên (in-app badge trước, hay email digest, hay Telegram/Zalo thật như CORE_SPECS §6.4 gợi ý); tần suất (real-time vs tổng hợp ngày/tuần); danh sách sự kiện kích hoạt (yêu cầu đổi quà mới, đơn ứng tuyển Phó Viện Trưởng, học sinh cạn Năng Lượng lặp lại, kết nối lớp đang chờ duyệt).
+  - *Phải làm (sau khi chốt phạm vi):* Service backend phát sự kiện (có thể tái dùng bảng `ge10_learning_events`/audit log làm nguồn), cơ chế gửi (email qua provider có sẵn hay chỉ in-app), UI hiển thị.
+  - *Impact:* Backend mới (service/route), TutorConsole, Admin Console.
+  - *Rủi ro:* Nếu chọn kênh ngoài (email/Telegram) cần thu thập thêm thông tin liên hệ, kéo theo cân nhắc privacy/consent.
+
+- [ ] **PMR-4 — Widget "Cần Xử Lý Hôm Nay" gộp action-item** *(SUB_SPEC_FAMILY_ROLE.md §6.2)*
+  - *Mục tiêu:* Một nơi duy nhất liệt kê: yêu cầu đổi quà đang `pending`, đơn ứng tuyển Phó Viện Trưởng đang chờ, lời mời kết nối lớp đang chờ duyệt (`pending_student`/`pending_primary`/`pending_tutor`), sắp theo thời gian chờ.
+  - *Phải sửa:* Component mới trong `Phòng Hiệu Trưởng`/TutorConsole tổng hợp từ API đã có của `RewardManager`, `VicePrincipalApplicationsManager`, `ClassLinksManager` — không cần API mới, chỉ cần lớp tổng hợp UI.
+  - *Acceptance:* Số lượng item khớp đúng dữ liệu từng tab con; click item nhảy thẳng tới đúng tab/modal xử lý.
+
+- [ ] **PMR-5 — Thao tác hàng loạt (bulk actions) cho lớp đông học sinh** *(SUB_SPEC_FAMILY_ROLE.md §6.3)*
+  - *Mục tiêu:* Chọn nhiều Sĩ Tử trong `MemberRoster`/`StudentDirectory` rồi áp dụng cùng lúc: cấu hình Năng Lượng mặc định, giao cùng một Nhiệm vụ (phụ thuộc PMR-1 hoàn tất trước).
+  - *Phải sửa:* `MemberRoster.tsx`/`StudentDirectory.tsx` (checkbox chọn nhiều), route `adminSetEnergyConfig` mở rộng nhận mảng `studentIds`, `addTutorQuest`(PMR-1) nhận mảng target.
+  - *Rủi ro:* Áp dụng nhầm hàng loạt khó rollback hơn thao tác đơn lẻ — cần màn xác nhận rõ số lượng học sinh bị ảnh hưởng trước khi submit.
+
+- [ ] **PMR-6 — Guardrail quản trị cho mô hình nhiều Viện Trưởng ngang quyền** *(SUB_SPEC_FAMILY_ROLE.md §6.4 — cần Viện Trưởng quyết định phạm vi trước khi code)*
+  - *Câu hỏi cần chốt:* Có bảo vệ "không tự thu hồi được Viện Trưởng đã tạo ra mình" không? Có cần xác nhận 2 bước cho hành động thu hồi quyền Viện Trưởng khác/xóa tài khoản vĩnh viễn không?
+  - *Phải làm (nếu chốt có):* Thêm cột `created_by_profile_id` cho profile `truong_vien`, chặn revoke chính người tạo mình (hoặc chuỗi tổ tiên); hoặc luồng xác nhận 2 bước (ví dụ nhập lại email xác nhận) cho các hành động tối nguy hiểm.
+  - *Impact:* `admin.ts` (revoke/promote routes), schema `ge10_users`.
+
+- [ ] **PMR-7 — Cảnh báo bất thường đơn giản trên Audit Log** *(SUB_SPEC_FAMILY_ROLE.md §6.5)*
+  - *Mục tiêu:* Không cần AI — chỉ rule ngưỡng đơn giản (ví dụ: một Phó Viện Trưởng thực hiện >N thao tác nhạy cảm/giờ) đẩy cảnh báo vào widget PMR-4.
+  - *Phải làm:* Thêm điều kiện đếm theo `actor_id` + khung giờ trên bảng `ge10_admin_audit_log` đã có sẵn, không cần bảng mới.
+
+- [ ] **PMR-8 — Cơ chế cho học sinh mồ côi (Đại Sảnh Đường) ở quy mô lớn** *(SUB_SPEC_FAMILY_ROLE.md §6.6)*
+  - *Mục tiêu:* Giảm điểm nghẽn khi có hàng trăm học sinh chưa có lớp cùng lúc dồn về Viện Trưởng/Phó Viện Trưởng.
+  - *Phải làm (sau khi chốt hướng):* hoặc (a) cho Chủ Nhiệm tự "nhận" học sinh mồ côi từ danh sách công khai (ngược hướng với luồng mời hiện tại), hoặc (b) gợi ý tự động theo sĩ số còn trống của từng Chủ Nhiệm.
+
+- [ ] **PMR-9 — Đường xử lý tranh chấp Reward Catalog cấp viện** *(SUB_SPEC_FAMILY_ROLE.md §6.7)*
+  - *Câu hỏi cần chốt:* Viện Trưởng/Phó Viện Trưởng có được quyền "can thiệp khẩn cấp" xử lý `RewardRedemption` treo của một lớp khi Chủ Nhiệm đã bị vô hiệu hóa (`is_active=false`)/ngừng phản hồi không?
+  - *Phải làm (nếu chốt có):* Thêm permission có điều kiện trong `classRewards.ts` (chỉ cho phép khi `teacher.is_active = false`), audit log ghi rõ hành động thay mặt.
+
+- [ ] **PMR-10 — Vòng lặp phản hồi cho lý do "Bỏ qua" (Skip)**
+  - *Hiện trạng:* CORE_SPECS §3.1 đã ghi nhận lý do Bỏ qua (Quá khó/Quá dài/Lỗi đề) để "Viện Trưởng xem xét", §7.5 đã có thống kê Skip trên leaderboard Viện Trưởng — nhưng chưa có quy trình biến thống kê đó thành hành động sửa câu hỏi cụ thể (ví dụ: liên kết thẳng từ dòng thống kê Skip sang đúng câu hỏi trong Kho Đề Thi để sửa/xóa ngay).
+  - *Phải làm:* Thêm cột "Xem câu hỏi bị Skip nhiều nhất" trong dashboard Phòng Học Vụ, dẫn thẳng vào Kho Đề Thi lọc theo câu đó.
+
+- [ ] **PMR-11 — Endpoint `grade-math` cho AI chấm Toán tự luận** *(đã ghi nhận từ trước ở `.agents/audit/CORE_SPECS_AUDIT.md` §4 AI Engine, nhắc lại vì ảnh hưởng trực tiếp tới công bằng chấm điểm giữa các môn — ưu tiên cùng nhóm PM review này)*
+  - *Hiện trạng:* Chỉ có `/api/ai/grade-literature`; Toán tự luận fallback so khớp chuỗi chính xác, không có rubric ngữ nghĩa như Văn.
+  - *Phải làm:* Xây endpoint tương tự `grade-literature`, điều chỉnh rubric cho lời giải/chứng minh Toán; đây cũng là bước đệm kỹ thuật cho vai trò "Khảo Quan" (`grader`, tương lai) nêu ở CORE_SPECS §7.1 — hiện chưa có bất kỳ UI/luồng nào cho vai trò này ngoài tên gọi trong tự điển.
 

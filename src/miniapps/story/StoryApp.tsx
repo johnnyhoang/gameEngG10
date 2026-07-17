@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { toast } from '../../utils/toast';
-import type { Question } from '../../types/game';
-import type { UiThemeId } from '../../types/game';
+import type { Question, UiThemeId, SubjectId } from '../../types/game';
+import { SUBJECTS_CONFIG } from '../../types/game';
 import { shuffleWithSeed } from '../../utils/shuffle';
 import { filterQuestionsInScope } from '../../utils/learningScope';
 
@@ -16,7 +16,7 @@ export interface StoryAppProps {
   questions?: any[];
 }
 
-export const StoryApp: React.FC<StoryAppProps> = ({ uiTheme, gradeTier, onReward, onGameComplete, questions = [] }) => {
+export const StoryApp: React.FC<StoryAppProps> = ({ activeSectId, uiTheme, gradeTier, onReward, onGameComplete, questions = [] }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
 
   const [storyStep, setStoryStep] = useState(0);
@@ -29,10 +29,18 @@ export const StoryApp: React.FC<StoryAppProps> = ({ uiTheme, gradeTier, onReward
     return shuffleWithSeed(activeStoryQuest.options, activeStoryQuest.id);
   }, [activeStoryQuest?.id, activeStoryQuest?.options]);
 
-  const initStoryQuest = (subject: 'math' | 'english' | 'literature') => {
-    const list = filterQuestionsInScope(questions, subject, gradeTier);
+  const initStoryQuest = (subject: string) => {
+    const isCoreSubject = activeSectId === 'math' || activeSectId === 'english' || activeSectId === 'literature';
+    const targetSubject = isCoreSubject ? subject : (activeSectId || 'math');
+
+    const list = filterQuestionsInScope(questions, targetSubject as any, gradeTier);
     if (list.length > 0) {
       setActiveStoryQuest(list[Math.floor(Math.random() * list.length)]);
+    } else {
+      const fallbackList = filterQuestionsInScope(questions, subject as any, gradeTier);
+      if (fallbackList.length > 0) {
+        setActiveStoryQuest(fallbackList[Math.floor(Math.random() * fallbackList.length)]);
+      }
     }
   };
 
@@ -71,11 +79,15 @@ export const StoryApp: React.FC<StoryAppProps> = ({ uiTheme, gradeTier, onReward
     }
   };
 
+  const subjectName = activeSectId === 'math' || activeSectId === 'english' || activeSectId === 'literature' 
+    ? '' 
+    : (SUBJECTS_CONFIG[activeSectId as SubjectId]?.name || activeSectId);
+
   const STEP_CONTEXT = [
     '', // step 0
-    { icon: '⚔️', location: 'Cổng Đền Cổ', desc: 'Quỷ gác cổng chặn đường. Giải câu Toán để qua!', subject: 'Toán Học' },
-    { icon: '🏰', location: 'Hành Lang Thứ Hai', desc: 'Một bức thư cổ bằng Tiếng Anh xuất hiện. Đọc hiểu để mở cửa!', subject: 'Tiếng Anh' },
-    { icon: '🗝️', location: 'Phòng Heo Maikawaii', desc: 'Câu đố cuối về Ngữ Văn — giải đúng để giải phóng Heo!', subject: 'Ngữ Văn' },
+    { icon: '⚔️', location: 'Cổng Đền Cổ', desc: `Quỷ gác cổng chặn đường. Giải câu ${subjectName || 'Toán Học'} để qua!`, subject: subjectName || 'Toán Học' },
+    { icon: '🏰', location: 'Hành Lang Thứ Hai', desc: `Đọc hiểu để mở cửa! Giải câu ${subjectName || 'Tiếng Anh'} để tiến bước.`, subject: subjectName || 'Tiếng Anh' },
+    { icon: '🗝️', location: 'Phòng Heo Maikawaii', desc: `Giải đúng câu hỏi môn ${subjectName || 'Ngữ Văn'} để giải phóng Heo!`, subject: subjectName || 'Ngữ Văn' },
   ];
 
   return (

@@ -13,6 +13,8 @@ export const pool = new Pool({
     // nên bật xác thực thường an toàn, nhưng cần test trước khi bật ở production thật).
     rejectUnauthorized: process.env.DB_SSL_REJECT_UNAUTHORIZED === 'true'
   },
+  max: process.env.DB_POOL_MAX ? parseInt(process.env.DB_POOL_MAX, 10) : 3, // Giới hạn pool cho môi trường serverless
+  idleTimeoutMillis: 10000, // Giải phóng nhanh các kết nối nhàn rỗi sau 10 giây
   connectionTimeoutMillis: 5000, // 5 seconds connection timeout
   query_timeout: 5000 // 5 seconds query timeout
 });

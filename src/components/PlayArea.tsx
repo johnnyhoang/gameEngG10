@@ -624,64 +624,16 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, prev
         const { score, missingKeywords, feedback, suggestions } = assessmentResult;
         scoreRatio = score / 10;
         isCorrect = scoreRatio >= 0.6;
-        setLastRubricScore(score);
+        setLastRubricScore(activeSectId === 'math' ? null : score);
         setLastRubricMissing(missingKeywords);
         setAiFeedback(feedback);
         setAiSuggestions(suggestions);
       } catch (err: any) {
         if (currentQuestionIdRef.current !== questionIdBeingGraded) return;
         console.error('Lỗi khi gọi AI chấm bài, chuyển sang backup:', err);
-        localAiWarningMessage = 'Trợ Giáo MIKA phải chấm dự phòng. Kết quả vẫn ổn, nhưng nên coi như mốc tham chiếu.';
-        setAiWarningMessage(localAiWarningMessage);
-        const fallbackResult = runOldGradingBackup();
-        isCorrect = fallbackResult.isCorrect;
-        scoreRatio = fallbackResult.scoreRatio;
-      } finally {
-        if (currentQuestionIdRef.current === questionIdBeingGraded) {
-          setIsAiGrading(false);
-        }
-      }
-    } else if (getSubjectModule(activeSectId)?.supportsShortAnswer && (activeQuestion.type === 'short-answer' || activeQuestion.type === 'text_input')) {
-      setIsAiGrading(true);
-      setAiFeedback('');
-      setAiSuggestions([]);
-      setAiWarningMessage('');
-
-      try {
-        const session = (await supabase.auth.getSession()).data.session;
-        const token = session?.access_token;
-        if (!token) throw new Error('No auth token available');
-
-        const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
-        const correctAnsStr = Array.isArray(activeQuestion.correctAnswer)
-          ? activeQuestion.correctAnswer[0]
-          : activeQuestion.correctAnswer;
-
-        const res = await fetch(`${backendUrl}/api/ai/grade-math`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-            'X-Profile-Id': localStorage.getItem('ge10_selected_profile_id') || ''
-          },
-          body: JSON.stringify({
-            questionPrompt: activeQuestion.prompt,
-            correctAnswer: correctAnsStr,
-            studentAnswer: typedAnswer
-          })
-        });
-
-        if (!res.ok) throw new Error(`API error: ${res.status}`);
-
-        data = await res.json();
-        if (currentQuestionIdRef.current !== questionIdBeingGraded) return;
-        isCorrect = data.isCorrect;
-        scoreRatio = isCorrect ? 1 : 0;
-        setAiFeedback(data.explanation || '');
-      } catch (err: any) {
-        if (currentQuestionIdRef.current !== questionIdBeingGraded) return;
-        console.error('Lỗi khi gọi AI chấm Toán tự luận, dùng backup:', err);
-        localAiWarningMessage = 'Trợ Giáo MIKA chấm Toán tự luận dự phòng (So khớp chuỗi).';
+        localAiWarningMessage = activeSectId === 'math'
+          ? 'Trợ Giáo MIKA chấm Toán tự luận dự phòng (So khớp chuỗi).'
+          : 'Trợ Giáo MIKA phải chấm dự phòng. Kết quả vẫn ổn, nhưng nên coi như mốc tham chiếu.';
         setAiWarningMessage(localAiWarningMessage);
         const fallbackResult = runOldGradingBackup();
         isCorrect = fallbackResult.isCorrect;
@@ -734,10 +686,10 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, prev
         scoreRatio: scoreRatio,
         isCorrect: isCorrect,
         isSkipped: false,
-        aiFeedback: activeSectId === 'math' ? (data ? (data.explanation || '') : '') : (data ? (data.result?.feedback || '') : ''),
-        aiSuggestions: (data ? (activeSectId === 'math' ? [] : data.result?.suggestions) : []) || [],
-        lastRubricScore: (data ? (activeSectId === 'math' ? null : data.result?.score) : null) ?? null,
-        lastRubricMissing: (data ? (activeSectId === 'math' ? [] : data.result?.missingKeywords) : []) || [],
+        aiFeedback: data?.result?.feedback ?? '',
+        aiSuggestions: data?.result?.suggestions ?? [],
+        lastRubricScore: (activeSectId === 'math' ? null : data?.result?.score) ?? null,
+        lastRubricMissing: data?.result?.missingKeywords ?? [],
         aiWarningMessage: localAiWarningMessage
       }
     ]);

@@ -2,6 +2,7 @@ import express from 'express';
 import { activeProfileMiddleware, authMiddleware, requireProfileRoles } from '../middleware/auth.js';
 import { callGeminiAPI, GeminiExhaustedError } from '../helpers/gemini.js';
 import { gradeLiteratureEssay } from '../subjectModules/literature/gradeLiterature.js';
+import { getBackendSubjectModule } from '../subjectModules/registry.js';
 
 const router = express.Router();
 router.use(authMiddleware, activeProfileMiddleware);
@@ -24,144 +25,17 @@ router.post('/ai/ingest', requireProfileRoles('truong_vien', 'pho_vien'), async 
     : [];
 
   try {
-    let prompt = '';
-    if (subject === 'math') {
-      prompt = `Bạn là một chuyên gia ôn thi môn Toán lớp 10 TP.HCM. Hãy phân tích đoạn văn bản sau đây và trích xuất/tạo ra câu hỏi theo đúng cấu trúc đề tuyển sinh Toán 10 TP.HCM. Đề thật thường chia theo 8 cụm nội dung: parabol/đồ thị, Vi-ét, hàm số bậc nhất/đổi đơn vị, tăng trưởng theo tỉ lệ phần trăm, giảm giá lũy tiến, hình học thể tích/dâng nước, mua hàng khuyến mãi, hình học phẳng chứng minh.
-
-      Trả về kết quả duy nhất là một mảng JSON các đối tượng theo schema sau, không kèm theo markdown hay phần giải thích ngoài JSON:
-      [
-        {
-          "id": "chuỗi ngẫu nhiên duy nhất",
-          "type": "mcq" | "short-answer" | "proof" | "multi-part",
-          "category": "parabol-line" | "viet-relation" | "linear-function" | "growth-modeling" | "percentage-discount" | "volume-displacement" | "shopping-discount" | "tangent-geometry" | "real-equations" | "real-geometry" | "real-finance" | "plane-geometry" | "statistics-probability" | "modeling",
-          "prompt": "Đề bài câu hỏi. Nếu là bài chứng minh hoặc nhiều ý, hãy giữ nguyên a/b/c rõ ràng.",
-          "options": ["Lựa chọn A", "Lựa chọn B", "Lựa chọn C", "Lựa chọn D"],
-          "correctAnswer": "Đáp án đúng hoặc mảng các đáp án được chấp nhận",
-          "explanation": "Giải thích chi tiết từng bước. Với bài hình hoặc chứng minh, tách các bước logic rõ ràng.",
-          "difficulty": số từ 1 đến 10,
-          "source": "AI Ingested Math",
-          "metadata": {
-            "examPart": "Bài 1|Bài 2|...",
-            "mathTopic": "function-graph" | "quadratic-equation" | "linear-function" | "growth-modeling" | "percentage-discount" | "volume-displacement" | "shopping-discount" | "tangent-geometry" | "statistics-probability" | "modeling" | "solid-geometry" | "finance" | "plane-geometry" | "mixed",
-            "answerMode": "single-choice" | "short-answer" | "proof" | "multi-part" | "numeric" | "expression",
-            "solutionStyle": "direct" | "worked" | "proof-outline" | "diagram" | "table",
-            "subparts": ["a", "b", "c"],
-            "solutionSteps": ["Bước 1...", "Bước 2..."],
-            "formulaHints": ["..."],
-            "diagramHint": "...",
-            "tags": ["official-exam", "hcmc-2026"]
-          }
-        }
-      ]
-
-      Văn bản cần phân tích:
-      ${rawText}`;
-    } else if (subject === 'literature') {
-      prompt = `Bạn là một chuyên gia ôn thi môn Ngữ văn lớp 10 TP.HCM. Hãy phân tích đoạn văn bản sau đây và trích xuất/tạo ra các câu hỏi theo đúng cấu trúc đề tuyển sinh lớp 10 TP.HCM môn Ngữ văn. Ngân hàng câu hỏi phải bao phủ đủ 4 lớp nội dung:
-      - "literature-reading-poetry": Đọc hiểu thơ.
-      - "literature-reading-prose": Đọc hiểu truyện, kí, tản văn.
-      - "literature-reading-argument": Đọc hiểu văn bản nghị luận hoặc văn bản thông tin.
-      - "literature-vietnamese": Tiếng Việt thực hành: phương thức biểu đạt, biện pháp tu từ, thành phần câu, nghĩa từ, liên kết.
-      - "literature-writing": Nghị luận xã hội và nghị luận văn học.
-
-      Gợi ý phân tầng metadata để UI và CRUD hiểu đúng bank:
-      - Phần I: reading, dùng cho câu nhận biết/thông hiểu/vận dụng đọc hiểu.
-      - Phần II: vietnamese, dùng cho câu tiếng Việt thực hành.
-      - Phần III: social-essay, dùng cho bài nghị luận xã hội.
-      - Phần IV: literary-essay, dùng cho bài nghị luận văn học.
-      - textGenre: poetry | prose | argument | informative | mixed.
-      - literatureTask: main-idea | detail | rhetoric | vocabulary | message | social-essay | poetry-analysis | prose-analysis | character-analysis | comparison.
-      - answerMode: single-choice | short-answer | multi-part.
-      - solutionStyle: direct | worked | rubric.
-
-      Lưu ý đặc biệt đối với đọc hiểu văn bản:
-      Nếu câu hỏi có đi kèm một văn bản đọc hiểu (đoạn trích thơ/văn), hãy đặt văn bản đọc hiểu đó ở đầu thuộc tính "prompt" theo mẫu định dạng:
-      "**Đọc đoạn trích sau và trả lời câu hỏi:**
-[Đoạn văn bản trích dẫn]
-
-[Câu hỏi cụ thể...]"
-
-      Với câu nghị luận, hãy trả về các ý chấm/rubric dưới dạng mảng trong correctAnswer và solutionSteps để có thể tái dùng cho CRUD và hiển thị đáp án mẫu.
-
-      Trả về kết quả duy nhất là một mảng JSON các đối tượng theo schema sau, không kèm theo markdown hay phần giải thích ngoài JSON:
-      [
-        {
-          "id": "chuỗi ngẫu nhiên duy nhất",
-          "type": "mcq" | "short-answer" | "multi-part",
-          "category": "literature-reading-poetry" | "literature-reading-prose" | "literature-reading-argument" | "literature-vietnamese" | "literature-writing",
-          "prompt": "Đề bài câu hỏi (kèm đoạn văn bản trích dẫn nếu có)...",
-          "options": ["Lựa chọn A", "Lựa chọn B", "Lựa chọn C", "Lựa chọn D"],
-          "correctAnswer": "Lựa chọn chính xác hoặc mảng các ý/keyword được chấp nhận",
-          "explanation": "Giải thích chi tiết tại sao chọn đáp án đó hoặc rubric chấm bài...",
-          "difficulty": số từ 1 đến 10,
-          "source": "AI Ingested Literature",
-          "metadata": {
-            "examPart": "Phần I|Phần II|Phần III|Phần IV",
-            "literatureTrack": "reading" | "vietnamese" | "social-essay" | "literary-essay",
-            "literatureTask": "main-idea" | "detail" | "rhetoric" | "vocabulary" | "message" | "social-essay" | "poetry-analysis" | "prose-analysis" | "character-analysis" | "comparison",
-            "textGenre": "poetry" | "prose" | "argument" | "informative" | "mixed",
-            "answerMode": "single-choice" | "short-answer" | "multi-part",
-            "solutionStyle": "direct" | "worked" | "rubric",
-            "subparts": ["mở bài", "thân bài", "kết bài"],
-            "solutionSteps": ["Bước 1...", "Bước 2..."],
-            "tags": ["official-exam", "hcmc-2026"]
-          }
-        }
-      ]
-
-      Văn bản cần phân tích:
-      ${rawText}`;
-    } else {
-      prompt = `Bạn là một chuyên gia ôn thi tiếng Anh lớp 10 TP.HCM. Hãy phân tích đoạn văn bản sau đây và trích xuất/tạo ra câu hỏi theo đúng cấu trúc đề tuyển sinh lớp 10 TP.HCM môn Tiếng Anh. Đề chuẩn hóa có 6 phần:
-      - Part I: Multiple Choice (grammar, vocabulary, pronunciation, stress, communication, signs).
-      - Part II: Guided Cloze.
-      - Part III: Reading Comprehension (true/false, main idea, detail, reference).
-      - Part IV: Word Forms.
-      - Part V: Sentence Rearrangement.
-      - Part VI: Sentence Transformation.
-
-      Gợi ý phân tầng metadata để UI và CRUD hiểu đúng bank:
-      - englishPart: Part I | Part II | Part III | Part IV | Part V | Part VI.
-      - englishTask: grammar | vocabulary | pronunciation | stress | guided-cloze | reading-true-false | reading-mcq | word-form | rearrangement | transformation.
-      - englishSkill: multiple-choice | guided-cloze | reading | word-form | rearrangement | transformation.
-      - answerMode: single-choice | short-answer | multi-part.
-      - solutionStyle: direct | worked | rubric.
-
-      Trả về kết quả duy nhất là một mảng JSON các đối tượng theo schema sau, không kèm theo markdown hay phần giải thích ngoài JSON:
-      [
-        {
-          "id": "chuỗi ngẫu nhiên duy nhất",
-          "type": "mcq" | "wordform" | "rewrite" | "cloze" | "short-answer" | "multi-part",
-          "category": "grammar" | "reading" | "vocabulary" | "wordform" | "pronunciation" | "stress" | "tenses" | "passive-voice" | "relative-clauses" | "rewrite",
-          "prompt": "Đề bài câu hỏi...",
-          "options": ["Lựa chọn A", "Lựa chọn B", "Lựa chọn C", "Lựa chọn D"],
-          "correctAnswer": "Đáp án đúng hoặc mảng các đáp án được chấp nhận",
-          "explanation": "Giải thích chi tiết tại sao chọn đáp án đó...",
-          "difficulty": số từ 1 đến 10,
-          "source": "AI Ingested English",
-          "metadata": {
-            "examPart": "Part I|Part II|Part III|Part IV|Part V|Part VI",
-            "englishPart": "Part I|Part II|Part III|Part IV|Part V|Part VI",
-            "englishTask": "grammar|vocabulary|pronunciation|stress|guided-cloze|reading-true-false|reading-mcq|word-form|rearrangement|transformation",
-            "englishSkill": "multiple-choice|guided-cloze|reading|word-form|rearrangement|transformation",
-            "answerMode": "single-choice|short-answer|multi-part",
-            "solutionStyle": "direct|worked|rubric",
-            "subparts": ["a", "b", "c"],
-            "solutionSteps": ["Step 1...", "Step 2..."],
-            "tags": ["official-exam", "hcmc-2026"]
-          }
-        }
-      ]
-
-      Văn bản cần phân tích:
-      ${rawText}`;
+    const module = getBackendSubjectModule(subject);
+    if (!module) {
+      return res.status(400).json({ error: `Unsupported subject for Ingestion: ${subject}` });
     }
 
+    const basePrompt = module.getIngestPrompt(rawText);
     const topicInstructions = safeTopicCatalog.length > 0
       ? `\n\nQUY TẮC PHÂN LOẠI CHUYÊN ĐỀ:\n- Với mỗi câu, bắt buộc đề xuất "topicId" từ đúng danh sách JSON sau: ${JSON.stringify(safeTopicCatalog)}.\n- Thêm "suggestedExamRelevance": "high" | "medium" | "low" theo mức độ thường xuất hiện trong đề thi.\n- Không tự tạo lựa chọn A/B/C/D để biến câu tự luận thành trắc nghiệm. Chỉ giữ câu trắc nghiệm nguyên bản hoặc các dạng hệ thống biểu diễn trọn vẹn.\n- Bỏ qua câu vẽ đồ thị, câu chứng minh, câu tự luận không thể biểu diễn trọn vẹn và câu thiếu dữ kiện/đáp án.\n- Không tự sửa nội dung, đáp án hoặc nguồn của câu gốc.`
       : '\n\nKhông tự biến câu tự luận thành trắc nghiệm. Bỏ qua câu không thể biểu diễn trọn vẹn hoặc thiếu dữ kiện/đáp án.';
 
-    const responseText = await callGeminiAPI(`${prompt}${topicInstructions}`, { responseMimeType: 'application/json' });
+    const responseText = await callGeminiAPI(`${basePrompt}${topicInstructions}`, { responseMimeType: 'application/json' });
     const parsedQuestions = JSON.parse(responseText.trim());
     if (!Array.isArray(parsedQuestions)) {
       return res.status(422).json({ error: 'AI response must be an array of questions.' });
@@ -178,7 +52,7 @@ router.post('/ai/ingest', requireProfileRoles('truong_vien', 'pho_vien'), async 
         suggestedExamRelevance: ['high', 'medium', 'low'].includes(question.suggestedExamRelevance)
           ? question.suggestedExamRelevance
           : proposedTopic?.examRelevance || 'medium',
-        source: question.source || (subject === 'math' ? 'AI Ingested Math' : subject === 'literature' ? 'AI Ingested Literature' : 'AI Ingested English')
+        source: question.source || module.getDefaultSource()
       };
     });
 

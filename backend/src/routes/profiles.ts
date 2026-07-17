@@ -211,14 +211,8 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
       pool.query('SELECT * FROM ge10_school_reward_templates ORDER BY created_at DESC'),
       pool.query('SELECT * FROM ge10_reward_redemptions WHERE user_id = $1 ORDER BY timestamp DESC', [userId]),
       pool.query('SELECT * FROM ge10_user_challenges WHERE user_id = $1', [userId]),
-      pool.query(
-        `SELECT * FROM ge10_custom_questions 
-         WHERE user_id = $1 
-            OR user_id IS NULL 
-            OR user_id IN (SELECT id FROM ge10_users WHERE role IN ('truong_vien', 'pho_vien'))`,
-        [userId]
-      ),
-      pool.query('SELECT * FROM ge10_lessons'),
+      Promise.resolve({ rows: [] }),
+      Promise.resolve({ rows: [] }),
       pool.query('SELECT * FROM ge10_user_lessons_progress WHERE user_id = $1', [userId]),
       pool.query('SELECT * FROM ge10_exploration_progress WHERE user_id = $1', [userId]),
       pool.query('SELECT * FROM ge10_topics ORDER BY sort_order ASC'),
