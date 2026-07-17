@@ -2,6 +2,9 @@
 
 ## 1. Trạng thái hiện tại (Current Status)
 - **Vừa hoàn thành:** 
+   - **Tái cấu trúc god-component `PlayArea.tsx` thành công (T11.1)**:
+      - Tách biệt logic và giao diện làm bài thành 5 subcomponents con chuyên biệt tại thư mục `src/components/PlayArea/` gồm: `BossTimerBar.tsx` (Thanh đếm giờ giới hạn), `GeometryBoard.tsx` (Bảng vẽ hình học), `SplitPassageView.tsx` (Layout đọc hiểu phân đôi màn hình), `SingleQuestionView.tsx` (Layout câu hỏi 1 cột) và `PlayAreaControls.tsx` (Bảng nút điều khiển chức năng ở chân trang).
+      - Thu gọn kích thước file lõi `PlayArea.tsx` xuống còn ~1100 dòng, tăng tính module hóa, sạch sẽ và dễ bảo trì.
    - **Hoàn thiện CRUD Quà Khuyến Học Của Trường**: Bổ sung tính năng Chỉnh sửa (Update) cho phần quà chung của trường trong [RewardManager.tsx](file:///d:/Hoa%20Hoang/Apps/gameEngG10/src/components/TutorConsole/RewardManager.tsx) (cho phép sửa Tên quà, Giá ruby, Số lượng tổng và Số lượng còn lại trực tiếp thông qua một SideDrawer).
    - **Sửa lỗi hiển thị dữ liệu Sĩ Tử trong Roster**: Trong [MemberRoster.tsx](file:///d:/Hoa%20Hoang/Apps/gameEngG10/src/components/TutorConsole/MemberRoster.tsx), chuyển đổi cách đọc dữ liệu Sĩ tử sang cấu trúc phẳng (truy xuất trực tiếp `level`, `streak`, `xp` thay vì qua `player` lồng), sửa logic tìm Người Quản Lý theo `link_type === 'primary'` và cập nhật hàng trống `colSpan={8}` giúp hiển thị Cấp độ, Danh hiệu, Chuỗi chuyên cần, Tích lũy XP và Người quản lý chính xác 100%.
    - **Tự động kết nối Ban Giám Hiệu Đồng Hành**:
