@@ -167,4 +167,45 @@ router.get('/content/all', async (req: any, res) => {
   }
 });
 
+router.get('/handbook-pages', async (req: any, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, category, title, content, audience, bullets FROM ge10_handbook_pages ORDER BY id`
+    );
+    return res.json({ success: true, handbookPages: result.rows });
+  } catch (error) {
+    console.error('Error fetching handbook pages:', error);
+    return res.status(500).json({ error: 'Internal server error while fetching handbook pages.' });
+  }
+});
+
+router.get('/english-island/items', async (req: any, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, district_id AS "districtId", type, prompt, options, correct_answer AS "correctAnswer", accepted_answers AS "acceptedAnswers", explanation, speech_text AS "speechText"
+       FROM ge10_english_island_items ORDER BY id`
+    );
+    return res.json({ success: true, items: result.rows });
+  } catch (error) {
+    console.error('Error fetching english island items:', error);
+    return res.status(500).json({ error: 'Internal server error while fetching island items.' });
+  }
+});
+
+router.get('/exam-blueprints', async (req: any, res) => {
+  const subject = req.query.subject;
+  if (!subject) return res.status(400).json({ error: 'subject is required.' });
+  try {
+    const result = await pool.query(
+      `SELECT id, subject, part, title, focus, common_question_forms AS "commonQuestionForms", answer_modes AS "answerModes", import_hint AS "importHint"
+       FROM ge10_subject_exam_blueprints WHERE subject = $1 ORDER BY id`,
+      [subject]
+    );
+    return res.json({ success: true, subject, blueprints: result.rows });
+  } catch (error) {
+    console.error('Error fetching exam blueprints:', error);
+    return res.status(500).json({ error: 'Internal server error while fetching blueprints.' });
+  }
+});
+
 export default router;

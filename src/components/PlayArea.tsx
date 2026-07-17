@@ -4,10 +4,44 @@ import { useSect } from '../contexts/SectContext';
 import type { Question } from '../types/game';
 import { SUBJECTS_CONFIG } from '../types/game';
 import { devWarnOutOfScope, questionInScope } from '../utils/learningScope';
-import { ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../data/englishExamBlueprint';
-import { MATH_TOPIC_LABELS } from '../data/mathExamBlueprint';
 import { getAssessmentProvider, getQuestionPresentation, getSubjectHint, getSubjectActivities, getSubjectModule, getGeometryVisualization } from '../subject-modules/registry';
 import { Scratchpad } from './Scratchpad';
+
+const ENGLISH_SKILL_LABELS: Record<string, string> = {
+  reading: 'Đọc hiểu',
+  writing: 'Viết câu',
+  listening: 'Nghe hiểu',
+  speaking: 'Nói thực hành',
+  language: 'Kiến thức ngôn ngữ'
+};
+
+const ENGLISH_TASK_LABELS: Record<string, string> = {
+  pronunciation: 'Pronunciation',
+  stress: 'Stress',
+  vocabulary: 'Vocabulary',
+  grammar: 'Grammar',
+  cloze: 'Guided Cloze',
+  reading: 'Reading Comprehension',
+  wordform: 'Word Form',
+  rewrite: 'Sentence Transformation'
+};
+
+const MATH_TOPIC_LABELS: Record<string, string> = {
+  'function-graph': 'Đồ thị hàm số',
+  'quadratic-equation': 'Phương trình bậc hai',
+  'linear-function': 'Hàm số bậc nhất',
+  'growth-modeling': 'Tăng trưởng %',
+  'percentage-discount': 'Giảm giá lũy tiến',
+  'volume-displacement': 'Dâng nước - thể tích',
+  'shopping-discount': 'Mua hàng khuyến mãi',
+  'tangent-geometry': 'Tiếp tuyến & nội tiếp',
+  'statistics-probability': 'Thống kê & xác suất',
+  modeling: 'Mô hình hóa thực tế',
+  'solid-geometry': 'Hình học không gian',
+  finance: 'Tài chính thực tế',
+  'plane-geometry': 'Hình học phẳng',
+  mixed: 'Tổng hợp'
+};
 import { Award } from 'lucide-react';
 import { BossTimerBar } from './PlayArea/BossTimerBar';
 import { SplitPassageView } from './PlayArea/SplitPassageView';

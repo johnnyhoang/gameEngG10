@@ -18,5 +18,47 @@ export const learningService = {
       };
     }
     throw new Error(`Failed to load learning content for grade ${gradeTier} subject ${subjectId}`);
+  },
+
+  fetchHandbookPages: async (): Promise<any[]> => {
+    const token = await authService.getAccessToken();
+    if (!token) throw new Error('No auth token available');
+
+    const res = await fetch(`${backendUrl}/api/learning-content/handbook-pages`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.handbookPages || [];
+    }
+    throw new Error('Failed to load handbook pages from server');
+  },
+
+  fetchEnglishIslandItems: async (): Promise<any[]> => {
+    const token = await authService.getAccessToken();
+    if (!token) throw new Error('No auth token available');
+
+    const res = await fetch(`${backendUrl}/api/learning-content/english-island/items`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.items || [];
+    }
+    throw new Error('Failed to load english island items from server');
+  },
+
+  fetchExamBlueprints: async (subject: string): Promise<any[]> => {
+    const token = await authService.getAccessToken();
+    if (!token) throw new Error('No auth token available');
+
+    const res = await fetch(`${backendUrl}/api/learning-content/exam-blueprints?subject=${subject}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.blueprints || [];
+    }
+    throw new Error(`Failed to load exam blueprints for subject ${subject} from server`);
   }
 };

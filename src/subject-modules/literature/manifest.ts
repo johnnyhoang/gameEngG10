@@ -54,7 +54,7 @@ export const literatureSubjectModule: SubjectModule = {
     getExamPartLabel: question => {
       const part = question.metadata?.examPart?.trim();
       if (!part) return null;
-      const blueprint = LITERATURE_EXAM_BLUEPRINT.find(item => item.part === part);
+      const blueprint = LITERATURE_EXAM_BLUEPRINT.find((item: any) => item.part === part);
       return blueprint ? `${part} - ${blueprint.title}` : part;
     },
     getTopicLabel: question => {

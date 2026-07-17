@@ -1,9 +1,26 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
-import { Volume2 } from 'lucide-react';
-import type { EnglishChoiceItem, EnglishSkillDistrictId, EnglishWritingItem } from '../../data/englishSkillDistricts';
-import { CONVERSATION_TOWN_ITEMS, LISTENING_LAKE_ITEMS, PHRASE_VALLEY_ITEMS, WRITING_PAVILION_ITEMS } from '../../data/englishSkillDistricts';
+import { Volume2, Loader2 } from 'lucide-react';
+import { learningService } from '../../services/learningService';
 import { toast } from '../../utils/toast';
 import { shuffleWithSeed } from '../../utils/shuffle';
+
+export type EnglishSkillDistrictId = 'phrase-valley' | 'conversation-town' | 'writing-pavilion' | 'listening-lake';
+
+export interface EnglishChoiceItem {
+  id: string;
+  prompt: string;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
+  speechText?: string;
+}
+
+export interface EnglishWritingItem {
+  id: string;
+  prompt: string;
+  acceptedAnswers: string[];
+  explanation: string;
+}
 
 interface EnglishSkillDistrictAppProps {
   mode: EnglishSkillDistrictId;
@@ -23,12 +40,27 @@ const normalizeAnswer = (value: string) => value.trim().toLowerCase().replace(/[
 export function EnglishSkillDistrictApp({ mode, onReward, onGameComplete }: EnglishSkillDistrictAppProps) {
   const config = MODE_CONFIG[mode];
   const isWriting = mode === 'writing-pavilion';
-  const choiceItems: EnglishChoiceItem[] = mode === 'phrase-valley'
-    ? PHRASE_VALLEY_ITEMS
-    : mode === 'conversation-town'
-      ? CONVERSATION_TOWN_ITEMS
-      : LISTENING_LAKE_ITEMS;
-  const items: Array<EnglishChoiceItem | EnglishWritingItem> = isWriting ? WRITING_PAVILION_ITEMS : choiceItems;
+
+  const [items, setItems] = useState<Array<EnglishChoiceItem | EnglishWritingItem>>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    learningService.fetchEnglishIslandItems()
+      .then(all => {
+        if (!active) return;
+        const filtered = all.filter(x => x.districtId === mode);
+        setItems(filtered);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error('Failed to load island items:', err);
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, [mode]);
+
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState('');
@@ -112,6 +144,24 @@ export function EnglishSkillDistrictApp({ mode, onReward, onGameComplete }: Engl
     setFinished(false);
     setAudioError('');
   };
+
+  if (loading) {
+    return (
+      <section className="glass-panel rounded-3xl border border-synth-cyan/25 p-8 text-center flex flex-col items-center justify-center space-y-4">
+        <Loader2 className="w-8 h-8 animate-spin text-synth-cyan" />
+        <p className="text-sm text-synth-text-muted">Đang tải thử thách...</p>
+      </section>
+    );
+  }
+
+  if (items.length === 0) {
+    return (
+      <section className="glass-panel rounded-3xl border border-synth-cyan/25 p-8 text-center space-y-4">
+        <div className="text-5xl">📭</div>
+        <p className="text-sm text-synth-text-muted">Chưa có câu hỏi cho phân khu này.</p>
+      </section>
+    );
+  }
 
   if (finished) {
     return (

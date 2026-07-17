@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import type { MiniGameProps } from '../../types/minigame';
 import { useGameState } from '../../hooks/useGameState';
-import type { EnglishSkillDistrictId } from '../../data/englishSkillDistricts';
+import type { EnglishSkillDistrictId } from './EnglishSkillDistrictApp';
 import { EnglishSkillDistrictApp } from './EnglishSkillDistrictApp';
 
 interface EnglishSkillDistrictGameProps extends MiniGameProps {

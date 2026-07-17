@@ -29,6 +29,7 @@ const MIGRATION_FILES = [
   '20260717_seed_game_settings_and_challenges.sql',
   '20260717_prevent_duplicate_profiles.sql',
   '20260717_auto_connect_admins.sql',
+  '20260717_dynamic_data_migration.sql',
 ];
 
 async function ensureMigrationsTable() {

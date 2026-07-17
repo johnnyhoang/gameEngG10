@@ -106,6 +106,14 @@ export const createAuthSlice: StateCreator<
       } catch (err) {
         console.error('Error fetching initial content in selectProfile:', err);
       }
+
+      // Fetch handbook pages
+      try {
+        const pages = await learningService.fetchHandbookPages();
+        set({ handbookPages: pages });
+      } catch (err) {
+        console.error('Error fetching handbook pages in selectProfile:', err);
+      }
       // Fetch class links data after profile is selected
       const state = get();
       if(state.fetchClassLinks) await state.fetchClassLinks();
@@ -255,6 +263,14 @@ export const createAuthSlice: StateCreator<
         set({ questions: enrichedQuestions, lessons: enrichedLessons });
       } catch (err) {
         console.error('Error fetching initial content in login:', err);
+      }
+
+      // Fetch handbook pages
+      try {
+        const pages = await learningService.fetchHandbookPages();
+        set({ handbookPages: pages });
+      } catch (err) {
+        console.error('Error fetching handbook pages in login:', err);
       }
     } catch (e) {
       console.error('Lỗi khi tải thông tin từ backend Supabase:', e);

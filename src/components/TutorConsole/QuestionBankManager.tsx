@@ -2,8 +2,6 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Database, Search, Sparkles, ShieldCheck, AlertTriangle, Plus, X } from 'lucide-react';
 import type { Question, SubjectId } from '../../types/game';
 import { SUBJECTS_CONFIG, DEFAULT_GRADE_TIER } from '../../types/game';
-import { ENGLISH_EXAM_BLUEPRINT, ENGLISH_TASK_LABELS } from '../../data/englishExamBlueprint';
-import { MATH_EXAM_BLUEPRINT, MATH_TOPIC_LABELS } from '../../data/mathExamBlueprint';
 import { getSubjectQuestionMetadata } from '../../subject-modules/registry';
 import { toast } from '../../utils/toast';
 import { supabase } from '../../utils/supabaseClient';
@@ -36,8 +34,51 @@ const QUESTION_TYPE_LABELS: Record<Question['type'], string> = {
   matching: 'Nối đáp án'
 };
 
-const ENGLISH_PART_LABELS = Object.fromEntries(ENGLISH_EXAM_BLUEPRINT.map(part => [part.part, part.title])) as Record<string, string>;
-const MATH_PART_LABELS = Object.fromEntries(MATH_EXAM_BLUEPRINT.map(part => [part.part, part.title])) as Record<string, string>;
+const ENGLISH_PART_LABELS: Record<string, string> = {
+  'Part 1': 'Trắc nghiệm Ngữ âm (Phát âm & Trọng âm)',
+  'Part 2': 'Trắc nghiệm Từ vựng & Ngữ pháp',
+  'Part 3': 'Đọc hiểu văn bản (Guided Cloze & Reading)',
+  'Part 4': 'Tự luận viết câu (Word Form & Rewrite)'
+};
+
+const MATH_PART_LABELS: Record<string, string> = {
+  'Bài 1': 'Đồ thị Parabol và đường thẳng',
+  'Bài 2': 'Phương trình bậc hai - Hệ thức Viète',
+  'Bài 3': 'Hàm số bậc nhất thực tế',
+  'Bài 4': 'Tăng trưởng dân số/quãng đường',
+  'Bài 5': 'Giảm giá lũy tiến thực tế',
+  'Bài 6': 'Thể tích và dâng nước thực tế',
+  'Bài 7': 'Mua hàng khuyến mãi thực tế',
+  'Bài 8': 'Hình học phẳng chứng minh'
+};
+
+const MATH_TOPIC_LABELS: Record<string, string> = {
+  'function-graph': 'Đồ thị hàm số',
+  'quadratic-equation': 'Phương trình bậc hai',
+  'linear-function': 'Hàm số bậc nhất',
+  'growth-modeling': 'Tăng trưởng %',
+  'percentage-discount': 'Giảm giá lũy tiến',
+  'volume-displacement': 'Dâng nước - thể tích',
+  'shopping-discount': 'Mua hàng khuyến mãi',
+  'tangent-geometry': 'Tiếp tuyến & nội tiếp',
+  'statistics-probability': 'Thống kê & xác suất',
+  modeling: 'Mô hình hóa thực tế',
+  'solid-geometry': 'Hình học không gian',
+  finance: 'Tài chính thực tế',
+  'plane-geometry': 'Hình học phẳng',
+  mixed: 'Tổng hợp'
+};
+
+const ENGLISH_TASK_LABELS: Record<string, string> = {
+  pronunciation: 'Pronunciation',
+  stress: 'Stress',
+  vocabulary: 'Vocabulary',
+  grammar: 'Grammar',
+  cloze: 'Guided Cloze',
+  reading: 'Reading Comprehension',
+  wordform: 'Word Form',
+  rewrite: 'Sentence Transformation'
+};
 
 const humanizeKey = (value: string) => value.replace(/-/g, ' ').replace(/\b\w/g, ch => ch.toUpperCase());
 

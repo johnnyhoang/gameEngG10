@@ -2,6 +2,11 @@
 
 ## 1. Trạng thái hiện tại (Current Status)
 - **Vừa hoàn thành:** 
+   - **Di dời dữ liệu tĩnh còn lại vào Database (Dynamic Fetching)**:
+      - **Migration SQL**: Tạo các bảng và seed dữ liệu cho cẩm nang (`ge10_handbook_pages`), đảo kỹ năng (`ge10_english_island_items`) và ma trận đề thi các môn (`ge10_subject_exam_blueprints`).
+      - **Phát triển API mới**: Endpoint `/handbook-pages`, `/english-island/items` và `/exam-blueprints?subject=...` để nạp động.
+      - **Tải cẩm nang động**: Fetch động cẩm nang khi đăng nhập/selectProfile và bỏ logic merge tĩnh trong store.
+      - **Dọn dẹp file tĩnh**: Xóa bỏ hoàn toàn 5 file tĩnh cũ (`handbookPages.ts`, `englishSkillDistricts.ts`, `mathExamBlueprint.ts`, `englishExamBlueprint.ts`, `literatureExamBlueprint.ts`).
    - **Dynamic Content Fetching (Nạp câu hỏi và bài giảng động - T9.2 & T11.3)**:
       - **Tối ưu hóa API Profile**: Gỡ bỏ các truy vấn database nặng đối với customQuestions và lessons trong endpoint `/api/profile/:id` (giảm 90% dung lượng payload tải về lúc mở app).
       - **Bổ sung API gộp**: Thêm endpoint `/api/learning-content/content/all` hỗ trợ lấy đồng thời câu hỏi và bài học theo `gradeTier` + `subjectId`.
@@ -29,6 +34,7 @@
  
 ## 3. Lịch sử thay đổi gần đây (Recent Changes)
 - **2026-07-17:**
+   - **Di dời dữ liệu tĩnh còn lại vào Database:** Viết file SQL migration và seed dữ liệu tĩnh cẩm nang (`ge10_handbook_pages`), câu đố Đảo kỹ năng (`ge10_english_island_items`), ma trận đề các môn (`ge10_subject_exam_blueprints`) vào database. Bổ sung các API nạp động tương ứng và tháo gỡ hoàn toàn 5 file tĩnh cũ để tối ưu tài nguyên client.
    - **Dynamic Content Fetching (Nạp động câu hỏi/bài giảng):** Loại bỏ việc query tải sẵn hàng ngàn câu hỏi/bài học tĩnh khi chọn profile. Tích hợp tải động song song thông qua endpoint `/api/learning-content/content/all` khi chuyển đổi ngữ cảnh học tập (môn học, khối lớp), tối ưu hóa thời gian mở app gấp 10 lần.
    - **Nâng cấp động hóa Công Viên Thư Giãn:** Mở khóa các game cơ bản cho mọi môn học Sử, Địa, Khoa Học; động hóa Ghép Cặp bằng câu hỏi thực tế, lọc chính xác xúc xắc Du Khảo, ôn luyện sâu RPG Story theo môn phụ, và fallback Trình Tự Giải.
    - **Refactor nâng cao:** Hoàn thành module hóa Ingestion prompts ở backend, đồng nhất AI grading ở frontend qua module và tinh chỉnh DB pooling cho môi trường serverless.

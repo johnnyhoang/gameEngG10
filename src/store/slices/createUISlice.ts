@@ -4,7 +4,6 @@ import type { HandbookPage, GradeTier, LearningContext } from '../../types/game'
 import { eventBus } from '../../utils/EventBus';
 import { toast } from '../../utils/toast';
 import { DEFAULT_GRADE_TIER, getGradeTierConfig } from '../../types/game';
-import { ALL_HANDBOOK_PAGES } from '../../data/handbookPages';
 import { learningService } from '../../services/learningService';
 import { enrichTextbookAttributes } from '../../utils/textbookEnricher';
 
@@ -29,7 +28,7 @@ export const createUISlice: StateCreator<
   uiTheme: 'current',
   uiThemesByUser: {},
   helpPageId: null,
-  handbookPages: ALL_HANDBOOK_PAGES,
+  handbookPages: [],
   tutorConsoleTab: 'management',
 
   setSectModalOpen: (open) => set({ isSectModalOpen: open }),

@@ -1,8 +1,44 @@
 import React from 'react';
 import { Volume2, VolumeX, Flame } from 'lucide-react';
 import type { PlayAreaHeaderProps } from './types';
-import { ENGLISH_ANSWER_MODE_LABELS, ENGLISH_SKILL_LABELS, ENGLISH_TASK_LABELS } from '../../data/englishExamBlueprint';
-import { MATH_ANSWER_MODE_LABELS } from '../../data/mathExamBlueprint';
+const ENGLISH_ANSWER_MODE_LABELS: Record<string, string> = {
+  'single-choice': 'Trắc nghiệm đơn',
+  'multiple-choice': 'Trắc nghiệm nhiều đáp án',
+  'short-answer': 'Tự luận ngắn',
+  'text-input': 'Tự luận tự do',
+  matching: 'Ghép cặp',
+  cloze: 'Điền từ',
+  writing: 'Viết lại câu'
+};
+
+const MATH_ANSWER_MODE_LABELS: Record<string, string> = {
+  'single-choice': 'Trắc nghiệm',
+  'short-answer': 'Tự luận ngắn',
+  numeric: 'Điền số',
+  expression: 'Biểu thức',
+  proof: 'Chứng minh',
+  'multi-part': 'Nhiều ý'
+};
+
+const ENGLISH_SKILL_LABELS: Record<string, string> = {
+  reading: 'Đọc hiểu',
+  writing: 'Viết câu',
+  listening: 'Nghe hiểu',
+  speaking: 'Nói thực hành',
+  language: 'Kiến thức ngôn ngữ'
+};
+
+const ENGLISH_TASK_LABELS: Record<string, string> = {
+  pronunciation: 'Pronunciation',
+  stress: 'Stress',
+  vocabulary: 'Vocabulary',
+  grammar: 'Grammar',
+  cloze: 'Guided Cloze',
+  reading: 'Reading Comprehension',
+  wordform: 'Word Form',
+  rewrite: 'Sentence Transformation'
+};
+
 import { getQuestionPresentation, hasSubjectUtility } from '../../subject-modules/registry';
 import type { SubjectId } from '../../types/game';
 
