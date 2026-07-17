@@ -546,7 +546,9 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
                                     </span>
                                     {isCompleted ? (
                                       <span className="text-[8px] font-bold text-synth-cyan uppercase font-orbitron tracking-wider">
-                                        Đã lĩnh ngộ 🌟
+                                        {typeof lessonsProgress[lesson.id] === 'number'
+                                          ? `Đã lĩnh ngộ 🌟 (${Math.round((lessonsProgress[lesson.id] as number) * 100)}%)`
+                                          : 'Đã lĩnh ngộ 🌟'}
                                       </span>
                                     ) : (
                                       <span className="text-[8px] font-semibold text-slate-500 uppercase tracking-wider">

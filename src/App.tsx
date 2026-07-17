@@ -42,6 +42,7 @@ const SubjectWorkshopPage = withSuspense(lazy(() => import('./components/Subject
 const LessonStudyView = withSuspense(lazy(() => import('./components/LessonStudyView').then(m => ({ default: m.LessonStudyView }))));
 const GeometryApp = withSuspense(lazy(() => import('./miniapps/geometry').then(m => ({ default: m.GeometryApp }))));
 const GraphHandbook = withSuspense(lazy(() => import('./components/GraphHandbook').then(m => ({ default: m.GraphHandbook }))));
+const ProfilePage = withSuspense(lazy(() => import('./components/ProfilePage').then(m => ({ default: m.ProfilePage }))));
 
 const APP_VERSION = 'fd44bc2';
 const APP_PUSH_TIME = 'Tue, 7 Jul 2026 12:05 ICT';
@@ -61,11 +62,11 @@ function App() {
   const classLinks = useGameState(state => state.classLinks);
 
   // Screen routing state — only for transient full-screen overlays
-  const [screen, setScreen] = useState<'academy' | 'play' | 'tutor' | 'workshop-3d' | 'workshop-plane' | 'workshop-graph' | 'lesson-study'>(
+  const [screen, setScreen] = useState<'academy' | 'play' | 'tutor' | 'workshop-3d' | 'workshop-plane' | 'workshop-graph' | 'lesson-study' | 'profile'>(
     () => {
       const saved = localStorage.getItem('cyber-app-screen') as any;
-      // Migrate legacy screen values to new 'academy'
-      const legacyScreens = ['map', 'arena', 'shop', 'pet', 'profile', 'practice', 'relax', 'logs'];
+      // Migrate legacy screen values to new 'academy' (except profile which we now support as overlay)
+      const legacyScreens = ['map', 'arena', 'shop', 'pet', 'practice', 'relax', 'logs'];
       if (legacyScreens.includes(saved)) return 'academy';
       return saved || 'academy';
     }
@@ -397,16 +398,17 @@ function App() {
   };
   const topHudScreen = (screen === 'play' || screen === 'lesson-study' || isWorkshopScreen) ? 'play'
     : screen === 'tutor' ? 'tutor'
-      : topHudTabToScreen[activeTab] ?? 'map';
+      : screen === 'profile' ? 'profile'
+        : topHudTabToScreen[activeTab] ?? 'map';
 
   return (
     <div className="app-shell min-h-screen flex flex-col text-slate-100" data-theme={uiTheme}>
 
-      {/* Top Header HUD */}
       <TopHUD
         onOpenParent={() => navigateWithWarning('tutor')}
         onBackToMap={() => navigateWithWarning('academy')}
         onLogout={handleLogoutIntercept}
+        onViewProfile={() => setScreen('profile')}
         currentScreen={topHudScreen}
       />
 
@@ -433,6 +435,15 @@ function App() {
               onOpenWorkshopPlane={() => setScreen('workshop-plane')}
               onOpenWorkshopGraph={() => setScreen('workshop-graph')}
               learningContextKey={learningContextKey}
+            />
+          )}
+
+          {/* ── Profile Page ── */}
+          {screen === 'profile' && currentUser?.role === 'student' && (
+            <ProfilePage
+              currentUser={currentUser}
+              currentTheme={uiTheme}
+              onNavigate={(dest) => setScreen(dest as any)}
             />
           )}
 

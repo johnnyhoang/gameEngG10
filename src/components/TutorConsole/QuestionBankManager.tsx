@@ -408,7 +408,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                       type="text"
                       value={questionQuery}
                       onChange={(e) => setQuestionQuery(e.target.value)}
-                      placeholder="Tìm theo đề bài, chuyên đề, part, kỹ năng, nguồn..."
+                      placeholder="Tìm theo đề bài, chuyên đề, phần thi, kỹ năng, nguồn..."
                       className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-xs text-white outline-none focus:border-synth-cyan"
                     />
                   </div>
@@ -450,13 +450,13 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                   </label>
                   {showPartFilter && (
                     <label className="space-y-1 text-[10px] block">
-                      <span className="uppercase font-orbitron font-bold text-synth-text-muted">Bài / Part</span>
+                      <span className="uppercase font-orbitron font-bold text-synth-text-muted">Bài / Phần thi</span>
                       <select
                         value={examPartFilter}
                         onChange={(e) => setExamPartFilter(e.target.value)}
                         className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs cursor-pointer outline-none focus:border-synth-cyan"
                       >
-                        <option value="all">Tất cả part</option>
+                        <option value="all">Tất cả phần thi</option>
                         {topExamParts.map(([part, count]) => (
                           <option key={part} value={part}>
                             {examPartLabelMap[part] || part} ({count})
@@ -488,7 +488,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                       className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs cursor-pointer outline-none focus:border-synth-cyan"
                     >
                       <option value="all">Tất cả câu</option>
-                      <option value="confused">Con hổng hiểu 🧠 ({sectQuestions.filter(q => q.isConfused).length})</option>
+                      <option value="confused">Sĩ Tử báo chưa hiểu 🧠 ({sectQuestions.filter(q => q.isConfused).length})</option>
                     </select>
                   </label>
                   <label className="space-y-1 text-[10px] block">
@@ -569,7 +569,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                                 )}
                                 {q.isConfused && (
                                   <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-bold uppercase font-orbitron border border-red-500/40">
-                                    Con hổng hiểu 🧠
+                                    Sĩ Tử báo chưa hiểu 🧠
                                   </span>
                                 )}
                                 <span className="text-[9px] px-1.5 py-0.5 rounded bg-synth-cyan/20 text-synth-cyan font-bold uppercase font-orbitron">
@@ -849,7 +849,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                 {isAiIngestExpanded && (
                   <div className="p-5 space-y-4 border-t border-white/5 bg-synth-gray/5 animate-in slide-in-from-top-2 duration-200">
                     <p className="text-[10px] text-synth-text-muted leading-relaxed">
-                      Dán đề thi của bạn vào ô dưới đây (hỗ trợ đề thi trắc nghiệm tiếng Việt/tiếng Anh thô). AI của Phòng Hiệu Trưởng sẽ tự động nhận diện câu hỏi, lựa chọn, đáp án, và đề xuất lời giải thích chi tiết.
+                      Dán đề thi của bạn vào ô dưới đây (hỗ trợ đề thi trắc nghiệm tiếng Việt/tiếng Anh thô). Trợ giáo MIKA AI sẽ tự động nhận diện câu hỏi, lựa chọn, đáp án, và đề xuất lời giải thích chi tiết.
                     </p>
 
                     <form onSubmit={handleAiIngest} className="space-y-3">
@@ -864,7 +864,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                         disabled={isIngesting || !rawText.trim()}
                         className="w-full py-2.5 bg-synth-orange text-black font-bold rounded-lg hover:synth-glow-orange disabled:opacity-50 transition-all text-xs uppercase cursor-pointer flex items-center justify-center gap-1.5"
                       >
-                        {isIngesting ? 'AI đang phân tích...' : 'Ingest Đề Thi 🎇'}
+                        {isIngesting ? 'AI đang phân tích...' : 'Nạp Đề Thi bằng AI 🎇'}
                       </button>
                     </form>
 
@@ -873,7 +873,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                           <div>
                             <h6 className="text-[11px] font-orbitron font-black uppercase text-synth-orange">
-                              Hàng chờ review — {pendingAiQuestions.length} câu
+                              Hàng chờ kiểm duyệt — {pendingAiQuestions.length} câu
                             </h6>
                             <p className="text-[10px] text-synth-text-muted mt-1">
                               Kiểm tra nội dung, đáp án và chuyên đề. Chưa có câu nào được lưu vào Kho Đề Thi.

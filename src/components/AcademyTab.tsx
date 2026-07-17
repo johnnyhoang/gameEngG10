@@ -1,6 +1,5 @@
-import { useMemo, useEffect, useState } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
-import { toast } from '../utils/toast';
 import { BrainCircuit } from 'lucide-react';
 import { CORE_KNOWLEDGE_TOPICS, inferTopicId } from '../data/coreKnowledge';
 import { useSect } from '../contexts/SectContext';
@@ -9,7 +8,6 @@ import { filterLessonsInScope } from '../utils/learningScope';
 import { isLightTheme } from '../theme/uiThemes';
 import { LearningLedger } from './LearningLedger';
 import { ActivityLog } from './ActivityLog';
-import { SearchSuggest } from './Common/SearchSuggest';
 import { UI_THEMES } from '../theme/uiThemes';
 import { useTranslate } from '../hooks/useTranslate';
 
@@ -36,15 +34,8 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
 
   // Profile / class connection state
   const classLinks = useGameState(state => state.classLinks);
-  const respondClassInvite = useGameState(state => state.respondClassInvite);
-  const leaveClass = useGameState(state => state.leaveClass);
-  const sendClassInvite = useGameState(state => state.sendClassInvite);
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [isInviting, setIsInviting] = useState(false);
 
   const activeLink = classLinks.find((l: any) => l.status === 'active');
-  const pendingLink = classLinks.find((l: any) => l.status === 'pending_tutor' && l.student_id === currentUser?.id);
-  const pendingStudentInvites = classLinks.filter((l: any) => l.status === 'pending_student');
 
   // Quests
   const tutorQuests = useGameState(state => state.tutorQuests || []);
@@ -53,7 +44,6 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
   useEffect(() => { syncWithServer(); }, [syncWithServer]);
 
   const activeTheme = UI_THEMES.find(theme => theme.id === uiTheme) || UI_THEMES[0];
-  const isLight = isLightTheme(uiTheme);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -249,141 +239,6 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
               </div>
             </section>
           )}
-
-          {/* SECTION: Kết nối Giáo Viên */}
-          {currentUser?.role === 'student' && (
-            <section className={`p-5 rounded-2xl border ${isLight ? 'border-violet-200/50 bg-violet-50/20' : 'border-white/10 bg-white/5'} space-y-4`}>
-              <h3 className={`font-orbitron font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 ${isLight ? 'text-violet-800' : 'text-synth-cyan'}`}>
-                <span>👨‍🏫</span> {t('Lớp Chủ Nhiệm & Kết Nối Giáo Viên', 'Homeroom Class & Teacher Connection')}
-              </h3>
-
-              {/* Pending student invites */}
-              {pendingStudentInvites.length > 0 && (
-                <div className="space-y-2">
-                  {pendingStudentInvites.map((invite: any) => (
-                    <div key={invite.id} className={`flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl border ${
-                      isLight ? 'border-violet-200/50 bg-white/80' : 'border-synth-cyan/20 bg-black/30'
-                    }`}>
-                      <p className={`text-xs font-semibold ${isLight ? 'text-violet-800' : 'text-white'}`}>
-                        {t('Giáo viên ', 'Teacher ')}
-                        <span className="text-synth-cyan">{invite.tutor_name || invite.tutor_email}</span>
-                        {t(' mời bạn vào lớp', ' invited you to their class')}
-                      </p>
-                      <div className="flex gap-2">
-                      <button onClick={() => respondClassInvite(invite.id, true)}
-                          className={`px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase cursor-pointer ${isLight ? 'bg-green-500 text-white' : 'bg-synth-green text-black'}`}>
-                          {t('Đồng ý', 'Accept')}
-                        </button>
-                        <button onClick={() => respondClassInvite(invite.id, false)}
-                          className="px-3 py-1.5 rounded-lg text-[10px] font-bold uppercase cursor-pointer bg-white/10 text-slate-300 hover:bg-white/20">
-                          {t('Từ chối', 'Decline')}
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Active link status */}
-              {activeLink && (
-                <div className={`flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl border ${
-                  isLight ? 'border-violet-200/50 bg-white/80 text-violet-800' : 'border-synth-cyan/20 bg-black/30 text-synth-cyan'
-                }`}>
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] uppercase font-bold text-slate-400">{t('Đang học lớp của:', 'Currently in class of:')}</p>
-                    <p className={`font-bold ${isLight ? 'text-violet-900' : 'text-white'}`}>{activeLink.tutor_name || t('Chưa rõ tên', 'Unknown')}</p>
-                    <p className="text-[10px] opacity-70">({activeLink.tutor_email})</p>
-                  </div>
-                  <button
-                    onClick={async () => {
-                      if (window.confirm(t('Bạn có chắc muốn rời khỏi lớp này không?', 'Are you sure you want to leave this class?'))) {
-                        const success = await leaveClass(activeLink.id);
-                        if (success) toast.success(t('Đã rời Lớp Chủ Nhiệm', 'Left class successfully'));
-                      }
-                    }}
-                    className={`px-3 py-1.5 rounded-lg border text-[9px] uppercase font-black tracking-wide cursor-pointer transition-colors ${
-                      isLight ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100' : 'border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20'
-                    }`}
-                  >
-                    {t('Rời Lớp', 'Leave Class')} 🚪
-                  </button>
-                </div>
-              )}
-
-              {/* Pending link status */}
-              {pendingLink && (
-                <div className={`flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl border ${
-                  isLight ? 'border-amber-200/50 bg-amber-50/50 text-amber-800' : 'border-synth-orange/20 bg-black/30 text-synth-orange'
-                }`}>
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] uppercase font-bold text-slate-400">{t('Đang chờ phản hồi kết nối:', 'Awaiting connection response:')}</p>
-                    <p className={`font-bold ${isLight ? 'text-amber-900' : 'text-white'}`}>{pendingLink.tutor_name || t('Chưa rõ tên', 'Unknown')}</p>
-                    <p className="text-[10px] opacity-70">({pendingLink.tutor_email})</p>
-                  </div>
-                  <button
-                    onClick={async () => {
-                      if (window.confirm(t('Bạn có chắc muốn hủy yêu cầu kết nối này không?', 'Cancel this connection request?'))) {
-                        const ok = await leaveClass(pendingLink.id);
-                        if (ok) toast.success(t('Đã hủy yêu cầu kết nối.', 'Connection request cancelled.'));
-                      }
-                    }}
-                    className={`px-3 py-1.5 rounded-lg border text-[9px] uppercase font-black tracking-wide cursor-pointer transition-colors ${
-                      isLight ? 'border-red-300 bg-red-50 text-red-600 hover:bg-red-100' : 'border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20'
-                    }`}
-                  >
-                    {t('Hủy Yêu Cầu', 'Cancel Request')}
-                  </button>
-                </div>
-              )}
-
-              {/* Join / switch class form */}
-              <div className={`flex flex-col sm:flex-row sm:items-center gap-3 p-3.5 rounded-xl border ${
-                isLight ? 'border-violet-200/40 bg-white/60' : 'border-white/5 bg-black/20'
-              }`}>
-                <div className="space-y-0.5 shrink-0 flex-1 min-w-[180px]">
-                  <p className={`font-bold text-xs flex items-center gap-1.5 ${isLight ? 'text-violet-800' : 'text-synth-cyan'}`}>
-                    <span>👨‍🏫</span> {(activeLink || pendingLink) ? t('Chuyển Lớp Thầy/Cô', 'Switch Class') : t('Gia Nhập Lớp Mới', 'Join New Class')}
-                  </p>
-                  <p className="text-[10px] leading-normal text-slate-400">
-                    {t("Nhập Email Google của Thầy/Cô để kết nối lớp.", "Enter your teacher's Google Email to connect to class.")}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 flex-1 max-w-sm w-full">
-                  <SearchSuggest
-                    placeholder={t("Email Thầy/Cô...", "Teacher's Email...")}
-                    roleFilter="tutor"
-                    value={inviteEmail}
-                    onChange={setInviteEmail}
-                    onSelect={user => setInviteEmail(user.email)}
-                    className="flex-1"
-                  />
-                  <button
-                    onClick={async () => {
-                      if (!inviteEmail.trim()) return;
-                      setIsInviting(true);
-                      const result = await sendClassInvite(inviteEmail.trim());
-                      if (result.success) {
-                        toast.success(t('Đã gửi yêu cầu kết nối thành công! Vui lòng chờ Thầy/Cô phê duyệt.', 'Connection request sent! Please wait for teacher approval.'));
-                        setInviteEmail('');
-                      } else {
-                        toast.error(result.error || t('Gửi yêu cầu thất bại.', 'Failed to send request.'));
-                      }
-                      setIsInviting(false);
-                    }}
-                    disabled={isInviting || !inviteEmail.trim()}
-                    className={`px-3.5 py-2 rounded-lg font-orbitron font-bold text-[9px] uppercase tracking-wider cursor-pointer transition-all ${
-                      isLight
-                        ? 'bg-violet-600 hover:bg-violet-700 text-white disabled:bg-violet-200'
-                        : 'bg-synth-cyan hover:bg-synth-cyan/80 text-black disabled:opacity-50'
-                    }`}
-                  >
-                    {isInviting ? '...' : t('Kết Nối', 'Connect')}
-                  </button>
-                </div>
-              </div>
-            </section>
-          )}
-
 
         </div>
 

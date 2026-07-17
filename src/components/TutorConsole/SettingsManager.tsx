@@ -150,7 +150,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
               ⚡ Chi Phí Vào Trường Thi
             </h4>
             <p className="text-[10px] text-synth-text-muted mt-0.5 mb-2">
-              Năng Lượng học sinh phải trả cho mỗi lượt vào Trường Thi.
+              Năng Lượng Sĩ Tử phải trả cho mỗi lượt vào Trường Thi.
             </p>
             {[
               { label: 'Cấp độ 1', value: challengeCost1, setter: setChallengeCost1 },
@@ -168,7 +168,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
               🎯 Thưởng Mỗi Câu Đúng
             </h4>
             <p className="text-[10px] text-synth-text-muted mt-0.5 mb-2">
-              Điểm cơ bản cộng cho học sinh với mỗi câu trả lời đúng.
+              Điểm cơ bản cộng cho Sĩ Tử với mỗi câu trả lời đúng.
             </p>
             <SettingRow label="XP cơ bản" unit="XP" value={baseXPVal} onChange={setBaseXPVal} min={1} />
             <SettingRow label="Ruby cơ bản" unit="Ruby" value={baseRubyVal} onChange={setBaseRubyVal} min={1} />
@@ -188,7 +188,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
 
         <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between bg-white/5 rounded-xl border border-white/5 p-4">
           <p className="text-[10px] text-synth-text-muted leading-relaxed">
-            Các cấu hình này áp dụng chung cho tất cả học sinh (Cấp độ thử thách và lượng điểm nhận được). Riêng Năng Lượng Tối Đa + giờ hồi thì chỉnh RIÊNG cho từng học sinh: vào ⚙️ Phòng Hiệu Trưởng → 👥 Học Sinh & Liên Kết → bấm vào học sinh cần chỉnh.
+            Các cấu hình này áp dụng chung cho tất cả Sĩ Tử (Cấp độ thử thách và lượng điểm nhận được). Riêng Năng Lượng Tối Đa + giờ hồi thì chỉnh RIÊNG cho từng Sĩ Tử: vào 🏫 Phòng Điều Hành → 👥 Sổ Danh Bộ → bấm vào Sĩ Tử cần chỉnh.
           </p>
           <button
             onClick={handleSaveSettings}
@@ -206,7 +206,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
             <div className="flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-synth-magenta" />
               <h3 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-1.5">
-                📜 Cẩm Nang Học Viện (Handbook)
+                📜 Cẩm Nang Học Đường
               </h3>
             </div>
             <button

@@ -292,6 +292,25 @@ export const createAuthSlice: StateCreator<
     return false;
   },
 
+  updateAvatar: async (newAvatar: string) => {
+    const profile = get().currentUser;
+    if (!profile) return false;
+
+    const ok = await authService.updateAvatar(profile.id, newAvatar);
+    if (ok) {
+      set(state => ({
+        currentUser: state.currentUser ? { ...state.currentUser, avatar: newAvatar } : null,
+        availableProfiles: state.availableProfiles.map(p =>
+          p.id === profile.id ? { ...p, avatar: newAvatar } : p
+        )
+      }));
+      toast.success('Đã thay đổi ảnh đại diện thành công! 🎉');
+      return true;
+    }
+    toast.error('Không thể thay đổi ảnh đại diện.');
+    return false;
+  },
+
   logout: async () => {
     // Prevent duplicate concurrent logout runs
     if (get().logoutState === 'processing') {

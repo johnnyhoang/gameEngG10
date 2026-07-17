@@ -20,6 +20,11 @@ export interface SubjectActivityContribution {
 export interface MiniGameContribution {
   id: string;
   surface: 'relaxation-park';
+  config?: {
+    steps?: { id: string; text: string; correctOrder: number }[];
+    title?: string;
+    [key: string]: any;
+  };
 }
 
 export interface QuestionPresentation {

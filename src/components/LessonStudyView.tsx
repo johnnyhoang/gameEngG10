@@ -121,7 +121,7 @@ export const LessonStudyView: React.FC<LessonStudyViewProps> = ({
           className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 text-xs text-white font-orbitron font-bold uppercase tracking-wider hover:bg-white/10 transition-colors cursor-pointer"
         >
           <ChevronLeft className="w-4 h-4" />
-          Học Đường
+          Phòng Luyện Tập
         </button>
 
         {isCompleted && (
@@ -160,7 +160,7 @@ export const LessonStudyView: React.FC<LessonStudyViewProps> = ({
           {/* Bottom Actions */}
           <div className="pt-8 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="text-xs text-slate-400 max-w-sm leading-relaxed">
-              * Sau khi đọc kỹ bài và tự tin đã nắm rõ kiến thức, con hãy bấm nút dưới đây để làm thử 3 câu hỏi thực tế.
+              * Sau khi đọc kỹ bài và tự tin đã nắm rõ kiến thức, con hãy bấm nút dưới đây để làm thử 3 câu hỏi thực tế (Cần chính xác tối thiểu 2/3 câu để lĩnh ngộ thành công bài học).
             </div>
 
             {onStartPractice && (

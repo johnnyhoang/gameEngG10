@@ -88,7 +88,7 @@ export const StudentDirectory: React.FC<StudentDirectoryProps> = ({
     <div className="rounded-2xl border border-white/5 bg-white/5 p-5 space-y-4">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider shrink-0">
-          👥 Sổ Danh Bộ Học Sinh Toàn Trường
+          👥 Sổ Danh Bộ Sĩ Tử Toàn Học Viện
           <span className="ml-2 px-1.5 py-0.5 rounded bg-white/10 text-[9px] text-slate-300 font-orbitron">
             {filtered.length}/{students.length}
           </span>
@@ -112,7 +112,7 @@ export const StudentDirectory: React.FC<StudentDirectoryProps> = ({
             className="px-2.5 py-2 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs cursor-pointer"
             title="Lọc theo tình trạng lớp học"
           >
-            <option value="all">Tất cả học sinh</option>
+            <option value="all">Tất cả Sĩ Tử</option>
             <option value="linked">Đã có lớp</option>
             <option value="unlinked">Chưa có lớp ({unlinkedCount})</option>
           </select>
@@ -126,7 +126,7 @@ export const StudentDirectory: React.FC<StudentDirectoryProps> = ({
             <option value="level">Cấp độ cao nhất</option>
             <option value="xp">XP cao nhất</option>
             <option value="ruby">Ruby nhiều nhất</option>
-            <option value="streak">Chuỗi ngày dài nhất</option>
+            <option value="streak">Chuỗi chuyên cần dài nhất</option>
           </select>
         </div>
       </div>
@@ -139,7 +139,7 @@ export const StudentDirectory: React.FC<StudentDirectoryProps> = ({
               key={s.id}
               disabled={inspectLoading}
               onClick={() => onInspect(s.id)}
-              title="Bấm để xem hoạt động, tiến độ và báo cáo của học sinh"
+              title="Bấm để xem hoạt động, tiến độ và báo cáo của Sĩ Tử"
               className="text-left p-3.5 rounded-xl bg-synth-gray/20 border border-white/5 hover:border-synth-cyan/40 hover:bg-white/[0.06] transition-all cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {/* Hàng 1: avatar + tên + email + trạng thái lớp */}
@@ -153,7 +153,7 @@ export const StudentDirectory: React.FC<StudentDirectoryProps> = ({
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-white text-sm truncate">{s.name || s.email || 'Học sinh'}</span>
+                    <span className="font-bold text-white text-sm truncate">{s.name || s.email || 'Sĩ Tử'}</span>
                     {teacherName ? (
                       <span
                         className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded shrink-0 bg-synth-cyan/20 border border-synth-cyan/40 text-synth-cyan max-w-[110px] truncate"
@@ -164,7 +164,7 @@ export const StudentDirectory: React.FC<StudentDirectoryProps> = ({
                     ) : (
                       <span
                         className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded shrink-0 bg-yellow-500/15 border border-yellow-500/40 text-yellow-400"
-                        title="Học sinh chưa vào lớp chủ nhiệm nào"
+                        title="Sĩ Tử chưa vào lớp chủ nhiệm nào"
                       >
                         Chưa có lớp
                       </span>
@@ -200,7 +200,7 @@ export const StudentDirectory: React.FC<StudentDirectoryProps> = ({
         })}
         {visible.length === 0 && (
           <p className="text-xs text-synth-text-muted italic py-4 col-span-3 text-center">
-            Không tìm thấy học sinh nào khớp điều kiện lọc.
+            Không tìm thấy Sĩ Tử nào khớp điều kiện lọc.
           </p>
         )}
       </div>

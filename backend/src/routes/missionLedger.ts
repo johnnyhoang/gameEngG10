@@ -124,6 +124,12 @@ router.post('/mission-events', async (req: any, res) => {
       [crypto.randomUUID(), idempotencyKey, profileId, eventType, gradeTier ?? null, subjectId ?? null, entityType ?? null, entityId ?? null, value, JSON.stringify(metadata)]
     );
     if (inserted.rowCount) {
+      // Lock the player profile first to establish a consistent lock hierarchy (Profile -> Assignments) and prevent deadlocks.
+      await client.query(
+        'SELECT 1 FROM ge10_player_profiles WHERE user_id = $1 FOR UPDATE',
+        [profileId]
+      );
+
       const candidates = await client.query(
         `SELECT a.id, a.current, a.target, d.condition_json, d.subject_scope, d.reward_json
          FROM ge10_profile_mission_assignments a

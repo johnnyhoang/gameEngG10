@@ -1,7 +1,8 @@
 import type { UiThemeId, SubjectId } from '../../types/game';
 import { SUBJECTS_CONFIG } from '../../types/game';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { toast } from '../../utils/toast';
+import { getSubjectModule } from '../../subject-modules/registry';
 
 interface StepItem { id: string; text: string; correctOrder: number; }
 
@@ -45,7 +46,21 @@ export interface StepBuilderAppProps {
 export const StepBuilderApp: React.FC<StepBuilderAppProps> = ({ activeSectId, uiTheme, onReward, onGameComplete, onGameStart }) => {
   const isUnicorn = uiTheme === 'unicorn-dream';
 
-  const hasGameData = activeSectId && activeSectId in STEP_DATA;
+  const dynamicSteps = useMemo(() => {
+    if (!activeSectId) return null;
+    const module = getSubjectModule(activeSectId as SubjectId);
+    const stepBuilderGame = module?.miniGames?.find(g => g.id === 'stepbuilder');
+    return stepBuilderGame?.config?.steps || null;
+  }, [activeSectId]);
+
+  const dynamicTitle = useMemo(() => {
+    if (!activeSectId) return '';
+    const module = getSubjectModule(activeSectId as SubjectId);
+    const stepBuilderGame = module?.miniGames?.find(g => g.id === 'stepbuilder');
+    return stepBuilderGame?.config?.title || '';
+  }, [activeSectId]);
+
+  const hasGameData = (activeSectId && activeSectId in STEP_DATA) || !!dynamicSteps;
   const stepSubject = activeSectId as keyof typeof STEP_DATA;
   
   const [scrambledSteps, setScrambledSteps] = useState<StepItem[]>([]);
@@ -57,7 +72,8 @@ export const StepBuilderApp: React.FC<StepBuilderAppProps> = ({ activeSectId, ui
 
   const initStepGame = () => {
     if (!hasGameData) return;
-    setScrambledSteps([...STEP_DATA[stepSubject]].sort(() => 0.5 - Math.random()));
+    const baseSteps = dynamicSteps || STEP_DATA[activeSectId as keyof typeof STEP_DATA] || [];
+    setScrambledSteps([...baseSteps].sort(() => 0.5 - Math.random()));
     setStepStatus('playing');
   };
 
@@ -76,7 +92,7 @@ export const StepBuilderApp: React.FC<StepBuilderAppProps> = ({ activeSectId, ui
     const isCorrect = scrambledSteps.every((step, idx) => step.correctOrder === idx);
     if (isCorrect) {
       setStepStatus('won');
-      onReward(30, 25, 'Hoàn thành Sắp xếp', `Sắp xếp trình tự giải chủ đề ${stepSubject}`);
+      onReward(30, 25, 'Hoàn thành Sắp xếp', `Sắp xếp trình tự giải chủ đề ${activeSectId}`);
       toast.success('Chuẩn xác, xếp trình tự ngon rồi! 🎉');
       onGameComplete?.({ correctAnswers: scrambledSteps.length, timeSpent: 0, score: 100, passed: true });
     } else {
@@ -101,7 +117,7 @@ export const StepBuilderApp: React.FC<StepBuilderAppProps> = ({ activeSectId, ui
       <div className="flex justify-between items-center">
         <div>
           <h3 className="font-orbitron font-black text-sm uppercase text-white">🧩 Trình Tự Giải</h3>
-          <p className="text-[10px] text-slate-400 mt-0.5">{TITLES[stepSubject]}</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">{dynamicTitle || TITLES[stepSubject] || 'Quy trình giải bài'}</p>
         </div>
         <div className="text-[10px] font-bold font-orbitron uppercase px-3 py-1.5 rounded-lg bg-black/20 border border-white/5 text-slate-400">
           Chủ đề: {subjectName}

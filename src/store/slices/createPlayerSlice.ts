@@ -411,20 +411,21 @@ export const createPlayerSlice: StateCreator<
           const state = get();
           if (state.pet.mood === 'happy' && state.pet.energy >= 100) return false;
 
-          // Luật "Lực Bất Tòng Tâm" (CORE_SPECS §3.B): cho Pet ăn tốn 10 Ruby và 5 XP của Cử Nhân.
           const rubyCost = 10;
-          const xpCost = 5;
+          const xpGain = 5;
           if (state.player.ruby < rubyCost) return false;
 
-          // Vì tiêu hao trực tiếp XP, Sĩ Tử chấp nhận tụt Level tạm thời nếu dồn quá nhiều tài nguyên chăm Pet.
+          // Chăm sóc thú cưng được cộng 5 XP, có thể thăng cấp
           let newLevel = state.player.level;
-          let newXp = state.player.xp - xpCost;
-          while (newXp < 0 && newLevel > 1) {
-            newLevel -= 1;
-            newXp += newLevel * 200;
+          let newXp = state.player.xp + xpGain;
+          let xpNeeded = newLevel * 200;
+          let didLevelUp = false;
+          while (newXp >= xpNeeded) {
+            newXp -= xpNeeded;
+            newLevel += 1;
+            xpNeeded = newLevel * 200;
+            didLevelUp = true;
           }
-          newXp = Math.max(0, newXp);
-          const didDeLevel = newLevel < state.player.level;
 
           set({
             player: {
@@ -443,12 +444,12 @@ export const createPlayerSlice: StateCreator<
 
           logActivity(get, set, 
             'pet_interact',
-            didDeLevel ? 'Cho thú nuôi ăn (tụt cấp tạm thời)' : 'Cho thú nuôi ăn',
-            didDeLevel
-              ? `Pet của con rất vui mừng, nhưng dồn quá nhiều tài nguyên khiến con tạm tụt xuống Level ${newLevel}. Quay lại Học Đường cày XP để lên cấp lại nhé!`
+            didLevelUp ? 'Cho thú nuôi ăn (Thăng cấp! 🎉)' : 'Cho thú nuôi ăn',
+            didLevelUp
+              ? `Chăm sóc Pet chu đáo giúp con thăng cấp lên Level ${newLevel}! Chúc mừng Sĩ Tử! 🎉`
               : 'Pet của con rất vui mừng và đầy năng lượng!',
             -rubyCost,
-            -xpCost
+            xpGain
           );
           get().syncWithServer();
           void recordMissionEvent({
@@ -460,10 +461,10 @@ export const createPlayerSlice: StateCreator<
             entityType: 'pet',
             entityId: 'maikawaii',
           });
-          if (didDeLevel) {
-            toast.success(`🐷 Heo Maikawaii đã ăn no! Con bị tiêu hao 10 Ruby 💎 và 5 XP ✨ (Tạm tụt cấp xuống Level ${newLevel} ⚠️).`);
+          if (didLevelUp) {
+            toast.success(`🐷 Heo Maikawaii đã ăn no! Con tiêu hao 10 Ruby 💎 và nhận 5 XP ✨ (Chúc mừng con thăng cấp lên Level ${newLevel}! 🎉).`);
           } else {
-            toast.success(`🐷 Heo Maikawaii đã ăn no! Con tiêu hao 10 Ruby 💎 và 5 XP ✨.`);
+            toast.success(`🐷 Heo Maikawaii đã ăn no! Con tiêu hao 10 Ruby 💎 và nhận +5 XP ✨.`);
           }
           return true;
         },
@@ -580,10 +581,11 @@ export const createPlayerSlice: StateCreator<
           const levelCheck = checkLevelUp(get, set, updatedXP, state.player.level);
 
           const actId = `act-lesson-${lessonId}`;
+          const targetProgressVal = accuracyRatio !== undefined && accuracyRatio !== null ? accuracyRatio : true;
           set({
             lessonsProgress: {
               ...state.lessonsProgress,
-              [lessonId]: true
+              [lessonId]: targetProgressVal
             },
             activityProgress: {
               ...state.activityProgress,
@@ -601,7 +603,7 @@ export const createPlayerSlice: StateCreator<
             }
           });
           // Luật Bất Thoái (CORE_SPECS §7.4.4): hoàn thành bài học cũng tính vào tỉ lệ tu luyện môn phái.
-          const updatedLessonsProgress = { ...state.lessonsProgress, [lessonId]: true };
+          const updatedLessonsProgress = { ...state.lessonsProgress, [lessonId]: targetProgressVal };
           const lessonMasteryRatio = computeSubjectMasteryRatio({
             subjectId: lesson.subject,
             gradeTier: state.activeGradeTier,

@@ -66,15 +66,15 @@ export function LearningLedger({ compact: _compact = false, defaultExpanded: _de
             <h3 className="mb-2 font-orbitron text-[10px] font-black uppercase text-synth-orange">{t("📈 Tiến Độ Tu Học", "📈 Study Progress")}</h3>
             <div className="space-y-2 text-xs text-slate-300">
               <p>Level <strong className="text-white">{player.level}</strong></p>
-              <p>{t("Kinh nghiệm", "Experience")} <strong className="text-white">{player.xp} XP</strong></p>
-              <p>{t("Chuỗi học", "Study Streak")} <strong className="text-white">{player.streak} {t("ngày", "days")}</strong></p>
+               <p>{t("Điểm Tu Học", "Experience")} <strong className="text-white">{player.xp} XP</strong></p>
+              <p>{t("Chuỗi Chuyên Cần", "Study Streak")} <strong className="text-white">{player.streak} {t("ngày", "days")}</strong></p>
             </div>
             <div className="mt-3 rounded-lg border border-dashed border-synth-orange/30 bg-synth-orange/5 p-2.5" aria-disabled="true">
               <div className="flex items-center gap-2">
                 <span className="text-lg" aria-hidden="true">🎁</span>
                 <div className="min-w-0 flex-1">
                   <p className="text-[10px] font-bold text-synth-orange">{t("Hòm Bí Mật", "Mystery Box")}</p>
-                  <p className="text-[9px] text-slate-400 truncate">{t("Đang hoàn thiện cơ chế nhận thưởng an toàn.", "Reward system is under development.")}</p>
+                  <p className="text-[9px] text-slate-400 truncate">{t("Bảo rương thần bí đang được Trợ Giáo MIKA phong ấn...", "The mysterious chest is being sealed by Tutor MIKA...")}</p>
                 </div>
                 <span className="ml-auto rounded-full bg-white/5 px-2 py-0.5 text-[8px] font-bold uppercase text-slate-500 shrink-0">{t("Sắp mở", "Soon")}</span>
               </div>

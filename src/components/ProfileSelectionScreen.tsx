@@ -80,19 +80,19 @@ export const ProfileSelectionScreen: React.FC = () => {
   const roleCards = [
     {
       key: 'student',
-      label: 'Học Sinh 🌱',
+      label: 'Sĩ Tử 🌱',
       icon: <GraduationCap className="w-5 h-5 text-synth-cyan" />,
       colorClass: 'border-synth-cyan/30 hover:border-synth-cyan hover:bg-synth-cyan/5 text-synth-cyan shadow-[0_0_15px_rgba(0,240,255,0.03)]',
       exists: !!existingStudent,
       name: existingStudent?.name || 'Chưa khởi tạo',
-      desc: 'Học sinh vào học tập & rèn luyện',
+      desc: 'Sĩ Tử vào học tập & rèn luyện',
       isLoading: quickStarting === 'student',
       isSelecting: selectingProfileId === existingStudent?.id,
       theme: existingStudent?.uiTheme || 'current',
     },
     {
       key: 'tutor',
-      label: 'Giáo Viên 📋',
+      label: 'Chủ Nhiệm 📋',
       icon: <Users className="w-5 h-5 text-synth-orange" />,
       colorClass: 'border-synth-orange/30 hover:border-synth-orange hover:bg-synth-orange/5 text-synth-orange shadow-[0_0_15px_rgba(255,159,28,0.03)]',
       exists: !!existingTutor,
@@ -212,7 +212,7 @@ export const ProfileSelectionScreen: React.FC = () => {
               );
             } else {
               // Option cho hồ sơ chưa khởi tạo: Hiển thị box nhỏ gọn dạng [icon - Trở thành Giáo Viên]
-              const displayLabel = card.key === 'student' ? 'Trở thành Học Sinh 🌱' : 'Trở thành Giáo Viên 📋';
+              const displayLabel = card.key === 'student' ? 'Trở thành Sĩ Tử 🌱' : 'Trở thành Chủ Nhiệm 📋';
               return (
                 <button
                   key={card.key}

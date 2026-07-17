@@ -251,7 +251,12 @@ app.use('/api', (req, res, next) => {
 // Error Handler Middleware
 app.use((err: any, req: any, res: any, next: any) => {
   console.error(`[${new Date().toISOString()}] Server Error:`, err);
-  res.status(500).json({ error: 'Internal Server Error', details: err.message });
+  const isProduction = process.env.NODE_ENV === 'production';
+  res.status(500).json({
+    error: 'Internal Server Error',
+    details: isProduction ? undefined : err.message,
+    message: isProduction ? 'Đã xảy ra sự cố hệ thống. Vui lòng liên hệ quản trị viên hoặc thử lại sau.' : undefined
+  });
 });
 
 if (!process.env.VERCEL) {

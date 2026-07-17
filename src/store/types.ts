@@ -27,6 +27,7 @@ export interface StoreState {
   login: (user: UserProfile) => Promise<void>;
   logout: () => Promise<void>;
   renameProfile: (newName: string) => Promise<boolean>;
+  updateAvatar: (newAvatar: string) => Promise<boolean>;
   logoutState: 'idle' | 'processing' | 'success' | 'failed';
 
   // === PLAYER & MECHANICS SLICE ===
@@ -34,7 +35,7 @@ export interface StoreState {
   pet: PetState;
   questions: Question[];
   lessons: Lesson[];
-  lessonsProgress: Record<string, boolean>;
+  lessonsProgress: Record<string, boolean | number>;
   topics: any[];
   activities: any[];
   activityProgress: Record<string, { status: string; completedAt: string | null }>;

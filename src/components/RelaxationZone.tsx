@@ -6,6 +6,9 @@ import { FogCard, getFogStatus } from './FogCard';
 import { FullscreenModal } from './Common/FullscreenModal';
 import { toast } from '../utils/toast';
 import { getSubjectMiniGameIds } from '../subject-modules/registry';
+import { SUBJECTS_CONFIG } from '../types/game';
+import type { SubjectId } from '../types/game';
+import { filterQuestionsInScope } from '../utils/learningScope';
 
 // Năng Lượng tiêu hao mỗi ván mini-game Công Viên Thư Giãn có sinh điểm (SUB_SPEC_ENERGY §3).
 const MINIGAME_ENERGY_COST = 10;
@@ -126,9 +129,11 @@ interface CanhSectionProps {
   bgClass: string;
   borderClass: string;
   lowEnergy: boolean;
+  subjectMiniGameIds: readonly string[];
+  activeSectId: string;
 }
 
-const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onOpenGame, isUnicorn, bgClass, borderClass, lowEnergy }) => (
+const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onOpenGame, isUnicorn, bgClass, borderClass, lowEnergy, subjectMiniGameIds, activeSectId }) => (
   <div className={`rounded-2xl border p-5 space-y-4 ${bgClass} ${borderClass}`}>
     <div className="space-y-0.5">
       <h2 className={`font-orbitron font-black text-base uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
@@ -139,7 +144,11 @@ const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onO
 
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {games.map(game => {
-        const isLocked = lowEnergy && game.costsEnergy !== false;
+        const isSupported = subjectMiniGameIds.includes(game.id);
+        const isLocked = (lowEnergy && game.costsEnergy !== false) || !isSupported;
+        const subjectConfig = SUBJECTS_CONFIG[activeSectId as SubjectId];
+        const subjectName = subjectConfig?.name || activeSectId;
+
         return (
         <div key={game.id} className="relative">
           <FogCard
@@ -147,14 +156,31 @@ const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onO
             requiredCompletions={game.id === 'flashcards' || game.id === 'match' ? 2 : 3}
             decayDays={7}
             label="Trò chơi chưa trải nghiệm"
-            onOpenLevel3={() => onOpenGame(game)}
+            onOpenLevel3={() => isSupported && onOpenGame(game)}
           >
             <div
-              title={isLocked ? `Cần ${MINIGAME_ENERGY_COST} Năng Lượng để chơi — hãy nghỉ chờ hồi hoặc đọc Cẩm Nang.` : undefined}
-              className={`rounded-xl border border-white/10 bg-black/40 p-4 flex flex-col gap-3 transition-all duration-200 h-full group ${
-                isLocked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-white/20'
+              title={
+                !isSupported
+                  ? `Trò chơi này chưa hỗ trợ môn ${subjectName}`
+                  : isLocked
+                    ? `Cần ${MINIGAME_ENERGY_COST} Năng Lượng để chơi — hãy nghỉ chờ hồi hoặc đọc Cẩm Nang.`
+                    : undefined
+              }
+              className={`rounded-xl border p-4 flex flex-col gap-3 transition-all duration-200 h-full group ${
+                !isSupported
+                  ? 'opacity-40 border-slate-700 bg-slate-900/10 pointer-events-none'
+                  : isLocked
+                    ? 'opacity-50 cursor-not-allowed border-white/10 bg-black/40'
+                    : 'cursor-pointer hover:border-white/20 border-white/10 bg-black/40'
               }`}
-              onClick={(e) => { e.stopPropagation(); onOpenGame(game); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                if (!isSupported) {
+                  toast.error(`Trò chơi này chưa hỗ trợ môn ${subjectName}!`);
+                  return;
+                }
+                onOpenGame(game);
+              }}
             >
               <div className="flex items-start gap-3">
                 <span className="text-2xl group-hover:scale-110 transition-transform duration-200">{game.icon}</span>
@@ -167,9 +193,9 @@ const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onO
               </div>
               <div className="mt-auto flex items-center justify-between flex-wrap gap-2">
                 <span className="inline-block text-[9px] font-bold font-orbitron uppercase px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400">
-                  🎁 {game.reward}
+                  {!isSupported ? `⚠️ Chưa hỗ trợ ${subjectName}` : `🎁 ${game.reward}`}
                 </span>
-                {game.costsEnergy !== false && (
+                {isSupported && game.costsEnergy !== false && (
                   <span className={`inline-block text-[9px] font-bold font-orbitron uppercase px-2 py-0.5 rounded ${
                     isLocked ? 'bg-red-500/20 border border-red-500/35 text-red-400 font-black' : 'bg-synth-cyan/15 border border-synth-cyan/25 text-synth-cyan'
                   }`} title={isLocked ? 'Không đủ năng lượng' : 'Năng lượng tiêu hao'}>
@@ -198,11 +224,21 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack: _onBack 
   const completeLevel3Page = useGameState(state => state.completeLevel3Page);
   const player = useGameState(state => state.player);
   const consumeEnergy = useGameState(state => state.useEnergy);
+  const questions = useGameState(state => state.questions);
 
   const [activeGame, setActiveGame] = useState<GameCard | null>(null);
   const subjectMiniGameIds = getSubjectMiniGameIds(activeSectId);
 
   const handleOpenGame = (game: GameCard) => {
+    if (game.id === 'story') {
+      const hasMath = filterQuestionsInScope(questions, 'math', activeGradeTier).length > 0;
+      const hasEnglish = filterQuestionsInScope(questions, 'english', activeGradeTier).length > 0;
+      const hasLit = filterQuestionsInScope(questions, 'literature', activeGradeTier).length > 0;
+      if (!hasMath || !hasEnglish || !hasLit) {
+        toast.error('⚠️ Đền cổ đang thiếu đề của ít nhất một môn trong 3 môn (Toán, Anh, Văn) cho lớp này. Trò chơi chưa thể bắt đầu và năng lượng của con đã được bảo toàn.');
+        return;
+      }
+    }
     if (game.costsEnergy !== false) {
       if (player.energy < MINIGAME_ENERGY_COST) {
         toast.error('Hết Năng Lượng rồi. Nghỉ một nhịp hoặc đọc Cẩm Nang trong lúc chờ hồi.');
@@ -242,6 +278,8 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack: _onBack 
           isUnicorn={isUnicorn}
           bgClass={isUnicorn ? 'bg-pink-50/40' : 'bg-pink-500/5'}
           borderClass={isUnicorn ? 'border-pink-200/40' : 'border-pink-500/15'}
+          subjectMiniGameIds={subjectMiniGameIds}
+          activeSectId={activeSectId}
         />
 
         <CanhSection
@@ -254,6 +292,8 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack: _onBack 
           isUnicorn={isUnicorn}
           bgClass={isUnicorn ? 'bg-green-50/40' : 'bg-emerald-500/5'}
           borderClass={isUnicorn ? 'border-green-200/40' : 'border-emerald-500/15'}
+          subjectMiniGameIds={subjectMiniGameIds}
+          activeSectId={activeSectId}
         />
 
         <CanhSection
@@ -266,6 +306,8 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack: _onBack 
           isUnicorn={isUnicorn}
           bgClass={isUnicorn ? 'bg-blue-50/40' : 'bg-blue-500/5'}
           borderClass={isUnicorn ? 'border-blue-200/40' : 'border-blue-500/15'}
+          subjectMiniGameIds={subjectMiniGameIds}
+          activeSectId={activeSectId}
         />
 
         {subjectMiniGameIds.length > 0 && (
@@ -279,6 +321,8 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack: _onBack 
             isUnicorn={isUnicorn}
             bgClass={isUnicorn ? 'bg-violet-50/40' : 'bg-violet-500/5'}
             borderClass={isUnicorn ? 'border-violet-200/40' : 'border-violet-500/15'}
+            subjectMiniGameIds={subjectMiniGameIds}
+            activeSectId={activeSectId}
           />
         )}
       </div>

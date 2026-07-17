@@ -30,7 +30,7 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
       return;
     }
     addTutorQuest(questTitle.trim(), questDesc.trim(), questRuby);
-    toast.success('Giao nhiệm vụ chủ nhiệm giao thành công! 🎯');
+    toast.success('Giao nhiệm vụ thành công! 🎯');
     setQuestTitle('');
     setQuestDesc('');
     setQuestRuby(50);
@@ -61,7 +61,7 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
         isOpen={isFormOpen}
         onClose={() => setIsFormOpen(false)}
         widthClass="max-w-md"
-        title={<span className="text-synth-cyan">📜 Giao nhiệm vụ mới cho con</span>}
+        title={<span className="text-synth-cyan">📜 Giao nhiệm vụ mới cho Sĩ Tử</span>}
       >
         <form onSubmit={handleCreateQuest} className="p-5 space-y-4">
           <label className="space-y-1.5 text-xs block">
@@ -79,7 +79,7 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
             <textarea
               value={questDesc}
               onChange={(e) => setQuestDesc(e.target.value)}
-              placeholder="Mô tả hành động cần con thực hiện..."
+              placeholder="Mô tả hành động cần Sĩ Tử thực hiện..."
               className="w-full p-3 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs h-20 resize-none"
             />
           </label>
@@ -98,7 +98,7 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
             type="submit"
             className="w-full py-2.5 rounded-xl bg-synth-cyan text-black font-orbitron font-bold text-xs uppercase tracking-wider transition hover:opacity-90 cursor-pointer flex items-center justify-center gap-1.5"
           >
-            <Plus className="w-4 h-4" /> Giao nhiệm vụ cho con
+            <Plus className="w-4 h-4" /> Giao nhiệm vụ cho Sĩ Tử
           </button>
         </form>
       </SideDrawer>
@@ -135,7 +135,7 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
                       <button
                         onClick={() => {
                           completeTutorQuest(quest.id);
-                          toast.success('Đã xác nhận hoàn thành nhiệm vụ! Con có thể nhận thưởng.');
+                          toast.success('Đã xác nhận hoàn thành nhiệm vụ! Sĩ Tử có thể nhận thưởng.');
                         }}
                         className="px-3 py-1.5 rounded-lg bg-synth-green text-black font-orbitron font-bold text-[10px] uppercase cursor-pointer hover:synth-glow-green"
                       >

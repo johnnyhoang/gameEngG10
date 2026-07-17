@@ -124,13 +124,8 @@ router.get('/admin/users', authMiddleware, async (req: any, res) => {
 
 // GET /api/admin/users-all: Lists ALL profiles (kể cả inactive) gộp theo account_id — dùng cho RoleManager
 router.get('/admin/users-all', authMiddleware, async (req: any, res) => {
-  const adminId = req.profile.id;
   try {
-    const adminCheck = await pool.query(
-      "SELECT role FROM ge10_users WHERE id = $1 AND role IN ('truong_vien', 'pho_vien') AND is_active = TRUE",
-      [adminId]
-    );
-    if (adminCheck.rowCount === 0) {
+    if (!req.profile || !['truong_vien', 'pho_vien'].includes(req.profile.role)) {
       return res.status(403).json({ error: 'Forbidden: Chỉ Ban Giám Hiệu mới có thể xem toàn bộ danh sách profile.' });
     }
 

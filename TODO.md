@@ -253,6 +253,11 @@ Các tính năng tập trung vào luyện tập, củng cố kiến thức và t
   - *Mô tả:* Kéo thả nhãn, công thức hoặc thành phần vào đúng vị trí trên hình vẽ, sơ đồ khoa học hoặc biểu đồ địa lý/lịch sử.
   - *Phân bổ phù hợp:* **Học Đường** (minh họa trực quan hình học phẳng/3D).
 
+- [ ] **🎮 Nâng cấp trò chơi tại Công Viên Thư Giãn cho mọi môn học**
+  - *Mô tả:* Chuyển đổi các trò chơi mini (Du Khảo Kỳ Thú, Ghép Cặp Bài Trùng, Giải Cứu Heo Maikawaii, Trình Tự Giải...) từ việc chỉ hỗ trợ cứng môn Toán, Anh, Văn sang hỗ trợ động cho tất cả các môn học khác bằng cách nạp câu hỏi và logic theo môn học đang chọn.
+  - *Phải sửa:* Các miniapps trong `src/miniapps/` (adventure, match-pairs, story, step-builder...).
+  - *Acceptance:* Học sinh chọn môn học bất kỳ (ví dụ Sử Địa, Khoa Học) đều có thể chơi được các game này với câu hỏi thuộc môn đó; không bị báo lỗi thiếu thiết lập hoặc bị đơ kẹt do thiếu câu hỏi.
+
 - [x] **⚔️ Boss Battle (Quyết đấu Boss)**
   - *Mô tả:* Mỗi câu trả lời hoặc bước giải đúng sẽ gây sát thương lên "boss". Trả lời sai thì boss phản công gây mất máu/năng lượng của người học. Bản chất vẫn là học nhưng được game hóa mạnh mẽ với đồ họa thanh máu và hiệu ứng chiến đấu.
   - *Phân bổ phù hợp:* **Trường Thi** (Khoa Thi cuối tuần/môn học).

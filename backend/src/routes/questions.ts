@@ -103,14 +103,7 @@ router.delete('/questions/custom/:questionId', requireProfileRoles('tutor', 'sec
 
 // GET /api/questions/stats: Gets question statistics (admin only)
 router.get('/questions/stats', requireProfileRoles('truong_vien', 'pho_vien'), async (req: any, res) => {
-  const userId = req.profile.id;
   try {
-    // Check if user is admin
-    const userRes = await pool.query('SELECT role FROM ge10_users WHERE id = $1', [userId]);
-    if (userRes.rows.length === 0 || !['truong_vien', 'pho_vien'].includes(userRes.rows[0].role)) {
-      return res.status(403).json({ error: 'Access denied. Admin only.' });
-    }
-
     const { subject, sortBy = 'opened', limit = 100 } = req.query;
 
     let query = `SELECT

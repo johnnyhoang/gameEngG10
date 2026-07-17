@@ -112,7 +112,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
         {/* TẦNG 1: VIỆN CHỦ (VIỆN TRƯỞNG) */}
         <div className="flex flex-col items-center">
           <span className="text-[8px] uppercase font-bold tracking-widest text-synth-magenta font-orbitron mb-1.5 flex items-center gap-1">
-            <Crown className="w-3 h-3 text-synth-magenta" /> Ban Viện Chủ (Viện Trưởng)
+            <Crown className="w-3 h-3 text-synth-magenta" /> Ban Giám Hiệu (Viện Trưởng)
           </span>
           <div className="flex flex-wrap justify-center gap-3">
             {admins.map(admin => {

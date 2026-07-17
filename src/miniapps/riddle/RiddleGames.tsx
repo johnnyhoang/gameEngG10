@@ -4,6 +4,7 @@ import { FullscreenModal } from '../../components/Common/FullscreenModal';
 import { useGameState } from '../../hooks/useGameState';
 import { useSect } from '../../contexts/SectContext';
 import type { Question, SubjectId } from '../../types/game';
+import { MarkdownRenderer } from '../../components/Common/MarkdownRenderer';
 import {
   getRecentRiddleQuestionIds,
   isRiddleAnswerCorrect,
@@ -298,7 +299,9 @@ export function RiddleGames() {
               </div>
             ) : activeQuestion ? (
               <div className="space-y-3">
-                <p className="text-sm font-semibold leading-snug text-white">{activeQuestion.prompt}</p>
+                <div className="text-sm font-semibold leading-snug text-white">
+                  <MarkdownRenderer content={activeQuestion.prompt} />
+                </div>
                 <div className="space-y-2">
                   {shuffledRiddleOptions.map(option => {
                     const isCorrectOption = submitted && isRiddleAnswerCorrect(option, activeQuestion.correctAnswer, activeQuestion.options ?? []);

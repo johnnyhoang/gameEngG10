@@ -26,6 +26,7 @@ interface ArenaProps {
 
 export function Arena({ onStartPlay }: ArenaProps) {
   const player = useGameState(state => state.player);
+  const failedQuestionIds = useGameState(state => state.failedQuestionIds);
   const consumeEnergy = useGameState(state => state.useEnergy);
   const { activeSectId, activeGradeTier } = useSect();
   // Bonus Điểm (Ruby) khi hạ Boss — quảng bá ngay trên Boss Card (CORE_SPECS §2.1). Boss không thưởng tiền.
@@ -73,6 +74,10 @@ export function Arena({ onStartPlay }: ArenaProps) {
   ) => {
     if (subjectQuestionCount === 0) {
       toast.error(`Viện Trưởng chưa nạp đề cho môn ${activeSubjectConfig.name}, thử chọn môn khác hoặc quay lại sau.`);
+      return;
+    }
+    if (mode === 'revenge' && (!failedQuestionIds || failedQuestionIds.length === 0)) {
+      toast.error('Chưa có câu sai nào để sửa sai truy tung!');
       return;
     }
     if (player.energy < energyCost) {
@@ -199,7 +204,11 @@ export function Arena({ onStartPlay }: ArenaProps) {
                     >
                       <div
                         onClick={(e) => { e.stopPropagation(); handleLaunchZone('lesson', cost, lesson.id, 'arena'); }}
-                        className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full"
+                        className={`glass-panel rounded-2xl border p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full ${
+                          subjectQuestionCount === 0
+                            ? 'opacity-40 border-slate-700 bg-slate-900/10 pointer-events-none'
+                            : 'border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent glass-panel-hover'
+                        }`}
                       >
                         <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white z-10">
                           <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {cost}
@@ -281,7 +290,11 @@ export function Arena({ onStartPlay }: ArenaProps) {
                 >
                   <div
                     onClick={(e) => { e.stopPropagation(); handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 30); }}
-                    className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full"
+                    className={`glass-panel rounded-2xl border p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full ${
+                      subjectQuestionCount === 0
+                        ? 'opacity-40 border-slate-700 bg-slate-900/10 pointer-events-none'
+                        : 'border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent glass-panel-hover'
+                    }`}
                   >
                     <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white z-10">
                       <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
@@ -316,7 +329,11 @@ export function Arena({ onStartPlay }: ArenaProps) {
             >
               <div
                 onClick={(e) => { e.stopPropagation(); handleLaunchZone('mixed', challengeEnergyCosts[1] ?? 30); }}
-                className="glass-panel glass-panel-hover rounded-2xl border border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full"
+                className={`glass-panel rounded-2xl border p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full ${
+                  subjectQuestionCount === 0
+                    ? 'opacity-40 border-slate-700 bg-slate-900/10 pointer-events-none'
+                    : 'border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/5 to-transparent glass-panel-hover'
+                }`}
               >
                 <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white z-10">
                   <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
@@ -342,8 +359,19 @@ export function Arena({ onStartPlay }: ArenaProps) {
               onOpenLevel3={() => handleLaunchZone('revenge', challengeEnergyCosts[2] ?? 30)}
             >
               <div
-                onClick={(e) => { e.stopPropagation(); handleLaunchZone('revenge', challengeEnergyCosts[2] ?? 30); }}
-                className="glass-panel glass-panel-hover rounded-2xl border border-synth-orange/30 hover:border-synth-orange bg-gradient-to-br from-synth-orange/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (!failedQuestionIds || failedQuestionIds.length === 0) {
+                    toast.error('Chưa có câu sai nào để sửa sai truy tung!');
+                    return;
+                  }
+                  handleLaunchZone('revenge', challengeEnergyCosts[2] ?? 30);
+                }}
+                className={`glass-panel rounded-2xl border p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full ${
+                  (!failedQuestionIds || failedQuestionIds.length === 0 || subjectQuestionCount === 0)
+                    ? 'opacity-40 border-slate-700 bg-slate-900/10 pointer-events-none'
+                    : 'border-synth-orange/30 hover:border-synth-orange bg-gradient-to-br from-synth-orange/5 to-transparent glass-panel-hover'
+                }`}
               >
                 <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-orange/20 text-white z-10">
                   <Zap className="w-3 h-3 text-synth-orange fill-synth-orange" /> {challengeEnergyCosts[2] ?? 30}
@@ -353,7 +381,11 @@ export function Arena({ onStartPlay }: ArenaProps) {
                 </div>
                 <div className="space-y-1 min-w-0">
                   <h4 className="font-orbitron font-bold text-sm text-synth-orange">💀 Sửa sai truy tung</h4>
-                  <p className="text-xs text-slate-400 leading-relaxed">Tập hợp câu hỏi đã làm sai để giải lại và sửa lỗi lầm.</p>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    {(!failedQuestionIds || failedQuestionIds.length === 0)
+                      ? 'Chưa có câu sai nào để phục thù.'
+                      : 'Tập hợp câu hỏi đã làm sai để giải lại và sửa lỗi lầm.'}
+                  </p>
                   <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">Phần thưởng: <span className="text-white">XP hồi phục / Xoá sai</span></div>
                 </div>
               </div>

@@ -11,12 +11,14 @@ interface TopHUDProps {
   onOpenParent: () => void;
   onBackToMap: () => void;
   onLogout?: () => void;
+  onViewProfile?: () => void;
 }
 
 export const TopHUD: React.FC<TopHUDProps> = ({
-  currentScreen, onOpenParent: _onOpenParent, onBackToMap, onLogout
+  currentScreen, onOpenParent: _onOpenParent, onBackToMap, onLogout, onViewProfile
 }) => {
   const { t } = useTranslate();
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false);
   const player = useGameState(state => state.player);
   const currentUser = useGameState(state => state.currentUser);
   const logout = useGameState(state => state.logout);
@@ -89,13 +91,10 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                   className="w-8 h-8 rounded-full border border-synth-cyan/40 cursor-pointer hover:border-synth-magenta transition-colors"
                   title={
                     isStudent
-                      ? `${currentUser.name} (${currentUser.email}) - ${isConnected ? 'Đã kết nối Lớp Chủ nhiệm' : 'Chưa gia nhập Lớp Chủ nhiệm'} - Nhấp để Đổi Hồ Sơ Sĩ Tử`
-                      : `${currentUser.name} (${currentUser.email}) - Nhấp để Đổi Hồ Sơ`
+                      ? `${currentUser.name} (${currentUser.email}) - Nhấp để xem tùy chọn`
+                      : `${currentUser.name} (${currentUser.email}) - Nhấp để xem tùy chọn`
                   }
-                  onClick={() => {
-                    useGameState.setState({ currentUser: null });
-                    localStorage.removeItem('ge10_selected_profile_id');
-                  }}
+                  onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                 />
                 {isStudent && (
                   <span
@@ -104,6 +103,60 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                     }`}
                     title={isConnected ? 'Đã kết nối Lớp Chủ nhiệm 🎓' : 'Chưa kết nối Lớp Chủ nhiệm ⚠️'}
                   />
+                )}
+
+                {isProfileMenuOpen && (
+                  <>
+                    <div className="fixed inset-0 z-40 cursor-default" onClick={() => setIsProfileMenuOpen(false)} />
+                    <div className={`absolute top-full left-0 mt-2 w-52 rounded-2xl border p-3 z-50 shadow-xl space-y-2.5 text-left font-mono ${
+                      isUnicorn
+                        ? 'border-violet-100 bg-white text-violet-900 shadow-[0_8px_30px_rgb(0,0,0,0.06)]'
+                        : 'border-synth-cyan/35 bg-slate-900 text-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.4)]'
+                    }`}>
+                      <div className="border-b border-white/5 pb-2 min-w-0">
+                        <p className="text-[10px] text-slate-400 truncate">{currentUser.email}</p>
+                        <p className="text-xs font-bold truncate mt-0.5">{currentUser.name}</p>
+                      </div>
+                      <div className="flex flex-col gap-1 text-[10px] uppercase font-bold tracking-wider">
+                        {isStudent && onViewProfile && (
+                          <button
+                            onClick={() => {
+                              setIsProfileMenuOpen(false);
+                              onViewProfile();
+                            }}
+                            className={`w-full py-2 px-3 rounded-lg text-left transition-colors cursor-pointer ${
+                              isUnicorn ? 'hover:bg-violet-50 text-violet-700' : 'hover:bg-white/5 text-synth-cyan'
+                            }`}
+                          >
+                            👤 Hồ Sơ Sĩ Tử
+                          </button>
+                        )}
+                        <button
+                          onClick={() => {
+                            setIsProfileMenuOpen(false);
+                            useGameState.setState({ currentUser: null });
+                            localStorage.removeItem('ge10_selected_profile_id');
+                          }}
+                          className={`w-full py-2 px-3 rounded-lg text-left transition-colors cursor-pointer ${
+                            isUnicorn ? 'hover:bg-violet-50 text-violet-700' : 'hover:bg-white/5 text-synth-orange'
+                          }`}
+                        >
+                          🔄 Đổi Vai Trò
+                        </button>
+                        <button
+                          onClick={() => {
+                            setIsProfileMenuOpen(false);
+                            onLogout?.();
+                          }}
+                          className={`w-full py-2 px-3 rounded-lg text-left transition-colors cursor-pointer ${
+                            isUnicorn ? 'hover:bg-violet-50 text-red-600' : 'hover:bg-white/5 text-red-400'
+                          }`}
+                        >
+                          🚪 Rời Học Viện
+                        </button>
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
             )}
@@ -216,16 +269,67 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                       alt={currentUser.name}
                       className="w-8 h-8 rounded-full border border-synth-cyan/40 cursor-pointer hover:border-synth-magenta transition-colors"
                       title={currentUser.name}
-                      onClick={() => {
-                        useGameState.setState({ currentUser: null });
-                        localStorage.removeItem('ge10_selected_profile_id');
-                      }}
+                      onClick={() => setIsProfileMenuOpen(!isProfileMenuOpen)}
                     />
                     <span
                       className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-slate-950 ${
                         isConnected ? 'bg-synth-green' : 'bg-amber-500 animate-pulse'
                       }`}
                     />
+
+                    {isProfileMenuOpen && (
+                      <>
+                        <div className="fixed inset-0 z-45 cursor-default" onClick={() => setIsProfileMenuOpen(false)} />
+                        <div className={`absolute top-full left-0 mt-2 w-52 rounded-2xl border p-3 z-50 shadow-xl space-y-2.5 text-left font-mono ${
+                          isUnicorn
+                            ? 'border-violet-100 bg-white text-violet-900 shadow-[0_8px_30px_rgb(0,0,0,0.06)]'
+                            : 'border-synth-cyan/35 bg-slate-900 text-slate-100 shadow-[0_8px_30px_rgb(0,0,0,0.4)]'
+                        }`}>
+                          <div className="border-b border-white/5 pb-2 min-w-0">
+                            <p className="text-[10px] text-slate-400 truncate">{currentUser.email}</p>
+                            <p className="text-xs font-bold truncate mt-0.5">{currentUser.name}</p>
+                          </div>
+                          <div className="flex flex-col gap-1 text-[10px] uppercase font-bold tracking-wider">
+                            {isStudent && onViewProfile && (
+                              <button
+                                onClick={() => {
+                                  setIsProfileMenuOpen(false);
+                                  onViewProfile();
+                                }}
+                                className={`w-full py-2 px-3 rounded-lg text-left transition-colors cursor-pointer ${
+                                  isUnicorn ? 'hover:bg-violet-50 text-violet-700' : 'hover:bg-white/5 text-synth-cyan'
+                                }`}
+                              >
+                                👤 Hồ Sơ Sĩ Tử
+                              </button>
+                            )}
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                useGameState.setState({ currentUser: null });
+                                localStorage.removeItem('ge10_selected_profile_id');
+                              }}
+                              className={`w-full py-2 px-3 rounded-lg text-left transition-colors cursor-pointer ${
+                                isUnicorn ? 'hover:bg-violet-50 text-violet-700' : 'hover:bg-white/5 text-synth-orange'
+                              }`}
+                            >
+                              🔄 Đổi Vai Trò
+                            </button>
+                            <button
+                              onClick={() => {
+                                setIsProfileMenuOpen(false);
+                                onLogout?.();
+                              }}
+                              className={`w-full py-2 px-3 rounded-lg text-left transition-colors cursor-pointer ${
+                                isUnicorn ? 'hover:bg-violet-50 text-red-600' : 'hover:bg-white/5 text-red-400'
+                              }`}
+                            >
+                              🚪 Rời Học Viện
+                            </button>
+                          </div>
+                        </div>
+                      </>
+                    )}
                   </div>
                 )}
                 <div className="flex flex-col min-w-0 gap-0.5">

@@ -169,7 +169,7 @@ export const FinalResultScreen: React.FC<FinalResultScreenProps> = ({
           }`}>
             <Zap className="w-6 h-6 text-synth-cyan shrink-0" />
             <div>
-              <p className="text-[9px] text-slate-400 font-orbitron uppercase">Kinh Nghiệm XP</p>
+              <p className="text-[9px] text-slate-400 font-orbitron uppercase">Điểm Tu Học (XP)</p>
               <p className="font-orbitron font-black text-xl text-synth-cyan">
                 {rewardsEarned.xp > 0 ? `+${rewardsEarned.xp}` : '0'}
               </p>

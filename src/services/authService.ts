@@ -120,5 +120,21 @@ export const authService = {
       body: JSON.stringify({ profileId, newName })
     });
     return res.ok;
+  },
+
+  updateAvatar: async (profileId: string, newAvatar: string): Promise<boolean> => {
+    const token = await authService.getAccessToken();
+    if (!token) return false;
+
+    const res = await fetch(`${backendUrl}/api/profiles/update-avatar`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+        ...activeProfileHeaders(profileId)
+      },
+      body: JSON.stringify({ profileId, newAvatar })
+    });
+    return res.ok;
   }
 };

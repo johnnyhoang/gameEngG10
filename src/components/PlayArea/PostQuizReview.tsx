@@ -113,7 +113,7 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
               <p className="text-2xl font-black text-synth-orange">+{displayedRuby} Ruby</p>
             </div>
             <div className="text-center font-orbitron">
-              <span className="text-[10px] text-synth-text-muted uppercase font-bold tracking-widest">Kinh Nghiệm XP</span>
+              <span className="text-[10px] text-synth-text-muted uppercase font-bold tracking-widest">Điểm Tu Học (XP)</span>
               <p className="text-2xl font-black text-synth-cyan">+{displayedXp} XP</p>
             </div>
           </div>

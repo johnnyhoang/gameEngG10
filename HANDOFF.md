@@ -2,15 +2,22 @@
 
 ## 1. Trạng thái hiện tại (Current Status)
 - **Vừa hoàn thành:** 
-   - Tinh giản Hero Greeting trên trang học sinh (`AcademyTab.tsx`):
-      - Loại bỏ các badge trùng lặp (Streak, Level, Môn học) vì các chỉ số này đã xuất hiện đầy đủ ở Top HUD và mục Tiến độ tu học.
-      - Xóa hoàn toàn hộp phụ EXP + Energy mini (EXP, Energy, Ruby) bên phải giúp giao diện cực kỳ gọn gàng.
-      - Chỉ giữ lại 2 badge hữu ích là Lớp chủ nhiệm ("Lớp: ...") và Phong cách học đường ("Phong Cách: ...").
-   - Tối ưu hóa "Dòng hoạt động" (Activity Log):
-      - Loại bỏ giới hạn chiều cao tĩnh `max-h-[480px]` ở `ActivityLog.tsx`.
-      - Chuyển wrapper chứa ActivityLog ở cột phải `AcademyTab.tsx` thành `h-full flex flex-col` giúp card kéo giãn tự nhiên theo chiều cao cột bên trái, lấp đầy không gian đến sát biên dưới, giải quyết triệt để khoảng trống dư thừa lãng phí.
-   - Sửa triệt để các lỗi TypeScript phát sinh do unused imports/variables (`player`, `activeSubjectConfig`, `SUBJECTS_CONFIG`, `isEnglish`, `Zap`, `Star`, `Flame`).
-   - Chạy `npm run build` thành công, không lỗi biên dịch.
+   - Hoàn thành đợt **Technical Audit & Refactor Improvements** toàn diện:
+      - **Hiệu năng:** Chuyển đổi sang `Promise.all` song song cho API nạp/đồng bộ profile ở `profiles.ts`, giải quyết triệt để nút thắt cổ chai awaits tuần tự.
+      - **Trùng lặp truy vấn:** Loại bỏ các câu query DB check role/ownership dư thừa trong các route `admin.ts`, `questions.ts`, `profiles.ts`.
+      - **Bảo mật:** Ẩn stack trace lỗi kỹ thuật thô ở môi trường production tại `server.ts`.
+      - **Tránh Deadlock:** Đồng bộ thứ tự khóa dòng (Lock Order: Profile -> Assignments) trong API xử lý nhiệm vụ tại `missionLedger.ts`.
+      - **TypeScript Store:** Gỡ bỏ `// @ts-nocheck` và chuẩn hóa type-safe thành công cho 3 slices: `createUISlice.ts`, `createClassLinksSlice.ts`, `createClassRewardSlice.ts`.
+   - Tinh giản Hero Greeting trên trang học sinh (`AcademyTab.tsx`).
+   - Hoàn thành xuất sắc toàn bộ loạt đề xuất từ đợt kiểm thử trải nghiệm học sinh (Student Audit):
+      - **AcademyTab & Kết nối lớp học**: Gỡ bỏ hoàn toàn phần hiển thị kết nối lớp học thô thiển của học sinh để tránh rò rỉ ID kĩ thuật và mang lại giao diện thoáng đãng, chuyên nghiệp.
+      - **Pet Sanctuary**: Gỡ bỏ sương mù vật phẩm bị mờ (FogCard) và khóa (Lock) ở vườn thú cưng để tăng tính khuyến khích học sinh nuôi Heo.
+      - **Practice Hall**: Đổi tên nút từ "Vào sảnh học" thành "Vào phòng luyện tập".
+      - **Item Shop**: Hiển thị công khai phần thưởng Vòng quay ngày thường ngay trong Shop. Bỏ mờ sương khi thiếu Ruby, chỉ vô hiệu hóa nút mua để học sinh có thể click xem chi tiết vật phẩm.
+      - **Minigames & Relaxation Zone**: Vô hiệu hóa (disable) những minigames chưa hỗ trợ môn hiện tại. Tự động qua ô trong Du Khảo khi thiếu câu MCQ phù hợp. Sửa lỗi Phiêu lưu tình huống (StoryApp) thiếu đề 3 môn, tự động hoàn trả Năng lượng và không trừ lượt. Nạp bước giải động cho Sắp xếp Trình tự từ registry môn học.
+      - **Giao diện làm bài & Riddle UI**: Thiết kế tab đọc hiểu thông minh cho di động ("📖 Bài Đọc" & "📝 Câu Hỏi"). Thiết kế thanh Sticky Bottom Action Bar cố định ở cạnh dưới trên di động để các nút nộp bài/câu tiếp luôn trong tầm mắt. Thay đổi từ ngữ chấm bài "Sửa tay đi" thành thân thiện hơn. Sử dụng `MarkdownRenderer` cho câu đố Heo Maikawaii để khắc phục triệt để lỗi raw LaTeX.
+   - Sửa triệt để toàn bộ lỗi unused imports/variables và typecheck phát sinh trong quá trình tái cấu trúc ở các file `AcademyTab.tsx`, `Arena.tsx`, `ItemShop.tsx`, `PetSanctuary.tsx`, và `RelaxationZone.tsx`.
+   - Đã chạy `npm run build` thành công 100% không còn lỗi biên dịch nào.
    - Tinh giản giao diện học sinh (lượt trước): Loại bỏ các liên kết nhanh dư thừa/trùng lặp trên top nav (`TopHUD.tsx`) gồm Bản đồ, Cửa hàng, Sân thú, Học tịch. Tránh gây loãng thông tin và tập trung trải nghiệm vào thanh điều hướng 5 tab chính ở dưới.
    - Sửa lỗi tiêu đề trùng lặp và tối ưu layout trong tab **Funzone**:
       - Loại bỏ thẻ tiêu đề "🐷 Sân Thú Nuôi" trùng lặp ở `FunzoneTab.tsx`, nhường quyền hiển thị duy nhất cho tiêu đề bên trong `PetSanctuary.tsx`.

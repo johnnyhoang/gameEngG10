@@ -177,7 +177,6 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
   const profileId = req.params.id;
 
   try {
-    // 1. Verify ownership AND profile is active
     const userRes = await pool.query(
       'SELECT * FROM ge10_users WHERE id = $1 AND account_id = $2 AND is_active = TRUE',
       [profileId, accountId]
@@ -188,41 +187,50 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
     const userRow = userRes.rows[0];
     const userId = profileId;
 
-    // 2. Fetch player profile stats
-    const playerRes = await pool.query('SELECT * FROM ge10_player_profiles WHERE user_id = $1', [userId]);
-    // 3. Fetch pet state
-    const petRes = await pool.query('SELECT * FROM ge10_pet_states WHERE user_id = $1', [userId]);
-    // 4. Fetch category stats
-    const statsRes = await pool.query('SELECT * FROM ge10_category_stats WHERE user_id = $1', [userId]);
-    // 5. Fetch logs (last 200)
-    const logsRes = await pool.query('SELECT * FROM ge10_history_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 200', [userId]);
-    // 6. Fetch reward catalog — Danh Mục Quà Khuyến Học CHUNG của trường (CORE_SPECS §3.2).
-    // Một danh sách duy nhất cho toàn viện; client chỉ hiển thị khi học sinh mồ côi
-    // (xem isOrphanStudent từ /api/class-rewards). Không nhân bản theo user nữa.
-    const rewardsRes = await pool.query('SELECT * FROM ge10_school_reward_templates ORDER BY created_at DESC');
-    // 6b. Fetch lượt đổi quà (RewardRedemption)
-    const redemptionsRes = await pool.query('SELECT * FROM ge10_reward_redemptions WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
-    // 7. Fetch challenges
-    const challengesRes = await pool.query('SELECT * FROM ge10_user_challenges WHERE user_id = $1', [userId]);
-    // 8. Fetch custom questions (retrieve owned, admin-created, and system-wide questions)
-    const questionsRes = await pool.query(
-      `SELECT * FROM ge10_custom_questions 
-       WHERE user_id = $1 
-          OR user_id IS NULL 
-          OR user_id IN (SELECT id FROM ge10_users WHERE role IN ('truong_vien', 'pho_vien'))`,
-      [userId]
-    );
-    // 10. Fetch lessons
-    const lessonsRes = await pool.query('SELECT * FROM ge10_lessons');
-    // 11. Fetch user lessons progress
-    const progressRes = await pool.query('SELECT * FROM ge10_user_lessons_progress WHERE user_id = $1', [userId]);
+    // 2. Fetch all resources in parallel
+    const [
+      playerRes,
+      petRes,
+      statsRes,
+      logsRes,
+      rewardsRes,
+      redemptionsRes,
+      challengesRes,
+      questionsRes,
+      lessonsRes,
+      progressRes,
+      explorationRes,
+      topicsRes,
+      activitiesRes,
+      activityProgressRes
+    ] = await Promise.all([
+      pool.query('SELECT * FROM ge10_player_profiles WHERE user_id = $1', [userId]),
+      pool.query('SELECT * FROM ge10_pet_states WHERE user_id = $1', [userId]),
+      pool.query('SELECT * FROM ge10_category_stats WHERE user_id = $1', [userId]),
+      pool.query('SELECT * FROM ge10_history_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 200', [userId]),
+      pool.query('SELECT * FROM ge10_school_reward_templates ORDER BY created_at DESC'),
+      pool.query('SELECT * FROM ge10_reward_redemptions WHERE user_id = $1 ORDER BY timestamp DESC', [userId]),
+      pool.query('SELECT * FROM ge10_user_challenges WHERE user_id = $1', [userId]),
+      pool.query(
+        `SELECT * FROM ge10_custom_questions 
+         WHERE user_id = $1 
+            OR user_id IS NULL 
+            OR user_id IN (SELECT id FROM ge10_users WHERE role IN ('truong_vien', 'pho_vien'))`,
+        [userId]
+      ),
+      pool.query('SELECT * FROM ge10_lessons'),
+      pool.query('SELECT * FROM ge10_user_lessons_progress WHERE user_id = $1', [userId]),
+      pool.query('SELECT * FROM ge10_exploration_progress WHERE user_id = $1', [userId]),
+      pool.query('SELECT * FROM ge10_topics ORDER BY sort_order ASC'),
+      pool.query('SELECT * FROM ge10_activities ORDER BY sort_order ASC'),
+      pool.query('SELECT * FROM ge10_user_activity_progress WHERE user_id = $1', [userId])
+    ]);
+
     const lessonsProgress: Record<string, boolean> = {};
     progressRes.rows.forEach((row: any) => {
       lessonsProgress[row.lesson_id] = row.completed;
     });
 
-    // 12. Fetch exploration progress
-    const explorationRes = await pool.query('SELECT * FROM ge10_exploration_progress WHERE user_id = $1', [userId]);
     const explorationProgress: Record<string, { clearCount: number, lastClearedAt: string }> = {};
     explorationRes.rows.forEach((row: any) => {
       explorationProgress[row.page_id] = {
@@ -231,14 +239,6 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
       };
     });
 
-    // 13. Fetch Topics (data-driven Phase 2)
-    const topicsRes = await pool.query('SELECT * FROM ge10_topics ORDER BY sort_order ASC');
-
-    // 14. Fetch Activities (data-driven Phase 3)
-    const activitiesRes = await pool.query('SELECT * FROM ge10_activities ORDER BY sort_order ASC');
-
-    // 15. Fetch Activity Progress (data-driven Phase 3)
-    const activityProgressRes = await pool.query('SELECT * FROM ge10_user_activity_progress WHERE user_id = $1', [userId]);
     const activityProgress: Record<string, { status: string, completedAt: string | null }> = {};
     activityProgressRes.rows.forEach((row: any) => {
       activityProgress[row.activity_id] = {
@@ -492,16 +492,28 @@ router.post('/profile/:id/sync', authMiddleware, activeProfileMiddleware, async 
         const clientLastSyncTime = req.body.lastSyncTime ? new Date(req.body.lastSyncTime).getTime() : 0;
 
         if (dbServerUpdatedAt > clientLastSyncTime + 1000) {
-          // Load all latest server state to send back to client
-          const petRes = await client.query('SELECT * FROM ge10_pet_states WHERE user_id = $1', [userId]);
-          const statsRes = await client.query('SELECT * FROM ge10_category_stats WHERE user_id = $1', [userId]);
-          const logsRes = await client.query('SELECT * FROM ge10_history_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 200', [userId]);
-          const rewardsRes = await client.query('SELECT * FROM ge10_school_reward_templates ORDER BY created_at DESC');
-          const redemptionsRes = await client.query('SELECT * FROM ge10_reward_redemptions WHERE user_id = $1 ORDER BY timestamp DESC', [userId]);
-          const challengesRes = await client.query('SELECT * FROM ge10_user_challenges WHERE user_id = $1', [userId]);
-          const progressRes = await client.query('SELECT * FROM ge10_user_lessons_progress WHERE user_id = $1', [userId]);
-          const explorationRes = await client.query('SELECT * FROM ge10_exploration_progress WHERE user_id = $1', [userId]);
-          const activityProgressRes = await client.query('SELECT * FROM ge10_user_activity_progress WHERE user_id = $1', [userId]);
+          // Load all latest server state to send back to client in parallel
+          const [
+            petRes,
+            statsRes,
+            logsRes,
+            rewardsRes,
+            redemptionsRes,
+            challengesRes,
+            progressRes,
+            explorationRes,
+            activityProgressRes
+          ] = await Promise.all([
+            client.query('SELECT * FROM ge10_pet_states WHERE user_id = $1', [userId]),
+            client.query('SELECT * FROM ge10_category_stats WHERE user_id = $1', [userId]),
+            client.query('SELECT * FROM ge10_history_logs WHERE user_id = $1 ORDER BY timestamp DESC LIMIT 200', [userId]),
+            client.query('SELECT * FROM ge10_school_reward_templates ORDER BY created_at DESC'),
+            client.query('SELECT * FROM ge10_reward_redemptions WHERE user_id = $1 ORDER BY timestamp DESC', [userId]),
+            client.query('SELECT * FROM ge10_user_challenges WHERE user_id = $1', [userId]),
+            client.query('SELECT * FROM ge10_user_lessons_progress WHERE user_id = $1', [userId]),
+            client.query('SELECT * FROM ge10_exploration_progress WHERE user_id = $1', [userId]),
+            client.query('SELECT * FROM ge10_user_activity_progress WHERE user_id = $1', [userId])
+          ]);
 
           const lessonsProgress: Record<string, boolean> = {};
           const activityProgress: Record<string, any> = {};
@@ -819,14 +831,7 @@ router.patch('/profiles/rename', authMiddleware, activeProfileMiddleware, async 
   if (profileId !== req.profile.id) return res.status(403).json({ error: 'Profile ID does not match active profile.' });
 
   try {
-    const check = await pool.query(
-      'SELECT id FROM ge10_users WHERE id = $1 AND account_id = $2 AND is_active = TRUE',
-      [profileId, accountId]
-    );
-    if (check.rowCount === 0) {
-      return res.status(404).json({ error: 'Profile not found or access denied.' });
-    }
-
+    // activeProfileMiddleware has already verified that req.profile exists, is active, and is owned by accountId.
     await pool.query(
       'UPDATE ge10_users SET name = $1 WHERE id = $2',
       [newName.trim(), profileId]
@@ -836,6 +841,38 @@ router.patch('/profiles/rename', authMiddleware, activeProfileMiddleware, async 
   } catch (err: any) {
     console.error('[PATCH /profiles/rename]', err);
     return res.status(500).json({ error: 'Failed to update profile name.' });
+  }
+});
+
+// PATCH /api/profiles/update-avatar
+router.patch('/profiles/update-avatar', authMiddleware, activeProfileMiddleware, async (req: any, res) => {
+  const accountId = req.user?.sub;
+  const { profileId, newAvatar } = req.body;
+
+  if (!accountId) return res.status(401).json({ error: 'Unauthorized' });
+  if (!profileId || !newAvatar?.trim()) {
+    return res.status(400).json({ error: 'Missing profileId or newAvatar' });
+  }
+  if (profileId !== req.profile.id) return res.status(403).json({ error: 'Profile ID does not match active profile.' });
+
+  try {
+    const check = await pool.query(
+      'SELECT id FROM ge10_users WHERE id = $1 AND account_id = $2 AND is_active = TRUE',
+      [profileId, accountId]
+    );
+    if (check.rowCount === 0) {
+      return res.status(404).json({ error: 'Profile not found or access denied.' });
+    }
+
+    await pool.query(
+      'UPDATE ge10_users SET avatar = $1 WHERE id = $2',
+      [newAvatar.trim(), profileId]
+    );
+
+    return res.json({ success: true, newAvatar: newAvatar.trim() });
+  } catch (err: any) {
+    console.error('[PATCH /profiles/update-avatar]', err);
+    return res.status(500).json({ error: 'Failed to update profile avatar.' });
   }
 });
 

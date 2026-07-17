@@ -49,10 +49,15 @@ export const AdventureApp: React.FC<AdventureAppProps> = ({  uiTheme, onReward, 
           toast.success('Bạn đã clear xong bản đồ du khảo! 🏆');
           onGameComplete?.({ correctAnswers: 10, timeSpent: 0, score: 100, passed: true });
         } else {
-          setBoardStatus('answering');
-          const mcqQuestions = questions.filter(q => q.type === 'multiple_choice' || q.type === 'mcq');
-          const randomQ = mcqQuestions[Math.floor(Math.random() * mcqQuestions.length)];
-          setActiveBoardQuestion(randomQ);
+          const mcqQuestions = questions.filter(q => q.type === 'multiple_choice' || q.type === 'mcq' || q.metadata?.answerMode === 'multiple_choice');
+          if (mcqQuestions.length === 0) {
+            toast.info('Ô này không có câu hỏi trắc nghiệm, con được tự do tiến bước! 🌸');
+            setBoardStatus('idle');
+          } else {
+            setBoardStatus('answering');
+            const randomQ = mcqQuestions[Math.floor(Math.random() * mcqQuestions.length)];
+            setActiveBoardQuestion(randomQ);
+          }
         }
       }
     }, 120);
@@ -60,8 +65,10 @@ export const AdventureApp: React.FC<AdventureAppProps> = ({  uiTheme, onReward, 
 
   const handleBoardAnswer = (selectedOption: string) => {
     if (!activeBoardQuestion) return;
-    const correctAnsStr = Array.isArray(activeBoardQuestion.correctAnswer) ? activeBoardQuestion.correctAnswer[0] : activeBoardQuestion.correctAnswer;
-    if (selectedOption.trim().toLowerCase() === correctAnsStr.trim().toLowerCase()) {
+    const rawCorrect = Array.isArray(activeBoardQuestion.correctAnswer) ? activeBoardQuestion.correctAnswer[0] : activeBoardQuestion.correctAnswer;
+    const correctAnsStr = String(rawCorrect ?? '').trim().toLowerCase();
+    const selectedOptionStr = String(selectedOption ?? '').trim().toLowerCase();
+    if (selectedOptionStr === correctAnsStr) {
       toast.success('Chuẩn xác, ô này an toàn. (+15 Ruby)');
       onReward(15, 10, 'Đúng ô du khảo', 'Trả lời chính xác ô trivia trên bản đồ du khảo');
       setBoardStatus('idle');

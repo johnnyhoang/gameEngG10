@@ -413,7 +413,7 @@ export const LectureBankManager: React.FC = () => {
                       {SUBJECTS_CONFIG[lesson.subject as keyof typeof SUBJECTS_CONFIG]?.name || lesson.subject}
                     </span>
                     <span className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-white/5 text-slate-300 font-mono">
-                      Category: {lesson.category}
+                      Danh mục: {lesson.category}
                     </span>
                   </div>
                   <div className="flex gap-1">
@@ -557,7 +557,7 @@ export const LectureBankManager: React.FC = () => {
                 </label>
 
                 <label className="space-y-1 block">
-                  <span className="text-slate-400 font-semibold">Nhóm chuyên mục (Category - vd: to-infinitive, grammar)</span>
+                  <span className="text-slate-400 font-semibold">Danh mục chuyên đề (vd: Reading, Ngữ pháp, Đại số...)</span>
                   <input
                     type="text"
                     required
@@ -571,7 +571,7 @@ export const LectureBankManager: React.FC = () => {
 
               <div className="grid grid-cols-1 gap-4">
                 <label className="space-y-1 block">
-                  <span className="text-slate-400 font-semibold">Chủ đề bài giảng (Topic - vd: Verb Patterns)</span>
+                  <span className="text-slate-400 font-semibold">Chủ đề bài giảng (vd: Cấu trúc động từ đi kèm, Đồ thị hàm số...)</span>
                   <input
                     type="text"
                     required
@@ -583,7 +583,7 @@ export const LectureBankManager: React.FC = () => {
                 </label>
 
                 <label className="space-y-1 block">
-                  <span className="text-slate-400 font-semibold">Tiêu đề bài giảng (Title - vd: Động từ + V-ing)</span>
+                  <span className="text-slate-400 font-semibold">Tiêu đề bài giảng (vd: Động từ + V-ing)</span>
                   <input
                     type="text"
                     required
@@ -635,7 +635,7 @@ export const LectureBankManager: React.FC = () => {
               </div>
 
               <label className="space-y-1 block">
-                <span className="text-slate-400 font-semibold">Nội dung Lý Thuyết / Cẩm nang truyền thụ (Theory - Markdown / Text)</span>
+                <span className="text-slate-400 font-semibold">Nội dung Lý Thuyết / Truyền thụ kiến thức (Hỗ trợ Markdown)</span>
                 <textarea
                   required
                   value={formTheory}
@@ -661,7 +661,7 @@ export const LectureBankManager: React.FC = () => {
                     className="px-4 py-2 bg-synth-magenta/20 text-synth-magenta border border-synth-magenta/40 rounded-lg hover:bg-synth-magenta/30 transition-colors uppercase font-orbitron font-bold text-[10px] tracking-wider flex items-center gap-1 cursor-pointer"
                   >
                     {isPreviewMode ? <Edit2 className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    {isPreviewMode ? 'Tiếp tục Sửa' : 'Preview'}
+                    {isPreviewMode ? 'Tiếp tục Sửa' : 'Xem Thử'}
                   </button>
                   <button
                     type="submit"

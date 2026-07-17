@@ -87,7 +87,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
 
   const handleCancelRedemption = async (redemptionId: string) => {
     if (processingRedemptions[redemptionId]) return;
-    if (window.confirm('Bạn có chắc muốn hủy đơn đổi quà này và hoàn lại Ruby cho học sinh?')) {
+    if (window.confirm('Bạn có chắc muốn hủy đơn đổi quà này và hoàn lại Ruby cho Sĩ Tử?')) {
       setProcessingRedemptions(prev => ({ ...prev, [redemptionId]: true }));
       try {
         if (viewingStudentId) {
@@ -95,7 +95,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
         } else {
           await cancelRedemption(redemptionId);
         }
-        toast.success('Đã hủy và hoàn Ruby thành công! 🪙');
+        toast.success('Đã hủy và hoàn Ruby thành công! 💎');
       } catch (err) {
         console.error(err);
         toast.error('Hủy đơn đổi quà thất bại.');
@@ -167,7 +167,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
             🏫 Quà Khuyến Học
           </h4>
           <span className="text-[10px] text-synth-text-muted ml-1">
-            — Tạo một lần, cả lớp thấy. Số lượng giảm khi học sinh đổi.
+            — Tạo một lần, cả lớp thấy. Số lượng giảm khi Sĩ Tử đổi.
           </span>
         </div>
 
@@ -289,7 +289,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                       ) : (
                         <span className="w-5 h-5 rounded-full bg-synth-purple/30 flex items-center justify-center text-[10px]">🧑</span>
                       )}
-                      <span className="text-xs font-semibold text-white truncate">{red.studentName || 'Học sinh'}</span>
+                      <span className="text-xs font-semibold text-white truncate">{red.studentName || 'Sĩ Tử'}</span>
                     </div>
                     <p className="text-[11px] text-synth-text-muted truncate">→ {red.rewardTitle}</p>
                     <div className="flex items-center gap-2">
@@ -341,7 +341,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
 
       {/* ═══════════════════════════════════════════════════════
           SECTION 2A: DANH MỤC QUÀ CHUNG CỦA TRƯỜNG (chỉ truong_vien/pho_vien sửa)
-          Một danh sách duy nhất cho toàn viện — học sinh mồ côi (không có giáo viên) thấy
+          Một danh sách duy nhất cho toàn viện — Sĩ Tử tự do (chưa có Chủ Nhiệm) thấy
           danh sách này; giáo viên mới clone danh sách này khi hồ sơ được tạo.
           ═══════════════════════════════════════════════════════ */}
       {!viewingStudentId && isSchoolAdmin && (
@@ -352,7 +352,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                 <h4 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase tracking-wider">
                   🏛️ Quà Khuyến Học Của Trường
                 </h4>
-                <span className="text-[10px] text-synth-text-muted/60 block mt-1">— Danh sách CHUNG toàn viện. Học sinh chưa vào lớp (orphan) thấy danh sách này.</span>
+                <span className="text-[10px] text-synth-text-muted/60 block mt-1">— Danh sách CHUNG toàn viện. Sĩ Tử chưa vào lớp thấy danh sách này.</span>
               </div>
               <button
                 onClick={() => setIsPersonalFormOpen(true)}
@@ -399,13 +399,13 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
           <h4 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase tracking-wider">
             👤 Nhật Ký Đổi Quà Cá Nhân
           </h4>
-          <span className="text-[10px] text-synth-text-muted/60">— Lượt đổi quà trường của học sinh đang xem (khi mồ côi)</span>
+          <span className="text-[10px] text-synth-text-muted/60">— Lượt đổi quà trường của Sĩ Tử đang xem (khi tự do)</span>
         </div>
 
         {!viewingStudentId ? (
           <div className="glass-panel rounded-2xl border border-white/5 p-6 text-center">
             <p className="text-xs text-synth-text-muted">
-              Chọn tài khoản học sinh tại tab <strong className="text-synth-magenta">👥 Học Sinh & Liên Kết</strong> → "Xem Hoạt Động" để xem lịch sử đổi quà.
+              Chọn tài khoản Sĩ Tử tại tab <strong className="text-synth-magenta">Sổ Danh Bộ</strong> → "Xem Hoạt Động" để xem lịch sử đổi quà.
             </p>
           </div>
         ) : (

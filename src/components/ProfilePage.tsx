@@ -3,7 +3,7 @@ import { Palette, Sparkles } from 'lucide-react';
 import { UI_THEMES } from '../theme/uiThemes';
 import type { UiThemeId, UserProfile } from '../types/game';
 import { useGameState } from '../hooks/useGameState';
-import { getStudentRankForLevel } from '../types/game';
+import { getStudentRankForLevel, STUDENT_RANKS } from '../types/game';
 import { toast } from '../utils/toast';
 import { AcademyHandbook } from './AcademyHandbook';
 import { ActivityLog } from './ActivityLog';
@@ -28,6 +28,23 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
   const { t } = useTranslate();
 
   const [isCamNangOpen, setIsCamNangOpen] = useState(false);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [updatingAvatar, setUpdatingAvatar] = useState(false);
+  const updateAvatar = useGameState(state => state.updateAvatar);
+
+  const MOCK_AVATARS = [
+    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Maikawaii1',
+    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Maikawaii2',
+    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Maikawaii3',
+    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Maikawaii4',
+    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Maikawaii5',
+    'https://api.dicebear.com/7.x/fun-emoji/svg?seed=Maikawaii6',
+    'https://api.dicebear.com/7.x/bottts/svg?seed=MaikawaiiRobot1',
+    'https://api.dicebear.com/7.x/bottts/svg?seed=MaikawaiiRobot2',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=MaikawaiiScholar1',
+    'https://api.dicebear.com/7.x/adventurer/svg?seed=MaikawaiiScholar2'
+  ];
+
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     cost: number;
@@ -96,11 +113,23 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
 
         <div className="relative z-10 mb-6 flex flex-col gap-4 border-b border-white/10 pb-6 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
-            <img
-              src={currentUser.avatar}
-              alt={currentUser.name}
-              className="h-16 w-16 rounded-3xl border border-white/15 object-cover shadow-lg"
-            />
+            <div className="flex flex-col items-center gap-1.5 shrink-0">
+              <img
+                src={currentUser.avatar}
+                alt={currentUser.name}
+                className="h-16 w-16 rounded-3xl border border-white/15 object-cover shadow-lg"
+              />
+              <button
+                onClick={() => setIsAvatarModalOpen(true)}
+                className={`text-[9px] font-bold px-2 py-0.5 rounded border tracking-wide uppercase transition-colors cursor-pointer ${
+                  isLight
+                    ? 'border-violet-200 bg-violet-50 text-violet-700 hover:bg-violet-100'
+                    : 'border-white/10 bg-white/5 text-slate-300 hover:bg-white/10 hover:text-white'
+                }`}
+              >
+                Đổi Avatar
+              </button>
+            </div>
             <div>
               <p className={`mb-1 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-[10px] font-black uppercase tracking-[0.24em] ${
                 isUnicorn
@@ -154,6 +183,18 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             </div>
           </div>
 
+          {onNavigate && (
+            <button
+              onClick={() => onNavigate('academy')}
+              className={`md:self-center px-4 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider transition-all hover:scale-[1.02] cursor-pointer border ${
+                isLight
+                  ? 'border-violet-200 bg-gradient-to-r from-fuchsia-100 to-violet-100 text-violet-900 shadow-sm hover:brightness-105'
+                  : 'border-synth-cyan/30 bg-synth-cyan/10 text-synth-cyan hover:bg-synth-cyan/20 hover:shadow-[0_0_15px_rgba(0,240,255,0.3)]'
+              }`}
+            >
+              ⬅ {t('Quay lại Học Viện', 'Back to Academy')}
+            </button>
+          )}
         </div>
 
         {/* Bố cục 1 trang duy nhất gộp mọi thông tin học tịch */}
@@ -184,6 +225,31 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 <div className="p-3.5 rounded-xl border border-white/5 bg-white/5">
                   <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron mb-1">{t('Chuỗi học tập', 'Learning Streak')}</span>
                   <span className="font-orbitron font-black text-synth-green text-sm">{player.streak} {t('Ngày', 'Days')}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Cây Danh Hiệu */}
+            {currentUser.role === 'student' && (
+              <div className={`p-5 rounded-2xl border ${isLight ? 'border-violet-200/50 bg-violet-50/20' : 'border-white/10 bg-white/5'} space-y-3`}>
+                <h3 className={`font-orbitron font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 ${isLight ? 'text-violet-800' : 'text-synth-cyan'}`}>
+                  <span>🏆</span> {t('Cây Danh Hiệu Sĩ Tử', 'Academic Titles Tree')}
+                </h3>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {STUDENT_RANKS.map(rank => {
+                    const isUnlocked = player.level >= rank.minLevel;
+                    return (
+                      <div key={rank.id} className={`p-2.5 rounded-xl border flex flex-col items-center text-center transition-all ${
+                        isUnlocked
+                          ? (isLight ? 'border-violet-200 bg-white/80' : 'border-synth-cyan/35 bg-synth-cyan/5 text-slate-200')
+                          : 'opacity-40 border-white/5 bg-black/10'
+                      }`} title={rank.description}>
+                        <span className="text-xl">{rank.icon}</span>
+                        <span className="font-orbitron font-bold text-[10px] mt-1 truncate max-w-full">{rank.name}</span>
+                        <span className="text-[9px] text-slate-400 mt-0.5">Lv.{rank.minLevel}+</span>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -378,17 +444,25 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
             )}
 
             {/* 3. Cẩm Nang Học Tập Banner */}
-            <div className="flex flex-col sm:flex-row justify-between items-center bg-gradient-to-r from-amber-950/60 to-stone-900/60 p-4 rounded-2xl border border-amber-800/25 gap-4">
+            <div className={`flex flex-col sm:flex-row justify-between items-center p-4 rounded-2xl border gap-4 ${
+              isLight
+                ? 'border-violet-200/50 bg-white/80 text-violet-800 shadow-sm'
+                : 'border-synth-cyan/20 bg-synth-blue/30 text-slate-100'
+            }`}>
               <div className="flex items-center gap-3">
                 <span className="text-3xl">📖</span>
                 <div>
-                  <h4 className="text-sm font-bold text-amber-100 font-serif">{t('Cẩm Nang Học Tập', 'Study Handbook')}</h4>
-                  <p className="text-xs text-slate-300 font-serif">{t('Nội quy học tập, điều kiện thăng cấp và kinh nghiệm.', 'Learning rules, level-up conditions and experience.')}</p>
+                  <h4 className={`text-sm font-bold font-serif ${isLight ? 'text-violet-900' : 'text-synth-cyan'}`}>{t('Cẩm Nang Học Tập', 'Study Handbook')}</h4>
+                  <p className={`text-xs font-serif ${isLight ? 'text-slate-500' : 'text-slate-300'}`}>{t('Quy chế học phủ, điều kiện thăng cấp và điểm tu học.', 'Learning rules, level-up conditions and experience.')}</p>
                 </div>
               </div>
               <button
                 onClick={() => setIsCamNangOpen(true)}
-                className="w-full sm:w-auto px-5 py-2.5 bg-amber-900 hover:bg-amber-800 text-amber-100 font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer border border-amber-800/30 hover:scale-[1.02] shadow-lg shadow-amber-950/40"
+                className={`w-full sm:w-auto px-5 py-2.5 font-orbitron font-black text-xs uppercase tracking-widest rounded-xl transition-all cursor-pointer border hover:scale-[1.02] ${
+                  isLight
+                    ? 'border-violet-300 bg-violet-50 text-violet-700 hover:bg-violet-100'
+                    : 'border-synth-cyan/30 bg-synth-cyan/10 text-synth-cyan hover:bg-synth-cyan/20 hover:shadow-[0_0_15px_rgba(0,240,255,0.3)]'
+                }`}
               >
                 {t('Mở Cẩm Nang', 'Open Handbook')} 📖
               </button>
@@ -423,6 +497,53 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
         onConfirm={confirmModal.onConfirm}
         onCancel={() => setConfirmModal(prev => ({ ...prev, isOpen: false }))}
       />
+
+      {isAvatarModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className={`w-full max-w-md rounded-2xl border p-5 space-y-4 ${
+            isLight ? 'border-violet-200 bg-white text-violet-900 shadow-xl' : 'border-synth-cyan/35 bg-slate-950 text-slate-100 shadow-[0_0_30px_rgba(0,240,255,0.25)]'
+          }`}>
+            <div className="flex justify-between items-center border-b border-white/10 pb-3">
+              <h3 className="font-orbitron font-bold text-sm uppercase tracking-wider">🔮 {t('Chọn Ảnh Đại Diện Mới', 'Select New Avatar')}</h3>
+              <button
+                onClick={() => setIsAvatarModalOpen(false)}
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-5 gap-3.5 py-2">
+              {MOCK_AVATARS.map((url, idx) => (
+                <button
+                  key={idx}
+                  onClick={async () => {
+                    if (updatingAvatar) return;
+                    setUpdatingAvatar(true);
+                    const success = await updateAvatar(url);
+                    if (success) {
+                      setIsAvatarModalOpen(false);
+                    }
+                    setUpdatingAvatar(false);
+                  }}
+                  disabled={updatingAvatar}
+                  className={`w-12 h-12 rounded-2xl overflow-hidden border-2 transition-all p-1 bg-slate-800/40 hover:scale-105 cursor-pointer ${
+                    currentUser.avatar === url
+                      ? 'border-synth-cyan shadow-[0_0_10px_#00f0ff]'
+                      : 'border-white/10 hover:border-synth-magenta'
+                  }`}
+                >
+                  <img src={url} alt="Avatar option" className="w-full h-full object-cover" />
+                </button>
+              ))}
+            </div>
+            
+            <div className="text-[10px] text-slate-400 leading-normal text-center">
+              * {t('Avatar được lưu trên mây và áp dụng đồng bộ khắp học viện.', 'Avatar is stored in the cloud and synced everywhere.')}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

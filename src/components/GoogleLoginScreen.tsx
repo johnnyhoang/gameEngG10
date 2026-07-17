@@ -12,9 +12,9 @@ const DEV_AVATAR = 'data:image/svg+xml;utf8,' + encodeURIComponent(
 // TODO(dev-tooling): backdoor đăng nhập giả cho test local, không tạo/đụng DB (xem login()
 // trong createAuthSlice.ts). Xoá bỏ hoàn toàn khi không còn cần test nhanh không cần Google thật.
 const DEV_BACKDOOR_ROLES = [
-  { role: 'student', label: 'Sĩ Tử (Học sinh)', id: 'mock-dev-student', name: 'Dev Sĩ Tử' },
-  { role: 'pho_vien', label: 'Phó Viện Trưởng', id: 'mock-dev-pho-vien', name: 'Dev Phó Viện Trưởng' },
-  { role: 'truong_vien', label: 'Viện Chủ (Trưởng bối/Admin)', id: 'mock-dev-truong-vien', name: 'Dev Viện Chủ' },
+  { role: 'student', label: 'Sĩ Tử 🌱', id: 'mock-dev-student', name: 'Dev Sĩ Tử' },
+  { role: 'pho_vien', label: 'Phó Viện Trưởng 🛡️', id: 'mock-dev-pho-vien', name: 'Dev Phó Viện Trưởng' },
+  { role: 'truong_vien', label: 'Viện Trưởng 👑', id: 'mock-dev-truong-vien', name: 'Dev Viện Trưởng' },
 ] as const;
 
 export const GoogleLoginScreen: React.FC = () => {

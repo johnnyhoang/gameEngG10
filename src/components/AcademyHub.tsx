@@ -56,7 +56,7 @@ export const AcademyHub: React.FC<AcademyHubProps> = ({
 
   const TABS: { id: AcademyTabId; icon: string; label: string; labelEn: string }[] = [
     { id: 'academy',   icon: '🏫', label: 'Học Viện',      labelEn: 'Academy' },
-    { id: 'knowledge', icon: '📚', label: 'Hang Luyện',    labelEn: 'Knowledge Hall' },
+    { id: 'knowledge', icon: '📚', label: 'Phòng Luyện Tập',    labelEn: 'Practice Hall' },
     { id: 'challenge', icon: '⚔️', label: 'Trường Thi',    labelEn: 'Challenge Hall' },
     { id: 'adventure', icon: '🧭', label: 'Khu Thám Hiểm', labelEn: 'Adventure Zone' },
     { id: 'funzone',   icon: '🎮', label: 'Funzone',       labelEn: 'Funzone' },

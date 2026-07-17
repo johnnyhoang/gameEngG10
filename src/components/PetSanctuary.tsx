@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
-import { ChevronLeft, ChevronRight, Lock } from 'lucide-react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { HistoryLog, PetStage } from '../types/game';
-import { FogCard } from './FogCard';
 
 const PET_STAGE_ORDER: PetStage[] = ['egg', 'baby', 'adult', 'legend'];
 const PET_NAME = 'Heo Maikawaii';
@@ -298,7 +297,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
           onClick={onClick}
           className={`relative w-48 h-48 mx-auto flex items-center justify-center rounded-full transition-all duration-200 ${glowClass} cursor-pointer ${
             isInteracting ? 'scale-105' : 'hover:scale-[1.02]'
-          } ${isTickled ? 'animate-wiggle' : 'animate-float'}`}
+          } ${(isTickled || isInteracting) ? 'animate-wiggle' : 'animate-float'}`}
         >
           <svg width="150" height="150" viewBox="0 0 200 200" className="w-full h-full">
             {/* Cracked mushroom shell at bottom */}
@@ -364,7 +363,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
           onClick={onClick}
           className={`relative w-48 h-48 mx-auto flex items-center justify-center rounded-full transition-all duration-200 ${glowClass} cursor-pointer ${
             isInteracting ? 'scale-105' : 'hover:scale-[1.02]'
-          } ${isTickled ? 'animate-wiggle' : 'animate-float'}`}
+          } ${(isTickled || isInteracting) ? 'animate-wiggle' : 'animate-float'}`}
         >
           <svg width="150" height="150" viewBox="0 0 200 200" className="w-full h-full">
             {/* Wooden Sword on back */}
@@ -437,7 +436,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
         onClick={onClick}
         className={`relative w-48 h-48 mx-auto flex items-center justify-center rounded-full transition-all duration-200 ${glowClass} cursor-pointer ${
           isInteracting ? 'scale-105' : 'hover:scale-[1.02]'
-        } ${isTickled ? 'animate-wiggle' : 'animate-float'}`}
+        } ${(isTickled || isInteracting) ? 'animate-wiggle' : 'animate-float'}`}
       >
         <svg width="150" height="150" viewBox="0 0 200 200" className="w-full h-full">
           {/* Glowing Aura under pig */}
@@ -676,7 +675,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
                       {unlocked ? (
                         <span className="text-xl">🐷</span>
                       ) : (
-                        <Lock className="w-4 h-4 text-slate-500" />
+                        <span className="text-sm font-bold text-slate-500">❓</span>
                       )}
                       <span className={`text-[8px] uppercase font-bold text-center leading-tight ${unlocked ? 'text-slate-300' : 'text-slate-600'}`}>
                         {unlocked ? PET_STAGE_LABELS[stage].replace(/[^\p{L}\p{N} ]/gu, '').trim() : 'Chưa mở'}
@@ -687,48 +686,41 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
               </div>
 
               <div className="relative">
-                <FogCard
-                  pageId={`pet-album-${viewedStage}`}
-                  requiredCompletions={1}
-                  decayDays={14}
-                  onOpenLevel3={() => {}}
-                >
-                  <div className="rounded-2xl border border-white/10 bg-black/35 p-6 flex flex-col items-center gap-4 text-center min-h-[300px] justify-center">
-                    {isUnlocked ? (
-                      <div className="space-y-4 w-full">
-                        {/* Polaroid Frame */}
-                        <div className="bg-white p-3 pb-5 rounded shadow-xl text-black max-w-xs mx-auto transform rotate-[-1deg] hover:rotate-0 transition-transform duration-300">
-                          <div className="bg-slate-900 rounded-lg p-4 flex items-center justify-center min-h-[140px] border border-slate-800">
-                            {renderPetAvatarForStage(viewedStage, 'happy', false, false)}
-                          </div>
-                          {/* Handwritten Photo Caption */}
-                          <div className="mt-3 text-xs font-serif font-bold tracking-tight text-slate-800 border-t border-slate-100 pt-2 min-h-[32px] flex items-center justify-center">
-                            ✍️ {STAGE_MEMORIES[viewedStage]?.photoConcept}
-                          </div>
+                <div className="rounded-2xl border border-white/10 bg-black/35 p-6 flex flex-col items-center gap-4 text-center min-h-[300px] justify-center">
+                  {isUnlocked ? (
+                    <div className="space-y-4 w-full">
+                      {/* Polaroid Frame */}
+                      <div className="bg-white p-3 pb-5 rounded shadow-xl text-black max-w-xs mx-auto transform rotate-[-1deg] hover:rotate-0 transition-transform duration-300">
+                        <div className="bg-slate-900 rounded-lg p-4 flex items-center justify-center min-h-[140px] border border-slate-800">
+                          {renderPetAvatarForStage(viewedStage, 'happy', false, false)}
                         </div>
-
-                        {/* Memory Story */}
-                        <div className="space-y-1.5 pt-2">
-                          <div className="font-orbitron font-black uppercase tracking-wider text-xs text-synth-cyan">
-                            Giai đoạn: {PET_STAGE_LABELS[viewedStage]}
-                          </div>
-                          <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed font-serif italic bg-white/5 p-3 rounded-xl border border-white/5">
-                            "{STAGE_MEMORIES[viewedStage]?.story}"
-                          </p>
+                        {/* Handwritten Photo Caption */}
+                        <div className="mt-3 text-xs font-serif font-bold tracking-tight text-slate-800 border-t border-slate-100 pt-2 min-h-[32px] flex items-center justify-center">
+                          ✍️ {STAGE_MEMORIES[viewedStage]?.photoConcept}
                         </div>
                       </div>
-                    ) : (
-                      <div className="py-12 flex flex-col items-center justify-center">
-                        <div className="font-orbitron font-black uppercase tracking-wider text-sm text-slate-500">
-                          Kỷ niệm chưa trải nghiệm
+
+                      {/* Memory Story */}
+                      <div className="space-y-1.5 pt-2">
+                        <div className="font-orbitron font-black uppercase tracking-wider text-xs text-synth-cyan">
+                          Giai đoạn: {PET_STAGE_LABELS[viewedStage]}
                         </div>
-                        <p className="text-xs text-slate-500 max-w-xs mt-1">
-                          Hãy kiên trì chăm sóc và cho Heo {pet.name} ăn để nâng cấp lên giai đoạn tiếp theo và mở ra bức ảnh này!
+                        <p className="text-xs text-slate-300 max-w-md mx-auto leading-relaxed font-serif italic bg-white/5 p-3 rounded-xl border border-white/5">
+                          "{STAGE_MEMORIES[viewedStage]?.story}"
                         </p>
                       </div>
-                    )}
-                  </div>
-                </FogCard>
+                    </div>
+                  ) : (
+                    <div className="py-12 flex flex-col items-center justify-center">
+                      <div className="font-orbitron font-black uppercase tracking-wider text-sm text-slate-500">
+                        Kỷ niệm chưa trải nghiệm
+                      </div>
+                      <p className="text-xs text-slate-500 max-w-xs mt-1">
+                        Hãy kiên trì chăm sóc và cho Heo {pet.name} ăn để nâng cấp lên giai đoạn tiếp theo và mở ra bức ảnh này!
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex items-center justify-between gap-3">

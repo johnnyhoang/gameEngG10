@@ -162,7 +162,7 @@ export const SearchSuggest: React.FC<SearchSuggestProps> = ({
                 <span className="block text-[10px] text-slate-400 truncate">{item.email}</span>
               </div>
               <span className="text-[9px] uppercase px-1.5 py-0.5 rounded font-orbitron bg-white/5 border border-white/10 text-slate-400">
-                {item.role === 'tutor' || item.role === 'secondary_tutor' ? 'Giáo Viên' : 'Học Sinh'}
+                {item.role === 'tutor' || item.role === 'secondary_tutor' ? 'Chủ Nhiệm' : 'Sĩ Tử'}
               </span>
             </div>
           ))}

@@ -195,7 +195,7 @@ export const TutorConsole: React.FC = () => {
             <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
-                    ⚙️ {isAdmin(currentUser?.role) ? 'BAN GIÁM HIỆU' : 'LỚP CHỦ NHIỆM'}
+                    🏫 PHÒNG ĐIỀU HÀNH — {isAdmin(currentUser?.role) ? 'BAN GIÁM HIỆU' : 'LỚP CHỦ NHIỆM'}
                     <button
                       onClick={() => showHelp('parent-console')}
                       className="w-5 h-5 rounded-full bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta text-[10px] font-black flex items-center justify-center hover:bg-synth-magenta/40 cursor-pointer transition-colors shrink-0"
@@ -206,16 +206,16 @@ export const TutorConsole: React.FC = () => {
                   </h3>
                   <div className="text-xs text-synth-text-muted leading-relaxed max-w-4xl space-y-1">
                     {isAdmin(currentUser?.role) ? (
-                      <p>Theo dõi toàn bộ học sinh và cán bộ trong viện, quản lý liên kết lớp học, cấu hình quy tắc thưởng (Ruby) và xem lịch sử hoạt động.</p>
+                      <p>Theo dõi toàn bộ Sĩ Tử và cán bộ trong viện, quản lý liên kết lớp học, cấu hình quy tắc thưởng (Ruby) và xem lịch sử hoạt động.</p>
                     ) : (
                       <>
                         <p>
                           Vai trò hiện tại:{' '}
                           <span className="font-bold text-synth-magenta uppercase font-orbitron">
-                            {currentUser?.role === 'tutor' ? 'Chủ Nhiệm Chính' : 'Phó chủ nhiệm'}
+                            {currentUser?.role === 'tutor' ? 'Chủ Nhiệm Chính' : 'Chủ Nhiệm Phụ'}
                           </span>
                         </p>
-                        <p>Theo dõi học sinh lớp bạn phụ trách, quản lý liên kết lớp học, giao nhiệm vụ và duyệt đổi quà khuyến học.</p>
+                        <p>Theo dõi Sĩ Tử lớp bạn phụ trách, quản lý liên kết lớp học, giao nhiệm vụ và duyệt đổi quà khuyến học.</p>
                       </>
                     )}
                   </div>
@@ -227,7 +227,7 @@ export const TutorConsole: React.FC = () => {
             {/* Quick Stats Grid — chỉ hiện chỉ số có ý nghĩa với vai trò hiện tại */}
               <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="glass-panel border border-white/5 rounded-2xl p-3.5 flex flex-col justify-between hover:border-synth-cyan/30 transition-all duration-300 group bg-white/3">
-                  <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-cyan transition-colors">👥 Tổng Số Học Sinh</span>
+                  <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-cyan transition-colors">👥 Tổng Số Sĩ Tử</span>
                   <span className="text-2xl font-black text-synth-cyan font-orbitron mt-1">{totalStudents}</span>
                 </div>
                 <div className="glass-panel border border-white/5 rounded-2xl p-3.5 flex flex-col justify-between hover:border-synth-magenta/30 transition-all duration-300 group bg-white/3">
@@ -453,7 +453,7 @@ export const TutorConsole: React.FC = () => {
               }`}
           >
             <span className="text-base">🏫</span>
-            <span>{t('Hiệu Trưởng', 'Homeroom')}</span>
+            <span>{t('Sổ Danh Bộ', 'Roster')}</span>
           </button>
 
           <button
@@ -479,7 +479,7 @@ export const TutorConsole: React.FC = () => {
         <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-synth-cyan mb-3"></div>
           <p className="font-orbitron text-xs text-synth-cyan font-bold tracking-widest uppercase animate-pulse">
-            Đang tải hồ sơ học sinh...
+            Đang tải hồ sơ Sĩ Tử...
           </p>
         </div>
       )}

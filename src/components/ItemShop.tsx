@@ -3,7 +3,6 @@ import { useGameState } from '../hooks/useGameState';
 import { Shield, Coins, Gift, Palette, RotateCcw } from 'lucide-react';
 import { toast } from '../utils/toast';
 import { UI_THEMES, isLightTheme } from '../theme/uiThemes';
-import { FogCard } from './FogCard';
 import { RubyConfirmModal } from './Common/RubyConfirmModal';
 import { useTranslate } from '../hooks/useTranslate';
 
@@ -241,42 +240,50 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="relative">
-            <FogCard pageId="shop-item-shield" requiredCompletions={2} decayDays={7}
-              forceOpenNormal={player.ruby >= 150}
-              label={t("Chưa đủ Ruby", "Not enough Ruby")}
-              onOpenLevel3={handleBuyShield}>
-              <div className={`glass-panel rounded-2xl p-5 flex justify-between items-center h-full ${isUnicorn ? 'border-violet-200/35 bg-gradient-to-tr from-white/85 via-cyan-50/70 to-fuchsia-50/70' : 'border-synth-cyan/20 bg-gradient-to-tr from-synth-cyan/5 to-transparent'}`}>
-                <div className="flex gap-4 items-center">
-                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl border shrink-0 ${isUnicorn ? 'bg-cyan-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-cyan/30'}`}>🛡️</div>
-                  <div className="space-y-1">
-                    <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{t("Thẻ Chuyên Cần", "Attendance Shield")}</h4>
-                    <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>{t("Bảo vệ chuỗi học tập khi lỡ bỏ một ngày đèn sách, tránh bị phạt ngắt chuỗi.", "Protect your learning streak when missing a study day, avoiding break penalties.")}</p>
-                    {hasStreakShield && <span className="text-[9px] font-bold text-synth-cyan border border-synth-cyan/40 px-1.5 py-0.5 rounded font-orbitron inline-block">{t("Đang kích hoạt ✓", "Activated ✓")}</span>}
-                  </div>
+            <div className={`glass-panel rounded-2xl p-5 flex justify-between items-center h-full ${
+              player.ruby < 150 ? 'opacity-70' : ''
+            } ${isUnicorn ? 'border-violet-200/35 bg-gradient-to-tr from-white/85 via-cyan-50/70 to-fuchsia-50/70' : 'border-synth-cyan/20 bg-gradient-to-tr from-synth-cyan/5 to-transparent'}`}>
+              <div className="flex gap-4 items-center">
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl border shrink-0 ${isUnicorn ? 'bg-cyan-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-cyan/30'}`}>🛡️</div>
+                <div className="space-y-1">
+                  <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{t("Thẻ Chuyên Cần", "Attendance Shield")}</h4>
+                  <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>{t("Bảo vệ chuỗi học tập khi lỡ bỏ một ngày đèn sách, tránh bị phạt ngắt chuỗi.", "Protect your learning streak when missing a study day, avoiding break penalties.")}</p>
+                  {hasStreakShield && <span className="text-[9px] font-bold text-synth-cyan border border-synth-cyan/40 px-1.5 py-0.5 rounded font-orbitron inline-block">{t("Đang kích hoạt ✓", "Activated ✓")}</span>}
+                  {player.ruby < 150 && <span className="text-[9px] font-bold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
                 </div>
-                <button onClick={(e) => { e.stopPropagation(); handleBuyShield(); }} disabled={hasStreakShield}
-                  className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shrink-0 ${isUnicorn ? 'bg-gradient-to-r from-cyan-300 to-violet-300 text-violet-900 shadow-md hover:brightness-105' : 'bg-synth-cyan text-black hover:shadow-[0_0_10px_rgba(0,240,255,0.4)]'}`}>150 Ruby</button>
               </div>
-            </FogCard>
+              <button onClick={(e) => { e.stopPropagation(); handleBuyShield(); }} disabled={hasStreakShield || player.ruby < 150}
+                className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shrink-0 ${
+                  player.ruby < 150
+                    ? 'bg-slate-800 text-slate-500 border border-slate-700'
+                    : isUnicorn
+                      ? 'bg-gradient-to-r from-cyan-300 to-violet-300 text-violet-900 shadow-md hover:brightness-105'
+                      : 'bg-synth-cyan text-black hover:shadow-[0_0_10px_rgba(0,240,255,0.4)]'
+                }`}>150 Ruby</button>
+            </div>
           </div>
           <div className="relative md:col-span-2">
-            <FogCard pageId="shop-item-hint" requiredCompletions={2} decayDays={7}
-              forceOpenNormal={player.ruby >= 50}
-              label={t("Chưa đủ Ruby", "Not enough Ruby")}
-              onOpenLevel3={handleBuyHint}>
-              <div className={`glass-panel rounded-2xl p-5 flex justify-between items-center h-full ${isUnicorn ? 'border-violet-200/35 bg-gradient-to-tr from-white/85 via-amber-50/70 to-fuchsia-50/70' : 'border-synth-orange/20 bg-gradient-to-tr from-synth-orange/5 to-transparent'}`}>
-                <div className="flex gap-4 items-center">
-                  <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl border shrink-0 ${isUnicorn ? 'bg-amber-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-orange/30'}`}>📜</div>
-                  <div className="space-y-1">
-                    <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{t("Thẻ Gợi Ý", "Hint Card")}</h4>
-                    <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>{t("Gợi mở hướng giải hoặc loại bỏ một đáp án nhiễu trong câu hỏi đang làm.", "Reveal a hint or eliminate a wrong option in the active question.")}</p>
-                    <span className={`text-[9px] font-bold font-orbitron ${isUnicorn ? 'text-amber-600' : 'text-synth-orange'}`}>{t("Dùng ngay trong câu hỏi đang làm", "Use directly in the active question")}</span>
-                  </div>
+            <div className={`glass-panel rounded-2xl p-5 flex justify-between items-center h-full ${
+              player.ruby < 50 ? 'opacity-70' : ''
+            } ${isUnicorn ? 'border-violet-200/35 bg-gradient-to-tr from-white/85 via-amber-50/70 to-fuchsia-50/70' : 'border-synth-orange/20 bg-gradient-to-tr from-synth-orange/5 to-transparent'}`}>
+              <div className="flex gap-4 items-center">
+                <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl border shrink-0 ${isUnicorn ? 'bg-amber-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-orange/30'}`}>📜</div>
+                <div className="space-y-1">
+                  <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{t("Thẻ Gợi Ý", "Hint Card")}</h4>
+                  <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>{t("Gợi mở hướng giải hoặc loại bỏ một đáp án nhiễu trong câu hỏi đang làm.", "Reveal a hint or eliminate a wrong option in the active question.")}</p>
+                  <span className={`text-[9px] font-bold font-orbitron ${isUnicorn ? 'text-amber-600' : 'text-synth-orange'}`}>{t("Dùng ngay trong câu hỏi đang làm", "Use directly in the active question")}</span>
+                  {player.ruby < 50 && <span className="text-[9px] font-bold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
                 </div>
-                <button onClick={(e) => { e.stopPropagation(); handleBuyHint(); }}
-                  className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${isUnicorn ? 'bg-gradient-to-r from-amber-300 to-orange-300 text-violet-900 shadow-md hover:brightness-105' : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.4)]'}`}>50 Ruby</button>
               </div>
-            </FogCard>
+              <button onClick={(e) => { e.stopPropagation(); handleBuyHint(); }} disabled={player.ruby < 50}
+                className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shrink-0 ${
+                  player.ruby < 50
+                    ? 'bg-slate-800 text-slate-500 border border-slate-700'
+                    : isUnicorn
+                      ? 'bg-gradient-to-r from-amber-300 to-orange-300 text-violet-900 shadow-md hover:brightness-105'
+                      : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.4)]'
+                }`}>50 Ruby</button>
+            </div>
           </div>
         </div>
       </div>
@@ -290,6 +297,18 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
           <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}`}>
             {t("Quay để nhận phần quà ngẫu nhiên từ học viện vào mỗi dịp cuối tuần!", "Spin to receive a random gift from the academy every weekend!")}
           </p>
+          {/* Danh sách giải thưởng có thể trúng */}
+          <div className="pt-2">
+            <span className="text-[10px] font-orbitron font-bold uppercase tracking-wider text-slate-400 block mb-1.5">🎁 Phần quà có trong vòng quay:</span>
+            <div className="flex flex-wrap gap-2">
+              <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 font-orbitron font-bold text-[9px] shadow-sm">💎 +50 Ruby</span>
+              <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 font-orbitron font-bold text-[9px] shadow-sm">💎 +100 Ruby</span>
+              <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 font-orbitron font-bold text-[9px] shadow-sm">💎 +200 Ruby</span>
+              <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 font-orbitron font-bold text-[9px] shadow-sm">💎 +300 Ruby</span>
+              <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-orbitron font-bold text-[9px] shadow-sm">⚡ +30 Năng lượng</span>
+              <span className="px-2 py-0.5 rounded bg-slate-500/10 border border-slate-500/30 text-slate-400 font-orbitron font-bold text-[9px] shadow-sm">❓ May mắn lần sau</span>
+            </div>
+          </div>
         </div>
         
         <div className={`glass-panel rounded-2xl p-5 flex flex-col md:flex-row justify-between items-center gap-4 ${isUnicorn ? 'border-violet-200/35 bg-gradient-to-tr from-white/85 via-amber-50/70 to-fuchsia-50/70' : 'border-synth-orange/20 bg-gradient-to-tr from-synth-orange/5 to-transparent'}`}>
@@ -339,28 +358,32 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
             const isActive = theme.id === uiTheme;
             return (
               <div key={theme.id} className="relative">
-                <FogCard pageId={`shop-theme-${theme.id}`} requiredCompletions={1} decayDays={10}
-                  forceOpenNormal={isUnlocked || player.ruby >= THEME_UNLOCK_COST}
-                  label="Chưa đủ Ruby"
-                  onOpenLevel3={() => isUnlocked ? setUiTheme(theme.id) : handleBuyTheme(theme.id)}>
-                  <div className={`glass-panel rounded-2xl p-5 flex justify-between items-center h-full ${isUnicorn ? 'border-violet-200/35 bg-gradient-to-tr from-white/85 via-violet-50/70 to-fuchsia-50/70' : 'border-synth-purple/20 bg-gradient-to-tr from-synth-purple/5 to-transparent'}`}>
-                    <div className="flex gap-4 items-center min-w-0">
-                      <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl border shrink-0 ${isUnicorn ? 'bg-violet-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-purple/30'}`}>{theme.iconSet[0]}</div>
-                      <div className="space-y-1 min-w-0">
-                        <h4 className={`font-orbitron font-bold text-sm truncate ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{theme.name}</h4>
-                        <p className={`text-xs line-clamp-2 ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>{theme.tagline}</p>
-                        {isActive && <span className="text-[9px] font-bold text-synth-green border border-synth-green/40 px-1.5 py-0.5 rounded font-orbitron inline-block">Đang dùng ✓</span>}
-                      </div>
+                <div className={`glass-panel rounded-2xl p-5 flex justify-between items-center h-full ${
+                  !isUnlocked && player.ruby < THEME_UNLOCK_COST ? 'opacity-70' : ''
+                } ${isUnicorn ? 'border-violet-200/35 bg-gradient-to-tr from-white/85 via-violet-50/70 to-fuchsia-50/70' : 'border-synth-purple/20 bg-gradient-to-tr from-synth-purple/5 to-transparent'}`}>
+                  <div className="flex gap-4 items-center min-w-0">
+                    <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl border shrink-0 ${isUnicorn ? 'bg-violet-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-purple/30'}`}>{theme.iconSet[0]}</div>
+                    <div className="space-y-1 min-w-0">
+                      <h4 className={`font-orbitron font-bold text-sm truncate ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{theme.name}</h4>
+                      <p className={`text-xs line-clamp-2 ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>{theme.tagline}</p>
+                      {isActive && <span className="text-[9px] font-bold text-synth-green border border-synth-green/40 px-1.5 py-0.5 rounded font-orbitron inline-block">Đang dùng ✓</span>}
+                      {!isUnlocked && player.ruby < THEME_UNLOCK_COST && <span className="text-[9px] font-bold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
                     </div>
-                    {isActive ? null : isUnlocked ? (
-                      <button onClick={(e) => { e.stopPropagation(); setUiTheme(theme.id); }}
-                        className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${isUnicorn ? 'bg-gradient-to-r from-violet-300 to-fuchsia-300 text-violet-900 shadow-md hover:brightness-105' : 'bg-synth-purple text-white hover:shadow-[0_0_10px_rgba(168,85,247,0.4)]'}`}>Mặc Ngay</button>
-                    ) : (
-                      <button onClick={(e) => { e.stopPropagation(); handleBuyTheme(theme.id); }}
-                        className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${isUnicorn ? 'bg-gradient-to-r from-cyan-300 to-violet-300 text-violet-900 shadow-md hover:brightness-105' : 'bg-synth-cyan text-black hover:shadow-[0_0_10px_rgba(0,240,255,0.4)]'}`}>🔒 {THEME_UNLOCK_COST} Ruby</button>
-                    )}
                   </div>
-                </FogCard>
+                  {isActive ? null : isUnlocked ? (
+                    <button onClick={(e) => { e.stopPropagation(); setUiTheme(theme.id); }}
+                      className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${isUnicorn ? 'bg-gradient-to-r from-violet-300 to-fuchsia-300 text-violet-900 shadow-md hover:brightness-105' : 'bg-synth-purple text-white hover:shadow-[0_0_10px_rgba(168,85,247,0.4)]'}`}>Mặc Ngay</button>
+                  ) : (
+                    <button onClick={(e) => { e.stopPropagation(); handleBuyTheme(theme.id); }} disabled={player.ruby < THEME_UNLOCK_COST}
+                      className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shrink-0 ${
+                        player.ruby < THEME_UNLOCK_COST
+                          ? 'bg-slate-800 text-slate-500 border border-slate-700'
+                          : isUnicorn
+                            ? 'bg-gradient-to-r from-cyan-300 to-violet-300 text-violet-900 shadow-md hover:brightness-105'
+                            : 'bg-synth-cyan text-black hover:shadow-[0_0_10px_rgba(0,240,255,0.4)]'
+                      }`}>🔒 {THEME_UNLOCK_COST} Ruby</button>
+                  )}
+                </div>
               </div>
             );
           })}
@@ -396,28 +419,32 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
                 const canRedeem = isAffordable;
                 return (
                   <div key={reward.id} className="relative">
-                    <FogCard pageId={`shop-reward-${reward.id}`} requiredCompletions={1} decayDays={5}
-                      forceOpenNormal={isAffordable}
-                      label={t('Chưa đủ Ruby', 'Not enough Ruby')}
-                      onOpenLevel3={() => canRedeem && handleRedeem(reward.id, reward.title)}>
-                      <div className={`glass-panel rounded-2xl p-4 flex justify-between items-center transition-all duration-200 h-full ${isUnicorn ? 'border-violet-200/25 bg-white/75 hover:bg-white/90' : 'border border-white/5 bg-synth-gray/20 hover:bg-synth-gray/30'}`}>
-                        <div className="flex gap-3 items-center min-w-0">
-                          <div className="w-10 h-10 rounded-lg bg-synth-blue/60 border border-white/5 flex items-center justify-center shrink-0 text-xl">🎁</div>
-                          <div className="space-y-0.5 min-w-0">
-                            <h4 className={`font-semibold text-sm truncate ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{reward.title}</h4>
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className={`text-[10px] font-bold font-orbitron ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-orange'}`}>{reward.costRuby} Ruby</span>
-                            </div>
+                    <div className={`glass-panel rounded-2xl p-4 flex justify-between items-center transition-all duration-200 h-full ${
+                      !isAffordable ? 'opacity-70' : ''
+                    } ${isUnicorn ? 'border-violet-200/25 bg-white/75 hover:bg-white/90' : 'border border-white/5 bg-synth-gray/20 hover:bg-synth-gray/30'}`}>
+                      <div className="flex gap-3 items-center min-w-0">
+                        <div className="w-10 h-10 rounded-lg bg-synth-blue/60 border border-white/5 flex items-center justify-center shrink-0 text-xl">🎁</div>
+                        <div className="space-y-0.5 min-w-0">
+                          <h4 className={`font-semibold text-sm truncate ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{reward.title}</h4>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`text-[10px] font-bold font-orbitron ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-orange'}`}>{reward.costRuby} Ruby</span>
+                            {!isAffordable && <span className="text-[9px] font-bold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 ml-2 shrink-0">
-                          <button onClick={(e) => { e.stopPropagation(); handleRedeem(reward.id, reward.title); }} disabled={!canRedeem}
-                            className={`px-3.5 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed ${isUnicorn ? 'bg-gradient-to-r from-fuchsia-300 to-violet-300 text-violet-900 hover:brightness-105' : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.3)]'}`}>
-                            {t('Đổi Quà', 'Redeem')}
-                          </button>
-                        </div>
                       </div>
-                    </FogCard>
+                      <div className="flex items-center gap-2 ml-2 shrink-0">
+                        <button onClick={(e) => { e.stopPropagation(); handleRedeem(reward.id, reward.title); }} disabled={!canRedeem}
+                          className={`px-3.5 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-45 disabled:cursor-not-allowed ${
+                            !canRedeem
+                              ? 'bg-slate-800 text-slate-500 border border-slate-700'
+                              : isUnicorn 
+                                ? 'bg-gradient-to-r from-fuchsia-300 to-violet-300 text-violet-900 hover:brightness-105' 
+                                : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.3)]'
+                          }`}>
+                          {t('Đổi Quà', 'Redeem')}
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 );
               })}
@@ -446,45 +473,49 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
                 const alreadyPending = myPendingForThisReward.length > 0;
                 return (
                   <div key={reward.id} className="relative">
-                    <FogCard pageId={`shop-class-reward-${reward.id}`} requiredCompletions={1} decayDays={5}
-                      forceOpenNormal={isAffordable}
-                      label={t('Chưa đủ Ruby', 'Not enough Ruby')}
-                      onOpenLevel3={() => !alreadyPending && canRedeem && handleRedeemClass(reward.id, reward.title)}>
-                      <div className={`glass-panel rounded-2xl p-4 flex justify-between items-center transition-all duration-200 h-full ${isUnicorn ? 'border-violet-200/25 bg-white/75 hover:bg-white/90' : 'border border-white/5 bg-synth-gray/20 hover:bg-synth-gray/30'} ${isOutOfStock ? 'opacity-50' : ''}`}>
-                        <div className="flex gap-3 items-center min-w-0">
-                          <div className="w-10 h-10 rounded-lg bg-synth-purple/30 border border-white/5 flex items-center justify-center shrink-0 text-xl">🎁</div>
-                          <div className="space-y-0.5 min-w-0">
-                            <h4 className={`font-semibold text-sm truncate ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{reward.title}</h4>
-                            {reward.teacherName && <p className="text-[10px] text-synth-text-muted">{t('từ ', 'from ')}{reward.teacherName}</p>}
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span className={`text-[10px] font-bold font-orbitron ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-orange'}`}>{reward.costRuby} Ruby</span>
-                              <span className={`text-[10px] font-bold font-orbitron px-1 rounded border ${isOutOfStock ? 'text-red-400 border-red-400/30 bg-red-400/5' : 'text-synth-cyan border-synth-cyan/30 bg-synth-cyan/5'}`}>
-                                {t('Còn', 'Left')} {reward.remaining}/{reward.quantity}
-                              </span>
-                            </div>
+                    <div className={`glass-panel rounded-2xl p-4 flex justify-between items-center transition-all duration-200 h-full ${
+                      !isAffordable ? 'opacity-70' : ''
+                    } ${isUnicorn ? 'border-violet-200/25 bg-white/75 hover:bg-white/90' : 'border border-white/5 bg-synth-gray/20 hover:bg-synth-gray/30'} ${isOutOfStock ? 'opacity-50' : ''}`}>
+                      <div className="flex gap-3 items-center min-w-0">
+                        <div className="w-10 h-10 rounded-lg bg-synth-purple/30 border border-white/5 flex items-center justify-center shrink-0 text-xl">🎁</div>
+                        <div className="space-y-0.5 min-w-0">
+                          <h4 className={`font-semibold text-sm truncate ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{reward.title}</h4>
+                          {reward.teacherName && <p className="text-[10px] text-synth-text-muted">{t('từ ', 'from ')}{reward.teacherName}</p>}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className={`text-[10px] font-bold font-orbitron ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-orange'}`}>{reward.costRuby} Ruby</span>
+                            <span className={`text-[10px] font-bold font-orbitron px-1 rounded border ${isOutOfStock ? 'text-red-400 border-red-400/30 bg-red-400/5' : 'text-synth-cyan border-synth-cyan/30 bg-synth-cyan/5'}`}>
+                              {t('Còn', 'Left')} {reward.remaining}/{reward.quantity}
+                            </span>
+                            {!isAffordable && !isOutOfStock && <span className="text-[9px] font-bold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
                           </div>
                         </div>
-                        <div className="flex flex-col gap-1.5 items-end ml-2 shrink-0">
-                          {alreadyPending ? (
-                            <>
-                              <span className="text-[10px] px-2 py-1 rounded font-orbitron font-bold text-synth-orange border border-synth-orange/30 bg-synth-orange/10 animate-pulse">{t('Chờ Trao', 'Pending')}</span>
-                              <button 
-                                disabled={cancellingIds[myPendingForThisReward[0].id]}
-                                onClick={(e) => { e.stopPropagation(); handleCancelClassRedemption(myPendingForThisReward[0].id); }}
-                                className="flex items-center gap-1 text-[10px] text-synth-text-muted hover:text-synth-magenta transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-                              >
-                                <RotateCcw className="w-3 h-3" /> {cancellingIds[myPendingForThisReward[0].id] ? t('Đang hủy...', 'Cancelling...') : t('Rút lại', 'Cancel')}
-                              </button>
-                            </>
-                          ) : (
-                            <button onClick={(e) => { e.stopPropagation(); handleRedeemClass(reward.id, reward.title); }} disabled={!canRedeem}
-                              className={`px-3.5 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed ${isUnicorn ? 'bg-gradient-to-r from-fuchsia-300 to-violet-300 text-violet-900 hover:brightness-105' : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.3)]'}`}>
-                              {isOutOfStock ? t('Hết Hàng', 'Out of Stock') : !isAffordable ? t('Chưa đủ Ruby', 'Not enough Ruby') : t('Đổi Quà', 'Redeem')}
-                            </button>
-                          )}
-                        </div>
                       </div>
-                    </FogCard>
+                      <div className="flex flex-col gap-1.5 items-end ml-2 shrink-0">
+                        {alreadyPending ? (
+                          <>
+                            <span className="text-[10px] px-2 py-1 rounded font-orbitron font-bold text-synth-orange border border-synth-orange/30 bg-synth-orange/10 animate-pulse">{t('Chờ Trao', 'Pending')}</span>
+                            <button 
+                              disabled={cancellingIds[myPendingForThisReward[0].id]}
+                              onClick={(e) => { e.stopPropagation(); handleCancelClassRedemption(myPendingForThisReward[0].id); }}
+                              className="flex items-center gap-1 text-[10px] text-synth-text-muted hover:text-synth-magenta transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                              <RotateCcw className="w-3 h-3" /> {cancellingIds[myPendingForThisReward[0].id] ? t('Đang hủy...', 'Cancelling...') : t('Rút lại', 'Cancel')}
+                            </button>
+                          </>
+                        ) : (
+                          <button onClick={(e) => { e.stopPropagation(); handleRedeemClass(reward.id, reward.title); }} disabled={!canRedeem}
+                            className={`px-3.5 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-45 disabled:cursor-not-allowed ${
+                              !canRedeem
+                                ? 'bg-slate-800 text-slate-500 border border-slate-700'
+                                : isUnicorn
+                                  ? 'bg-gradient-to-r from-fuchsia-300 to-violet-300 text-violet-900 hover:brightness-105'
+                                  : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.3)]'
+                            }`}>
+                            {isOutOfStock ? t('Hết Hàng', 'Out of Stock') : !isAffordable ? t('Thiếu Ruby', 'No Ruby') : t('Đổi Quà', 'Redeem')}
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 );
               })}

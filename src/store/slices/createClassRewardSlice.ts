@@ -1,4 +1,3 @@
-// @ts-nocheck
 import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
 import { classRewardService } from '../../services/classRewardService';

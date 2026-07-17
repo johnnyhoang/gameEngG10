@@ -85,7 +85,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
     return (
       <div className="glass-panel rounded-2xl border border-white/5 p-8 text-center space-y-3">
         <p className="text-xs text-synth-text-muted">
-          Chọn tài khoản học sinh tại tab <strong className="text-synth-magenta">👥 Học Sinh & Liên Kết</strong> (bấm "Xem Hoạt Động") để theo dõi báo cáo, tiến độ và nạp năng lượng.
+          Chọn tài khoản Sĩ Tử tại tab <strong className="text-synth-magenta">Sổ Danh Bộ</strong> (bấm "Xem Hồ Sơ") để theo dõi báo cáo, tiến độ và nạp năng lượng.
         </p>
       </div>
     );
@@ -126,7 +126,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
             </div>
             {pet && (
               <div className="bg-white/3 border border-white/5 rounded-2xl px-3.5 py-2 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300" title={`Tâm trạng: ${pet.mood === 'happy' ? 'Hân Hoan' : pet.mood === 'neutral' ? 'Bình Hòa' : 'U Uất'}`}>
-                <span className="block text-[9px] uppercase text-synth-text-muted">Thú Cưng</span>
+                <span className="block text-[9px] uppercase text-synth-text-muted">Linh Vật MIKA</span>
                 <span className="font-bold text-white text-sm flex justify-center items-center gap-1">
                   {pet.stage === 'egg' ? '🥚' : pet.stage === 'baby' ? '🐷' : '🐗'} <span className="text-[10px] text-synth-magenta font-orbitron">LV.{pet.level}</span>
                 </span>
@@ -139,11 +139,11 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
               </span>
             </div>
             <div className="bg-white/3 border border-white/5 rounded-2xl px-3.5 py-2 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
-              <span className="block text-[9px] uppercase text-synth-text-muted">Tích Lũy Điểm Số</span>
+              <span className="block text-[9px] uppercase text-synth-text-muted">Tích Lũy Điểm Tu Học</span>
               <span className="font-orbitron font-black text-synth-green text-sm">{player?.xp || 0} XP</span>
             </div>
             <div className="bg-white/3 border border-white/5 rounded-2xl px-3.5 py-2 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
-              <span className="block text-[9px] uppercase text-synth-text-muted">Chuỗi ngày</span>
+              <span className="block text-[9px] uppercase text-synth-text-muted">Chuỗi Chuyên Cần</span>
               <span className="font-orbitron font-black text-orange-400 text-sm">{player?.streak || 0} ngày</span>
             </div>
             <div className="bg-white/3 border border-white/5 rounded-2xl px-3.5 py-2 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
@@ -189,7 +189,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
             </ResponsiveContainer>
           ) : (
             <div className="h-full flex items-center justify-center text-synth-text-muted">
-              Học sinh chưa bắt đầu làm bài luyện tập.
+              Sĩ Tử chưa bắt đầu làm bài luyện tập.
             </div>
           )}
         </div>
@@ -202,7 +202,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
           <div className="glass-panel rounded-2xl border border-white/5 p-5 flex flex-col h-[350px]">
             <div className="flex justify-between items-center mb-4">
               <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider flex items-center gap-1.5">
-                ⚠️ Hàng đợi phản hồi Bỏ qua (Skip Reviews)
+                ⚠️ Yêu cầu duyệt Bỏ qua câu hỏi
                 {pendingSkipCount > 0 && (
                   <span className="px-1.5 py-0.5 rounded-full bg-red-500 text-white text-[9px] font-black">
                     {pendingSkipCount}
@@ -268,7 +268,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
           </div>
         ) : (
           <div className="glass-panel rounded-2xl border border-white/5 p-5 flex flex-col h-[350px] items-center justify-center text-center text-xs text-slate-400">
-            <span>🔒 Chỉ trưởng bối mới xem được hàng đợi Skip Reviews.</span>
+            <span>🔒 Chỉ Ban Giám Hiệu và Chủ Nhiệm mới xem được hàng đợi duyệt bỏ qua.</span>
           </div>
         )}
 
@@ -343,7 +343,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
         />
       </div>
 
-      {/* 5. Cáo Thị Nhiệm Vụ */}
+      {/* 5. Bảng Bài Tập Giao Sĩ Tử */}
       {studentUser?.id && (
         <div className="glass-panel rounded-2xl border border-white/5 p-5">
           <QuestManager
@@ -368,7 +368,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
       >
         <div className="p-5 space-y-4">
           <p className="text-xs text-slate-300">
-            Nạp đầy năng lượng để học sinh hoàn thành các thử thách học tập tại Trường Thi.
+            Nạp đầy năng lượng để Sĩ Tử hoàn thành các thử thách học tập tại Trường Thi.
           </p>
 
           {/* Visual Progress Bar showing exact current level */}
@@ -424,10 +424,10 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
             </button>
           </div>
 
-          {/* Cấu hình Năng Lượng Tối Đa + giờ hồi RIÊNG cho học sinh (SUB_SPEC_ENERGY §2) */}
+          {/* Cấu hình Năng Lượng Tối Đa + giờ hồi RIÊNG cho Sĩ Tử (SUB_SPEC_ENERGY §2) */}
           <div className="pt-3 mt-1 border-t border-white/5 space-y-3">
             <h5 className="text-[10px] font-bold uppercase tracking-wider text-synth-text-muted">
-              ⚙️ Cấu Hình Riêng Cho Học Sinh
+              ⚙️ Cấu Hình Riêng Cho Sĩ Tử
             </h5>
             <div className="grid grid-cols-2 gap-3">
               <label className="space-y-1 text-xs">
@@ -478,7 +478,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
             </button>
             {!canManageEnergy && (
               <p className="text-[9px] text-yellow-500/80 italic mt-2 leading-tight">
-                ⚠️ Tài khoản của bạn hiện là Chủ nhiệm phụ, chỉ Chủ nhiệm chính mới có quyền thay đổi Năng lượng của học sinh này.
+                ⚠️ Tài khoản của bạn hiện là Chủ nhiệm phụ, chỉ Chủ nhiệm chính mới có quyền thay đổi Năng lượng của Sĩ Tử này.
               </p>
             )}
           </div>

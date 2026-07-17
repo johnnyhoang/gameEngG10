@@ -1,7 +1,6 @@
-﻿// @ts-nocheck
 import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
-import type { HandbookPage, GradeTier, LearningContext, SubjectId, UiThemeId } from '../../types/game';
+import type { HandbookPage, GradeTier, LearningContext } from '../../types/game';
 import { eventBus } from '../../utils/EventBus';
 import { toast } from '../../utils/toast';
 import { DEFAULT_GRADE_TIER, getGradeTierConfig } from '../../types/game';
