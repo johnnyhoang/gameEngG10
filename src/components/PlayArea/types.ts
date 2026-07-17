@@ -12,6 +12,7 @@ export interface PlayAreaHeaderProps {
   onToggleMute: () => void;
   onShowScratchpad: () => void;
   formatTime: (seconds: number) => string;
+  mode?: string;
 }
 
 export interface QuestionMCQProps {

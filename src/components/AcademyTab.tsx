@@ -1,10 +1,10 @@
 import { useMemo, useEffect, useState } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { toast } from '../utils/toast';
-import { BrainCircuit, Zap, Star, Flame } from 'lucide-react';
+import { BrainCircuit } from 'lucide-react';
 import { CORE_KNOWLEDGE_TOPICS, inferTopicId } from '../data/coreKnowledge';
 import { useSect } from '../contexts/SectContext';
-import { SUBJECTS_CONFIG, DEFAULT_GRADE_TIER } from '../types/game';
+import { DEFAULT_GRADE_TIER } from '../types/game';
 import { filterLessonsInScope } from '../utils/learningScope';
 import { isLightTheme } from '../theme/uiThemes';
 import { LearningLedger } from './LearningLedger';
@@ -25,13 +25,12 @@ interface AcademyTabProps {
 }
 
 export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabProps) {
-  const { t, isEnglish } = useTranslate();
+  const { t } = useTranslate();
   const { activeSectId, activeGradeTier } = useSect();
   const uiTheme = useGameState(state => state.uiTheme);
   const categoryStats = useGameState(state => state.categoryStats);
   const isUnicorn = isLightTheme(uiTheme);
   const syncWithServer = useGameState(state => state.syncWithServer);
-  const player = useGameState(state => state.player);
   const currentUser = useGameState(state => state.currentUser);
   const lessons = useGameState(state => state.lessons);
 
@@ -53,7 +52,6 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
 
   useEffect(() => { syncWithServer(); }, [syncWithServer]);
 
-  const activeSubjectConfig = SUBJECTS_CONFIG[activeSectId as keyof typeof SUBJECTS_CONFIG];
   const activeTheme = UI_THEMES.find(theme => theme.id === uiTheme) || UI_THEMES[0];
   const isLight = isLightTheme(uiTheme);
 
@@ -140,26 +138,6 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
 
                 {/* Stats row */}
                 <div className="flex flex-wrap items-center gap-2">
-                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-orbitron font-bold text-[10px] uppercase ${
-                    player.streak > 0
-                      ? (isUnicorn ? 'border-orange-300 bg-orange-50 text-orange-700' : 'border-orange-500/40 bg-orange-500/10 text-orange-400')
-                      : (isUnicorn ? 'border-slate-200 bg-slate-50 text-slate-400' : 'border-white/10 bg-white/5 text-slate-500')
-                  }`}>
-                    <Flame className={`w-3.5 h-3.5 ${player.streak > 0 ? 'fill-current' : ''}`} />
-                    {player.streak > 0 ? t(`${player.streak} ngày liên tiếp 🔥`, `${player.streak} days streak 🔥`) : t('Bắt đầu chuỗi hôm nay!', 'Start your streak today!')}
-                  </div>
-                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-orbitron font-bold text-[10px] uppercase ${
-                    isUnicorn ? 'border-violet-200 bg-violet-50 text-violet-700' : 'border-synth-purple/40 bg-synth-purple/10 text-synth-purple'
-                  }`}>
-                    <Star className="w-3.5 h-3.5" />
-                    {t('Cấp', 'Level')} {player.level}
-                  </div>
-                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-orbitron font-bold text-[10px] uppercase ${
-                    isUnicorn ? 'border-cyan-200 bg-cyan-50 text-cyan-700' : 'border-synth-cyan/30 bg-synth-cyan/10 text-synth-cyan'
-                  }`}>
-                    <span>{activeSubjectConfig?.icon}</span>
-                    {t('Môn', 'Subject')}: {isEnglish ? 'English' : activeSubjectConfig?.name}
-                  </div>
                   {activeLink ? (
                     <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-orbitron font-bold text-[10px] uppercase ${
                       isUnicorn ? 'border-violet-200 bg-violet-50/70 text-violet-700' : 'border-synth-cyan/30 bg-synth-cyan/10 text-synth-cyan'
@@ -182,39 +160,11 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
                   </div>
                 </div>
               </div>
-
-              {/* XP + Energy mini */}
-              <div className={`shrink-0 rounded-2xl border p-4 space-y-3 min-w-[150px] ${
-                isUnicorn ? 'border-violet-200/40 bg-white/60' : 'border-white/10 bg-black/30'
-              }`}>
-                <div className="space-y-1">
-                  <div className="flex justify-between text-[10px] font-orbitron font-bold uppercase">
-                    <span className={isUnicorn ? 'text-violet-600' : 'text-slate-400'}>EXP</span>
-                    <span className={isUnicorn ? 'text-violet-800' : 'text-white'}>{player.xp}/{player.level * 200}</span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-black/20 overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-synth-cyan to-synth-purple rounded-full transition-all"
-                      style={{ width: `${Math.min(100, (player.xp / (player.level * 200)) * 100)}%` }}
-                    />
-                  </div>
-                </div>
-                <div className="flex items-center justify-between gap-2 text-[10px] font-orbitron font-bold uppercase">
-                  <div className="flex items-center gap-1 text-synth-cyan">
-                    <Zap className="w-3.5 h-3.5 fill-current" />
-                    <span>{player.energy}/{player.maxEnergy ?? 100}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-synth-orange">
-                    <span>💎</span>
-                    <span>{player.ruby} Ruby</span>
-                  </div>
-                </div>
-              </div>
             </div>
 
-            {/* Sổ Tu Học (Learning Ledger) tích hợp gọn gàng ở đây dưới dạng compact & collapsed */}
+            {/* Sổ Tu Học (Learning Ledger) hiển thị trực quan trực tiếp */}
             <div className="mt-4 pt-4 border-t border-white/5 relative z-10">
-              <LearningLedger compact={true} defaultExpanded={false} />
+              <LearningLedger />
             </div>
           </section>
 
@@ -437,8 +387,8 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
 
         </div>
 
-        {/* ── Right: ActivityLog + Missions ── */}
-        <div className="lg:col-span-1 space-y-5">
+        {/* ── Right: ActivityLog ── */}
+        <div className="lg:col-span-1 h-full flex flex-col">
 
 
           {/* ActivityLog */}

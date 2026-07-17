@@ -10,6 +10,7 @@ import { isLightTheme } from '../../theme/uiThemes';
 import { getAssessmentProvider } from '../../subject-modules/registry';
 import type { SubjectId } from '../../types/game';
 import { shuffleWithSeed } from '../../utils/shuffle';
+import { MarkdownRenderer } from '../Common/MarkdownRenderer';
 
 export interface PostQuizReviewProps {
   mode: string;
@@ -41,30 +42,40 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
   const displayedXp = isDefeat ? Math.floor(rewardsEarned.xp / 2) : rewardsEarned.xp;
 
   // Process all questions into review records
-  const reviewData = currentQuestions.map((q, idx) => {
-    const submission = answersSubmitted.find(s => s.questionId === q.id);
-    const isSkipped = !submission || submission.isSkipped;
-    const isCorrect = submission ? (submission.isCorrect || submission.scoreRatio === 1) : false;
-    const scoreRatio = submission ? submission.scoreRatio : 0;
+  const reviewData = useMemo(() => {
+    return currentQuestions.map((q, idx) => {
+      const submission = answersSubmitted.find(s => s.questionId === q.id);
+      const isSkipped = !submission || submission.isSkipped;
+      const isCorrect = submission ? (submission.isCorrect || submission.scoreRatio === 1) : false;
+      const scoreRatio = submission ? submission.scoreRatio : 0;
 
-    let userAnswer = '';
-    if (submission) {
-      userAnswer = q.type === 'mcq' ? (submission.selectedAnswer || '') : (submission.typedAnswer || '');
-    }
+      let userAnswer = '';
+      if (submission) {
+        userAnswer = q.type === 'mcq' ? (submission.selectedAnswer || '') : (submission.typedAnswer || '');
+      }
 
-    const correctAnswer = Array.isArray(q.correctAnswer) ? q.correctAnswer.join(' | ') : q.correctAnswer;
+      const correctAnswer = Array.isArray(q.correctAnswer) ? q.correctAnswer.join(' | ') : q.correctAnswer;
 
-    return {
-      question: q,
-      index: idx,
-      isSkipped,
-      isCorrect,
-      scoreRatio,
-      userAnswer,
-      correctAnswer,
-      submission
-    };
-  });
+      return {
+        question: q,
+        index: idx,
+        isSkipped,
+        isCorrect,
+        scoreRatio,
+        userAnswer,
+        correctAnswer,
+        submission
+      };
+    });
+  }, [currentQuestions, answersSubmitted]);
+
+  const shuffledReviewOptions = useMemo(() => {
+    if (selectedReviewIndex === null) return [];
+    const q = reviewData[selectedReviewIndex]?.question;
+    if (!q || !q.options) return [];
+    return shuffleWithSeed(q.options, q.id);
+  }, [selectedReviewIndex, reviewData]);
+
 
   // Render Summary Table View
   if (selectedReviewIndex === null) {
@@ -217,10 +228,6 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
   const isEssay = Boolean(getAssessmentProvider(activeSectId as SubjectId, q));
   const isTextInput = q.type === 'short-answer' || q.type === 'text_input';
 
-  const shuffledReviewOptions = useMemo(() => {
-    if (!q.options) return [];
-    return shuffleWithSeed(q.options, q.id);
-  }, [q.id, q.options]);
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto animate-fade-in p-4">
@@ -274,9 +281,9 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
               </span>
             )}
           </div>
-          <h4 className="font-orbitron font-bold text-base leading-relaxed text-white whitespace-pre-line select-none">
-            {q.prompt}
-          </h4>
+          <div className="font-orbitron font-bold text-base leading-relaxed text-white select-none">
+            <MarkdownRenderer content={q.prompt} className="font-orbitron font-bold text-base text-white leading-relaxed" />
+          </div>
         </div>
 
         {/* Read-Only Answer View */}
@@ -389,9 +396,12 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
               <p className="text-emerald-400 font-semibold pt-1">
                 Đáp án đúng cần điền: {reviewItem.correctAnswer}
               </p>
-              <p className="text-slate-300 italic pt-1">
-                Luận giải: {q.explanation}
-              </p>
+              {q.explanation && (
+                <div className="text-slate-300 italic pt-1 flex flex-col gap-1">
+                  <strong>Luận giải:</strong>
+                  <MarkdownRenderer content={q.explanation} className="text-slate-300 italic text-xs leading-relaxed" />
+                </div>
+              )}
             </div>
           </div>
         )}

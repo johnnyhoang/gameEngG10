@@ -11,12 +11,8 @@ import {
    Target,
    NotebookTabs,
    Sparkles,
-   ArrowRight,
-   CheckCircle2
+   ArrowRight
 } from 'lucide-react';
-import {
-   PRACTICE_SOURCES
-} from '../data/practiceHall';
 import { SUBJECTS_CONFIG } from '../types/game';
 import type { SubjectId, HamNguyenTo } from '../types/game';
 import { useSect } from '../contexts/SectContext';
@@ -25,7 +21,7 @@ import type { Lesson } from '../data/lessons';
 import { FogCard } from './FogCard';
 import { FullscreenModal } from './Common/FullscreenModal';
 import { LessonStudyView } from './LessonStudyView';
-import { getSubjectActivities, getSubjectToolIds } from '../subject-modules/registry';
+import { getSubjectToolIds } from '../subject-modules/registry';
 import { DUNGEONS_CONFIG, enrichTextbookAttributes, getDungeonConfig } from '../utils/textbookEnricher';
 
 const getElementalDungeon = (lesson: Lesson): HamNguyenTo => {
@@ -64,6 +60,13 @@ const MAT_THAT_CARDS = [
     icon: <LineChart className="w-5 h-5" />
   }
 ] as const;
+
+const SUBJECT_TOOL_INTRODUCTIONS: Record<string, string> = {
+  math: 'Bộ công cụ vẽ hình học 3D, dựng đồ thị hàm số và hình phẳng giúp đệ tử trực quan hóa các định lý, bài tập thực hành Toán học.',
+  english: 'Các công cụ tương tác hỗ trợ phát âm, tra cứu từ điển ngữ cảnh và luyện phản xạ giao tiếp tiếng Anh.',
+  literature: 'Bản đồ tư duy phân tích tác phẩm văn học, sơ đồ cốt truyện và bảng tra cứu dẫn chứng Ngữ Văn.',
+  default: 'Các công cụ tương tác hỗ trợ học tập trực quan giúp đệ tử dễ dàng lĩnh hội kiến thức môn học.'
+};
 
 const SUBJECT_META: Record<string, any> = {
   english: {
@@ -340,22 +343,10 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
   const questions = useGameState(state => state.questions);
   const lessons = useGameState(state => state.lessons);
   const lessonsProgress = useGameState(state => state.lessonsProgress);
-  const currentUser = useGameState(state => state.currentUser);
 
-  const [noteText, setNoteText] = useState('');
+
   const [overlayLessonId, setOverlayLessonId] = useState<string | null>(null);
   const [visibleLessonCounts, setVisibleLessonCounts] = useState<Record<string, number>>({});
-
-  useEffect(() => {
-    if (!currentUser?.id) return;
-    const saved = localStorage.getItem(`gameengg10-hang-notes:${currentUser.id}`);
-    setNoteText(saved || '');
-  }, [currentUser?.id]);
-
-  useEffect(() => {
-    if (!currentUser?.id) return;
-    localStorage.setItem(`gameengg10-hang-notes:${currentUser.id}`, noteText);
-  }, [currentUser?.id, noteText]);
 
   const selectedSubject: PracticeSubjectId = activeSectId as PracticeSubjectId;
   const subjectToolIds = getSubjectToolIds(selectedSubject);
@@ -374,19 +365,7 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
 
 
 
-  const sampleQuestions = useMemo(() => {
-    const allowedCategories: Record<string, string[]> = {
-      english: ['grammar', 'passive-voice', 'relative-clauses', 'tenses', 'rewrite', 'reading', 'cloze', 'vocabulary', 'wordform', 'pronunciation', 'stress'],
-      math: ['parabol-line', 'viet-relation', 'real-equations', 'real-geometry', 'real-finance', 'plane-geometry'],
-    };
 
-    const moduleCategories = getSubjectActivities(selectedSubject).flatMap(activity => activity.categories);
-    const targetCategories = moduleCategories.length > 0 ? [...new Set(moduleCategories)] : allowedCategories[selectedSubject] || Array.from(new Set(
-      subjectQuestions.map(q => q.category)
-    )).filter(Boolean);
-
-    return subjectQuestions.filter(q => targetCategories.includes(q.category)).slice(0, 3);
-  }, [selectedSubject, subjectQuestions]);
 
   const meta = SUBJECT_META[selectedSubject] || {
     label: SUBJECTS_CONFIG[selectedSubject as SubjectId]?.name || selectedSubject,
@@ -444,6 +423,9 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
 
           <div className="flex flex-col gap-2 shrink-0 md:text-right">
             <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">Luyện tập tổng hợp ({subjectQuestions.length} câu hỏi)</div>
+            <p className="text-[9px] text-slate-400 leading-normal max-w-xs md:ml-auto">
+              Hệ thống tự động đưa bạn học tiếp bài giảng còn dang dở, hoặc luyện câu hỏi ngẫu nhiên khi đã hoàn tất các chuyên đề.
+            </p>
             <button
               onClick={handleStart}
               className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl bg-gradient-to-r from-synth-cyan via-synth-purple to-synth-magenta text-black font-orbitron font-black text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(0,240,255,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all cursor-pointer"
@@ -452,55 +434,50 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
             </button>
           </div>
         </div>
+
+        {/* Công cụ học tập tương tác (nhúng gọn gàng trong Header Card) */}
+        {subjectToolIds.length > 0 && (
+          <div className="border-t border-dashed border-white/10 pt-4 mt-6">
+            <h2 className="font-orbitron font-black text-[10px] text-synth-cyan uppercase tracking-wider mb-1 flex items-center gap-2">
+              <Target className="w-4 h-4 text-synth-cyan" />
+              Công cụ học tập tương tác
+            </h2>
+            <p className="text-[9px] text-slate-400 leading-normal mb-3">
+              {SUBJECT_TOOL_INTRODUCTIONS[selectedSubject] || SUBJECT_TOOL_INTRODUCTIONS.default}
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {MAT_THAT_CARDS.filter(card => subjectToolIds.includes(card.id)).map(card => {
+                const onOpen = card.id === 'handbook3d'
+                  ? onOpenWorkshop3D
+                  : card.id === 'handbookplane'
+                    ? onOpenWorkshopPlane
+                    : onOpenWorkshopGraph;
+                return (
+                  <button
+                    key={card.id}
+                    onClick={onOpen}
+                    className="group flex items-center justify-between p-3 rounded-xl border border-white/5 bg-black/35 hover:border-synth-cyan/30 hover:bg-white/[0.04] transition-all text-left cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="text-lg group-hover:scale-110 transition-transform duration-200">{card.icon}</span>
+                      <div>
+                        <h3 className="font-orbitron font-black text-[9px] uppercase tracking-wider text-slate-200 group-hover:text-synth-cyan transition-colors">
+                          {card.title}
+                        </h3>
+                        <p className="text-[8px] text-slate-500 leading-tight mt-0.5">{card.description}</p>
+                      </div>
+                    </div>
+                    <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-synth-cyan transition-colors" />
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </section>
 
-      {/* 2. Main 2-Column Grid */}
-      <div className="grid grid-cols-1 xl:grid-cols-[1.25fr_0.75fr] gap-6 items-start">
-        
-        {/* Column Left: Main Content (Interactive Chambers & Elemental Dungeons & Samples) */}
-        <div className="space-y-6">
-          
-          {/* Kho Nền Tảng tương tác - chỉ dành cho Toán */}
-          {subjectToolIds.length > 0 && (
-            <div className="glass-panel rounded-2xl border border-white/10 p-5 bg-black/20">
-              <h2 className="font-orbitron font-black text-xs text-synth-cyan uppercase tracking-wider mb-3 flex items-center gap-2">
-                <Target className="w-4 h-4 text-synth-cyan" />
-                Kho Nền Tảng tương tác trực quan
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                {MAT_THAT_CARDS.filter(card => subjectToolIds.includes(card.id)).map(card => {
-                  const onOpen = card.id === 'handbook3d'
-                    ? onOpenWorkshop3D
-                    : card.id === 'handbookplane'
-                      ? onOpenWorkshopPlane
-                      : onOpenWorkshopGraph;
-                  return (
-                    <button
-                      key={card.id}
-                      onClick={onOpen}
-                      className="group rounded-xl border border-white/5 bg-white/[0.02] p-4 text-left hover:border-synth-cyan/30 hover:bg-white/[0.05] transition-all duration-200 cursor-pointer flex flex-col justify-between"
-                    >
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-white">
-                          <div className="inline-flex items-center gap-2 font-orbitron font-bold text-xs uppercase group-hover:text-synth-cyan transition-colors">
-                            {card.icon}
-                            {card.title}
-                          </div>
-                          <ExternalLink className="w-3.5 h-3.5 text-slate-400 group-hover:text-synth-cyan transition-colors" />
-                        </div>
-                        <p className="text-[11px] text-slate-400 leading-relaxed line-clamp-2">
-                          {card.description}
-                        </p>
-                      </div>
-                      <div className="mt-3 inline-flex items-center gap-1 text-[9px] font-bold uppercase tracking-wider text-synth-cyan group-hover:translate-x-0.5 transition-transform">
-                        Khám phá Xưởng Toán <ArrowRight className="w-3 h-3" />
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
+      {/* 2. Main Content (1-Column Layout) */}
+      <div className="space-y-6">
 
           {/* Elemental Dungeons List */}
           <div className="glass-panel rounded-2xl border border-white/10 p-3 space-y-3">
@@ -625,128 +602,6 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
             </div>
           </div>
 
-          {/* Sample Questions Section */}
-          <div className="glass-panel rounded-2xl border border-white/10 p-5 space-y-3 bg-black/10">
-            <div>
-              <h2 className="font-orbitron font-black text-xs text-slate-200 uppercase tracking-wider">
-                🎯 {track.sampleTitle}
-              </h2>
-              <p className="text-[11px] text-slate-400 mt-0.5">
-                Các câu hỏi mẫu đại diện tiêu biểu giúp đệ tử hình dung đề thi thực tế.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {sampleQuestions.length > 0 ? sampleQuestions.map(question => (
-                <div key={question.id} className="rounded-xl border border-white/5 bg-white/[0.01] p-3 flex flex-col justify-between gap-3 text-xs">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-[9px] uppercase tracking-wider text-slate-400 font-bold">
-                      <span className="text-synth-orange">{question.category}</span>
-                      <span>Độ khó {question.difficulty}/10</span>
-                    </div>
-                    {question.imageUrl && (
-                      <div className="flex justify-center bg-black/20 rounded-lg p-2 max-h-[85px] overflow-hidden border border-white/5">
-                        <img 
-                          src={question.imageUrl} 
-                          className="rounded max-h-[65px] object-contain" 
-                          alt="Preview" 
-                        />
-                      </div>
-                    )}
-                    <p className="text-[11px] text-slate-300 leading-relaxed line-clamp-3">
-                      {question.prompt}
-                    </p>
-                  </div>
-                  <div className="text-[8px] text-slate-500 uppercase tracking-wider truncate">
-                    Nguồn: {question.source}
-                  </div>
-                </div>
-              )) : (
-                <div className="col-span-3 py-4 text-center text-xs text-slate-500 italic">
-                  Chưa có dữ liệu câu hỏi mẫu cho môn này.
-                </div>
-              )}
-            </div>
-          </div>
-
-        </div>
-
-        {/* Column Right: Supplement Panel (Fixed Error Notebook & Sources) */}
-        <aside className="space-y-6 xl:sticky xl:top-24">
-          
-          {/* Sổ tay Lỗi Sai - Error Notebook */}
-          <div className="glass-panel rounded-2xl border border-synth-cyan/20 p-5 bg-gradient-to-b from-synth-blue/30 to-black/50 space-y-3 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-24 h-24 bg-synth-cyan/5 rounded-full blur-2xl pointer-events-none" />
-            
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-5 h-5 text-synth-cyan" />
-              <h3 className="font-orbitron font-black uppercase tracking-wider text-xs text-white">
-                Sổ tay lỗi sai
-              </h3>
-            </div>
-            
-            <p className="text-[11px] text-slate-400 leading-relaxed">
-              Ghi lại những lỗi sai bạn thường mắc phải (sai công thức, thiếu điều kiện, dịch nhầm từ...) để ghi nhớ và ôn tập hàng ngày.
-            </p>
-
-            <div className="relative">
-              <textarea
-                value={noteText}
-                onChange={e => setNoteText(e.target.value)}
-                placeholder={track.notePlaceholder}
-                className="w-full min-h-[220px] rounded-xl border border-white/10 bg-black/40 p-3.5 text-xs text-slate-200 outline-none focus:border-synth-cyan/40 focus:ring-1 focus:ring-synth-cyan/30 resize-y transition-all leading-relaxed placeholder-slate-600"
-              />
-              <div className="absolute bottom-2.5 right-2.5 text-[9px] text-slate-500 font-orbitron uppercase tracking-wider select-none pointer-events-none">
-                Tự động lưu
-              </div>
-            </div>
-          </div>
-
-          {/* Nguồn Học Liệu - Sources */}
-          <div className="glass-panel rounded-2xl border border-white/10 p-5 bg-black/20 space-y-3">
-            <div className="flex items-center gap-2">
-              <BookOpen className="w-4 h-4 text-synth-orange" />
-              <h3 className="font-orbitron font-black uppercase tracking-wider text-xs text-white">
-                Nguồn học liệu tham khảo
-              </h3>
-            </div>
-            
-            <p className="text-[11px] text-slate-400 leading-relaxed">
-              Các nguồn tài liệu, đề mẫu, cẩm nang tra cứu chọn lọc cho môn {meta.label}.
-            </p>
-
-            <div className="space-y-2 pt-1">
-              {(() => {
-                const sources = PRACTICE_SOURCES[selectedSubject as keyof typeof PRACTICE_SOURCES] || [];
-                if (sources.length === 0) {
-                  return (
-                    <div className="text-[10px] text-slate-500 italic py-2 text-center border border-dashed border-white/5 rounded-xl">
-                      Chưa có nguồn học liệu riêng cho môn này.
-                    </div>
-                  );
-                }
-                return sources.map(source => (
-                  <a
-                    key={source.url}
-                    href={source.url}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="group block rounded-xl border border-white/5 bg-white/[0.01] p-3 hover:border-synth-orange/30 hover:bg-white/[0.04] transition-all"
-                  >
-                    <div className="flex items-center justify-between text-xs font-bold text-slate-200 group-hover:text-synth-orange transition-colors">
-                      <span>{source.label}</span>
-                      <ExternalLink className="w-3.5 h-3.5 text-slate-500 group-hover:text-synth-orange transition-colors" />
-                    </div>
-                    <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
-                      {source.note}
-                    </p>
-                  </a>
-                ));
-              })()}
-            </div>
-          </div>
-
-        </aside>
 
       </div>
 

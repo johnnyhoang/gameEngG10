@@ -17,7 +17,8 @@ export const PlayAreaHeader: React.FC<PlayAreaHeaderProps> = ({
   activeSectId,
   onToggleMute,
   onShowScratchpad,
-  formatTime
+  formatTime,
+  mode
 }) => {
   const subjectId = activeSectId as SubjectId;
   const modulePresentation = getQuestionPresentation(subjectId, activeQuestion);
@@ -74,19 +75,21 @@ export const PlayAreaHeader: React.FC<PlayAreaHeaderProps> = ({
 
       <div className="flex items-center gap-2">
         {/* Mute/Unmute sound button */}
-        <button
-          onClick={onToggleMute}
-          className="px-2.5 py-1 rounded bg-synth-gray/50 border border-white/10 hover:bg-synth-gray text-white cursor-pointer transition-colors flex items-center justify-center"
-          title={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
-        >
-          {isMuted ? <VolumeX className="w-3.5 h-3.5 text-synth-magenta mr-1" /> : <Volume2 className="w-3.5 h-3.5 text-synth-cyan mr-1" />}
-          <span className="font-orbitron font-bold text-[9px] tracking-wide uppercase">
-            {isMuted ? 'MUTE' : 'SOUND'}
-          </span>
-        </button>
+        {mode !== 'preview' && (
+          <button
+            onClick={onToggleMute}
+            className="px-2.5 py-1 rounded bg-synth-gray/50 border border-white/10 hover:bg-synth-gray text-white cursor-pointer transition-colors flex items-center justify-center"
+            title={isMuted ? "Bật âm thanh" : "Tắt âm thanh"}
+          >
+            {isMuted ? <VolumeX className="w-3.5 h-3.5 text-synth-magenta mr-1" /> : <Volume2 className="w-3.5 h-3.5 text-synth-cyan mr-1" />}
+            <span className="font-orbitron font-bold text-[9px] tracking-wide uppercase">
+              {isMuted ? 'MUTE' : 'SOUND'}
+            </span>
+          </button>
+        )}
 
         {/* Bảng Nháp button */}
-        {hasSubjectUtility(subjectId, 'scratchpad') && (
+        {mode !== 'preview' && hasSubjectUtility(subjectId, 'scratchpad') && (
           <button
             onClick={onShowScratchpad}
             className="px-2.5 py-1 rounded bg-synth-magenta/20 border border-synth-magenta/40 hover:bg-synth-magenta/40 text-[10px] text-synth-magenta font-bold cursor-pointer transition-colors font-orbitron"

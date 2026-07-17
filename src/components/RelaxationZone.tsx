@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { useSect } from '../contexts/SectContext';
 import { useGameState } from '../hooks/useGameState';
 import { FogCard, getFogStatus } from './FogCard';
@@ -165,13 +165,17 @@ const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onO
                   <p className="text-[10px] text-slate-400 mt-1 leading-relaxed line-clamp-2">{game.desc}</p>
                 </div>
               </div>
-              <div className="mt-auto">
+              <div className="mt-auto flex items-center justify-between flex-wrap gap-2">
                 <span className="inline-block text-[9px] font-bold font-orbitron uppercase px-2 py-0.5 rounded bg-white/5 border border-white/10 text-slate-400">
                   🎁 {game.reward}
                 </span>
-              </div>
-              <div className="w-full py-2 rounded-lg bg-gradient-to-r from-synth-cyan/20 to-synth-purple/20 border border-synth-cyan/20 text-center text-[10px] font-bold font-orbitron uppercase text-synth-cyan group-hover:from-synth-cyan/30 group-hover:to-synth-purple/30 transition-all">
-                {isLocked ? 'Hết Năng Lượng' : 'Vào Chơi →'}
+                {game.costsEnergy !== false && (
+                  <span className={`inline-block text-[9px] font-bold font-orbitron uppercase px-2 py-0.5 rounded ${
+                    isLocked ? 'bg-red-500/20 border border-red-500/35 text-red-400 font-black' : 'bg-synth-cyan/15 border border-synth-cyan/25 text-synth-cyan'
+                  }`} title={isLocked ? 'Không đủ năng lượng' : 'Năng lượng tiêu hao'}>
+                    ⚡ {isLocked ? 'Hết 10⚡' : '10⚡'}
+                  </span>
+                )}
               </div>
             </div>
           </FogCard>
@@ -184,7 +188,7 @@ const CanhSection: React.FC<CanhSectionProps> = ({ icon, label, desc, games, onO
 
 import { isLightTheme } from '../theme/uiThemes';
 
-export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
+export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack: _onBack }) => {
   const uiTheme = useGameState(state => state.uiTheme);
   const isUnicorn = isLightTheme(uiTheme);
 
@@ -214,17 +218,7 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack }) => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div className="space-y-1">
-          <button
-            onClick={onBack}
-            className={`inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider py-1.5 px-3 rounded-lg border transition-all cursor-pointer ${
-              isUnicorn
-                ? 'border-violet-200/50 bg-white/70 hover:bg-violet-50 text-violet-700'
-                : 'border-white/5 bg-synth-gray/30 hover:bg-synth-gray/50 text-synth-text-muted hover:text-white'
-            }`}
-          >
-            <ArrowLeft className="w-3.5 h-3.5" /> Bản Đồ Chính
-          </button>
-          <div className="flex items-center gap-2 mt-2">
+          <div className="flex items-center gap-2">
             <Sparkles className={`w-6 h-6 ${isUnicorn ? 'text-fuchsia-500' : 'text-synth-magenta animate-pulse'}`} />
             <h1 className={`font-orbitron font-black text-2xl uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
               Công Viên Thư Giãn

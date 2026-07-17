@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Trash2, SlidersHorizontal } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { toast } from '../../utils/toast';
 import { SideDrawer } from '../Common/SideDrawer';
 
@@ -39,17 +39,11 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal className="w-5 h-5 text-synth-cyan" />
-          <h3 className="font-orbitron font-bold text-sm text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
-            🎯 Cáo Thị
-          </h3>
-        </div>
+      <div className="flex justify-end mb-2">
         {canCreateMission && (
           <button
             onClick={() => setIsFormOpen(true)}
-            className="px-4 py-2 bg-synth-cyan text-black font-bold font-orbitron text-xs uppercase rounded-lg hover:synth-glow-cyan transition-all flex items-center gap-1.5 self-start sm:self-auto cursor-pointer"
+            className="px-4 py-2 bg-synth-cyan text-black font-bold font-orbitron text-xs uppercase rounded-lg hover:synth-glow-cyan transition-all flex items-center gap-1.5 cursor-pointer"
           >
             <Plus className="w-4 h-4" /> Giao Nhiệm Vụ Mới
           </button>
@@ -110,14 +104,14 @@ export const QuestManager: React.FC<QuestManagerProps> = ({
       </SideDrawer>
 
       {/* List of parent quests */}
-      <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-4">
+      <div className="space-y-4">
           <h4 className="text-xs font-bold text-synth-text-muted uppercase tracking-wider">
             Nhiệm vụ đang giao ({tutorQuests.length})
           </h4>
           <div className="space-y-2 max-h-[380px] overflow-y-auto pr-1">
             {tutorQuests.length > 0 ? (
               tutorQuests.map((quest: any) => (
-                <div key={quest.id} className="p-4 rounded-xl border border-white/5 bg-synth-gray/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div key={quest.id} className="py-3 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 last:border-0">
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-bold text-white">{quest.title}</span>

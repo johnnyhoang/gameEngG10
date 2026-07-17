@@ -6,6 +6,7 @@ import { toast } from '../../utils/toast';
 import { RewardManager } from './RewardManager';
 import { QuestManager } from './QuestManager';
 import { SideDrawer } from '../Common/SideDrawer';
+import { getStudentRankForLevel } from '../../types/game';
 
 interface StudentProfileViewProps {
   currentUser: any;
@@ -21,8 +22,7 @@ interface StudentProfileViewProps {
   adminSetEnergyConfig: (studentId: string, maxEnergy: number, resetHours: 2 | 3 | 5) => Promise<void>;
   fetchSkipReviews: (studentId: string) => Promise<void>;
   resolveSkipReview: (reviewId: string) => Promise<boolean>;
-  /** Quay lại danh sách học sinh (hiện nút "Đổi học sinh khác" trên header khi được truyền) */
-  onSwitchStudent?: () => void;
+  // Props
   // Reward props
   activeRedemptions: any[];
   schoolRewards: any[];
@@ -51,7 +51,6 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
   adminSetEnergyConfig,
   fetchSkipReviews,
   resolveSkipReview,
-  onSwitchStudent,
   activeRedemptions,
   schoolRewards,
   fetchSchoolRewards,
@@ -94,6 +93,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
 
   const { studentUser, player, pet, categoryStats = {}, logs = [] } = selectedStudentProfile;
   const pendingSkipCount = (skipReviews || []).length;
+  const studentRank = getStudentRankForLevel(player?.level || 1);
 
   return (
     <div className="space-y-6">
@@ -118,6 +118,20 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
               <span className="block text-[9px] uppercase text-synth-text-muted">Cấp Độ</span>
               <span className="font-orbitron font-black text-synth-magenta text-sm">LV.{player?.level || 1}</span>
             </div>
+            <div className="bg-white/3 border border-white/5 rounded-2xl px-3.5 py-2 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
+              <span className="block text-[9px] uppercase text-synth-text-muted">Danh Hiệu</span>
+              <span className="font-bold text-synth-orange text-sm flex justify-center items-center gap-1">
+                {studentRank.icon} <span className="text-[10px]">{studentRank.name}</span>
+              </span>
+            </div>
+            {pet && (
+              <div className="bg-white/3 border border-white/5 rounded-2xl px-3.5 py-2 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300" title={`Tâm trạng: ${pet.mood === 'happy' ? 'Hân Hoan' : pet.mood === 'neutral' ? 'Bình Hòa' : 'U Uất'}`}>
+                <span className="block text-[9px] uppercase text-synth-text-muted">Thú Cưng</span>
+                <span className="font-bold text-white text-sm flex justify-center items-center gap-1">
+                  {pet.stage === 'egg' ? '🥚' : pet.stage === 'baby' ? '🐷' : '🐗'} <span className="text-[10px] text-synth-magenta font-orbitron">LV.{pet.level}</span>
+                </span>
+              </div>
+            )}
             <div className="bg-white/3 border border-white/5 rounded-2xl px-3.5 py-2 text-center shadow-sm backdrop-blur-sm hover:border-white/20 transition-all duration-300">
               <span className="block text-[9px] uppercase text-synth-text-muted">Ruby</span>
               <span className={`font-orbitron font-black text-sm ${(player?.ruby || 0) < 0 ? 'text-red-400' : 'text-synth-orange'}`}>
@@ -146,14 +160,6 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
             >
               ⚡ Nạp Năng Lượng
             </button>
-            {onSwitchStudent && (
-              <button
-                onClick={onSwitchStudent}
-                className="px-3.5 py-2 rounded-xl border border-white/10 text-slate-300 hover:bg-white/10 font-orbitron font-bold text-[10px] uppercase tracking-wider transition-all cursor-pointer"
-              >
-                🔄 Đổi Học Sinh Khác
-              </button>
-            )}
           </div>
         </div>
       </div>
@@ -167,9 +173,9 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
           {Object.keys(categoryStats).length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={Object.values(categoryStats).map((stat: any) => ({
-                name: stat.name,
-                correct: stat.correct,
-                total: stat.total
+                name: stat.category,
+                correct: stat.totalCorrect,
+                total: stat.totalAnswered
               }))}>
                 <XAxis dataKey="name" stroke="#888888" fontSize={9} tickLine={false} />
                 <YAxis stroke="#888888" fontSize={9} tickLine={false} />
@@ -192,7 +198,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
       {/* 3. Nhật Ký Hoạt Động & Hàng Đợi Skip Reviews — việc cần theo dõi/xử lý, ngay sau tiến độ */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Hàng đợi Phản hồi Skip (Closed-loop Review) */}
-        {isTutorRole(currentUser?.role) ? (
+        {isTutorRole(currentUser?.role) || isAdmin(currentUser?.role) ? (
           <div className="glass-panel rounded-2xl border border-white/5 p-5 flex flex-col h-[350px]">
             <div className="flex justify-between items-center mb-4">
               <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider flex items-center gap-1.5">
@@ -277,29 +283,43 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
                 Chưa ghi nhận hoạt động học tập nào.
               </div>
             ) : (
-              logs.slice(0, 50).map((log: any) => (
-                <div key={log.id} className="p-3 rounded-lg bg-white/5 border border-white/5 space-y-1.5">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-white capitalize">{log.actionType || 'Học tập'}</span>
-                    <span className="text-[10px] text-synth-text-muted">
-                      {new Date(log.timestamp).toLocaleString('vi-VN')}
-                    </span>
-                  </div>
-                  <p className="text-slate-300 leading-relaxed">{log.description}</p>
-                  <div className="flex gap-4 text-[10px] font-bold font-orbitron">
-                    {log.xpAwarded !== 0 && (
-                      <span className={log.xpAwarded > 0 ? 'text-synth-green' : 'text-red-400'}>
-                        {log.xpAwarded > 0 ? '+' : ''}{log.xpAwarded} XP
+              logs.slice(0, 50).map((log: any) => {
+                let icon = '📝';
+                let borderColor = 'border-l-slate-400';
+                const typeStr = (log.actionType || '').toLowerCase();
+                if (typeStr.includes('quiz') || typeStr.includes('test')) { icon = '📝'; borderColor = 'border-l-synth-cyan'; }
+                else if (typeStr.includes('reward') || typeStr.includes('ruby')) { icon = '💎'; borderColor = 'border-l-synth-orange'; }
+                else if (typeStr.includes('pet')) { icon = '🐷'; borderColor = 'border-l-synth-magenta'; }
+                else if (typeStr.includes('quest') || typeStr.includes('mission')) { icon = '🎯'; borderColor = 'border-l-synth-green'; }
+                
+                return (
+                  <div key={log.id} className={`p-3 rounded-lg bg-black/40 border border-white/5 border-l-4 ${borderColor} space-y-1.5`}>
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-white capitalize flex items-center gap-1.5">
+                        <span className="text-sm">{icon}</span> {log.actionType || 'Học tập'}
                       </span>
-                    )}
-                    {log.rubyAwarded !== 0 && (
-                      <span className={log.rubyAwarded > 0 ? 'text-synth-orange' : 'text-red-400'}>
-                        {log.rubyAwarded > 0 ? '+' : ''}{log.rubyAwarded} Ruby
+                      <span className="text-[9px] font-orbitron text-slate-400 font-semibold tracking-wider">
+                        {new Date(log.timestamp).toLocaleString('vi-VN')}
                       </span>
+                    </div>
+                    <p className="text-slate-300 leading-relaxed text-xs pl-6">{log.description}</p>
+                    {(log.xpAwarded !== 0 || log.rubyAwarded !== 0) && (
+                      <div className="flex gap-4 text-[10px] font-bold font-orbitron pl-6 mt-1">
+                        {log.xpAwarded !== 0 && (
+                          <span className={log.xpAwarded > 0 ? 'text-synth-green' : 'text-red-400'}>
+                            {log.xpAwarded > 0 ? '+' : ''}{log.xpAwarded} XP
+                          </span>
+                        )}
+                        {log.rubyAwarded !== 0 && (
+                          <span className={log.rubyAwarded > 0 ? 'text-synth-orange' : 'text-red-400'}>
+                            {log.rubyAwarded > 0 ? '+' : ''}{log.rubyAwarded} Ruby
+                          </span>
+                        )}
+                      </div>
                     )}
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
@@ -337,47 +357,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
       )}
 
       {/* 6. Thú cưng — thông tin tham khảo, đặt cuối trang */}
-      <div className="glass-panel rounded-2xl border border-white/5 p-5">
-        <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider mb-4">
-          🐷 Thú Cưng Đồng Hành (Pet Stable)
-        </h4>
-        {pet ? (
-          <div className="flex items-center gap-5 bg-white/3 border border-white/5 p-4 rounded-2xl w-full max-w-2xl">
-            <div className="w-20 h-20 rounded-3xl bg-black/40 border border-synth-magenta/25 flex items-center justify-center text-5xl shrink-0 shadow-lg relative group overflow-hidden">
-              <div className="absolute inset-0 bg-synth-magenta/5 animate-pulse pointer-events-none"></div>
-              <span className="relative z-10 group-hover:scale-115 transition-transform duration-300 inline-block">
-                {pet.stage === 'egg' ? '🥚' : pet.stage === 'baby' ? '🐷' : '🐗'}
-              </span>
-            </div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-3 flex-1 text-xs">
-              <div>
-                <span className="block text-[9px] uppercase text-slate-400 font-bold">Tên thú cưng</span>
-                <span className="font-bold text-white text-sm">Heo Maikawaii</span>
-              </div>
-              <div>
-                <span className="block text-[9px] uppercase text-slate-400 font-bold">Cấp độ</span>
-                <span className="font-orbitron font-black text-synth-magenta text-sm">LV.{pet.level}</span>
-              </div>
-              <div>
-                <span className="block text-[9px] uppercase text-slate-400 font-bold">Tâm trạng</span>
-                <span className="inline-flex items-center gap-1 font-bold text-white mt-0.5 capitalize">
-                  {pet.mood === 'happy' ? '😄 Hân Hoan' : pet.mood === 'neutral' ? '😐 Bình Hòa' : '😢 U Uất'}
-                </span>
-              </div>
-              <div>
-                <span className="block text-[9px] uppercase text-slate-400 font-bold">Cho ăn gần cuối</span>
-                <span className="font-semibold text-slate-300 block mt-0.5">
-                  {pet.lastFed ? new Date(pet.lastFed).toLocaleDateString('vi-VN') : 'Chưa rõ'}
-                </span>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <p className="text-xs text-synth-text-muted italic py-6 text-center w-full">
-            Học sinh chưa kích hoạt Thú cưng đồng hành.
-          </p>
-        )}
-      </div>
+      {/* 6. Thú cưng — Đã gộp lên phần Header Thông tin chung */}
 
       {/* Drawer Nạp Năng Lượng: mở từ nút nhanh trên header, gom cả nạp + cấu hình riêng */}
       <SideDrawer

@@ -405,9 +405,6 @@ function App() {
       {/* Top Header HUD */}
       <TopHUD
         onOpenParent={() => navigateWithWarning('tutor')}
-        onOpenShop={() => { navigateWithWarning('academy'); setActiveTab('funzone'); }}
-        onOpenPet={() => { navigateWithWarning('academy'); setActiveTab('funzone'); }}
-        onOpenProfile={() => navigateWithWarning('academy')}
         onBackToMap={() => navigateWithWarning('academy')}
         onLogout={handleLogoutIntercept}
         currentScreen={topHudScreen}

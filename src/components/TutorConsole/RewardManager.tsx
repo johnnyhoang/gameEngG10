@@ -155,17 +155,12 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Award className="w-5 h-5 text-synth-orange" />
-        <h3 className="font-orbitron font-bold text-sm text-synth-orange uppercase tracking-wider">
-          💰 Phòng Tài Vụ
-        </h3>
-      </div>
 
       {/* ═══════════════════════════════════════════════════════
           SECTION 1: QUÀ KHUYẾN HỌC (Luôn hiện với Chủ Nhiệm)
           ═══════════════════════════════════════════════════════ */}
-      <div className="space-y-5">
+      {!viewingStudentId && !isSchoolAdmin && (
+        <div className="space-y-5">
         <div className="flex items-center gap-2 border-b border-synth-orange/20 pb-2">
           <Users className="w-4 h-4 text-synth-orange" />
           <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider">
@@ -342,26 +337,23 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
           </div>
         </div>
       </div>
+      )}
 
       {/* ═══════════════════════════════════════════════════════
           SECTION 2A: DANH MỤC QUÀ CHUNG CỦA TRƯỜNG (chỉ truong_vien/pho_vien sửa)
           Một danh sách duy nhất cho toàn viện — học sinh mồ côi (không có giáo viên) thấy
           danh sách này; giáo viên mới clone danh sách này khi hồ sơ được tạo.
           ═══════════════════════════════════════════════════════ */}
-      {isSchoolAdmin && (
+      {!viewingStudentId && isSchoolAdmin && (
         <div className="space-y-4 pt-2 border-t border-white/5">
-          <div className="flex items-center gap-2">
-            <h4 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase tracking-wider">
-              🏛️ Quà Khuyến Học Của Trường
-            </h4>
-            <span className="text-[10px] text-synth-text-muted/60">— Danh sách CHUNG toàn viện. Học sinh chưa vào lớp (orphan) thấy danh sách này.</span>
-          </div>
-
           <div className="glass-panel rounded-2xl border border-synth-text-muted/20 p-5">
-            <div className="flex items-center justify-between gap-2 mb-4">
-              <h5 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase tracking-wider flex items-center gap-1.5">
-                🏛️ Danh Mục Quà Của Trường
-              </h5>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h4 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase tracking-wider">
+                  🏛️ Quà Khuyến Học Của Trường
+                </h4>
+                <span className="text-[10px] text-synth-text-muted/60 block mt-1">— Danh sách CHUNG toàn viện. Học sinh chưa vào lớp (orphan) thấy danh sách này.</span>
+              </div>
               <button
                 onClick={() => setIsPersonalFormOpen(true)}
                 className="px-3 py-1.5 rounded-lg bg-synth-cyan text-black font-orbitron font-bold text-[10px] uppercase tracking-wider hover:synth-glow-cyan cursor-pointer transition-all flex items-center gap-1 shrink-0"
@@ -399,9 +391,10 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
       )}
 
       {/* ═══════════════════════════════════════════════════════
-          SECTION 2B: NHẬT KÝ ĐỔI QUÀ CÁ NHÂN (cần chọn học sinh)
+          SECTION 2B: NHẬT KÝ ĐỔI QuÀ CÁ NHÂN (cần chọn học sinh)
           ═══════════════════════════════════════════════════════ */}
-      <div className="space-y-4 pt-2 border-t border-white/5">
+      {viewingStudentId && (
+        <div className="space-y-4 pt-2 border-t border-white/5">
         <div className="flex items-center gap-2">
           <h4 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase tracking-wider">
             👤 Nhật Ký Đổi Quà Cá Nhân
@@ -474,6 +467,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
           </div>
         )}
       </div>
+      )}
 
       {/* Drawer: Tạo Quà Khuyến Học cho lớp */}
       <SideDrawer

@@ -518,7 +518,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
         </div>
       )}
 
-      <div className={isFull ? "grid grid-cols-1 lg:grid-cols-2 gap-6 items-start" : "contents"}>
+      <div className={isFull ? "flex flex-col gap-6 w-full" : "contents"}>
         {/* CẢNH 1: CHUỒNG CHĂM SÓC (Stable) */}
         <div className={`flex flex-col items-center justify-center p-4 relative ${isFull ? 'w-full' : 'h-full animate-float'}`}>
           {/* CSS Styles for floating/wiggling animations */}

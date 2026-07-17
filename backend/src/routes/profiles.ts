@@ -60,14 +60,17 @@ router.post('/profiles/quick-start', authMiddleware, async (req: any, res) => {
   }
 
   try {
-    // Check if profile of this role already exists and is active
+    // Check if profile of this role already exists (active or inactive)
     const existCheck = await pool.query(
-      'SELECT * FROM ge10_users WHERE account_id = $1 AND role = $2 AND is_active = TRUE',
+      'SELECT * FROM ge10_users WHERE account_id = $1 AND role = $2',
       [accountId, role]
     );
-    if (existCheck.rowCount && existCheck.rowCount > 0) {
+    if (existCheck.rows.length > 0) {
       const profile = existCheck.rows[0];
-      return res.json({ success: true, profile });
+      if (!profile.is_active) {
+        await pool.query('UPDATE ge10_users SET is_active = TRUE WHERE id = $1', [profile.id]);
+      }
+      return res.json({ success: true, profile: { ...profile, is_active: true } });
     }
 
     // Create a new profile automatically
@@ -111,8 +114,39 @@ router.post('/profiles', authMiddleware, async (req: any, res) => {
   if (!role || !name) return res.status(400).json({ error: 'Missing role or name' });
   
   try {
-    const profileId = 'prof-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
+    // Check if profile of this role already exists for this account (active or inactive)
+    const existCheck = await pool.query(
+      'SELECT id, name, email, avatar_url, role, is_active FROM ge10_users WHERE account_id = $1 AND role = $2',
+      [accountId, role]
+    );
+
     const finalAvatar = avatarUrl || req.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
+
+    if (existCheck.rows.length > 0) {
+      const existing = existCheck.rows[0];
+      await pool.query(
+        'UPDATE ge10_users SET name = $1, avatar_url = $2, is_active = TRUE WHERE id = $3',
+        [name, finalAvatar, existing.id]
+      );
+      // Đảm bảo các bảng liên kết của profile này tồn tại
+      await pool.query(`INSERT INTO ge10_player_profiles (user_id) VALUES ($1) ON CONFLICT DO NOTHING`, [existing.id]);
+      await pool.query(`INSERT INTO ge10_pet_states (user_id) VALUES ($1) ON CONFLICT DO NOTHING`, [existing.id]);
+      
+      return res.json({
+        success: true,
+        profile: {
+          id: existing.id,
+          account_id: accountId,
+          name,
+          email: existing.email,
+          avatar_url: finalAvatar,
+          role: existing.role,
+          is_active: true
+        }
+      });
+    }
+
+    const profileId = 'prof-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
     
     await pool.query(
       `INSERT INTO ge10_users (id, account_id, name, email, avatar_url, role, is_active)

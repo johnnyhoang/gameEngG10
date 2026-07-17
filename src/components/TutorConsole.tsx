@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { isAdmin, isTutorRole, isSuperAdmin } from '../utils/roleHelpers';
-import { toast } from '../utils/toast';
 import { useTranslate } from '../hooks/useTranslate';
 
 // Import child managers
@@ -16,6 +15,7 @@ import { MemberRoster } from './TutorConsole/MemberRoster';
 import { RoleManager } from './TutorConsole/RoleManager';
 import { VicePrincipalApplicationsManager } from './TutorConsole/VicePrincipalApplicationsManager';
 import { AuditLogsManager } from './TutorConsole/AuditLogsManager';
+import { RewardManager } from './TutorConsole/RewardManager';
 
 export const TutorConsole: React.FC = () => {
   const { t } = useTranslate();
@@ -187,13 +187,12 @@ export const TutorConsole: React.FC = () => {
 
 
       {/* Tab Panels */}
-      <div className="glass-panel rounded-2xl border border-white/5 p-5">
-        {activeTab === 'management' && (
-          <div className="space-y-6">
-            {/* Welcome & Dashboard */}
-            <div className="glass-panel rounded-2xl border border-synth-cyan/30 overflow-hidden bg-gradient-to-r from-synth-cyan/10 via-transparent to-synth-magenta/5 relative shadow-lg p-5 mb-6">
-              <div className="absolute top-0 right-0 w-32 h-32 bg-synth-cyan/5 rounded-full blur-2xl pointer-events-none"></div>
-              <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {activeTab === 'management' && (
+        <div className="glass-panel rounded-2xl border border-white/5 overflow-hidden">
+          {/* Welcome & Dashboard */}
+          <div className="bg-gradient-to-r from-synth-cyan/10 via-transparent to-synth-magenta/5 relative border-b border-white/10 p-5">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-synth-cyan/5 rounded-full blur-2xl pointer-events-none"></div>
+            <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
                     ⚙️ {isAdmin(currentUser?.role) ? 'BAN GIÁM HIỆU' : 'LỚP CHỦ NHIỆM'}
@@ -222,8 +221,9 @@ export const TutorConsole: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
+          </div>
 
+          <div className="p-5 space-y-6">
             {/* Quick Stats Grid — chỉ hiện chỉ số có ý nghĩa với vai trò hiện tại */}
               <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="glass-panel border border-white/5 rounded-2xl p-3.5 flex flex-col justify-between hover:border-synth-cyan/30 transition-all duration-300 group bg-white/3">
@@ -308,19 +308,36 @@ export const TutorConsole: React.FC = () => {
                       classLinks={classLinks}
                       respondClassInvite={respondClassInvite}
                       leaveClass={leaveClass}
-                      inviteAdminConnection={inviteAdminConnection}
+                      inviteAdminConnection={isSuperAdmin(currentUser?.role) ? inviteAdminConnection : undefined}
                     />
-                    <div className="border-t border-white/5 pt-6">
-                      <VicePrincipalApplicationsManager currentUser={currentUser} />
-                    </div>
                     {isSuperAdmin(currentUser?.role) && (
-                      <div className="border-t border-white/5 pt-6">
-                        <RoleManager currentUser={currentUser} />
-                      </div>
+                      <>
+                        <div className="border-t border-white/5 pt-6">
+                          <VicePrincipalApplicationsManager currentUser={currentUser} />
+                        </div>
+                        <div className="border-t border-white/5 pt-6">
+                          <RoleManager currentUser={currentUser} />
+                        </div>
+                      </>
                     )}
                   </div>
                 </div>
               )}
+              
+              <RewardManager
+                viewingStudentId={null}
+                activeRedemptions={[]}
+                canApproveReward={isTutorRole(currentUser?.role) || isAdmin(currentUser?.role)}
+                isSchoolAdmin={isAdmin(currentUser?.role)}
+                schoolRewards={schoolRewards}
+                fetchSchoolRewards={fetchSchoolRewards}
+                createSchoolReward={createSchoolReward as any}
+                deleteSchoolReward={deleteSchoolReward as any}
+                markRewardDelivered={markRewardDelivered as any}
+                cancelRedemption={cancelRedemption as any}
+                adminMarkRewardDelivered={adminMarkRewardDelivered as any}
+                adminCancelRedemption={adminCancelRedemption as any}
+              />
 
               <OrgChart
                 currentUser={currentUser}
@@ -336,31 +353,31 @@ export const TutorConsole: React.FC = () => {
               )}
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {activeTab === 'settings' && (
-          <SettingsManager
-            currentUser={currentUser}
-            gameSettings={gameSettings}
-            updateGameSettings={updateGameSettings as any}
-            addHandbookPage={addHandbookPage as any}
-          />
-        )}
+      {activeTab === 'settings' && (
+        <SettingsManager
+          currentUser={currentUser}
+          gameSettings={gameSettings}
+          updateGameSettings={updateGameSettings as any}
+          addHandbookPage={addHandbookPage as any}
+        />
+      )}
 
-        {activeTab === 'questions' && (
-          <QuestionBankManager
-            questions={questions}
-            deleteQuestion={deleteQuestion}
-            updateQuestion={updateQuestion}
-            addQuestion={addQuestion}
-            importQuestions={importQuestions as any}
-          />
-        )}
+      {activeTab === 'questions' && (
+        <QuestionBankManager
+          questions={questions}
+          deleteQuestion={deleteQuestion}
+          updateQuestion={updateQuestion}
+          addQuestion={addQuestion}
+          importQuestions={importQuestions as any}
+        />
+      )}
 
-        {activeTab === 'lectures' && (
-          <LectureBankManager />
-        )}
-      </div>
+      {activeTab === 'lectures' && (
+        <LectureBankManager />
+      )}
 
       {/* Student Profile Modal Overlay */}
       {viewingStudentId && selectedStudentProfile && (
@@ -407,10 +424,6 @@ export const TutorConsole: React.FC = () => {
                 adminSetEnergyConfig={adminSetEnergyConfig as any}
                 fetchSkipReviews={fetchSkipReviews}
                 resolveSkipReview={resolveSkipReview}
-                onSwitchStudent={() => {
-                  setViewingStudentId(null);
-                  toast.success(t('Đã quay lại danh sách', 'Returned to directory'));
-                }}
                 activeRedemptions={activeRedemptions}
                 schoolRewards={schoolRewards}
                 fetchSchoolRewards={fetchSchoolRewards}

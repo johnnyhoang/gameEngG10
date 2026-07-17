@@ -28,15 +28,17 @@ import { QuestionTextInput } from './PlayArea/QuestionTextInput';
 import { ExplanationBox } from './PlayArea/ExplanationBox';
 import { PostQuizReview } from './PlayArea/PostQuizReview';
 import { FinalResultScreen } from './PlayArea/FinalResultScreen';
+import { MarkdownRenderer } from './Common/MarkdownRenderer';
 
 interface PlayAreaProps {
-  mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'lesson' | 'survival';
+  mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'lesson' | 'survival' | 'preview';
   bossId?: string;
   lessonId?: string;
+  previewQuestion?: Question;
   onFinish: (result: ActivityResult) => void;
 }
 
-export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFinish }) => {
+export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, previewQuestion, onFinish }) => {
   const getQuestionByWeight = useGameState(state => state.getQuestionByWeight);
   const questions = useGameState(state => state.questions);
   const lessons = useGameState(state => state.lessons);
@@ -170,6 +172,23 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     setInitDone(false);
 
     const initOnlineSession = async () => {
+      if (mode === 'preview' && previewQuestion) {
+        if (active) {
+          setSessionId('preview');
+          setCurrentQuestions([previewQuestion]);
+          setCurrentIndex(0);
+          setAnswersSubmitted([]);
+          setRewardsEarned({ ruby: 0, xp: 0 });
+          setSessionAnswered(0);
+          setSessionCorrect(0);
+          setRunFinished(false);
+          runEndHandledRef.current = false;
+          setRunMistakes(0);
+          setTimeLeft(0);
+          setInitDone(true);
+        }
+        return;
+      }
       // Phiên dev-backdoor (mock-*) không có backend thật — dùng thẳng bộ câu hỏi local.
       if (playerIdRef.current?.startsWith('mock-')) {
         runLocalFallback();
@@ -250,7 +269,9 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           pool = [...pool, ...extra].slice(0, 3);
         }
       } else {
-        const weightMode = mode === 'survival' ? 'mixed' : mode;
+        const weightMode = (mode === 'survival' || mode === 'preview')
+          ? 'mixed'
+          : (mode as 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed');
         for (let i = 0; i < count; i++) {
           const q = getQuestionByWeightRef.current(weightMode);
           if (q && ((q as any).subject || 'english') === activeSectId && !pool.some(existing => existing.id === q.id)) {
@@ -302,7 +323,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     return () => {
       active = false;
     };
-  }, [mode, bossId, lessonId, activeSectId, activeGradeTier]);
+  }, [mode, bossId, lessonId, activeSectId, activeGradeTier, previewQuestion]);
 
   // Handle countdown timer
   useEffect(() => {
@@ -367,21 +388,22 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
       let finalRuby = rewardsEarned.ruby;
       let finalXp = rewardsEarned.xp;
 
-      try {
-        if (!sessionId) {
-          // Fallback if session wasn't started online
-          if (isDefeat) {
-            applyDefeatPenalty(rewardsEarned.ruby, rewardsEarned.xp);
-            finalRuby = Math.floor(rewardsEarned.ruby / 2);
-            finalXp = Math.floor(rewardsEarned.xp / 2);
-          } else if (mode === 'boss') {
-            const bossBonusIndex = bossId === 'b-2024' || bossId === 'b-hk1' ? 0
-              : bossId === 'b-2025' || bossId === 'b-hk2' ? 1
-              : bossId === 'b-2026' ? 2
-              : undefined;
-            completeBossVictory(bossBonusIndex);
-          }
-        } else {
+      if (mode !== 'preview') {
+        try {
+          if (!sessionId) {
+            // Fallback if session wasn't started online
+            if (isDefeat) {
+              applyDefeatPenalty(rewardsEarned.ruby, rewardsEarned.xp);
+              finalRuby = Math.floor(rewardsEarned.ruby / 2);
+              finalXp = Math.floor(rewardsEarned.xp / 2);
+            } else if (mode === 'boss') {
+              const bossBonusIndex = bossId === 'b-2024' || bossId === 'b-hk1' ? 0
+                : bossId === 'b-2025' || bossId === 'b-hk2' ? 1
+                : bossId === 'b-2026' ? 2
+                : undefined;
+              completeBossVictory(bossBonusIndex);
+            }
+          } else {
           const bossBonusIndex = bossId === 'b-2024' || bossId === 'b-hk1' ? 0
             : bossId === 'b-2025' || bossId === 'b-hk2' ? 1
             : bossId === 'b-2026' ? 2
@@ -427,8 +449,9 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           completeBossVictory(bossBonusIndex);
         }
       }
+    }
 
-      // Store final ActivityResult — render phases will consume this
+    // Store final ActivityResult — render phases will consume this
       setActivityResult({
         status,
         score: sessionCorrect,
@@ -687,13 +710,15 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     }
 
     const mappedMode = mode === 'boss' ? 'boss' : mode === 'survival' ? 'survival' : 'practice';
-    const outcome = answerQuestion(
-      activeQuestion.id,
-      isCorrect,
-      10,
-      mappedMode,
-      scoreRatio
-    );
+    const outcome = mode === 'preview' 
+      ? { rubyGained: 0, expGained: 0, newLevel: 0, leveledUp: false }
+      : answerQuestion(
+          activeQuestion.id,
+          isCorrect,
+          10,
+          mappedMode,
+          scoreRatio
+        );
 
     setAnswersSubmitted(prev => [
       ...prev,
@@ -744,6 +769,17 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
     if (!activeQuestion) return;
     setIsSkipDialogOpen(false);
     
+    if (mode === 'preview') {
+      toast.success('Bỏ qua thành công (Preview mode)');
+      sound.playNext();
+      if (currentIndex + 1 < currentQuestions.length) {
+        setCurrentIndex(prev => prev + 1);
+      } else {
+        setRunFinished(true);
+      }
+      return;
+    }
+
     const success = await flagQuestionConfused(activeQuestion, reason, severity);
     if (success) {
       toast.success('Đã gửi phản ánh tới Chủ Nhiệm. Câu hỏi này sẽ được gác lại.');
@@ -872,6 +908,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
             </span>. Hãy tiếp tục duy trì phong độ xuất sắc này nhé!
           </p>
           <button
+            type="button"
             onClick={handleEscape}
             className="px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-border-cyan cursor-pointer transition-all duration-300 shadow-[0_0_15px_rgba(0,240,255,0.4)]"
           >
@@ -895,6 +932,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           Hãy nhờ Thầy/Cô nạp thêm câu hỏi, hoặc thử phòng khác nhé!
         </p>
         <button
+          type="button"
           onClick={handleEscape}
           className="px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:synth-border-cyan cursor-pointer transition-all duration-300 shadow-[0_0_15px_rgba(0,240,255,0.4)]"
         >
@@ -981,6 +1019,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         onToggleMute={toggleMute}
         onShowScratchpad={() => setShowScratchpad(true)}
         formatTime={formatTime}
+        mode={mode}
       />
 
       {/* Progress Bar */}
@@ -999,8 +1038,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
             <span className="text-[10px] font-bold text-synth-orange font-orbitron uppercase tracking-wider block border-b border-synth-orange/20 pb-1.5 mb-2">
               📖 ĐOẠN TRÍCH ĐỌC HIỂU
             </span>
-            <div className="text-xs text-white/90 leading-relaxed whitespace-pre-line font-serif italic">
-              {passageText}
+            <div className="text-xs text-white/90 leading-relaxed font-serif italic">
+              <MarkdownRenderer content={passageText} className="font-serif italic text-xs text-white/90 leading-relaxed" />
             </div>
           </div>
 
@@ -1020,14 +1059,14 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                   />
                 </div>
               )}
-              <p className="text-sm text-white font-semibold leading-relaxed bg-synth-gray/20 border border-white/5 rounded-xl p-3.5 whitespace-pre-line flex items-start gap-2">
+              <div className="text-sm text-white font-semibold leading-relaxed bg-synth-gray/20 border border-white/5 rounded-xl p-3.5 flex items-start gap-2">
                 {activeQuestion.metadata?.isStandard && (
                   <span className="inline-flex items-center justify-center shrink-0 w-4 h-4 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-black mt-0.5" title="Câu hỏi đạt chuẩn">
                     ✓
                   </span>
                 )}
-                <span>{questionText}</span>
-              </p>
+                <MarkdownRenderer content={questionText} className="flex-1 text-sm text-white font-semibold leading-relaxed" />
+              </div>
             </div>
 
             {/* Render MCQ / Essay / TextInput */}
@@ -1051,14 +1090,14 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
                 />
               </div>
             )}
-            <p className="text-base text-white font-medium leading-relaxed bg-synth-gray/20 border border-white/5 rounded-xl p-4 whitespace-pre-line flex items-start gap-2">
+            <div className="text-base text-white font-medium leading-relaxed bg-synth-gray/20 border border-white/5 rounded-xl p-4 flex items-start gap-2">
               {activeQuestion.metadata?.isStandard && (
                 <span className="inline-flex items-center justify-center shrink-0 w-4 h-4 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-[10px] font-black mt-1" title="Câu hỏi đạt chuẩn">
                   ✓
                 </span>
               )}
-              <span>{activeQuestion.prompt}</span>
-            </p>
+              <MarkdownRenderer content={activeQuestion.prompt} className="flex-1 text-base text-white font-medium leading-relaxed" />
+            </div>
           </div>
 
           {/* Geometry drawing board */}
@@ -1126,6 +1165,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
         <div className="flex flex-wrap items-center gap-2">
           {!checked ? (
             <button
+              type="button"
               onClick={handleCheckAnswer}
               disabled={isAiGrading || (activeQuestion.type === 'mcq' ? !selectedAnswer : !typedAnswer.trim())}
               className="px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-cyan text-black hover:synth-glow-cyan cursor-pointer transition-all duration-300 disabled:opacity-40 text-center flex items-center justify-center gap-2"
@@ -1140,16 +1180,20 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
               )}
             </button>
           ) : (
-            <button
-              onClick={handleNextQuestion}
-              className="px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-magenta text-black hover:synth-glow-magenta cursor-pointer transition-all duration-300 flex items-center justify-center gap-2 text-center"
-            >
-              Sang câu kế <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+            mode !== 'preview' && (
+              <button
+                type="button"
+                onClick={handleNextQuestion}
+                className="px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-magenta text-black hover:synth-glow-magenta cursor-pointer transition-all duration-300 flex items-center justify-center gap-2 text-center"
+              >
+                Sang câu kế <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )
           )}
 
-          {!checked && (
+          {!checked && mode !== 'preview' && (
             <button
+              type="button"
               onClick={handleUseHint}
               disabled={hintUsed || isAiGrading}
               className="px-4 py-2.5 rounded-xl border border-synth-orange/40 hover:bg-synth-orange/5 text-synth-orange font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 text-center"
@@ -1159,31 +1203,35 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, onFi
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={handleEscape}
-            className="px-4 py-2.5 rounded-xl border border-synth-gray hover:bg-synth-gray/20 text-synth-text-muted font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 text-center"
-          >
-            Rút khỏi phòng 
-          </button>
+        {mode !== 'preview' && (
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleEscape}
+              className="px-4 py-2.5 rounded-xl border border-synth-gray hover:bg-synth-gray/20 text-synth-text-muted font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 text-center"
+            >
+              Rút khỏi phòng 
+            </button>
 
-          {!checked && (() => {
-            const todayStr = getHoChiMinhDateString(new Date());
-            const skipsCount = player.dailySkips?.date === todayStr ? (player.dailySkips.count || 0) : 0;
-            const remainingSkips = Math.max(0, 3 - skipsCount);
-            const isBlocked = remainingSkips <= 0;
-            return (
-              <button
-                onClick={handleSkipConfused}
-                disabled={isBlocked || isAiGrading}
-                className="px-4 py-2.5 rounded-xl border border-red-500/40 hover:bg-red-500/10 text-red-400 font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 text-center flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
-                title={`Lượt Bỏ qua hôm nay: ${remainingSkips}/3`}
-              >
-                Bỏ qua (Còn {remainingSkips}/3) 🧠
-              </button>
-            );
-          })()}
-        </div>
+            {!checked && (() => {
+              const todayStr = getHoChiMinhDateString(new Date());
+              const skipsCount = player.dailySkips?.date === todayStr ? (player.dailySkips.count || 0) : 0;
+              const remainingSkips = Math.max(0, 3 - skipsCount);
+              const isBlocked = remainingSkips <= 0;
+              return (
+                <button
+                  type="button"
+                  onClick={handleSkipConfused}
+                  disabled={isBlocked || isAiGrading}
+                  className="px-4 py-2.5 rounded-xl border border-red-500/40 hover:bg-red-500/10 text-red-400 font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 text-center flex items-center justify-center gap-1.5 disabled:opacity-40 disabled:cursor-not-allowed"
+                  title={`Lượt Bỏ qua hôm nay: ${remainingSkips}/3`}
+                >
+                  Bỏ qua (Còn {remainingSkips}/3) 🧠
+                </button>
+              );
+            })()}
+          </div>
+        )}
       </div>
 
       {isSkipDialogOpen && (

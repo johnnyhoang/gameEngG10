@@ -368,29 +368,30 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Banner */}
-      <div className="glass-panel rounded-2xl border border-synth-cyan/30 overflow-hidden bg-gradient-to-r from-synth-cyan/10 via-transparent to-synth-magenta/5 relative shadow-lg p-5 mb-6">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-synth-cyan/5 rounded-full blur-2xl pointer-events-none"></div>
-        <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
-              🗃️ NGÂN HÀNG CÂU HỎI
-            </h3>
-            <div className="text-xs text-synth-text-muted leading-relaxed max-w-4xl space-y-1">
-              <p>Quản lý toàn bộ danh sách câu hỏi trắc nghiệm, thống kê độ phủ chuyên đề và chuẩn bị đề thi.</p>
+      <div className="glass-panel rounded-2xl border border-white/5 overflow-hidden">
+        {/* Banner */}
+        <div className="bg-gradient-to-r from-synth-cyan/10 via-transparent to-synth-magenta/5 relative border-b border-white/10 p-5">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-synth-cyan/5 rounded-full blur-2xl pointer-events-none"></div>
+          <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
+                🗃️ NGÂN HÀNG CÂU HỎI
+              </h3>
+              <div className="text-xs text-synth-text-muted leading-relaxed max-w-4xl space-y-1">
+                <p>Quản lý toàn bộ danh sách câu hỏi trắc nghiệm, thống kê độ phủ chuyên đề và chuẩn bị đề thi.</p>
+              </div>
             </div>
+            <button
+              onClick={startAddNew}
+              className="px-4 py-2 bg-synth-cyan text-black font-bold font-orbitron text-xs uppercase rounded-lg hover:synth-glow-cyan transition-all flex items-center gap-1.5 self-start sm:self-auto cursor-pointer shrink-0"
+            >
+              <Plus className="w-4 h-4" /> Thêm Câu Hỏi
+            </button>
           </div>
-          <button
-            onClick={startAddNew}
-            className="px-4 py-2 bg-synth-cyan text-black font-bold font-orbitron text-xs uppercase rounded-lg hover:synth-glow-cyan transition-all flex items-center gap-1.5 self-start sm:self-auto cursor-pointer shrink-0"
-          >
-            <Plus className="w-4 h-4" /> Thêm Câu Hỏi
-          </button>
         </div>
-      </div>
 
-      <div className="space-y-6">
-          <div id="question-bank-tools" className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5 scroll-mt-24">
+        <div className="p-5 space-y-6">
+          <div id="question-bank-tools" className="space-y-5 scroll-mt-24">
             <div className="flex items-center justify-between">
               <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-1.5">
                 <Database className="w-4 h-4" /> Ngân hàng câu hỏi hiện có
@@ -934,6 +935,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
 
 
         </div>
+      </div>
       <QuestionFormModal
         isOpen={isAddingNew || !!editingQuestion}
         onClose={() => {

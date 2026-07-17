@@ -126,6 +126,12 @@ const initDB = async () => {
     } else {
       throw new Error(`Missing required game settings and challenges seed migration: ${gameSettingsAndChallengesPath}`);
     }
+    const preventDuplicateProfilesPath = path.join(__dirname, '..', 'migrations', '20260717_prevent_duplicate_profiles.sql');
+    if (fs.existsSync(preventDuplicateProfilesPath)) {
+      await pool.query(fs.readFileSync(preventDuplicateProfilesPath, 'utf8'));
+    } else {
+      throw new Error(`Missing required prevent duplicate profiles migration: ${preventDuplicateProfilesPath}`);
+    }
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS subject VARCHAR(50) DEFAULT 'english';`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS image_url TEXT;`);
     await pool.query(`ALTER TABLE ge10_custom_questions ADD COLUMN IF NOT EXISTS metadata JSONB DEFAULT '{}'::jsonb;`);
@@ -211,11 +217,17 @@ const initDB = async () => {
   }
 };
 
-initDB();
+// initDB();
 
 // Health Check API
 app.get('/api/health', (req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString() });
+});
+
+// Request Logger Middleware
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+  next();
 });
 
 // Register routes
@@ -229,7 +241,18 @@ app.use('/api', riddleRouter);
 app.use('/api', gameRouter);
 app.use('/api', classRewardsRouter);
 app.use('/api', learningContextRouter);
-app.use('/api', missionLedgerRouter);
+app.use('/api', (req, res, next) => {
+  if (req.url.startsWith('/mission-ledger') || req.url.startsWith('/mission-events')) {
+    console.log(`[Debug] Routing mission ledger request: ${req.method} ${req.url}`);
+  }
+  next();
+}, missionLedgerRouter);
+
+// Error Handler Middleware
+app.use((err: any, req: any, res: any, next: any) => {
+  console.error(`[${new Date().toISOString()}] Server Error:`, err);
+  res.status(500).json({ error: 'Internal Server Error', details: err.message });
+});
 
 if (!process.env.VERCEL) {
   app.listen(PORT, () => {

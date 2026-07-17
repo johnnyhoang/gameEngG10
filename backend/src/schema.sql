@@ -240,6 +240,8 @@ CREATE TABLE IF NOT EXISTS ge10_lessons (
     examples JSONB NOT NULL DEFAULT '[]'::jsonb,
     practice_points JSONB NOT NULL DEFAULT '[]'::jsonb,
     difficulty INTEGER NOT NULL DEFAULT 5,
+    times_opened INTEGER DEFAULT 0,
+    times_completed INTEGER DEFAULT 0,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 

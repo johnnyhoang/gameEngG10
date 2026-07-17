@@ -3,6 +3,7 @@ import { Check, X } from 'lucide-react';
 import type { ExplanationBoxProps } from './types';
 import { getAssessmentProvider } from '../../subject-modules/registry';
 import type { SubjectId } from '../../types/game';
+import { MarkdownRenderer } from '../Common/MarkdownRenderer';
 
 export const ExplanationBox: React.FC<ExplanationBoxProps> = ({
   activeSectId,
@@ -64,7 +65,9 @@ export const ExplanationBox: React.FC<ExplanationBoxProps> = ({
         {aiFeedback && (
           <div className="text-theme-text-highlight/95 space-y-1 mt-2">
             <p className="font-bold uppercase tracking-wider text-[10px] text-theme-text-info">Trợ Giáo MIKA luận giải</p>
-            <p className="text-theme-text-highlight/90 italic leading-relaxed bg-synth-gray/25 p-2 rounded-lg">{aiFeedback}</p>
+            <div className="text-theme-text-highlight/90 italic leading-relaxed bg-synth-gray/25 p-2 rounded-lg">
+              <MarkdownRenderer content={aiFeedback} className="italic text-theme-text-highlight/90" />
+            </div>
           </div>
         )}
 
@@ -79,9 +82,11 @@ export const ExplanationBox: React.FC<ExplanationBoxProps> = ({
           </div>
         )}
 
-        <p className="text-synth-text-muted">
-          {activeQuestion.explanation}
-        </p>
+        {activeQuestion.explanation && (
+          <div className="text-synth-text-muted">
+            <MarkdownRenderer content={activeQuestion.explanation} className="text-synth-text-muted" />
+          </div>
+        )}
 
         {isWriting && activeQuestion.metadata?.solutionSteps?.length ? (
           <div className="text-theme-text-highlight/90 space-y-1">

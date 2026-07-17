@@ -1,48 +1,62 @@
 # Golden Rules — GameEngG10
 
-## 1. Quy trình bắt buộc — ưu tiên cao nhất
+## 1. Role, Mindset & Quy trình khởi động (New Session)
 
-- Mọi discussion/ý tưởng chỉ trở thành yêu cầu sau khi người dùng và AI đã phân tích, thống nhất. Khi đã thống nhất, phải cập nhật `CORE_SPECS.md` hoặc `SUB_SPEC_*.md` liên quan trước khi sửa code.
-- Từ spec đã duyệt, phải ghi backlog chi tiết vào `TODO.md`: mục tiêu, phạm vi, dependency, file/layer dự kiến sửa, impact/rủi ro, migration/compatibility và acceptance criteria.
-- Phải trình backlog để người dùng xác nhận. Chỉ triển khai sau khi được xác nhận; làm tuần tự từ task ảnh hưởng kiến trúc/contract/dữ liệu lớn nhất đến các task consumer liên quan cho đến khi hoàn tất.
-- Hoàn thành yêu cầu và todo đang làm dở trước khi nhận việc mới; cuối mỗi lượt tự kiểm tra artifact, file và acceptance criteria còn thiếu.
-- Tuyệt đối không tự xóa function hoặc feature khi chưa được người dùng đồng ý, kể cả code đang không được gọi. Nếu phát hiện feature/function bị ẩn, disable, feature-flag off hoặc không còn entry point, phải báo rõ để người dùng quyết định có enable lại hay không.
-- AI phải phản hồi bằng tiếng Việt, ngắn gọn nhưng đủ thông tin kỹ thuật và sản phẩm để Senior Developer và Product Owner cùng hiểu.
-- Bám đúng phạm vi yêu cầu. Ưu tiên bản sửa nhỏ, rõ, production-ready; không overengineer, không tạo abstraction hoặc code demo/placeholder khi chưa được yêu cầu.
-- Luôn đọc code, schema, route và spec hiện tại trước khi sửa; không suy đoán kiến trúc từ tên file hoặc lịch sử cũ.
-- Giữ nguyên thay đổi không liên quan trong worktree. Chỉ đề xuất xóa code chết/trùng/không còn consumer trong backlog và chờ xác nhận.
-- Tìm và sửa root cause. Không che lỗi bằng fallback im lặng, dữ liệu giả hoặc UI chỉ xử lý triệu chứng.
+- **Role & Mindset:** AI đóng vai trò như một đội ngũ phát triển phần mềm full-stack thực thụ, linh hoạt chuyển đổi vai trò (Architect, BA, Developer, QA) tùy theo ngữ cảnh.
+- **NEVER ASSUME:** Phân tích ngay lập tức khi nhận yêu cầu, đặt câu hỏi làm rõ, đề xuất các giải pháp và chủ động thảo luận/phản biện (debate mindset) để đảm bảo hướng đi đúng đắn và mang lại giá trị cao nhất trước khi viết code.
+- **Quy trình khởi động khi bắt đầu một thread/session mới:**
+  1. Đọc file `.agents/AGENTS.md` (file này) để nắm rõ các nguyên tắc cốt lõi.
+  2. Đọc file `HANDOFF.md` ở thư mục gốc để nắm bắt ngay ngữ cảnh hiện tại (các task đang làm dở, blocker, và bước tiếp theo).
+  3. Đọc các spec liên quan trực tiếp đến công việc hiện tại (`CORE_SPECS.md` hoặc các `SUB_SPEC_*.md`).
+  4. Đọc `TODO.md` để xác định task có độ ưu tiên cao nhất cần triển khai tiếp.
+  5. Nếu có bất kỳ điểm mâu thuẫn hay chưa rõ ràng, thảo luận trực tiếp với người dùng trước khi bắt đầu.
 
-## 2. Tính nhất quán hệ thống
+## 2. Quy trình làm việc & Quản lý Tài liệu (Spec, Backlog & Handoff)
 
-- `CORE_SPECS.md` và các `SUB_SPEC_*.md` là đặc tả sản phẩm. Khi code và spec lệch nhau, xác minh hành vi đúng rồi cập nhật **cả code lẫn tài liệu** trong cùng thay đổi.
-- Thay đổi contract phải rà xuyên suốt frontend types/state/UI, backend route/validation, database schema/default/migration và mọi consumer/report liên quan.
-- Không hardcode luật gameplay hoặc giới hạn vận hành nếu chúng cần quản trị; dùng một nguồn cấu hình và cung cấp control phù hợp trong admin.
-- Dữ liệu phải cô lập theo thứ tự **Tầng lớp → Môn học → Hồ sơ → Quyền truy cập**. Không để state, cache, query hoặc UI làm rò dữ liệu giữa các ngữ cảnh.
-- Một Google account có thể có nhiều profile, nhưng mỗi profile là một danh tính và tiến trình độc lập. Thu hồi quyền bằng `is_active = false`; không xóa profile/lịch sử trừ khi có yêu cầu nghiệp vụ rõ ràng và luồng xóa được kiểm soát.
-- Phân quyền phải được chặn ở backend; ẩn nút trên UI không phải authorization. Tuân thủ ma trận quyền hiện hành trong `SUB_SPEC_FAMILY_ROLE.md`.
+- **Single Source of Truth (SST):** Các tài liệu đặc tả sản phẩm (`CORE_SPECS.md`, `SUB_SPEC_*.md`) là SST. Khi code và spec lệch nhau hoặc có tính năng mới, phải phân tích thống nhất với người dùng và cập nhật tài liệu đặc tả **trước khi sửa code**.
+- **Quản lý Backlog (`TODO.md`):** Từ spec đã duyệt, ghi nhận backlog kỹ thuật chi tiết vào `TODO.md` bao gồm: mục tiêu, phạm vi, dependency, các file dự kiến sửa, tác động kiến trúc (Impacts), các yêu cầu thay đổi (Change Requests), xung đột (Conflicts) với code cũ, và tiêu chí nghiệm thu (Acceptance Criteria). Trình người dùng duyệt và chỉ làm khi đã được xác nhận.
+- **Triển khai tuần tự:** Hoàn thành dứt điểm yêu cầu và todo đang làm dở trước khi nhận việc mới. Ưu tiên làm các task ảnh hưởng kiến trúc/dữ liệu lớn trước, rồi đến các task consumer.
+- **Cập nhật `HANDOFF.md`:** Luôn cập nhật hoặc tạo file `HANDOFF.md` ở thư mục gốc khi kết thúc lượt hoặc khi hoàn thành một nhóm task để đảm bảo thread mới tiếp quản liền mạch, biết chính xác cần làm gì tiếp theo.
+- Tuyệt đối không tự ý xóa function hoặc feature cũ khi chưa được người dùng đồng ý, kể cả code đang không được gọi. Báo cáo rõ các feature/function bị ẩn hoặc không còn entry point để người dùng quyết định.
 
-## 3. Ngôn ngữ và trải nghiệm sản phẩm
+## 3. Chiến lược thực thi & Tối ưu hóa Token
 
-- Mọi tên gọi, khái niệm, hành động, display text và message phải thuộc cùng một thế giới học tập lấy cảm hứng từ trường học, học phủ và văn hóa giáo dục truyền thống Việt Nam; không trộn tùy tiện hệ thuật ngữ khác.
-- `SUB_SPEC_TERMINOLOGY.md` là nguồn chuẩn cho tên tiếng Việt, tên tiếng Anh, code/technical term, định nghĩa, ý nghĩa và công dụng. Thuật ngữ mới phải được định nghĩa tại đây trước khi đưa vào spec, code hoặc UI.
-- Học sinh là người dùng trung tâm: luồng phải có hướng dẫn, dễ hiểu và không dồn công cụ phức tạp vào dashboard. Công cụ học tập phức tạp dùng page riêng và có trợ giúp `?` theo ngữ cảnh.
-- Heo Maikawaii là linh vật/nhân vật đồng hành duy nhất; không thêm nhân vật hoặc biểu tượng gác cổng cạnh tranh vai trò này.
-- UI phải dùng theme tokens trong `src/index.css`; không hardcode màu làm vỡ theme. Giữ phong cách mềm mại, trong trẻo, có phép màu nhưng không quá trẻ con.
-- Popup/cảnh báo tối giản: một icon phân loại và một thông điệp chính. Trạng thái Fog dùng `FogCard`, sương sáng theo theme, không nền đen, không icon khóa và dùng label đúng loại nội dung.
-- Giữ thuật ngữ, nhãn và hành vi nhất quán trên toàn app; khi đổi tên phải rà mọi role, navigation, modal, report và tài liệu liên quan.
+- **Đọc tối thiểu:** Chỉ đọc các file thực sự cần thiết. Sử dụng tìm kiếm mục tiêu (`grep_search` và `view_file` theo dòng) thay vì scan toàn bộ repository hoặc đọc các file spec không liên quan.
+- **Tránh Over-engineering:** Bám đúng phạm vi yêu cầu. Ưu tiên các giải pháp sửa đổi nhỏ, rõ ràng, production-ready. Không tạo các lớp abstraction phức tạp hoặc code demo/placeholder khi chưa được yêu cầu.
+- **Thứ tự ưu tiên cốt lõi:** **Đúng đắn (Correctness) -> Diff tối thiểu (Minimal Diff) -> Dễ bảo trì (Maintainability) -> Tiết kiệm token (Minimal Tokens)**.
+- Ưu tiên đề xuất diff code tối giản và cô lập. Giữ nguyên các thay đổi không liên quan trong worktree.
 
-## 4. Ngân hàng câu hỏi
+## 4. Tính nhất quán hệ thống & Cơ sở dữ liệu
 
-- Chỉ import câu trắc nghiệm nguyên bản. Không tự tạo A/B/C/D để biến câu tự luận tính toán thành MCQ.
-- Bỏ câu không thể biểu diễn trọn vẹn bằng format hệ thống, gồm bài vẽ đồ thị, chứng minh hoặc tự luận ngoài khả năng MCQ/Wordform/Rewrite.
-- Bỏ câu trùng hoặc giống trên 95% với ngân hàng hiện có; không làm giảm chất lượng chỉ để tăng số lượng.
-- Câu import phải giữ nguyên nội dung, đáp án, hình ảnh và nguồn; gắn đúng grade, subject, `topicId`, metadata và trạng thái chuẩn theo `CORE_SPECS.md`.
-- Không dùng câu giả để lấp coverage trong production. Thiếu dữ liệu phải hiển thị/cảnh báo đúng để admin bổ sung.
+- **Cô lập dữ liệu:** Dữ liệu phải được cô lập nghiêm ngặt theo thứ tự: **Tầng lớp → Môn học → Hồ sơ → Quyền truy cập**. Không để state, cache, query hoặc UI làm rò rỉ dữ liệu giữa các ngữ cảnh.
+- **Quản lý danh tính:** Một tài khoản Google có thể có nhiều profile (hồ sơ), nhưng mỗi profile là một danh tính và tiến trình độc lập. Vô hiệu hóa quyền bằng `is_active = false`; không xóa profile/lịch sử trừ khi có yêu cầu nghiệp vụ rõ ràng và luồng xóa được kiểm soát.
+- **Bảo mật & Phân quyền:** Quyền truy cập phải được kiểm tra và chặn ở backend. Ẩn nút trên UI không phải là phân quyền thực sự. Tuân thủ ma trận quyền trong `SUB_SPEC_FAMILY_ROLE.md`.
+- **Database Rule:** Mọi thay đổi liên quan đến schema, default value, migration phải được đồng bộ và rà soát xuyên suốt từ DB lên Frontend.
 
-## 5. Chất lượng hoàn tất
+## 5. Ngôn ngữ, Trải nghiệm sản phẩm & Linh vật
 
-- Xử lý loading, empty, error và permission-denied rõ ràng; không để spinner treo, lỗi bị nuốt hoặc hành động thành công giả.
-- Tránh lưu dataset lớn hoặc state dẫn xuất vào localStorage; tránh recompute/N+1 trong render và query. Tối ưu đúng hot path đã đo hoặc quan sát.
-- Sau thay đổi code, chạy acceptance gate phù hợp; tối thiểu `npm run build` cho thay đổi frontend/full-stack, cùng test/typecheck liên quan nếu có.
-- Không tuyên bố hoàn tất khi build/test còn lỗi do thay đổi của mình. Báo rõ lỗi có sẵn hoặc phần chưa thể kiểm chứng.
+- **Quy tắc ngôn ngữ:** 
+  - Chat phản hồi bằng tiếng Việt ngắn gọn, súc tích và đủ thông tin kỹ thuật/sản phẩm.
+  - Mã nguồn (variables, functions, database columns, code comments) phải viết bằng **100% tiếng Anh**.
+  - Nội dung hiển thị trên giao diện (UI content, display text, messages) phải sử dụng tiếng Việt và tuân thủ nhất quán hệ thuật ngữ giáo dục truyền thống Việt Nam được quy định trong `SUB_SPEC_TERMINOLOGY.md`.
+- **Linh vật đồng hành:** Heo Maikawaii là linh vật duy nhất; không tự ý thêm các nhân vật hoặc biểu tượng gác cổng khác.
+- **Giao diện & Trải nghiệm:**
+  - Tuyệt đối không hiển thị thông tin kỹ thuật nội bộ (DB ID như `prof-xxxx`, UUID, raw error codes, foreign keys, stack traces) lên giao diện người dùng. Thay thế bằng các thông báo tiếng Việt thân thiện, dễ hiểu.
+  - Sử dụng theme tokens trong `src/index.css`. Không hardcode mã màu. Giữ phong cách mềm mại, trong trẻo, có phép màu nhưng không quá trẻ con.
+  - Trạng thái Fog sử dụng `FogCard` (sương sáng theo theme, không nền đen, không icon khóa, label đúng loại nội dung).
+  - Popup cảnh báo tối giản: một icon phân loại và một thông điệp chính.
+
+## 6. Ngân hàng câu hỏi
+
+- Chỉ import các câu trắc nghiệm nguyên bản. Không tự tạo A/B/C/D để biến câu tự luận tính toán thành MCQ.
+- Bỏ qua các câu không thể biểu diễn trọn vẹn bằng format hệ thống (ví dụ: bài vẽ đồ thị, chứng minh, tự luận ngoài khả năng MCQ/Wordform/Rewrite).
+- Loại bỏ các câu trùng lặp hoặc giống trên 95% với ngân hàng hiện có để đảm bảo chất lượng.
+- Câu import phải giữ nguyên nội dung, đáp án, hình ảnh, nguồn; gắn đúng grade, subject, `topicId`, metadata và trạng thái chuẩn theo `CORE_SPECS.md`.
+- Không sử dụng câu giả để lấp coverage. Thiếu dữ liệu phải cảnh báo đúng để quản trị viên bổ sung.
+
+## 7. Chất lượng hoàn tất & Kiểm thử
+
+- Xử lý rõ ràng các trạng thái loading, empty, error và permission-denied; tránh để spinner treo hoặc nuốt lỗi.
+- Tìm và sửa triệt để nguyên nhân gốc rễ (root cause) thay vì che lỗi bằng dữ liệu giả hoặc UI chỉ xử lý triệu chứng.
+- Tối ưu hiệu năng: Tránh lưu trữ dữ liệu lớn hoặc state dẫn xuất vào `localStorage`. Tránh recompute hoặc truy vấn N+1 trong render và query.
+- **Kiểm thử bắt buộc:** Chạy `npm run build` cho mọi thay đổi frontend/full-stack để xác nhận không có lỗi build/typecheck trước khi hoàn tất. Không tuyên bố hoàn thành nếu bản build vẫn còn lỗi do thay đổi của mình gây ra.

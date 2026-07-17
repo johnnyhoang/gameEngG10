@@ -732,7 +732,7 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
 
 ## T9 — Khắc phục lỗi Rules-of-hooks & Tối ưu hóa nạp dữ liệu
 
-- [ ] **T9.1 — Sửa lỗi rules-of-hooks có sẵn trong PostQuizReview và QuestionMCQ**
+- [x] **T9.1 — Sửa lỗi rules-of-hooks có sẵn trong PostQuizReview và QuestionMCQ**
   - *Mục tiêu:* Đảm bảo các React hooks (đặc biệt là `useMemo`) không được gọi có điều kiện bên trong các nhánh if/else hoặc return sớm, tuân thủ nghiêm ngặt quy tắc Rules of Hooks để tránh crash runtime.
   - *Phải sửa:* `src/components/PlayArea/PostQuizReview.tsx` (dòng ~220) và `src/components/PlayArea/QuestionMCQ.tsx` (dòng ~33).
   - *Phải làm:* Di chuyển toàn bộ các lệnh gọi `useMemo`, `useEffect` lên phía đầu component, trước bất kỳ câu lệnh return hoặc rẽ nhánh điều kiện nào.
@@ -748,12 +748,12 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
 
 ## T10 — Refactor Tối giản hóa và Tối ưu hóa UI Sĩ Tử
 
-- [ ] **T10.1 — Cấu trúc lại Sổ Tu Học (Learning Ledger)**
+- [x] **T10.1 — Cấu trúc lại Sổ Tu Học (Learning Ledger)**
   - *Mục tiêu:* Cho phép mở sẵn sổ tu học khi học sinh ở trang Bản Đồ.
   - *Phải sửa:* `src/components/LearningLedger.tsx`
   - *Phải làm:* Thêm prop `defaultExpanded` và khởi tạo state `expanded` từ prop này.
 
-- [ ] **T10.2 — Đưa Sổ Tu Học vào Bản Đồ Học Viện và ẩn Vòng Quay, Shop, Pet ở cuối bản đồ**
+- [x] **T10.2 — Đưa Sổ Tu Học vào Bản Đồ Học Viện và ẩn Vòng Quay, Shop, Pet ở cuối bản đồ**
   - *Mục tiêu:* Bố cục gọn gàng cho Bản Đồ Học Viện, hiển thị ngay nhiệm vụ tu học khi đăng nhập.
   - *Phải sửa:* `src/components/WorldMap.tsx`
   - *Phải làm:*
@@ -763,7 +763,7 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
     - Xóa 2 box liên kết Shop Học Cụ và Sân Thú Nuôi ở cuối trang.
     - Chuyển giao diện tương tác lớp học thành thông tin tĩnh (chỉ hiển thị lớp chủ nhiệm, không cho kết nối/rời lớp hay duyệt lời mời ở đây).
 
-- [ ] **T10.3 — Di chuyển tính năng kết nối giáo viên vào Học Tịch, gộp Học Tịch thành 1 trang**
+- [x] **T10.3 — Di chuyển tính năng kết nối giáo viên vào Học Tịch, gộp Học Tịch thành 1 trang**
   - *Mục tiêu:* Dễ dàng quản lý thông tin sĩ tử, học lực và kết nối lớp học tại một nơi duy nhất không cần tab.
   - *Phải sửa:* `src/components/ProfilePage.tsx`
   - *Phải làm:*
@@ -772,20 +772,20 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
     - Hiển thị trực tiếp ActivityLog ở cột phải.
     - Trưng bày Theme hiện tại kèm nút hướng dẫn người dùng đi tới Shop để đổi theme.
 
-- [ ] **T10.4 — Di chuyển Vòng Quay May Mắn vào Shop Học Cụ**
+- [x] **T10.4 — Di chuyển Vòng Quay May Mắn vào Shop Học Cụ**
   - *Mục tiêu:* Gộp các tính năng tiêu dùng Ruby và nhận quà may mắn vào Shop Học Cụ.
   - *Phải sửa:* `src/components/ItemShop.tsx`, `src/App.tsx`
   - *Phải làm:*
     - Thêm Quầy Vòng Quay May Mắn chỉ mở vào cuối tuần vào trong Cửa hàng.
     - Truyền prop `onSpinWheel` từ App.tsx và gọi khi sĩ tử nhấn quay.
 
-- [ ] **T10.5 — Tối ưu hóa UI và tinh gọn giao diện học sinh & giáo viên**
+- [x] **T10.5 — Tối ưu hóa UI và tinh gọn giao diện học sinh & giáo viên**
   - *Mục tiêu:* Tối ưu responsive trên mobile cho TopHUD, tinh gọn giao diện quản lý câu hỏi và lớp học của Giáo viên, đồng thời dồn gọn Sổ Tu Học & Phong Cách trên trang chủ Học sinh.
   - *Phải sửa:* `src/components/TopHUD.tsx`, `src/components/TutorConsole/QuestionBankManager.tsx`, `src/components/TutorConsole.tsx`, `src/components/AcademyTab.tsx`
   - *Phải làm:*
     - [x] Cấu hình flex-wrap cho container của TopHUD trên mobile, gộp thông tin và ẩn điều hướng nhanh.
     - [x] Sửa `QuestionBankManager.tsx` để đưa các phần thống kê và AI Ingest vào các Accordions mặc định thu gọn.
     - [x] Sửa `TutorConsole.tsx` để đưa phần Welcome Dashboard, Stats và Bảng Vàng của lớp học vào một Accordion mặc định thu gọn.
-    - [ ] Sửa `AcademyTab.tsx` để dồn Sổ Tu Học và badge Phong Cách Học Đường vào khối Hero Greeting, xóa section Đổi Phong Cách cũ.
+    - [x] Sửa `AcademyTab.tsx` để dồn Sổ Tu Học và badge Phong Cách Học Đường vào khối Hero Greeting, xóa section Đổi Phong Cách cũ.
 
 

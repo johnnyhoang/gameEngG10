@@ -66,10 +66,10 @@ export const VicePrincipalApplicationsManager: React.FC<VicePrincipalApplication
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-1.5">
-          🛡️ Duyệt Đơn Ứng Tuyển Phó Viện Trưởng ({apps.length})
-        </h3>
+      <div className="flex items-center justify-between mb-2">
+        <span className="text-[10px] text-synth-text-muted italic">
+          Số lượng đơn chờ duyệt: {apps.length}
+        </span>
         <button
           onClick={fetchApps}
           className="p-1 rounded hover:bg-white/5 text-slate-400 hover:text-white transition-colors cursor-pointer"

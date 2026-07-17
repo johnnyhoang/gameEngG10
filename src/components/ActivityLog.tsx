@@ -77,7 +77,7 @@ export const ActivityLog: React.FC = () => {
         <div
           ref={scrollRef}
           onScroll={handleScroll}
-          className="flex-1 min-h-0 max-h-[480px] overflow-y-auto space-y-2 pr-1 select-none"
+          className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-1 select-none"
         >
           {visibleLogs.length > 0 ? (
             <>

@@ -112,9 +112,9 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="glass-panel rounded-2xl border border-white/5 overflow-hidden">
       {/* Banner */}
-      <div className="glass-panel rounded-2xl border border-synth-cyan/30 overflow-hidden bg-gradient-to-r from-synth-cyan/10 via-transparent to-synth-magenta/5 relative shadow-lg p-5 mb-6">
+      <div className="bg-gradient-to-r from-synth-cyan/10 via-transparent to-synth-magenta/5 relative border-b border-white/10 p-5">
         <div className="absolute top-0 right-0 w-32 h-32 bg-synth-cyan/5 rounded-full blur-2xl pointer-events-none"></div>
         <div className="relative z-10 space-y-1">
           <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
@@ -126,8 +126,9 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
         </div>
       </div>
 
+      <div className="p-5 space-y-6">
       {/* 1. Cấu hình game settings (Phòng Hiệu Trưởng — CORE_SPECS §2.1) */}
-      <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-5">
+      <div className="space-y-5">
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
           {/* Nhóm 1: Thưởng Hoàn Thành Khoa Thi */}
@@ -270,6 +271,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
       )}
 
       {/* Duyệt ứng tuyển Phó Viện + cấp/thu hồi quyền đã chuyển sang tab 🛡️ Nhân Sự & Phân Quyền */}
+      </div>
     </div>
   );
 };

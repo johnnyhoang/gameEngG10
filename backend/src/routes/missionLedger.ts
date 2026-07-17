@@ -87,16 +87,13 @@ router.get('/mission-ledger', async (req: any, res) => {
   if (req.profile.id !== profileId) return res.status(403).json({ error: 'Forbidden' });
   const client = await pool.connect();
   try {
-    await client.query('BEGIN');
     await ensureAssignments(client, profileId, gradeTier);
     const missions = await readLedger(client, profileId);
     const progress = await client.query(
       `SELECT level, xp, streak FROM ge10_player_profiles WHERE user_id = $1`, [profileId]
     );
-    await client.query('COMMIT');
     return res.json({ missions, progress: progress.rows[0] ?? { level: 1, xp: 0, streak: 0 } });
   } catch (error) {
-    await client.query('ROLLBACK');
     console.error('Error reading mission ledger:', error);
     return res.status(500).json({ error: 'Failed to read mission ledger' });
   } finally {

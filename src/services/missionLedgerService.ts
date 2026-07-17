@@ -46,12 +46,26 @@ async function headers(profileId: string, json = false): Promise<Record<string, 
 }
 
 export async function fetchMissionLedger(profileId: string, gradeTier: number): Promise<MissionLedgerResponse> {
-  const response = await fetch(
-    `${backendUrl}/api/mission-ledger?profileId=${encodeURIComponent(profileId)}&gradeTier=${gradeTier}`,
-    { headers: await headers(profileId) }
-  );
-  if (!response.ok) throw new Error(`Không tải được Sổ Tu Học (${response.status})`);
-  return response.json();
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 5000);
+  try {
+    const response = await fetch(
+      `${backendUrl}/api/mission-ledger?profileId=${encodeURIComponent(profileId)}&gradeTier=${gradeTier}`,
+      { 
+        headers: await headers(profileId),
+        signal: controller.signal
+      }
+    );
+    clearTimeout(timeoutId);
+    if (!response.ok) throw new Error(`Không tải được Sổ Tu Học (${response.status})`);
+    return await response.json();
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error('Kết nối tới máy chủ Sổ Tu Học bị quá hạn (Timeout). Vui lòng thử lại.');
+    }
+    throw error;
+  }
 }
 
 export async function recordMissionEvent(input: MissionEventInput): Promise<void> {

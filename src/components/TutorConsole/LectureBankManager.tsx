@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { BookOpen, Plus, Trash2, Search, RefreshCw } from 'lucide-react';
+import { BookOpen, Plus, Trash2, Search, RefreshCw, ChevronLeft, ChevronRight, Eye, Edit2 } from 'lucide-react';
 import { SideDrawer } from '../Common/SideDrawer';
+import { LessonStudyView } from '../LessonStudyView';
 import { SUBJECTS_CONFIG } from '../../types/game';
 import type { SubjectId } from '../../types/game';
 import { toast } from '../../utils/toast';
@@ -21,6 +22,8 @@ interface Lesson {
   loai?: string;
   bai?: number;
   hamNguyenTo?: HamNguyenTo;
+  times_opened?: number;
+  times_completed?: number;
   created_at?: string;
 }
 
@@ -53,6 +56,7 @@ export const LectureBankManager: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [formAttempted, setFormAttempted] = useState(false);
   const [deletingIds, setDeletingIds] = useState<Record<string, boolean>>({});
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
 
   // Lazy Load Paging (Page Size 6)
   const [visibleCount, setVisibleCount] = useState(6);
@@ -101,6 +105,7 @@ export const LectureBankManager: React.FC = () => {
     setFormBai('');
     setFormHamNguyenTo('thach');
     setFormAttempted(true);
+    setIsPreviewMode(false);
     setIsModalOpen(true);
   };
 
@@ -116,6 +121,7 @@ export const LectureBankManager: React.FC = () => {
     setFormBai(lesson.bai !== undefined ? String(lesson.bai) : '');
     setFormHamNguyenTo(lesson.hamNguyenTo || 'thach');
     setFormAttempted(true);
+    setIsPreviewMode(false);
     setIsModalOpen(true);
   };
 
@@ -165,8 +171,12 @@ export const LectureBankManager: React.FC = () => {
 
       if (res.ok) {
         toast.success(editingLesson ? 'Cập nhật bài giảng thành công!' : 'Tạo mới bài giảng thành công!');
-        setIsModalOpen(false);
         fetchLessons();
+        if (editingLesson && editingIndex >= 0 && editingIndex < filteredLessons.length - 1) {
+          handleNavigateEditing(1);
+        } else {
+          setIsModalOpen(false);
+        }
       } else {
         const err = await res.json();
         toast.error(err.error || 'Thao tác thất bại.');
@@ -250,10 +260,20 @@ export const LectureBankManager: React.FC = () => {
     });
   }, [sectLessons, categoryFilter, topicFilter, standardFilter, searchQuery]);
 
+  const editingIndex = editingLesson 
+    ? filteredLessons.findIndex(l => l.id === editingLesson.id) 
+    : -1;
+
+  const handleNavigateEditing = (direction: -1 | 1) => {
+    if (editingIndex < 0) return;
+    const nextLesson = filteredLessons[editingIndex + direction];
+    if (nextLesson) handleOpenEditModal(nextLesson);
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="glass-panel rounded-2xl border border-white/5 overflow-hidden">
       {/* Banner */}
-      <div className="glass-panel rounded-2xl border border-synth-cyan/30 overflow-hidden bg-gradient-to-r from-synth-cyan/10 via-transparent to-synth-magenta/5 relative shadow-lg p-5 mb-6">
+      <div className="bg-gradient-to-r from-synth-cyan/10 via-transparent to-synth-magenta/5 relative border-b border-white/10 p-5">
         <div className="absolute top-0 right-0 w-32 h-32 bg-synth-cyan/5 rounded-full blur-2xl pointer-events-none"></div>
         <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
@@ -273,6 +293,7 @@ export const LectureBankManager: React.FC = () => {
         </div>
       </div>
 
+      <div className="p-5 space-y-6">
       {/* Filters bar */}
       <div className="bg-synth-gray/10 rounded-xl p-4 space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4">
@@ -440,6 +461,7 @@ export const LectureBankManager: React.FC = () => {
           )}
         </div>
       )}
+      </div>
 
       {/* CREATE/EDIT SIDE DRAWER */}
       <SideDrawer
@@ -452,7 +474,74 @@ export const LectureBankManager: React.FC = () => {
           </span>
         }
       >
+        {editingLesson && (
+          <div className="flex items-center justify-between gap-2 px-5 py-2 border-b border-white/5 bg-white/5">
+            <button
+              type="button"
+              disabled={isSaving || editingIndex <= 0}
+              onClick={() => handleNavigateEditing(-1)}
+              className="px-3 py-1.5 rounded-lg border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer uppercase font-orbitron font-bold text-[10px] tracking-wider flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" /> Bài trước
+            </button>
+            <span className="text-[10px] font-orbitron font-bold text-slate-300 uppercase tracking-wider">
+              Bài {editingIndex + 1}/{filteredLessons.length}
+            </span>
+            <button
+              type="button"
+              disabled={isSaving || editingIndex >= filteredLessons.length - 1}
+              onClick={() => handleNavigateEditing(1)}
+              className="px-3 py-1.5 rounded-lg border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer uppercase font-orbitron font-bold text-[10px] tracking-wider flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Bài sau <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {isPreviewMode ? (
+          <div className="flex-1 overflow-auto bg-black relative flex flex-col border border-synth-cyan/30 rounded-xl m-4">
+            <div className="p-3 border-b border-white/10 bg-white/5 flex justify-between items-center sticky top-0 z-10 backdrop-blur-md">
+              <span className="text-synth-cyan font-bold font-orbitron text-xs uppercase tracking-wider">👁️ Chế độ xem trước</span>
+              <button
+                type="button"
+                onClick={() => setIsPreviewMode(false)}
+                className="px-4 py-2 bg-synth-magenta/20 text-synth-magenta border border-synth-magenta/40 hover:bg-synth-magenta/30 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1 cursor-pointer"
+              >
+                <Edit2 className="w-3.5 h-3.5" /> Tiếp tục sửa
+              </button>
+            </div>
+            <div className="p-4 flex-1">
+              <LessonStudyView
+                draftLesson={{
+                  id: editingLesson?.id || 'draft',
+                  subject: formSubject,
+                  category: formCategory,
+                  topic: formTopic,
+                  title: formTitle,
+                  theory: formTheory,
+                  grade_tier: activeGradeTier,
+                  loai: formLoai,
+                  bai: formBai ? parseFloat(formBai) : undefined,
+                  hamNguyenTo: formHamNguyenTo
+                }}
+                onBack={() => setIsPreviewMode(false)}
+              />
+            </div>
+          </div>
+        ) : (
         <form onSubmit={handleSaveLesson} className="p-5 space-y-4 text-xs text-left">
+              {editingLesson && (
+                <div className="p-3.5 rounded-xl border border-synth-cyan/20 bg-synth-cyan/5 grid grid-cols-2 gap-4 text-center">
+                  <div>
+                    <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">👁️ Tổng lượt mở</span>
+                    <span className="text-sm font-bold text-white mt-1 block">{editingLesson.times_opened || 0}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">✅ Học hoàn tất</span>
+                    <span className="text-sm font-bold text-emerald-400 mt-1 block">{editingLesson.times_completed || 0}</span>
+                  </div>
+                </div>
+              )}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <label className="space-y-1 block">
                   <span className="text-slate-400 font-semibold">Môn phái học tập</span>
@@ -567,6 +656,14 @@ export const LectureBankManager: React.FC = () => {
                 </button>
                 <div className="flex gap-2">
                   <button
+                    type="button"
+                    onClick={() => setIsPreviewMode(!isPreviewMode)}
+                    className="px-4 py-2 bg-synth-magenta/20 text-synth-magenta border border-synth-magenta/40 rounded-lg hover:bg-synth-magenta/30 transition-colors uppercase font-orbitron font-bold text-[10px] tracking-wider flex items-center gap-1 cursor-pointer"
+                  >
+                    {isPreviewMode ? <Edit2 className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                    {isPreviewMode ? 'Tiếp tục Sửa' : 'Preview'}
+                  </button>
+                  <button
                     type="submit"
                     disabled={isSaving}
                     className="px-5 py-2 bg-synth-cyan text-black rounded-lg hover:synth-glow-cyan transition-all font-orbitron font-bold text-[10px] tracking-wider uppercase cursor-pointer disabled:opacity-50"
@@ -594,7 +691,8 @@ export const LectureBankManager: React.FC = () => {
                   )}
                 </div>
               </div>
-        </form>
+            </form>
+        )}
       </SideDrawer>
     </div>
   );

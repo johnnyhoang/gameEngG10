@@ -8,16 +8,13 @@ import { isLightTheme } from '../theme/uiThemes';
 
 interface TopHUDProps {
   currentScreen: 'map' | 'arena' | 'play' | 'shop' | 'tutor' | 'pet' | 'logs' | 'practice' | 'profile';
-  onOpenShop: () => void;
   onOpenParent: () => void;
-  onOpenPet: () => void;
-  onOpenProfile: () => void;
   onBackToMap: () => void;
   onLogout?: () => void;
 }
 
 export const TopHUD: React.FC<TopHUDProps> = ({
-  currentScreen, onOpenShop, onOpenParent: _onOpenParent, onOpenPet, onOpenProfile, onBackToMap, onLogout
+  currentScreen, onOpenParent: _onOpenParent, onBackToMap, onLogout
 }) => {
   const { t } = useTranslate();
   const player = useGameState(state => state.player);
@@ -346,65 +343,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
 
         {/* Cụm 3: Điều hướng nhanh + Hồ Sơ Sĩ Tử + Thoái Ẩn */}
         <div className="flex items-center gap-2 order-2 md:order-none ml-auto">
-          {isStudent && (
-            <div className="hidden lg:flex items-center gap-2">
-              {/* Bản đồ */}
-              <button
-                onClick={onBackToMap}
-                title="Bản Đồ Học Tập"
-                className={navBtnClass(
-                  currentScreen === 'map',
-                  isUnicorn ? 'bg-gradient-to-r from-fuchsia-400 to-cyan-300 border-violet-200 text-violet-900 shadow-[0_0_10px_rgba(192,132,252,0.2)]' : 'bg-synth-cyan border-synth-cyan text-black shadow-[0_0_12px_#00f0ff]',
-                  isUnicorn ? 'bg-white/50 border-violet-200/50 text-violet-700 hover:bg-white/80' : 'bg-transparent border-synth-cyan/50 text-synth-cyan hover:bg-synth-cyan/10'
-                )}
-              >
-                <span>🗺️</span>
-                <span className="hidden lg:inline">Bản đồ</span>
-              </button>
 
-              {/* Bách Hóa */}
-              <button
-                onClick={onOpenShop}
-                title="Cửa Hàng Quà Tặng"
-                className={navBtnClass(
-                  currentScreen === 'shop',
-                  isUnicorn ? 'bg-gradient-to-r from-fuchsia-400 to-cyan-300 border-violet-200 text-violet-900 shadow-[0_0_10px_rgba(192,132,252,0.2)]' : 'bg-synth-orange border-synth-orange text-black shadow-[0_0_12px_#ff9f1c]',
-                  isUnicorn ? 'bg-white/50 border-violet-200/50 text-violet-700 hover:bg-white/80' : 'bg-transparent border-synth-orange/50 text-synth-orange hover:bg-synth-orange/10'
-                )}
-              >
-                <span>🛒</span>
-                <span className="hidden lg:inline">Cửa hàng</span>
-              </button>
-
-              {/* Sân Thú */}
-              <button
-                onClick={onOpenPet}
-                title="Sân Thú Cưng"
-                className={navBtnClass(
-                  currentScreen === 'pet',
-                  isUnicorn ? 'bg-gradient-to-r from-fuchsia-400 to-cyan-300 border-violet-200 text-violet-900 shadow-[0_0_10px_rgba(192,132,252,0.2)]' : 'bg-purple-500 border-purple-500 text-white shadow-[0_0_12px_#a855f7]',
-                  isUnicorn ? 'bg-white/50 border-violet-200/50 text-violet-700 hover:bg-white/80' : 'bg-transparent border-purple-500/50 text-purple-400 hover:bg-purple-500/10'
-                )}
-              >
-                <span>🐷</span>
-                <span className="hidden lg:inline">Sân Thú</span>
-              </button>
-
-              {/* Học Tích */}
-              <button
-                onClick={onOpenProfile}
-                title="Hồ Sơ Học Tập"
-                className={navBtnClass(
-                  currentScreen === 'profile',
-                  isUnicorn ? 'bg-gradient-to-r from-fuchsia-400 to-cyan-300 border-violet-200 text-violet-900 shadow-[0_0_10px_rgba(192,132,252,0.2)]' : 'bg-synth-magenta border-synth-magenta text-black shadow-[0_0_12px_#ff007f]',
-                  isUnicorn ? 'bg-white/50 border-violet-200/50 text-violet-700 hover:bg-white/80' : 'bg-transparent border-synth-magenta/50 text-synth-magenta hover:bg-synth-magenta/10'
-                )}
-              >
-                <span>👑</span>
-                <span className="hidden lg:inline">Học tịch</span>
-              </button>
-            </div>
-          )}
 
           {/* Nav chính Phòng Điều Hành cho Giáo viên / Ban Giám Hiệu — cùng vị trí với nav học sinh */}
           {isConsoleUser && currentScreen === 'tutor' && (

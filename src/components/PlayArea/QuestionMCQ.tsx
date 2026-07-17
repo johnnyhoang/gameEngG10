@@ -28,11 +28,11 @@ export const QuestionMCQ: React.FC<QuestionMCQProps> = ({
   checked,
   onSelectAnswer
 }) => {
-  if (!activeQuestion.options) return null;
-
   const shuffledOptions = useMemo(() => {
     return shuffleWithSeed(activeQuestion.options || [], activeQuestion.id);
   }, [activeQuestion.id, activeQuestion.options]);
+
+  if (!activeQuestion.options) return null;
 
   return (
     <div className={getMCQLayoutClass(shuffledOptions)}>
@@ -53,6 +53,7 @@ export const QuestionMCQ: React.FC<QuestionMCQProps> = ({
 
         return (
           <button
+            type="button"
             key={idx}
             onClick={() => !checked && onSelectAnswer(cleanOpt)}
             disabled={checked}

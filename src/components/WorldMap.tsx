@@ -114,6 +114,7 @@ export function WorldMap({
 
   return (
     <div className="space-y-5">
+      {currentUser?.role === 'student' && <LearningLedger compact={false} defaultExpanded={true} />}
 
       {/* ─── SECTION 1: HERO GREETING ─── */}
       <section className={`glass-panel rounded-3xl border p-5 md:p-7 relative overflow-hidden ${
@@ -205,8 +206,6 @@ export function WorldMap({
           </div>
         </div>
       </section>
-
-      {currentUser?.role === 'student' && <LearningLedger compact={false} defaultExpanded={false} />}
 
       {weakLesson && (
         <section className="glass-panel rounded-2xl border border-amber-400/30 bg-gradient-to-r from-amber-400/10 via-orange-400/5 to-transparent p-4 flex flex-col md:flex-row items-start md:items-center gap-4">

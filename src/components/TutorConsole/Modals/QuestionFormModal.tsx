@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { ChevronLeft, ChevronRight, Eye, Edit2 } from 'lucide-react';
 import { SideDrawer } from '../../Common/SideDrawer';
+import { PlayArea } from '../../PlayArea';
 import type { GradeTier, Question, SubjectId } from '../../../types/game';
 import { SUBJECTS_CONFIG } from '../../../types/game';
 import { CORE_KNOWLEDGE_TOPICS } from '../../../data/coreKnowledge';
@@ -63,9 +64,52 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
   const [editBai, setEditBai] = useState('');
   const [isSaving, setIsSaving] = useState(false);
   const [formAttempted, setFormAttempted] = useState(false);
+  const [isPreviewMode, setIsPreviewMode] = useState(false);
+  const wasOpenRef = useRef(false);
+
+  const previewQuestion = useMemo(() => {
+    if (!isOpen) return null;
+    return {
+      id: editingQuestion?.id || 'draft',
+      type: editType as any,
+      prompt: editPrompt,
+      explanation: editExplanation,
+      category: editCategory,
+      topicId: editTopicId || undefined,
+      difficulty: editDifficulty,
+      options: editOptions.split('\n').map(o => o.trim()).filter(Boolean),
+      correctAnswer: editCorrectAnswer.split('\n').map(a => a.trim()).filter(Boolean),
+      source: editSource,
+      imageUrl: editImageUrl || undefined,
+      subject: editSubject,
+      gradeTier
+    };
+  }, [
+    isOpen,
+    editingQuestion?.id,
+    editType,
+    editPrompt,
+    editExplanation,
+    editCategory,
+    editTopicId,
+    editDifficulty,
+    editOptions,
+    editCorrectAnswer,
+    editSource,
+    editImageUrl,
+    editSubject,
+    gradeTier
+  ]);
 
   useEffect(() => {
     if (isOpen) {
+      const justOpened = !wasOpenRef.current;
+      wasOpenRef.current = true;
+
+      if (justOpened) {
+        setIsPreviewMode(false);
+      }
+
       if (isAddingNew) {
         setEditType('mcq');
         setEditPrompt('');
@@ -98,6 +142,8 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
         setEditBai(q.bai !== undefined ? String(q.bai) : '');
         setFormAttempted(true);
       }
+    } else {
+      wasOpenRef.current = false;
     }
   }, [isOpen, isAddingNew, editingQuestion, selectedSect]);
 
@@ -240,7 +286,29 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
             </div>
           )}
 
-          {editingQuestion && (
+          {isPreviewMode ? (
+            <div className="flex-1 overflow-auto bg-black relative flex flex-col border border-synth-cyan/30 rounded-xl mt-4">
+              <div className="p-3 border-b border-white/10 bg-white/5 flex justify-between items-center sticky top-0 z-10 backdrop-blur-md">
+                <span className="text-synth-cyan font-bold font-orbitron text-xs uppercase tracking-wider">👁️ Chế độ xem trước</span>
+                <button
+                  type="button"
+                  onClick={() => setIsPreviewMode(false)}
+                  className="px-4 py-2 bg-synth-magenta/20 text-synth-magenta border border-synth-magenta/40 hover:bg-synth-magenta/30 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1 cursor-pointer"
+                >
+                  <Edit2 className="w-3.5 h-3.5" /> Tiếp tục sửa
+                </button>
+              </div>
+              <div className="p-4 flex-1">
+                <PlayArea 
+                mode="preview" 
+                previewQuestion={previewQuestion || undefined} 
+                onFinish={() => setIsPreviewMode(false)} 
+              />
+              </div>
+            </div>
+          ) : (
+            <>
+            {editingQuestion && (
             <div className="p-3.5 rounded-xl border border-synth-cyan/20 bg-synth-cyan/5 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
               <div>
                 <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">👁️ Tổng lượt mở</span>
@@ -422,6 +490,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
           )}
 
           {/* Action Buttons */}
+          {!isPreviewMode && (
           <div className="flex justify-between items-center gap-3 border-t border-white/10 pt-4 mt-2">
             <button
               type="button"
@@ -431,6 +500,14 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
               {isAddingNew ? 'Hủy bỏ' : '✕ Đóng'}
             </button>
             <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setIsPreviewMode(!isPreviewMode)}
+                className="px-4 py-2 bg-synth-magenta/20 text-synth-magenta border border-synth-magenta/40 rounded-lg hover:bg-synth-magenta/30 transition-colors uppercase font-orbitron font-bold text-[10px] tracking-wider flex items-center gap-1 cursor-pointer"
+              >
+                {isPreviewMode ? <Edit2 className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                {isPreviewMode ? 'Tiếp tục Sửa' : 'Preview'}
+              </button>
               <button
                 type="submit"
                 disabled={isSaving}
@@ -461,6 +538,9 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
               )}
             </div>
           </div>
+          )}
+          </>
+          )}
         </form>
     </SideDrawer>
   );

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Shield, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { isSuperAdmin } from '../../utils/roleHelpers';
 import { toast } from '../../utils/toast';
 import { authService } from '../../services/authService';
@@ -115,13 +115,7 @@ export const RoleManager: React.FC<RoleManagerProps> = ({ currentUser }) => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <Shield className="w-4 h-4 text-synth-magenta" />
-          <h3 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider">
-            👑 Quản Lý Vai Trò
-          </h3>
-        </div>
+      <div className="flex justify-end mb-2">
         <button
           onClick={fetchAllUsers}
           disabled={loading}
