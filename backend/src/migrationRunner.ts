@@ -31,6 +31,7 @@ const MIGRATION_FILES = [
   '20260717_auto_connect_admins.sql',
   '20260717_dynamic_data_migration.sql',
   '20260718_upgrade_topics_metadata.sql',
+  '20260718_textbook_mappings.sql',
 ];
 
 async function ensureMigrationsTable() {

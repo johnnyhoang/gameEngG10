@@ -210,5 +210,159 @@ export async function seedTopicsAndActivities(pool: Pool) {
     );
   }
 
+  // 4. Seed Textbook Mappings
+  await seedTextbookMappings(pool);
+
   console.log('=== Hoàn tất seeding Topics và Activities thành công! ===');
 }
+
+async function seedTextbookMappings(pool: Pool) {
+  console.log('=== Khởi chạy seeding Textbook Mappings ===');
+  
+  const mappings = [
+    // Math
+    { key: 'math-quadratic-function', subject: 'math', loai: 'Đại số', bai: 1, ham: 'thach' },
+    { key: 'quadratic-function', subject: 'math', loai: 'Đại số', bai: 1, ham: 'thach' },
+    { key: 'parabol-line', subject: 'math', loai: 'Đại số', bai: 2, ham: 'thach' },
+    { key: 'math-quadratic-equation', subject: 'math', loai: 'Đại số', bai: 3, ham: 'thach' },
+    { key: 'quadratic-equation', subject: 'math', loai: 'Đại số', bai: 3, ham: 'thach' },
+    { key: 'math-quadratic-formula', subject: 'math', loai: 'Đại số', bai: 4, ham: 'thach' },
+    { key: 'math-quadratic-discriminant', subject: 'math', loai: 'Đại số', bai: 5, ham: 'thach' },
+    { key: 'math-vieta', subject: 'math', loai: 'Đại số', bai: 6, ham: 'thach' },
+    { key: 'vieta', subject: 'math', loai: 'Đại số', bai: 6, ham: 'thach' },
+    { key: 'viet-relation', subject: 'math', loai: 'Đại số', bai: 6, ham: 'thach' },
+    { key: 'math-viet-advanced', subject: 'math', loai: 'Đại số', bai: 7, ham: 'thach' },
+    { key: 'math-linear-system', subject: 'math', loai: 'Đại số', bai: 8, ham: 'thach' },
+    { key: 'linear-system', subject: 'math', loai: 'Đại số', bai: 8, ham: 'thach' },
+    { key: 'math-system-eq-1', subject: 'math', loai: 'Đại số', bai: 9, ham: 'thach' },
+    { key: 'math-system-eq-2', subject: 'math', loai: 'Đại số', bai: 10, ham: 'thach' },
+    { key: 'math-inequality', subject: 'math', loai: 'Đại số', bai: 11, ham: 'thach' },
+    { key: 'inequality', subject: 'math', loai: 'Đại số', bai: 11, ham: 'thach' },
+    { key: 'math-inequality-concept', subject: 'math', loai: 'Đại số', bai: 12, ham: 'thach' },
+    { key: 'math-inequality-cauchy', subject: 'math', loai: 'Đại số', bai: 13, ham: 'thach' },
+    { key: 'math-linear-inequality-1', subject: 'math', loai: 'Đại số', bai: 14, ham: 'thach' },
+    { key: 'math-linear-inequality-2', subject: 'math', loai: 'Đại số', bai: 15, ham: 'thach' },
+    { key: 'math-real-world-algebra', subject: 'math', loai: 'Đại số', bai: 16, ham: 'thach' },
+    { key: 'real-world-algebra', subject: 'math', loai: 'Đại số', bai: 16, ham: 'thach' },
+    { key: 'math-real-world-percent', subject: 'math', loai: 'Đại số', bai: 17, ham: 'thach' },
+    { key: 'real-world-percent', subject: 'math', loai: 'Đại số', bai: 17, ham: 'thach' },
+    { key: 'math-radicals', subject: 'math', loai: 'Đại số', bai: 18, ham: 'thach' },
+    { key: 'radicals', subject: 'math', loai: 'Đại số', bai: 18, ham: 'thach' },
+    { key: 'math-rational-expression', subject: 'math', loai: 'Đại số', bai: 19, ham: 'thach' },
+    { key: 'math-eq-product', subject: 'math', loai: 'Đại số', bai: 20, ham: 'thach' },
+    { key: 'math-eq-rational', subject: 'math', loai: 'Đại số', bai: 21, ham: 'thach' },
+    { key: 'math-parabol-general', subject: 'math', loai: 'Đại số', bai: 22, ham: 'thach' },
+    { key: 'math-quadratic-applied', subject: 'math', loai: 'Đại số', bai: 23, ham: 'thach' },
+    { key: 'math-plane-geometry-circle', subject: 'math', loai: 'Hình học và Đo lường', bai: 1, ham: 'hoa' },
+    { key: 'plane-geometry', subject: 'math', loai: 'Hình học và Đo lường', bai: 1, ham: 'hoa' },
+    { key: 'math-plane-geometry-triangle', subject: 'math', loai: 'Hình học và Đo lường', bai: 2, ham: 'hoa' },
+    { key: 'math-plane-geometry-cyclic', subject: 'math', loai: 'Hình học và Đo lường', bai: 3, ham: 'hoa' },
+    { key: 'math-plane-geometry-coordinates', subject: 'math', loai: 'Hình học và Đo lường', bai: 4, ham: 'hoa' },
+    { key: 'math-solid-geometry-volume', subject: 'math', loai: 'Hình học và Đo lường', bai: 5, ham: 'hoa' },
+    { key: 'solid-geometry', subject: 'math', loai: 'Hình học và Đo lường', bai: 5, ham: 'hoa' },
+    { key: 'math-solid-geometry-3d', subject: 'math', loai: 'Hình học và Đo lường', bai: 6, ham: 'hoa' },
+    { key: 'math-trigonometry', subject: 'math', loai: 'Hình học và Đo lường', bai: 7, ham: 'hoa' },
+    { key: 'math-plane-geom', subject: 'math', loai: 'Hình học và Đo lường', bai: 8, ham: 'hoa' },
+    { key: 'math-space-geom', subject: 'math', loai: 'Hình học và Đo lường', bai: 9, ham: 'hoa' },
+    { key: 'math-trig-ratio', subject: 'math', loai: 'Hình học và Đo lường', bai: 10, ham: 'hoa' },
+    { key: 'math-trig-applied-1', subject: 'math', loai: 'Hình học và Đo lường', bai: 11, ham: 'hoa' },
+    { key: 'math-trig-applied-2', subject: 'math', loai: 'Hình học và Đo lường', bai: 12, ham: 'hoa' },
+    { key: 'math-circle-angle-1', subject: 'math', loai: 'Hình học và Đo lường', bai: 13, ham: 'hoa' },
+    { key: 'math-circle-angle-2', subject: 'math', loai: 'Hình học và Đo lường', bai: 14, ham: 'hoa' },
+    { key: 'math-circle-tangent-1', subject: 'math', loai: 'Hình học và Đo lường', bai: 15, ham: 'hoa' },
+    { key: 'math-circle-tangent-2', subject: 'math', loai: 'Hình học và Đo lường', bai: 16, ham: 'hoa' },
+    { key: 'math-right-triangle-ratio', subject: 'math', loai: 'Hình học và Đo lường', bai: 17, ham: 'hoa' },
+    { key: 'math-right-triangle-ratio-2', subject: 'math', loai: 'Hình học và Đo lường', bai: 18, ham: 'hoa' },
+    { key: 'math-trig-relations', subject: 'math', loai: 'Hình học và Đo lường', bai: 19, ham: 'hoa' },
+    { key: 'math-circle-concept', subject: 'math', loai: 'Hình học và Đo lường', bai: 20, ham: 'hoa' },
+    { key: 'math-circle-position', subject: 'math', loai: 'Hình học và Đo lường', bai: 21, ham: 'hoa' },
+    { key: 'math-circle-length-area', subject: 'math', loai: 'Hình học và Đo lường', bai: 22, ham: 'hoa' },
+    { key: 'math-circle-polygon', subject: 'math', loai: 'Hình học và Đo lường', bai: 23, ham: 'hoa' },
+    { key: 'math-cylinder-detail', subject: 'math', loai: 'Hình học và Đo lường', bai: 24, ham: 'hoa' },
+    { key: 'math-cone-detail', subject: 'math', loai: 'Hình học và Đo lường', bai: 25, ham: 'hoa' },
+    { key: 'math-cone-sphere-combined', subject: 'math', loai: 'Hình học và Đo lường', bai: 26, ham: 'hoa' },
+    { key: 'math-statistics', subject: 'math', loai: 'Thống kê và Xác suất', bai: 1, ham: 'bang' },
+    { key: 'statistics', subject: 'math', loai: 'Thống kê và Xác suất', bai: 1, ham: 'bang' },
+    { key: 'math-probability', subject: 'math', loai: 'Thống kê và Xác suất', bai: 2, ham: 'bang' },
+    { key: 'probability', subject: 'math', loai: 'Thống kê và Xác suất', bai: 2, ham: 'bang' },
+    { key: 'math-stat-collect', subject: 'math', loai: 'Thống kê và Xác suất', bai: 3, ham: 'bang' },
+    { key: 'math-stat-relative', subject: 'math', loai: 'Thống kê và Xác suất', bai: 4, ham: 'bang' },
+    { key: 'math-stat-chart-1', subject: 'math', loai: 'Thống kê và Xác suất', bai: 5, ham: 'bang' },
+    { key: 'math-stat-chart-2', subject: 'math', loai: 'Thống kê và Xác suất', bai: 6, ham: 'bang' },
+    { key: 'math-stat-mean', subject: 'math', loai: 'Thống kê và Xác suất', bai: 7, ham: 'bang' },
+    { key: 'math-stat-interpret', subject: 'math', loai: 'Thống kê và Xác suất', bai: 8, ham: 'bang' },
+    { key: 'math-prob-sample-space', subject: 'math', loai: 'Thống kê và Xác suất', bai: 9, ham: 'bang' },
+    { key: 'math-prob-classical', subject: 'math', loai: 'Thống kê và Xác suất', bai: 10, ham: 'bang' },
+
+    // English
+    { key: 'eng-tenses', subject: 'english', loai: 'Ngữ pháp', bai: 1, ham: 'thach' },
+    { key: 'tenses', subject: 'english', loai: 'Ngữ pháp', bai: 1, ham: 'thach' },
+    { key: 'eng-passive-voice', subject: 'english', loai: 'Ngữ pháp', bai: 2, ham: 'thach' },
+    { key: 'passive-voice', subject: 'english', loai: 'Ngữ pháp', bai: 2, ham: 'thach' },
+    { key: 'eng-relative-clauses', subject: 'english', loai: 'Ngữ pháp', bai: 3, ham: 'thach' },
+    { key: 'relative-clauses', subject: 'english', loai: 'Ngữ pháp', bai: 3, ham: 'thach' },
+    { key: 'eng-conditional', subject: 'english', loai: 'Ngữ pháp', bai: 4, ham: 'thach' },
+    { key: 'conditional', subject: 'english', loai: 'Ngữ pháp', bai: 4, ham: 'thach' },
+    { key: 'eng-reported-speech', subject: 'english', loai: 'Ngữ pháp', bai: 5, ham: 'thach' },
+    { key: 'reported-speech', subject: 'english', loai: 'Ngữ pháp', bai: 5, ham: 'thach' },
+    { key: 'eng-gerund-infinitive', subject: 'english', loai: 'Ngữ pháp', bai: 6, ham: 'thach' },
+    { key: 'eng-comparison', subject: 'english', loai: 'Ngữ pháp', bai: 7, ham: 'thach' },
+    { key: 'eng-modal-verbs', subject: 'english', loai: 'Ngữ pháp', bai: 8, ham: 'thach' },
+    { key: 'eng-wish-suggest', subject: 'english', loai: 'Ngữ pháp', bai: 9, ham: 'thach' },
+    { key: 'eng-have-get-done', subject: 'english', loai: 'Ngữ pháp', bai: 10, ham: 'thach' },
+    { key: 'eng-vocabulary-topic', subject: 'english', loai: 'Từ vựng', bai: 1, ham: 'hoa' },
+    { key: 'vocabulary', subject: 'english', loai: 'Từ vựng', bai: 1, ham: 'hoa' },
+    { key: 'eng-word-form', subject: 'english', loai: 'Từ vựng', bai: 2, ham: 'hoa' },
+    { key: 'wordform', subject: 'english', loai: 'Từ vựng', bai: 2, ham: 'hoa' },
+    { key: 'word-form', subject: 'english', loai: 'Từ vựng', bai: 2, ham: 'hoa' },
+    { key: 'eng-pronunciation', subject: 'english', loai: 'Phát âm & Trọng âm', bai: 1, ham: 'phong' },
+    { key: 'pronunciation', subject: 'english', loai: 'Phát âm & Trọng âm', bai: 1, ham: 'phong' },
+    { key: 'eng-stress', subject: 'english', loai: 'Phát âm & Trọng âm', bai: 2, ham: 'phong' },
+    { key: 'stress', subject: 'english', loai: 'Phát âm & Trọng âm', bai: 2, ham: 'phong' },
+    { key: 'eng-reading-passage', subject: 'english', loai: 'Đọc hiểu', bai: 1, ham: 'bang' },
+    { key: 'reading', subject: 'english', loai: 'Đọc hiểu', bai: 1, ham: 'bang' },
+    { key: 'eng-reading-cloze', subject: 'english', loai: 'Đọc hiểu', bai: 2, ham: 'bang' },
+    { key: 'cloze', subject: 'english', loai: 'Đọc hiểu', bai: 2, ham: 'bang' },
+    { key: 'eng-reading-sign', subject: 'english', loai: 'Đọc hiểu', bai: 3, ham: 'bang' },
+    { key: 'eng-rewrite', subject: 'english', loai: 'Viết & Biến đổi câu', bai: 1, ham: 'loi' },
+    { key: 'rewrite', subject: 'english', loai: 'Viết & Biến đổi câu', bai: 1, ham: 'loi' },
+    { key: 'eng-communication', subject: 'english', loai: 'Viết & Biến đổi câu', bai: 2, ham: 'loi' },
+    { key: 'communication', subject: 'english', loai: 'Viết & Biến đổi câu', bai: 2, ham: 'loi' },
+
+    // Literature
+    { key: 'lit-rhetoric-device', subject: 'literature', loai: 'Tiếng Việt', bai: 1, ham: 'thach' },
+    { key: 'lit-reading-poetry', subject: 'literature', loai: 'Đọc hiểu', bai: 1, ham: 'bang' },
+    { key: 'lit-reading-prose', subject: 'literature', loai: 'Đọc hiểu', bai: 2, ham: 'bang' },
+    { key: 'lit-social-essay', subject: 'literature', loai: 'Nghị luận xã hội', bai: 1, ham: 'phong' },
+    { key: 'lit-literary-essay', subject: 'literature', loai: 'Nghị luận văn học', bai: 1, ham: 'hoa' },
+
+    // Science
+    { key: 'sci-phy-electricity', subject: 'science', loai: 'Vật lý', bai: 1, ham: 'thach' },
+    { key: 'sci-phy-electromagnet', subject: 'science', loai: 'Vật lý', bai: 2, ham: 'thach' },
+    { key: 'sci-phy-optics', subject: 'science', loai: 'Vật lý', bai: 3, ham: 'thach' },
+    { key: 'sci-chem-oxacid', subject: 'science', loai: 'Hóa học', bai: 1, ham: 'hoa' },
+    { key: 'sci-bio-genetics-mendelian', subject: 'science', loai: 'Sinh học', bai: 1, ham: 'bang' },
+    { key: 'sci-bio-dna-gene', subject: 'science', loai: 'Sinh học', bai: 2, ham: 'bang' },
+    { key: 'sci-bio-ecosystem', subject: 'science', loai: 'Sinh học', bai: 3, ham: 'bang' },
+
+    // History & Geography
+    { key: 'his-vn-party', subject: 'history_geography', loai: 'Lịch sử', bai: 1, ham: 'thach' },
+    { key: 'geo-regions-7', subject: 'history_geography', loai: 'Địa lý', bai: 1, ham: 'hoa' }
+  ];
+
+  for (const m of mappings) {
+    await pool.query(
+      `INSERT INTO ge10_textbook_mappings (category_key, subject, loai, bai, ham)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (category_key) DO UPDATE SET
+         subject = EXCLUDED.subject,
+         loai = EXCLUDED.loai,
+         bai = EXCLUDED.bai,
+         ham = EXCLUDED.ham`,
+      [m.key, m.subject, m.loai, m.bai, m.ham]
+    );
+  }
+
+  console.log('=== Hoàn tất seeding Textbook Mappings thành công! ===');
+}
+

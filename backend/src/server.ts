@@ -14,6 +14,7 @@ import gameRouter from './routes/game.js';
 import classRewardsRouter from './routes/classRewards.js';
 import learningContextRouter from './routes/learningContext.js';
 import missionLedgerRouter from './routes/missionLedger.js';
+import textbookMappingsRouter from './routes/textbookMappings.js';
 
 dotenv.config();
 
@@ -62,6 +63,7 @@ app.use('/api', riddleRouter);
 app.use('/api', gameRouter);
 app.use('/api', classRewardsRouter);
 app.use('/api/learning-content', learningContextRouter);
+app.use('/api', textbookMappingsRouter);
 app.use('/api', (req, res, next) => {
   if (req.url.startsWith('/mission-ledger') || req.url.startsWith('/mission-events')) {
     console.log(`[Debug] Routing mission ledger request: ${req.method} ${req.url}`);

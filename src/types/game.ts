@@ -528,3 +528,12 @@ export function getStudentRankForLevel(level: number): StudentRank {
   }
   return STUDENT_RANKS[0];
 }
+
+export interface TextbookMapping {
+  categoryKey: string;
+  subject: string;
+  loai: string;
+  bai: number;
+  ham: HamNguyenTo;
+}
+

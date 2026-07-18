@@ -8,6 +8,7 @@ import { createUISlice } from './slices/createUISlice';
 import { createPlayerSlice } from './slices/createPlayerSlice';
 import { createAdminSlice } from './slices/createAdminSlice';
 import { createClassRewardSlice } from './slices/createClassRewardSlice';
+import { createTextbookMappingsSlice } from './slices/createTextbookMappingsSlice';
 import { normalizePersistedRubyState } from '../utils/rubyCompatibility';
 
 export const useGameState = create<StoreState>()(
@@ -19,6 +20,7 @@ export const useGameState = create<StoreState>()(
       ...createPlayerSlice(set, get, store),
       ...createAdminSlice(set, get, store),
       ...createClassRewardSlice(set, get, store),
+      ...createTextbookMappingsSlice(set, get, store),
     }),
     {
       name: 'cyber-english-state',
@@ -40,6 +42,7 @@ export const useGameState = create<StoreState>()(
         uiThemesByUser: state.uiThemesByUser,
         failedQuestionIds: state.failedQuestionIds,
         recentlyPlayedQuestionIds: state.recentlyPlayedQuestionIds,
+        textbookMappings: state.textbookMappings,
       }),
       merge: (persistedState: any, currentState: any) => {
         const migratedState = normalizePersistedRubyState(persistedState);

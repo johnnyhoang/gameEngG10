@@ -3,14 +3,14 @@ import type {
   ClassReward, ClassRewardRedemption,
   Challenge, HistoryLog,
   HandbookPage, TutorQuest, GradeTier, SubjectId, UiThemeId, GameSettings, ClassLink, LearningContext,
-  PageExplorationState, ExplorationProgress
+  PageExplorationState, ExplorationProgress, TextbookMapping
 } from '../types/game';
 
 // We might need to import Lesson and ExplorationProgress from their correct files.
 import type { Lesson } from '../data/lessons';
 
 /** Các tab chính của Phòng Điều Hành (TutorConsole) — nav đặt trên TopHUD */
-export type TutorConsoleTab = 'management' | 'questions' | 'lectures' | 'settings';
+export type TutorConsoleTab = 'management' | 'questions' | 'lectures' | 'settings' | 'it';
 
 
 export interface StoreState {
@@ -196,4 +196,11 @@ export interface StoreState {
   showHelp: (topic: string) => void;
   closeHelp: () => void;
   initEventSubscriptions: () => () => void;
+
+  // === TEXTBOOK MAPPINGS (Phòng IT CRUD) ===
+  textbookMappings: TextbookMapping[];
+  fetchTextbookMappings: () => Promise<void>;
+  addTextbookMapping: (mapping: TextbookMapping) => Promise<boolean>;
+  updateTextbookMapping: (key: string, mapping: Partial<TextbookMapping>) => Promise<boolean>;
+  deleteTextbookMapping: (key: string) => Promise<boolean>;
 }

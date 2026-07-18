@@ -452,11 +452,12 @@ export const TopHUD: React.FC<TopHUDProps> = ({
           {isConsoleUser && currentScreen === 'tutor' && (
             <div className="hidden md:flex items-center gap-2">
               {([
-                { tab: 'management', icon: '🏫', label: t('Hiệu Trưởng', 'Principal'), title: t('Phòng Hiệu Trưởng ✦ Trung tâm quản lý nhân sự và báo cáo', 'Principal Room ✦ Personnel & Reports Center') },
-                { tab: 'lectures', icon: '📖', label: t('Bài Giảng', 'Lectures'), title: t('Kho Bài Giảng ✦ Soạn thảo lý thuyết chuyên đề', 'Lecture Bank ✦ Theory Lectures') },
-                { tab: 'questions', icon: '📚', label: t('Đề Thi', 'Questions'), title: t('Kho Đề Thi ✦ Soạn thảo và import đề thi', 'Question Bank ✦ Manage Questions') },
-                { tab: 'settings', icon: '⚙️', label: t('Cấu Hình', 'Settings'), title: t('Cấu Hình ✦ Tinh chỉnh hệ thống và học viện', 'Settings ✦ System Configurations') },
-              ] as const).map(item => (
+                { tab: 'management', icon: '🏫', label: t('Hiệu Trưởng', 'Principal'), title: t('Phòng Hiệu Trưởng ✦ Trung tâm quản lý nhân sự và báo cáo', 'Principal Room ✦ Personnel & Reports Center'), show: true },
+                { tab: 'lectures', icon: '📖', label: t('Bài Giảng', 'Lectures'), title: t('Kho Bài Giảng ✦ Soạn thảo lý thuyết chuyên đề', 'Lecture Bank ✦ Theory Lectures'), show: true },
+                { tab: 'questions', icon: '📚', label: t('Đề Thi', 'Questions'), title: t('Kho Đề Thi ✦ Soạn thảo và import đề thi', 'Question Bank ✦ Manage Questions'), show: true },
+                { tab: 'settings', icon: '⚙️', label: t('Cấu Hình', 'Settings'), title: t('Cấu Hình ✦ Tinh chỉnh hệ thống và học viện', 'Settings ✦ System Configurations'), show: true },
+                { tab: 'it', icon: '💻', label: t('Phòng IT', 'IT Room'), title: t('Phòng IT ✦ Quản lý cấu hình SGK', 'IT Room ✦ Manage Textbook Mappings'), show: currentUser?.email === import.meta.env.VITE_SUPER_ADMIN_EMAIL },
+              ] as const).filter(item => item.show).map(item => (
                 <button
                   key={item.tab}
                   onClick={() => setTutorConsoleTab(item.tab)}

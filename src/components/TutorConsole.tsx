@@ -16,6 +16,7 @@ import { RoleManager } from './TutorConsole/RoleManager';
 import { VicePrincipalApplicationsManager } from './TutorConsole/VicePrincipalApplicationsManager';
 import { AuditLogsManager } from './TutorConsole/AuditLogsManager';
 import { RewardManager } from './TutorConsole/RewardManager';
+import { ControlPanel } from './TutorConsole/ControlPanel';
 
 export const TutorConsole: React.FC = () => {
   const { t } = useTranslate();
@@ -379,6 +380,10 @@ export const TutorConsole: React.FC = () => {
 
       {activeTab === 'lectures' && (
         <LectureBankManager />
+      )}
+
+      {activeTab === 'it' && currentUser?.email === import.meta.env.VITE_SUPER_ADMIN_EMAIL && (
+        <ControlPanel />
       )}
 
       {/* Student Profile Modal Overlay */}

@@ -1,4 +1,5 @@
 import type { HamNguyenTo } from '../types/game';
+import { useGameState } from '../store';
 
 export interface TextbookInfo {
   loai: string;
@@ -104,164 +105,14 @@ export function getDungeonConfig(ham: HamNguyenTo, subject?: string): DungeonDet
   return details;
 }
 
-// Mapear subject & normalized topic/category key to SGK details
-const MATH_MAP: Record<string, { loai: string; bai: number; ham: HamNguyenTo }> = {
-  // Đại số
-  'math-quadratic-function': { loai: 'Đại số', bai: 1, ham: 'thach' },
-  'quadratic-function': { loai: 'Đại số', bai: 1, ham: 'thach' },
-  'parabol-line': { loai: 'Đại số', bai: 2, ham: 'thach' },
-  'math-quadratic-equation': { loai: 'Đại số', bai: 3, ham: 'thach' },
-  'quadratic-equation': { loai: 'Đại số', bai: 3, ham: 'thach' },
-  'math-quadratic-formula': { loai: 'Đại số', bai: 4, ham: 'thach' },
-  'math-quadratic-discriminant': { loai: 'Đại số', bai: 5, ham: 'thach' },
-  'math-vieta': { loai: 'Đại số', bai: 6, ham: 'thach' },
-  'vieta': { loai: 'Đại số', bai: 6, ham: 'thach' },
-  'viet-relation': { loai: 'Đại số', bai: 6, ham: 'thach' },
-  'math-viet-advanced': { loai: 'Đại số', bai: 7, ham: 'thach' },
-  'math-linear-system': { loai: 'Đại số', bai: 8, ham: 'thach' },
-  'linear-system': { loai: 'Đại số', bai: 8, ham: 'thach' },
-  'math-system-eq-1': { loai: 'Đại số', bai: 9, ham: 'thach' },
-  'math-system-eq-2': { loai: 'Đại số', bai: 10, ham: 'thach' },
-  'math-inequality': { loai: 'Đại số', bai: 11, ham: 'thach' },
-  'inequality': { loai: 'Đại số', bai: 11, ham: 'thach' },
-  'math-inequality-concept': { loai: 'Đại số', bai: 12, ham: 'thach' },
-  'math-inequality-cauchy': { loai: 'Đại số', bai: 13, ham: 'thach' },
-  'math-linear-inequality-1': { loai: 'Đại số', bai: 14, ham: 'thach' },
-  'math-linear-inequality-2': { loai: 'Đại số', bai: 15, ham: 'thach' },
-  'math-real-world-algebra': { loai: 'Đại số', bai: 16, ham: 'thach' },
-  'real-world-algebra': { loai: 'Đại số', bai: 16, ham: 'thach' },
-  'math-real-world-percent': { loai: 'Đại số', bai: 17, ham: 'thach' },
-  'real-world-percent': { loai: 'Đại số', bai: 17, ham: 'thach' },
-  'math-radicals': { loai: 'Đại số', bai: 18, ham: 'thach' },
-  'radicals': { loai: 'Đại số', bai: 18, ham: 'thach' },
-  'math-rational-expression': { loai: 'Đại số', bai: 19, ham: 'thach' },
-  'math-eq-product': { loai: 'Đại số', bai: 20, ham: 'thach' },
-  'math-eq-rational': { loai: 'Đại số', bai: 21, ham: 'thach' },
-  'math-parabol-general': { loai: 'Đại số', bai: 22, ham: 'thach' },
-  'math-quadratic-applied': { loai: 'Đại số', bai: 23, ham: 'thach' },
-
-  // Hình học và Đo lường
-  'math-plane-geometry-circle': { loai: 'Hình học và Đo lường', bai: 1, ham: 'hoa' },
-  'plane-geometry': { loai: 'Hình học và Đo lường', bai: 1, ham: 'hoa' },
-  'math-plane-geometry-triangle': { loai: 'Hình học và Đo lường', bai: 2, ham: 'hoa' },
-  'math-plane-geometry-cyclic': { loai: 'Hình học và Đo lường', bai: 3, ham: 'hoa' },
-  'math-plane-geometry-coordinates': { loai: 'Hình học và Đo lường', bai: 4, ham: 'hoa' },
-  'math-solid-geometry-volume': { loai: 'Hình học và Đo lường', bai: 5, ham: 'hoa' },
-  'solid-geometry': { loai: 'Hình học và Đo lường', bai: 5, ham: 'hoa' },
-  'math-solid-geometry-3d': { loai: 'Hình học và Đo lường', bai: 6, ham: 'hoa' },
-  'math-trigonometry': { loai: 'Hình học và Đo lường', bai: 7, ham: 'hoa' },
-  'math-plane-geom': { loai: 'Hình học và Đo lường', bai: 8, ham: 'hoa' },
-  'math-space-geom': { loai: 'Hình học và Đo lường', bai: 9, ham: 'hoa' },
-  'math-trig-ratio': { loai: 'Hình học và Đo lường', bai: 10, ham: 'hoa' },
-  'math-trig-applied-1': { loai: 'Hình học và Đo lường', bai: 11, ham: 'hoa' },
-  'math-trig-applied-2': { loai: 'Hình học và Đo lường', bai: 12, ham: 'hoa' },
-  'math-circle-angle-1': { loai: 'Hình học và Đo lường', bai: 13, ham: 'hoa' },
-  'math-circle-angle-2': { loai: 'Hình học và Đo lường', bai: 14, ham: 'hoa' },
-  'math-circle-tangent-1': { loai: 'Hình học và Đo lường', bai: 15, ham: 'hoa' },
-  'math-circle-tangent-2': { loai: 'Hình học và Đo lường', bai: 16, ham: 'hoa' },
-  'math-right-triangle-ratio': { loai: 'Hình học và Đo lường', bai: 17, ham: 'hoa' },
-  'math-right-triangle-ratio-2': { loai: 'Hình học và Đo lường', bai: 18, ham: 'hoa' },
-  'math-trig-relations': { loai: 'Hình học và Đo lường', bai: 19, ham: 'hoa' },
-  'math-circle-concept': { loai: 'Hình học và Đo lường', bai: 20, ham: 'hoa' },
-  'math-circle-position': { loai: 'Hình học và Đo lường', bai: 21, ham: 'hoa' },
-  'math-circle-length-area': { loai: 'Hình học và Đo lường', bai: 22, ham: 'hoa' },
-  'math-circle-polygon': { loai: 'Hình học và Đo lường', bai: 23, ham: 'hoa' },
-  'math-cylinder-detail': { loai: 'Hình học và Đo lường', bai: 24, ham: 'hoa' },
-  'math-cone-detail': { loai: 'Hình học và Đo lường', bai: 25, ham: 'hoa' },
-  'math-cone-sphere-combined': { loai: 'Hình học và Đo lường', bai: 26, ham: 'hoa' },
-
-  // Thống kê và Xác suất
-  'math-statistics': { loai: 'Thống kê và Xác suất', bai: 1, ham: 'bang' },
-  'statistics': { loai: 'Thống kê và Xác suất', bai: 1, ham: 'bang' },
-  'math-probability': { loai: 'Thống kê và Xác suất', bai: 2, ham: 'bang' },
-  'probability': { loai: 'Thống kê và Xác suất', bai: 2, ham: 'bang' },
-  'math-stat-collect': { loai: 'Thống kê và Xác suất', bai: 3, ham: 'bang' },
-  'math-stat-relative': { loai: 'Thống kê và Xác suất', bai: 4, ham: 'bang' },
-  'math-stat-chart-1': { loai: 'Thống kê và Xác suất', bai: 5, ham: 'bang' },
-  'math-stat-chart-2': { loai: 'Thống kê và Xác suất', bai: 6, ham: 'bang' },
-  'math-stat-mean': { loai: 'Thống kê và Xác suất', bai: 7, ham: 'bang' },
-  'math-stat-interpret': { loai: 'Thống kê và Xác suất', bai: 8, ham: 'bang' },
-  'math-prob-sample-space': { loai: 'Thống kê và Xác suất', bai: 9, ham: 'bang' },
-  'math-prob-classical': { loai: 'Thống kê và Xác suất', bai: 10, ham: 'bang' },
-};
-
-const ENGLISH_MAP: Record<string, { loai: string; bai: number; ham: HamNguyenTo }> = {
-  // Ngữ pháp
-  'eng-tenses': { loai: 'Ngữ pháp', bai: 1, ham: 'thach' },
-  'tenses': { loai: 'Ngữ pháp', bai: 1, ham: 'thach' },
-  'eng-passive-voice': { loai: 'Ngữ pháp', bai: 2, ham: 'thach' },
-  'passive-voice': { loai: 'Ngữ pháp', bai: 2, ham: 'thach' },
-  'eng-relative-clauses': { loai: 'Ngữ pháp', bai: 3, ham: 'thach' },
-  'relative-clauses': { loai: 'Ngữ pháp', bai: 3, ham: 'thach' },
-  'eng-conditional': { loai: 'Ngữ pháp', bai: 4, ham: 'thach' },
-  'conditional': { loai: 'Ngữ pháp', bai: 4, ham: 'thach' },
-  'eng-reported-speech': { loai: 'Ngữ pháp', bai: 5, ham: 'thach' },
-  'reported-speech': { loai: 'Ngữ pháp', bai: 5, ham: 'thach' },
-  'eng-gerund-infinitive': { loai: 'Ngữ pháp', bai: 6, ham: 'thach' },
-  'eng-comparison': { loai: 'Ngữ pháp', bai: 7, ham: 'thach' },
-  'eng-modal-verbs': { loai: 'Ngữ pháp', bai: 8, ham: 'thach' },
-  'eng-wish-suggest': { loai: 'Ngữ pháp', bai: 9, ham: 'thach' },
-  'eng-have-get-done': { loai: 'Ngữ pháp', bai: 10, ham: 'thach' },
-
-  // Từ vựng
-  'eng-vocabulary-topic': { loai: 'Từ vựng', bai: 1, ham: 'hoa' },
-  'vocabulary': { loai: 'Từ vựng', bai: 1, ham: 'hoa' },
-  'eng-word-form': { loai: 'Từ vựng', bai: 2, ham: 'hoa' },
-  'wordform': { loai: 'Từ vựng', bai: 2, ham: 'hoa' },
-  'word-form': { loai: 'Từ vựng', bai: 2, ham: 'hoa' },
-
-  // Phát âm & Trọng âm
-  'eng-pronunciation': { loai: 'Phát âm & Trọng âm', bai: 1, ham: 'phong' },
-  'pronunciation': { loai: 'Phát âm & Trọng âm', bai: 1, ham: 'phong' },
-  'eng-stress': { loai: 'Phát âm & Trọng âm', bai: 2, ham: 'phong' },
-  'stress': { loai: 'Phát âm & Trọng âm', bai: 2, ham: 'phong' },
-
-  // Đọc hiểu
-  'eng-reading-passage': { loai: 'Đọc hiểu', bai: 1, ham: 'bang' },
-  'reading': { loai: 'Đọc hiểu', bai: 1, ham: 'bang' },
-  'eng-reading-cloze': { loai: 'Đọc hiểu', bai: 2, ham: 'bang' },
-  'cloze': { loai: 'Đọc hiểu', bai: 2, ham: 'bang' },
-  'eng-reading-sign': { loai: 'Đọc hiểu', bai: 3, ham: 'bang' },
-
-  // Viết & Biến đổi câu
-  'eng-rewrite': { loai: 'Viết & Biến đổi câu', bai: 1, ham: 'loi' },
-  'rewrite': { loai: 'Viết & Biến đổi câu', bai: 1, ham: 'loi' },
-  'eng-communication': { loai: 'Viết & Biến đổi câu', bai: 2, ham: 'loi' },
-  'communication': { loai: 'Viết & Biến đổi câu', bai: 2, ham: 'loi' },
-};
-
-const LITERATURE_MAP: Record<string, { loai: string; bai: number; ham: HamNguyenTo }> = {
-  'lit-rhetoric-device': { loai: 'Tiếng Việt', bai: 1, ham: 'thach' },
-  'lit-reading-poetry': { loai: 'Đọc hiểu', bai: 1, ham: 'bang' },
-  'lit-reading-prose': { loai: 'Đọc hiểu', bai: 2, ham: 'bang' },
-  'lit-social-essay': { loai: 'Nghị luận xã hội', bai: 1, ham: 'phong' },
-  'lit-literary-essay': { loai: 'Nghị luận văn học', bai: 1, ham: 'hoa' },
-};
-
-const SCIENCE_MAP: Record<string, { loai: string; bai: number; ham: HamNguyenTo }> = {
-  // Vật lý
-  'sci-phy-electricity': { loai: 'Vật lý', bai: 1, ham: 'thach' },
-  'sci-phy-electromagnet': { loai: 'Vật lý', bai: 2, ham: 'thach' },
-  'sci-phy-optics': { loai: 'Vật lý', bai: 3, ham: 'thach' },
-
-  // Hóa học
-  'sci-chem-oxacid': { loai: 'Hóa học', bai: 1, ham: 'hoa' },
-
-  // Sinh học
-  'sci-bio-genetics-mendelian': { loai: 'Sinh học', bai: 1, ham: 'bang' },
-  'sci-bio-dna-gene': { loai: 'Sinh học', bai: 2, ham: 'bang' },
-  'sci-bio-ecosystem': { loai: 'Sinh học', bai: 3, ham: 'bang' },
-};
-
-const HIS_GEO_MAP: Record<string, { loai: string; bai: number; ham: HamNguyenTo }> = {
-  'his-vn-party': { loai: 'Lịch sử', bai: 1, ham: 'thach' },
-  'geo-regions-7': { loai: 'Địa lý', bai: 1, ham: 'hoa' },
-};
-
 export function getCleanTopicKey(key: string): string {
   return key.replace(/-g\d+$/, '').toLowerCase().trim();
 }
 
+/**
+ * Tra cứu thông tin SGK (Loại, bài học, hầm nguyên tố) động từ Database/Store.
+ * Loại bỏ hoàn toàn MATH_MAP, ENGLISH_MAP... cứng trên code.
+ */
 export function enrichTextbookAttributes(
   topicId?: string,
   category?: string,
@@ -272,29 +123,19 @@ export function enrichTextbookAttributes(
   const cleanKey = getCleanTopicKey(rawKey);
   const cleanCat = category ? getCleanTopicKey(category) : '';
 
-  let mapped: { loai: string; bai: number; ham: HamNguyenTo } | undefined;
-
-  if (normSubject === 'math' || cleanKey.startsWith('math-')) {
-    mapped = MATH_MAP[cleanKey] || MATH_MAP[cleanCat];
-  } else if (normSubject === 'english' || cleanKey.startsWith('eng-')) {
-    mapped = ENGLISH_MAP[cleanKey] || ENGLISH_MAP[cleanCat];
-  } else if (normSubject === 'literature' || cleanKey.startsWith('lit-')) {
-    mapped = LITERATURE_MAP[cleanKey] || LITERATURE_MAP[cleanCat];
-  } else if (normSubject === 'science' || cleanKey.startsWith('sci-') || normSubject === 'physics' || normSubject === 'chemistry' || normSubject === 'biology') {
-    mapped = SCIENCE_MAP[cleanKey] || SCIENCE_MAP[cleanCat];
-  } else if (normSubject === 'history_geography' || cleanKey.startsWith('his-') || cleanKey.startsWith('geo-') || normSubject === 'history' || normSubject === 'geography') {
-    mapped = HIS_GEO_MAP[cleanKey] || HIS_GEO_MAP[cleanCat];
-  }
-
-  if (mapped) {
+  // 1. Tra cứu động trong Zustand store (được tải trực tiếp từ ge10_textbook_mappings)
+  const textbookMappings = useGameState.getState().textbookMappings || [];
+  const dbMapped = textbookMappings.find(m => m.categoryKey === cleanKey || (cleanCat && m.categoryKey === cleanCat));
+  
+  if (dbMapped) {
     return {
-      loai: mapped.loai,
-      bai: mapped.bai,
-      hamNguyenTo: mapped.ham
+      loai: dbMapped.loai,
+      bai: dbMapped.bai,
+      hamNguyenTo: dbMapped.ham
     };
   }
 
-  // Đối với Kiến thức Đại học (Grade 13 hoặc các môn chuyên ngành bắt đầu bằng cs_), cho phép tự động đề xuất thứ tự
+  // 2. Đối với Kiến thức Đại học (hoặc các môn chuyên ngành bắt đầu bằng cs_), cho phép tự động đề xuất thứ tự
   const isDaiHoc = normSubject.startsWith('cs_') || cleanKey.startsWith('cs-') || cleanKey.startsWith('cs_');
   if (isDaiHoc) {
     const hash = cleanKey.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
@@ -306,7 +147,8 @@ export function enrichTextbookAttributes(
     return { loai, bai, hamNguyenTo };
   }
 
-  // Các cấp học phổ thông (6-12): Không suy đoán. Thiếu cấu hình SGK là báo lỗi Chưa phân loại SGK.
+  // 3. Các cấp học phổ thông (6-12): Không suy đoán bừa bãi.
+  // Trả về 'Chưa phân loại SGK' nếu chưa được Admin khai báo/CRUD trong Phòng IT.
   return {
     loai: 'Chưa phân loại SGK',
     bai: 0,

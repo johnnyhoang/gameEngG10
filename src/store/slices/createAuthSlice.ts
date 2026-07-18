@@ -11,6 +11,7 @@ import { DEFAULT_GRADE_TIER } from '../../types/game';
 import { normalizeRubyPayload } from '../../utils/rubyCompatibility';
 import { enrichTextbookAttributes } from '../../utils/textbookEnricher';
 import { learningService } from '../../services/learningService';
+import { textbookMappingService } from '../../services/textbookMappingService';
 
 export const createAuthSlice: StateCreator<
   StoreState,
@@ -85,6 +86,14 @@ export const createAuthSlice: StateCreator<
         lastSyncTime: new Date().toISOString(),
       });
       localStorage.setItem('ge10_selected_profile_id', profileId);
+
+      // Fetch textbook mappings configuration from DB
+      try {
+        const mappings = await textbookMappingService.fetch();
+        set({ textbookMappings: mappings });
+      } catch (err) {
+        console.error('Error fetching textbook mappings in selectProfile:', err);
+      }
 
       // Fetch dynamic content
       try {
