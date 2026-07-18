@@ -2,7 +2,7 @@
 
 ## 1. Trạng thái hiện tại (Current Status)
 - **Vừa hoàn thành:** 
-   - **Kiểm thử và Xác minh toàn diện (Comprehensive Test Plan & Verification)**: Đã lập kế hoạch kiểm thử chi tiết, chạy test suite tự động đạt 100% thành công, chạy kiểm tra cấu trúc cơ sở dữ liệu động Postgres trên Supabase và ghi nhận kết quả xác minh kết nối hoạt động hoàn hảo cho mọi tính năng của Học sinh & Giáo viên.
+   - **Kiểm thử và Xác minh toàn diện (Comprehensive Test Plan & Verification)**: Đã lập kế hoạch kiểm thử chi tiết và sửa lỗi lệch prefix route `/api/learning-content` ở backend, dọn dẹp sạch mock data tĩnh khỏi `riddleQuestions.ts` và `coreKnowledge.ts`. Xác nhận nạp dữ liệu động 100% từ Database thành công trên cả local và prod.
    - **Di dời dữ liệu tĩnh còn lại vào Database (Dynamic Fetching)**:
       - **Migration SQL**: Tạo các bảng và seed dữ liệu cho cẩm nang (`ge10_handbook_pages`), đảo kỹ năng (`ge10_english_island_items`) và ma trận đề thi các môn (`ge10_subject_exam_blueprints`).
       - **Phát triển API mới**: Endpoint `/handbook-pages`, `/english-island/items` và `/exam-blueprints?subject=...` để nạp động.
