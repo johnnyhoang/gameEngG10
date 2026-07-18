@@ -32,6 +32,12 @@ const MIGRATION_FILES = [
   '20260717_dynamic_data_migration.sql',
   '20260718_upgrade_topics_metadata.sql',
   '20260718_textbook_mappings.sql',
+  '20260718_cs_database_data_lessons.sql',
+  '20260718_cs_database_data_questions.sql',
+  '20260718_cs_database_data_integration.sql',
+  '20260718_cs_robot_programming_lessons.sql',
+  '20260718_cs_robot_programming_questions.sql',
+  '20260718_cs_robot_programming_integration.sql',
 ];
 
 async function ensureMigrationsTable() {
