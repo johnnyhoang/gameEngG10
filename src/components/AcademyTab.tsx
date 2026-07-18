@@ -1,7 +1,7 @@
 import { useMemo, useEffect } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { BrainCircuit } from 'lucide-react';
-import { CORE_KNOWLEDGE_TOPICS, inferTopicId } from '../data/coreKnowledge';
+import { inferTopicId } from '../data/coreKnowledge';
 import { useSect } from '../contexts/SectContext';
 import { DEFAULT_GRADE_TIER } from '../types/game';
 import { filterLessonsInScope } from '../utils/learningScope';
@@ -31,6 +31,7 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
   const syncWithServer = useGameState(state => state.syncWithServer);
   const currentUser = useGameState(state => state.currentUser);
   const lessons = useGameState(state => state.lessons);
+  const topics = useGameState(state => state.topics || []);
 
   // Profile / class connection state
   const classLinks = useGameState(state => state.classLinks);
@@ -66,7 +67,7 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
       return timeA - timeB;
     });
     const preferredHam = sortedPages.length > 0 ? getHamForPage(sortedPages[0].pageId) : null;
-    const subjectTopics = CORE_KNOWLEDGE_TOPICS.filter(t =>
+    const subjectTopics = topics.filter(t =>
       t.subjectId === activeSectId && (t.gradeTier ?? DEFAULT_GRADE_TIER) === activeGradeTier
     );
     const topicAccuracies = subjectTopics.map(t => {
@@ -89,7 +90,7 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
     const matchingLesson = subjectLessons.find(l => inferTopicId(l.category, l.subject) === weakTopicItem.topic.id);
     if (!matchingLesson) return null;
     return { lesson: matchingLesson, accuracy: weakTopicItem.accuracy };
-  }, [pageExplorationStates, categoryStats, activeSectId, activeGradeTier, subjectLessons]);
+  }, [pageExplorationStates, categoryStats, activeSectId, activeGradeTier, subjectLessons, topics]);
 
   const weakLesson = weakData?.lesson ?? null;
   const weakAccuracy = weakData?.accuracy ?? 0;

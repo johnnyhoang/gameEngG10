@@ -30,6 +30,7 @@ const MIGRATION_FILES = [
   '20260717_prevent_duplicate_profiles.sql',
   '20260717_auto_connect_admins.sql',
   '20260717_dynamic_data_migration.sql',
+  '20260718_upgrade_topics_metadata.sql',
 ];
 
 async function ensureMigrationsTable() {

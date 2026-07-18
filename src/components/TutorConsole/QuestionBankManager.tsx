@@ -6,7 +6,6 @@ import { getSubjectQuestionMetadata } from '../../subject-modules/registry';
 import { toast } from '../../utils/toast';
 import { supabase } from '../../utils/supabaseClient';
 import { getRiddleCoverageStats, isRiddleEligible } from '../../miniapps/riddle/riddleEngine';
-import { CORE_KNOWLEDGE_TOPICS } from '../../data/coreKnowledge';
 import { useGameState } from '../../hooks/useGameState';
 import { DUNGEONS_CONFIG, enrichTextbookAttributes } from '../../utils/textbookEnricher';
 
@@ -110,6 +109,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
   importQuestions
 }) => {
   const activeGradeTier = useGameState(state => state.activeGradeTier);
+  const storeTopics = useGameState(state => state.topics || []);
   const selectedSect = useGameState(state => state.currentSubject); // Đồng bộ toàn cục với Top HUD
   const currentProfileId = useGameState(state => state.currentUser?.id);
   const [questionQuery, setQuestionQuery] = useState('');
@@ -214,7 +214,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
 
   const coreCoverage = useMemo(() => {
     if (!selectedSect) return null;
-    const topics = CORE_KNOWLEDGE_TOPICS.filter(topic =>
+    const topics = storeTopics.filter(topic =>
       topic.subjectId === selectedSect && (topic.gradeTier ?? DEFAULT_GRADE_TIER) === activeGradeTier
     );
     const counts = contextQuestions.reduce<Record<string, number>>((acc, question) => {
@@ -306,9 +306,9 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
   const topicLabelMap = useMemo(() => {
     return Object.fromEntries([
       ['untagged', 'Chưa gắn chuyên đề'],
-      ...CORE_KNOWLEDGE_TOPICS.map(topic => [topic.id, topic.label]),
+      ...storeTopics.map(topic => [topic.id, topic.label]),
     ]);
-  }, []);
+  }, [storeTopics]);
 
   // Handle Edit/Save
   const startEdit = (q: Question) => {
@@ -341,7 +341,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
         body: JSON.stringify({
           rawText: rawText.trim(),
           subject: selectedSect,
-          topicCatalog: CORE_KNOWLEDGE_TOPICS
+          topicCatalog: storeTopics
             .filter(topic => topic.subjectId === selectedSect)
             .map(topic => ({ id: topic.id, label: topic.label, examRelevance: topic.examRelevance }))
         })
@@ -572,7 +572,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                 >
                   {filteredQuestions.length > 0 ? (
                     filteredQuestions.slice(0, visibleCount).map(q => {
-                      const coreTopic = q.topicId ? CORE_KNOWLEDGE_TOPICS.find(topic => topic.id === q.topicId) : undefined;
+                      const coreTopic = q.topicId ? storeTopics.find(topic => topic.id === q.topicId) : undefined;
                       return (
                         <div 
                           key={q.id} 
@@ -735,7 +735,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
 
                   <div className="flex flex-wrap gap-2">
                     {coreCoverage.byHam.map(item => {
-                      const details = DUNGEONS_CONFIG[item.ham];
+                      const details = (DUNGEONS_CONFIG as any)[item.ham];
                       const label = details ? details.label : item.ham;
                       return (
                         <div key={item.ham} className="flex-auto w-full sm:w-[180px] max-w-xs rounded-xl border border-white/5 bg-white/5 p-3 space-y-2">
@@ -826,7 +826,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                 <div className="flex flex-wrap gap-2">
                   {coreCoverage?.byHam.map(hamItem => {
                     const ham = hamItem.ham;
-                    const details = DUNGEONS_CONFIG[ham];
+                    const details = (DUNGEONS_CONFIG as any)[ham];
                     const label = details ? details.label : ham;
                     const count = riddleStats[selectedSect]?.byHam[ham] || 0;
                     const isLow = count === 0;
@@ -946,7 +946,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                                     className="w-full p-2 rounded-lg border border-white/10 bg-synth-gray/30 text-white text-[10px] outline-none focus:border-synth-orange"
                                   >
                                     <option value="">Chọn chuyên đề...</option>
-                                    {CORE_KNOWLEDGE_TOPICS.filter(topic => topic.subjectId === selectedSect).map(topic => (
+                                    {storeTopics.filter(topic => topic.subjectId === selectedSect).map(topic => (
                                       <option key={topic.id} value={topic.id}>{topic.label}</option>
                                     ))}
                                   </select>

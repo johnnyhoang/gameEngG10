@@ -1,6 +1,5 @@
-import type { SubjectId, CategoryStat, GradeTier } from '../types/game';
+import type { SubjectId, CategoryStat, GradeTier, CoreKnowledgeTopic } from '../types/game';
 import { DEFAULT_GRADE_TIER } from '../types/game';
-import { CORE_KNOWLEDGE_TOPICS } from '../data/coreKnowledge';
 import { filterLessonsInScope, filterQuestionsInScope } from './learningScope';
 
 // Đẳng Cấp Môn Phái — nguồn định nghĩa DUY NHẤT (CORE_SPECS §7.4). Dùng chung giữa UI hiển thị
@@ -44,20 +43,21 @@ export interface SubjectMasteryInput {
   // StoreState.lessonsProgress lưu boolean (đã học xong) hoặc number (tiến độ %) tuỳ nơi ghi —
   // chỉ dùng truthy-check bên dưới nên chấp nhận cả hai, không ép kiểu phía caller.
   lessonsProgress: Record<string, boolean | number>;
+  topics?: CoreKnowledgeTopic[];
 }
 
 // Công thức CORE_SPECS §7.4.2: 50% bài học hoàn thành + 50% tỉ lệ câu đúng (mẫu số = tổng
 // minQuestions của Core Knowledge topics thuộc môn, để Viện Trưởng import thêm câu không ăn gian tỉ lệ).
-export function computeSubjectMasteryRatio({ subjectId, gradeTier, questions, categoryStats, lessons, lessonsProgress }: SubjectMasteryInput): number {
+export function computeSubjectMasteryRatio({ subjectId, gradeTier, questions, categoryStats, lessons, lessonsProgress, topics }: SubjectMasteryInput): number {
   const contextQuestions = filterQuestionsInScope(questions, subjectId, gradeTier);
   const contextLessons = filterLessonsInScope(lessons, subjectId, gradeTier);
   const subjectCategories = Array.from(new Set(contextQuestions.map(q => q.category)));
   const correctCount = subjectCategories.reduce((sum, cat) => sum + (categoryStats[cat]?.totalCorrect || 0), 0);
 
-  const topics = CORE_KNOWLEDGE_TOPICS.filter(t =>
+  const subjectTopics = (topics || []).filter(t =>
     t.subjectId === subjectId && (t.gradeTier ?? DEFAULT_GRADE_TIER) === gradeTier
   );
-  const totalQuestions = topics.reduce((sum, t) => sum + t.minQuestions, 0) || contextQuestions.length || 1;
+  const totalQuestions = subjectTopics.reduce((sum, t) => sum + (t.minQuestions || 30), 0) || contextQuestions.length || 1;
 
   const totalLessons = contextLessons.length;
   const completedLessons = contextLessons.filter(l => lessonsProgress[l.id]).length;

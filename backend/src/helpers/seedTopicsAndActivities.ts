@@ -6,54 +6,68 @@ export async function seedTopicsAndActivities(pool: Pool) {
   // 1. Seed Topics
   const topics = [
     // English
-    { id: 'eng-grammar', subject: 'english', name: 'Ngữ pháp lõi', description: 'Hệ thống hóa các điểm thường ra nhất trong đề lớp 10 và bám sát năng lực giao tiếp thực hành.', sort_order: 1 },
-    { id: 'eng-pronunciation', subject: 'english', name: 'Phát âm và trọng âm', description: 'Luyện nhận diện đuôi -ed/-s, nguyên âm, phụ âm và quy tắc nhấn âm.', sort_order: 2 },
-    { id: 'eng-reading', subject: 'english', name: 'Đọc hiểu và điền khuyết', description: 'Tập trung đọc ý chính, từ nối, đại từ tham chiếu và ngữ cảnh đoạn văn.', sort_order: 3 },
-    { id: 'eng-rewrite', subject: 'english', name: 'Viết lại câu', description: 'Rèn chuyển đổi cấu trúc câu nhanh, gọn, đúng chuẩn chấm điểm.', sort_order: 4 },
+    { id: 'eng-grammar', subject: 'english', name: 'Ngữ pháp lõi', description: 'Hệ thống hóa các điểm thường ra nhất trong đề lớp 10 và bám sát năng lực giao tiếp thực hành.', sort_order: 1, ham_nguyen_to: 'thach', exam_relevance: 'high', min_questions: 30, question_types: ['mcq'] },
+    { id: 'eng-pronunciation', subject: 'english', name: 'Phát âm và trọng âm', description: 'Luyện nhận diện đuôi -ed/-s, nguyên âm, phụ âm và quy tắc nhấn âm.', sort_order: 2, ham_nguyen_to: 'hoa', exam_relevance: 'high', min_questions: 30, question_types: ['mcq'] },
+    { id: 'eng-reading', subject: 'english', name: 'Đọc hiểu và điền khuyết', description: 'Tập trung đọc ý chính, từ nối, đại từ tham chiếu và ngữ cảnh đoạn văn.', sort_order: 3, ham_nguyen_to: 'bang', exam_relevance: 'high', min_questions: 30, question_types: ['mcq'] },
+    { id: 'eng-rewrite', subject: 'english', name: 'Viết lại câu', description: 'Rèn chuyển đổi cấu trúc câu nhanh, gọn, đúng chuẩn chấm điểm.', sort_order: 4, ham_nguyen_to: 'phong', exam_relevance: 'high', min_questions: 30, question_types: ['rewrite'] },
 
     // Math
-    { id: 'math-quadratic', subject: 'math', name: 'Hàm số và phương trình bậc hai', description: 'Bài trọng tâm của toán vào 10: parabol, hoành độ giao điểm, Vi-ét và tham số.', sort_order: 1 },
-    { id: 'math-real', subject: 'math', name: 'Bài toán thực tế', description: 'Các câu vận dụng số liệu, phần trăm, tăng giảm giá, năng suất và chuyển động.', sort_order: 2 },
-    { id: 'math-plane', subject: 'math', name: 'Hình học phẳng', description: 'Ôn các hệ thức trong tam giác vuông, đường tròn, tiếp tuyến và tứ giác nội tiếp.', sort_order: 3 },
-    { id: 'math-solid', subject: 'math', name: 'Hình học không gian', description: 'Nắm công thức thể tích, diện tích xung quanh và bài toán liên hệ thực tế.', sort_order: 4 },
+    { id: 'math-quadratic', subject: 'math', name: 'Hàm số và phương trình bậc hai', description: 'Bài trọng tâm của toán vào 10: parabol, hoành độ giao điểm, Vi-ét và tham số.', sort_order: 1, ham_nguyen_to: 'thach', exam_relevance: 'high', min_questions: 30, question_types: ['mcq'] },
+    { id: 'math-real', subject: 'math', name: 'Bài toán thực tế', description: 'Các câu vận dụng số liệu, phần trăm, tăng giảm giá, năng suất và chuyển động.', sort_order: 2, ham_nguyen_to: 'bang', exam_relevance: 'high', min_questions: 30, question_types: ['mcq'] },
+    { id: 'math-plane', subject: 'math', name: 'Hình học phẳng', description: 'Ôn các hệ thức trong tam giác vuông, đường tròn, tiếp tuyến và tứ giác nội tiếp.', sort_order: 3, ham_nguyen_to: 'hoa', exam_relevance: 'high', min_questions: 30, question_types: ['mcq'] },
+    { id: 'math-solid', subject: 'math', name: 'Hình học không gian', description: 'Nắm công thức thể tích, diện tích xung quanh và bài toán liên hệ thực tế.', sort_order: 4, ham_nguyen_to: 'phong', exam_relevance: 'high', min_questions: 30, question_types: ['mcq'] },
 
     // Literature
-    { id: 'lit-reading', subject: 'literature', name: 'Đọc hiểu văn bản', description: 'Phân biệt thơ, truyện, kí và văn bản nghị luận; rút ý, tìm biện pháp nghệ thuật và thông điệp.', sort_order: 1 },
-    { id: 'lit-vietnamese', subject: 'literature', name: 'Tiếng Việt', description: 'Ôn các lớp từ, thành phần câu, phép liên kết, từ Hán Việt và lỗi diễn đạt.', sort_order: 2 },
-    { id: 'lit-essay', subject: 'literature', name: 'Viết đoạn và bài nghị luận', description: 'Luyện bố cục, luận điểm, luận cứ và cách triển khai đoạn văn 200 chữ.', sort_order: 3 },
-    { id: 'lit-analysis', subject: 'literature', name: 'Nghị luận văn học', description: 'Rèn dàn ý cảm nhận tác phẩm, nhân vật và hình ảnh thơ theo hướng ngắn gọn, rõ ý.', sort_order: 4 },
+    { id: 'lit-reading', subject: 'literature', name: 'Đọc hiểu văn bản', description: 'Phân biệt thơ, truyện, kí và văn bản nghị luận; rút ý, tìm biện pháp nghệ thuật và thông điệp.', sort_order: 1, ham_nguyen_to: 'thach', exam_relevance: 'high', min_questions: 30, question_types: ['mcq'] },
+    { id: 'lit-vietnamese', subject: 'literature', name: 'Tiếng Việt', description: 'Ôn các lớp từ, thành phần câu, phép liên kết, từ Hán Việt và lỗi diễn đạt.', sort_order: 2, ham_nguyen_to: 'hoa', exam_relevance: 'high', min_questions: 30, question_types: ['mcq'] },
+    { id: 'lit-essay', subject: 'literature', name: 'Viết đoạn và bài nghị luận', description: 'Luyện bố cục, luận điểm, luận cứ và cách triển khai đoạn văn 200 chữ.', sort_order: 3, ham_nguyen_to: 'bang', exam_relevance: 'high', min_questions: 30, question_types: ['mcq'] },
+    { id: 'lit-analysis', subject: 'literature', name: 'Nghị luận văn học', description: 'Rèn dàn ý cảm nhận tác phẩm, nhân vật và hình ảnh thơ theo hướng ngắn gọn, rõ ý.', sort_order: 4, ham_nguyen_to: 'phong', exam_relevance: 'high', min_questions: 30, question_types: ['mcq'] },
 
     // Science
-    { id: 'sci-physics', subject: 'science', name: 'Vật lý (Lớp 9)', description: 'Hệ thống hóa lý thuyết Điện học, Điện từ học, Quang học và Sự bảo toàn năng lượng.', sort_order: 1 },
-    { id: 'sci-chemistry', subject: 'science', name: 'Hóa học (Lớp 9)', description: 'Các hợp chất vô cơ, Kim loại, Phi kim và Sơ lược hóa học hữu cơ.', sort_order: 2 },
-    { id: 'sci-biology', subject: 'science', name: 'Sinh học (Lớp 9)', description: 'Di truyền học, Biến dị, Sinh vật và Môi trường sống.', sort_order: 3 },
+    { id: 'sci-physics', subject: 'science', name: 'Vật lý (Lớp 9)', description: 'Hệ thống hóa lý thuyết Điện học, Điện từ học, Quang học và Sự bảo toàn năng lượng.', sort_order: 1, ham_nguyen_to: 'thach', exam_relevance: 'medium', min_questions: 30, question_types: ['mcq'] },
+    { id: 'sci-chemistry', subject: 'science', name: 'Hóa học (Lớp 9)', description: 'Các hợp chất vô cơ, Kim loại, Phi kim và Sơ lược hóa học hữu cơ.', sort_order: 2, ham_nguyen_to: 'hoa', exam_relevance: 'medium', min_questions: 30, question_types: ['mcq'] },
+    { id: 'sci-biology', subject: 'science', name: 'Sinh học (Lớp 9)', description: 'Di truyền học, Biến dị, Sinh vật và Môi trường sống.', sort_order: 3, ham_nguyen_to: 'bang', exam_relevance: 'medium', min_questions: 30, question_types: ['mcq'] },
 
     // History & Geography
-    { id: 'hist-history', subject: 'history_geography', name: 'Lịch sử lớp 9', description: 'Lịch sử thế giới hiện đại từ 1945 và tiến trình cách mạng Việt Nam từ năm 1919.', sort_order: 1 },
-    { id: 'hist-geography', subject: 'history_geography', name: 'Địa lý lớp 9', description: 'Địa lý dân cư Việt Nam và sự phát triển, phân bố của các ngành kinh tế.', sort_order: 2 },
+    { id: 'hist-history', subject: 'history_geography', name: 'Lịch sử lớp 9', description: 'Lịch sử thế giới hiện đại từ 1945 và tiến trình cách mạng Việt Nam từ năm 1919.', sort_order: 1, ham_nguyen_to: 'thach', exam_relevance: 'medium', min_questions: 30, question_types: ['mcq'] },
+    { id: 'hist-geography', subject: 'history_geography', name: 'Địa lý lớp 9', description: 'Địa lý dân cư Việt Nam và sự phát triển, phân bố của các ngành kinh tế.', sort_order: 2, ham_nguyen_to: 'hoa', exam_relevance: 'medium', min_questions: 30, question_types: ['mcq'] },
 
     // Civics
-    { id: 'civ-civics', subject: 'civics', name: 'Đạo đức & Pháp luật', description: 'Nghĩa vụ công dân, quyền tự do dân chủ và trách nhiệm với gia đình, xã hội.', sort_order: 1 },
+    { id: 'civ-civics', subject: 'civics', name: 'Đạo đức & Pháp luật', description: 'Nghĩa vụ công dân, quyền tự do dân chủ và trách nhiệm với gia đình, xã hội.', sort_order: 1, ham_nguyen_to: 'bang', exam_relevance: 'medium', min_questions: 30, question_types: ['mcq'] },
 
     // Tech
-    { id: 'tech-technology', subject: 'technology', name: 'Công nghệ lắp đặt & Đời sống', description: 'Lý thuyết mạch điện sinh hoạt trong nhà và quy trình lắp đặt an toàn.', sort_order: 1 },
+    { id: 'tech-technology', subject: 'technology', name: 'Công nghệ lắp đặt & Đời sống', description: 'Lý thuyết mạch điện sinh hoạt trong nhà và quy trình lắp đặt an toàn.', sort_order: 1, ham_nguyen_to: 'phong', exam_relevance: 'medium', min_questions: 30, question_types: ['mcq'] },
 
     // Informatics
-    { id: 'info-informatics', subject: 'informatics', name: 'Lập trình & Mạng máy tính', description: 'Tư duy thuật toán căn bản ( Scratch / Python ), Cơ sở dữ liệu và sử dụng Internet an toàn.', sort_order: 1 },
+    { id: 'info-informatics', subject: 'informatics', name: 'Lập trình & Mạng máy tính', description: 'Tư duy thuật toán căn bản ( Scratch / Python ), Cơ sở dữ liệu và sử dụng Internet an toàn.', sort_order: 1, ham_nguyen_to: 'loi', exam_relevance: 'medium', min_questions: 30, question_types: ['mcq'] },
 
     // Arts
-    { id: 'arts-arts', subject: 'arts', name: 'Âm nhạc & Mỹ thuật', description: 'Nhạc lý cơ bản, các nhạc sĩ tiêu biểu và Mỹ thuật ứng dụng vẽ tranh đề tài.', sort_order: 1 }
+    { id: 'arts-arts', subject: 'arts', name: 'Âm nhạc & Mỹ thuật', description: 'Nhạc lý cơ bản, các nhạc sĩ tiêu biểu và Mỹ thuật ứng dụng vẽ tranh đề tài.', sort_order: 1, ham_nguyen_to: 'thuy', exam_relevance: 'medium', min_questions: 30, question_types: ['mcq'] }
   ];
 
   for (const topic of topics) {
     await pool.query(
-      `INSERT INTO ge10_topics (id, subject, grade_tier, name, description, sort_order)
-       VALUES ($1, $2, 9, $3, $4, $5)
+      `INSERT INTO ge10_topics (id, subject, grade_tier, name, description, sort_order, ham_nguyen_to, exam_relevance, min_questions, question_types)
+       VALUES ($1, $2, 9, $3, $4, $5, $6, $7, $8, $9)
        ON CONFLICT (id) DO UPDATE SET
          name = EXCLUDED.name,
          description = EXCLUDED.description,
-         sort_order = EXCLUDED.sort_order`,
-      [topic.id, topic.subject, topic.name, topic.description, topic.sort_order]
+         sort_order = EXCLUDED.sort_order,
+         ham_nguyen_to = EXCLUDED.ham_nguyen_to,
+         exam_relevance = EXCLUDED.exam_relevance,
+         min_questions = EXCLUDED.min_questions,
+         question_types = EXCLUDED.question_types`,
+      [
+        topic.id,
+        topic.subject,
+        topic.name,
+        topic.description,
+        topic.sort_order,
+        topic.ham_nguyen_to,
+        topic.exam_relevance,
+        topic.min_questions,
+        topic.question_types
+      ]
     );
   }
 

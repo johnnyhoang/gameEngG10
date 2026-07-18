@@ -5,7 +5,7 @@ import { UI_THEMES } from '../../theme/uiThemes';
 import type { RewardRedemption } from '../../types/game';
 import { DEFAULT_GRADE_TIER } from '../../types/game';
 import { questionInScope } from '../../utils/learningScope';
-import { logActivity, checkLevelUp } from '../helpers';
+import { logActivity, checkLevelUp, mapServerTopics } from '../helpers';
 import { eventBus } from '../../utils/EventBus';
 import { toast } from '../../utils/toast';
 import { computeSubjectMasteryRatio, getMasteryRankByRatio } from '../../utils/masteryRank';
@@ -177,7 +177,8 @@ export const createPlayerSlice: StateCreator<
             questions: state.questions,
             categoryStats: updatedStats,
             lessons: state.lessons,
-            lessonsProgress: state.lessonsProgress
+            lessonsProgress: state.lessonsProgress,
+            topics: state.topics
           });
           get().ratchetMasteryRank(answeredSubject, masteryRatio);
 
@@ -602,7 +603,8 @@ export const createPlayerSlice: StateCreator<
             questions: state.questions,
             categoryStats: state.categoryStats,
             lessons: state.lessons,
-            lessonsProgress: updatedLessonsProgress
+            lessonsProgress: updatedLessonsProgress,
+            topics: state.topics
           });
           get().ratchetMasteryRank(lesson.subject, lessonMasteryRatio);
 
@@ -1031,7 +1033,7 @@ export const createPlayerSlice: StateCreator<
         rewardRedemptions: serverData.rewardRedemptions || state.rewardRedemptions,
         challenges: serverData.challenges || state.challenges,
         lessonsProgress: serverData.lessonsProgress || state.lessonsProgress,
-        topics: serverData.topics || state.topics,
+        topics: serverData.topics ? mapServerTopics(serverData.topics) : state.topics,
         activities: serverData.activities || state.activities,
         activityProgress: serverData.activityProgress || state.activityProgress,
         explorationProgress: serverData.explorationProgress || state.explorationProgress

@@ -5,7 +5,7 @@ import {
   Sword, Mountain, Palmtree, BrainCircuit, ArrowRight,
   Flame, Zap, Star
 } from 'lucide-react';
-import { CORE_KNOWLEDGE_TOPICS, inferTopicId } from '../data/coreKnowledge';
+import { inferTopicId } from '../data/coreKnowledge';
 import { useSect } from '../contexts/SectContext';
 import { SUBJECTS_CONFIG, DEFAULT_GRADE_TIER } from '../types/game';
 import { filterLessonsInScope } from '../utils/learningScope';
@@ -51,6 +51,7 @@ export function WorldMap({
   
   const classLinks = useGameState(state => state.classLinks);
   const activeLink = classLinks.find((l: any) => l.status === 'active');
+  const topics = useGameState(state => state.topics || []);
 
   const getGreeting = () => {
     const hour = new Date().getHours();
@@ -77,7 +78,7 @@ export function WorldMap({
     });
 
     const preferredHam = sortedPages.length > 0 ? getHamForPage(sortedPages[0].pageId) : null;
-    const subjectTopics = CORE_KNOWLEDGE_TOPICS.filter(t =>
+    const subjectTopics = topics.filter(t =>
       t.subjectId === activeSectId && (t.gradeTier ?? DEFAULT_GRADE_TIER) === activeGradeTier
     );
     
@@ -106,7 +107,7 @@ export function WorldMap({
     if (!matchingLesson) return null;
 
     return { lesson: matchingLesson, accuracy: weakTopicItem.accuracy };
-  }, [pageExplorationStates, categoryStats, activeSectId, activeGradeTier, subjectLessons]);
+  }, [pageExplorationStates, categoryStats, activeSectId, activeGradeTier, subjectLessons, topics]);
 
   const weakLesson = weakData?.lesson ?? null;
   const weakAccuracy = weakData?.accuracy ?? 0;

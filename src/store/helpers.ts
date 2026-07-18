@@ -102,3 +102,20 @@ export const checkLevelUp = (
 
   return { level, xp, badges, badgesChanged };
 };
+
+export const mapServerTopics = (topics: any[]): any[] => {
+  return (topics || []).map((t: any) => ({
+    id: t.id,
+    subjectId: t.subject || t.subjectId,
+    gradeTier: t.grade_tier ?? t.gradeTier ?? 9,
+    group: t.group || 'co_ban',
+    label: t.name || t.label,
+    labelEN: t.label_en ?? t.labelEN ?? '',
+    hamNguyenTo: t.ham_nguyen_to ?? t.hamNguyenTo ?? 'thach',
+    examRelevance: t.exam_relevance ?? t.examRelevance ?? 'medium',
+    minQuestions: t.min_questions ?? t.minQuestions ?? 30,
+    questionTypes: t.question_types ?? t.questionTypes ?? ['mcq'],
+    description: t.description || '',
+  }));
+};
+

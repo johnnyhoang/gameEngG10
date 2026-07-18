@@ -4,7 +4,7 @@ import { SideDrawer } from '../../Common/SideDrawer';
 import { PlayArea } from '../../PlayArea';
 import type { GradeTier, Question, SubjectId } from '../../../types/game';
 import { SUBJECTS_CONFIG } from '../../../types/game';
-import { CORE_KNOWLEDGE_TOPICS } from '../../../data/coreKnowledge';
+import { useGameState } from '../../../hooks/useGameState';
 import { toast } from '../../../utils/toast';
 import { DUNGEONS_CONFIG, enrichTextbookAttributes } from '../../../utils/textbookEnricher';
 
@@ -49,6 +49,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
   navPosition,
   onNavigate
 }) => {
+  const topics = useGameState(state => state.topics || []);
   const [editType, setEditType] = useState<Question['type']>('mcq');
   const [editPrompt, setEditPrompt] = useState('');
   const [editExplanation, setEditExplanation] = useState('');
@@ -403,7 +404,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
                 className={`w-full p-2 rounded-lg border ${formAttempted && !editTopicId ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-black/40 focus:border-synth-cyan'} text-xs text-white cursor-pointer`}
               >
                 <option value="">-- Chưa chọn topic --</option>
-                {CORE_KNOWLEDGE_TOPICS.filter(t => t.subjectId === editSubject).map(t => {
+                {topics.filter(t => t.subjectId === editSubject).map(t => {
                   const textbook = enrichTextbookAttributes(t.id, undefined, editSubject);
                   const details = DUNGEONS_CONFIG[textbook.hamNguyenTo];
                   const dLabel = details ? details.label.split(' ')[0] : textbook.hamNguyenTo; // e.g. 🔥 or 🪨

@@ -4,7 +4,7 @@ import type { StoreState } from '../types';
 import { DEFAULT_GAME_SETTINGS, getProfileScopedResetState } from '../initialState';
 import { DEFAULT_UI_THEME } from '../../theme/uiThemes';
 import { supabase } from '../../utils/supabaseClient';
-import { logActivity } from '../helpers';
+import { logActivity, mapServerTopics } from '../helpers';
 import { toast } from '../../utils/toast';
 import { authService } from '../../services/authService';
 import { DEFAULT_GRADE_TIER } from '../../types/game';
@@ -71,7 +71,7 @@ export const createAuthSlice: StateCreator<
         challenges: data.challenges || [],
         challengeTemplates: data.challengeTemplates || [],
         lessonsProgress: data.lessonsProgress || {},
-        topics: data.topics || [],
+        topics: mapServerTopics(data.topics || []),
         activities: data.activities || [],
         activityProgress: data.activityProgress || {},
         explorationProgress: data.explorationProgress || {},
