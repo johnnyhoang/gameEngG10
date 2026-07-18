@@ -4,7 +4,7 @@ import { activeProfileMiddleware, authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
 router.use(authMiddleware, activeProfileMiddleware);
-const SUPPORTED_GRADES = new Set([6, 7, 8, 9, 10, 11, 12]);
+const SUPPORTED_GRADES = new Set([6, 7, 8, 9, 10, 11, 12, 13]);
 
 export function parseContext(input: Record<string, unknown>) {
   const gradeTier = Number(input.gradeTier);
