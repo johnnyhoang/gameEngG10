@@ -4,13 +4,11 @@ import { activeProfileMiddleware, authMiddleware } from '../middleware/auth.js';
 
 const router = express.Router();
 router.use(authMiddleware, activeProfileMiddleware);
-const SUPPORTED_GRADES = new Set([6, 7, 8, 9, 10, 11, 12, 13]);
-
 export function parseContext(input: Record<string, unknown>) {
   const gradeTier = Number(input.gradeTier);
   const rawSubject = input.subjectId ?? input.subject;
   const subjectId = typeof rawSubject === 'string' ? rawSubject.trim() : '';
-  if (!SUPPORTED_GRADES.has(gradeTier) || !subjectId) return null;
+  if (isNaN(gradeTier) || gradeTier <= 0 || !subjectId) return null;
   return { gradeTier, subjectId };
 }
 
