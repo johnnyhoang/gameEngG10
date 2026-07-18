@@ -76,6 +76,7 @@ export const createUISlice: StateCreator<
       })
       .catch(err => {
         console.error('Failed to load learning content dynamically:', err);
+        toast.error('Không thể tải giáo trình học tập của cấp/môn này. Vui lòng kiểm tra lại kết nối mạng hoặc thử lại sau!');
       });
 
     // Spinner giữ tối thiểu 400ms cho người dùng thấy app đang nạp lại ngữ cảnh,

@@ -114,6 +114,7 @@ export const createAuthSlice: StateCreator<
         set({ questions: enrichedQuestions, lessons: enrichedLessons });
       } catch (err) {
         console.error('Error fetching initial content in selectProfile:', err);
+        toast.error('Không thể tải giáo trình học tập của cấp/môn này. Vui lòng kiểm tra lại kết nối mạng hoặc thử lại sau!');
       }
 
       // Fetch handbook pages
@@ -272,6 +273,7 @@ export const createAuthSlice: StateCreator<
         set({ questions: enrichedQuestions, lessons: enrichedLessons });
       } catch (err) {
         console.error('Error fetching initial content in login:', err);
+        toast.error('Không thể tải giáo trình học tập của cấp/môn này. Vui lòng kiểm tra lại kết nối mạng hoặc thử lại sau!');
       }
 
       // Fetch handbook pages
