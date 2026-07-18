@@ -94,7 +94,8 @@ router.post('/game/session/start', async (req: any, res) => {
       metadata: row.metadata || undefined,
       isConfused: row.is_confused,
       gradeTier: row.grade_tier,
-      attempts: Number(row.student_attempts) || 0
+      attempts: Number(row.student_attempts) || 0,
+      lessonId: row.lesson_id
     }));
 
     let poolSelected: typeof questions = [];
@@ -145,7 +146,7 @@ router.post('/game/session/start', async (req: any, res) => {
     } else if (sessionType === 'revenge') {
       poolSelected = shuffle(questions.filter(q => failedQuestionIds.includes(q.id)));
     } else if (sessionType === 'lesson') {
-      let lessonPool = questions.filter(q => q.metadata?.lessonId === lessonId || q.category === lessonId);
+      let lessonPool = questions.filter(q => q.lessonId === lessonId || q.metadata?.lessonId === lessonId || q.category === lessonId);
       lessonPool = shuffle(lessonPool);
       poolSelected = lessonPool.slice(0, 3);
       if (poolSelected.length < 3) {

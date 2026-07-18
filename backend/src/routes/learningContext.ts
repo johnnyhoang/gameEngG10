@@ -143,7 +143,8 @@ router.get('/content/all', async (req: any, res) => {
       pool.query(
         `SELECT id, type, category, topic_id AS "topicId", prompt, options,
                 correct_answer AS "correctAnswer", explanation, difficulty, source,
-                subject, grade_tier AS "gradeTier", image_url AS "imageUrl", metadata
+                subject, grade_tier AS "gradeTier", image_url AS "imageUrl", metadata,
+                lesson_id AS "lessonId"
          FROM ge10_custom_questions
          WHERE grade_tier = $1 AND subject = $2
            AND (user_id = $3 OR user_id IS NULL OR user_id IN

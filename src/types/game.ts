@@ -143,6 +143,7 @@ export interface Question {
   metadata?: QuestionMeta;
   isConfused?: boolean;
   skipReason?: 'quá khó' | 'quá dài' | 'quá khùng';
+  lessonId?: string;
   skipSeverity?: number;
   /** Số lần câu hỏi được mở/sử dụng */
   timesOpened?: number;

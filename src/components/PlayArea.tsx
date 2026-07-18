@@ -300,11 +300,17 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, prev
       } else if (mode === 'lesson') {
         const lesson = lessonsRef.current.find(l => l.id === lessonId);
         if (lesson) {
-          pool = fallbackQuestions.filter(q => (q as any).lessonId === lessonId || q.category === lesson.category);
+          // Priority 1: questions directly linked to this lesson via lessonId field
+          pool = fallbackQuestions.filter(q => q.lessonId === lessonId || (q as any).metadata?.lessonId === lessonId);
+          // Priority 2: questions matching same category (legacy & fallback)
+          if (pool.length < 3) {
+            const byCategory = fallbackQuestions.filter(q => q.category === lesson.category && !pool.some(p => p.id === q.id));
+            pool = [...pool, ...byCategory];
+          }
           pool = pool.slice(0, 3);
         }
         if (pool.length < 3) {
-          const extra = fallbackQuestions.filter(q => !pool.includes(q));
+          const extra = fallbackQuestions.filter(q => !pool.some(p => p.id === q.id));
           pool = [...pool, ...extra].slice(0, 3);
         }
       } else {
