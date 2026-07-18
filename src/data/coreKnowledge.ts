@@ -1,1596 +1,310 @@
-/**
- * Bộ Nội Công Cốt Lõi (Core Knowledge Bank) — CORE_SPECS §9
- *
- * 102 chuyên đề cho 9 môn phái, xây dựng dựa trên:
- * - Cấu trúc đề tuyển sinh lớp 10 TP.HCM 2025 (GDPT 2018)
- * - Chương trình GDPT 2018 lớp 9 (Khoa học tự nhiên, Lịch sử-Địa lý, GDCD, Công nghệ, Tin học, Nghệ thuật)
- */
+import type { CoreKnowledgeTopic, SubjectId, HamNguyenTo } from '../types/game';
 
-import type { CoreKnowledgeTopic, SubjectId, HamNguyenTo, GradeTier } from '../types/game';
+// Bộ Nội Công Cốt Lõi (Core Knowledge Bank) — CORE_SPECS §9
+// Được tải động từ Database qua store topics. Dưới đây là danh sách chuyên đề chính thức khớp 100% với DB.
 
-// ==================== TIẾNG ANH — 19 chuyên đề ====================
-const ENGLISH_TOPICS: CoreKnowledgeTopic[] = [
+export const CORE_KNOWLEDGE_TOPICS: CoreKnowledgeTopic[] = [
+  // English
+  {
+    id: 'eng-grammar',
+    subjectId: 'english',
+    group: 'co_ban',
+    label: 'Ngữ pháp lõi',
+    hamNguyenTo: 'thach',
+    examRelevance: 'high',
+    minQuestions: 30,
+    questionTypes: ['mcq'],
+    description: 'Hệ thống hóa các điểm thường ra nhất trong đề lớp 10 và bám sát năng lực giao tiếp thực hành.',
+  },
   {
     id: 'eng-pronunciation',
     subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'Phát âm đuôi -ed/-s',
-    labelEN: 'Pronunciation of -ed/-s endings',
+    group: 'co_ban',
+    label: 'Phát âm và trọng âm',
     hamNguyenTo: 'hoa',
     examRelevance: 'high',
     minQuestions: 30,
     questionTypes: ['mcq'],
-    description: 'Phân biệt cách phát âm đuôi -ed (ba âm /t/, /d/, /ɪd/) và đuôi -s/es (ba âm /s/, /z/, /ɪz/). Xuất hiện trong Phần 1 đề tuyển sinh (1đ).',
+    description: 'Luyện nhận diện đuôi -ed/-s, nguyên âm, phụ âm và quy tắc nhấn âm.',
   },
   {
-    id: 'eng-stress',
+    id: 'eng-reading',
     subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'Trọng âm từ (Word Stress)',
-    labelEN: 'Word Stress',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 30,
-    questionTypes: ['mcq'],
-    description: 'Quy tắc nhấn âm cho danh từ 2 âm tiết, động từ 2 âm tiết, tính từ đuôi -ic/-tion/-ous. Xuất hiện trong Phần 1 đề tuyển sinh (1đ).',
-  },
-  {
-    id: 'eng-tenses',
-    subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'Các thì động từ (Tenses)',
-    labelEN: 'Verb Tenses',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 30,
-    questionTypes: ['mcq', 'wordform'],
-    description: 'Hiện tại đơn/tiếp diễn/hoàn thành, Quá khứ đơn/tiếp diễn/hoàn thành, Tương lai. Nhận diện dấu hiệu từng thì.',
-  },
-  {
-    id: 'eng-passive-voice',
-    subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'Câu bị động (Passive Voice)',
-    labelEN: 'Passive Voice',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 30,
-    questionTypes: ['mcq', 'rewrite'],
-    description: 'Bị động các thì, bị động tương lai, bị động khách quan (It is said/believed that...). Viết lại câu chủ động sang bị động.',
-  },
-  {
-    id: 'eng-relative-clauses',
-    subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'Mệnh đề quan hệ (Relative Clauses)',
-    labelEN: 'Relative Clauses',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 30,
-    questionTypes: ['mcq', 'rewrite'],
-    description: 'Who, Whom, Which, Whose, That. Mệnh đề xác định vs. không xác định. Rút gọn mệnh đề quan hệ bằng V-ing/V-ed.',
-  },
-  {
-    id: 'eng-conditional',
-    subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'Câu điều kiện (Conditional Sentences)',
-    labelEN: 'Conditional Sentences',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 30,
-    questionTypes: ['mcq', 'rewrite'],
-    description: 'Câu điều kiện Loại 1 (có thể xảy ra) và Loại 2 (không thật ở hiện tại). Viết lại câu với Unless / If only.',
-  },
-  {
-    id: 'eng-reported-speech',
-    subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'Câu tường thuật (Reported Speech)',
-    labelEN: 'Reported Speech',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 30,
-    questionTypes: ['mcq', 'rewrite'],
-    description: 'Chuyển câu trực tiếp sang gián tiếp: lùi thì, đổi đại từ/trạng từ. Câu hỏi if/whether, câu lệnh to V.',
-  },
-  {
-    id: 'eng-word-form',
-    subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'Biến đổi dạng từ (Word Form)',
-    labelEN: 'Word Form',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 30,
-    questionTypes: ['wordform'],
-    description: 'Biến đổi danh từ → tính từ → trạng từ → động từ bằng tiền tố/hậu tố. Phần IV đề tuyển sinh (chiếm điểm cao).',
-  },
-  {
-    id: 'eng-gerund-infinitive',
-    subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'Danh động từ / Động từ nguyên mẫu',
-    labelEN: 'Gerund & Infinitive',
-    hamNguyenTo: 'thach',
-    examRelevance: 'medium',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Động từ đi với V-ing (enjoy, mind, finish...), động từ đi với to-V (want, decide, agree...), và động từ đi được cả hai (remember, stop, try).',
-  },
-  {
-    id: 'eng-comparison',
-    subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'So sánh (Comparison)',
-    labelEN: 'Comparison',
-    hamNguyenTo: 'thach',
-    examRelevance: 'medium',
-    minQuestions: 15,
-    questionTypes: ['mcq', 'rewrite'],
-    description: 'So sánh hơn, bằng, nhất, kép (the more... the more...). Viết lại câu dùng so sánh.',
-  },
-  {
-    id: 'eng-modal-verbs',
-    subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'Động từ khiếm khuyết (Modal Verbs)',
-    labelEN: 'Modal Verbs',
-    hamNguyenTo: 'thach',
-    examRelevance: 'medium',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Can/Could, Will/Would, Should/Must/Have to, May/Might. Phân biệt nghĩa trong ngữ cảnh.',
-  },
-  {
-    id: 'eng-wish-suggest',
-    subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'Cấu trúc Wish / Suggest / It\'s time',
-    labelEN: 'Wish, Suggest, It\'s time structures',
-    hamNguyenTo: 'bang',
-    examRelevance: 'medium',
-    minQuestions: 15,
-    questionTypes: ['rewrite'],
-    description: 'Wish + Past Simple (ước muốn hiện tại), Suggest + V-ing/that clause, It\'s time + Past Simple. Viết lại câu.',
-  },
-  {
-    id: 'eng-have-get-done',
-    subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'Cấu trúc have/get something done',
-    labelEN: 'Causative have/get',
-    hamNguyenTo: 'bang',
-    examRelevance: 'medium',
-    minQuestions: 15,
-    questionTypes: ['rewrite'],
-    description: 'Have/Get something done (nhờ ai làm gì). Viết lại câu từ câu chủ động sang cấu trúc nhờ làm.',
-  },
-  {
-    id: 'eng-vocabulary-topic',
-    subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'Từ vựng theo chủ đề',
-    labelEN: 'Thematic Vocabulary',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 30,
-    questionTypes: ['mcq'],
-    description: 'Từ vựng các chủ đề: Gia đình, Giáo dục, Môi trường, Công nghệ, Sức khỏe, Thể thao, Du lịch. Collocations và Phrasal Verbs.',
-  },
-  {
-    id: 'eng-communication',
-    subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'Giao tiếp tình huống thực tế',
-    labelEN: 'Communication & Functional Language',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 30,
-    questionTypes: ['mcq'],
-    description: 'Đáp lại lời mời/từ chối/đồng ý, hỏi thăm sức khỏe, xin phép, đề nghị giúp đỡ. Phần II giao tiếp trong đề tuyển sinh.',
-  },
-  {
-    id: 'eng-reading-sign',
-    subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'Đọc hiểu biển báo/thông báo ngắn',
-    labelEN: 'Reading Signs & Short Notices',
+    group: 'co_ban',
+    label: 'Đọc hiểu và điền khuyết',
     hamNguyenTo: 'bang',
     examRelevance: 'high',
     minQuestions: 30,
     questionTypes: ['mcq'],
-    description: 'Đọc biển báo, thông báo, chú thích ngắn và trả lời câu hỏi MCQ. Phần III đề tuyển sinh.',
-  },
-  {
-    id: 'eng-reading-cloze',
-    subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'Điền từ vào văn bản (Cloze Test)',
-    labelEN: 'Cloze Test',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 30,
-    questionTypes: ['mcq', 'cloze'],
-    description: 'Điền từ thích hợp vào chỗ trống trong đoạn văn 80–100 từ. Chọn từ theo nghĩa và ngữ pháp.',
-  },
-  {
-    id: 'eng-reading-passage',
-    subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'Đọc hiểu đoạn văn dài',
-    labelEN: 'Reading Comprehension Passage',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 30,
-    questionTypes: ['mcq', 'reading'],
-    description: 'Đọc đoạn văn 180–200 từ, tìm thông tin chi tiết, suy luận. Phần III đề tuyển sinh.',
+    description: 'Tập trung đọc ý chính, từ nối, đại từ tham chiếu và ngữ cảnh đoạn văn.',
   },
   {
     id: 'eng-rewrite',
     subjectId: 'english',
-    group: 'chuyen_sau',
-    label: 'Viết lại câu (Sentence Transformation)',
-    labelEN: 'Sentence Transformation / Rewrite',
-    hamNguyenTo: 'bang',
+    group: 'co_ban',
+    label: 'Viết lại câu',
+    hamNguyenTo: 'phong',
     examRelevance: 'high',
     minQuestions: 30,
     questionTypes: ['rewrite'],
-    description: 'Viết lại câu giữ nguyên nghĩa sử dụng cấu trúc cho sẵn. Phần IV đề tuyển sinh (4đ). Các cấu trúc: bị động, điều kiện, tường thuật, wish, so sánh.',
+    description: 'Rèn chuyển đổi cấu trúc câu nhanh, gọn, đúng chuẩn chấm điểm.',
   },
-];
 
-// ==================== TOÁN HỌC — 18 chuyên đề ====================
-const MATH_TOPICS: CoreKnowledgeTopic[] = [
+  // Math
   {
-    id: 'math-quadratic-function',
+    id: 'math-quadratic',
     subjectId: 'math',
-    group: 'chuyen_sau',
-    label: 'Hàm số bậc hai y=ax²+bx+c (Parabol)',
-    labelEN: 'Quadratic Function & Parabola',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq', 'short-answer'],
-    description: 'Vẽ đồ thị (P), tìm đỉnh, trục đối xứng, tính chất biến thiên, giao với đường thẳng. Bài 1 đề tuyển sinh (1.5đ).',
-  },
-  {
-    id: 'math-quadratic-equation',
-    subjectId: 'math',
-    group: 'chuyen_sau',
-    label: 'Phương trình bậc hai (nghiệm, Delta)',
-    labelEN: 'Quadratic Equation',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq', 'short-answer'],
-    description: 'Công thức nghiệm Delta và Delta\', điều kiện có nghiệm (Delta ≥ 0), điều kiện vô nghiệm. Bài 2 đề tuyển sinh (1đ).',
-  },
-  {
-    id: 'math-vieta',
-    subjectId: 'math',
-    group: 'chuyen_sau',
-    label: 'Hệ thức Vi-ét và ứng dụng',
-    labelEN: 'Vieta\'s Formulas',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['short-answer'],
-    description: 'x₁+x₂ = -b/a; x₁·x₂ = c/a. Ứng dụng: tìm điều kiện tham số, biểu thức đối xứng nghiệm. Bài 2 đề tuyển sinh (1đ).',
-  },
-  {
-    id: 'math-linear-system',
-    subjectId: 'math',
-    group: 'chuyen_sau',
-    label: 'Hệ phương trình bậc nhất hai ẩn',
-    labelEN: 'System of Linear Equations',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['short-answer'],
-    description: 'Giải hệ bằng phương pháp thế và cộng đại số. Bài 6 đề tuyển sinh (1đ).',
-  },
-  {
-    id: 'math-inequality',
-    subjectId: 'math',
-    group: 'chuyen_sau',
-    label: 'Bất phương trình bậc nhất',
-    labelEN: 'Linear Inequality',
+    group: 'co_ban',
+    label: 'Hàm số và phương trình bậc hai',
     hamNguyenTo: 'thach',
-    examRelevance: 'medium',
-    minQuestions: 15,
-    questionTypes: ['short-answer'],
-    description: 'Giải bất phương trình bậc nhất, biểu diễn trên trục số, ứng dụng tìm điều kiện tham số.',
+    examRelevance: 'high',
+    minQuestions: 30,
+    questionTypes: ['mcq'],
+    description: 'Bài trọng tâm của toán vào 10: parabol, hoành độ giao điểm, Vi-ét và tham số.',
   },
   {
-    id: 'math-statistics',
+    id: 'math-real',
     subjectId: 'math',
-    group: 'chuyen_sau',
-    label: 'Thống kê (Tần số, Biểu đồ, Trung bình)',
-    labelEN: 'Statistics & Data Analysis',
+    group: 'co_ban',
+    label: 'Bài toán thực tế',
+    hamNguyenTo: 'bang',
+    examRelevance: 'high',
+    minQuestions: 30,
+    questionTypes: ['mcq'],
+    description: 'Các câu vận dụng số liệu, phần trăm, tăng giảm giá, năng suất và chuyển động.',
+  },
+  {
+    id: 'math-plane',
+    subjectId: 'math',
+    group: 'co_ban',
+    label: 'Hình học phẳng',
     hamNguyenTo: 'hoa',
     examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq', 'short-answer'],
-    description: 'Bảng số liệu, biểu đồ cột/tròn/đoạn thẳng, số trung bình, trung vị, mode. Bài 3 đề tuyển sinh (1.5đ).',
+    minQuestions: 30,
+    questionTypes: ['mcq'],
+    description: 'Ôn các hệ thức trong tam giác vuông, đường tròn, tiếp tuyến và tứ giác nội tiếp.',
   },
   {
-    id: 'math-probability',
+    id: 'math-solid',
     subjectId: 'math',
-    group: 'chuyen_sau',
-    label: 'Xác suất cơ bản',
-    labelEN: 'Basic Probability',
-    hamNguyenTo: 'hoa',
+    group: 'co_ban',
+    label: 'Hình học không gian',
+    hamNguyenTo: 'phong',
     examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq', 'short-answer'],
-    description: 'Xác suất thực nghiệm và lí thuyết, không gian mẫu, biến cố. Bài 3 đề tuyển sinh (1.5đ).',
+    minQuestions: 30,
+    questionTypes: ['mcq'],
+    description: 'Nắm công thức thể tích, diện tích xung quanh và bài toán liên hệ thực tế.',
   },
-  {
-    id: 'math-real-world-algebra',
-    subjectId: 'math',
-    group: 'chuyen_sau',
-    label: 'Toán thực tế — lập phương trình',
-    labelEN: 'Real-World Algebra Problem',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['short-answer', 'multi-part'],
-    description: 'Lập phương trình/hệ phương trình từ bài toán năng suất, chuyển động, hỗn hợp. Bài 4, 6 đề tuyển sinh.',
-  },
-  {
-    id: 'math-real-world-percent',
-    subjectId: 'math',
-    group: 'chuyen_sau',
-    label: 'Toán thực tế — phần trăm, tăng giảm',
-    labelEN: 'Percentage & Rate Problems',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['short-answer'],
-    description: 'Phần trăm tăng giảm giá, lãi suất, khuyến mãi, tỉ lệ. Bài 4, 5 đề tuyển sinh.',
-  },
-  {
-    id: 'math-plane-geometry-circle',
-    subjectId: 'math',
-    group: 'chuyen_sau',
-    label: 'Hình học phẳng — Đường tròn & Tiếp tuyến',
-    labelEN: 'Circle & Tangent Line Geometry',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['proof', 'short-answer'],
-    description: 'Vị trí tương đối đường thẳng-đường tròn, tiếp tuyến, dây cung, góc nội tiếp, góc tạo bởi tiếp tuyến và dây cung. Bài 7 đề tuyển sinh (3đ).',
-  },
-  {
-    id: 'math-plane-geometry-triangle',
-    subjectId: 'math',
-    group: 'chuyen_sau',
-    label: 'Hình học phẳng — Tam giác & Đồng dạng',
-    labelEN: 'Triangle & Similarity Geometry',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['proof', 'short-answer'],
-    description: 'Tam giác đồng dạng, hệ thức lượng trong tam giác vuông, đường thẳng song song/vuông góc từ tính chất đường tròn. Bài 7 đề tuyển sinh (3đ).',
-  },
-  {
-    id: 'math-plane-geometry-cyclic',
-    subjectId: 'math',
-    group: 'chuyen_sau',
-    label: 'Tứ giác nội tiếp',
-    labelEN: 'Cyclic Quadrilateral',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['proof'],
-    description: 'Dấu hiệu nhận biết tứ giác nội tiếp, tổng hai góc đối = 180°, ứng dụng chứng minh. Bài 7 đề tuyển sinh (3đ).',
-  },
-  {
-    id: 'math-plane-geometry-coordinates',
-    subjectId: 'math',
-    group: 'chuyen_sau',
-    label: 'Hệ tọa độ & Phương trình đường thẳng',
-    labelEN: 'Coordinate Geometry',
-    hamNguyenTo: 'bang',
-    examRelevance: 'medium',
-    minQuestions: 15,
-    questionTypes: ['short-answer'],
-    description: 'Phương trình đường thẳng y=ax+b, giao điểm hai đường thẳng, khoảng cách.',
-  },
-  {
-    id: 'math-solid-geometry-volume',
-    subjectId: 'math',
-    group: 'chuyen_sau',
-    label: 'Hình học không gian — Thể tích & DTXQ',
-    labelEN: 'Solid Geometry: Volume & Surface Area',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['short-answer'],
-    description: 'Thể tích và diện tích xung quanh Hình trụ, Hình nón, Hình cầu, Hình chóp. Bài 5 đề tuyển sinh (1đ).',
-  },
-  {
-    id: 'math-solid-geometry-3d',
-    subjectId: 'math',
-    group: 'chuyen_sau',
-    label: 'Hình học không gian — Mặt cắt, đường cao',
-    labelEN: 'Solid Geometry: Cross-Sections & Altitude',
-    hamNguyenTo: 'bang',
-    examRelevance: 'medium',
-    minQuestions: 15,
-    questionTypes: ['short-answer', 'proof'],
-    description: 'Mặt cắt hình trụ/hình nón, đường cao trong hình chóp, hình hộp.',
-  },
-  {
-    id: 'math-trigonometry',
-    subjectId: 'math',
-    group: 'chuyen_sau',
-    label: 'Hệ thức lượng trong tam giác vuông',
-    labelEN: 'Trigonometry in Right Triangle',
-    hamNguyenTo: 'thach',
-    examRelevance: 'medium',
-    minQuestions: 15,
-    questionTypes: ['short-answer'],
-    description: 'sin, cos, tan, cot. Tính cạnh, góc trong tam giác vuông. Hệ thức Pitago.',
-  },
-  {
-    id: 'math-radicals',
-    subjectId: 'math',
-    group: 'chuyen_sau',
-    label: 'Biểu thức chứa căn thức (rút gọn)',
-    labelEN: 'Radical Expressions',
-    hamNguyenTo: 'thach',
-    examRelevance: 'medium',
-    minQuestions: 15,
-    questionTypes: ['short-answer'],
-    description: 'Căn thức bậc hai, điều kiện xác định, rút gọn biểu thức, trục căn thức ở mẫu.',
-  },
-  {
-    id: 'math-rational-expression',
-    subjectId: 'math',
-    group: 'chuyen_sau',
-    label: 'Rút gọn biểu thức hữu tỉ',
-    labelEN: 'Rational Expression Simplification',
-    hamNguyenTo: 'thach',
-    examRelevance: 'medium',
-    minQuestions: 15,
-    questionTypes: ['short-answer'],
-    description: 'Rút gọn phân thức, tính giá trị biểu thức, tìm điều kiện xác định.',
-  },
-];
 
-// ==================== NGỮ VĂN — 13 chuyên đề ====================
-const LITERATURE_TOPICS: CoreKnowledgeTopic[] = [
+  // Literature
   {
-    id: 'lit-reading-poetry',
+    id: 'lit-reading',
     subjectId: 'literature',
-    group: 'chuyen_sau',
-    label: 'Đọc hiểu — Văn bản thơ',
-    labelEN: 'Poetry Reading Comprehension',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq', 'short-answer'],
-    description: 'Đọc và phân tích văn bản thơ: thể loại, hình ảnh biểu tượng, cảm xúc trung tâm, thông điệp. Phần 1 đề tuyển sinh (3đ). Ngữ liệu ngoài SGK.',
-  },
-  {
-    id: 'lit-reading-prose',
-    subjectId: 'literature',
-    group: 'chuyen_sau',
-    label: 'Đọc hiểu — Văn bản truyện/kí',
-    labelEN: 'Prose/Fiction Reading Comprehension',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq', 'short-answer'],
-    description: 'Đọc truyện ngắn, đoạn trích: tình huống, nhân vật, chi tiết đặc sắc, ý nghĩa nhan đề. Phần 1 đề tuyển sinh.',
-  },
-  {
-    id: 'lit-reading-argument',
-    subjectId: 'literature',
-    group: 'chuyen_sau',
-    label: 'Đọc hiểu — Văn bản nghị luận',
-    labelEN: 'Argumentative Text Comprehension',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq', 'short-answer'],
-    description: 'Đọc văn bản nghị luận: xác định luận điểm, luận cứ, bằng chứng, thái độ người viết. Phần 2 đề tuyển sinh (1đ).',
-  },
-  {
-    id: 'lit-reading-information',
-    subjectId: 'literature',
-    group: 'chuyen_sau',
-    label: 'Đọc hiểu — Văn bản thông tin',
-    labelEN: 'Informational Text Comprehension',
-    hamNguyenTo: 'bang',
-    examRelevance: 'medium',
-    minQuestions: 15,
-    questionTypes: ['mcq', 'short-answer'],
-    description: 'Đọc văn bản thông tin: biểu đồ, bảng số liệu, tờ rơi, hướng dẫn sử dụng. Phần 2 đề tuyển sinh.',
-  },
-  {
-    id: 'lit-rhetoric-device',
-    subjectId: 'literature',
-    group: 'chuyen_sau',
-    label: 'Biện pháp tu từ',
-    labelEN: 'Rhetorical Devices',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq'],
-    description: 'Nhân hóa, Ẩn dụ, Hoán dụ, So sánh, Điệp ngữ, Đối lập, Câu hỏi tu từ. Nhận diện và phân tích tác dụng. Câu hỏi Tiếng Việt trong đề.',
-  },
-  {
-    id: 'lit-vietnamese-word-class',
-    subjectId: 'literature',
-    group: 'chuyen_sau',
-    label: 'Tiếng Việt — Từ loại, Nghĩa của từ',
-    labelEN: 'Vietnamese Word Classes & Meaning',
+    group: 'co_ban',
+    label: 'Đọc hiểu văn bản',
     hamNguyenTo: 'thach',
     examRelevance: 'high',
-    minQuestions: 20,
+    minQuestions: 30,
     questionTypes: ['mcq'],
-    description: 'Danh từ, động từ, tính từ, trạng từ. Từ đồng nghĩa/trái nghĩa, nghĩa tường minh/hàm ẩn, từ Hán Việt. Câu hỏi Tiếng Việt trong đề.',
+    description: 'Phân biệt thơ, truyện, kí và văn bản nghị luận; rút ý, tìm biện pháp nghệ thuật và thông điệp.',
   },
   {
-    id: 'lit-vietnamese-sentence',
+    id: 'lit-vietnamese',
     subjectId: 'literature',
-    group: 'chuyen_sau',
-    label: 'Tiếng Việt — Câu ghép, Thành phần câu',
-    labelEN: 'Vietnamese Sentence Structure',
+    group: 'co_ban',
+    label: 'Tiếng Việt',
+    hamNguyenTo: 'hoa',
+    examRelevance: 'high',
+    minQuestions: 30,
+    questionTypes: ['mcq'],
+    description: 'Ôn các lớp từ, thành phần câu, phép liên kết, từ Hán Việt và lỗi diễn đạt.',
+  },
+  {
+    id: 'lit-essay',
+    subjectId: 'literature',
+    group: 'co_ban',
+    label: 'Viết đoạn và bài nghị luận',
+    hamNguyenTo: 'bang',
+    examRelevance: 'high',
+    minQuestions: 30,
+    questionTypes: ['mcq'],
+    description: 'Luyện bố cục, luận điểm, luận cứ và cách triển khai đoạn văn 200 chữ.',
+  },
+  {
+    id: 'lit-analysis',
+    subjectId: 'literature',
+    group: 'co_ban',
+    label: 'Nghị luận văn học',
+    hamNguyenTo: 'phong',
+    examRelevance: 'high',
+    minQuestions: 30,
+    questionTypes: ['mcq'],
+    description: 'Rèn dàn ý cảm nhận tác phẩm, nhân vật và hình ảnh thơ theo hướng ngắn gọn, rõ ý.',
+  },
+
+  // Science
+  {
+    id: 'sci-physics',
+    subjectId: 'science',
+    group: 'co_ban',
+    label: 'Vật lý (Lớp 9)',
     hamNguyenTo: 'thach',
     examRelevance: 'medium',
-    minQuestions: 15,
+    minQuestions: 30,
     questionTypes: ['mcq'],
-    description: 'Câu đơn, câu ghép, câu phức. Thành phần chính (chủ ngữ, vị ngữ), thành phần phụ, thành phần biệt lập.',
+    description: 'Hệ thống hóa lý thuyết Điện học, Điện từ học, Quang học và Sự bảo toàn năng lượng.',
   },
   {
-    id: 'lit-vietnamese-cohesion',
-    subjectId: 'literature',
-    group: 'chuyen_sau',
-    label: 'Tiếng Việt — Phép liên kết, Phép nối',
-    labelEN: 'Vietnamese Cohesion Devices',
-    hamNguyenTo: 'thach',
-    examRelevance: 'medium',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Phép lặp, phép thế, phép liên tưởng, phép nối. Xác định phép liên kết trong đoạn văn.',
-  },
-  {
-    id: 'lit-poem-analysis',
-    subjectId: 'literature',
-    group: 'chuyen_sau',
-    label: 'Cảm nhận/Phân tích đoạn thơ (Viết đoạn 200 chữ)',
-    labelEN: 'Poetry Analysis — Short Essay (~200 words)',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['short-answer'],
-    description: 'Viết đoạn văn ~200 chữ ghi lại cảm nghĩ hoặc phân tích nghệ thuật của đoạn thơ cho sẵn. Phần 1 Câu 2 đề tuyển sinh (2đ). Chấm bằng AI §4.2.',
-  },
-  {
-    id: 'lit-social-essay',
-    subjectId: 'literature',
-    group: 'chuyen_sau',
-    label: 'Viết bài NLXH (vấn đề đời sống)',
-    labelEN: 'Social Issue Argumentative Essay',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 10,
-    questionTypes: ['short-answer'],
-    description: 'Viết bài nghị luận xã hội về vấn đề đời sống (đồng tình/phản đối + lí lẽ + bằng chứng, hoặc đề xuất giải pháp). Phần 2 Câu 2 đề tuyển sinh (4đ). Chấm bằng AI §4.2.',
-  },
-  {
-    id: 'lit-literary-essay',
-    subjectId: 'literature',
-    group: 'chuyen_sau',
-    label: 'Viết NLVH (cảm nhận nhân vật/tác phẩm)',
-    labelEN: 'Literary Analysis Essay',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 10,
-    questionTypes: ['short-answer', 'proof'],
-    description: 'Phân tích nhân vật, hình tượng, tình huống trong tác phẩm văn học. Rubric: dàn ý, dẫn chứng, giọng điệu nghệ thuật. Chấm bằng AI §4.2.',
-  },
-  {
-    id: 'lit-text-genre',
-    subjectId: 'literature',
-    group: 'chuyen_sau',
-    label: 'Nhận biết thể loại văn bản',
-    labelEN: 'Text Genre Identification',
+    id: 'sci-chemistry',
+    subjectId: 'science',
+    group: 'co_ban',
+    label: 'Hóa học (Lớp 9)',
     hamNguyenTo: 'hoa',
     examRelevance: 'medium',
-    minQuestions: 15,
+    minQuestions: 30,
     questionTypes: ['mcq'],
-    description: 'Phân biệt thơ/truyện/kí/nghị luận/thông tin. Nhận biết đặc trưng thể loại: phương thức biểu đạt, bố cục, giọng điệu.',
+    description: 'Các hợp chất vô cơ, Kim loại, Phi kim và Sơ lược hóa học hữu cơ.',
   },
   {
-    id: 'lit-work-knowledge',
-    subjectId: 'literature',
-    group: 'chuyen_sau',
-    label: 'Kiến thức tác giả-tác phẩm lớp 9',
-    labelEN: 'Author & Work Knowledge (Grade 9)',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'low',
-    minQuestions: 15,
+    id: 'sci-biology',
+    subjectId: 'science',
+    group: 'co_ban',
+    label: 'Sinh học (Lớp 9)',
+    hamNguyenTo: 'bang',
+    examRelevance: 'medium',
+    minQuestions: 30,
     questionTypes: ['mcq'],
-    description: 'Tác giả, hoàn cảnh sáng tác, thể loại các tác phẩm trong chương trình GDPT 2018 lớp 9: Truyện Kiều, Chuyện người con gái Nam Xương, Bếp lửa, Kim-Kiều gặp gỡ...',
+    description: 'Di truyền học, Biến dị, Sinh vật và Môi trường sống.',
   },
-];
 
-// ==================== KHOA HỌC TỰ NHIÊN — 14 chuyên đề ====================
-const SCIENCE_TOPICS: CoreKnowledgeTopic[] = [
-  // Vật lý
+  // History & Geography
   {
-    id: 'sci-phy-electricity',
-    subjectId: 'science',
+    id: 'hist-history',
+    subjectId: 'history_geography',
     group: 'co_ban',
-    label: 'Điện học — Điện trở, Định luật Ôm, Mạch nối tiếp/song song',
-    labelEN: 'Electricity: Ohm\'s Law & Circuits',
+    label: 'Lịch sử lớp 9',
     hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq', 'short-answer'],
-    description: 'Điện trở, công thức Ohm I=U/R, mạch nối tiếp và song song, công suất điện. Chủ đề trọng tâm KHTN lớp 9.',
-  },
-  {
-    id: 'sci-phy-electromagnet',
-    subjectId: 'science',
-    group: 'co_ban',
-    label: 'Điện từ học — Nam châm, Cảm ứng điện từ',
-    labelEN: 'Electromagnetism',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 20,
+    examRelevance: 'medium',
+    minQuestions: 30,
     questionTypes: ['mcq'],
-    description: 'Từ trường, nam châm, lực điện từ, cảm ứng điện từ, nguyên tắc tạo dòng điện xoay chiều, máy phát điện, máy biến áp.',
+    description: 'Lịch sử thế giới hiện đại từ 1945 và tiến trình cách mạng Việt Nam từ năm 1919.',
   },
   {
-    id: 'sci-phy-optics',
-    subjectId: 'science',
+    id: 'hist-geography',
+    subjectId: 'history_geography',
     group: 'co_ban',
-    label: 'Quang học — Thấu kính hội tụ/phân kỳ',
-    labelEN: 'Optics: Lenses',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq', 'short-answer'],
-    description: 'Khúc xạ ánh sáng, thấu kính hội tụ, thấu kính phân kỳ, ảnh thật/ảo qua thấu kính, kính lúp.',
-  },
-  {
-    id: 'sci-phy-energy',
-    subjectId: 'science',
-    group: 'co_ban',
-    label: 'Năng lượng — Công suất, Hiệu suất',
-    labelEN: 'Energy, Power & Efficiency',
+    label: 'Địa lý lớp 9',
     hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq', 'short-answer'],
-    description: 'Công, công suất, hiệu suất, bảo toàn năng lượng, năng lượng tái tạo, vòng năng lượng trên Trái Đất.',
-  },
-  // Hóa học
-  {
-    id: 'sci-chem-oxacid',
-    subjectId: 'science',
-    group: 'co_ban',
-    label: 'Oxit — Axit — Bazơ — Muối',
-    labelEN: 'Oxide, Acid, Base & Salt',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 20,
+    examRelevance: 'medium',
+    minQuestions: 30,
     questionTypes: ['mcq'],
-    description: 'Phân loại, tính chất hóa học của Oxit (axit/bazơ), Axit (mạnh/yếu), Bazơ (tan/không tan), Muối. Chuỗi phản ứng hóa học.',
+    description: 'Địa lý dân cư Việt Nam và sự phát triển, phân bố của các ngành kinh tế.',
   },
-  {
-    id: 'sci-chem-periodic',
-    subjectId: 'science',
-    group: 'co_ban',
-    label: 'Bảng tuần hoàn & Tính chất hóa học theo nhóm',
-    labelEN: 'Periodic Table & Element Groups',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq'],
-    description: 'Cấu trúc bảng tuần hoàn, quy luật biến đổi tính chất, ký hiệu nguyên tố phổ biến, nhóm nguyên tố điển hình.',
-  },
-  {
-    id: 'sci-chem-metal',
-    subjectId: 'science',
-    group: 'co_ban',
-    label: 'Kim loại — Tính chất, Dãy hoạt động',
-    labelEN: 'Metals & Reactivity Series',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq'],
-    description: 'Tính chất vật lý/hóa học của kim loại, dãy hoạt động hóa học, ăn mòn kim loại, hợp kim thông dụng.',
-  },
-  {
-    id: 'sci-chem-nonmetal',
-    subjectId: 'science',
-    group: 'co_ban',
-    label: 'Phi kim — Clo, Cacbon, Silic, Lưu huỳnh',
-    labelEN: 'Nonmetals',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Tính chất và ứng dụng các phi kim điển hình: Clo (Cl₂), Cacbon (C), Silic (Si), Lưu huỳnh (S).',
-  },
-  {
-    id: 'sci-chem-organic',
-    subjectId: 'science',
-    group: 'co_ban',
-    label: 'Hóa hữu cơ sơ lược — Hiđrocacbon, Rượu, Polime',
-    labelEN: 'Introductory Organic Chemistry',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq'],
-    description: 'Alkane, Alkene, Ethylic alcohol, Acetic acid, Lipid, Carbohydrate (glucose, tinh bột, cellulose), Protein, Polymer. Ứng dụng thực tiễn.',
-  },
-  // Sinh học
-  {
-    id: 'sci-bio-genetics-mendelian',
-    subjectId: 'science',
-    group: 'co_ban',
-    label: 'Di truyền học — Quy luật Mendel',
-    labelEN: 'Mendelian Genetics',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq', 'short-answer'],
-    description: 'Quy luật phân li, phân li độc lập. Lai một cặp/hai cặp tính trạng, lập bảng lai, tỉ lệ kiểu gen/kiểu hình.',
-  },
-  {
-    id: 'sci-bio-dna-gene',
-    subjectId: 'science',
-    group: 'co_ban',
-    label: 'Cấu trúc ADN, Gen, ARN, Protein',
-    labelEN: 'DNA, Gene, RNA & Protein',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq'],
-    description: 'Cấu trúc ADN (nguyên tắc bổ sung), cơ chế nhân đôi ADN, phiên mã ARN, dịch mã Protein, đột biến gen/NST.',
-  },
-  {
-    id: 'sci-bio-evolution',
-    subjectId: 'science',
-    group: 'co_ban',
-    label: 'Biến dị — Đột biến gen, NST, Biến dị tổ hợp',
-    labelEN: 'Variation: Mutation & Recombination',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Đột biến gen (điểm), đột biến nhiễm sắc thể (cấu trúc/số lượng), biến dị tổ hợp, ứng dụng trong chọn giống.',
-  },
-  {
-    id: 'sci-bio-ecosystem',
-    subjectId: 'science',
-    group: 'co_ban',
-    label: 'Hệ sinh thái — Quần thể, Quần xã, Lưới thức ăn',
-    labelEN: 'Ecosystem, Population & Community',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq'],
-    description: 'Quần thể sinh vật, quần xã sinh vật, hệ sinh thái, lưới thức ăn, chuỗi thức ăn, chu trình vật chất.',
-  },
-  {
-    id: 'sci-bio-environment',
-    subjectId: 'science',
-    group: 'co_ban',
-    label: 'Môi trường & Bảo vệ môi trường',
-    labelEN: 'Environment & Conservation',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Ô nhiễm môi trường (nước, không khí, đất), biến đổi khí hậu, bảo tồn đa dạng sinh học, phát triển bền vững.',
-  },
-];
 
-// ==================== LỊCH SỬ & ĐỊA LÝ — 11 chuyên đề ====================
-const HISTORY_GEOGRAPHY_TOPICS: CoreKnowledgeTopic[] = [
-  // Lịch sử lớp 9 GDPT 2018: bao phủ 1918–1945
+  // Civics
   {
-    id: 'his-world-ww2-background',
-    subjectId: 'history_geography',
+    id: 'civ-civics',
+    subjectId: 'civics',
     group: 'co_ban',
-    label: 'Thế giới 1918–1939 — Liên Xô, Đại suy thoái, Chủ nghĩa phát xít',
-    labelEN: 'Interwar Period 1918–1939',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq'],
-    description: 'Liên Xô xây dựng CNXH, khủng hoảng kinh tế 1929–1933, sự nổi lên của chủ nghĩa phát xít Đức-Ý-Nhật.',
-  },
-  {
-    id: 'his-world-ww2',
-    subjectId: 'history_geography',
-    group: 'co_ban',
-    label: 'Chiến tranh thế giới thứ hai 1939–1945',
-    labelEN: 'World War II 1939–1945',
+    label: 'Đạo đức & Pháp luật',
     hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 20,
+    examRelevance: 'medium',
+    minQuestions: 30,
     questionTypes: ['mcq'],
-    description: 'Nguyên nhân, diễn biến chính (Dunkirk, Trân Châu Cảng, Stalingrad, D-Day, Hiroshima), kết quả và hậu quả.',
+    description: 'Nghĩa vụ công dân, quyền tự do dân chủ và trách nhiệm với gia đình, xã hội.',
   },
-  {
-    id: 'his-world-asia-1918',
-    subjectId: 'history_geography',
-    group: 'co_ban',
-    label: 'Châu Á 1918–1945 — Nhật, Trung Quốc, Ấn Độ, Đông Nam Á',
-    labelEN: 'Asia 1918–1945',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Nhật Bản phát xít hóa, Trung Quốc (phong trào Ngũ Tứ, Quốc-Cộng), Ấn Độ (Gandhi), phong trào dân tộc Đông Nam Á.',
-  },
-  {
-    id: 'his-vn-colonial',
-    subjectId: 'history_geography',
-    group: 'co_ban',
-    label: 'Việt Nam 1918–1930 — Khai thác thuộc địa lần 2, phong trào dân tộc',
-    labelEN: 'Vietnam 1918–1930: Colonial Period',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq'],
-    description: 'Khai thác thuộc địa lần 2 của Pháp, biến đổi kinh tế-xã hội, các phong trào yêu nước (Duy Tân, VNQDĐ, Hội VNCMTN), vai trò Nguyễn Ái Quốc.',
-  },
-  {
-    id: 'his-vn-party',
-    subjectId: 'history_geography',
-    group: 'co_ban',
-    label: 'Thành lập Đảng CSVN (1930) & phong trào cách mạng 1930–1939',
-    labelEN: 'Communist Party of Vietnam Founded & Revolution 1930–1939',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq'],
-    description: 'Hội nghị thành lập Đảng CSVN (3/2/1930), phong trào Xô viết Nghệ-Tĩnh 1930–1931, phong trào dân chủ 1936–1939.',
-  },
-  {
-    id: 'his-vn-aug-revolution',
-    subjectId: 'history_geography',
-    group: 'co_ban',
-    label: 'Cách mạng tháng Tám 1945',
-    labelEN: 'August Revolution 1945',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq'],
-    description: 'Bối cảnh Pháp-Nhật đảo chính, Tổng khởi nghĩa, thành lập nước Việt Nam DCCH (2/9/1945). Ý nghĩa lịch sử.',
-  },
-  // Địa lý lớp 9 GDPT 2018
-  {
-    id: 'geo-population',
-    subjectId: 'history_geography',
-    group: 'co_ban',
-    label: 'Dân cư — Dân tộc, Dân số, Phân bố, Chất lượng cuộc sống',
-    labelEN: 'Vietnamese Population & Demographics',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq'],
-    description: 'Đặc điểm dân tộc (54 dân tộc), quy mô và gia tăng dân số, phân bố dân cư (nông thôn/thành thị), lao động và việc làm, chất lượng cuộc sống.',
-  },
-  {
-    id: 'geo-agri-forestry-fish',
-    subjectId: 'history_geography',
-    group: 'co_ban',
-    label: 'Nông-Lâm-Ngư nghiệp & Nông nghiệp xanh',
-    labelEN: 'Agriculture, Forestry & Fishery',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq'],
-    description: 'Nhân tố ảnh hưởng, phân bố và tình hình phát triển nông-lâm-thủy sản Việt Nam, định hướng nông nghiệp xanh bền vững.',
-  },
-  {
-    id: 'geo-industry',
-    subjectId: 'history_geography',
-    group: 'co_ban',
-    label: 'Công nghiệp — Các ngành chủ yếu & Công nghiệp xanh',
-    labelEN: 'Industrial Development',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq'],
-    description: 'Các ngành công nghiệp chủ yếu, khu công nghiệp, phân bố không gian, công nghiệp xanh và chuyển đổi số.',
-  },
-  {
-    id: 'geo-service',
-    subjectId: 'history_geography',
-    group: 'co_ban',
-    label: 'Dịch vụ — Thương mại, Du lịch',
-    labelEN: 'Service Sector: Trade & Tourism',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Thương mại nội địa và xuất nhập khẩu, du lịch Việt Nam (tài nguyên, phân bố, thách thức).',
-  },
-  {
-    id: 'geo-regions-7',
-    subjectId: 'history_geography',
-    group: 'co_ban',
-    label: '7 Vùng kinh tế — đặc điểm tự nhiên, kinh tế nổi bật',
-    labelEN: 'Vietnam\'s 7 Economic Regions',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq', 'short-answer'],
-    description: 'Trung du & miền núi Bắc Bộ, Đồng bằng sông Hồng, Bắc Trung Bộ, Duyên hải Nam Trung Bộ, Tây Nguyên, Đông Nam Bộ, Đồng bằng sông Cửu Long.',
-  },
-];
 
-// ==================== GIÁO DỤC CÔNG DÂN — 10 chuyên đề ====================
-const CIVICS_TOPICS: CoreKnowledgeTopic[] = [
+  // Technology
   {
-    id: 'civ-ideal-life',
-    subjectId: 'civics',
-    group: 'co_ban',
-    label: 'Sống có lí tưởng',
-    labelEN: 'Living with Ideals',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Lí tưởng sống của thế hệ trẻ, ý nghĩa của lí tưởng trong cuộc sống, gương người có lí tưởng cao đẹp. Bài 1 GDCD lớp 9 GDPT 2018.',
-  },
-  {
-    id: 'civ-tolerance',
-    subjectId: 'civics',
-    group: 'co_ban',
-    label: 'Khoan dung',
-    labelEN: 'Tolerance & Forgiveness',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Khái niệm khoan dung, biểu hiện, ý nghĩa, phân biệt khoan dung với dung túng. Bài 2 GDCD lớp 9.',
-  },
-  {
-    id: 'civ-community',
-    subjectId: 'civics',
-    group: 'co_ban',
-    label: 'Tích cực tham gia các hoạt động cộng đồng',
-    labelEN: 'Community Participation',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Ý nghĩa của hoạt động cộng đồng, các hình thức tham gia, trách nhiệm của học sinh. Bài 3 GDCD lớp 9.',
-  },
-  {
-    id: 'civ-fairness',
-    subjectId: 'civics',
-    group: 'co_ban',
-    label: 'Khách quan và công bằng',
-    labelEN: 'Objectivity & Fairness',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Khái niệm khách quan, công bằng trong đánh giá và ứng xử. Ý nghĩa trong cuộc sống và công việc. Bài 4 GDCD lớp 9.',
-  },
-  {
-    id: 'civ-peace',
-    subjectId: 'civics',
-    group: 'co_ban',
-    label: 'Bảo vệ hoà bình',
-    labelEN: 'Protecting Peace',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Hòa bình và vai trò của hòa bình, nguyên nhân chiến tranh, trách nhiệm bảo vệ hòa bình. Bài 5 GDCD lớp 9.',
-  },
-  {
-    id: 'civ-time-management',
-    subjectId: 'civics',
-    group: 'co_ban',
-    label: 'Quản lí thời gian hiệu quả',
-    labelEN: 'Effective Time Management',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Tầm quan trọng của thời gian, các kỹ năng lập kế hoạch và quản lí thời gian, rào cản và giải pháp. Bài 6 GDCD lớp 9.',
-  },
-  {
-    id: 'civ-adaptability',
-    subjectId: 'civics',
-    group: 'co_ban',
-    label: 'Thích ứng với thay đổi',
-    labelEN: 'Adaptability to Change',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Thay đổi trong cuộc sống, tầm quan trọng của thích ứng, kỹ năng thích ứng linh hoạt. Bài 7 GDCD lớp 9.',
-  },
-  {
-    id: 'civ-smart-consumer',
-    subjectId: 'civics',
-    group: 'co_ban',
-    label: 'Tiêu dùng thông minh',
-    labelEN: 'Smart Consumption',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Quyền của người tiêu dùng, tiêu dùng bền vững, nhận biết hàng giả/kém chất lượng, trách nhiệm xã hội khi tiêu dùng. Bài 8 GDCD lớp 9.',
-  },
-  {
-    id: 'civ-law-violation',
-    subjectId: 'civics',
-    group: 'co_ban',
-    label: 'Vi phạm pháp luật và trách nhiệm pháp lí',
-    labelEN: 'Legal Violations & Legal Responsibility',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Các loại vi phạm pháp luật (hình sự, dân sự, hành chính, kỷ luật), trách nhiệm pháp lí tương ứng, ví dụ thực tiễn. Bài 9 GDCD lớp 9.',
-  },
-  {
-    id: 'civ-business-tax',
-    subjectId: 'civics',
-    group: 'co_ban',
-    label: 'Quyền tự do kinh doanh và nghĩa vụ nộp thuế',
-    labelEN: 'Freedom of Business & Tax Obligation',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Quyền tự do kinh doanh theo pháp luật, các loại thuế, nghĩa vụ nộp thuế của cá nhân và tổ chức. Bài 10 GDCD lớp 9.',
-  },
-];
-
-// ==================== CÔNG NGHỆ — 5 chuyên đề ====================
-const TECHNOLOGY_TOPICS: CoreKnowledgeTopic[] = [
-  {
-    id: 'tech-career-jobs',
+    id: 'tech-technology',
     subjectId: 'technology',
     group: 'co_ban',
-    label: 'Nghề nghiệp trong lĩnh vực kĩ thuật, công nghệ',
-    labelEN: 'Engineering & Technology Careers',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 15,
+    label: 'Công nghệ lắp đặt & Đời sống',
+    hamNguyenTo: 'phong',
+    examRelevance: 'medium',
+    minQuestions: 30,
     questionTypes: ['mcq'],
-    description: 'Các nghề nghiệp kỹ thuật-công nghệ phổ biến, đặc điểm, yêu cầu và cơ hội việc làm. Chủ đề 1 Công nghệ lớp 9 GDPT 2018.',
+    description: 'Lý thuyết mạch điện sinh hoạt trong nhà và quy trình lắp đặt an toàn.',
   },
+
+  // Informatics
   {
-    id: 'tech-career-education',
-    subjectId: 'technology',
+    id: 'info-informatics',
+    subjectId: 'informatics',
     group: 'co_ban',
-    label: 'Giáo dục kĩ thuật, công nghệ trong hệ thống GDQD',
-    labelEN: 'Tech Education in Vietnam\'s Education System',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 15,
+    label: 'Lập trình & Mạng máy tính',
+    hamNguyenTo: 'loi',
+    examRelevance: 'medium',
+    minQuestions: 30,
     questionTypes: ['mcq'],
-    description: 'Vị trí của giáo dục kỹ thuật-công nghệ, các ngành đào tạo, hệ thống trường/học viện kỹ thuật. Chủ đề 2.',
+    description: 'Tư duy thuật toán căn bản ( Scratch / Python ), Cơ sở dữ liệu và sử dụng Internet an toàn.',
   },
+
+  // Arts
   {
-    id: 'tech-career-market',
-    subjectId: 'technology',
+    id: 'arts-arts',
+    subjectId: 'arts',
     group: 'co_ban',
-    label: 'Thị trường lao động kĩ thuật, công nghệ tại Việt Nam',
-    labelEN: 'Vietnam Tech Labor Market',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 15,
+    label: 'Âm nhạc & Mỹ thuật',
+    hamNguyenTo: 'thuy',
+    examRelevance: 'medium',
+    minQuestions: 30,
     questionTypes: ['mcq'],
-    description: 'Nhu cầu nhân lực kỹ thuật, xu hướng thị trường lao động, kỹ năng cần thiết thời đại 4.0. Chủ đề 3.',
-  },
-  {
-    id: 'tech-career-choice',
-    subjectId: 'technology',
-    group: 'co_ban',
-    label: 'Lựa chọn nghề nghiệp trong lĩnh vực kĩ thuật, công nghệ',
-    labelEN: 'Career Choice in Tech & Engineering',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Tiêu chí lựa chọn nghề phù hợp (năng lực, sở thích, giá trị nghề nghiệp), hướng dẫn lập kế hoạch nghề nghiệp. Chủ đề 4.',
-  },
-  {
-    id: 'tech-circuit-install',
-    subjectId: 'technology',
-    group: 'co_ban',
-    label: 'Mô đun lắp đặt mạng điện trong nhà',
-    labelEN: 'Household Electrical Installation',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq'],
-    description: 'Thiết bị điện sinh hoạt, dụng cụ đo, quy trình lắp đặt an toàn, kiểm tra mạch điện. Mô đun thực hành Công nghệ lớp 9.',
-  },
+    description: 'Nhạc lý cơ bản, các nhạc sĩ tiêu biểu và Mỹ thuật ứng dụng vẽ tranh đề tài.',
+  }
 ];
 
-// ==================== TIN HỌC — 6 chuyên đề ====================
-const INFORMATICS_TOPICS: CoreKnowledgeTopic[] = [
-  {
-    id: 'inf-digital-world',
-    subjectId: 'informatics',
-    group: 'co_ban',
-    label: 'Chủ đề A — Máy tính và cộng đồng',
-    labelEN: 'Computer & Community (Theme A)',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Bộ xử lí thông tin, thế giới kỹ thuật số, ứng dụng máy tính trong cuộc sống, học tập và công việc.',
-  },
-  {
-    id: 'inf-data-manage',
-    subjectId: 'informatics',
-    group: 'co_ban',
-    label: 'Chủ đề C — Tổ chức lưu trữ, tìm kiếm, trao đổi thông tin',
-    labelEN: 'Data Storage, Search & Exchange (Theme C)',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Tổ chức lưu trữ dữ liệu, tìm kiếm thông tin hiệu quả trên Internet, chất lượng và đánh giá thông tin, cộng tác trực tuyến.',
-  },
-  {
-    id: 'inf-ethics-law',
-    subjectId: 'informatics',
-    group: 'co_ban',
-    label: 'Chủ đề D — Đạo đức, pháp luật và văn hoá trong môi trường số',
-    labelEN: 'Digital Ethics, Law & Culture (Theme D)',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Quyền tác giả, bản quyền phần mềm, vi phạm pháp luật trực tuyến, ứng xử văn minh trên mạng, bảo vệ thông tin cá nhân.',
-  },
-  {
-    id: 'inf-digital-tools',
-    subjectId: 'informatics',
-    group: 'co_ban',
-    label: 'Chủ đề E — Ứng dụng tin học: Bảng tính, Trình chiếu, Biên tập video',
-    labelEN: 'Digital Applications: Spreadsheet, Presentation, Video (Theme E)',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq'],
-    description: 'Bảng tính nâng cao (hàm IF, COUNTIF, SUMIF, xác thực dữ liệu), trình chiếu (PowerPoint/Google Slides), biên tập video cơ bản.',
-  },
-  {
-    id: 'inf-algorithm',
-    subjectId: 'informatics',
-    group: 'co_ban',
-    label: 'Chủ đề F — Giải quyết vấn đề với máy tính: Thuật toán, Lập trình',
-    labelEN: 'Problem Solving: Algorithm & Programming (Theme F)',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 20,
-    questionTypes: ['mcq', 'short-answer'],
-    description: 'Các bước giải bài toán bằng máy tính, thuật toán (sơ đồ khối, mã giả), lập trình cơ bản (Scratch hoặc Python): biến, điều kiện, vòng lặp, hàm.',
-  },
-  {
-    id: 'inf-career',
-    subjectId: 'informatics',
-    group: 'co_ban',
-    label: 'Chủ đề G — Hướng nghiệp với tin học',
-    labelEN: 'IT Career Orientation (Theme G)',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 10,
-    questionTypes: ['mcq'],
-    description: 'Nghề phần mềm, đa phương tiện, vận hành hệ thống, AI và dữ liệu lớn. Định hướng nghề nghiệp trong ngành công nghệ thông tin.',
-  },
-];
-
-// ==================== NGHỆ THUẬT — 6 chuyên đề ====================
-const ARTS_TOPICS: CoreKnowledgeTopic[] = [
-  {
-    id: 'art-music-theory',
-    subjectId: 'arts',
-    group: 'co_ban',
-    label: 'Âm nhạc — Lí thuyết: Quãng, Hợp âm, Nhịp, Tiết tấu',
-    labelEN: 'Music Theory: Interval, Chord, Meter & Rhythm',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Quãng âm, hợp âm ba/bảy, các loại nhịp (2/4, 3/4, 4/4, 6/8), tiết tấu và phách. Nền tảng lí thuyết âm nhạc lớp 9.',
-  },
-  {
-    id: 'art-music-composers',
-    subjectId: 'arts',
-    group: 'co_ban',
-    label: 'Âm nhạc — Thường thức: Nhạc sĩ tiêu biểu VN & Thế giới',
-    labelEN: 'Music Appreciation: Notable Composers',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Nhạc sĩ Việt Nam tiêu biểu (Nguyễn Văn Tý, Đỗ Nhuận...) và thế giới (Beethoven, Mozart...). Tác phẩm nổi tiếng, phong cách âm nhạc.',
-  },
-  {
-    id: 'art-music-listening',
-    subjectId: 'arts',
-    group: 'co_ban',
-    label: 'Âm nhạc — Nghe và nhận biết tác phẩm',
-    labelEN: 'Music Listening & Recognition',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Nhận biết nhạc cụ, thể loại âm nhạc (thính phòng, dân gian, pop...), tính chất âm nhạc qua nghe.',
-  },
-  {
-    id: 'art-visual-figure',
-    subjectId: 'arts',
-    group: 'co_ban',
-    label: 'Mĩ thuật tạo hình — Kí họa dáng người, Nhân vật & Sân khấu',
-    labelEN: 'Visual Art: Figure Drawing & Character Design',
-    hamNguyenTo: 'bang',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Kí họa dáng người (tỉ lệ, đường nét), tạo hình nhân vật rối dây, thiết kế sân khấu biểu diễn. Mĩ thuật tạo hình lớp 9.',
-  },
-  {
-    id: 'art-visual-apply',
-    subjectId: 'arts',
-    group: 'co_ban',
-    label: 'Mĩ thuật ứng dụng — Thiết kế thời trang, Nhận diện thương hiệu',
-    labelEN: 'Applied Visual Art: Fashion Design & Brand Identity',
-    hamNguyenTo: 'hoa',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Thiết kế phụ kiện thời trang, bộ nhận diện thương hiệu, bìa sách, tranh minh họa, đồ gia dụng. Mĩ thuật ứng dụng lớp 9.',
-  },
-  {
-    id: 'art-visual-history',
-    subjectId: 'arts',
-    group: 'co_ban',
-    label: 'Mĩ thuật thường thức — Nghệ thuật Đương đại VN & Thế giới',
-    labelEN: 'Art History: Contemporary Vietnamese & World Art',
-    hamNguyenTo: 'thach',
-    examRelevance: 'high',
-    minQuestions: 15,
-    questionTypes: ['mcq'],
-    description: 'Nghệ thuật đương đại Việt Nam, các phong trào mỹ thuật thế giới (Ấn tượng, Trừu tượng, Pop Art...). Nhận biết phong cách nghệ thuật.',
-  },
-];
-
-// ==================== ĐẠI HỌC - COMPUTER SCIENCE TOPICS ====================
-const CS_SUBJECTS_TOPICS_MAP: Record<string, { label: string; labelEN: string }[]> = {
-  cs_programming: [
-    { label: 'Cơ sở lập trình', labelEN: 'Programming Fundamentals' },
-    { label: 'Lập trình hướng đối tượng (OOP)', labelEN: 'Object-Oriented Programming (OOP)' }
-  ],
-  cs_algorithms_structures: [
-    { label: 'Cấu trúc dữ liệu', labelEN: 'Data Structures' },
-    { label: 'Thuật toán', labelEN: 'Algorithms' },
-    { label: 'Toán rời rạc', labelEN: 'Discrete Mathematics' }
-  ],
-  cs_computer_systems: [
-    { label: 'Kiến trúc máy tính', labelEN: 'Computer Architecture' },
-    { label: 'Hệ điều hành', labelEN: 'Operating Systems' },
-    { label: 'Hệ thống thời gian thực', labelEN: 'Real-Time Systems' }
-  ],
-  cs_database_data: [
-    { label: 'Hệ cơ sở dữ liệu', labelEN: 'Database Systems' },
-    { label: 'Khoa học dữ liệu', labelEN: 'Data Science' }
-  ],
-  cs_networking_security: [
-    { label: 'Mạng máy tính', labelEN: 'Computer Networks' },
-    { label: 'An ninh mạng', labelEN: 'Cybersecurity' }
-  ],
-  cs_software_engineering: [
-    { label: 'Công nghệ phần mềm', labelEN: 'Software Engineering' },
-    { label: 'DevOps & Triển khai phần mềm', labelEN: 'DevOps & Software Deployment' },
-    { label: 'Hệ thống phân tán', labelEN: 'Distributed Systems' }
-  ],
-  cs_web_app_development: [
-    { label: 'Phát triển Web', labelEN: 'Web Development' },
-    { label: 'Phát triển ứng dụng di động', labelEN: 'Mobile Development' },
-    { label: 'Tương tác người - máy (HCI)', labelEN: 'Human-Computer Interaction (HCI)' }
-  ],
-  cs_cloud_computing: [
-    { label: 'Điện toán đám mây', labelEN: 'Cloud Computing' }
-  ],
-  cs_artificial_intelligence: [
-    { label: 'Trí tuệ nhân tạo', labelEN: 'Artificial Intelligence' },
-    { label: 'Học máy', labelEN: 'Machine Learning' },
-    { label: 'Học sâu', labelEN: 'Deep Learning' }
-  ],
-  cs_graphics_advanced_computing: [
-    { label: 'Đồ họa máy tính', labelEN: 'Computer Graphics' },
-    { label: 'Thiết kế trình biên dịch', labelEN: 'Compiler Design' },
-    { label: 'Tính toán song song', labelEN: 'Parallel Computing' }
-  ],
-  cs_embedded_systems: [
-    { label: 'Hệ thống nhúng', labelEN: 'Embedded Systems' }
-  ],
-  cs_robotics_fundamentals: [
-    { label: 'Cơ sở Robot học', labelEN: 'Robotics Fundamentals' }
-  ],
-  cs_robot_programming: [
-    { label: 'Lập trình Robot', labelEN: 'Robot Programming' },
-    { label: 'Hệ điều hành Robot (ROS)', labelEN: 'ROS (Robot Operating System)' }
-  ],
-  cs_robot_mechanics: [
-    { label: 'Động học Robot', labelEN: 'Robot Kinematics' },
-    { label: 'Động lực học Robot', labelEN: 'Robot Dynamics' },
-    { label: 'Hệ thống điều khiển Robot', labelEN: 'Robot Control Systems' }
-  ],
-  cs_robot_intelligence: [
-    { label: 'Trí tuệ nhân tạo cho Robot', labelEN: 'AI for Robotics' },
-    { label: 'Hệ thống tự hành', labelEN: 'Autonomous Systems' }
-  ],
-  cs_navigation_motion: [
-    { label: 'Quy hoạch quỹ đạo', labelEN: 'Motion Planning' },
-    { label: 'Dẫn đường tự hành', labelEN: 'Autonomous Navigation' },
-    { label: 'Định vị và bản đồ hóa đồng thời (SLAM)', labelEN: 'SLAM (Simultaneous Localization and Mapping)' }
-  ],
-  cs_robot_perception: [
-    { label: 'Nhận thức Robot', labelEN: 'Robot Perception' },
-    { label: 'Thị giác máy tính cho Robot', labelEN: 'Computer Vision for Robotics' },
-    { label: 'Tích hợp cảm biến', labelEN: 'Sensor Fusion' }
-  ],
-  cs_embedded_hardware: [
-    { label: 'Robot học nhúng', labelEN: 'Embedded Robotics' },
-    { label: 'Cơ điện tử', labelEN: 'Mechatronics' },
-    { label: 'Internet vạn vật cho Robot (IoT)', labelEN: 'IoT for Robotics' }
-  ],
-  cs_specialized_robotics: [
-    { label: 'Robot công nghiệp', labelEN: 'Industrial Robotics' },
-    { label: 'Robot di động', labelEN: 'Mobile Robotics' },
-    { label: 'Robot mô phỏng người (Humanoid)', labelEN: 'Humanoid Robotics' },
-    { label: 'Hệ thống nhiều Robot', labelEN: 'Multi-Robot Systems' }
-  ],
-  cs_human_interaction: [
-    { label: 'Tương tác người - Robot (HRI)', labelEN: 'Human-Robot Interaction (HRI)' }
-  ],
-  cs_robotics_engineering: [
-    { label: 'Mô phỏng Robot', labelEN: 'Robotics Simulation' },
-    { label: 'Đồ án tốt nghiệp Robot', labelEN: 'Robotics Capstone Project' }
-  ]
-};
-
-const hams: HamNguyenTo[] = ['hoa', 'bang', 'thach'];
-const CS_TOPICS: CoreKnowledgeTopic[] = [];
-Object.entries(CS_SUBJECTS_TOPICS_MAP).forEach(([subId, topicsList]) => {
-  topicsList.forEach((topicInfo, index) => {
-    const cleanId = topicInfo.labelEN.toLowerCase()
-      .replace(/[^a-z0-9]/g, '-')
-      .replace(/-+/g, '-');
-    
-    CS_TOPICS.push({
-      id: `cs-${cleanId}`,
-      subjectId: subId as SubjectId,
-      gradeTier: 13,
-      group: index === 0 ? 'chuyen_sau' : 'co_ban',
-      label: topicInfo.label,
-      labelEN: topicInfo.labelEN,
-      hamNguyenTo: hams[index % 3],
-      examRelevance: 'high',
-      minQuestions: 10,
-      questionTypes: ['mcq', 'short-answer'],
-      description: `Chuyên đề ${topicInfo.label} thuộc môn ${subId}.`
-    });
-  });
-});
-
-// ==================== TẤT CẢ TOPICS ====================
-const BASE_CORE_KNOWLEDGE_TOPICS: CoreKnowledgeTopic[] = [
-  ...ENGLISH_TOPICS,       // 19
-  ...MATH_TOPICS,          // 18
-  ...LITERATURE_TOPICS,    // 13
-  ...SCIENCE_TOPICS,       // 14
-  ...HISTORY_GEOGRAPHY_TOPICS, // 11
-  ...CIVICS_TOPICS,        // 10
-  ...TECHNOLOGY_TOPICS,    // 5
-  ...INFORMATICS_TOPICS,   // 6
-  ...ARTS_TOPICS,          // 6
-];
-
-const clonedTopics: CoreKnowledgeTopic[] = [];
-
-// Thêm lớp 9 gốc (giữ nguyên ID cũ để tương thích ngược)
-BASE_CORE_KNOWLEDGE_TOPICS.forEach(topic => {
-  clonedTopics.push({
-    ...topic,
-    gradeTier: 9
-  });
-});
-
-// Nhân bản cho các lớp 6, 7, 8, 10, 11, 12
-([6, 7, 8, 10, 11, 12] as GradeTier[]).forEach(tier => {
-  BASE_CORE_KNOWLEDGE_TOPICS.forEach(topic => {
-    let subId = topic.subjectId;
-    
-    // Tách môn THPT cho Lớp 10, 11, 12
-    if (tier >= 10 && tier <= 12) {
-      if (subId === 'science') {
-        if (topic.id.startsWith('sci-phy-')) subId = 'physics';
-        else if (topic.id.startsWith('sci-chem-')) subId = 'chemistry';
-        else if (topic.id.startsWith('sci-bio-')) subId = 'biology';
-      } else if (subId === 'history_geography') {
-        if (topic.id.startsWith('his-')) subId = 'history';
-        else if (topic.id.startsWith('geo-')) subId = 'geography';
-      }
-    }
-    
-    clonedTopics.push({
-      ...topic,
-      id: `${topic.id}-g${tier}`,
-      subjectId: subId,
-      gradeTier: tier
-    });
-  });
-});
-
-export const CORE_KNOWLEDGE_TOPICS: CoreKnowledgeTopic[] = [
-  ...clonedTopics,
-  ...CS_TOPICS
-];
-
-// ==================== UTILITY FUNCTIONS ====================
-
-/** Lấy tất cả chuyên đề theo môn phái */
 export function getTopicsBySubject(subjectId: SubjectId): CoreKnowledgeTopic[] {
   return CORE_KNOWLEDGE_TOPICS.filter(t => t.subjectId === subjectId);
 }
 
-/** Lấy chuyên đề theo Hầm nguyên tố */
 export function getTopicsByHam(ham: HamNguyenTo): CoreKnowledgeTopic[] {
   return CORE_KNOWLEDGE_TOPICS.filter(t => t.hamNguyenTo === ham);
 }
 
-/** Lấy chuyên đề theo ID */
 export function getTopicById(id: string): CoreKnowledgeTopic | undefined {
   return CORE_KNOWLEDGE_TOPICS.find(t => t.id === id);
 }
 
-/** Lấy chuyên đề theo môn phái VÀ Hầm nguyên tố */
 export function getTopicsBySubjectAndHam(subjectId: SubjectId, ham: HamNguyenTo): CoreKnowledgeTopic[] {
   return CORE_KNOWLEDGE_TOPICS.filter(t => t.subjectId === subjectId && t.hamNguyenTo === ham);
 }
 
-/** Lấy chuyên đề HIGH priority theo môn phái (cho Coverage Alert) */
 export function getHighPriorityTopics(subjectId: SubjectId): CoreKnowledgeTopic[] {
   return CORE_KNOWLEDGE_TOPICS.filter(t => t.subjectId === subjectId && t.examRelevance === 'high');
 }
 
-/**
- * Bảng ánh xạ category (hiện tại trong questions.ts) → topicId (Core Knowledge)
- * Dùng để retrofit topicId tự động cho câu hỏi hiện có.
- */
-export const CATEGORY_TO_TOPIC_MAP: Record<string, string> = {
-  // English
-  'wordform': 'eng-word-form',
-  'word-form': 'eng-word-form',
-  'passive-voice': 'eng-passive-voice',
-  'relative-clauses': 'eng-relative-clauses',
-  'tenses': 'eng-tenses',
-  'conditional': 'eng-conditional',
-  'reported-speech': 'eng-reported-speech',
-  'pronunciation': 'eng-pronunciation',
-  'stress': 'eng-stress',
-  'vocabulary': 'eng-vocabulary-topic',
-  'communication': 'eng-communication',
-  'reading': 'eng-reading-passage',
-  'cloze': 'eng-reading-cloze',
-  'rewrite': 'eng-rewrite',
-  'gerund-infinitive': 'eng-gerund-infinitive',
-  'comparison': 'eng-comparison',
-  'modal-verbs': 'eng-modal-verbs',
-  'wish': 'eng-wish-suggest',
-  'causative': 'eng-have-get-done',
-  'reading-sign': 'eng-reading-sign',
-  'reading-notice': 'eng-reading-sign',
-  // Math
-  'quadratic-function': 'math-quadratic-function',
-  'parabol-line': 'math-quadratic-function',
-  'function-graph': 'math-quadratic-function',
-  'quadratic-equation': 'math-quadratic-equation',
-  'vieta': 'math-vieta',
-  'viet-relation': 'math-vieta',
-  'linear-system': 'math-linear-system',
-  'linear-function': 'math-linear-function',
-  'statistics': 'math-statistics',
-  'probability': 'math-probability',
-  'real-world-algebra': 'math-real-world-algebra',
-  'real-world-percent': 'math-real-world-percent',
-  'real-finance': 'math-real-world-algebra',
-  'real-equations': 'math-real-world-algebra',
-  'finance': 'math-real-world-algebra',
-  'percentage-discount': 'math-real-world-percent',
-  'shopping-discount': 'math-real-world-percent',
-  'growth-modeling': 'math-real-world-algebra',
-  'plane-geometry': 'math-plane-geometry-circle',
-  'tangent-geometry': 'math-plane-geometry-circle',
-  'real-geometry': 'math-plane-geometry-circle',
-  'solid-geometry': 'math-solid-geometry-volume',
-  'volume-displacement': 'math-solid-geometry-volume',
-  'radicals': 'math-radicals',
-  'phương trình bậc hai': 'math-quadratic-equation',
-  'định lý vi-ét': 'math-vieta',
-  'định lý vi-et': 'math-vieta',
-  'đường tròn': 'math-plane-geometry-circle',
-  'tứ giác nội tiếp': 'math-plane-geometry-cyclic',
-  'góc với đường tròn': 'math-plane-geometry-circle',
-  'hệ thức lượng': 'math-trigonometry',
-  'hình học phẳng': 'math-plane-geometry-circle',
-  'toán thực tế': 'math-real-world-algebra',
-  'hàm số bậc hai': 'math-quadratic-function',
-  'hệ phương trình bậc nhất': 'math-linear-system',
-  'đồ thị hàm số': 'math-quadratic-function',
-  'căn thức bậc hai': 'math-radicals',
-  // Literature
-  'rhetoric-device': 'lit-rhetoric-device',
-  'literature-vietnamese': 'lit-rhetoric-device',
-  'reading-poetry': 'lit-reading-poetry',
-  'literature-reading-poetry': 'lit-reading-poetry',
-  'reading-prose': 'lit-reading-prose',
-  'literature-reading-prose': 'lit-reading-prose',
-  'literature-reading-argument': 'lit-reading-prose',
-  'social-essay': 'lit-social-essay',
-  'literature-writing': 'lit-social-essay',
-  'literary-essay': 'lit-literary-essay',
-  // Science
-  'electricity': 'sci-phy-electricity',
-  'electromagnet': 'sci-phy-electromagnet',
-  'optics': 'sci-phy-optics',
-  'genetics': 'sci-bio-genetics-mendelian',
-  'dna-gene': 'sci-bio-dna-gene',
-  'ecosystem': 'sci-bio-ecosystem',
-  'chemistry': 'sci-chem-oxacid',
-  // History & Geography
-  'history': 'his-vn-party',
-  'geography': 'geo-regions-7',
-  // Arts / Fine Arts
-  'mĩ thuật tạo hình': 'art-visual-figure',
-  'mĩ thuật ứng dụng': 'art-visual-apply',
-  'lịch sử mĩ thuật': 'art-visual-history',
-  // Informatics
-  'máy tính': 'inf-digital-world',
-  'thế giới số': 'inf-digital-world',
-  'tìm kiếm thông tin': 'inf-data-manage',
-  'đám mây': 'inf-data-manage',
-  'bản quyền': 'inf-ethics-law',
-  'thông tin cá nhân': 'inf-ethics-law',
-  'đạo đức': 'inf-ethics-law',
-  'bảng tính': 'inf-digital-tools',
-  'trình chiếu': 'inf-digital-tools',
-  'video': 'inf-digital-tools',
-  'lập trình': 'inf-algorithm',
-  'hướng nghiệp': 'inf-career',
-};
-
-/**
- * Lấy topicId phù hợp nhất cho một câu hỏi dựa trên category + subject.
- * Dùng khi retrofit topicId cho questions.ts hiện có.
- */
 export function inferTopicId(category: string, subjectId?: SubjectId): string {
-  const mapped = CATEGORY_TO_TOPIC_MAP[category.toLowerCase()];
-  if (mapped) return mapped;
-  // Fallback: chuyên đề đầu tiên của môn phái đó
+  const normalizedCategory = category.toLowerCase().trim();
+  
+  // Ánh xạ nhanh dựa trên từ khóa trong category
+  if (normalizedCategory.includes('ngữ pháp') || normalizedCategory.includes('grammar')) return 'eng-grammar';
+  if (normalizedCategory.includes('phát âm') || normalizedCategory.includes('pronunciation') || normalizedCategory.includes('trọng âm') || normalizedCategory.includes('stress')) return 'eng-pronunciation';
+  if (normalizedCategory.includes('đọc hiểu') || normalizedCategory.includes('reading') || normalizedCategory.includes('điền khuyết') || normalizedCategory.includes('cloze')) return 'eng-reading';
+  if (normalizedCategory.includes('viết lại') || normalizedCategory.includes('rewrite') || normalizedCategory.includes('sentence')) return 'eng-rewrite';
+
+  if (normalizedCategory.includes('quadratic') || normalizedCategory.includes('bậc hai') || normalizedCategory.includes('parabol')) return 'math-quadratic';
+  if (normalizedCategory.includes('thực tế') || normalizedCategory.includes('modeling') || normalizedCategory.includes('percent')) return 'math-real';
+  if (normalizedCategory.includes('hình học phẳng') || normalizedCategory.includes('plane') || normalizedCategory.includes('đường tròn') || normalizedCategory.includes('tam giác')) return 'math-plane';
+  if (normalizedCategory.includes('không gian') || normalizedCategory.includes('solid') || normalizedCategory.includes('thể tích')) return 'math-solid';
+
+  if (normalizedCategory.includes('tiếng việt')) return 'lit-vietnamese';
+  if (normalizedCategory.includes('đọc hiểu')) return 'lit-reading';
+  if (normalizedCategory.includes('nghị luận xã hội') || normalizedCategory.includes('đoạn văn')) return 'lit-essay';
+  if (normalizedCategory.includes('nghị luận văn học') || normalizedCategory.includes('tác phẩm')) return 'lit-analysis';
+
   if (subjectId) {
-    const firstTopic = CORE_KNOWLEDGE_TOPICS.find(t => t.subjectId === subjectId);
-    if (firstTopic) return firstTopic.id;
+    if (subjectId === 'science') {
+      if (normalizedCategory.includes('vật lý') || normalizedCategory.includes('physics') || normalizedCategory.includes('điện')) return 'sci-physics';
+      if (normalizedCategory.includes('hóa học') || normalizedCategory.includes('chemistry')) return 'sci-chemistry';
+      return 'sci-biology';
+    }
+    if (subjectId === 'history_geography') {
+      if (normalizedCategory.includes('lịch sử') || normalizedCategory.includes('history')) return 'hist-history';
+      return 'hist-geography';
+    }
+    const fallback = CORE_KNOWLEDGE_TOPICS.find(t => t.subjectId === subjectId);
+    if (fallback) return fallback.id;
   }
   return 'misc';
 }

@@ -1,4 +1,5 @@
 import { authService } from './authService';
+import { activeProfileHeaders } from './profileHeaders';
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
 
@@ -8,7 +9,7 @@ export const learningService = {
     if (!token) throw new Error('No auth token available');
 
     const res = await fetch(`${backendUrl}/api/learning-content/content/all?gradeTier=${gradeTier}&subjectId=${subjectId}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders() }
     });
     if (res.ok) {
       const data = await res.json();
@@ -25,7 +26,7 @@ export const learningService = {
     if (!token) throw new Error('No auth token available');
 
     const res = await fetch(`${backendUrl}/api/learning-content/handbook-pages`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders() }
     });
     if (res.ok) {
       const data = await res.json();
@@ -39,7 +40,7 @@ export const learningService = {
     if (!token) throw new Error('No auth token available');
 
     const res = await fetch(`${backendUrl}/api/learning-content/english-island/items`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders() }
     });
     if (res.ok) {
       const data = await res.json();
@@ -53,7 +54,7 @@ export const learningService = {
     if (!token) throw new Error('No auth token available');
 
     const res = await fetch(`${backendUrl}/api/learning-content/exam-blueprints?subject=${subject}`, {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}`, ...activeProfileHeaders() }
     });
     if (res.ok) {
       const data = await res.json();
@@ -62,3 +63,4 @@ export const learningService = {
     throw new Error(`Failed to load exam blueprints for subject ${subject} from server`);
   }
 };
+

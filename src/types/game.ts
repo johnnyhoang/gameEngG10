@@ -167,7 +167,7 @@ export interface CoreKnowledgeTopic {
   gradeTier?: GradeTier;
   group: 'chuyen_sau' | 'co_ban';
   label: string;                    // tên hiển thị tiếng Việt
-  labelEN: string;                  // tên kỹ thuật tiếng Anh
+  labelEN?: string;                  // tên kỹ thuật tiếng Anh
   hamNguyenTo: HamNguyenTo;         // Hầm nguyên tố gán cho topic này (🔥Hỏa/❄️Băng/🪨Thạch)
   examRelevance: ExamRelevance;     // mức độ xuất hiện trong đề tuyển sinh / HK
   minQuestions: number;             // số câu tối thiểu cần có trong DB để mở khu vực
