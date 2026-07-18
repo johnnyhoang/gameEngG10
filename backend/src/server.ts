@@ -61,7 +61,7 @@ app.use('/api', economyRouter);
 app.use('/api', riddleRouter);
 app.use('/api', gameRouter);
 app.use('/api', classRewardsRouter);
-app.use('/api', learningContextRouter);
+app.use('/api/learning-content', learningContextRouter);
 app.use('/api', (req, res, next) => {
   if (req.url.startsWith('/mission-ledger') || req.url.startsWith('/mission-events')) {
     console.log(`[Debug] Routing mission ledger request: ${req.method} ${req.url}`);
