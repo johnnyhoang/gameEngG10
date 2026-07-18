@@ -38,6 +38,9 @@ const MIGRATION_FILES = [
   '20260718_cs_robot_programming_lessons.sql',
   '20260718_cs_robot_programming_questions.sql',
   '20260718_cs_robot_programming_integration.sql',
+  '20260718_cs_programming_lessons.sql',
+  '20260718_cs_programming_questions.sql',
+  '20260718_cs_programming_integration.sql',
 ];
 
 async function ensureMigrationsTable() {
