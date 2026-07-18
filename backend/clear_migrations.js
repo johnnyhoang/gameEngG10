@@ -14,11 +14,11 @@ async function clear() {
     await client.query(`
       DELETE FROM schema_migrations 
       WHERE filename IN (
-        '20260718_cs_algorithms_structures_questions.sql', 
-        '20260718_cs_algorithms_structures_integration.sql'
+        '20260718_cs_computer_systems_questions.sql', 
+        '20260718_cs_computer_systems_integration.sql'
       )
     `);
-    console.log('Cleared targeted Algorithms migration history rows.');
+    console.log('Cleared targeted Systems migration history rows.');
   } catch (err) {
     console.error(err);
   } finally {

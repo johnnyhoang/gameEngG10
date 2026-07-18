@@ -44,6 +44,9 @@ const MIGRATION_FILES = [
   '20260718_cs_algorithms_structures_lessons.sql',
   '20260718_cs_algorithms_structures_questions.sql',
   '20260718_cs_algorithms_structures_integration.sql',
+  '20260718_cs_computer_systems_lessons.sql',
+  '20260718_cs_computer_systems_questions.sql',
+  '20260718_cs_computer_systems_integration.sql',
 ];
 
 async function ensureMigrationsTable() {
