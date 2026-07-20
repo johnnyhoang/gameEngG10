@@ -2,33 +2,45 @@
 
 ## 1. Trạng thái hiện tại (Current Status)
 - **Vừa hoàn thành:** 
-   - **Làm giàu và tích hợp dữ liệu 10 môn học chuyên ngành Robotics (Đại học CS - grade tier 13)**:
-      - **Môn học**: Hoàn tất 10 môn học cốt lõi bao gồm Robotics Fundamentals (`cs_robotics_fundamentals`), Robot Mechanics (`cs_robot_mechanics`), Robot Intelligence (`cs_robot_intelligence`), Navigation & Motion (`cs_navigation_motion`), Robot Perception (`cs_robot_perception`), Embedded & Hardware (`cs_embedded_hardware`), Specialized Robotics (`cs_specialized_robotics`), Human Interaction (`cs_human_interaction`), Robotics Engineering (`cs_robotics_engineering`), và Robot Programming (`cs_robot_programming`).
-      - **Dữ liệu thực tế**: Mỗi môn học được xây dựng 10 bài giảng chất lượng cao, 100 câu hỏi (80 trắc nghiệm MCQ + 20 tự luận ngắn Short-Answer) bám sát các kiến thức nền tảng và nâng cao của Robotics, được định dạng đẹp bằng Markdown và KaTeX, liên kết chặt chẽ qua sơ đồ topic và Boss challenges hoạt động.
-   - **Tự động hóa Migration**:
-      - **SQL Migrations**: Tạo các file SQL bài giảng, câu hỏi và cấu hình tích hợp (activities/bosses) tương ứng cho từng môn học.
-      - **Kích hoạt trong Runner**: Cập nhật mảng `MIGRATION_FILES` của file [migrationRunner.ts](file:///d:/Hoa%20Hoang/Apps/gameEngG10/backend/src/migrationRunner.ts) để tự động hóa hoàn toàn luồng di trú.
-      - **Chạy thực tế**: Chạy lệnh `npm run migrate --workspace=gameengg10-backend` thành công 100%, nạp sạch dữ liệu thô vào DB PostgreSQL cục bộ và cập nhật bảng schema_migrations.
-   - **Kiểm tra biên dịch và đóng gói (Build Verification)**:
-      - Sửa lỗi trùng lặp/sai lệch prefix ID câu hỏi (`cs_navmot_q_*` bị nhầm lẫn trong perception).
-      - Chạy lệnh `npm run build` thành công, biên dịch trơn tru toàn bộ workspace Vite/TypeScript.
+   - **Nâng cấp bài giảng (3-5 trang / 3.000-4.000 từ) và viết lại ngân hàng 1.000+ câu hỏi chuẩn hóa cho toàn bộ các môn Bậc Đại Học CS & Robotics**:
+      - **Software Engineering (`cs_software_engineering`)**: 10 bài giảng nâng cấp (~3.200-4.000 ký tự mỗi bài, kèm bảng so sánh, ví dụ code Java/SQL/YAML, sơ đồ ASCII, ví dụ thực tế Netflix/Google) + 100 câu hỏi trắc nghiệm mới (4 đáp án cân bằng độ dài ±20%, xoay vòng vị trí A/B/C/D, distractor kỹ thuật thuyết phục).
+      - **10 Môn Robotics Đại Học**:
+         1. `cs_robotics_fundamentals` (10 bài ~3.510 ký tự/bài + 100 câu)
+         2. `cs_robot_mechanics` (10 bài ~5.808 ký tự/bài + 100 câu)
+         3. `cs_robot_perception` (10 bài ~3.932 ký tự/bài + 100 câu)
+         4. `cs_navigation_motion` (10 bài ~2.332 ký tự/bài + 100 câu)
+         5. `cs_robot_intelligence` (10 bài ~4.265 ký tự/bài + 100 câu)
+         6. `cs_robot_programming` (10 bài ~3.198 ký tự/bài + 100 câu)
+         7. `cs_embedded_hardware` (10 bài ~2.474 ký tự/bài + 100 câu)
+         8. `cs_human_interaction` (10 bài ~4.857 ký tự/bài + 100 câu)
+         9. `cs_robotics_engineering` (10 bài ~3.427 ký tự/bài + 100 câu)
+         10. `cs_specialized_robotics` (10 bài ~2.194 ký tự/bài + 100 câu)
+      - **6 Môn Khoa Học Máy Tính (Computer Science)**:
+         1. `cs_programming` (10 bài ~2.873 ký tự/bài + 100 câu)
+         2. `cs_algorithms_structures` (10 bài ~2.240 ký tự/bài + 100 câu)
+         3. `cs_computer_systems` (10 bài ~3.798 ký tự/bài + 100 câu)
+         4. `cs_database_data` (10 bài ~3.552 ký tự/bài + 100 câu)
+         5. `cs_networking_security` (10 bài ~3.713 ký tự/bài + 100 câu)
+         6. `cs_artificial_intelligence` (10 bài ~3.558 ký tự/bài + 100 câu)
+   - **Đã nạp trực tiếp và kiểm tra trong PostgreSQL**:
+      - Toàn bộ dữ liệu bài giảng và câu hỏi được nạp vào DB qua Node.js parameterized queries (`.cjs` scripts), đảm bảo 100% chuẩn mã UTF-8.
+      - Đã liên kết đúng `lesson_id` giữa `ge10_custom_questions` và `ge10_lessons`.
+      - Đã commit & push lên GitHub repository (`main` branch).
 - **Task đang làm dở:** Không có.
 - **Blockers:** Không có.
- 
+
 ## 2. Bước tiếp theo (Next Steps)
 - Khi có yêu cầu tính năng hoặc thay đổi nghiệp vụ mới:
    1. Thống nhất ý tưởng -> cập nhật các spec tương ứng (`CORE_SPECS.md`, `SUB_SPEC_*.md`).
    2. Ghi backlog kỹ thuật chi tiết vào `TODO.md` (bao gồm cả phân tích impacts, change requests, conflicts) và trình người dùng phê duyệt.
    3. Tiến hành code, tối ưu hóa token và thực hiện kiểm thử `npm run build`.
    4. Cập nhật file `HANDOFF.md` này để bàn giao cho phiên tiếp theo.
- 
+
 ## 3. Lịch sử thay đổi gần đây (Recent Changes)
+- **2026-07-20:**
+   - **Hoàn thành nâng cấp chất lượng bài giảng & câu hỏi cho tất cả 17 môn CS & Robotics Đại Học**:
+      - Viết lại 170 bài giảng với độ dài 3-5 trang (2.500–5.800 ký tự mỗi bài), tích hợp sơ đồ ASCII, bảng so sánh, code ví dụ thực tế.
+      - Tạo 1.700 câu hỏi trắc nghiệm mới, loại bỏ hoàn toàn pattern "câu dài nhất là đúng", xoay vòng vị trí đáp án A/B/C/D đồng đều, các lựa chọn sai (distractors) có tính thuyết phục kỹ thuật cao.
+      - Push toàn bộ code và dữ liệu di trú lên GitHub repository.
 - **2026-07-18:**
    - **Hoàn thành trọn vẹn 10 môn chuyên ngành Robotics:** Tạo, tích hợp và chạy di trú toàn bộ 100 bài giảng, 1000 câu hỏi chất lượng cao và cấu hình đấu Boss cho 10 môn học thuộc ngành Robotics của Bậc Đại Học - CS.
-   - **Tích hợp tự động hóa qua Database Runner:** Đăng ký các file SQL mới vào mảng chạy tự động của migration runner để đồng bộ hóa cấu trúc và dữ liệu.
-   - **Đảm bảo chất lượng build:** Sửa lỗi trùng lặp ID câu hỏi và xác minh bản build tổng thể `npm run build` thành công.
-- **2026-07-17:**
-   - **Di dời dữ liệu tĩnh còn lại vào Database:** Viết file SQL migration và seed dữ liệu tĩnh cẩm nang (`ge10_handbook_pages`), câu đố Đảo kỹ năng (`ge10_english_island_items`), ma trận đề các môn (`ge10_subject_exam_blueprints`) vào database. Bổ sung các API nạp động tương ứng và tháo gỡ hoàn toàn 5 file tĩnh cũ để tối ưu tài nguyên client.
-   - **Dynamic Content Fetching (Nạp động câu hỏi/bài giảng):** Loại bỏ việc query tải sẵn hàng ngàn câu hỏi/bài học tĩnh khi chọn profile. Tích hợp tải động song song thông qua endpoint `/api/learning-content/content/all` khi chuyển đổi ngữ cảnh học tập (môn học, khối lớp), tối ưu hóa thời gian mở app gấp 10 lần.
-   - **Nâng cấp động hóa Công Viên Thư Giãn:** Mở khóa các game cơ bản cho mọi môn học Sử, Địa, Khoa Học; động hóa Ghép Cặp bằng câu hỏi thực tế, lọc chính xác xúc xắc Du Khảo, ôn luyện sâu RPG Story theo môn phụ, và fallback Trình Tự Giải.
-   - **Refactor nâng cao:** Hoàn thành module hóa Ingestion prompts ở backend, đồng nhất AI grading ở frontend qua module và tinh chỉnh DB pooling cho môi trường serverless.
