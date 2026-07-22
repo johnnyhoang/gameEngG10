@@ -32,6 +32,7 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
   const fetchClassRewards = useGameState(state => state.fetchClassRewards);
   const redeemClassReward = useGameState(state => state.redeemClassReward);
   const cancelClassRedemption = useGameState(state => state.cancelClassRedemption);
+  const syncWithServer = useGameState(state => state.syncWithServer);
 
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -63,10 +64,23 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
 
   useEffect(() => {
     setClassRewardsLoading(true);
-    fetchClassRewards().finally(() => {
+    
+    // Tải dữ liệu ban đầu bao gồm classRewards và đồng bộ thông tin ví Ruby của player
+    Promise.all([
+      fetchClassRewards(),
+      syncWithServer?.()
+    ]).finally(() => {
       setClassRewardsLoading(false);
     });
-  }, []);
+
+    // Thiết lập tự động refresh mỗi 1 phút (60 giây)
+    const intervalId = setInterval(() => {
+      fetchClassRewards();
+      syncWithServer?.();
+    }, 60 * 1000);
+
+    return () => clearInterval(intervalId);
+  }, [fetchClassRewards, syncWithServer]);
 
   const handleBuyTheme = (themeId: typeof UI_THEMES[number]['id']) => {
     if (player.ruby < THEME_UNLOCK_COST) {

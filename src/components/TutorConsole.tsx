@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { isAdmin, isTutorRole, isSuperAdmin } from '../utils/roleHelpers';
-import { useTranslate } from '../hooks/useTranslate';
+import { useTranslate } from '../hooks/useTranslate';import { RefreshCw } from 'lucide-react';
 
 // Import child managers
 import { AdminConnectionManager } from './TutorConsole/AdminConnectionManager';
@@ -76,6 +76,28 @@ export const TutorConsole: React.FC = () => {
   const activeTab = useGameState(state => state.tutorConsoleTab);
   const setActiveTab = useGameState(state => state.setTutorConsoleTab);
   const [viewingStudentId, setViewingStudentId] = useState<string | null>(null);
+  const [isReloading, setIsReloading] = useState(false);
+
+  const handleReloadDashboard = async () => {
+    setIsReloading(true);
+    try {
+      const { fetchAdminStudents, fetchClassLinks, fetchAuditLogs, fetchSchoolRewards } = useGameState.getState();
+      const promises: Promise<any>[] = [];
+      if (isAdmin(currentUser?.role)) {
+        promises.push(fetchAdminStudents());
+        promises.push(fetchAuditLogs());
+      }
+      if (isTutorRole(currentUser?.role) || isAdmin(currentUser?.role)) {
+        promises.push(fetchClassLinks());
+      }
+      promises.push(fetchSchoolRewards());
+      await Promise.all(promises);
+    } catch (e) {
+      console.error('Error reloading dashboard:', e);
+    } finally {
+      setIsReloading(false);
+    }
+  };
 
   // Filter students strictly by role for stats
   const allStudents = useMemo(() => {
@@ -222,6 +244,15 @@ export const TutorConsole: React.FC = () => {
                     )}
                   </div>
                 </div>
+
+                <button
+                  onClick={handleReloadDashboard}
+                  disabled={isReloading}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-synth-cyan/10 border border-synth-cyan/35 text-synth-cyan font-bold font-orbitron text-xs hover:bg-synth-cyan/20 cursor-pointer transition-all disabled:opacity-50 shrink-0 self-start sm:self-center"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isReloading ? 'animate-spin' : ''}`} />
+                  {isReloading ? 'Đang cập nhật...' : 'Đồng bộ dữ liệu'}
+                </button>
               </div>
           </div>
 

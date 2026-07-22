@@ -37,6 +37,13 @@
    4. Cập nhật file `HANDOFF.md` này để bàn giao cho phiên tiếp theo.
 
 ## 3. Lịch sử thay đổi gần đây (Recent Changes)
+- **2026-07-22:**
+   - **Nâng cấp giao diện Admin Dashboard & Nhật ký hoạt động (Mobile First) + Auto Refresh Shop**:
+      - Thêm nút "Đồng bộ dữ liệu" (Reload Dashboard) ở header Phòng Điều Hành để cập nhật nhanh tức thời.
+      - Tự động gọi `fetchAuditLogs` sau mỗi thao tác quản trị (nạp năng lượng, duyệt quà...) giúp đồng bộ hóa lịch sử ngay lập tức.
+      - Phân trang nhật ký (hiển thị 10 dòng đầu kèm nút Tải thêm nhật ký).
+      - Tối ưu hóa UI mobile cho phần nhật ký quyết nghị bằng dạng danh sách các thẻ (Cards) thay vì bảng dữ liệu cồng kềnh, cải thiện đáng kể trải nghiệm di động.
+      - Thiết lập `setInterval` tự động làm mới giá cả, số lượng quà tặng lớp và ví Ruby của học sinh trong Cửa hàng (ItemShop) định kỳ 1 phút/lần.
 - **2026-07-20:**
    - **Hoàn thành nâng cấp chất lượng bài giảng & câu hỏi cho tất cả 17 môn CS & Robotics Đại Học**:
       - Viết lại 170 bài giảng với độ dài 3-5 trang (2.500–5.800 ký tự mỗi bài), tích hợp sơ đồ ASCII, bảng so sánh, code ví dụ thực tế.

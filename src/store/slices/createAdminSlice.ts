@@ -122,6 +122,7 @@ export const createAdminSlice: StateCreator<
     const ok = await adminService.createSchoolReward(title, costRuby, Math.max(1, Math.round(quantity)));
     if (ok) {
       await get().fetchSchoolRewards();
+      await get().fetchAuditLogs();
       logActivity(get, set, 'parent_approve', 'Thêm Quà Khuyến Học của trường', `Quà mới: "${title}" trị giá ${costRuby} Ruby, số lượng ${quantity}`, 0, 0);
     }
     return ok;
@@ -131,6 +132,7 @@ export const createAdminSlice: StateCreator<
     const ok = await adminService.deleteSchoolReward(rewardId);
     if (ok) {
       set((state: any) => ({ schoolRewards: state.schoolRewards.filter((r: any) => r.id !== rewardId) }));
+      await get().fetchAuditLogs();
     }
     return ok;
   },
@@ -145,6 +147,7 @@ export const createAdminSlice: StateCreator<
     );
     if (ok) {
       await get().fetchSchoolRewards();
+      await get().fetchAuditLogs();
       logActivity(get, set, 'parent_approve', 'Cập nhật Quà Khuyến Học của trường', `Cập nhật quà: "${title}" trị giá ${costRuby} Ruby, số lượng còn lại ${remainingQuantity}/${quantity}`, 0, 0);
     }
     return ok;
@@ -308,6 +311,7 @@ export const createAdminSlice: StateCreator<
             const ok = await adminService.promoteUser(targetUserId, newRole);
             if (ok) {
               await get().fetchAdminStudents();
+              await get().fetchAuditLogs();
             }
           } catch (e) {
             console.error('Error promoting user:', e);
@@ -328,6 +332,7 @@ export const createAdminSlice: StateCreator<
             const ok = await adminService.adminMarkRewardDelivered(studentUserId, redemptionId);
             if (ok) {
               await get().fetchStudentProfile(studentUserId);
+              await get().fetchAuditLogs();
             }
           } catch (e) {
             console.error('Error marking reward delivered:', e);
@@ -339,6 +344,7 @@ export const createAdminSlice: StateCreator<
             const ok = await adminService.adminCancelRedemption(studentUserId, redemptionId);
             if (ok) {
               await get().fetchStudentProfile(studentUserId);
+              await get().fetchAuditLogs();
             }
           } catch (e) {
             console.error('Error cancelling redemption:', e);
@@ -354,6 +360,7 @@ export const createAdminSlice: StateCreator<
               return;
             }
             await get().fetchStudentProfile(studentUserId);
+            await get().fetchAuditLogs();
             toast.success(`Cập nhật năng lượng thành công: ${clampedPercent}%.`);
           } catch (e) {
             console.error('Error updating student energy:', e);
@@ -370,6 +377,7 @@ export const createAdminSlice: StateCreator<
               return;
             }
             await get().fetchStudentProfile(studentUserId);
+            await get().fetchAuditLogs();
             toast.success(`Đã cập nhật trần Năng Lượng ${clampedMax} và thời gian hồi ${resetHours} giờ cho Sĩ Tử.`);
           } catch (e) {
             console.error('Error updating student energy config:', e);
@@ -390,6 +398,7 @@ export const createAdminSlice: StateCreator<
                 ...payload
               }
             }));
+            await get().fetchAuditLogs();
             toast.success('Cấu hình đã được cập nhật.');
           } catch (e) {
             console.error('Error updating game settings:', e);
