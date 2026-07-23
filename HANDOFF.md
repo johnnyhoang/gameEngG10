@@ -38,6 +38,9 @@
 
 ## 3. Lịch sử thay đổi gần đây (Recent Changes)
 - **2026-07-22:**
+   - **Tinh chỉnh Typography - Giảm bold text không cần thiết trên toàn bộ giao diện sĩ tử**:
+      - Chuyển đổi các chữ `font-bold` và `font-black` sang `font-semibold` / `font-medium` một cách chọn lọc trên các màn hình chính phía Học sinh (`TopHUD`, `ActivityLog`, `LearningLedger`, `AcademyTab`, `PracticeHall`, `Arena`, `ItemShop`).
+      - Làm mềm các nhãn thông tin phụ, badge chỉ số (Lvl, Ruby, XP), thẻ SGK, trạng thái phần thưởng, mô tả vật phẩm và các nút hành động phụ để giao diện thanh thoát và cao cấp hơn, giữ lại bold thực sự cho tiêu đề và số liệu trọng tâm.
    - **Nâng cấp giao diện Admin Dashboard & Nhật ký hoạt động (Mobile First) + Auto Refresh Shop**:
       - Thêm nút "Đồng bộ dữ liệu" (Reload Dashboard) ở header Phòng Điều Hành để cập nhật nhanh tức thời.
       - Tự động gọi `fetchAuditLogs` sau mỗi thao tác quản trị (nạp năng lượng, duyệt quà...) giúp đồng bộ hóa lịch sử ngay lập tức.

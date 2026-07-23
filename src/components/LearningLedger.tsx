@@ -47,7 +47,7 @@ export function LearningLedger({ compact: _compact = false, defaultExpanded: _de
       {error ? (
         <div className="flex items-center justify-between gap-3 rounded-xl border border-red-400/30 bg-red-500/10 p-3 text-xs text-red-200">
           <span>{error}</span>
-          <button onClick={() => void load()} className="inline-flex items-center gap-1 font-bold">
+          <button onClick={() => void load()} className="inline-flex items-center gap-1 font-semibold">
             <RefreshCw className="h-3.5 w-3.5" /> {t("Thử lại", "Retry")}
           </button>
         </div>
@@ -63,20 +63,20 @@ export function LearningLedger({ compact: _compact = false, defaultExpanded: _de
           <MissionGroup title={t("🌱 Nhập Môn", "🌱 Onboarding")} items={onboarding} />
           <MissionGroup title={t("📋 Nhiệm Vụ Hôm Nay", "📋 Today's Missions")} items={daily} />
           <div className="rounded-xl border border-white/5 bg-white/5 p-3">
-            <h3 className="mb-2 font-orbitron text-[10px] font-black uppercase text-synth-orange">{t("📈 Tiến Độ Tu Học", "📈 Study Progress")}</h3>
+            <h3 className="mb-2 font-orbitron text-[10px] font-bold uppercase text-synth-orange">{t("📈 Tiên Độ Tu Học", "📈 Study Progress")}</h3>
             <div className="space-y-2 text-xs text-slate-300">
-              <p>Level <strong className="text-white">{player.level}</strong></p>
-               <p>{t("Điểm Tu Học", "Experience")} <strong className="text-white">{player.xp} XP</strong></p>
-              <p>{t("Chuỗi Chuyên Cần", "Study Streak")} <strong className="text-white">{player.streak} {t("ngày", "days")}</strong></p>
+              <p>Level <strong className="font-semibold text-white">{player.level}</strong></p>
+               <p>{t("Điểm Tu Học", "Experience")} <strong className="font-semibold text-white">{player.xp} XP</strong></p>
+              <p>{t("Chuỗi Chuyên Cần", "Study Streak")} <strong className="font-semibold text-white">{player.streak} {t("ngày", "days")}</strong></p>
             </div>
             <div className="mt-3 rounded-lg border border-dashed border-synth-orange/30 bg-synth-orange/5 p-2.5" aria-disabled="true">
               <div className="flex items-center gap-2">
                 <span className="text-lg" aria-hidden="true">🎁</span>
                 <div className="min-w-0 flex-1">
-                  <p className="text-[10px] font-bold text-synth-orange">{t("Hòm Bí Mật", "Mystery Box")}</p>
+                  <p className="text-[10px] font-semibold text-synth-orange">{t("Hòm Bí Mật", "Mystery Box")}</p>
                   <p className="text-[9px] text-slate-400 truncate">{t("Bảo rương thần bí đang được Trợ Giáo MIKA phong ấn...", "The mysterious chest is being sealed by Tutor MIKA...")}</p>
                 </div>
-                <span className="ml-auto rounded-full bg-white/5 px-2 py-0.5 text-[8px] font-bold uppercase text-slate-500 shrink-0">{t("Sắp mở", "Soon")}</span>
+                <span className="ml-auto rounded-full bg-white/5 px-2 py-0.5 text-[8px] font-semibold uppercase text-slate-500 shrink-0">{t("Sắp mở", "Soon")}</span>
               </div>
             </div>
           </div>
@@ -89,7 +89,7 @@ export function LearningLedger({ compact: _compact = false, defaultExpanded: _de
 function MissionGroup({ title, items }: { title: string; items: MissionAssignment[] }) {
   return (
     <div className="rounded-xl border border-white/5 bg-white/5 p-3">
-      <h3 className="mb-2 font-orbitron text-[10px] font-black uppercase text-synth-cyan">{title}</h3>
+      <h3 className="mb-2 font-orbitron text-[10px] font-bold uppercase text-synth-cyan">{title}</h3>
       <div className="max-h-none md:max-h-52 space-y-2 overflow-y-visible md:overflow-y-auto pr-1">
         {items.map(item => {
           const percent = Math.min(100, Math.round(item.current / item.target * 100));

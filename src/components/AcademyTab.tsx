@@ -119,10 +119,10 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 relative">
               <div className="space-y-3">
                 <div className="space-y-1">
-                  <p className={`text-xs font-orbitron font-bold uppercase tracking-[0.2em] ${isUnicorn ? 'text-violet-500' : 'text-synth-cyan/70'}`}>
+                  <p className={`text-xs font-orbitron font-semibold uppercase tracking-[0.2em] ${isUnicorn ? 'text-violet-500' : 'text-synth-cyan/70'}`}>
                     {getGreeting()}, {t('Sĩ Tử', 'Scholar')}
                   </p>
-                  <h1 className={`font-orbitron font-black text-2xl md:text-3xl uppercase tracking-wide ${isUnicorn ? 'text-violet-900' : 'text-white'}`}>
+                  <h1 className={`font-orbitron font-bold text-2xl md:text-3xl uppercase tracking-wide ${isUnicorn ? 'text-violet-900' : 'text-white'}`}>
                     {currentUser?.name || t('Sĩ Tử mới', 'New Scholar')} 👋
                   </h1>
                 </div>
@@ -130,20 +130,20 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
                 {/* Stats row */}
                 <div className="flex flex-wrap items-center gap-2">
                   {activeLink ? (
-                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-orbitron font-bold text-[10px] uppercase ${
+                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-orbitron font-semibold text-[10px] uppercase ${
                       isUnicorn ? 'border-violet-200 bg-violet-50/70 text-violet-700' : 'border-synth-cyan/30 bg-synth-cyan/10 text-synth-cyan'
                     }`}>
                       👨‍🏫 {t('Lớp', 'Class')}: {activeLink.tutor_name || activeLink.tutor_email || t('Chưa rõ tên', 'Unknown')}
                     </div>
                   ) : (
-                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-dashed font-orbitron font-bold text-[10px] uppercase ${
+                    <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-dashed font-orbitron font-semibold text-[10px] uppercase ${
                       isUnicorn ? 'border-slate-200 bg-slate-50 text-slate-400' : 'border-white/10 bg-white/5 text-slate-500'
                     }`}>
                       👨‍🏫 {t('Chưa kết nối lớp', 'No class connected')}
                     </div>
                   )}
                   {/* Badge hiển thị phong cách học đường hiện tại */}
-                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-orbitron font-bold text-[10px] uppercase ${
+                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border font-orbitron font-semibold text-[10px] uppercase ${
                     isUnicorn ? 'border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700' : 'border-synth-magenta/30 bg-synth-magenta/10 text-synth-magenta'
                   }`}>
                     <span>🎨</span>
@@ -166,13 +166,13 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
                 <div className="w-10 h-10 rounded-xl bg-amber-400/15 border border-amber-400/25 flex items-center justify-center">
                   <BrainCircuit className="w-5 h-5 text-amber-400" />
                 </div>
-                <span className="font-orbitron font-bold text-xs uppercase text-amber-300 tracking-wider">
+                <span className="font-orbitron font-semibold text-xs uppercase text-amber-300 tracking-wider">
                   {t('Thư Viện ✦ AI Trợ Giảng', 'Library ✦ AI Tutor')}
                 </span>
               </div>
               <p className="text-xs text-slate-300 flex-1 leading-relaxed">
                 {t('Bạn đang yếu ở chuyên đề ', 'You are weak in topic ')}
-                <span className="text-amber-300 font-bold">{weakLesson.title}</span>
+                <span className="text-amber-300 font-semibold">{weakLesson.title}</span>
                 {t(
                   ` (chỉ ${Math.round(weakAccuracy * 100)}% chính xác). Ôn lại ngay, đừng để lỗ hổng phình ra.`,
                   ` (only ${Math.round(weakAccuracy * 100)}% accuracy). Review now to fill this learning gap.`
@@ -182,7 +182,7 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
                 {onStudyLesson && (
                   <button
                     onClick={() => onStudyLesson(weakLesson.id)}
-                    className="px-3 py-2 rounded-lg border border-amber-400/30 bg-amber-400/10 text-amber-300 text-[10px] font-bold uppercase tracking-wider hover:bg-amber-400/20 transition-colors cursor-pointer"
+                    className="px-3 py-2 rounded-lg border border-amber-400/30 bg-amber-400/10 text-amber-300 text-[10px] font-semibold uppercase tracking-wider hover:bg-amber-400/20 transition-colors cursor-pointer"
                   >
                     {t('Xem bài giảng 📖', 'View Lecture 📖')}
                   </button>
@@ -190,7 +190,7 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
                 {onStartLessonPractice && (
                   <button
                     onClick={() => onStartLessonPractice(weakLesson.id)}
-                    className="px-3 py-2 rounded-lg border border-amber-400/30 bg-amber-400/15 text-amber-200 text-[10px] font-bold uppercase tracking-wider hover:bg-amber-400/25 transition-colors cursor-pointer"
+                    className="px-3 py-2 rounded-lg border border-amber-400/30 bg-amber-400/15 text-amber-200 text-[10px] font-semibold uppercase tracking-wider hover:bg-amber-400/25 transition-colors cursor-pointer"
                   >
                     {t('Luyện ngay ⚡', 'Practice Now ⚡')}
                   </button>
@@ -202,7 +202,7 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
           {/* SECTION: Quests (Giáo viên giao) */}
           {(pendingQuests.length > 0 || claimableQuests.length > 0) && (
             <section className="space-y-3">
-              <h2 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
+              <h2 className={`font-orbitron font-semibold text-sm uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
                 📋 {t('Nhiệm Vụ Được Giao', 'Assigned Quests')}
               </h2>
               <div className="space-y-2">
@@ -217,7 +217,7 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
                       <div className="min-w-0">
                         <p className={`text-sm font-semibold truncate ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{quest.title}</p>
                         {quest.reward && (
-                          <p className={`text-[10px] font-orbitron font-bold ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-orange'}`}>
+                          <p className={`text-[10px] font-orbitron font-semibold ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-orange'}`}>
                             +{quest.reward.ruby} Ruby · +{quest.reward.xp} XP
                           </p>
                         )}
@@ -226,7 +226,7 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
                     {quest.status === 'completed' && !quest.claimedAt && (
                       <button
                         onClick={() => claimTutorQuest(quest.id)}
-                        className={`px-4 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all shrink-0 ${
+                        className={`px-4 py-2 rounded-xl font-orbitron font-semibold text-xs uppercase tracking-wider cursor-pointer transition-all shrink-0 ${
                           isUnicorn
                             ? 'bg-gradient-to-r from-green-300 to-cyan-300 text-violet-900 shadow-md hover:brightness-105'
                             : 'bg-synth-green text-black hover:shadow-[0_0_10px_rgba(0,255,127,0.4)]'

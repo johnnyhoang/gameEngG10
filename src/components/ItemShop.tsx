@@ -240,7 +240,7 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
             {t("Tiêu hao Ruby tích lũy để đổi các vật phẩm học tập và đặc quyền giao diện.", "Spend your accumulated Ruby to redeem learning items and UI theme privileges.")}
           </p>
         </div>
-        <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-orbitron font-bold ${
+        <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-orbitron font-semibold ${
           isUnicorn ? 'bg-white/80 border border-violet-200/40 text-violet-700' : 'bg-synth-blue border border-synth-orange/30'
         }`}>
           <Coins className={`w-5 h-5 animate-pulse ${isUnicorn ? 'text-fuchsia-500 fill-fuchsia-500' : 'text-synth-orange fill-synth-orange'}`} /> {player.ruby} Ruby
@@ -249,7 +249,7 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
 
       {/* QUẦY 1: CÔNG CỤ TRỢ GIÚP */}
       <div className={`rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'bg-cyan-50/40 border-violet-200/40' : 'bg-synth-cyan/5 border-synth-cyan/10'}`}>
-        <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
+        <h3 className={`font-orbitron font-semibold text-sm uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
           <Shield className="w-4 h-4" /> {t("Quầy Vật Phẩm Trợ Giúp", "Support Items Counter")}
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -260,14 +260,14 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
               <div className="flex gap-4 items-center">
                 <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl border shrink-0 ${isUnicorn ? 'bg-cyan-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-cyan/30'}`}>🛡️</div>
                 <div className="space-y-1">
-                  <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{t("Thẻ Chuyên Cần", "Attendance Shield")}</h4>
+                  <h4 className={`font-orbitron font-semibold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{t("Thẻ Chuyên Cần", "Attendance Shield")}</h4>
                   <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>{t("Bảo vệ chuỗi học tập khi lỡ bỏ một ngày đèn sách, tránh bị phạt ngắt chuỗi.", "Protect your learning streak when missing a study day, avoiding break penalties.")}</p>
-                  {hasStreakShield && <span className="text-[9px] font-bold text-synth-cyan border border-synth-cyan/40 px-1.5 py-0.5 rounded font-orbitron inline-block">{t("Đang kích hoạt ✓", "Activated ✓")}</span>}
-                  {player.ruby < 150 && <span className="text-[9px] font-bold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
+                  {hasStreakShield && <span className="text-[9px] font-semibold text-synth-cyan border border-synth-cyan/40 px-1.5 py-0.5 rounded font-orbitron inline-block">{t("Đang kích hoạt ✓", "Activated ✓")}</span>}
+                  {player.ruby < 150 && <span className="text-[9px] font-semibold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
                 </div>
               </div>
               <button onClick={(e) => { e.stopPropagation(); handleBuyShield(); }} disabled={hasStreakShield || player.ruby < 150}
-                className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shrink-0 ${
+                className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-semibold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shrink-0 ${
                   player.ruby < 150
                     ? 'bg-slate-800 text-slate-500 border border-slate-700'
                     : isUnicorn
@@ -283,14 +283,14 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
               <div className="flex gap-4 items-center">
                 <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl border shrink-0 ${isUnicorn ? 'bg-amber-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-orange/30'}`}>📜</div>
                 <div className="space-y-1">
-                  <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{t("Thẻ Gợi Ý", "Hint Card")}</h4>
+                  <h4 className={`font-orbitron font-semibold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{t("Thẻ Gợi Ý", "Hint Card")}</h4>
                   <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>{t("Gợi mở hướng giải hoặc loại bỏ một đáp án nhiễu trong câu hỏi đang làm.", "Reveal a hint or eliminate a wrong option in the active question.")}</p>
-                  <span className={`text-[9px] font-bold font-orbitron ${isUnicorn ? 'text-amber-600' : 'text-synth-orange'}`}>{t("Dùng ngay trong câu hỏi đang làm", "Use directly in the active question")}</span>
-                  {player.ruby < 50 && <span className="text-[9px] font-bold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
+                  <span className={`text-[9px] font-semibold font-orbitron ${isUnicorn ? 'text-amber-600' : 'text-synth-orange'}`}>{t("Dùng ngay trong câu hỏi đang làm", "Use directly in the active question")}</span>
+                  {player.ruby < 50 && <span className="text-[9px] font-semibold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
                 </div>
               </div>
               <button onClick={(e) => { e.stopPropagation(); handleBuyHint(); }} disabled={player.ruby < 50}
-                className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shrink-0 ${
+                className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-semibold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shrink-0 ${
                   player.ruby < 50
                     ? 'bg-slate-800 text-slate-500 border border-slate-700'
                     : isUnicorn
@@ -305,7 +305,7 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
       {/* QUẦY: VÒNG QUAY MAY MẮN */}
       <div className={`rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'bg-amber-50/40 border-violet-200/40' : 'bg-synth-orange/5 border-synth-orange/10'}`}>
         <div className="space-y-0.5">
-          <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
+          <h3 className={`font-orbitron font-semibold text-sm uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
             🎡 {t("Vòng Quay May Mắn (Cuối Tuần)", "Weekend Lucky Wheel")}
           </h3>
           <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}`}>
@@ -313,14 +313,14 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
           </p>
           {/* Danh sách giải thưởng có thể trúng */}
           <div className="pt-2">
-            <span className="text-[10px] font-orbitron font-bold uppercase tracking-wider text-slate-400 block mb-1.5">🎁 Phần quà có trong vòng quay:</span>
+            <span className="text-[10px] font-orbitron font-semibold uppercase tracking-wider text-slate-400 block mb-1.5">🎁 Phần quà có trong vòng quay:</span>
             <div className="flex flex-wrap gap-2">
-              <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 font-orbitron font-bold text-[9px] shadow-sm">💎 +50 Ruby</span>
-              <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 font-orbitron font-bold text-[9px] shadow-sm">💎 +100 Ruby</span>
-              <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 font-orbitron font-bold text-[9px] shadow-sm">💎 +200 Ruby</span>
-              <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 font-orbitron font-bold text-[9px] shadow-sm">💎 +300 Ruby</span>
-              <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-orbitron font-bold text-[9px] shadow-sm">⚡ +30 Năng lượng</span>
-              <span className="px-2 py-0.5 rounded bg-slate-500/10 border border-slate-500/30 text-slate-400 font-orbitron font-bold text-[9px] shadow-sm">❓ May mắn lần sau</span>
+              <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 font-orbitron font-semibold text-[9px] shadow-sm">💎 +50 Ruby</span>
+              <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 font-orbitron font-semibold text-[9px] shadow-sm">💎 +100 Ruby</span>
+              <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 font-orbitron font-semibold text-[9px] shadow-sm">💎 +200 Ruby</span>
+              <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/30 text-amber-400 font-orbitron font-semibold text-[9px] shadow-sm">💎 +300 Ruby</span>
+              <span className="px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-orbitron font-semibold text-[9px] shadow-sm">⚡ +30 Năng lượng</span>
+              <span className="px-2 py-0.5 rounded bg-slate-500/10 border border-slate-500/30 text-slate-400 font-orbitron font-semibold text-[9px] shadow-sm">❓ May mắn lần sau</span>
             </div>
           </div>
         </div>
@@ -331,7 +331,7 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
               🎡
             </div>
             <div className="space-y-1">
-              <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
+              <h4 className={`font-orbitron font-semibold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
                 {isWeekend() ? t('Vòng Quay Đang Mở!', 'Lucky Wheel Open!') : t('Vòng Quay Đang Khóa', 'Lucky Wheel Locked')}
               </h4>
               <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>
@@ -343,14 +343,14 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
           {isWeekend() ? (
             <button
               onClick={onSpinWheel}
-              className={`px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${isUnicorn ? 'bg-gradient-to-r from-amber-300 to-orange-300 text-violet-900 shadow-md hover:brightness-105' : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.4)]'}`}
+              className={`px-5 py-2.5 rounded-xl font-orbitron font-semibold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${isUnicorn ? 'bg-gradient-to-r from-amber-300 to-orange-300 text-violet-900 shadow-md hover:brightness-105' : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.4)]'}`}
             >
               {t("Quay Ngay 🎁", "Spin Now 🎁")}
             </button>
           ) : (
             <button
               disabled
-              className="px-5 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider shrink-0 bg-white/5 border border-white/10 text-slate-500 cursor-not-allowed"
+              className="px-5 py-2.5 rounded-xl font-orbitron font-semibold text-xs uppercase tracking-wider shrink-0 bg-white/5 border border-white/10 text-slate-500 cursor-not-allowed"
             >
               {t("Đóng (Chờ Cuối Tuần)", "Closed (Wait for Weekend)")}
             </button>
@@ -361,7 +361,7 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
       {/* QUẦY 2: KHO GIAO DIỆN */}
       <div className={`rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'bg-violet-50/40 border-violet-200/40' : 'bg-synth-purple/5 border-synth-purple/10'}`}>
         <div className="space-y-0.5">
-          <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
+          <h3 className={`font-orbitron font-semibold text-sm uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
             <Palette className="w-4 h-4" /> {t("Kho Giao Diện (Phong Cách Học Đường)", "School Theme Catalog")}
           </h3>
           <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}`}>{t("Mở khóa phong cách giao diện cá tính để cá nhân hóa không gian học tập của bạn.", "Unlock personalized UI styles to customize your learning space.")}</p>
@@ -378,18 +378,18 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
                   <div className="flex gap-4 items-center min-w-0">
                     <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-2xl border shrink-0 ${isUnicorn ? 'bg-violet-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-purple/30'}`}>{theme.iconSet[0]}</div>
                     <div className="space-y-1 min-w-0">
-                      <h4 className={`font-orbitron font-bold text-sm truncate ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{theme.name}</h4>
+                      <h4 className={`font-orbitron font-semibold text-sm truncate ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{theme.name}</h4>
                       <p className={`text-xs line-clamp-2 ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>{theme.tagline}</p>
-                      {isActive && <span className="text-[9px] font-bold text-synth-green border border-synth-green/40 px-1.5 py-0.5 rounded font-orbitron inline-block">Đang dùng ✓</span>}
-                      {!isUnlocked && player.ruby < THEME_UNLOCK_COST && <span className="text-[9px] font-bold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
+                      {isActive && <span className="text-[9px] font-semibold text-synth-green border border-synth-green/40 px-1.5 py-0.5 rounded font-orbitron inline-block">Đang dùng ✓</span>}
+                      {!isUnlocked && player.ruby < THEME_UNLOCK_COST && <span className="text-[9px] font-semibold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
                     </div>
                   </div>
                   {isActive ? null : isUnlocked ? (
                     <button onClick={(e) => { e.stopPropagation(); setUiTheme(theme.id); }}
-                      className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${isUnicorn ? 'bg-gradient-to-r from-violet-300 to-fuchsia-300 text-violet-900 shadow-md hover:brightness-105' : 'bg-synth-purple text-white hover:shadow-[0_0_10px_rgba(168,85,247,0.4)]'}`}>Mặc Ngay</button>
+                      className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-semibold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${isUnicorn ? 'bg-gradient-to-r from-violet-300 to-fuchsia-300 text-violet-900 shadow-md hover:brightness-105' : 'bg-synth-purple text-white hover:shadow-[0_0_10px_rgba(168,85,247,0.4)]'}`}>Mặc Ngay</button>
                   ) : (
                     <button onClick={(e) => { e.stopPropagation(); handleBuyTheme(theme.id); }} disabled={player.ruby < THEME_UNLOCK_COST}
-                      className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shrink-0 ${
+                      className={`ml-3 px-4 py-2.5 rounded-xl font-orbitron font-semibold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed shrink-0 ${
                         player.ruby < THEME_UNLOCK_COST
                           ? 'bg-slate-800 text-slate-500 border border-slate-700'
                           : isUnicorn
@@ -407,7 +407,7 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
       {/* QUẦY 3: PHÚC LỢI */}
       <div className={`rounded-2xl border p-5 space-y-4 ${isUnicorn ? 'bg-fuchsia-50/40 border-pink-200/40' : 'bg-synth-orange/5 border-synth-orange/10'}`}>
         <div className="space-y-0.5">
-          <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-orange'}`}>
+          <h3 className={`font-orbitron font-semibold text-sm uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-orange'}`}>
             <Gift className="w-4 h-4" />
             {isOrphanStudent ? t('🎁 Quầy Quà Khuyến Học Toàn Viện', '🎁 Academy Gift Counter') : t('🎁 Quầy Quà Khuyến Học', '🎁 Class Gift Counter')}
           </h3>
@@ -441,14 +441,14 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
                         <div className="space-y-0.5 min-w-0">
                           <h4 className={`font-semibold text-sm truncate ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{reward.title}</h4>
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className={`text-[10px] font-bold font-orbitron ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-orange'}`}>{reward.costRuby} Ruby</span>
-                            {!isAffordable && <span className="text-[9px] font-bold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
+                            <span className={`text-[10px] font-semibold font-orbitron ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-orange'}`}>{reward.costRuby} Ruby</span>
+                            {!isAffordable && <span className="text-[9px] font-semibold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
                           </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2 ml-2 shrink-0">
                         <button onClick={(e) => { e.stopPropagation(); handleRedeem(reward.id, reward.title); }} disabled={!canRedeem}
-                          className={`px-3.5 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-45 disabled:cursor-not-allowed ${
+                          className={`px-3.5 py-2 rounded-xl font-orbitron font-semibold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-45 disabled:cursor-not-allowed ${
                             !canRedeem
                               ? 'bg-slate-800 text-slate-500 border border-slate-700'
                               : isUnicorn 
@@ -469,7 +469,7 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
           classRewardsLoading ? (
             <div className="flex flex-col items-center justify-center py-12 text-synth-cyan">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-synth-cyan mb-2"></div>
-              <span className="text-xs font-orbitron font-bold tracking-widest uppercase animate-pulse">{t('Đang tải phần thưởng lớp...', 'Loading class rewards...')}</span>
+              <span className="text-xs font-orbitron font-semibold tracking-widest uppercase animate-pulse">{t('Đang tải phần thưởng lớp...', 'Loading class rewards...')}</span>
             </div>
           ) : classRewards.length === 0 ? (
             <div className={`rounded-2xl border border-dashed p-8 text-center ${isUnicorn ? 'border-violet-200/40 text-violet-600/60' : 'border-white/10 text-synth-text-muted'}`}>
@@ -496,18 +496,18 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
                           <h4 className={`font-semibold text-sm truncate ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{reward.title}</h4>
                           {reward.teacherName && <p className="text-[10px] text-synth-text-muted">{t('từ ', 'from ')}{reward.teacherName}</p>}
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className={`text-[10px] font-bold font-orbitron ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-orange'}`}>{reward.costRuby} Ruby</span>
-                            <span className={`text-[10px] font-bold font-orbitron px-1 rounded border ${isOutOfStock ? 'text-red-400 border-red-400/30 bg-red-400/5' : 'text-synth-cyan border-synth-cyan/30 bg-synth-cyan/5'}`}>
+                            <span className={`text-[10px] font-semibold font-orbitron ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-orange'}`}>{reward.costRuby} Ruby</span>
+                            <span className={`text-[10px] font-semibold font-orbitron px-1 rounded border ${isOutOfStock ? 'text-red-400 border-red-400/30 bg-red-400/5' : 'text-synth-cyan border-synth-cyan/30 bg-synth-cyan/5'}`}>
                               {t('Còn', 'Left')} {reward.remaining}/{reward.quantity}
                             </span>
-                            {!isAffordable && !isOutOfStock && <span className="text-[9px] font-bold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
+                            {!isAffordable && !isOutOfStock && <span className="text-[9px] font-semibold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
                           </div>
                         </div>
                       </div>
                       <div className="flex flex-col gap-1.5 items-end ml-2 shrink-0">
                         {alreadyPending ? (
                           <>
-                            <span className="text-[10px] px-2 py-1 rounded font-orbitron font-bold text-synth-orange border border-synth-orange/30 bg-synth-orange/10 animate-pulse">{t('Chờ Trao', 'Pending')}</span>
+                            <span className="text-[10px] px-2 py-1 rounded font-orbitron font-semibold text-synth-orange border border-synth-orange/30 bg-synth-orange/10 animate-pulse">{t('Chờ Trao', 'Pending')}</span>
                             <button 
                               disabled={cancellingIds[myPendingForThisReward[0].id]}
                               onClick={(e) => { e.stopPropagation(); handleCancelClassRedemption(myPendingForThisReward[0].id); }}
@@ -518,10 +518,10 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
                           </>
                         ) : (
                           <button onClick={(e) => { e.stopPropagation(); handleRedeemClass(reward.id, reward.title); }} disabled={!canRedeem}
-                            className={`px-3.5 py-2 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-45 disabled:cursor-not-allowed ${
+                            className={`px-3.5 py-2 rounded-xl font-orbitron font-semibold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-45 disabled:cursor-not-allowed ${
                               !canRedeem
                                 ? 'bg-slate-800 text-slate-500 border border-slate-700'
-                                : isUnicorn
+                               : isUnicorn
                                   ? 'bg-gradient-to-r from-fuchsia-300 to-violet-300 text-violet-900 hover:brightness-105'
                                   : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.3)]'
                             }`}>
@@ -540,7 +540,7 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
         {/* Nhật ký đổi quà */}
         {(classRewardRedemptions.length > 0 || rewardRedemptions.length > 0) && (
           <div className="pt-2 space-y-2">
-            <h4 className={`text-xs font-orbitron font-bold uppercase tracking-wider ${isUnicorn ? 'text-violet-700' : 'text-synth-text-muted'}`}>{t('Nhật ký đổi quà', 'Redemption History')}</h4>
+            <h4 className={`text-xs font-orbitron font-semibold uppercase tracking-wider ${isUnicorn ? 'text-violet-700' : 'text-synth-text-muted'}`}>{t('Nhật ký đổi quà', 'Redemption History')}</h4>
             <div className="space-y-2 max-h-56 overflow-y-auto">
               {classRewardRedemptions.filter(r => r.status !== 'cancelled').map(redemption => (
                 <div key={redemption.id} className={`rounded-xl p-3 flex justify-between items-center ${isUnicorn ? 'bg-white/60 border border-violet-200/25' : 'bg-white/5 border border-white/5'}`}>

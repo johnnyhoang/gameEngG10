@@ -175,7 +175,7 @@ export function Arena({ onStartPlay }: ArenaProps) {
             </h3>
             <p className="text-[10px] text-slate-400">Hệ thống bài thi chuẩn hóa theo SGK, sắp xếp tuần tự</p>
           </div>
-          <span className="text-[10px] font-orbitron font-bold text-slate-400">
+          <span className="text-[10px] font-orbitron font-semibold text-slate-400">
             Tổng cộng: {subjectLessonsSorted.length} bài
           </span>
         </div>
@@ -210,7 +210,7 @@ export function Arena({ onStartPlay }: ArenaProps) {
                             : 'border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent glass-panel-hover'
                         }`}
                       >
-                        <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white z-10">
+                        <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold bg-synth-blue border border-synth-cyan/20 text-white z-10">
                           <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {cost}
                         </div>
                         <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
@@ -222,13 +222,13 @@ export function Arena({ onStartPlay }: ArenaProps) {
                               {lesson.bai ? `Bài ${lesson.bai}: ` : ''}{lesson.title}
                             </h4>
                             {isCompleted && (
-                              <span className="text-[9px] font-orbitron font-bold bg-synth-green/20 text-synth-green border border-synth-green/30 px-1.5 py-0.5 rounded">
+                              <span className="text-[9px] font-orbitron font-semibold bg-synth-green/20 text-synth-green border border-synth-green/30 px-1.5 py-0.5 rounded">
                                 ĐÃ HOÀN THÀNH
                               </span>
                             )}
                           </div>
-                          <div className={`text-[9px] font-bold uppercase tracking-[0.24em] ${
-                            lesson.loai === 'Chưa phân loại SGK' ? 'text-red-400 font-black' : 'text-slate-400'
+                          <div className={`text-[9px] font-semibold uppercase tracking-[0.24em] ${
+                            lesson.loai === 'Chưa phân loại SGK' ? 'text-red-400 font-bold' : 'text-slate-400'
                           }`}>
                             {lesson.loai === 'Chưa phân loại SGK' 
                               ? '⚠️ LỖI: CHƯA PHÂN LOẠI SGK' 
@@ -237,7 +237,7 @@ export function Arena({ onStartPlay }: ArenaProps) {
                           <p className="text-xs text-slate-300 leading-relaxed line-clamp-2">
                             Luyện đề thi thử chuẩn cấu trúc cho nội dung bài học này để tích lũy kiến thức thực chiến.
                           </p>
-                          <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
+                          <div className="text-[10px] font-semibold font-orbitron pt-1 text-slate-400">
                             Phần thưởng: <span className="text-white">+15 XP / +5 Ruby</span>
                           </div>
                         </div>
@@ -254,7 +254,7 @@ export function Arena({ onStartPlay }: ArenaProps) {
           <div className="flex justify-center pt-2">
             <button
               onClick={() => setVisibleLessonsCount(prev => prev + 6)}
-              className="px-6 py-2 rounded-xl border border-synth-cyan/30 hover:border-synth-cyan bg-synth-cyan/10 hover:bg-synth-cyan/20 text-synth-cyan font-orbitron font-bold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer"
+              className="px-6 py-2 rounded-xl border border-synth-cyan/30 hover:border-synth-cyan bg-synth-cyan/10 hover:bg-synth-cyan/20 text-synth-cyan font-orbitron font-semibold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer"
             >
               Xem thêm bài thi ⚔️
             </button>
@@ -296,7 +296,7 @@ export function Arena({ onStartPlay }: ArenaProps) {
                         : 'border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent glass-panel-hover'
                     }`}
                   >
-                    <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white z-10">
+                    <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold bg-synth-blue border border-synth-cyan/20 text-white z-10">
                       <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
                     </div>
                     <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
@@ -306,9 +306,9 @@ export function Arena({ onStartPlay }: ArenaProps) {
                       <div className="flex items-center gap-2 flex-wrap">
                         <h4 className="font-orbitron font-black text-sm text-synth-cyan">🏰 {card.title}</h4>
                       </div>
-                      <div className="text-[9px] font-bold uppercase tracking-[0.24em] text-slate-400">{card.subtitle}</div>
+                      <div className="text-[9px] font-semibold uppercase tracking-[0.24em] text-slate-400">{card.subtitle}</div>
                       <p className="text-xs text-slate-300 leading-relaxed line-clamp-2">{card.description}</p>
-                      <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
+                      <div className="text-[10px] font-semibold font-orbitron pt-1 text-slate-400">
                         Phần thưởng: <span className="text-white">{card.reward}</span>
                       </div>
                     </div>
@@ -335,16 +335,16 @@ export function Arena({ onStartPlay }: ArenaProps) {
                     : 'border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/5 to-transparent glass-panel-hover'
                 }`}
               >
-                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-cyan/20 text-white z-10">
+                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold bg-synth-blue border border-synth-cyan/20 text-white z-10">
                   <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
                 </div>
                 <div className="w-14 h-14 rounded-xl border border-white/5 bg-synth-gray/50 flex items-center justify-center shrink-0">
                   <Star className="w-7 h-7 text-synth-cyan" />
                 </div>
                 <div className="space-y-1 min-w-0">
-                  <h4 className="font-orbitron font-bold text-sm text-white">🌀 Luyện tập ngẫu nhiên</h4>
+                  <h4 className="font-orbitron font-semibold text-sm text-white">🌀 Luyện tập ngẫu nhiên</h4>
                   <p className="text-xs text-slate-400 leading-relaxed">10 câu hỏi ngẫu nhiên từ toàn bộ chuyên đề, ưu tiên câu yếu.</p>
-                  <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">Phần thưởng: <span className="text-white">+15 XP / +5 Ruby</span></div>
+                  <div className="text-[10px] font-semibold font-orbitron pt-1 text-slate-400">Phần thưởng: <span className="text-white">+15 XP / +5 Ruby</span></div>
                 </div>
               </div>
             </FogCard>
@@ -373,20 +373,20 @@ export function Arena({ onStartPlay }: ArenaProps) {
                     : 'border-synth-orange/30 hover:border-synth-orange bg-gradient-to-br from-synth-orange/5 to-transparent glass-panel-hover'
                 }`}
               >
-                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-synth-blue border border-synth-orange/20 text-white z-10">
+                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold bg-synth-blue border border-synth-orange/20 text-white z-10">
                   <Zap className="w-3 h-3 text-synth-orange fill-synth-orange" /> {challengeEnergyCosts[2] ?? 30}
                 </div>
                 <div className="w-14 h-14 rounded-xl border border-white/5 bg-synth-gray/50 flex items-center justify-center shrink-0">
                   <ShieldAlert className="w-7 h-7 text-synth-orange" />
                 </div>
                 <div className="space-y-1 min-w-0">
-                  <h4 className="font-orbitron font-bold text-sm text-synth-orange">💀 Sửa sai truy tung</h4>
+                  <h4 className="font-orbitron font-semibold text-sm text-synth-orange">💀 Sửa sai truy tung</h4>
                   <p className="text-xs text-slate-400 leading-relaxed">
                     {(!failedQuestionIds || failedQuestionIds.length === 0)
                       ? 'Chưa có câu sai nào để phục thù.'
                       : 'Tập hợp câu hỏi đã làm sai để giải lại và sửa lỗi lầm.'}
                   </p>
-                  <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">Phần thưởng: <span className="text-white">XP hồi phục / Xoá sai</span></div>
+                  <div className="text-[10px] font-semibold font-orbitron pt-1 text-slate-400">Phần thưởng: <span className="text-white">XP hồi phục / Xoá sai</span></div>
                 </div>
               </div>
             </FogCard>
@@ -426,14 +426,14 @@ export function Arena({ onStartPlay }: ArenaProps) {
                         : 'border-synth-magenta/20 hover:border-synth-magenta bg-gradient-to-t from-synth-magenta/5 to-transparent'
                     }`}
                   >
-                    <div className={`absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold z-10 ${
+                    <div className={`absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold z-10 ${
                       isUnicorn ? 'bg-white/80 border border-violet-200/40 text-violet-700' : 'bg-synth-blue border border-synth-magenta/30 text-synth-magenta'
                     }`}>
                       <Zap className={`w-3 h-3 ${isUnicorn ? 'text-fuchsia-500 fill-fuchsia-500' : 'text-synth-magenta fill-synth-magenta'}`} /> {boss.energy}
                     </div>
 
                     <div className="space-y-2">
-                      <span className={`text-[9px] font-bold font-orbitron px-2 py-0.5 rounded uppercase ${
+                      <span className={`text-[9px] font-semibold font-orbitron px-2 py-0.5 rounded uppercase ${
                         isUnicorn ? 'bg-fuchsia-100/80 text-violet-700 border border-violet-200/40' : 'bg-synth-magenta/15 text-synth-magenta border border-synth-magenta/30'
                       }`}>
                         Học Vị: Khoa Thi
@@ -450,7 +450,7 @@ export function Arena({ onStartPlay }: ArenaProps) {
 
                     <div className="border-t border-synth-gray/50 pt-3 mt-3 flex justify-between items-center text-xs font-semibold">
                       <span className={isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}>Bonus hoàn thành:</span>
-                      <span className={`font-orbitron font-bold flex items-center gap-1 ${isUnicorn ? 'text-violet-700' : 'text-synth-green'}`}>
+                      <span className={`font-orbitron font-semibold flex items-center gap-1 ${isUnicorn ? 'text-violet-700' : 'text-synth-green'}`}>
                         +{bossCompletionBonusRuby[index] ?? [100, 150, 200][index]} Ruby
                       </span>
                     </div>
@@ -484,7 +484,7 @@ export function Arena({ onStartPlay }: ArenaProps) {
                 onClick={(e) => { e.stopPropagation(); handleLaunchZone('survival', challengeEnergyCosts[0] ?? 30); }}
                 className="glass-panel glass-panel-hover rounded-2xl border border-red-500/40 hover:border-red-400 bg-gradient-to-br from-red-500/10 via-orange-500/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
               >
-                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-bold bg-red-500/20 border border-red-500/40 text-red-400 z-10">
+                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold bg-red-500/20 border border-red-500/40 text-red-400 z-10">
                   <Zap className="w-3 h-3 text-red-400 fill-red-400" /> {challengeEnergyCosts[0] ?? 30}
                 </div>
                 <div className="w-14 h-14 rounded-xl border border-red-500/30 bg-red-500/10 flex items-center justify-center shrink-0">
@@ -492,12 +492,12 @@ export function Arena({ onStartPlay }: ArenaProps) {
                 </div>
                 <div className="space-y-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="font-orbitron font-black text-sm text-red-400">⚔️ Trường Thi Sinh Tồn</h4>
+                    <h4 className="font-orbitron font-semibold text-sm text-red-400">⚔️ Trường Thi Sinh Tồn</h4>
                   </div>
                   <p className="text-xs text-slate-300 leading-relaxed">
                     15 câu hỏi hỗn hợp liên tục – trả lời sai mất 1 mạng <Heart className="inline w-3 h-3 text-red-400 fill-red-400" />. Chỉ có 3 mạng, trả lời đúng liên tiếp nhận thưởng cấp số nhân!
                   </p>
-                  <div className="text-[10px] font-bold font-orbitron pt-1 text-slate-400">
+                  <div className="text-[10px] font-semibold font-orbitron pt-1 text-slate-400">
                     Phần thưởng: <span className="text-red-300">+1.5× XP & Ruby mỗi câu đúng / Combo multiplier</span>
                   </div>
                 </div>

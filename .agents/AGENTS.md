@@ -60,3 +60,12 @@
 - Tìm và sửa triệt để nguyên nhân gốc rễ (root cause) thay vì che lỗi bằng dữ liệu giả hoặc UI chỉ xử lý triệu chứng.
 - Tối ưu hiệu năng: Tránh lưu trữ dữ liệu lớn hoặc state dẫn xuất vào `localStorage`. Tránh recompute hoặc truy vấn N+1 trong render và query.
 - **Kiểm thử bắt buộc:** Chạy `npm run build` cho mọi thay đổi frontend/full-stack để xác nhận không có lỗi build/typecheck trước khi hoàn tất. Không tuyên bố hoàn thành nếu bản build vẫn còn lỗi do thay đổi của mình gây ra.
+
+## 8. Quy trình Deploy tự động (Automatic Deployment Process)
+
+- Khi người dùng nói **'deploy'** hoặc yêu cầu deploy, AI phải tự động thực hiện quy trình sau theo thứ tự:
+  1. **Checkcode:** Chạy kiểm thử build (`npm run build`) tại local để đảm bảo code không có lỗi typecheck hoặc bundle.
+  2. **Commit & Push:** Tiến hành commit toàn bộ các thay đổi hợp lệ với thông điệp rõ ràng, sau đó push lên nhánh hiện tại (ví dụ: `main`) trên GitHub để kích hoạt Vercel tự động deploy trên môi trường production.
+  3. **Local Docker Update:** Ở máy local của người dùng, thực hiện build lại và khởi động lại Docker container bằng lệnh thích hợp (ví dụ: `docker-compose up -d --build`).
+  4. Báo cáo chi tiết kết quả từng bước (Checkcode, Git Push, Docker Up) cho người dùng.
+

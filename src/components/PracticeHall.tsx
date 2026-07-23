@@ -390,7 +390,7 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
       <section className="glass-panel rounded-3xl border border-synth-cyan/20 p-6 md:p-8 bg-[radial-gradient(circle_at_top_right,rgba(0,240,255,0.12),transparent_35%),radial-gradient(circle_at_bottom_left,rgba(255,0,127,0.08),transparent_35%)]">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-4 flex-1">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-synth-cyan/30 bg-synth-blue/40 text-[9px] font-orbitron font-bold uppercase tracking-[0.24em] text-synth-cyan">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-synth-cyan/30 bg-synth-blue/40 text-[9px] font-orbitron font-semibold uppercase tracking-[0.24em] text-synth-cyan">
               <Sparkles className="w-3.5 h-3.5" />
               Phòng Luyện Tập
             </div>
@@ -410,7 +410,7 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
             <div className="space-y-2 max-w-md pt-2">
               <div className="flex justify-between items-center text-xs">
                 <span className="text-slate-400 font-medium">Tiến độ lĩnh ngộ chuyên đề:</span>
-                <span className="font-bold font-orbitron text-synth-cyan">{completedLessonsCount}/{totalLessonsCount} ({progressPct}%)</span>
+                <span className="font-semibold font-orbitron text-synth-cyan">{completedLessonsCount}/{totalLessonsCount} ({progressPct}%)</span>
               </div>
               <div className="w-full h-2 bg-black/40 rounded-full overflow-hidden border border-white/5 p-[1px]">
                 <div
@@ -422,7 +422,7 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
           </div>
 
           <div className="flex flex-col gap-2 shrink-0 md:text-right">
-            <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-bold">Luyện tập tổng hợp ({subjectQuestions.length} câu hỏi)</div>
+            <div className="text-[10px] uppercase tracking-[0.2em] text-slate-400 font-semibold">Luyện tập tổng hợp ({subjectQuestions.length} câu hỏi)</div>
             <p className="text-[9px] text-slate-400 leading-normal max-w-xs md:ml-auto">
               Hệ thống tự động đưa bạn học tiếp bài giảng còn dang dở, hoặc luyện câu hỏi ngẫu nhiên khi đã hoàn tất các chuyên đề.
             </p>
@@ -537,7 +537,7 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
                               }`}>
                                 <div className="space-y-1.5">
                                   <div className="flex items-center justify-between gap-2">
-                                    <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider ${
+                                    <span className={`px-1.5 py-0.5 rounded text-[8px] font-semibold uppercase tracking-wider ${
                                       lesson.loai === 'Chưa phân loại SGK'
                                         ? 'bg-red-500/20 border border-red-500/40 text-red-400'
                                         : 'bg-white/5 border border-white/10 text-slate-400'
@@ -545,7 +545,7 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
                                       {lesson.loai === 'Chưa phân loại SGK' ? '⚠️ Thiếu SGK KNTT' : (lesson.loai || lesson.topic)}
                                     </span>
                                     {isCompleted ? (
-                                      <span className="text-[8px] font-bold text-synth-cyan uppercase font-orbitron tracking-wider">
+                                      <span className="text-[8px] font-semibold text-synth-cyan uppercase font-orbitron tracking-wider">
                                         {typeof lessonsProgress[lesson.id] === 'number'
                                           ? `Đã lĩnh ngộ 🌟 (${Math.round((lessonsProgress[lesson.id] as number) * 100)}%)`
                                           : 'Đã lĩnh ngộ 🌟'}
@@ -556,7 +556,7 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
                                       </span>
                                     )}
                                   </div>
-                                  <h3 className="font-orbitron font-bold uppercase text-xs text-white tracking-wide leading-snug">
+                                  <h3 className="font-orbitron font-semibold uppercase text-xs text-white tracking-wide leading-snug">
                                     {lesson.bai ? `Bài ${lesson.bai}: ` : ''}{lesson.title}
                                   </h3>
                                   <p className="text-[10px] text-slate-400 line-clamp-1 leading-snug">
@@ -569,7 +569,7 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
                                     e.stopPropagation();
                                     onStudyLesson(lesson.id);
                                   }}
-                                  className={`self-start inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-md font-orbitron font-bold text-[8px] uppercase tracking-wide transition-all duration-300 cursor-pointer ${
+                                  className={`self-start inline-flex items-center justify-center gap-1 px-2.5 py-1 rounded-md font-orbitron font-semibold text-[8px] uppercase tracking-wide transition-all duration-300 cursor-pointer ${
                                     isCompleted 
                                       ? 'border border-white/10 bg-white/5 text-slate-300 hover:bg-white/10'
                                       : 'bg-gradient-to-r from-synth-cyan to-synth-purple text-black shadow-[0_0_10px_rgba(0,240,255,0.2)] hover:scale-[1.01]'
@@ -592,7 +592,7 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
                             ...current,
                             [dungeon.id]: (current[dungeon.id] ?? 6) + 6
                           }))}
-                          className="px-4 py-1.5 rounded-lg border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-slate-300 font-orbitron font-bold text-[10px] uppercase tracking-wider transition-all duration-200 cursor-pointer"
+                          className="px-4 py-1.5 rounded-lg border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-slate-300 font-orbitron font-semibold text-[10px] uppercase tracking-wider transition-all duration-200 cursor-pointer"
                         >
                           Xem thêm bài học ⚔️
                         </button>

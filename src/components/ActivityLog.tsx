@@ -70,7 +70,7 @@ export const ActivityLog: React.FC = () => {
 
       {/* Activity Logs Section */}
       <div className="flex-1 flex flex-col min-h-0">
-        <h3 className={`font-orbitron font-bold text-sm uppercase tracking-wider flex items-center gap-2 mb-3 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
+        <h3 className={`font-orbitron font-semibold text-sm uppercase tracking-wider flex items-center gap-2 mb-3 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
           <Clock className={`w-4 h-4 ${isUnicorn ? 'text-fuchsia-500' : ''}`} /> Dòng hoạt động
         </h3>
 
@@ -81,7 +81,7 @@ export const ActivityLog: React.FC = () => {
         >
           {visibleLogs.length > 0 ? (
             <>
-              <div className={`flex items-center justify-between text-[10px] font-bold uppercase tracking-wider mb-2 sticky top-0 z-10 backdrop-blur-sm py-1 ${
+              <div className={`flex items-center justify-between text-[10px] font-semibold uppercase tracking-wider mb-2 sticky top-0 z-10 backdrop-blur-sm py-1 ${
                 isUnicorn ? 'bg-white/85 text-violet-600/80' : 'bg-synth-bg/90 text-synth-text-muted'
               }`}>
                 <span>Hiển thị {visibleLogs.length}/{sectLogs.length}</span>
@@ -97,7 +97,7 @@ export const ActivityLog: React.FC = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-center mb-0.5">
-                    <span className="font-bold text-white truncate">{log.title}</span>
+                    <span className="font-semibold text-white truncate">{log.title}</span>
                     <span className="text-[9px] text-synth-text-muted">
                       {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
@@ -108,7 +108,7 @@ export const ActivityLog: React.FC = () => {
                   
                   {/* Reward indicator */}
                   {(log.rubyChanged !== 0 || log.xpChanged !== 0) && (
-                    <div className="flex gap-2 mt-1.5 text-[9px] font-orbitron font-bold">
+                    <div className="flex gap-2 mt-1.5 text-[9px] font-orbitron font-semibold">
                       {log.rubyChanged > 0 && (
                         <span className="text-synth-orange">+{log.rubyChanged} Ruby</span>
                       )}
@@ -130,7 +130,7 @@ export const ActivityLog: React.FC = () => {
             </div>
           )}
           {visibleLogs.length < sectLogs.length && (
-            <div className="py-3 text-center text-[10px] text-synth-text-muted font-bold uppercase tracking-wider">
+            <div className="py-3 text-center text-[10px] text-synth-text-muted font-semibold uppercase tracking-wider">
               Đang rút thêm...
             </div>
           )}

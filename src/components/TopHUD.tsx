@@ -68,7 +68,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
 
   const statItemClass = 'flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition-opacity';
   const navBtnClass = (active: boolean, activeStyle: string, idleStyle: string) =>
-    `flex items-center gap-1.5 px-3 h-10 font-orbitron font-bold text-xs rounded-lg uppercase tracking-wider border cursor-pointer transition-all duration-300 ${active ? activeStyle : idleStyle}`;
+    `flex items-center gap-1.5 px-3 h-10 font-orbitron font-semibold text-xs rounded-lg uppercase tracking-wider border cursor-pointer transition-all duration-300 ${active ? activeStyle : idleStyle}`;
 
   return (
     <header className={headerClass}>
@@ -117,9 +117,9 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                     }`}>
                       <div className="border-b border-white/5 pb-2 min-w-0">
                         <p className="text-[10px] text-slate-400 truncate">{currentUser.email}</p>
-                        <p className="text-xs font-bold truncate mt-0.5">{currentUser.name}</p>
+                        <p className="text-xs font-semibold truncate mt-0.5">{currentUser.name}</p>
                       </div>
-                      <div className="flex flex-col gap-1 text-[10px] uppercase font-bold tracking-wider">
+                      <div className="flex flex-col gap-1 text-[10px] uppercase font-semibold tracking-wider">
                         {isStudent && onViewProfile && (
                           <button
                             onClick={() => {
@@ -169,13 +169,13 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                 {isStudent ? (
                   <span
                     onClick={() => showHelp('xp')}
-                    className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-synth-purple/30 text-synth-cyan border border-synth-cyan/20 uppercase font-orbitron cursor-pointer hover:bg-synth-purple/50 shrink-0"
+                    className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-synth-purple/30 text-synth-cyan border border-synth-cyan/20 uppercase font-orbitron cursor-pointer hover:bg-synth-purple/50 shrink-0"
                     title={`Danh hiệu: ${getStudentRankForLevel(player.level).name} — Cấp độ ${player.level}. Nhấp để xem hướng dẫn.`}
                   >
                     {getStudentRankForLevel(player.level).icon} Lvl.{player.level}
                   </span>
                 ) : (
-                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase font-orbitron shrink-0 ${
+                  <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded uppercase font-orbitron shrink-0 ${
                     currentUser?.role === 'truong_vien' ? 'bg-synth-magenta/30 text-synth-magenta border border-synth-magenta/20' :
                     currentUser?.role === 'pho_vien' ? 'bg-purple-500/30 text-purple-400 border border-purple-500/20' :
                     currentUser?.role === 'tutor' ? 'bg-synth-orange/30 text-synth-orange border border-synth-orange/20' :
@@ -288,9 +288,9 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                         }`}>
                           <div className="border-b border-white/5 pb-2 min-w-0">
                             <p className="text-[10px] text-slate-400 truncate">{currentUser.email}</p>
-                            <p className="text-xs font-bold truncate mt-0.5">{currentUser.name}</p>
+                            <p className="text-xs font-semibold truncate mt-0.5">{currentUser.name}</p>
                           </div>
-                          <div className="flex flex-col gap-1 text-[10px] uppercase font-bold tracking-wider">
+                          <div className="flex flex-col gap-1 text-[10px] uppercase font-semibold tracking-wider">
                             {isStudent && onViewProfile && (
                               <button
                                 onClick={() => {
@@ -339,7 +339,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                     </span>
                     <span
                       onClick={() => showHelp('xp')}
-                      className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-synth-purple/30 text-synth-cyan border border-synth-cyan/20 uppercase font-orbitron cursor-pointer hover:bg-synth-purple/50 shrink-0"
+                      className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-synth-purple/30 text-synth-cyan border border-synth-cyan/20 uppercase font-orbitron cursor-pointer hover:bg-synth-purple/50 shrink-0"
                     >
                       {getStudentRankForLevel(player.level).icon} Lvl.{player.level}
                     </span>
@@ -415,7 +415,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                   <span className="text-[11px] font-black text-white font-orbitron tracking-wide max-w-[90px] truncate">
                     {currentUser ? currentUser.name : 'Ban quản trị'}
                   </span>
-                  <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase font-orbitron shrink-0 ${
+                  <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded uppercase font-orbitron shrink-0 ${
                     currentUser?.role === 'truong_vien' ? 'bg-synth-magenta/30 text-synth-magenta border border-synth-magenta/20' :
                     currentUser?.role === 'pho_vien' ? 'bg-purple-500/30 text-purple-400 border border-purple-500/20' :
                     currentUser?.role === 'tutor' ? 'bg-synth-orange/30 text-synth-orange border border-synth-orange/20' :
