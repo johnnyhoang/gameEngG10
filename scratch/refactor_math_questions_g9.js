@@ -9,6 +9,13 @@ function getLessonIdForMathG9Question(q) {
   const cat = (q.category || '').toLowerCase();
   const id = q.id.toLowerCase();
 
+  // Kiểm tra bài toán thống kê/xác suất để tránh so khớp nhầm
+  const isStatsOrProb = cat === 'statistics' || cat === 'probability' || prompt.includes('tan so') || prompt.includes('tan suat') || prompt.includes('trung binh') || prompt.includes('hop chua') || prompt.includes('qua cau') || prompt.includes('xac suat');
+
+  if (isStatsOrProb) {
+    return null; // Các bài này hiện chưa có bài học tương ứng lớp 9, trả về null để gộp theo category ở frontend
+  }
+
   // 1. Hệ phương trình & Giải bài toán bằng cách lập hệ phương trình
   if (cat === 'linear-system' || prompt.includes('he phuong trinh') || prompt.includes('phuong trinh bac nhat hai an')) {
     if (prompt.includes('tham so') || prompt.includes('tim m') || prompt.includes('gia tri cua m') || prompt.includes('he phuong trinh vo so nghiem')) {
