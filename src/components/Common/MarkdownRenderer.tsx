@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkMath from 'remark-math';
 import remarkGfm from 'remark-gfm';
@@ -9,6 +9,61 @@ import { Sparkles } from 'lucide-react';
 import 'katex/dist/katex.min.css';
 import 'highlight.js/styles/github-dark.css';
 
+/**
+ * Preprocesses raw text/markdown to convert Vietnamese math notations,
+ * sub-part letterings (a), b), c)), arrows, degrees, and un-bracketed LaTeX
+ * into clean Markdown and LaTeX math expressions.
+ */
+export function preprocessMathContent(raw: string): string {
+  if (!raw) return '';
+
+  let text = raw;
+
+  // 1. Convert sub-parts like "a) ", "b) ", "c) ", "d) " into distinct new paragraph blocks if concatenated in plain text
+  text = text.replace(/([.!?;\n]|\b)\s*([a-dA-D1-9])\)\s+(?=[A-Z0-9\$\\áàảãạăắằẳẵặâấầnẩẫậéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵđ])/g, (_match, p1, p2, offset) => {
+    if (offset === 0 || p1 === '\n') {
+      return `**${p2})** `;
+    }
+    return `${p1}\n\n**${p2})** `;
+  });
+
+  // 2. Process non-math parts (outside $...$ and $$...$$)
+  const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+?\$)/g);
+
+  const processedParts = parts.map((part, index) => {
+    if (index % 2 === 1) return part;
+
+    let s = part;
+
+    // Convert arrows
+    s = s.replace(/==>/g, '$\\Rightarrow$');
+    s = s.replace(/(?<=\s|^)=>(?=\s|$)/g, '$\\Rightarrow$');
+    s = s.replace(/<==>/g, '$\\Leftrightarrow$');
+    s = s.replace(/(?<=\s|^)<=>\s*/g, '$\\Leftrightarrow$ ');
+
+    // Convert degrees: "90 độ" -> "$90^\circ$", "90°" -> "$90^\circ$"
+    s = s.replace(/\b(\d+)\s*độ\b/gi, '$$1^\\circ$$');
+    s = s.replace(/\b(\d+)\s*°/g, '$$1^\\circ$$');
+
+    // Convert unicode superscripts (e.g. AD² -> $AD^2$)
+    s = s.replace(/\b([A-Za-z0-9]+)²\b/g, '$$$1^2$$');
+    s = s.replace(/\b([A-Za-z0-9]+)³\b/g, '$$$1^3$$');
+
+    // Convert angle notation: "góc ACB" -> "$\widehat{ACB}$"
+    s = s.replace(/\bgóc\s+([A-Z]{1,4})\b/gi, '$\\widehat{$1}$');
+
+    // Convert triangle notation: "tam giác ABC" -> "$\Delta ABC$"
+    s = s.replace(/\btam giác\s+([A-Z]{3})\b/gi, '$\\Delta $1$');
+
+    // Convert middle dot products: "DC . DB" or "DC · DB" -> "$DC \cdot DB$"
+    s = s.replace(/\b([A-Z]{1,3})\s*[·\.]\s*([A-Z]{1,3})\b/g, '$$$1 \\cdot $2$$');
+
+    return s;
+  });
+
+  return processedParts.join('');
+}
+
 interface MarkdownRendererProps {
   content: string;
   className?: string;
@@ -18,6 +73,8 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
   content,
   className = ''
 }) => {
+  const formattedContent = useMemo(() => preprocessMathContent(content), [content]);
+
   return (
     <div className={`markdown-renderer max-w-none text-left select-text ${className}`}>
       <ReactMarkdown
@@ -87,7 +144,7 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           ),
         }}
       >
-        {content}
+        {formattedContent}
       </ReactMarkdown>
     </div>
   );
