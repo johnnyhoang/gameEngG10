@@ -8,6 +8,8 @@ export const ProfileSelectionScreen: React.FC = () => {
   const quickStartProfile = useGameState(state => state.quickStartProfile);
   const logout = useGameState(state => state.logout);
   const profilesLoading = useGameState(state => state.profilesLoading);
+  const profilesError = useGameState(state => state.profilesError);
+  const fetchProfiles = useGameState(state => state.fetchProfiles);
   const [quickStarting, setQuickStarting] = useState<'student' | 'tutor' | null>(null);
   const [selectingProfileId, setSelectingProfileId] = useState<string | null>(null);
 
@@ -144,6 +146,52 @@ export const ProfileSelectionScreen: React.FC = () => {
           <p className="font-orbitron text-[10px] text-synth-cyan font-bold tracking-widest uppercase animate-pulse">
             Đang tải danh sách hồ sơ...
           </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Hiển thị Box Lỗi khi gặp sự cố máy chủ / không nạp được profile — không cho phép tạo mới nhầm
+  if (profilesError) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4 font-mono text-white animate-fade-in">
+        <div className="glass-panel rounded-3xl border border-rose-500/30 p-6 pb-8 max-w-md w-full text-center space-y-6 shadow-[0_0_40px_rgba(244,63,94,0.15)] relative">
+          <button
+            onClick={handleLogout}
+            className="absolute top-4 right-4 flex items-center gap-1.5 text-[9px] uppercase tracking-widest text-slate-400 hover:text-synth-magenta transition-colors cursor-pointer"
+            title="Đăng xuất tài khoản Google"
+          >
+            <LogOut className="w-3 h-3" />
+            Đăng xuất
+          </button>
+
+          <div className="w-14 h-14 mx-auto rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-3xl">
+            ⚠️
+          </div>
+
+          <div className="space-y-2">
+            <h2 className="font-orbitron text-base font-black uppercase tracking-wider text-rose-400">
+              Không Thể Tải Hồ Sơ
+            </h2>
+            <p className="text-xs text-slate-300 leading-relaxed font-sans">
+              Đã xảy ra sự cố khi tải danh sách hồ sơ từ máy chủ. Vui lòng kiểm tra lại kết nối mạng hoặc thử lại.
+            </p>
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={handleLogout}
+              className="flex-1 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors cursor-pointer"
+            >
+              Đăng xuất
+            </button>
+            <button
+              onClick={() => fetchProfiles()}
+              className="flex-1 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-gradient-to-r from-synth-purple to-synth-cyan text-black hover:opacity-90 transition-opacity cursor-pointer shadow-[0_0_12px_rgba(0,240,255,0.3)]"
+            >
+              Thử lại 🔄
+            </button>
+          </div>
         </div>
       </div>
     );

@@ -27,6 +27,7 @@ export const createAuthSlice: StateCreator<
   sessionAccountId: null,
   availableProfiles: [],
   profilesLoading: false,
+  profilesError: null,
   logoutState: 'idle',
 
   setSessionAccountId: (accountId: string) => {
@@ -34,12 +35,14 @@ export const createAuthSlice: StateCreator<
   },
 
   fetchProfiles: async () => {
-    set({ profilesLoading: true });
+    set({ profilesLoading: true, profilesError: null });
     try {
       const profiles = await authService.fetchProfiles();
-      set({ availableProfiles: profiles });
-    } catch (e) {
+      set({ availableProfiles: profiles, profilesError: null });
+    } catch (e: any) {
       console.error('fetchProfiles error', e);
+      const errMsg = e?.message || 'Không thể tải danh sách hồ sơ từ máy chủ.';
+      set({ profilesError: errMsg });
       toast.error('Không thể tải danh sách hồ sơ từ máy chủ. Vui lòng kiểm tra kết nối.');
     } finally {
       set({ profilesLoading: false });
