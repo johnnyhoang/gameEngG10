@@ -20,10 +20,22 @@ const router = express.Router();
 router.get('/profiles', authMiddleware, async (req: any, res) => {
   try {
     const accountId = req.user?.sub;
+    const email = req.user?.email;
     if (!accountId) {
       console.error('No accountId in req.user');
       return res.status(401).json({ error: 'Unauthorized: missing accountId' });
     }
+
+    // Tự động liên kết lại profile cũ nếu email khớp nhưng account_id bị lệch (do đổi project/reset auth session)
+    if (email) {
+      await pool.query(
+        `UPDATE ge10_users 
+         SET account_id = $1, is_active = TRUE 
+         WHERE email = $2 AND (account_id IS NULL OR account_id <> $1)`,
+        [accountId, email]
+      );
+    }
+
     // Chỉ trả về profile đang hoạt động (is_active = true) — profile bị vô hiệu hóa sẽ không hiển thị ở màn hình chọn
     const profilesRes = await pool.query(
       `SELECT u.*, p.ui_theme 
@@ -61,17 +73,21 @@ router.post('/profiles/quick-start', authMiddleware, async (req: any, res) => {
   }
 
   try {
-    // Check if profile of this role already exists (active or inactive)
+    // Check if profile of this role already exists for accountId or email
     const existCheck = await pool.query(
-      'SELECT * FROM ge10_users WHERE account_id = $1 AND role = $2',
-      [accountId, role]
+      `SELECT * FROM ge10_users 
+       WHERE (account_id = $1 OR (email = $2 AND email IS NOT NULL AND email <> '')) AND role = $3`,
+      [accountId, email || '', role]
     );
     if (existCheck.rows.length > 0) {
       const profile = existCheck.rows[0];
-      if (!profile.is_active) {
-        await pool.query('UPDATE ge10_users SET is_active = TRUE WHERE id = $1', [profile.id]);
+      if (profile.account_id !== accountId || !profile.is_active) {
+        await pool.query(
+          'UPDATE ge10_users SET account_id = $1, is_active = TRUE WHERE id = $2',
+          [accountId, profile.id]
+        );
       }
-      return res.json({ success: true, profile: { ...profile, is_active: true } });
+      return res.json({ success: true, profile: { ...profile, account_id: accountId, is_active: true } });
     }
 
     // Create a new profile automatically

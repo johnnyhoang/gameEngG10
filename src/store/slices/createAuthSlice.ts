@@ -40,6 +40,7 @@ export const createAuthSlice: StateCreator<
       set({ availableProfiles: profiles });
     } catch (e) {
       console.error('fetchProfiles error', e);
+      toast.error('Không thể tải danh sách hồ sơ từ máy chủ. Vui lòng kiểm tra kết nối.');
     } finally {
       set({ profilesLoading: false });
     }

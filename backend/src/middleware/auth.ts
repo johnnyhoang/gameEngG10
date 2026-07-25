@@ -17,14 +17,14 @@ export const authMiddleware = async (req: any, res: any, next: any) => {
   try {
     const { payload } = await jwtVerify(token, JWKS, {
       issuer: `${supabaseUrl}/auth/v1`,
-      algorithms: ['ES256']
+      algorithms: ['ES256', 'RS256', 'ES384', 'ES512', 'RS384', 'RS512', 'HS256']
     });
 
     req.user = payload;
     next();
   } catch (error: any) {
     console.error('JWT Verification Error:', error.message);
-    return res.status(401).json({ error: 'Unauthorized: Invalid token.' });
+    return res.status(401).json({ error: 'Unauthorized: Invalid token.', details: error.message });
   }
 };
 
