@@ -404,6 +404,17 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
     }).filter(Boolean) as { dungeon: typeof DUNGEONS_CONFIG[keyof typeof DUNGEONS_CONFIG]; dungeonLessons: typeof subjectLessons }[];
   }, [subjectLessons]);
 
+  const [activeDungeonTab, setActiveDungeonTab] = useState<string>('all');
+
+  useEffect(() => {
+    setActiveDungeonTab('all');
+  }, [selectedSubject, activeGradeTier]);
+
+  const filteredDungeonsWithLessons = useMemo(() => {
+    if (activeDungeonTab === 'all') return dungeonsWithLessons;
+    return dungeonsWithLessons.filter(({ dungeon }) => dungeon.id === activeDungeonTab);
+  }, [dungeonsWithLessons, activeDungeonTab]);
+
   // Memoize filtered tool cards
   const availableToolCards = useMemo(
     () => MAT_THAT_CARDS.filter(card => subjectToolIds.includes(card.id)),
@@ -515,8 +526,50 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
                 Chọn chuyên đề để học lý thuyết cốt lõi và làm các bài luyện liên quan.
               </p>
             </div>
+
+            {/* TAB CHO TỪNG HẦM NGUYÊN TỐ */}
+            {dungeonsWithLessons.length > 0 && (
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                <button
+                  type="button"
+                  onClick={() => setActiveDungeonTab('all')}
+                  className={`px-3 py-1.5 rounded-xl font-orbitron font-semibold text-xs transition-all cursor-pointer shrink-0 flex items-center gap-1.5 ${
+                    activeDungeonTab === 'all'
+                      ? 'bg-synth-cyan text-black font-bold shadow-[0_0_10px_rgba(0,240,255,0.3)]'
+                      : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  ✨ Tất cả ({totalLessonsCount})
+                </button>
+
+                {dungeonsWithLessons.map(({ dungeon, dungeonLessons }) => {
+                  const dungeonConfig = getDungeonConfig(dungeon.id, selectedSubject as string);
+                  const isActive = activeDungeonTab === dungeon.id;
+                  return (
+                    <button
+                      key={dungeon.id}
+                      type="button"
+                      onClick={() => setActiveDungeonTab(dungeon.id)}
+                      className={`px-3 py-1.5 rounded-xl font-orbitron font-semibold text-xs transition-all cursor-pointer shrink-0 flex items-center gap-1.5 ${
+                        isActive
+                          ? 'bg-synth-cyan text-black font-bold shadow-[0_0_10px_rgba(0,240,255,0.3)]'
+                          : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white'
+                      }`}
+                    >
+                      <span>{dungeonConfig.label}</span>
+                      <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                        isActive ? 'bg-black/30 text-black' : 'bg-white/10 text-slate-400'
+                      }`}>
+                        {dungeonLessons.length}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             <div className="space-y-3">
-              {dungeonsWithLessons.map(({ dungeon, dungeonLessons }) => {
+              {filteredDungeonsWithLessons.map(({ dungeon, dungeonLessons }) => {
                 const dungeonConfig = getDungeonConfig(dungeon.id, selectedSubject as string);
                 const firstLesson = dungeonLessons[0];
                 const loaiLabel = firstLesson?.loai && firstLesson.loai !== 'Chưa phân loại SGK' ? ` - ${firstLesson.loai}` : '';

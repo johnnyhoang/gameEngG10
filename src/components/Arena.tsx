@@ -14,7 +14,7 @@ import { FogCard } from './FogCard';
 
 import { isLightTheme } from '../theme/uiThemes';
 import { RiddleGames } from '../miniapps/riddle/RiddleGames';
-import { getDungeonConfig } from '../utils/textbookEnricher';
+import { DUNGEONS_CONFIG, getDungeonConfig } from '../utils/textbookEnricher';
 
 interface ArenaProps {
   onStartPlay: (
@@ -41,9 +41,11 @@ export function Arena({ onStartPlay }: ArenaProps) {
   const isUnicorn = isLightTheme(uiTheme);
 
   const [visibleLessonsCount, setVisibleLessonsCount] = useState(20);
+  const [activeDungeonTab, setActiveDungeonTab] = useState<string>('all');
 
   useEffect(() => {
     setVisibleLessonsCount(20);
+    setActiveDungeonTab('all');
   }, [activeSectId, activeGradeTier]);
 
   const subjectLessonsSorted = useMemo(() => {
@@ -66,6 +68,23 @@ export function Arena({ onStartPlay }: ArenaProps) {
 
     return [...sortGroup(inSgk), ...sortGroup(notInSgk)];
   }, [lessons, activeSectId, activeGradeTier]);
+
+  const arenaDungeonsWithLessons = useMemo(() => {
+    return Object.values(DUNGEONS_CONFIG).map(dungeon => {
+      const dLessons = subjectLessonsSorted.filter(l => (l.hamNguyenTo || 'thach') === dungeon.id);
+      if (dLessons.length === 0) return null;
+      return {
+        dungeon,
+        dungeonConfig: getDungeonConfig(dungeon.id, activeSectId),
+        lessons: dLessons
+      };
+    }).filter(Boolean) as { dungeon: typeof DUNGEONS_CONFIG[keyof typeof DUNGEONS_CONFIG]; dungeonConfig: ReturnType<typeof getDungeonConfig>; lessons: typeof subjectLessonsSorted }[];
+  }, [subjectLessonsSorted, activeSectId]);
+
+  const filteredSubjectLessons = useMemo(() => {
+    if (activeDungeonTab === 'all') return subjectLessonsSorted;
+    return subjectLessonsSorted.filter(l => (l.hamNguyenTo || 'thach') === activeDungeonTab);
+  }, [subjectLessonsSorted, activeDungeonTab]);
 
 
   const activeSubjectConfig = SUBJECTS_CONFIG[activeSectId as SubjectId];
@@ -186,17 +205,59 @@ export function Arena({ onStartPlay }: ArenaProps) {
             <p className="text-[10px] text-slate-400">Hệ thống bài thi chuẩn hóa theo SGK, sắp xếp tuần tự — Luyện đề thi thử chuẩn cấu trúc để tích lũy kiến thức thực chiến.</p>
           </div>
           <span className="text-[10px] font-orbitron font-semibold text-slate-400">
-            Tổng cộng: {subjectLessonsSorted.length} bài
+            Tổng cộng: {filteredSubjectLessons.length} bài
           </span>
         </div>
 
+        {/* TAB CHO TỪNG HẦM NGUYÊN TỐ */}
+        {arenaDungeonsWithLessons.length > 0 && (
+          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+            <button
+              type="button"
+              onClick={() => { setActiveDungeonTab('all'); setVisibleLessonsCount(20); }}
+              className={`px-3 py-1.5 rounded-xl font-orbitron font-semibold text-xs transition-all cursor-pointer shrink-0 flex items-center gap-1.5 ${
+                activeDungeonTab === 'all'
+                  ? (isUnicorn ? 'bg-violet-600 text-white shadow-sm' : 'bg-synth-cyan text-black font-bold shadow-[0_0_10px_rgba(0,240,255,0.3)]')
+                  : (isUnicorn ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white')
+              }`}
+            >
+              ✨ Tất cả ({subjectLessonsSorted.length})
+            </button>
+
+            {arenaDungeonsWithLessons.map(({ dungeon, dungeonConfig, lessons: dLessons }) => {
+              const isActive = activeDungeonTab === dungeon.id;
+              return (
+                <button
+                  key={dungeon.id}
+                  type="button"
+                  onClick={() => { setActiveDungeonTab(dungeon.id); setVisibleLessonsCount(20); }}
+                  className={`px-3 py-1.5 rounded-xl font-orbitron font-semibold text-xs transition-all cursor-pointer shrink-0 flex items-center gap-1.5 ${
+                    isActive
+                      ? (isUnicorn ? 'bg-violet-600 text-white shadow-sm' : 'bg-synth-cyan text-black font-bold shadow-[0_0_10px_rgba(0,240,255,0.3)]')
+                      : (isUnicorn ? 'bg-slate-100 text-slate-600 hover:bg-slate-200' : 'bg-white/5 text-slate-400 hover:bg-white/10 hover:text-white')
+                  }`}
+                >
+                  <span>{dungeonConfig.label}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    isActive
+                      ? (isUnicorn ? 'bg-white/20 text-white' : 'bg-black/30 text-black')
+                      : 'bg-white/10 text-slate-400'
+                  }`}>
+                    {dLessons.length}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
-          {subjectLessonsSorted.length === 0 ? (
-            <div className="col-span-2 glass-panel rounded-2xl border border-dashed border-white/10 p-6 text-center text-xs text-slate-400">
-              📭 Chưa có bài học nào được nạp cho môn học này.
+          {filteredSubjectLessons.length === 0 ? (
+            <div className="col-span-2 lg:col-span-4 glass-panel rounded-2xl border border-dashed border-white/10 p-6 text-center text-xs text-slate-400">
+              📭 Chưa có bài học nào trong hầm này.
             </div>
           ) : (
-            subjectLessonsSorted
+            filteredSubjectLessons
               .slice(0, visibleLessonsCount)
               .map(lesson => {
                 const isCompleted = lessonsProgress[lesson.id] || false;
@@ -253,7 +314,7 @@ export function Arena({ onStartPlay }: ArenaProps) {
         </div>
 
         {/* Nút Xem thêm (Load More) */}
-        {visibleLessonsCount < subjectLessonsSorted.length && (
+        {visibleLessonsCount < filteredSubjectLessons.length && (
           <div className="flex justify-center pt-2">
             <button
               onClick={() => setVisibleLessonsCount(prev => prev + 20)}
