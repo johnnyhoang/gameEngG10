@@ -27,7 +27,7 @@
       - Đã liên kết đúng `lesson_id` giữa `ge10_custom_questions` và `ge10_lessons`.
       - Đã commit & push lên GitHub repository (`main` branch).
 - **Task đang làm dở:** Không có.
-- **Blockers:** Không có.
+- **Blockers:** Local Docker Desktop chưa được bật, khiến lệnh `docker-compose up -d --build` ở local bị lỗi kết nối Docker daemon.
 
 ## 2. Bước tiếp theo (Next Steps)
 - Khi có yêu cầu tính năng hoặc thay đổi nghiệp vụ mới:
@@ -37,6 +37,10 @@
    4. Cập nhật file `HANDOFF.md` này để bàn giao cho phiên tiếp theo.
 
 ## 3. Lịch sử thay đổi gần đây (Recent Changes)
+- **2026-07-23:**
+   - **Tích hợp Quy trình Deploy tự động & Cập nhật `.agents/AGENTS.md`**:
+      - Thêm mục `## 8. Quy trình Deploy tự động` vào `AGENTS.md` quy định rõ quy trình: checkcode -> commit & push GitHub -> rebuild Docker local.
+      - Thực hiện deploy: Chạy thành công `npm run build` kiểm tra, thực hiện `git add .`, `git commit` và `git push` thành công lên GitHub repository để kích hoạt Vercel tự động build & deploy môi trường production.
 - **2026-07-22:**
    - **Tinh chỉnh Typography - Giảm bold text không cần thiết trên toàn bộ giao diện sĩ tử**:
       - Chuyển đổi các chữ `font-bold` và `font-black` sang `font-semibold` / `font-medium` một cách chọn lọc trên các màn hình chính phía Học sinh (`TopHUD`, `ActivityLog`, `LearningLedger`, `AcademyTab`, `PracticeHall`, `Arena`, `ItemShop`).

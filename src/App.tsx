@@ -1,5 +1,5 @@
 import { isTutorRole, isAdmin } from './utils/roleHelpers';
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense, useCallback } from 'react';
 import { useGameState } from './hooks/useGameState';
 import { getProfileScopedResetState } from './store/initialState';
 import { TopHUD } from './components/TopHUD';
@@ -48,6 +48,27 @@ const ProfilePage = withSuspense(lazy(() => import('./components/ProfilePage').t
 const APP_VERSION = 'fd44bc2';
 const APP_PUSH_TIME = 'Tue, 7 Jul 2026 12:05 ICT';
 
+// Constants outside component to avoid re-creation on every render
+const TOP_HUD_TAB_TO_SCREEN: Record<string, 'map' | 'arena' | 'practice' | 'shop' | 'pet' | 'profile'> = {
+  academy: 'map', knowledge: 'practice', challenge: 'arena',
+  adventure: 'map', funzone: 'shop'
+};
+
+const NAV_TABS: { id: string; icon: string; label: string }[] = [
+  { id: 'academy', icon: '🏫', label: 'Học Viện' },
+  { id: 'knowledge', icon: '📚', label: 'Hang Luyện' },
+  { id: 'challenge', icon: '⚔️', label: 'Thi' },
+  { id: 'adventure', icon: '🧭', label: 'Thám Hiểm' },
+  { id: 'funzone', icon: '🎮', label: 'Funzone' },
+];
+
+const LEGACY_SCREENS = ['map', 'arena', 'shop', 'pet', 'practice', 'relax', 'logs'];
+const VALID_TABS = ['academy', 'knowledge', 'challenge', 'adventure', 'funzone'];
+const LEGACY_TAB_MAP: Record<string, string> = {
+  map: 'academy', profile: 'academy', arena: 'challenge',
+  practice: 'knowledge', relax: 'adventure', pet: 'funzone', shop: 'funzone'
+};
+
 function App() {
   const currentUser = useGameState(state => state.currentUser);
   const checkDailyReset = useGameState(state => state.checkDailyReset);
@@ -66,9 +87,7 @@ function App() {
   const [screen, setScreen] = useState<'academy' | 'play' | 'tutor' | 'workshop-3d' | 'workshop-plane' | 'workshop-graph' | 'lesson-study' | 'profile'>(
     () => {
       const saved = localStorage.getItem('cyber-app-screen') as any;
-      // Migrate legacy screen values to new 'academy' (except profile which we now support as overlay)
-      const legacyScreens = ['map', 'arena', 'shop', 'pet', 'practice', 'relax', 'logs'];
-      if (legacyScreens.includes(saved)) return 'academy';
+      if (LEGACY_SCREENS.includes(saved)) return 'academy';
       return saved || 'academy';
     }
   );
@@ -77,14 +96,10 @@ function App() {
   const [activeTab, setActiveTab] = useState<AcademyTabId>(
     () => {
       const saved = localStorage.getItem('cyber-app-tab') as AcademyTabId | null;
-      if (saved && ['academy', 'knowledge', 'challenge', 'adventure', 'funzone'].includes(saved)) return saved;
+      if (saved && VALID_TABS.includes(saved)) return saved;
       // Migrate legacy screen → tab
       const legacyScreen = localStorage.getItem('cyber-app-screen');
-      const legacyMap: Record<string, AcademyTabId> = {
-        map: 'academy', profile: 'academy', arena: 'challenge',
-        practice: 'knowledge', relax: 'adventure', pet: 'funzone', shop: 'funzone'
-      };
-      return legacyMap[legacyScreen ?? ''] ?? 'academy';
+      return (LEGACY_TAB_MAP[legacyScreen ?? ''] as AcademyTabId) ?? 'academy';
     }
   );
 
@@ -116,20 +131,22 @@ function App() {
     setScreen(current => (current === 'lesson-study' || current === 'play') ? 'academy' : current);
   }, [activeSectId, activeGradeTier]);
 
+  // classLink active ID để tránh re-run khi các field khác của classLinks thay đổi
+  const activeLinkId = classLinks.find((link: any) => link.status === 'active')?.id;
+
   useEffect(() => {
     if (!currentUser?.id || currentUser.id.startsWith('mock-')) return;
-    const activeLink = classLinks.find((link: any) => link.status === 'active');
-    if (!activeLink) return;
+    if (!activeLinkId) return;
     void recordMissionEvent({
       profileId: currentUser.id,
-      idempotencyKey: `teacher-link:${activeLink.id}`,
+      idempotencyKey: `teacher-link:${activeLinkId}`,
       eventType: 'teacher_link_activated',
       gradeTier: activeGradeTier,
       subjectId: activeSectId,
       entityType: 'class-link',
-      entityId: activeLink.id,
+      entityId: activeLinkId,
     });
-  }, [activeGradeTier, activeSectId, currentUser?.id, classLinks]);
+  }, [activeGradeTier, activeSectId, currentUser?.id, activeLinkId]);
 
   useEffect(() => {
     if (screen !== 'workshop-3d' || !currentUser?.id) return;
@@ -164,6 +181,7 @@ function App() {
   }, []);
   const [playMode, setPlayMode] = useState<'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'lesson' | 'survival'>('mixed');
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+  const [lessonQuizCount, setLessonQuizCount] = useState<number>(10); // 10 câu khi thi Arena, 3 câu khi kiểm tra sau bài giảng
   const masterLesson = useGameState(state => state.masterLesson);
   const [bossId, setBossId] = useState<string | undefined>(undefined);
   const [_lessonBackTarget, setLessonBackTarget] = useState<'map' | 'practice' | 'academy'>('academy');
@@ -214,7 +232,7 @@ function App() {
     onConfirm?: () => void;
   } | null>(null);
 
-  const navigateWithWarning = (targetScreen: typeof screen, targetTab?: AcademyTabId) => {
+  const navigateWithWarning = useCallback((targetScreen: typeof screen, targetTab?: AcademyTabId) => {
     if (screen === 'play') {
       setModalData({
         isOpen: true,
@@ -230,7 +248,7 @@ function App() {
       setScreen(targetScreen);
       if (targetTab) setActiveTab(targetTab);
     }
-  };
+  }, [screen]);
 
   // Initialize event subscriptions & daily checks on mount
   useEffect(() => {
@@ -254,7 +272,8 @@ function App() {
       unsub();
       clearInterval(interval);
     };
-  }, [currentUser]);
+  // Dùng currentUser?.id thay vì currentUser object để tránh re-subscribe khi XP/ruby thay đổi
+  }, [currentUser?.id]);
 
   useEffect(() => {
     document.documentElement.dataset.theme = uiTheme;
@@ -374,6 +393,9 @@ function App() {
     if (mode === 'lesson') {
       setSelectedLessonId(id || null);
       setBossId(undefined);
+      if (backTarget === 'arena') {
+        setLessonQuizCount(10);
+      }
     } else {
       setBossId(id);
     }
@@ -386,6 +408,8 @@ function App() {
   };
 
   const handleStartLessonPracticeFromMap = (lessonId: string) => {
+    // Khi kích hoạt từ WorldMap/AcademyTab → 10 câu (tương đương Arena)
+    setLessonQuizCount(10);
     handleStartPlay('lesson', lessonId);
   };
 
@@ -394,15 +418,11 @@ function App() {
   // Key remount theo môn+lớp
   const learningContextKey = `${activeSectId}-${activeGradeTier}`;
   const isWorkshopScreen = screen === 'workshop-3d' || screen === 'workshop-plane' || screen === 'workshop-graph';
-  // Map activeTab/screen → topHUD screen prop
-  const topHudTabToScreen: Record<AcademyTabId, 'map' | 'arena' | 'practice' | 'shop' | 'pet' | 'profile'> = {
-    academy: 'map', knowledge: 'practice', challenge: 'arena',
-    adventure: 'map', funzone: 'shop'
-  };
+  // Map activeTab/screen → topHUD screen prop (dùng constant ngoài component)
   const topHudScreen = (screen === 'play' || screen === 'lesson-study' || isWorkshopScreen) ? 'play'
     : screen === 'tutor' ? 'tutor'
       : screen === 'profile' ? 'profile'
-        : topHudTabToScreen[activeTab] ?? 'map';
+        : TOP_HUD_TAB_TO_SCREEN[activeTab] ?? 'map';
 
   return (
     <div className="app-shell min-h-screen flex flex-col text-slate-100" data-theme={uiTheme}>
@@ -467,6 +487,7 @@ function App() {
             mode={playMode}
             bossId={bossId}
             lessonId={selectedLessonId || undefined}
+            lessonQuizCount={playMode === 'lesson' ? lessonQuizCount : undefined}
             onFinish={async (result) => {
               if (playMode === 'lesson' && selectedLessonId) {
                 if (result.passed) {
@@ -491,7 +512,11 @@ function App() {
         {screen === 'lesson-study' && selectedLessonId && (
           <LessonStudyView
             lessonId={selectedLessonId}
-            onStartPractice={(lessonId) => handleStartPlay('lesson', lessonId)}
+            onStartPractice={(lessonId) => {
+              // Sau khi đọc bài giảng: chỉ kiểm tra 3 câu
+              setLessonQuizCount(3);
+              handleStartPlay('lesson', lessonId);
+            }}
             onBack={() => setScreen('academy')}
           />
         )}
@@ -599,16 +624,10 @@ function App() {
       {/* Mobile Bottom Navigation Bar — 5 tabs (Chỉ hiển thị cho Học sinh) */}
       {currentUser && currentUser.role === 'student' && screen === 'academy' && (
         <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-synth-bg/95 backdrop-blur-md border-t border-synth-cyan/20 px-2 py-2 pb-3 flex justify-around items-center z-50 shadow-[0_-4px_20px_rgba(0,240,255,0.15)]">
-          {([
-            { id: 'academy', icon: '🏫', label: 'Học Viện' },
-            { id: 'knowledge', icon: '📚', label: 'Hang Luyện' },
-            { id: 'challenge', icon: '⚔️', label: 'Thi' },
-            { id: 'adventure', icon: '🧭', label: 'Thám Hiểm' },
-            { id: 'funzone', icon: '🎮', label: 'Funzone' },
-          ] as { id: AcademyTabId; icon: string; label: string }[]).map(tab => (
+          {NAV_TABS.map(tab => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
+              onClick={() => setActiveTab(tab.id as AcademyTabId)}
               className={`flex flex-col items-center gap-0.5 font-orbitron font-bold text-[8px] uppercase tracking-wider transition-colors cursor-pointer ${activeTab === tab.id ? 'text-synth-cyan' : 'text-synth-text-muted hover:text-white'
                 }`}
             >

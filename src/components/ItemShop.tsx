@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useGameState } from '../hooks/useGameState';
 import { Shield, Coins, Gift, Palette, RotateCcw } from 'lucide-react';
 import { toast } from '../utils/toast';
@@ -10,9 +10,15 @@ interface ItemShopProps {
   onSpinWheel?: () => void;
 }
 
+// Static fallback để tránh tạo mảng mới mỗi render khi unlockedThemes undefined
+const DEFAULT_UNLOCKED_THEMES = ['current'];
+
 export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
   const { t } = useTranslate();
+  // Granular selectors: chỉ subscribe field cần, tránh re-render khi energy/xp thay đổi
   const player = useGameState(state => state.player);
+  const playerRuby = useGameState(state => state.player.ruby);
+  const playerUnlockedThemes = player.unlockedThemes;
   const THEME_UNLOCK_COST = useGameState(state => state.gameSettings.themeUnlockCost ?? 200);
   const rewards = useGameState(state => state.rewards);
   const rewardRedemptions = useGameState(state => state.rewardRedemptions);
@@ -23,7 +29,7 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
   const redeemReward = useGameState(state => state.redeemReward);
   const uiTheme = useGameState(state => state.uiTheme);
   const isUnicorn = isLightTheme(uiTheme);
-  const unlockedThemes = player.unlockedThemes || ['current'];
+  const unlockedThemes = playerUnlockedThemes || DEFAULT_UNLOCKED_THEMES;
 
   // Class Rewards (mới)
   const classRewards = useGameState(state => state.classRewards);
@@ -51,39 +57,58 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
   const [classRewardsLoading, setClassRewardsLoading] = useState(true);
   const [cancellingIds, setCancellingIds] = useState<Record<string, boolean>>({});
 
-  const isWeekend = () => {
+  // Tính một lần mỗi render, tránh gọi new Date() nhiều lần
+  const todayInfo = useMemo(() => {
     const day = new Date().getDay();
-    return day === 0 || day === 6;
-  };
+    const isWeekend = day === 0 || day === 6;
+    const daysUntilWeekend = isWeekend ? 0 : (day <= 5 ? 6 - day : 1);
+    return { isWeekend, daysUntilWeekend };
+  }, []);
 
-  const daysUntilWeekend = () => {
-    const day = new Date().getDay();
-    if (day === 0 || day === 6) return 0;
-    return day <= 5 ? 6 - day : 1;
-  };
+  // Pre-compute pending redemption map để tránh O(N×M) nested filter trong render loop
+  const pendingRedemptionMap = useMemo(() => {
+    const map = new Map<string, typeof classRewardRedemptions[0]>();
+    for (const r of classRewardRedemptions) {
+      if (r.status === 'pending' && !map.has(r.classRewardId)) {
+        map.set(r.classRewardId, r);
+      }
+    }
+    return map;
+  }, [classRewardRedemptions]);
+
+  // Memoize filtered redemptions cho phần lịch sử đổi quà
+  const activeRedemptions = useMemo(
+    () => classRewardRedemptions.filter(r => r.status !== 'cancelled'),
+    [classRewardRedemptions]
+  );
+
+  // Dùng ref để luưu stable ref của store actions, tránh restart interval khi re-render
+  const fetchClassRewardsRef = useRef(fetchClassRewards);
+  const syncWithServerRef = useRef(syncWithServer);
+  fetchClassRewardsRef.current = fetchClassRewards;
+  syncWithServerRef.current = syncWithServer;
 
   useEffect(() => {
     setClassRewardsLoading(true);
-    
-    // Tải dữ liệu ban đầu bao gồm classRewards và đồng bộ thông tin ví Ruby của player
     Promise.all([
-      fetchClassRewards(),
-      syncWithServer?.()
+      fetchClassRewardsRef.current(),
+      syncWithServerRef.current?.(),
     ]).finally(() => {
       setClassRewardsLoading(false);
     });
 
-    // Thiết lập tự động refresh mỗi 1 phút (60 giây)
+    // Tự động refresh mỗi 1 phút — dùng ref để interval không bị restart khi action re-instantiate
     const intervalId = setInterval(() => {
-      fetchClassRewards();
-      syncWithServer?.();
+      fetchClassRewardsRef.current();
+      syncWithServerRef.current?.();
     }, 60 * 1000);
 
     return () => clearInterval(intervalId);
-  }, [fetchClassRewards, syncWithServer]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleBuyTheme = (themeId: typeof UI_THEMES[number]['id']) => {
-    if (player.ruby < THEME_UNLOCK_COST) {
+    if (playerRuby < THEME_UNLOCK_COST) {
       toast.error(`Thiếu Ruby. Cần ${THEME_UNLOCK_COST} Ruby để mở khóa Giao diện này.`);
       return;
     }
@@ -107,7 +132,7 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
       toast.error('Thẻ Chuyên Cần đã sẵn sàng rồi.');
       return;
     }
-    if (player.ruby < 150) {
+    if (playerRuby < 150) {
       toast.error('Thiếu Ruby. Cần 150 Ruby để mua Thẻ Chuyên Cần.');
       return;
     }
@@ -126,7 +151,7 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
   };
 
   const handleBuyHint = () => {
-    if (player.ruby < 50) {
+    if (playerRuby < 50) {
       toast.error(t('Thiếu Ruby để mua Thẻ Gợi Ý!', 'Not enough Ruby to buy Hint Card!'));
       return;
     }
@@ -147,7 +172,7 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
   const handleRedeem = (id: string, title: string) => {
     const reward = rewards.find(r => r.id === id);
     if (!reward) return;
-    if (player.ruby < reward.costRuby) {
+    if (playerRuby < reward.costRuby) {
       toast.error(t('Ruby chưa đủ để đổi phần thưởng này!', 'Not enough Ruby to redeem this reward!'));
       return;
     }
@@ -171,7 +196,7 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
       toast.error(t('Phúc lợi này đã hết số lượng!', 'This class benefit is out of stock!'));
       return;
     }
-    if (player.ruby < reward.costRuby) {
+    if (playerRuby < reward.costRuby) {
       toast.error(t('Ruby chưa đủ để đổi phúc lợi này!', 'Not enough Ruby to redeem this class benefit!'));
       return;
     }
@@ -327,20 +352,20 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
         
         <div className={`glass-panel rounded-2xl p-5 flex flex-col md:flex-row justify-between items-center gap-4 ${isUnicorn ? 'border-violet-200/35 bg-gradient-to-tr from-white/85 via-amber-50/70 to-fuchsia-50/70' : 'border-synth-orange/20 bg-gradient-to-tr from-synth-orange/5 to-transparent'}`}>
           <div className="flex gap-4 items-center">
-            <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-3xl border shrink-0 ${isWeekend() ? 'animate-spin-slow' : 'opacity-40 grayscale'} ${isUnicorn ? 'bg-amber-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-orange/30'}`}>
+            <div className={`w-14 h-14 rounded-xl flex items-center justify-center text-3xl border shrink-0 ${todayInfo.isWeekend ? 'animate-spin-slow' : 'opacity-40 grayscale'} ${isUnicorn ? 'bg-amber-50 border-violet-200/30' : 'bg-synth-gray/50 border-synth-orange/30'}`}>
               🎡
             </div>
             <div className="space-y-1">
               <h4 className={`font-orbitron font-semibold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
-                {isWeekend() ? t('Vòng Quay Đang Mở!', 'Lucky Wheel Open!') : t('Vòng Quay Đang Khóa', 'Lucky Wheel Locked')}
+                {todayInfo.isWeekend ? t('Vòng Quay Đang Mở!', 'Lucky Wheel Open!') : t('Vòng Quay Đang Khóa', 'Lucky Wheel Locked')}
               </h4>
               <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>
-                {isWeekend() ? t('Hãy thử vận may để nhận Ruby, năng lượng hoặc các phần thưởng bất ngờ!', 'Try your luck to receive Ruby, energy, or unexpected rewards!') : t(`Vòng quay sẽ mở vào Thứ Bảy & Chủ Nhật. Còn lại ${daysUntilWeekend()} ngày.`, `The wheel opens on Sat & Sun. ${daysUntilWeekend()} days remaining.`)}
+                {todayInfo.isWeekend ? t('Hãy thử vận may để nhận Ruby, năng lượng hoặc các phần thưởng bất ngờ!', 'Try your luck to receive Ruby, energy, or unexpected rewards!') : t(`Vòng quay sẽ mở vào Thứ Bảy & Chủ Nhật. Còn lại ${todayInfo.daysUntilWeekend} ngày.`, `The wheel opens on Sat & Sun. ${todayInfo.daysUntilWeekend} days remaining.`)}
               </p>
             </div>
           </div>
           
-          {isWeekend() ? (
+          {todayInfo.isWeekend ? (
             <button
               onClick={onSpinWheel}
               className={`px-5 py-2.5 rounded-xl font-orbitron font-semibold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 shrink-0 ${isUnicorn ? 'bg-gradient-to-r from-amber-300 to-orange-300 text-violet-900 shadow-md hover:brightness-105' : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.4)]'}`}
@@ -481,10 +506,11 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {classRewards.map(reward => {
                 const isOutOfStock = reward.remaining <= 0;
-                const isAffordable = player.ruby >= reward.costRuby;
+                const isAffordable = playerRuby >= reward.costRuby;
                 const canRedeem = !isOutOfStock && isAffordable;
-                const myPendingForThisReward = classRewardRedemptions.filter(r => r.classRewardId === reward.id && r.status === 'pending');
-                const alreadyPending = myPendingForThisReward.length > 0;
+                // O(1) lookup thay vì O(N) filter lặp lại trong mỗi item
+                const pendingRedemption = pendingRedemptionMap.get(reward.id);
+                const alreadyPending = !!pendingRedemption;
                 return (
                   <div key={reward.id} className="relative">
                     <div className={`glass-panel rounded-2xl p-4 flex justify-between items-center transition-all duration-200 h-full ${
@@ -509,11 +535,11 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
                           <>
                             <span className="text-[10px] px-2 py-1 rounded font-orbitron font-semibold text-synth-orange border border-synth-orange/30 bg-synth-orange/10 animate-pulse">{t('Chờ Trao', 'Pending')}</span>
                             <button 
-                              disabled={cancellingIds[myPendingForThisReward[0].id]}
-                              onClick={(e) => { e.stopPropagation(); handleCancelClassRedemption(myPendingForThisReward[0].id); }}
+                              disabled={cancellingIds[pendingRedemption!.id]}
+                              onClick={(e) => { e.stopPropagation(); handleCancelClassRedemption(pendingRedemption!.id); }}
                               className="flex items-center gap-1 text-[10px] text-synth-text-muted hover:text-synth-magenta transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
                             >
-                              <RotateCcw className="w-3 h-3" /> {cancellingIds[myPendingForThisReward[0].id] ? t('Đang hủy...', 'Cancelling...') : t('Rút lại', 'Cancel')}
+                              <RotateCcw className="w-3 h-3" /> {cancellingIds[pendingRedemption!.id] ? t('Đang hủy...', 'Cancelling...') : t('Rút lại', 'Cancel')}
                             </button>
                           </>
                         ) : (
@@ -542,7 +568,7 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
           <div className="pt-2 space-y-2">
             <h4 className={`text-xs font-orbitron font-semibold uppercase tracking-wider ${isUnicorn ? 'text-violet-700' : 'text-synth-text-muted'}`}>{t('Nhật ký đổi quà', 'Redemption History')}</h4>
             <div className="space-y-2 max-h-56 overflow-y-auto">
-              {classRewardRedemptions.filter(r => r.status !== 'cancelled').map(redemption => (
+              {activeRedemptions.map(redemption => (
                 <div key={redemption.id} className={`rounded-xl p-3 flex justify-between items-center ${isUnicorn ? 'bg-white/60 border border-violet-200/25' : 'bg-white/5 border border-white/5'}`}>
                   <div>
                     <span className={`text-xs font-semibold block ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{redemption.rewardTitle}</span>

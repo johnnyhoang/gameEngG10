@@ -48,15 +48,25 @@ export function Arena({ onStartPlay }: ArenaProps) {
 
   const subjectLessonsSorted = useMemo(() => {
     const rawLessons = filterLessonsInScope(lessons, activeSectId as SubjectId, activeGradeTier);
-    const mappedLessons = rawLessons.filter(l => typeof l.bai === 'number');
-    const unmappedLessons = rawLessons.filter(l => typeof l.bai !== 'number');
-    const maxBai = mappedLessons.length > 0 ? Math.max(...mappedLessons.map(l => l.bai as number)) : 0;
 
-    return [
-      ...mappedLessons,
-      ...unmappedLessons.map((l, idx) => ({ ...l, bai: maxBai + 1 + idx }))
-    ].sort((a, b) => (a.bai ?? 0) - (b.bai ?? 0));
+    // Bài có trong SGK (loai hợp lệ, không phải 'Chưa phân loại SGK') lên trước
+    const inSgk = rawLessons.filter(l => l.loai && l.loai !== 'Chưa phân loại SGK');
+    const notInSgk = rawLessons.filter(l => !l.loai || l.loai === 'Chưa phân loại SGK');
+
+    // Trong mỗi nhóm: bài có số bài (bai) lên trước rồi mới đến bài không có số
+    const sortGroup = (group: typeof rawLessons) => {
+      const mapped = group.filter(l => typeof l.bai === 'number');
+      const unmapped = group.filter(l => typeof l.bai !== 'number');
+      const maxBai = mapped.length > 0 ? Math.max(...mapped.map(l => l.bai as number)) : 0;
+      return [
+        ...mapped,
+        ...unmapped.map((l, idx) => ({ ...l, bai: maxBai + 1 + idx }))
+      ].sort((a, b) => (a.bai ?? 0) - (b.bai ?? 0));
+    };
+
+    return [...sortGroup(inSgk), ...sortGroup(notInSgk)];
   }, [lessons, activeSectId, activeGradeTier]);
+
 
   const activeSubjectConfig = SUBJECTS_CONFIG[activeSectId as SubjectId];
   const isChuyenSau = activeSubjectConfig.group === 'chuyen_sau';

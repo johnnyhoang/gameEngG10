@@ -13,6 +13,7 @@ export async function assessLiteratureRubric(input: AssessmentInput): Promise<As
       'X-Profile-Id': input.profileId,
     },
     body: JSON.stringify({
+      questionId: input.question.id,
       promptText: input.question.prompt,
       essay: input.answer,
       keywords: answers,
@@ -33,5 +34,6 @@ export async function assessLiteratureRubric(input: AssessmentInput): Promise<As
     missingKeywords: payload.result.missingKeywords ?? [],
     feedback: payload.result.feedback ?? '',
     suggestions: payload.result.suggestions ?? [],
+    signature: payload.signature,
   };
 }

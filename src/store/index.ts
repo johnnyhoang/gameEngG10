@@ -34,15 +34,13 @@ export const useGameState = create<StoreState>()(
         rewards: state.rewards,
         challenges: state.challenges,
         maxCombo: state.maxCombo,
-        profiles: state.profiles,
-        petStates: state.petStates,
-        pageExplorationStates: state.pageExplorationStates,
-        categoryStatsAll: state.categoryStatsAll,
         uiTheme: state.uiTheme,
         uiThemesByUser: state.uiThemesByUser,
         failedQuestionIds: state.failedQuestionIds,
         recentlyPlayedQuestionIds: state.recentlyPlayedQuestionIds,
-        textbookMappings: state.textbookMappings,
+        // NOTE: profiles, petStates, categoryStatsAll, textbookMappings, pageExplorationStates
+        // được bỏ khỏi persist để tránh JSON.stringify blocking trên mỗi state update.
+        // Các data này được fetch lại từ server khi selectProfile().
       }),
       merge: (persistedState: any, currentState: any) => {
         const migratedState = normalizePersistedRubyState(persistedState);

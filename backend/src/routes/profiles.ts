@@ -10,7 +10,8 @@ import {
   loadBaseRuby,
   loadThemeUnlockCost,
   loadChallengeTemplates,
-  ensureInitialChallenges
+  ensureInitialChallenges,
+  loadAllGameSettings
 } from '../helpers/gameSettings.js';
 
 const router = express.Router();
@@ -241,12 +242,13 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
       };
     });
 
-    const bossCompletionBonusRuby = await loadBossCompletionBonusRuby();
-    const challengeEnergyCosts = await loadChallengeEnergyCosts();
-    const maxEnergy = await loadMaxEnergy();
-    const baseXP = await loadBaseXP();
-    const baseRuby = await loadBaseRuby();
-    const themeUnlockCost = await loadThemeUnlockCost();
+    const allSettings = await loadAllGameSettings();
+    const bossCompletionBonusRuby = allSettings.bossCompletionBonusRuby;
+    const challengeEnergyCosts = allSettings.challengeEnergyCosts;
+    const maxEnergy = allSettings.maxEnergy;
+    const baseXP = allSettings.baseXP;
+    const baseRuby = allSettings.baseRuby;
+    const themeUnlockCost = allSettings.themeUnlockCost;
     const challengeTemplates = await loadChallengeTemplates();
 
     // Format category stats array into record mapping

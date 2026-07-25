@@ -46,9 +46,9 @@ export function WorldMap({
     syncWithServer();
   }, [syncWithServer]);
 
+
   const tutorQuests = useGameState(state => state.tutorQuests || []);
   const claimTutorQuest = useGameState(state => state.claimTutorQuest);
-  
   const classLinks = useGameState(state => state.classLinks);
   const activeLink = classLinks.find((l: any) => l.status === 'active');
   const topics = useGameState(state => state.topics || []);
@@ -62,8 +62,15 @@ export function WorldMap({
   };
 
   const pageExplorationStates = useGameState(state => state.pageExplorationStates || {});
-  const subjectLessons = filterLessonsInScope(lessons, activeSectId as any, activeGradeTier);
-  const completedLessons = subjectLessons.filter(l => lessonsProgress[l.id]).length;
+  // Memoize subjectLessons để weakData useMemo hoạt động đúng (trước: unmemoized nên weakData luôn recompute)
+  const subjectLessons = useMemo(
+    () => filterLessonsInScope(lessons, activeSectId as any, activeGradeTier),
+    [lessons, activeSectId, activeGradeTier]
+  );
+  const completedLessons = useMemo(
+    () => subjectLessons.filter(l => lessonsProgress[l.id]).length,
+    [subjectLessons, lessonsProgress]
+  );
 
 
   const weakData = useMemo(() => {

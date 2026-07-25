@@ -4,15 +4,17 @@ import type { Question, TutorQuest } from '../../types/game';
 import { logActivity } from '../helpers';
 import { toast } from '../../utils/toast';
 import { adminService } from '../../services/adminService';
+import { tutorQuestsService } from '../../services/tutorQuestsService';
 import { enrichTextbookAttributes } from '../../utils/textbookEnricher';
 import { getHoChiMinhDateString } from '../../utils/date';
+
 
 export const createAdminSlice: StateCreator<
   StoreState,
   [],
   [],
   Pick<StoreState, 
-    'adminStudents' | 'adminLinks' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'tutorQuests' | 'markRewardDelivered' | 'cancelRedemption' | 'schoolRewards' | 'fetchSchoolRewards' | 'createSchoolReward' | 'deleteSchoolReward' | 'updateSchoolReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'addQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'adminSetEnergyConfig' | 'updateGameSettings' | 'addTutorQuest' | 'completeTutorQuest' | 'deleteTutorQuest' | 'claimTutorQuest' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
+    'adminStudents' | 'adminLinks' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'tutorQuests' | 'markRewardDelivered' | 'cancelRedemption' | 'schoolRewards' | 'fetchSchoolRewards' | 'createSchoolReward' | 'deleteSchoolReward' | 'updateSchoolReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'addQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'adminSetEnergyConfig' | 'updateGameSettings' | 'addTutorQuest' | 'completeTutorQuest' | 'deleteTutorQuest' | 'claimTutorQuest' | 'fetchTutorQuests' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
   >
 > = (set, get) => ({
   adminStudents: [],
@@ -121,8 +123,7 @@ export const createAdminSlice: StateCreator<
   createSchoolReward: async (title, costRuby, quantity) => {
     const ok = await adminService.createSchoolReward(title, costRuby, Math.max(1, Math.round(quantity)));
     if (ok) {
-      await get().fetchSchoolRewards();
-      await get().fetchAuditLogs();
+      await Promise.all([get().fetchSchoolRewards(), get().fetchAuditLogs()]);
       logActivity(get, set, 'parent_approve', 'Thêm Quà Khuyến Học của trường', `Quà mới: "${title}" trị giá ${costRuby} Ruby, số lượng ${quantity}`, 0, 0);
     }
     return ok;
@@ -146,8 +147,7 @@ export const createAdminSlice: StateCreator<
       Math.max(0, Math.round(remainingQuantity))
     );
     if (ok) {
-      await get().fetchSchoolRewards();
-      await get().fetchAuditLogs();
+      await Promise.all([get().fetchSchoolRewards(), get().fetchAuditLogs()]);
       logActivity(get, set, 'parent_approve', 'Cập nhật Quà Khuyến Học của trường', `Cập nhật quà: "${title}" trị giá ${costRuby} Ruby, số lượng còn lại ${remainingQuantity}/${quantity}`, 0, 0);
     }
     return ok;
@@ -310,8 +310,7 @@ export const createAdminSlice: StateCreator<
           try {
             const ok = await adminService.promoteUser(targetUserId, newRole);
             if (ok) {
-              await get().fetchAdminStudents();
-              await get().fetchAuditLogs();
+              await Promise.all([get().fetchAdminStudents(), get().fetchAuditLogs()]);
             }
           } catch (e) {
             console.error('Error promoting user:', e);
@@ -331,8 +330,7 @@ export const createAdminSlice: StateCreator<
           try {
             const ok = await adminService.adminMarkRewardDelivered(studentUserId, redemptionId);
             if (ok) {
-              await get().fetchStudentProfile(studentUserId);
-              await get().fetchAuditLogs();
+              await Promise.all([get().fetchStudentProfile(studentUserId), get().fetchAuditLogs()]);
             }
           } catch (e) {
             console.error('Error marking reward delivered:', e);
@@ -343,8 +341,7 @@ export const createAdminSlice: StateCreator<
           try {
             const ok = await adminService.adminCancelRedemption(studentUserId, redemptionId);
             if (ok) {
-              await get().fetchStudentProfile(studentUserId);
-              await get().fetchAuditLogs();
+              await Promise.all([get().fetchStudentProfile(studentUserId), get().fetchAuditLogs()]);
             }
           } catch (e) {
             console.error('Error cancelling redemption:', e);
@@ -359,8 +356,7 @@ export const createAdminSlice: StateCreator<
               toast.error('Lỗi khi cập nhật năng lượng.');
               return;
             }
-            await get().fetchStudentProfile(studentUserId);
-            await get().fetchAuditLogs();
+            await Promise.all([get().fetchStudentProfile(studentUserId), get().fetchAuditLogs()]);
             toast.success(`Cập nhật năng lượng thành công: ${clampedPercent}%.`);
           } catch (e) {
             console.error('Error updating student energy:', e);
@@ -376,8 +372,7 @@ export const createAdminSlice: StateCreator<
               toast.error('Lỗi khi cập nhật cấu hình Năng Lượng.');
               return;
             }
-            await get().fetchStudentProfile(studentUserId);
-            await get().fetchAuditLogs();
+            await Promise.all([get().fetchStudentProfile(studentUserId), get().fetchAuditLogs()]);
             toast.success(`Đã cập nhật trần Năng Lượng ${clampedMax} và thời gian hồi ${resetHours} giờ cho Sĩ Tử.`);
           } catch (e) {
             console.error('Error updating student energy config:', e);
@@ -406,58 +401,100 @@ export const createAdminSlice: StateCreator<
           }
         },
 
-  addTutorQuest: (title, description, rewardRuby) => {
-          set((state: any) => ({
-            tutorQuests: [
-              ...state.tutorQuests,
-              {
-                id: `pq-${Date.now()}`,
-                title,
-                description,
-                rewardRuby,
-                status: 'pending',
-                timestamp: Date.now()
-              }
-            ]
-          }));
-        },
-
-  completeTutorQuest: (questId) => {
-          set((state: any) => ({
-            tutorQuests: state.tutorQuests.map((q: TutorQuest) =>
-              q.id === questId ? { ...q, status: 'completed' } : q
-            )
-          }));
-        },
-
-  deleteTutorQuest: (questId) => {
-          set((state: any) => ({
-            tutorQuests: state.tutorQuests.filter((q: TutorQuest) => q.id !== questId)
-          }));
-        },
-
-  claimTutorQuest: (questId) => {
-          let rubyReward = 0;
-          let qTitle = '';
-          set((state: any) => {
-            const quest = state.tutorQuests.find((q: TutorQuest) => q.id === questId);
-            if (!quest || quest.status !== 'completed') return {};
-            rubyReward = quest.rewardRuby;
-            qTitle = quest.title;
-            return {
-              tutorQuests: state.tutorQuests.map((q: TutorQuest) =>
-                q.id === questId ? { ...q, status: 'claimed' } : q
-              ),
-              player: {
-                ...state.player,
-                ruby: state.player.ruby + rubyReward
-              }
-            };
-          });
-          if (rubyReward > 0) {
-            logActivity(get, set, 'reward_claimed', 'Nhận thưởng nhiệm vụ', `Đã nhận thưởng: ${qTitle}`, rubyReward, 0);
+  addTutorQuest: async (studentIds, title, description, rewardRuby) => {
+          try {
+            const res = await tutorQuestsService.create(studentIds, title, description, rewardRuby);
+            if (res.success && res.quests) {
+              const newQuests = res.quests;
+              set((state: any) => ({
+                tutorQuests: [...newQuests, ...state.tutorQuests]
+              }));
+              toast.success('Giao nhiệm vụ thành công! 🎯');
+            } else {
+              toast.error(res.error || 'Lỗi khi giao nhiệm vụ.');
+            }
+          } catch (e) {
+            console.error('Error adding tutor quest:', e);
+            toast.error('Lỗi kết nối khi giao nhiệm vụ.');
           }
         },
+
+  completeTutorQuest: async (questId) => {
+          try {
+            const res = await tutorQuestsService.complete(questId);
+            if (res.success && res.quest) {
+              set((state: any) => ({
+                tutorQuests: state.tutorQuests.map((q: TutorQuest) =>
+                  q.id === questId ? res.quest : q
+                )
+              }));
+              toast.success('Đã xác nhận hoàn thành nhiệm vụ! Sĩ Tử có thể nhận thưởng.');
+            } else {
+              toast.error(res.error || 'Lỗi khi hoàn tất nhiệm vụ.');
+            }
+          } catch (e) {
+            console.error('Error completing tutor quest:', e);
+            toast.error('Lỗi kết nối khi hoàn tất nhiệm vụ.');
+          }
+        },
+
+  deleteTutorQuest: async (questId) => {
+          try {
+            const ok = await tutorQuestsService.delete(questId);
+            if (ok) {
+              set((state: any) => ({
+                tutorQuests: state.tutorQuests.filter((q: TutorQuest) => q.id !== questId)
+              }));
+              toast.success('Đã xoá nhiệm vụ giao.');
+            } else {
+              toast.error('Lỗi khi xóa nhiệm vụ.');
+            }
+          } catch (e) {
+            console.error('Error deleting tutor quest:', e);
+            toast.error('Lỗi kết nối khi xóa nhiệm vụ.');
+          }
+        },
+
+  claimTutorQuest: async (questId) => {
+          try {
+            const res = await tutorQuestsService.claim(questId);
+            if (res.success && res.rewardRuby !== undefined) {
+              let qTitle = '';
+              set((state: any) => {
+                const quest = state.tutorQuests.find((q: TutorQuest) => q.id === questId);
+                if (quest) qTitle = quest.title;
+                return {
+                  tutorQuests: state.tutorQuests.map((q: TutorQuest) =>
+                    q.id === questId ? { ...q, status: 'claimed' } : q
+                  ),
+                  player: {
+                    ...state.player,
+                    ruby: state.player.ruby + res.rewardRuby!
+                  }
+                };
+              });
+              if (res.rewardRuby > 0) {
+                logActivity(get, set, 'reward_claimed', 'Nhận thưởng nhiệm vụ', `Đã nhận thưởng: ${qTitle}`, res.rewardRuby, 0);
+              }
+              toast.success(`Đã nhận +${res.rewardRuby} Ruby! 🎉`);
+            } else {
+              toast.error(res.error || 'Lỗi khi nhận thưởng.');
+            }
+          } catch (e) {
+            console.error('Error claiming tutor quest:', e);
+            toast.error('Lỗi kết nối khi nhận thưởng.');
+          }
+        },
+
+  fetchTutorQuests: async () => {
+          try {
+            const quests = await tutorQuestsService.fetch();
+            set({ tutorQuests: quests });
+          } catch (e) {
+            console.error('Error fetching tutor quests:', e);
+          }
+        },
+
 
 });
 

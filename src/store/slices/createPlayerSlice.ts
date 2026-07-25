@@ -894,40 +894,27 @@ export const createPlayerSlice: StateCreator<
           });
           if (list.length === 0) return null;
 
-          // Find historical rolling accuracy for this category/topic
           const stat = state.categoryStats[topicId];
-          const accuracy = stat ? stat.rollingAccuracy : 0.5; // default to medium
+          const accuracy = stat ? stat.rollingAccuracy : 0.5;
 
-          // Dynamic difficulty selector:
-          let minDiff = 1;
-          let maxDiff = 10;
-
-          if (accuracy < 0.4) {
-            maxDiff = 4;
-          } else if (accuracy < 0.75) {
-            minDiff = 3;
-            maxDiff = 7;
-          } else {
-            minDiff = 6;
-          }
+          let minDiff = 1, maxDiff = 10;
+          if (accuracy < 0.4) { maxDiff = 4; }
+          else if (accuracy < 0.75) { minDiff = 3; maxDiff = 7; }
+          else { minDiff = 6; }
 
           const matchedDiffList = list.filter(q => q.difficulty >= minDiff && q.difficulty <= maxDiff);
           const finalPool = matchedDiffList.length > 0 ? matchedDiffList : list;
 
-          // Aggressive randomization: filter out recently played questions to avoid repetition
-          const recentlyPlayed = state.recentlyPlayedQuestionIds || [];
-          let filteredPool = finalPool.filter(q => !recentlyPlayed.includes(q.id));
+          // O(1) lookup: convert array to Set trước khi filter (trước: O(N×M) nested scan)
+          const recentlyPlayedSet = new Set(state.recentlyPlayedQuestionIds || []);
+          const filteredPool = finalPool.filter(q => !recentlyPlayedSet.has(q.id));
 
-          // If filtering leaves the pool empty or too small (e.g. less than 2 questions), fall back to original pool
-          if (filteredPool.length === 0) {
-            filteredPool = finalPool;
-          }
-
-          // Random pick from final/filtered pool
-          return filteredPool[Math.floor(Math.random() * filteredPool.length)];
+          const pool = filteredPool.length > 0 ? filteredPool : finalPool;
+          return pool[Math.floor(Math.random() * pool.length)];
         },
 
   getQuestionByWeight: (mode) => {
+          // Cache state một lần, tránh gọi get() hai lần
           const state = get();
           const activities = getSubjectActivities(state.currentSubject);
           const activity = activities.find(a => a.modeKey === mode || a.id === mode || a.legacyMode === mode);
@@ -939,7 +926,6 @@ export const createPlayerSlice: StateCreator<
             topicPool = [...activity.topicIds];
           }
 
-          // Fallback hoặc wildcard: lấy tất cả topics của môn học hiện tại
           if (topicPool.length === 0 || topicPool.includes('*')) {
             const subjectTopics = state.topics
               .filter(t => t.subject === state.currentSubject && (t.gradeTier ?? DEFAULT_GRADE_TIER) === state.activeGradeTier)
@@ -947,16 +933,14 @@ export const createPlayerSlice: StateCreator<
             topicPool = subjectTopics.length > 0 ? subjectTopics : ['misc'];
           }
 
-          // Calculate weights: W_c = (1.0 - Accuracy) + 0.1
+          // W_c = (1.0 - Accuracy) + 0.1 (epsilon để topic accuracy=1 vẫn có cơ hội xuất hiện)
           const weightedTopics = topicPool.map(topicId => {
             const stat = state.categoryStats[topicId];
-            const accuracy = stat ? stat.rollingAccuracy : 0.5; // Default to 50%
-            const weight = (1.0 - accuracy) + 0.1; // epsilon = 0.1
-            return { topicId, weight };
+            const accuracy = stat ? stat.rollingAccuracy : 0.5;
+            return { topicId, weight: (1.0 - accuracy) + 0.1 };
           });
 
-          // Spin weighted roulette
-          const totalWeight = weightedTopics.reduce((acc, current) => acc + current.weight, 0);
+          const totalWeight = weightedTopics.reduce((acc, cur) => acc + cur.weight, 0);
           let randomWeight = Math.random() * totalWeight;
           let selectedTopicId = topicPool[0];
 
@@ -968,7 +952,7 @@ export const createPlayerSlice: StateCreator<
             }
           }
 
-          // Fetch adaptive question from the selected topic
+          // Inline adaptive selection thử vì gọi get().getAdaptiveQuestion để tránh cầp getAdaptiveQuestion tạo cầu state mới
           return get().getAdaptiveQuestion(selectedTopicId);
         },
 

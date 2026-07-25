@@ -63,7 +63,6 @@ import { QuestionMCQ } from './PlayArea/QuestionMCQ';
 import { QuestionEssay } from './PlayArea/QuestionEssay';
 import { QuestionTextInput } from './PlayArea/QuestionTextInput';
 import { ExplanationBox } from './PlayArea/ExplanationBox';
-import { PostQuizReview } from './PlayArea/PostQuizReview';
 import { FinalResultScreen } from './PlayArea/FinalResultScreen';
 // MarkdownRenderer is now used inside split/single question view subcomponents.
 
@@ -71,11 +70,12 @@ interface PlayAreaProps {
   mode: 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed' | 'revenge' | 'boss' | 'lesson' | 'survival' | 'preview';
   bossId?: string;
   lessonId?: string;
+  lessonQuizCount?: number; // 10 khi thi từ Arena, 3 khi kiểm tra sau bài giảng
   previewQuestion?: Question;
   onFinish: (result: ActivityResult) => void;
 }
 
-export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, previewQuestion, onFinish }) => {
+export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, lessonQuizCount = 10, previewQuestion, onFinish }) => {
   const getQuestionByWeight = useGameState(state => state.getQuestionByWeight);
   const questions = useGameState(state => state.questions);
   const lessons = useGameState(state => state.lessons);
@@ -108,10 +108,11 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, prev
   // Bộ đếm lỗi NỘI BỘ của lượt chơi
   const [runMistakes, setRunMistakes] = useState(0);
   const [runFinished, setRunFinished] = useState(false);
+  const [tabSwitches, setTabSwitches] = useState(0);
   const [timeoutOccurred, setTimeoutOccurred] = useState(false);
   const [activityResult, setActivityResult] = useState<ActivityResult | null>(null);
-  // 'review' = PostQuizReview, 'result' = FinalResultScreen
-  const [runPhase, setRunPhase] = useState<'review' | 'result'>('review');
+  // runPhase kept for future use; result screen now shows everything in one view
+  const [, setRunPhase] = useState<'review' | 'result'>('result');
   const runEndHandledRef = useRef(false);
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
@@ -303,15 +304,15 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, prev
           // Priority 1: questions directly linked to this lesson via lessonId field
           pool = fallbackQuestions.filter(q => q.lessonId === lessonId || (q as any).metadata?.lessonId === lessonId);
           // Priority 2: questions matching same category (legacy & fallback)
-          if (pool.length < 3) {
+          if (pool.length < lessonQuizCount) {
             const byCategory = fallbackQuestions.filter(q => q.category === lesson.category && !pool.some(p => p.id === q.id));
             pool = [...pool, ...byCategory];
           }
-          pool = pool.slice(0, 3);
+          pool = pool.slice(0, lessonQuizCount);
         }
-        if (pool.length < 3) {
+        if (pool.length < lessonQuizCount) {
           const extra = fallbackQuestions.filter(q => !pool.some(p => p.id === q.id));
-          pool = [...pool, ...extra].slice(0, 3);
+          pool = [...pool, ...extra].slice(0, lessonQuizCount);
         }
       } else {
         const weightMode = (mode === 'survival' || mode === 'preview')
@@ -369,6 +370,46 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, prev
       active = false;
     };
   }, [mode, bossId, lessonId, activeSectId, activeGradeTier, previewQuestion]);
+
+  // Tab switching detection (Anti-cheating)
+  useEffect(() => {
+    if (mode !== 'boss' && mode !== 'survival') return;
+    if (runFinished) return;
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        setTabSwitches(prev => {
+          const nextVal = prev + 1;
+          if (nextVal >= 3) {
+            toast.error('Giám Học xử phạt: Sĩ Tử chuyển tab quá 3 lần, bài thi bị hủy bỏ! ⚖️');
+            setRunMistakes(3); // Ép defeat
+            setRunFinished(true);
+          } else {
+            toast.error(`Giám Học nhắc nhở: Sĩ Tử không được chuyển tab khi đang thi! Cảnh cáo lần ${nextVal}/3. ⚖️`);
+          }
+          return nextVal;
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [mode, runFinished]);
+
+  // Prevent page reload during exams (Anti-cheating)
+  useEffect(() => {
+    if (mode !== 'boss' && mode !== 'survival') return;
+    if (runFinished) return;
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = 'Bạn đang trong phòng thi! Nếu rời đi hoặc tải lại trang, kết quả bài thi sẽ bị hủy bỏ.';
+      return e.returnValue;
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [mode, runFinished]);
 
   // Handle countdown timer
   useEffect(() => {
@@ -462,7 +503,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, prev
               typedAnswer: ans.typedAnswer,
               selectedAnswer: ans.selectedAnswer,
               scoreRatio: ans.scoreRatio,
-              isSkipped: ans.isSkipped || false
+              isSkipped: ans.isSkipped || false,
+              signature: ans.signature
             })),
             isDefeat,
             bossBonusIndex
@@ -730,7 +772,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, prev
         aiSuggestions: data?.result?.suggestions ?? [],
         lastRubricScore: (activeSectId === 'math' ? null : data?.result?.score) ?? null,
         lastRubricMissing: data?.result?.missingKeywords ?? [],
-        aiWarningMessage: localAiWarningMessage
+        aiWarningMessage: localAiWarningMessage,
+        signature: data?.result?.signature
       }
     ]);
 
@@ -853,24 +896,13 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, prev
 
   // --- Early returns ---
   if (runFinished && activityResult) {
-    if (runPhase === 'review') {
-      return (
-        <PostQuizReview
-          mode={mode}
-          rewardsEarned={activityResult.rewardsEarned}
-          runMistakes={runMistakes}
-          currentQuestions={currentQuestions}
-          answersSubmitted={answersSubmitted}
-          activeSectId={activeSectId}
-          onEscape={() => setRunPhase('result')}
-        />
-      );
-    }
-    // runPhase === 'result'
     return (
       <FinalResultScreen
         result={activityResult}
         mode={mode}
+        currentQuestions={currentQuestions}
+        answersSubmitted={answersSubmitted}
+        activeSectId={activeSectId}
         onFinish={() => onFinish(activityResult)}
         onRetry={() => {
           // Reset the whole run for a retry attempt
@@ -878,7 +910,6 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, prev
           setRunFinished(false);
           setTimeoutOccurred(false);
           setActivityResult(null);
-          setRunPhase('review');
           setRunMistakes(0);
           setCurrentIndex(0);
           setAnswersSubmitted([]);
@@ -1013,6 +1044,13 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, prev
           style={{ width: `${((currentIndex + 1) / currentQuestions.length) * 100}%` }}
         />
       </div>
+
+      {/* Tab switch warnings (Anti-cheating) */}
+      {(mode === 'boss' || mode === 'survival') && tabSwitches > 0 && (
+        <div className="text-[10px] text-red-400 font-bold uppercase tracking-wider bg-red-950/20 border border-red-900/30 p-2.5 rounded-xl text-center animate-pulse">
+          ⚠️ Giám Học cảnh cáo: Sĩ Tử đã chuyển tab {tabSwitches}/3 lần. Chuyển tab 3 lần bài thi sẽ bị hủy!
+        </div>
+      )}
 
       {/* Content Area */}
       {isSplitPassage ? (

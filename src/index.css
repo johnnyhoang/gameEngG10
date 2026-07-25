@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700;800&family=Fredoka:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800&family=Lexend:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;700;900&family=Press+Start+2P&family=Silkscreen:wght@400;700&family=Space+Grotesk:wght@400;500;600;700&family=Nunito:wght@400;500;600;700;800;900&family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Noto+Serif:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&display=swap');
+/* Google Fonts đã được chuyển sang <link rel="stylesheet"> trong index.html để non-blocking */
 
 /*
   Chữ tiếng Việt (nhất là dấu chồng như ệ, ẵ, ắ) rất dễ bị vỡ/mờ khi dùng font hệ thống
@@ -527,31 +527,36 @@ body[data-theme='unicorn-dream'] {
   color: #5f3c77;
 }
 
+/* neon-glow: animate opacity trên pseudo-element thay vì box-shadow để GPU composite (no repaint) */
 @keyframes neon-glow-cyan {
-  from {
-    box-shadow: 0 0 4px rgba(0, 240, 255, 0.2), 0 0 8px rgba(0, 240, 255, 0.1);
-  }
-  to {
-    box-shadow: 0 0 12px rgba(0, 240, 255, 0.6), 0 0 20px rgba(0, 240, 255, 0.3);
-  }
+  from { opacity: 0.3; }
+  to { opacity: 1; }
 }
 
 @keyframes neon-glow-magenta {
-  from {
-    box-shadow: 0 0 4px rgba(255, 0, 127, 0.2), 0 0 8px rgba(255, 0, 127, 0.1);
-  }
-  to {
-    box-shadow: 0 0 12px rgba(255, 0, 127, 0.6), 0 0 20px rgba(255, 0, 127, 0.3);
-  }
+  from { opacity: 0.3; }
+  to { opacity: 1; }
 }
 
+.synth-glow-cyan {
+  position: relative;
+}
+.synth-glow-cyan::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.6), 0 0 20px rgba(0, 240, 255, 0.3);
+  animation: neon-glow-cyan 2s infinite alternate;
+  will-change: opacity;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* cyber-scan: translate3d → GPU composited (no background-position repaint) */
 @keyframes cyber-scan {
-  0% {
-    background-position: 0% 0%;
-  }
-  100% {
-    background-position: 0% 100%;
-  }
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, -5%, 0); }
 }
 
 @keyframes float-animation {
@@ -609,13 +614,10 @@ body[data-theme='unicorn-dream'] {
   }
 }
 
+/* unicorn-rainbow: dùng transform thay vì background-position để GPU composite */
 @keyframes unicorn-rainbow {
-  0% {
-    background-position: 0% 50%;
-  }
-  100% {
-    background-position: 200% 50%;
-  }
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
 }
 
 @keyframes cloud-float {
@@ -828,6 +830,8 @@ body {
 .app-shell[data-theme='fantasy-forest']::after,
 .app-shell[data-theme='pixel-arcade']::after {
   opacity: 0.32;
+  /* GPU compositing hint để tránh main-thread repaint */
+  will-change: transform, opacity;
 }
 
 .app-shell[data-theme='cute-pink-pastel']::after {

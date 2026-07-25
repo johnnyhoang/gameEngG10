@@ -106,7 +106,10 @@ export async function seedTopicsAndActivities(pool: Pool) {
     await pool.query(
       `INSERT INTO ge10_activities (id, topic_id, activity_type, title, config, sort_order, reward_np, reward_xp, subject, grade_tier)
        VALUES ($1, $2, 'lesson', $3, $4::jsonb, $5, 10, 20, $6, $7)
-       ON CONFLICT (id) DO NOTHING`,
+       ON CONFLICT (id) DO UPDATE SET
+         topic_id = EXCLUDED.topic_id,
+         subject = EXCLUDED.subject,
+         grade_tier = EXCLUDED.grade_tier`,
       [actId, lesson.topic_id, lesson.title, JSON.stringify({ lesson_id: lesson.id }), 0, subject, lesson.grade_tier]
     );
   }
@@ -212,6 +215,34 @@ export async function seedTopicsAndActivities(pool: Pool) {
 
   // 4. Seed Textbook Mappings
   await seedTextbookMappings(pool);
+
+  console.log('=== Bắt đầu chuẩn hóa và sửa sai lệch môn học/chuyên đề tự động ===');
+  
+  // 1. Đồng bộ ge10_lessons theo ge10_topics
+  await pool.query(`
+    UPDATE ge10_lessons l
+    SET subject = t.subject, grade_tier = t.grade_tier
+    FROM ge10_topics t
+    WHERE l.topic_id = t.id AND (l.subject <> t.subject OR l.grade_tier <> t.grade_tier)
+  `);
+
+  // 2. Đồng bộ ge10_custom_questions theo ge10_lessons
+  await pool.query(`
+    UPDATE ge10_custom_questions q
+    SET subject = l.subject, grade_tier = l.grade_tier, topic_id = l.topic_id
+    FROM ge10_lessons l
+    WHERE q.lesson_id = l.id AND (q.subject <> l.subject OR q.grade_tier <> l.grade_tier OR q.topic_id <> l.topic_id)
+  `);
+
+  // 3. Đồng bộ ge10_activities theo ge10_topics
+  await pool.query(`
+    UPDATE ge10_activities a
+    SET subject = t.subject, grade_tier = t.grade_tier
+    FROM ge10_topics t
+    WHERE a.topic_id = t.id AND (a.subject <> t.subject OR a.grade_tier <> t.grade_tier)
+  `);
+
+  console.log('=== Hoàn tất chuẩn hóa dữ liệu học liệu ===');
 
   console.log('=== Hoàn tất seeding Topics và Activities thành công! ===');
 }

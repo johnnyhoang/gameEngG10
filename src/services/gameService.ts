@@ -22,6 +22,8 @@ export interface EndSessionParams {
     typedAnswer?: string;
     selectedAnswer?: string;
     scoreRatio: number;
+    isSkipped?: boolean;
+    signature?: string;
   }[];
   isDefeat: boolean;
   bossBonusIndex?: number;

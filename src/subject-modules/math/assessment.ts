@@ -13,6 +13,7 @@ export async function assessMathShortAnswer(input: AssessmentInput): Promise<Ass
       'X-Profile-Id': input.profileId,
     },
     body: JSON.stringify({
+      questionId: input.question.id,
       questionPrompt: input.question.prompt,
       correctAnswer: correctAnsStr,
       studentAnswer: input.answer,
@@ -31,5 +32,6 @@ export async function assessMathShortAnswer(input: AssessmentInput): Promise<Ass
     missingKeywords: [],
     feedback: payload.explanation ?? '',
     suggestions: [],
+    signature: payload.signature,
   };
 }

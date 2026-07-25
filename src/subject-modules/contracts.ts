@@ -66,6 +66,7 @@ export interface AssessmentResult {
   missingKeywords: string[];
   feedback: string;
   suggestions: string[];
+  signature?: string;
 }
 
 export interface AssessmentProviderContribution {

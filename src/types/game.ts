@@ -320,6 +320,12 @@ export interface TutorQuest {
   rewardRuby: number;
   status: 'pending' | 'completed' | 'claimed';
   timestamp: number;
+  studentId?: string;
+  studentName?: string;
+  tutorId?: string;
+  tutorName?: string;
+  completedAt?: string;
+  claimedAt?: string;
 }
 
 export interface GameEvent {

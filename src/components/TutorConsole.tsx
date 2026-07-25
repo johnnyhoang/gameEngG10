@@ -470,8 +470,12 @@ export const TutorConsole: React.FC = () => {
                 updateSchoolReward={updateSchoolReward as any}
                 markRewardDelivered={markRewardDelivered as any}
                 cancelRedemption={cancelRedemption as any}
-                tutorQuests={tutorQuests}
-                addTutorQuest={addTutorQuest as any}
+                tutorQuests={tutorQuests.filter((q: any) => q.studentId === selectedStudentProfile?.studentUser?.id)}
+                addTutorQuest={(title: string, description: string, rewardRuby: number) => {
+                  if (selectedStudentProfile?.studentUser?.id) {
+                    addTutorQuest([selectedStudentProfile.studentUser.id], title, description, rewardRuby);
+                  }
+                }}
                 completeTutorQuest={completeTutorQuest as any}
                 deleteTutorQuest={deleteTutorQuest as any}
               />

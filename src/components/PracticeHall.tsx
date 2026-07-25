@@ -380,9 +380,35 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
     onStartPractice();
   };
 
-  const completedLessonsCount = subjectLessons.filter(l => lessonsProgress[l.id]).length;
+  // Memoize để tránh recompute mỗi render
+  const completedLessonsCount = useMemo(
+    () => subjectLessons.filter(l => lessonsProgress[l.id]).length,
+    [subjectLessons, lessonsProgress]
+  );
   const totalLessonsCount = subjectLessons.length;
   const progressPct = totalLessonsCount > 0 ? Math.round((completedLessonsCount / totalLessonsCount) * 100) : 0;
+
+  // Pre-build dungeon list với bài học đã filter/sort — tránh lặp lại trong JSX
+  const dungeonsWithLessons = useMemo(() => {
+    return Object.values(DUNGEONS_CONFIG).map(dungeon => {
+      const rawDungeonLessons = subjectLessons.filter(l => getElementalDungeon(l) === dungeon.id);
+      if (rawDungeonLessons.length === 0) return null;
+      const mappedLessons = rawDungeonLessons.filter(l => typeof l.bai === 'number');
+      const unmappedLessons = rawDungeonLessons.filter(l => typeof l.bai !== 'number');
+      const maxBai = mappedLessons.length > 0 ? Math.max(...mappedLessons.map(l => l.bai as number)) : 0;
+      const dungeonLessons = [
+        ...mappedLessons,
+        ...unmappedLessons.map((l, idx) => ({ ...l, bai: maxBai + 1 + idx }))
+      ].sort((a, b) => (a.bai ?? 0) - (b.bai ?? 0));
+      return { dungeon, dungeonLessons };
+    }).filter(Boolean) as { dungeon: typeof DUNGEONS_CONFIG[keyof typeof DUNGEONS_CONFIG]; dungeonLessons: typeof subjectLessons }[];
+  }, [subjectLessons]);
+
+  // Memoize filtered tool cards
+  const availableToolCards = useMemo(
+    () => MAT_THAT_CARDS.filter(card => subjectToolIds.includes(card.id)),
+    [subjectToolIds]
+  );
 
   return (
     <div className="space-y-6">
@@ -446,7 +472,7 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
               {SUBJECT_TOOL_INTRODUCTIONS[selectedSubject] || SUBJECT_TOOL_INTRODUCTIONS.default}
             </p>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              {MAT_THAT_CARDS.filter(card => subjectToolIds.includes(card.id)).map(card => {
+              {availableToolCards.map(card => {
                 const onOpen = card.id === 'handbook3d'
                   ? onOpenWorkshop3D
                   : card.id === 'handbookplane'
@@ -490,20 +516,7 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
               </p>
             </div>
             <div className="space-y-3">
-              {Object.values(DUNGEONS_CONFIG).map(dungeon => {
-                const rawDungeonLessons = subjectLessons.filter(l => getElementalDungeon(l) === dungeon.id);
-                if (rawDungeonLessons.length === 0) return null;
-
-                // Tự động gán số thứ tự cho các bài chưa có số bài (do Viện Chủ tạo thêm hoặc ngoài danh mục)
-                const mappedLessons = rawDungeonLessons.filter(l => typeof l.bai === 'number');
-                const unmappedLessons = rawDungeonLessons.filter(l => typeof l.bai !== 'number');
-                const maxBai = mappedLessons.length > 0 ? Math.max(...mappedLessons.map(l => l.bai as number)) : 0;
-
-                const dungeonLessons = [
-                  ...mappedLessons,
-                  ...unmappedLessons.map((l, idx) => ({ ...l, bai: maxBai + 1 + idx }))
-                ].sort((a, b) => (a.bai ?? 0) - (b.bai ?? 0));
-
+              {dungeonsWithLessons.map(({ dungeon, dungeonLessons }) => {
                 const dungeonConfig = getDungeonConfig(dungeon.id, selectedSubject as string);
                 const firstLesson = dungeonLessons[0];
                 const loaiLabel = firstLesson?.loai && firstLesson.loai !== 'Chưa phân loại SGK' ? ` - ${firstLesson.loai}` : '';

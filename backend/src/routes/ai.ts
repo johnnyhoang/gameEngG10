@@ -1,8 +1,20 @@
 import express from 'express';
+import crypto from 'crypto';
 import { activeProfileMiddleware, authMiddleware, requireProfileRoles } from '../middleware/auth.js';
 import { callGeminiAPI, GeminiExhaustedError } from '../helpers/gemini.js';
 import { gradeLiteratureEssay } from '../subjectModules/literature/gradeLiterature.js';
 import { getBackendSubjectModule } from '../subjectModules/registry.js';
+
+export function generateGradingSignature(profileId: string, questionId: string, scoreRatio: number): string {
+  const secret = process.env.SIGNING_SECRET || 'cyber-english-secret-signing-key-2026';
+  // Chuẩn hóa scoreRatio về 4 chữ số thập phân để tránh sai số dấu phẩy động khi so sánh
+  const normalizedScore = Number(scoreRatio).toFixed(4);
+  return crypto
+    .createHmac('sha256', secret)
+    .update(`${profileId}:${questionId}:${normalizedScore}`)
+    .digest('hex');
+}
+
 
 const router = express.Router();
 router.use(authMiddleware, activeProfileMiddleware);
@@ -261,7 +273,7 @@ ${problemText}`;
 
 // POST /api/ai/grade-literature: Uses Gemini API to evaluate and grade a student's literature essay
 router.post('/ai/grade-literature', authMiddleware, async (req: any, res) => {
-  const { promptText, essay, keywords = [], rubric = [] } = req.body || {};
+  const { questionId = 'unknown-literature', promptText, essay, keywords = [], rubric = [] } = req.body || {};
   if (!promptText || !String(promptText).trim()) {
     return res.status(400).json({ error: 'Missing promptText.' });
   }
@@ -271,7 +283,10 @@ router.post('/ai/grade-literature', authMiddleware, async (req: any, res) => {
 
   try {
     const parsed = await gradeLiteratureEssay({ promptText, essay, keywords, rubric });
-    res.json({ success: true, result: parsed });
+    const score = parsed.score ?? 0;
+    const scoreRatio = score / 10;
+    const signature = generateGradingSignature(req.profile.id, questionId, scoreRatio);
+    res.json({ success: true, result: parsed, signature });
   } catch (error: any) {
     console.error('Lỗi gọi Gemini AI Grade Literature:', error.message);
     if (error instanceof GeminiExhaustedError) {
@@ -283,7 +298,7 @@ router.post('/ai/grade-literature', authMiddleware, async (req: any, res) => {
 
 // POST /api/ai/grade-math: Uses Gemini API to evaluate and grade a student's math short answer
 router.post('/ai/grade-math', authMiddleware, async (req: any, res) => {
-  const { questionPrompt, correctAnswer, studentAnswer } = req.body;
+  const { questionId = 'unknown-math', questionPrompt, correctAnswer, studentAnswer } = req.body;
 
   if (!questionPrompt || !correctAnswer || studentAnswer === undefined) {
     return res.status(400).json({ error: 'Missing questionPrompt, correctAnswer, or studentAnswer.' });
@@ -308,7 +323,9 @@ Không thêm bất kỳ văn bản nào khác ngoài JSON này.`;
   try {
     const responseText = await callGeminiAPI(prompt, { responseMimeType: 'application/json', temperature: 0.1 });
     const result = JSON.parse(responseText.trim());
-    res.json(result);
+    const scoreRatio = result.isCorrect ? 1.0 : 0.0;
+    const signature = generateGradingSignature(req.profile.id, questionId, scoreRatio);
+    res.json({ ...result, signature });
   } catch (error: any) {
     console.error('Lỗi gọi Gemini AI Grade Math:', error.message);
     if (error instanceof GeminiExhaustedError) {
@@ -316,9 +333,12 @@ Không thêm bất kỳ văn bản nào khác ngoài JSON này.`;
     }
     // Fallback to exact match check
     const isExact = studentAnswer.trim().toLowerCase() === correctAnswer.trim().toLowerCase();
+    const scoreRatio = isExact ? 1.0 : 0.0;
+    const signature = generateGradingSignature(req.profile.id, questionId, scoreRatio);
     res.json({
       isCorrect: isExact,
-      explanation: 'Hệ thống AI bận, đã chấm điểm tự động qua so khớp chuỗi chính xác.'
+      explanation: 'Hệ thống AI bận, đã chấm điểm tự động qua so khớp chuỗi chính xác.',
+      signature
     });
   }
 });

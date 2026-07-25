@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useTranslate } from '../hooks/useTranslate';
 import { Zap, Coins, Flame, Shield, LogOut, ChevronDown } from 'lucide-react';
 import { useGameState } from '../hooks/useGameState';
@@ -20,7 +20,14 @@ export const TopHUD: React.FC<TopHUDProps> = ({
 }) => {
   const { t } = useTranslate();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false);
+  // Granular player selectors — chỉ re-render khi field cụ thể thay đổi
   const player = useGameState(state => state.player);
+  const playerXp = useGameState(state => state.player.xp);
+  const playerLevel = useGameState(state => state.player.level);
+  const playerBadges = useGameState(state => state.player.badges);
+  const playerEnergy = useGameState(state => state.player.energy);
+  const playerEnergyDepletedAt = useGameState(state => state.player.energyDepletedAt);
+  const playerResetHours = useGameState(state => state.player.resetHours);
   const currentUser = useGameState(state => state.currentUser);
   const logout = useGameState(state => state.logout);
   const deselectProfile = useGameState(state => state.deselectProfile);
@@ -41,21 +48,23 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   const isConsoleUser = !!currentUser && !isStudent;
   const isConnected = isStudent && classLinks.some(l => l.status === 'active');
 
-  // Tick Năng Lượng đều đặn để mở khóa đúng giờ hồi mà không cần reload trang (SUB_SPEC_ENERGY §5).
+  // Dùng ref để interval stable (tránh restart mỗi khi tickEnergyRegen re-instantiate)
+  const tickEnergyRegenRef = useRef(tickEnergyRegen);
+  tickEnergyRegenRef.current = tickEnergyRegen;
   useEffect(() => {
-    const id = setInterval(() => tickEnergyRegen(), 30000);
+    const id = setInterval(() => tickEnergyRegenRef.current(), 30000);
     return () => clearInterval(id);
-  }, [tickEnergyRegen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  const isEnergyDepleted = player.energy === 0 && !!player.energyDepletedAt;
+  const isEnergyDepleted = playerEnergy === 0 && !!playerEnergyDepletedAt;
   const energyResetLabel = isEnergyDepleted
-    ? new Date(player.energyDepletedAt! + (player.resetHours ?? 3) * 60 * 60 * 1000).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+    ? new Date(playerEnergyDepletedAt! + (playerResetHours ?? 3) * 60 * 60 * 1000).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
     : null;
 
-  // Calculate percentage of XP to next level
-  const xpNeeded = xpNeededForLevel(player.level);
-  const xpPercent = Math.min(100, (player.xp / xpNeeded) * 100);
-  const hasShield = player.badges.includes('Streak Shield');
+  const xpNeeded = xpNeededForLevel(playerLevel);
+  const xpPercent = Math.min(100, (playerXp / xpNeeded) * 100);
+  const hasShield = playerBadges.includes('Streak Shield');
 
   const headerClass = isUnicorn
     ? 'glass-panel border-b border-violet-200/30 p-3 sticky top-0 z-40 bg-gradient-to-r from-fuchsia-50/80 via-white/90 to-cyan-50/80'

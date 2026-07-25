@@ -10,6 +10,7 @@ import {
   trackStudentQuestionPerformance
 } from '../helpers/questionStats.js';
 import { applyLevelUps } from '../helpers/leveling.js';
+import { generateGradingSignature } from './ai.js';
 
 const router = express.Router();
 router.use(authMiddleware, activeProfileMiddleware);
@@ -278,9 +279,16 @@ router.post('/game/session/end', async (req: any, res) => {
           isCorrect = cleanAnswer(ans.selectedAnswer) === cleanAnswer(correctOpt);
           scoreRatio = isCorrect ? 1 : 0;
         } else if (ans.scoreRatio !== undefined && ans.scoreRatio !== null) {
-          // Essay / Math grading AI was run on client, we respect their scoreRatio but clamp it
+          // Essay / Math grading AI was run on client, we verify signature to prevent tampering
           scoreRatio = Math.max(0, Math.min(1, ans.scoreRatio));
-          isCorrect = scoreRatio >= 0.6;
+          const expectedSig = generateGradingSignature(profileId, ans.questionId, scoreRatio);
+          if (ans.signature && ans.signature === expectedSig) {
+            isCorrect = scoreRatio >= 0.6;
+          } else {
+            console.warn(`[Security Warning] Invalid signature for essay grading. Profile: ${profileId}, Question: ${ans.questionId}, ScoreRatio: ${scoreRatio}`);
+            scoreRatio = 0.0;
+            isCorrect = false;
+          }
         } else {
           // Normal typed fill
           const normalizedTyped = cleanAnswer(ans.typedAnswer || '');

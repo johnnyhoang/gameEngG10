@@ -151,10 +151,12 @@ export interface StoreState {
     baseXP?: number;
     baseRuby?: number;
   }) => Promise<void>;
-  addTutorQuest: (title: string, description: string, rewardRuby: number) => void;
-  completeTutorQuest: (questId: string) => void;
-  deleteTutorQuest: (questId: string) => void;
-  claimTutorQuest: (questId: string) => void;
+  addTutorQuest: (studentIds: string[], title: string, description: string, rewardRuby: number) => Promise<void>;
+  completeTutorQuest: (questId: string) => Promise<void>;
+  deleteTutorQuest: (questId: string) => Promise<void>;
+  claimTutorQuest: (questId: string) => Promise<void>;
+  fetchTutorQuests: () => Promise<void>;
+
 
   // === CLASS LINKS SLICE ===
   classLinks: ClassLink[];

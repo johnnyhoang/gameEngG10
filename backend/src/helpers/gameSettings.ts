@@ -1,70 +1,104 @@
 import { pool } from '../db.js';
 
-// Các key dưới đây được schema.sql/migration đảm bảo LUÔN tồn tại trong ge10_game_settings
-// (import một lần từ giá trị cấu hình gốc — xem schema.sql và
-// migrations/20260717_seed_game_settings_and_challenges.sql). Không còn fallback hardcode:
-// nếu thiếu, đó là lỗi seed cần sửa migration, không phải trạng thái bình thường để che giấu.
+// Cache in RAM to avoid DB exhaustion (1-minute TTL)
+interface GameSettings {
+  bossCompletionBonusRuby: [number, number, number];
+  challengeEnergyCosts: [number, number, number, number];
+  maxEnergy: number;
+  baseXP: number;
+  baseRuby: number;
+  themeUnlockCost: number;
+}
 
+let cachedSettings: GameSettings | null = null;
+let settingsCacheExpiresAt = 0;
+
+let cachedChallengeTemplates: any[] | null = null;
+let templatesCacheExpiresAt = 0;
+
+const CACHE_TTL_MS = 60000; // 1 minute
+
+export const invalidateSettingsCache = () => {
+  cachedSettings = null;
+  cachedChallengeTemplates = null;
+};
+
+export const loadAllGameSettings = async (): Promise<GameSettings> => {
+  const now = Date.now();
+  if (cachedSettings && now < settingsCacheExpiresAt) {
+    return cachedSettings;
+  }
+
+  const res = await pool.query('SELECT setting_key, setting_json FROM ge10_game_settings');
+  const settingsMap: Record<string, any> = {};
+  res.rows.forEach(row => {
+    settingsMap[row.setting_key] = row.setting_json;
+  });
+
+  const boss = settingsMap['boss_completion_bonus_ruby'] || {};
+  const energyCosts = settingsMap['challenge_energy_costs'] || {};
+
+  cachedSettings = {
+    bossCompletionBonusRuby: [
+      Number(boss['easy'] ?? 10),
+      Number(boss['medium'] ?? 20),
+      Number(boss['hard'] ?? 30)
+    ],
+    challengeEnergyCosts: [
+      Number(energyCosts['1'] ?? 10),
+      Number(energyCosts['2'] ?? 20),
+      Number(energyCosts['3'] ?? 30),
+      Number(energyCosts['4'] ?? 40)
+    ],
+    maxEnergy: Number(settingsMap['max_energy']?.['value'] ?? 1000),
+    baseXP: Number(settingsMap['base_xp']?.['value'] ?? 10),
+    baseRuby: Number(settingsMap['base_ruby']?.['value'] ?? 5),
+    themeUnlockCost: Number(settingsMap['theme_unlock_cost']?.['value'] ?? 100)
+  };
+
+  settingsCacheExpiresAt = now + CACHE_TTL_MS;
+  return cachedSettings;
+};
+
+// Tương thích ngược với các API cũ
 export const loadBossCompletionBonusRuby = async (): Promise<[number, number, number]> => {
-  const res = await pool.query(
-    "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'boss_completion_bonus_ruby'"
-  );
-  const raw = res.rows[0]?.setting_json;
-  return [Number(raw['easy']), Number(raw['medium']), Number(raw['hard'])];
+  const s = await loadAllGameSettings();
+  return s.bossCompletionBonusRuby;
 };
 
 export const loadChallengeEnergyCosts = async (): Promise<[number, number, number, number]> => {
-  const res = await pool.query(
-    "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'challenge_energy_costs'"
-  );
-  const raw = res.rows[0]?.setting_json;
-  return [Number(raw['1']), Number(raw['2']), Number(raw['3']), Number(raw['4'])];
+  const s = await loadAllGameSettings();
+  return s.challengeEnergyCosts;
 };
 
 export const loadMaxEnergy = async (): Promise<number> => {
-  const res = await pool.query(
-    "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'max_energy'"
-  );
-  const raw = res.rows[0]?.setting_json;
-  return Number(raw?.['value'] ?? 1000);
+  const s = await loadAllGameSettings();
+  return s.maxEnergy;
 };
 
 export const loadBaseXP = async (): Promise<number> => {
-  const res = await pool.query(
-    "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'base_xp'"
-  );
-  const raw = res.rows[0]?.setting_json;
-  return Number(raw['value']);
+  const s = await loadAllGameSettings();
+  return s.baseXP;
 };
 
 export const loadBaseRuby = async (): Promise<number> => {
-  const res = await pool.query(
-    "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'base_ruby'"
-  );
-  const raw = res.rows[0]?.setting_json;
-  return Number(raw['value']);
+  const s = await loadAllGameSettings();
+  return s.baseRuby;
 };
 
 export const loadThemeUnlockCost = async (): Promise<number> => {
-  const res = await pool.query(
-    "SELECT setting_json FROM ge10_game_settings WHERE setting_key = 'theme_unlock_cost'"
-  );
-  const raw = res.rows[0]?.setting_json;
-  return Number(raw['value']);
-};
-
-export const saveThemeUnlockCost = async (themeUnlockCost: number) => {
-  await pool.query(
-    `INSERT INTO ge10_game_settings (setting_key, setting_json)
-     VALUES ('theme_unlock_cost', $1::jsonb)
-     ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
-    [JSON.stringify({ value: themeUnlockCost })]
-  );
+  const s = await loadAllGameSettings();
+  return s.themeUnlockCost;
 };
 
 export const loadChallengeTemplates = async (): Promise<any[]> => {
+  const now = Date.now();
+  if (cachedChallengeTemplates && now < templatesCacheExpiresAt) {
+    return cachedChallengeTemplates;
+  }
+
   const res = await pool.query('SELECT * FROM ge10_challenge_templates ORDER BY sort_order');
-  return res.rows.map(row => ({
+  cachedChallengeTemplates = res.rows.map(row => ({
     id: row.id,
     type: row.type,
     title: row.title,
@@ -76,10 +110,11 @@ export const loadChallengeTemplates = async (): Promise<any[]> => {
     category: row.category || undefined,
     completed: false
   }));
+
+  templatesCacheExpiresAt = now + CACHE_TTL_MS;
+  return cachedChallengeTemplates;
 };
 
-/** Khởi tạo danh sách nhiệm vụ (challenges) ban đầu cho một hồ sơ học sinh mới, từ
- * ge10_challenge_templates — thay cho mảng hardcode INITIAL_CHALLENGES trước đây. */
 export const ensureInitialChallenges = async (profileId: string) => {
   const templates = await loadChallengeTemplates();
   await pool.query(
@@ -90,6 +125,16 @@ export const ensureInitialChallenges = async (profileId: string) => {
   );
 };
 
+export const saveThemeUnlockCost = async (themeUnlockCost: number) => {
+  await pool.query(
+    `INSERT INTO ge10_game_settings (setting_key, setting_json)
+     VALUES ('theme_unlock_cost', $1::jsonb)
+     ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
+    [JSON.stringify({ value: themeUnlockCost })]
+  );
+  invalidateSettingsCache();
+};
+
 export const saveMaxEnergy = async (maxEnergy: number) => {
   await pool.query(
     `INSERT INTO ge10_game_settings (setting_key, setting_json)
@@ -97,6 +142,7 @@ export const saveMaxEnergy = async (maxEnergy: number) => {
      ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
     [JSON.stringify({ value: maxEnergy })]
   );
+  invalidateSettingsCache();
 };
 
 export const saveBaseXP = async (baseXP: number) => {
@@ -106,6 +152,7 @@ export const saveBaseXP = async (baseXP: number) => {
      ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
     [JSON.stringify({ value: baseXP })]
   );
+  invalidateSettingsCache();
 };
 
 export const saveBaseRuby = async (baseRuby: number) => {
@@ -115,6 +162,7 @@ export const saveBaseRuby = async (baseRuby: number) => {
      ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
     [JSON.stringify({ value: baseRuby })]
   );
+  invalidateSettingsCache();
 };
 
 export const saveBossCompletionBonusRuby = async (bossCompletionBonusRuby: [number, number, number]) => {
@@ -124,6 +172,7 @@ export const saveBossCompletionBonusRuby = async (bossCompletionBonusRuby: [numb
      ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
     [JSON.stringify({ easy: bossCompletionBonusRuby[0], medium: bossCompletionBonusRuby[1], hard: bossCompletionBonusRuby[2] })]
   );
+  invalidateSettingsCache();
 };
 
 export const saveChallengeEnergyCosts = async (challengeEnergyCosts: [number, number, number, number]) => {
@@ -133,4 +182,5 @@ export const saveChallengeEnergyCosts = async (challengeEnergyCosts: [number, nu
      ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
     [JSON.stringify({ 1: challengeEnergyCosts[0], 2: challengeEnergyCosts[1], 3: challengeEnergyCosts[2], 4: challengeEnergyCosts[3] })]
   );
+  invalidateSettingsCache();
 };
