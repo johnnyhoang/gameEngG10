@@ -10,6 +10,7 @@ import { useGameState } from '../../hooks/useGameState';
 import { DUNGEONS_CONFIG, enrichTextbookAttributes } from '../../utils/textbookEnricher';
 
 import { QuestionFormModal } from './Modals/QuestionFormModal';
+import { MarkdownRenderer } from '../Common/MarkdownRenderer';
 
 interface QuestionBankManagerProps {
   questions: Question[];
@@ -633,14 +634,15 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                                   </span>
                                 )}
                               </div>
-                              <p className="text-sm text-white font-medium">{q.prompt}</p>
+                              <MarkdownRenderer content={q.prompt} className="text-sm text-white font-medium" />
                               {q.imageUrl && (
                                 <img src={q.imageUrl} alt="Đồ họa đề thi" className="max-h-24 rounded-lg bg-black/20 p-1 border border-white/5" />
                               )}
                               {q.explanation && (
-                                <p className="text-[10px] text-synth-text-muted italic bg-white/5 p-2 rounded-lg mt-1">
-                                  💡 Giải thích: {q.explanation}
-                                </p>
+                                <div className="text-[10px] text-synth-text-muted italic bg-white/5 p-2 rounded-lg mt-1 flex flex-col gap-1">
+                                  <span>💡 Giải thích:</span>
+                                  <MarkdownRenderer content={q.explanation} className="text-[10px] text-synth-text-muted italic" />
+                                </div>
                               )}
                               <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-[10px] text-synth-text-muted/75 font-semibold font-orbitron border-t border-white/5 pt-1.5">
                                 <span>👁️ Mở: {q.timesOpened || 0}</span>

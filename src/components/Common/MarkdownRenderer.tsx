@@ -19,6 +19,10 @@ export function preprocessMathContent(raw: string): string {
 
   let text = raw;
 
+  // Convert LaTeX inline delimiters \( ... \) and \[ ... \] to $ ... $ and $$ ... $$
+  text = text.replace(/\\\(([\s\S]*?)\\\)/g, '$$$1$$');
+  text = text.replace(/\\\[([\s\S]*?)\\\]/g, '$$$$$1$$$$');
+
   // 1. Convert sub-parts like "a) ", "b) ", "c) ", "d) " into distinct new paragraph blocks if concatenated in plain text
   text = text.replace(/([.!?;\n]|\b)\s*([a-dA-D1-9])\)\s+(?=[A-Z0-9\$\\áàảãạăắằẳẵặâấầnẩẫậéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵđ])/g, (_match, p1, p2, offset) => {
     if (offset === 0 || p1 === '\n') {
@@ -57,6 +61,15 @@ export function preprocessMathContent(raw: string): string {
 
     // Convert middle dot products: "DC . DB" or "DC · DB" -> "$DC \cdot DB$"
     s = s.replace(/\b([A-Z]{1,3})\s*[·\.]\s*([A-Z]{1,3})\b/g, '$$$1 \\cdot $2$$');
+
+    // Convert unbracketed LaTeX commands like \sqrt{3}, \frac{1}{2}, R\sqrt{2}/2, etc. that lack $...$
+    s = s.replace(/([A-Za-z0-9_\^]*\\[a-zA-Z]+(?:\{[^{}]*\}|\[[^[\]]*\]|[\w\^]+)*(?:\s*[\/\+\-\=\*]\s*[A-Za-z0-9_\^\.]*)?)/g, (m) => {
+      const trimmed = m.trim();
+      if (trimmed && !trimmed.startsWith('$') && !trimmed.endsWith('$')) {
+        return ` $${trimmed}$ `;
+      }
+      return m;
+    });
 
     return s;
   });

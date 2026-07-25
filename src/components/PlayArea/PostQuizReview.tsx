@@ -168,8 +168,8 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
                         {row.question.category.replace('-', ' ')}
                       </span>
                     </td>
-                    <td className="py-3 px-3 font-medium text-white truncate max-w-xs group-hover:text-synth-cyan transition-colors">
-                      {row.question.prompt.substring(0, 75)}{row.question.prompt.length > 75 ? '...' : ''}
+                    <td className="py-3 px-3 font-medium text-white max-w-xs group-hover:text-synth-cyan transition-colors">
+                      <MarkdownRenderer content={row.question.prompt} className="text-xs text-white line-clamp-2 [&>p]:inline [&>p]:mb-0" />
                     </td>
                     <td className="py-3 px-3 text-center">
                       {row.isSkipped ? (
@@ -186,11 +186,15 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
                         </span>
                       )}
                     </td>
-                    <td className="py-3 px-3 text-slate-300 font-sans truncate max-w-[150px]">
-                      {row.isSkipped ? <span className="text-slate-500 italic">Chưa trả lời</span> : row.userAnswer}
+                    <td className="py-3 px-3 text-slate-300 font-sans max-w-[180px]">
+                      {row.isSkipped ? (
+                        <span className="text-slate-500 italic">Chưa trả lời</span>
+                      ) : (
+                        <MarkdownRenderer content={stripOptionPrefix(row.userAnswer || '')} className="text-xs text-slate-300 [&>p]:inline [&>p]:mb-0" />
+                      )}
                     </td>
-                    <td className="py-3 px-3 text-emerald-400 font-sans font-semibold truncate max-w-[150px]">
-                      {row.correctAnswer}
+                    <td className="py-3 px-3 text-emerald-400 font-sans font-semibold max-w-[180px]">
+                      <MarkdownRenderer content={stripOptionPrefix(row.correctAnswer || '')} className="text-xs text-emerald-400 font-semibold [&>p]:inline [&>p]:mb-0 [&_*]:text-emerald-400" />
                     </td>
                     <td className="py-3 px-3 text-center font-bold font-mono">
                       {(row.scoreRatio * 10).toFixed(0)}/10
