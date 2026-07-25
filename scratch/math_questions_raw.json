@@ -1,0 +1,709 @@
+[
+  {
+    "id": "gk-math-circle-1",
+    "prompt": "Chu vi hình tròn có bán kính r = 5 cm là bao nhiêu? (Lấy π ≈ 3,14)",
+    "category": "plane-geometry",
+    "topic_id": "math-plane-geometry-circle",
+    "lesson_id": "math-circle-concept"
+  },
+  {
+    "id": "gk-math-linearsys-1",
+    "prompt": "Hệ phương trình { x + y = 5; x - y = 1 } có nghiệm là?",
+    "category": "linear-system",
+    "topic_id": "math-linear-system",
+    "lesson_id": "math-system-eq-1"
+  },
+  {
+    "id": "gk-math-probability-1",
+    "prompt": "Tung một đồng tiền xu cân đối. Xác suất để xuất hiện mặt ngửa (H) là bao nhiêu?",
+    "category": "probability",
+    "topic_id": "math-probability",
+    "lesson_id": null
+  },
+  {
+    "id": "gk-math-quadratic-eq-1",
+    "prompt": "Phương trình bậc hai ax² + bx + c = 0 có biệt thức Δ = b² - 4ac. Phương trình có hai nghiệm phân biệt khi nào?",
+    "category": "quadratic-equation",
+    "topic_id": "math-quadratic-equation",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "gk-math-quadratic-eq-2",
+    "prompt": "Phương trình x² - 5x + 6 = 0 có nghiệm là?",
+    "category": "quadratic-equation",
+    "topic_id": "math-quadratic-equation",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "gk-math-quadratic-fn-1",
+    "prompt": "Parabol y = ax² (a ≠ 0) có đỉnh ở tọa độ nào?",
+    "category": "quadratic-function",
+    "topic_id": "math-quadratic-function",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "gk-math-quadratic-fn-2",
+    "prompt": "Parabol y = -2x² mở theo hướng nào?",
+    "category": "quadratic-function",
+    "topic_id": "math-quadratic-function",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "gk-math-radicals-1",
+    "prompt": "Rút gọn $\\sqrt{75}$ bằng biểu thức nào sau đây?",
+    "category": "radicals",
+    "topic_id": "math-radicals",
+    "lesson_id": null
+  },
+  {
+    "id": "gk-math-realworld-1",
+    "prompt": "Một sản phẩm giá gốc 500.000đ được giảm 20%. Giá bán sau khi giảm là bao nhiêu?",
+    "category": "real-world-algebra",
+    "topic_id": "math-real-world-algebra",
+    "lesson_id": null
+  },
+  {
+    "id": "gk-math-solid-1",
+    "prompt": "Thể tích hình hộp chữ nhật có chiều dài 4 cm, chiều rộng 3 cm, chiều cao 2 cm là?",
+    "category": "solid-geometry",
+    "topic_id": "math-solid-geometry-volume",
+    "lesson_id": "math-cylinder-detail"
+  },
+  {
+    "id": "gk-math-statistics-1",
+    "prompt": "Số trung bình cộng (Mean) của dãy số 2, 4, 6, 8, 10 là?",
+    "category": "statistics",
+    "topic_id": "math-statistics",
+    "lesson_id": null
+  },
+  {
+    "id": "gk-math-vieta-1",
+    "prompt": "Phương trình x² + px + q = 0 có hai nghiệm x₁, x₂. Theo hệ thức Vi-ét, tổng x₁ + x₂ bằng?",
+    "category": "vieta",
+    "topic_id": "math-vieta",
+    "lesson_id": "math-viet"
+  },
+  {
+    "id": "hcm-math-l9-hk2-q1",
+    "prompt": "Tìm các giá trị của tham số \\(m\\) để hệ phương trình \\(\\begin{cases} mx + y = 1 \\\\ x + my = 1 \\end{cases}\\) vô số nghiệm.",
+    "category": "Hệ phương trình bậc nhất",
+    "topic_id": "math-linear-system",
+    "lesson_id": null
+  },
+  {
+    "id": "hcm-math-l9-hk2-q2",
+    "prompt": "Cho tứ giác \\(ABCD\\) nội tiếp đường tròn. Biết góc \\(A = 70^\\circ\\). Tính số đo của góc \\(C\\).",
+    "category": "Tứ giác nội tiếp",
+    "topic_id": "math-circle",
+    "lesson_id": null
+  },
+  {
+    "id": "hcm-math-l9-hk2-q3",
+    "prompt": "Một hình nón có bán kính đáy \\(r = 3\\text{ cm}\\) và đường sinh \\(l = 5\\text{ cm}\\). Tính thể tích \\(V\\) của hình nón (lấy \\(\\pi \\approx 3,14\\)).",
+    "category": "Hình học không gian",
+    "topic_id": "math-spatial-geometry",
+    "lesson_id": "math-trig-ratio"
+  },
+  {
+    "id": "hcm-math-l9-hk2-q4",
+    "prompt": "Tính giá trị của biểu thức \\(P = \\frac{2}{\\sqrt{3}-1} - \\sqrt{3}\\).",
+    "category": "Căn thức bậc hai",
+    "topic_id": "math-square-root",
+    "lesson_id": null
+  },
+  {
+    "id": "hcm-math10-2021-q1",
+    "prompt": "Hệ phương trình nào sau đây có nghiệm duy nhất là \\((x; y) = (1; -1)\\)?",
+    "category": "Hệ phương trình bậc nhất",
+    "topic_id": "math-linear-system",
+    "lesson_id": null
+  },
+  {
+    "id": "hcm-math10-2021-q2",
+    "prompt": "Rút gọn biểu thức \\(A = \\sqrt{(2-\\sqrt{5})^2} - \\sqrt{5}\\).",
+    "category": "Căn thức bậc hai",
+    "topic_id": "math-square-root",
+    "lesson_id": null
+  },
+  {
+    "id": "hcm-math10-2021-q3",
+    "prompt": "Hàm số bậc hai \\(y = -2x^2\\) đồng biến và nghịch biến trong các khoảng nào?",
+    "category": "Hàm số bậc hai",
+    "topic_id": "math-quadratic-function",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "hcm-math10-2021-q4",
+    "prompt": "Một góc nội tiếp chắn nửa đường tròn có số đo góc bằng bao nhiêu độ?",
+    "category": "Góc với đường tròn",
+    "topic_id": "math-circle",
+    "lesson_id": null
+  },
+  {
+    "id": "hcm-math10-2022-q1",
+    "prompt": "Căn thức \\(\\sqrt{2x - 4}\\) xác định khi và chỉ khi giá trị của \\(x\\) thoả mãn điều kiện gì?",
+    "category": "Căn thức bậc hai",
+    "topic_id": "math-square-root",
+    "lesson_id": null
+  },
+  {
+    "id": "hcm-math10-2022-q2",
+    "prompt": "Một quả bóng đá có dạng hình cầu với đường kính bằng \\(22\\text{ cm}\\). Tính thể tích \\(V\\) của quả bóng đó (lấy \\(\\pi \\approx 3,14\\), làm tròn đến hàng đơn vị).",
+    "category": "Hình học không gian",
+    "topic_id": "math-spatial-geometry",
+    "lesson_id": null
+  },
+  {
+    "id": "hcm-math10-2022-q3",
+    "prompt": "Cho đường tròn \\((O; R)\\) và một dây cung \\(AB = R\\sqrt{3}\\). Khoảng cách từ tâm \\(O\\) đến dây cung \\(AB\\) bằng bao nhiêu?",
+    "category": "Đường tròn",
+    "topic_id": "math-circle",
+    "lesson_id": null
+  },
+  {
+    "id": "hcm-math10-2022-q4",
+    "prompt": "Không giải phương trình, hãy cho biết tổng \\(S\\) và tích \\(P\\) của hai nghiệm phương trình bậc hai \\(3x^2 - 8x - 5 = 0\\).",
+    "category": "Định lý Vi-ét",
+    "topic_id": "math-vieta",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "hcm-math10-2023-q1",
+    "prompt": "Tìm nghiệm \\((x; y)\\) của hệ phương trình bậc nhất hai ẩn sau: \\(\\begin{cases} 2x - y = 3 \\\\ x + y = 3 \\end{cases}\\).",
+    "category": "Hệ phương trình bậc nhất",
+    "topic_id": "math-linear-system",
+    "lesson_id": null
+  },
+  {
+    "id": "hcm-math10-2023-q2",
+    "prompt": "Cho phương trình bậc hai \\(x^2 - 4x + 3 = 0\\). Tập nghiệm \\(S\\) của phương trình là gì?",
+    "category": "Phương trình bậc hai",
+    "topic_id": "math-quadratic-equation",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "hcm-math10-2023-q3",
+    "prompt": "Đồ thị hàm số \\(y = 2x - 3\\) cắt trục tung \\(Oy\\) tại điểm nào?",
+    "category": "Hàm số bậc nhất",
+    "topic_id": "math-linear-function",
+    "lesson_id": null
+  },
+  {
+    "id": "hcm-math10-2023-q4",
+    "prompt": "Một hình trụ có bán kính đáy \\(r = 5\\text{ cm}\\) và chiều cao \\(h = 10\\text{ cm}\\). Tính diện tích xung quanh \\(S_{xq}\\) của hình trụ (lấy \\(\\pi \\approx 3,14\\)).",
+    "category": "Hình học không gian",
+    "topic_id": "math-spatial-geometry",
+    "lesson_id": null
+  },
+  {
+    "id": "hcm-math10-2024-q1",
+    "prompt": "Cho hàm số \\(y = ax^2\\) có đồ thị đi qua điểm \\(A(2; -2)\\). Hệ số \\(a\\) nhận giá trị là bao nhiêu?",
+    "category": "Hàm số bậc hai",
+    "topic_id": "math-quadratic-function",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "hcm-math10-2024-q2",
+    "prompt": "Cho phương trình bậc hai \\(x^2 - 2(m-1)x + m^2 - 3m = 0\\). Tính biệt thức \\(\\Delta'\\) của phương trình.",
+    "category": "Phương trình bậc hai",
+    "topic_id": "math-quadratic-equation",
+    "lesson_id": "math-quadratic-discriminant"
+  },
+  {
+    "id": "hcm-math10-2024-q3",
+    "prompt": "Gọi \\(x_1, x_2\\) là hai nghiệm của phương trình \\(2x^2 - 5x + 2 = 0\\). Giá trị của biểu thức \\(T = x_1 + x_2 + x_1 x_2\\) là bao nhiêu?",
+    "category": "Định lý Vi-ét",
+    "topic_id": "math-vieta",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "hcm-math10-2024-q4",
+    "prompt": "Một cái xô hình nón cụt có bán kính đáy nhỏ là \\(15\\text{ cm}\\), bán kính đáy lớn là \\(25\\text{ cm}\\), chiều cao là \\(30\\text{ cm}\\). Tính thể tích \\(V\\) của cái xô (lấy \\(\\pi \\approx 3,14\\)).",
+    "category": "Hình học không gian",
+    "topic_id": "math-spatial-geometry",
+    "lesson_id": null
+  },
+  {
+    "id": "hcmc-math-2024-q1",
+    "prompt": "Cho Parabol (P): $y = x^2$ và đường thẳng (d): $y = 2x + 3$. Hãy xác định tọa độ giao điểm của (P) và (d).",
+    "category": "parabol-line",
+    "topic_id": "math-quadratic",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "hcmc-math-2024-q2",
+    "prompt": "Cho phương trình bậc hai: $x^2 - 5x + 3 = 0$. Gọi $x_1, x_2$ là hai nghiệm của phương trình. Tính giá trị của biểu thức $A = x_1^2 + x_2^2$.",
+    "category": "viet-relation",
+    "topic_id": "math-quadratic",
+    "lesson_id": "math-viet"
+  },
+  {
+    "id": "hcmc-math-2024-q3",
+    "prompt": "Một vỏ lon sữa hình trụ có bán kính đường tròn đáy là $R = 4\\text{ cm}$, chiều cao của vỏ lon là $h = 10\\text{ cm}$. Tính thể tích của vỏ lon sữa đó (lấy số $\\pi$ xấp xỉ 3.14).",
+    "category": "real-geometry",
+    "topic_id": "math-solid",
+    "lesson_id": null
+  },
+  {
+    "id": "hcmc-math-2025-q1",
+    "prompt": "Cho Parabol (P): $y = \\frac{1}{2}x^2$ và đường thẳng (d): $y = x + 4$.\na) Vẽ (P) và (d) trên cùng một hệ trục tọa độ.\nb) Tìm tọa độ giao điểm của (P) và (d) bằng phép tính.",
+    "category": "function-graph",
+    "topic_id": "math-real",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "hcmc-math-2025-q2",
+    "prompt": "Cho phương trình $x^2 - 5x + 3 = 0$ có hai nghiệm $x_1, x_2$.\nKhông giải phương trình, hãy tính giá trị của biểu thức: $A = x_1^2 + x_2^2 - 3x_1x_2$.",
+    "category": "quadratic-equation",
+    "topic_id": "math-quadratic-equation",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "hcmc-math-2025-q4",
+    "prompt": "Một cửa hàng thời trang giảm giá 20% cho tất cả các mặt hàng quần áo. Nếu khách hàng có thẻ thành viên thì được giảm thêm 5% trên giá đã giảm. Bạn An mua một bộ quần áo có giá niêm yết ban đầu là 800.000 đồng và bạn có thẻ thành viên. Hỏi bạn An phải trả bao nhiêu tiền?",
+    "category": "percentage-discount",
+    "topic_id": "math-real-world-percent",
+    "lesson_id": "math-finance"
+  },
+  {
+    "id": "hcmc-math-2025-q6",
+    "prompt": "Một cái xô dạng hình trụ có bán kính đáy r = 15 cm và chiều cao h = 40 cm. Người ta dùng cái xô này để múc nước đổ vào một bể chứa. Hỏi cần ít nhất bao nhiêu xô nước đầy để đổ đầy một bể chứa nước hình hộp chữ nhật có kích thước dài 1,2 m, rộng 1 m và cao 0,6 m? (Lấy $\\pi \\approx 3,14$).",
+    "category": "solid-geometry",
+    "topic_id": "math-solid-geometry-volume",
+    "lesson_id": "math-cylinder-detail"
+  },
+  {
+    "id": "hcmc-math-2025-q8",
+    "prompt": "Cho đường tròn (O; R) có đường kính AB. Lấy điểm C thuộc (O) sao cho AC < BC. Tiếp tuyến tại A của (O) cắt đường thẳng BC tại D.\na) Chứng minh tam giác ABC vuông và $AD^2 = DC \\cdot DB$.\nb) Qua O kẻ đường thẳng vuông góc với BC tại H, cắt tiếp tuyến tại A ở điểm M. Chứng minh tứ giác AMHB nội tiếp và MC là tiếp tuyến của (O).",
+    "category": "plane-geometry",
+    "topic_id": "math-plane",
+    "lesson_id": "math-circle-concept"
+  },
+  {
+    "id": "hcmc-math-2026-q1",
+    "prompt": "Cho đường tròn (O; R) và điểm A nằm ngoài đường tròn sao cho OA = 2R. Vẽ tiếp tuyến AB với đường tròn (O) (B là tiếp điểm). Tính độ dài đoạn thẳng AB theo bán kính R.",
+    "category": "plane-geometry",
+    "topic_id": "math-plane",
+    "lesson_id": "math-circle-concept"
+  },
+  {
+    "id": "hcmc-math-2026-q1b",
+    "prompt": "Cho hàm số $y = \\frac{1}{4}x^2$ có đồ thị (P). Tìm tọa độ điểm M thuộc (P) có hoành độ bằng 6.\n\n(Nhập đáp án dưới dạng tọa độ, ví dụ: (6;9))",
+    "category": "parabol-line",
+    "topic_id": "math-quadratic",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "hcmc-math-2026-q2",
+    "prompt": "Cho phương trình bậc hai: $x^2 - 2mx + m^2 - m + 1 = 0$ (x là ẩn số, m là tham số).\na) Tìm điều kiện của m để phương trình có hai nghiệm phân biệt $x_1$, $x_2$.\nb) Tìm m để hai nghiệm $x_1$, $x_2$ thỏa mãn hệ thức $x_1^2 + x_2^2 - x_1x_2 = 5$.",
+    "category": "quadratic-equation",
+    "topic_id": "math-quadratic-equation",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "hcmc-math-2026-q2b",
+    "prompt": "Cho phương trình $2x^2 - 3x - 4 = 0$ có hai nghiệm phân biệt $x_1$, $x_2$. Không giải phương trình, hãy tính giá trị của biểu thức $A = x_1^2 + x_2^2 + \\frac{1}{2}x_1 + \\frac{1}{2}x_2$.",
+    "category": "viet-theorem",
+    "topic_id": "math-real-world-algebra",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "hcmc-math-2026-q3",
+    "prompt": "Một mối liên hệ giữa nhiệt độ F (Fahrenheit) và nhiệt độ C (Celsius) được cho bởi công thức hàm số bậc nhất: $F = a \\cdot C + b$. Biết rằng nước đóng băng ở 0°C tương ứng với 32°F và sôi ở 100°C tương ứng với 212°F.\na) Xác định các hệ số a và b.\nb) Nếu nhiệt độ cơ thể của một người đo được là 37°C thì tương ứng là bao nhiêu độ F?",
+    "category": "linear-function",
+    "topic_id": "math-quadratic-function",
+    "lesson_id": "math-quadratic-applied"
+  },
+  {
+    "id": "hcmc-math-2026-q3a",
+    "prompt": "Kết quả khảo sát đối với một số bạn học sinh khối 9 về số giờ sử dụng điện thoại trong một ngày được thống kê như sau:\n- 1 giờ: 12 học sinh\n- 2 giờ: 28 học sinh\n- 3 giờ: 30 học sinh\n- 4 giờ: 20 học sinh\n- 5 giờ: 10 học sinh\n\nTính số học sinh đã tham gia cuộc khảo sát.",
+    "category": "probability-statistics",
+    "topic_id": "math-statistics",
+    "lesson_id": "math-trig-ratio"
+  },
+  {
+    "id": "hcmc-math-2026-q3b",
+    "prompt": "Kết quả khảo sát số giờ sử dụng điện thoại của 100 học sinh khối 9 (1 giờ: 12 học sinh, 2 giờ: 28 học sinh, 3 giờ: 30 học sinh, 4 giờ: 20 học sinh, 5 giờ: 10 học sinh). Chọn ngẫu nhiên một học sinh trong nhóm học sinh được khảo sát. Tính xác suất của biến cố A: \"Học sinh được chọn có thời gian sử dụng điện thoại 3 giờ một ngày\".\n\n(Nhập đáp án dưới dạng số thập phân, ví dụ: 0.3)",
+    "category": "probability-statistics",
+    "topic_id": "math-probability",
+    "lesson_id": "math-trig-ratio"
+  },
+  {
+    "id": "hcmc-math-2026-q3c",
+    "prompt": "Kết quả khảo sát số giờ sử dụng điện thoại của 100 học sinh khối 9 (1 giờ: 12 học sinh, 2 giờ: 28 học sinh, 3 giờ: 30 học sinh, 4 giờ: 20 học sinh, 5 giờ: 10 học sinh). Nhà trường khuyến cáo học sinh không nên sử dụng điện thoại nhiều hơn 3 giờ một ngày. Chọn ngẫu nhiên một học sinh. Tính xác suất của biến cố B: \"Học sinh được chọn đã thực hiện đúng khuyến cáo của nhà trường\".\n\n(Nhập đáp án dưới dạng số thập phân, ví dụ: 0.7)",
+    "category": "probability-statistics",
+    "topic_id": "math-probability",
+    "lesson_id": "math-trig-ratio"
+  },
+  {
+    "id": "hcmc-math-2026-q4",
+    "prompt": "Để chuẩn bị cho giải chạy Marathon quốc tế tại TP.HCM vào cuối năm, một vận động viên lên kế hoạch tập luyện. Trong tuần đầu tiên, anh ấy chạy tổng cộng 40 km. Kể từ tuần thứ hai, mục tiêu của anh ấy là tăng quãng đường chạy mỗi tuần thêm 5% so với tuần ngay trước đó.\na) Viết công thức tính tổng quãng đường anh ấy chạy được trong tuần thứ n (với n là số tuần tập luyện).\nb) Hỏi vào tuần thứ mấy thì tổng quãng đường chạy trong tuần đó của anh ấy sẽ lần đầu tiên vượt qua mốc 50 km?",
+    "category": "growth-modeling",
+    "topic_id": "math-real-world-algebra",
+    "lesson_id": null
+  },
+  {
+    "id": "hcmc-math-2026-q4b",
+    "prompt": "Bác Năm có một mảnh đất hình chữ nhật với chiều rộng $x$ (m) ($x > 11$) và chiều dài hơn chiều rộng 9 (m). Bác Năm dùng một phần đất hình chữ nhật có chiều rộng là $x - 11$ (m) và chiều dài là $x - 6$ (m) để làm nhà ở. Biết diện tích toàn bộ mảnh đất gấp 8 lần diện tích làm nhà ở, tìm chiều dài và chiều rộng của mảnh đất.\n\n(Nhập đáp án theo định dạng: dài = [giá trị]m, rộng = [giá trị]m, ví dụ: dài = 25m, rộng = 16m)",
+    "category": "quadratic-equation",
+    "topic_id": "math-quadratic-equation",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "hcmc-math-2026-q5",
+    "prompt": "Một cửa hàng thời trang giảm giá một lô áo khoác. Lần thứ nhất cửa hàng giảm giá 10% so với giá niêm yết. Do vẫn chưa bán hết, cửa hàng tiếp tục giảm giá thêm 5% nữa trên giá đã giảm của lần thứ nhất. Lúc này, giá bán của một chiếc áo khoác là 427.500 đồng. Hỏi giá niêm yết ban đầu của một chiếc áo khoác là bao nhiêu?",
+    "category": "percentage-discount",
+    "topic_id": "math-real-world-percent",
+    "lesson_id": "math-finance"
+  },
+  {
+    "id": "hcmc-math-2026-q5a",
+    "prompt": "Một bình inox có cấu tạo gồm hai phần: phần thân có dạng hình trụ với chiều cao 20 cm và bán kính đáy là 4 cm, phần nắp có dạng nửa hình cầu có đường kính bằng với đường kính đáy của phần thân. Tính thể tích không gian bên trong của cái bình nếu bỏ qua độ dày của vỏ bình. (Làm tròn kết quả đến hàng đơn vị của $\\text{cm}^3$, lấy $\\pi = 3.14$).",
+    "category": "geometry-spatial",
+    "topic_id": "math-solid-geometry-volume",
+    "lesson_id": null
+  },
+  {
+    "id": "hcmc-math-2026-q5b",
+    "prompt": "Một bình inox có cấu tạo gồm hai phần: phần thân hình trụ (chiều cao 20 cm, bán kính đáy 4 cm), phần nắp là nửa hình cầu (bán kính đáy 4 cm). Nhà sản xuất muốn phủ một lớp sơn tĩnh điện lên mặt ngoài của vỏ bình (gồm phần thân, phần nắp và đáy bình), giả sử chi phí sơn là 210.000 đồng/$\\text{m}^2$. Tính chi phí để sơn một cái bình inox.\n\n(Làm tròn kết quả đến hàng nghìn đồng, ví dụ: 14000)",
+    "category": "geometry-spatial",
+    "topic_id": "math-solid-geometry-volume",
+    "lesson_id": null
+  },
+  {
+    "id": "hcmc-math-2026-q6",
+    "prompt": "Một chiếc ly thủy tinh có dạng hình trụ chứa nước, đường kính đáy bên trong ly là 6 cm, chiều cao mực nước hiện tại là 10 cm. Người ta thả vào ly 4 viên bi thủy tinh hình cầu giống hệt nhau chìm hoàn toàn trong nước thì thấy nước dâng lên vừa vặn đầy ly (không bị tràn ra ngoài). Biết chiều cao của ly là 12 cm. Tính bán kính của mỗi viên bi (làm tròn kết quả đến chữ số thập phân thứ nhất; lấy π ≈ 3,14).",
+    "category": "volume-displacement",
+    "topic_id": "math-real-world-algebra",
+    "lesson_id": null
+  },
+  {
+    "id": "hcmc-math-2026-q7",
+    "prompt": "Bạn An đem theo một số tiền vào siêu thị để mua 10 quyển tập cùng loại. Tuy nhiên, hôm nay siêu thị có chương trình khuyến mãi: \"Mua từ quyển thứ 6 trở đi sẽ được giảm 20% trên giá niêm yết\". Nhờ vậy, với số tiền đem theo ban đầu, An đã mua được tổng cộng 11 quyển tập và còn dư lại 4.000 đồng. Tính giá niêm yết của một quyển tập.",
+    "category": "shopping-discount",
+    "topic_id": "math-real-world-percent",
+    "lesson_id": "math-finance"
+  },
+  {
+    "id": "hcmc-math-2026-q8",
+    "prompt": "Cho đường tròn tâm O đường kính AB. Lấy điểm C thuộc đường tròn (O) sao cho AC < BC (C không trùng A). Tiếp tuyến tại A của đường tròn (O) cắt đường thẳng BC tại điểm M.\na) Chứng minh: Tam giác ABC vuông tại C và $MA^2 = MB \\cdot MC$.\nb) Vẽ đường cao CH của tam giác ABC (H thuộc AB). Gọi I là trung điểm của CH. Đường thẳng MI cắt AC tại E và cắt đường tròn (O) tại D (D khác M). Chứng minh tứ giác AHCE nội tiếp.\nc) Chứng minh: MB · MC = MD · MH. Từ đó chứng minh đường thẳng BC là tiếp tuyến của đường tròn ngoại tiếp tam giác ACD.",
+    "category": "tangent-geometry",
+    "topic_id": "math-plane-geometry-circle",
+    "lesson_id": null
+  },
+  {
+    "id": "m-1",
+    "prompt": "Tìm giao điểm của Parabol $y = x^2$ và đường thẳng $y = 2x + 3$.",
+    "category": "parabol-line",
+    "topic_id": "math-quadratic",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "m-14",
+    "prompt": "Cho phương trình: $x^2 - 4x - 3 = 0$ có hai nghiệm phân biệt $x_1$, $x_2$. Không giải phương trình, hãy tính giá trị của biểu thức:\n$$A = \\frac{x_1^2}{x_2} + \\frac{x_2^2}{x_1}$$",
+    "category": "quadratic-equation",
+    "topic_id": "math-quadratic-equation",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "m-15",
+    "prompt": "Cho phương trình: $x^2 - 2mx + 2m - 3 = 0$ (m là tham số).\na) Chứng minh phương trình luôn có hai nghiệm phân biệt $x_1$, $x_2$ với mọi giá trị của m.\nb) Tìm m để hai nghiệm $x_1$, $x_2$ thỏa mãn hệ thức: $x_1^2 + x_2^2 = 10$.",
+    "category": "quadratic-equation",
+    "topic_id": "math-quadratic-equation",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "m-16",
+    "prompt": "Cho phương trình: $3x^2 - 5x - 1 = 0$ có hai nghiệm $x_1$, $x_2$. Không giải phương trình, hãy lập một phương trình bậc hai một ẩn y có hai nghiệm $y_1$, $y_2$ sao cho:\n$y_1 = x_1 + \\frac{1}{x_2}$ và $y_2 = x_2 + \\frac{1}{x_1}$",
+    "category": "quadratic-equation",
+    "topic_id": "math-quadratic-equation",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "m-17",
+    "prompt": "Cho phương trình: $x^2 - 2(m-1)x + m^2 - 4 = 0$. Tìm các giá trị của tham số $m$ để phương trình có hai nghiệm phân biệt $x_1, x_2$ sao cho biểu thức sau đạt giá trị cực trị (đạt đỉnh parabol):\n$B = x_1 x_2 - (x_1 + x_2)$",
+    "category": "quadratic-equation",
+    "topic_id": "math-quadratic-equation",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "m-18",
+    "prompt": "Cho phương trình: $x^2 - 3x - 5 = 0$ có hai nghiệm $x_1, x_2$. Không giải phương trình, hãy tính giá trị của biểu thức:\n$C = (x_1^2 - 3x_1 + 1)(x_2^2 - 3x_2 + 1)$",
+    "category": "quadratic-equation",
+    "topic_id": "math-quadratic-equation",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "m-19",
+    "prompt": "Mối liên hệ giữa nhiệt độ F (độ Fahrenheit) và nhiệt độ C (độ Celsius) được cho bởi công thức hàm số bậc nhất: $F = aC + b$. Biết rằng nước đóng băng ở 0°C tương ứng với 32°F và nước sôi ở 100°C tương ứng với 212°F.\na) Xác định các hệ số a và b.\nb) Nếu nhiệt độ cơ thể người bình thường là 37°C thì tương ứng bao nhiêu độ F?",
+    "category": "linear-function",
+    "topic_id": "math-quadratic-function",
+    "lesson_id": "math-finance"
+  },
+  {
+    "id": "m-2",
+    "prompt": "Cho phương trình x² - 5x + 3 = 0 có hai nghiệm x₁, x₂. Tính giá trị biểu thức A = x₁² + x₂².",
+    "category": "viet-relation",
+    "topic_id": "math-quadratic",
+    "lesson_id": "math-viet"
+  },
+  {
+    "id": "m-20",
+    "prompt": "Một công ty viễn thông đưa ra hai gói cước mạng Internet như sau:\n- Gói A: Chi phí đăng ký ban đầu là 300.000 đồng và phí duy trì hàng tháng là 120.000 đồng.\n- Gói B: Không tốn phí đăng ký ban đầu nhưng phí duy trì hàng tháng là 150.000 đồng.\na) Viết công thức tính tổng số tiền y (đồng) khách hàng phải trả sau x (tháng) sử dụng đối với từng gói cước.\nb) Nếu một hộ gia đình có nhu cầu sử dụng Internet trong vòng 2 năm (24 tháng) thì nên chọn gói cước nào để tiết kiệm chi phí hơn?",
+    "category": "linear-function",
+    "topic_id": "math-quadratic-function",
+    "lesson_id": "math-viet"
+  },
+  {
+    "id": "m-21",
+    "prompt": "Càng lên cao áp suất khí quyển càng giảm. Mối liên hệ giữa áp suất khí quyển y (mmHg) và độ cao x (m) so với mực nước biển là một hàm số bậc nhất y = ax + b. Biết tại mực nước biển (độ cao 0 m) áp suất là 760 mmHg, và tại độ cao 1000 m áp suất là 670 mmHg.\na) Xác định hàm số y theo x.\nb) Thành phố Đà Lạt có độ cao trung bình khoảng 1500 m so với mực nước biển. Hãy tính áp suất khí quyển tại đây.",
+    "category": "linear-function",
+    "topic_id": "math-quadratic-function",
+    "lesson_id": null
+  },
+  {
+    "id": "m-22",
+    "prompt": "Một xí nghiệp may mặc cần thanh lý một lô hàng gồm 5.000 bộ quần áo. Kể từ ngày bắt đầu thanh lý, mỗi ngày xí nghiệp bán được 150 bộ quần áo.\na) Thiết lập hàm số biểu diễn số bộ quần áo còn lại y sau x ngày thanh lý.\nb) Hỏi sau bao nhiêu ngày thì xí nghiệp chỉ còn lại 1.400 bộ quần áo? Sau bao lâu thì thanh lý hết hoàn toàn lô hàng?",
+    "category": "linear-function",
+    "topic_id": "math-quadratic-function",
+    "lesson_id": "math-finance"
+  },
+  {
+    "id": "m-23",
+    "prompt": "Lực đàn hồi F (N) của một lò xo tỉ lệ thuận với độ dãn Δl (cm) của nó theo công thức bậc nhất $F = k \\cdot \\Delta l$. Người ta đo được khi treo vật nặng có trọng lượng 2 N thì lò xo dãn ra 1,5 cm.\na) Tìm hệ số đàn hồi k của lò xo.\nb) Nếu muốn lò xo dãn ra 4,5 cm thì phải treo vào lò xo một vật có trọng lượng bao nhiêu Newton?",
+    "category": "linear-function",
+    "topic_id": "math-quadratic-function",
+    "lesson_id": "math-quadratic-applied"
+  },
+  {
+    "id": "m-24",
+    "prompt": "Vào đầu năm học, một cửa hàng sách giảm giá 10% cho tất cả các loại sách văn học. Bạn Bình mua 5 quyển sách văn học cùng loại và một chiếc ba lô có giá niêm yết 350.000 đồng (ba lô không được giảm giá). Tổng số tiền Bình phải trả cho cửa hàng là 575.000 đồng. Tính giá niêm yết ban đầu của một quyển sách văn học đó.",
+    "category": "shopping-discount",
+    "topic_id": "math-real-world-percent",
+    "lesson_id": "math-finance"
+  },
+  {
+    "id": "m-25",
+    "prompt": "Một siêu thị điện máy thực hiện chương trình khuyến mãi: Tivi mẫu A giảm giá 15% so với giá niêm yết. Người mua chiếc tivi thứ hai cùng loại sẽ được giảm thêm 10% trên giá đã giảm của chiếc thứ nhất. Gia đình ông Bình đã mua 2 chiếc tivi mẫu A và phải trả tổng số tiền là 26.350.000 đồng. Hỏi giá niêm yết ban đầu của một chiếc tivi mẫu A là bao nhiêu? (Lưu ý: Giảm thêm 10% ở đây tương ứng mức giảm 25% so với giá gốc cho chiếc thứ hai).",
+    "category": "percentage-discount",
+    "topic_id": "math-real-world-percent",
+    "lesson_id": "math-finance"
+  },
+  {
+    "id": "m-26",
+    "prompt": "Một cửa hàng kinh doanh đồ uống áp dụng chính sách: Giá một ly trà sữa ban đầu là 40.000 đồng. Nếu mua từ ly thứ 4 trở đi, mỗi ly sẽ được giảm giá 20% so với giá ban đầu. Một nhóm học sinh mua tổng cộng n ly trà sữa (n > 3) và trả tổng số tiền là 248.000 đồng. Tìm số lượng ly trà sữa nhóm học sinh đó đã mua.",
+    "category": "shopping-discount",
+    "topic_id": "math-real-world-percent",
+    "lesson_id": "math-finance"
+  },
+  {
+    "id": "m-27",
+    "prompt": "Giá một mét khối nước sinh hoạt được tính lũy tiến như sau: 10 m³ đầu giá 6.500 đ/m³; từ m³ 11 đến 20 giá 8.000 đ/m³; từ m³ 21 trở đi giá 11.000 đ/m³. Thuế VAT là 5% và phí bảo vệ môi trường là 10% (tổng cộng cộng thêm 15% vào hóa đơn). Tháng 5 gia đình Nam dùng 22 m³ nước. Tính số tiền phải trả.",
+    "category": "finance",
+    "topic_id": "math-real-world-algebra",
+    "lesson_id": "math-finance"
+  },
+  {
+    "id": "m-28",
+    "prompt": "Cửa hàng nhập 200 kg cam giá 25.000 đ/kg. Đợt 1 bán 120 kg với giá lãi 40% so với giá vốn. Đợt 2 bán 80 kg còn lại với giá rẻ hơn 10% so với giá vốn. Hỏi sau khi bán hết, cửa hàng lời hay lỗ bao nhiêu tiền?",
+    "category": "finance",
+    "topic_id": "math-real-world-algebra",
+    "lesson_id": "math-finance"
+  },
+  {
+    "id": "m-29",
+    "prompt": "Một chiếc ly thủy tinh có phần chứa nước dạng hình nón với bán kính đáy nón r = 4 cm và chiều cao h = 9 cm. Người ta đổ nước vào ly sao cho chiều cao của cột nước bằng 2/3 chiều cao hình nón. Tính thể tích nước có trong ly (lấy pi ≈ 3,14, làm tròn đến hàng đơn vị).",
+    "category": "solid-geometry",
+    "topic_id": "math-solid-geometry-volume",
+    "lesson_id": "math-cone-detail"
+  },
+  {
+    "id": "m-3",
+    "prompt": "Một cửa hàng niêm yết giá bán một chiếc balo là 300.000 đồng. Nhân dịp khai giảng, cửa hàng giảm giá đợt 1 là 10%. Sau đó đợt 2 cửa hàng lại giảm tiếp 5% trên giá đã giảm của đợt 1. Hỏi sau hai đợt giảm giá, chiếc balo có giá bao nhiêu?",
+    "category": "real-finance",
+    "topic_id": "math-real",
+    "lesson_id": "math-finance"
+  },
+  {
+    "id": "m-30",
+    "prompt": "Một hộp sữa bột hình trụ có chiều cao $h = 18$ cm và bán kính đáy $r = 6$ cm.\na) Tính diện tích phần nhãn giấy cần dùng để dán kín xung quanh mặt bên của hộp sữa (bỏ qua mép dán).\nb) Biết thể tích sữa bột chiếm 85% thể tích của cả hộp. Tính khối lượng sữa bột có trong hộp nếu cứ 1 cm³ sữa bột nặng 0,6 gram. (Lấy $\\pi \\approx 3,14$).",
+    "category": "solid-geometry",
+    "topic_id": "math-solid-geometry-volume",
+    "lesson_id": "math-cylinder-detail"
+  },
+  {
+    "id": "m-31",
+    "prompt": "Một quả bóng đá tiêu chuẩn có dạng hình cầu với chu vi đường tròn lớn là 68 cm.\na) Tính bán kính của quả bóng đá đó (làm tròn đến chữ số thập phân thứ hai).\nb) Tính diện tích da tối thiểu cần dùng để khâu thành quả bóng đó, biết diện tích các mép khâu và phần hao hụt bằng 12% diện tích bề mặt quả bóng. (Sử dụng công thức $C = 2\\pi r$ và $S = 4\\pi r^2$, lấy $\\pi \\approx 3,14$).",
+    "category": "solid-geometry",
+    "topic_id": "math-solid-geometry-volume",
+    "lesson_id": "math-space-geom"
+  },
+  {
+    "id": "m-32",
+    "prompt": "Một bồn chứa dầu đặt nằm ngang gồm một phần thân có dạng hình trụ dài 5 m và hai đầu là hai nửa hình cầu bằng nhau có bán kính $r = 1$ m.\na) Tính thể tích toàn bộ bồn chứa dầu này.\nb) Hiện tại bồn đang chứa lượng dầu chiếm $\\frac{3}{4}$ thể tích bồn. Người ta rút dầu ra bằng các xe xitec, mỗi xe chở được tối đa 8 m³ dầu. Hỏi cần ít nhất bao nhiêu chuyến xe để chở hết lượng dầu hiện có trong bồn? (Lấy $\\pi \\approx 3,14$).",
+    "category": "solid-geometry",
+    "topic_id": "math-solid-geometry-volume",
+    "lesson_id": "math-cone-sphere-combined"
+  },
+  {
+    "id": "m-33",
+    "prompt": "Một cây kem ốc quế gồm hai phần: Phần bánh hình nón chiều cao h = 12 cm, bán kính r = 3 cm; phần kem bên trên là nửa hình cầu úp khít lên miệng hình nón.\na) Tính thể tích toàn bộ cây kem.\nb) Giá nguyên vật liệu để làm ra 100 cm³ kem là 15.000 đồng. Hỏi chi phí nguyên vật liệu để làm ra 50 cây kem như trên là bao nhiêu? (Lấy $\\pi \\approx 3,14$).",
+    "category": "solid-geometry",
+    "topic_id": "math-solid-geometry-volume",
+    "lesson_id": "math-cone-sphere-combined"
+  },
+  {
+    "id": "m-4",
+    "prompt": "Một lon nước ngọt hình trụ có bán kính đáy r = 3 cm và chiều cao h = 12 cm. Tính thể tích vỏ lon nước ngọt này (lấy π ≈ 3.14).",
+    "category": "real-geometry",
+    "topic_id": "math-solid",
+    "lesson_id": null
+  },
+  {
+    "id": "m-5",
+    "prompt": "Tìm giá trị tham số m để phương trình x² - 2x + m - 1 = 0 có hai nghiệm phân biệt.",
+    "category": "viet-relation",
+    "topic_id": "math-quadratic",
+    "lesson_id": "math-viet"
+  },
+  {
+    "id": "m-6",
+    "prompt": "Hai trường A và B có tổng cộng 500 học sinh đỗ lớp 10. Biết tỷ lệ đỗ của trường A là 90%, trường B là 85%. Tổng số học sinh dự thi của hai trường là 560 học sinh. Hỏi trường A có bao nhiêu học sinh dự thi?",
+    "category": "real-equations",
+    "topic_id": "math-real-world-algebra",
+    "lesson_id": "math-trig-ratio"
+  },
+  {
+    "id": "m-7",
+    "prompt": "Cho đường tròn $(O; R)$ và điểm A nằm ngoài đường tròn sao cho $OA = 2R$. Kẻ tiếp tuyến AB với đường tròn (B là tiếp điểm). Tính độ dài tiếp tuyến AB theo R.",
+    "category": "plane-geometry",
+    "topic_id": "math-plane",
+    "lesson_id": "math-circle-concept"
+  },
+  {
+    "id": "math-gatekeeper-topic-math-inequality",
+    "prompt": "Tìm tập nghiệm của bất phương trình sau: $3x - 5 \\ge 5x + 3$.",
+    "category": "inequality",
+    "topic_id": "math-inequality",
+    "lesson_id": null
+  },
+  {
+    "id": "math-gatekeeper-topic-math-linear-system",
+    "prompt": "Tìm nghiệm $(x; y)$ của hệ phương trình sau:\n$2x + y = 5$\n$3x - y = 5$",
+    "category": "linear-system",
+    "topic_id": "math-linear-system",
+    "lesson_id": "math-system-eq-1"
+  },
+  {
+    "id": "math-gatekeeper-topic-math-plane-geometry-circle",
+    "prompt": "Cho đường tròn (O; 5cm) và một điểm A nằm ngoài đường tròn sao cho OA = 13cm. Vẽ tiếp tuyến AB với đường tròn (B là tiếp điểm). Tính độ dài đoạn tiếp tuyến AB.",
+    "category": "plane-geometry",
+    "topic_id": "math-plane-geometry-circle",
+    "lesson_id": "math-circle-concept"
+  },
+  {
+    "id": "math-gatekeeper-topic-math-plane-geometry-coordinates",
+    "prompt": "Xác định phương trình đường thẳng (d): $y = ax + b$ biết (d) đi qua điểm $A(1; 5)$ và song song với đường thẳng (d'): $y = 2x + 1$.",
+    "category": "plane-geometry",
+    "topic_id": "math-plane-geometry-coordinates",
+    "lesson_id": "math-circle-concept"
+  },
+  {
+    "id": "math-gatekeeper-topic-math-plane-geometry-cyclic",
+    "prompt": "Cho tứ giác ABCD nội tiếp đường tròn (O). Biết góc A = 70° và góc B = 110°. Tính số đo góc C và góc D của tứ giác.",
+    "category": "plane-geometry",
+    "topic_id": "math-plane-geometry-cyclic",
+    "lesson_id": "math-circle-concept"
+  },
+  {
+    "id": "math-gatekeeper-topic-math-plane-geometry-triangle",
+    "prompt": "Cho tam giác ABC đồng dạng với tam giác A'B'C' theo tỉ số đồng dạng $k = \\frac{2}{3}$. Biết diện tích tam giác A'B'C' là $36\\text{cm}^2$. Tính diện tích tam giác ABC.",
+    "category": "plane-geometry",
+    "topic_id": "math-plane-geometry-triangle",
+    "lesson_id": "math-circle-concept"
+  },
+  {
+    "id": "math-gatekeeper-topic-math-probability",
+    "prompt": "Một hộp chứa 3 quả cầu đỏ, 4 quả cầu xanh và 5 quả cầu vàng có kích thước giống hệt nhau. Lấy ngẫu nhiên một quả cầu từ hộp. Tính xác suất để quả cầu được lấy ra không phải màu xanh.",
+    "category": "probability",
+    "topic_id": "math-probability",
+    "lesson_id": null
+  },
+  {
+    "id": "math-gatekeeper-topic-math-quadratic-equation",
+    "prompt": "Cho phương trình ẩn x: $x^2 - 2mx + m^2 - 4 = 0$ (m là tham số). Kết luận nào sau đây là đúng về số nghiệm của phương trình?",
+    "category": "quadratic-equation",
+    "topic_id": "math-quadratic-equation",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "math-gatekeeper-topic-math-quadratic-function",
+    "prompt": "Cho parabol (P): $y = -x^2$ và đường thẳng (d): $y = 2x - 3$. Tìm tọa độ giao điểm của (P) và (d).",
+    "category": "quadratic-function",
+    "topic_id": "math-quadratic-function",
+    "lesson_id": "math-quadratic-formula"
+  },
+  {
+    "id": "math-gatekeeper-topic-math-radicals",
+    "prompt": "Rút gọn biểu thức sau: $A = \\sqrt{12} - 3\\sqrt{27} + \\sqrt{48}$.",
+    "category": "radicals",
+    "topic_id": "math-radicals",
+    "lesson_id": null
+  },
+  {
+    "id": "math-gatekeeper-topic-math-rational-expression",
+    "prompt": "Rút gọn biểu thức hữu tỉ sau: $P = \\frac{x^2 - 4}{x^2 - 2x}$ với điều kiện $x \\neq 0$ và $x \\neq 2$.",
+    "category": "rational-expression",
+    "topic_id": "math-rational-expression",
+    "lesson_id": null
+  },
+  {
+    "id": "math-gatekeeper-topic-math-real-world-algebra",
+    "prompt": "Một mảnh đất hình chữ nhật có chiều dài hơn chiều rộng 4m. Nếu tăng chiều rộng thêm 3m và giảm chiều dài đi 2m thì diện tích tăng thêm $8\\text{m}^2$. Tính chiều rộng ban đầu của mảnh đất.",
+    "category": "real-world-algebra",
+    "topic_id": "math-real-world-algebra",
+    "lesson_id": null
+  },
+  {
+    "id": "math-gatekeeper-topic-math-real-world-percent",
+    "prompt": "Một cửa hàng niêm yết giá bán một chiếc áo khoác là 400,000 đồng. Nhân dịp lễ, cửa hàng giảm giá lần thứ nhất 10%. Sau đó, để thanh lý nhanh, cửa hàng tiếp tục giảm thêm 5% trên giá đã giảm của lần thứ nhất. Hỏi giá của chiếc áo sau hai lần giảm giá là bao nhiêu?",
+    "category": "real-world-percent",
+    "topic_id": "math-real-world-percent",
+    "lesson_id": "math-finance"
+  },
+  {
+    "id": "math-gatekeeper-topic-math-solid-geometry-3d",
+    "prompt": "Một hình trụ có bán kính đáy $r = 5\\text{cm}$. Một mặt phẳng song song với trục của hình trụ và cách trục một khoảng $d = 3\\text{cm}$ cắt hình trụ tạo thành một thiết diện hình chữ nhật có diện tích là $40\\text{cm}^2$. Tính chiều cao $h$ của hình trụ.",
+    "category": "solid-geometry",
+    "topic_id": "math-solid-geometry-3d",
+    "lesson_id": "math-cylinder-detail"
+  },
+  {
+    "id": "math-gatekeeper-topic-math-solid-geometry-volume",
+    "prompt": "Tính thể tích $V$ của một hình nón có bán kính đáy $r = 3\\text{cm}$ and chiều cao $h = 4\\text{cm}$ (lấy số Pi $\\pi \\approx 3.14$, kết quả làm tròn đến chữ số thập phân thứ hai).",
+    "category": "solid-geometry",
+    "topic_id": "math-solid-geometry-volume",
+    "lesson_id": "math-cone-detail"
+  },
+  {
+    "id": "math-gatekeeper-topic-math-statistics",
+    "prompt": "Cho bảng tần số về điểm kiểm tra của một nhóm 10 học sinh:\nĐiểm số ($x$): 6 | 7 | 8 | 9 | 10\nTần số ($n$): 1 | 3 | 4 | 1 | 1\nHãy tính điểm trung bình ($X_{tb}$) của nhóm học sinh này.",
+    "category": "statistics",
+    "topic_id": "math-statistics",
+    "lesson_id": null
+  },
+  {
+    "id": "math-gatekeeper-topic-math-trigonometry",
+    "prompt": "Cho tam giác ABC vuông tại A, đường cao AH. Biết độ dài hai đoạn hình chiếu $HB = 2\\text{cm}$ và $HC = 8\\text{cm}$. Tính độ dài đường cao $AH$.",
+    "category": "trigonometry",
+    "topic_id": "math-trigonometry",
+    "lesson_id": "math-trig-ratio"
+  },
+  {
+    "id": "math-gatekeeper-topic-math-vieta",
+    "prompt": "Gọi $x_1$, $x_2$ là hai nghiệm của phương trình $x^2 - 5x + 3 = 0$. Không giải phương trình, hãy tính giá trị của biểu thức $A = x_1^2 + x_2^2$.",
+    "category": "vieta",
+    "topic_id": "math-vieta",
+    "lesson_id": "math-viet"
+  }
+]

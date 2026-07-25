@@ -12,6 +12,11 @@ import type { SubjectId } from '../../types/game';
 import { shuffleWithSeed } from '../../utils/shuffle';
 import { MarkdownRenderer } from '../Common/MarkdownRenderer';
 
+/** Strip leading A. / B. / C. / D. from option text */
+const stripOptionPrefix = (text: string): string =>
+  text.trim().replace(/^[A-D]\s*[.)>]\s*/i, '').trim();
+
+
 export interface PostQuizReviewProps {
   mode: string;
   rewardsEarned: { ruby: number; xp: number };
@@ -343,9 +348,13 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
             <div className="space-y-2">
               {shuffledReviewOptions.map((option, idx) => {
                 const cleanOpt = option.trim();
-                const isSelected = reviewItem.userAnswer === cleanOpt;
+                const displayOpt = stripOptionPrefix(cleanOpt);
                 const correctAnsStr = Array.isArray(q.correctAnswer) ? q.correctAnswer[0] : q.correctAnswer;
-                const isCorrectChoice = cleanOpt.toLowerCase() === correctAnsStr.toLowerCase();
+                const correctStripped = stripOptionPrefix((correctAnsStr || '').trim());
+                const isSelected = reviewItem.userAnswer === cleanOpt || reviewItem.userAnswer === displayOpt;
+                const isCorrectChoice =
+                  cleanOpt.toLowerCase() === (correctAnsStr || '').toLowerCase() ||
+                  displayOpt.toLowerCase() === correctStripped.toLowerCase();
 
                 return (
                   <div 
@@ -361,8 +370,11 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
                     <span className="font-orbitron font-bold uppercase tracking-wider min-w-[20px] pt-0.5">
                       {String.fromCharCode(65 + idx)}.
                     </span>
-                    <div className="flex-1 space-y-1">
-                      <p>{option}</p>
+                    <div className="flex-1 space-y-1 min-w-0">
+                      <MarkdownRenderer
+                        content={displayOpt}
+                        className="text-xs leading-snug [&>p]:mb-0 [&>p]:text-inherit [&_*]:text-inherit"
+                      />
                       <div className="text-[10px] text-slate-400 italic">
                         {isCorrectChoice ? (
                           <span className="text-emerald-400 font-bold">
