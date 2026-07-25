@@ -3,12 +3,11 @@ import { BookOpen, Plus, Trash2, Search, RefreshCw, ChevronLeft, ChevronRight, E
 import { FullscreenModal } from '../Common/FullscreenModal';
 import { LessonStudyView } from '../LessonStudyView';
 import { SUBJECTS_CONFIG } from '../../types/game';
-import type { SubjectId } from '../../types/game';
+import type { SubjectId, GradeTier, HamNguyenTo } from '../../types/game';
 import { toast } from '../../utils/toast';
 import { supabase } from '../../utils/supabaseClient';
 import { useGameState } from '../../hooks/useGameState';
-import { DUNGEONS_CONFIG } from '../../utils/textbookEnricher';
-import type { HamNguyenTo } from '../../types/game';
+import { DUNGEONS_CONFIG, enrichTextbookAttributes } from '../../utils/textbookEnricher';
 
 interface Lesson {
   id: string;
@@ -146,6 +145,7 @@ export const LectureBankManager: React.FC = () => {
 
   // Form Fields
   const [formSubject, setFormSubject] = useState<SubjectId>(currentSubject);
+  const [formGradeTier, setFormGradeTier] = useState<GradeTier>(activeGradeTier);
   const [formCategory, setFormCategory] = useState('');
   const [formTopic, setFormTopic] = useState('');
   const [formTopicId, setFormTopicId] = useState('');
@@ -193,63 +193,88 @@ export const LectureBankManager: React.FC = () => {
     fetchLessons();
   }, [activeGradeTier]);
 
-  // Distinct options derived from current subject's lessons in current grade
-  const subjectLessons = useMemo(() => {
-    return lessons.filter(l => l.subject === formSubject);
-  }, [lessons, formSubject]);
-
+  // Rich distinct options derived from presets, Zustand topics store & DB lessons
   const distinctCategories = useMemo(() => {
     const set = new Set<string>();
-    subjectLessons.forEach(l => {
-      if (l.category?.trim()) set.add(l.category.trim());
+    const presets: Record<string, string[]> = {
+      toan: ['real-geometry', 'algebra', 'geometry', 'plane-geometry', 'solid-geometry', 'modeling', 'statistics', 'calculus', 'general'],
+      english: ['grammar', 'reading', 'vocabulary', 'pronunciation', 'rewrite', 'cloze', 'listening', 'speaking', 'general'],
+      van: ['van-hoc', 'tieng-viet', 'tap-lam-van', 'reading', 'essay', 'general'],
+      ly: ['co-ban', 'thi-nghiem', 'li-thuyet', 'bai-tap-tinh-toan', 'general'],
+      hoa: ['co-ban', 'vo-co', 'huu-co', 'thi-nghiem', 'general'],
+      sinh: ['di-truyen', 'te-bao', 'sinh-thai', 'general']
+    };
+    (presets[formSubject] || ['general', 'reading', 'grammar', 'algebra', 'geometry']).forEach(c => set.add(c));
+
+    lessons.forEach(l => {
+      if (l.subject === formSubject && l.category?.trim()) set.add(l.category.trim());
     });
     return Array.from(set).sort();
-  }, [subjectLessons]);
+  }, [lessons, formSubject]);
 
   const distinctTopics = useMemo(() => {
     const set = new Set<string>();
-    subjectLessons.forEach(l => {
-      if (l.topic?.trim()) set.add(l.topic.trim());
+    topics.filter((t: any) => t.subjectId === formSubject).forEach((t: any) => {
+      if (t.label?.trim()) set.add(t.label.trim());
+      if (t.id?.trim()) set.add(t.id.trim());
+    });
+    lessons.forEach(l => {
+      if (l.subject === formSubject && l.topic?.trim()) set.add(l.topic.trim());
     });
     return Array.from(set).sort();
-  }, [subjectLessons]);
+  }, [lessons, formSubject, topics]);
 
   const distinctTitles = useMemo(() => {
     const set = new Set<string>();
-    subjectLessons.forEach(l => {
-      if (l.title?.trim()) set.add(l.title.trim());
+    lessons.forEach(l => {
+      if (l.subject === formSubject && l.title?.trim()) set.add(l.title.trim());
     });
     return Array.from(set).sort();
-  }, [subjectLessons]);
+  }, [lessons, formSubject]);
 
   const distinctLoai = useMemo(() => {
     const set = new Set<string>();
-    subjectLessons.forEach(l => {
-      if (l.loai?.trim()) set.add(l.loai.trim());
+    const presets: Record<string, string[]> = {
+      toan: ['Đại số', 'Hình học', 'Thống kê & Xác suất', 'Hình học & Đo lường', 'Đại số & Giải tích', 'Giải tích', 'Chuyên đề học tập'],
+      english: ['Grammar', 'Reading', 'Vocabulary', 'Phonetics & Pronunciation', 'Sentence Transformation', 'Listening & Speaking'],
+      van: ['Văn học', 'Tiếng Việt', 'Tập làm văn', 'Đọc hiểu văn bản'],
+      ly: ['Vật lý đại cương', 'Cơ học', 'Điện học', 'Quang học'],
+      hoa: ['Hóa học đại cương', 'Hóa học vô cơ', 'Hóa học hữu cơ'],
+      sinh: ['Sinh học tế bào', 'Di truyền học', 'Sinh thái học & Tiến hóa']
+    };
+    (presets[formSubject] || ['Chương trình chuẩn', 'Lý thuyết cơ bản', 'Chuyên đề']).forEach(l => set.add(l));
+
+    lessons.forEach(l => {
+      if (l.subject === formSubject && l.loai?.trim()) set.add(l.loai.trim());
     });
     return Array.from(set).sort();
-  }, [subjectLessons]);
+  }, [lessons, formSubject]);
 
   const distinctBai = useMemo(() => {
     const set = new Set<number>();
-    subjectLessons.forEach(l => {
-      if (l.bai !== undefined && l.bai !== null && !isNaN(l.bai)) set.add(l.bai);
+    [1, 2, 3, 4, 5, 5.5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25].forEach(n => set.add(n));
+    lessons.forEach(l => {
+      if (l.subject === formSubject && l.bai !== undefined && l.bai !== null && !isNaN(l.bai)) set.add(l.bai);
     });
     return Array.from(set).sort((a, b) => a - b).map(n => String(n));
-  }, [subjectLessons]);
+  }, [lessons, formSubject]);
 
   const handleOpenCreateModal = () => {
     setEditingLesson(null);
     setFormSubject(currentSubject);
+    setFormGradeTier(activeGradeTier);
     setFormCategory('');
     setFormTopic('');
     setFormTopicId('');
     setFormTitle('');
     setFormTheory('');
     setFormIsStandard(false);
-    setFormLoai('');
-    setFormBai('');
-    setFormHamNguyenTo('thach');
+
+    const enriched = enrichTextbookAttributes('', '', currentSubject);
+    setFormLoai(enriched.loai || 'Chương trình chuẩn');
+    setFormBai(String(enriched.bai || 1));
+    setFormHamNguyenTo(enriched.hamNguyenTo || 'thach');
+
     setFormAttempted(false);
     setIsPreviewMode(false);
     setIsModalOpen(true);
@@ -258,15 +283,19 @@ export const LectureBankManager: React.FC = () => {
   const handleOpenEditModal = (lesson: Lesson, keepPreview?: boolean) => {
     setEditingLesson(lesson);
     setFormSubject(lesson.subject as SubjectId);
+    setFormGradeTier((lesson.grade_tier || activeGradeTier) as GradeTier);
     setFormCategory(lesson.category);
     setFormTopic(lesson.topic);
     setFormTopicId(lesson.topicId || '');
     setFormTitle(lesson.title);
     setFormTheory(lesson.theory);
     setFormIsStandard(lesson.is_standard || false);
-    setFormLoai(lesson.loai || '');
-    setFormBai(lesson.bai !== undefined ? String(lesson.bai) : '');
-    setFormHamNguyenTo(lesson.hamNguyenTo || 'thach');
+
+    const enriched = enrichTextbookAttributes(lesson.topicId || lesson.category, lesson.category, lesson.subject);
+    setFormLoai(lesson.loai?.trim() || enriched.loai || 'Chương trình chuẩn');
+    setFormBai(lesson.bai !== undefined && lesson.bai !== null ? String(lesson.bai) : String(enriched.bai || 1));
+    setFormHamNguyenTo(lesson.hamNguyenTo || enriched.hamNguyenTo || 'thach');
+
     setFormAttempted(true);
     if (!keepPreview) {
       setIsPreviewMode(false);
@@ -289,18 +318,19 @@ export const LectureBankManager: React.FC = () => {
       if (!token) return;
 
       const parsedBai = formBai.trim() ? parseFloat(formBai) : undefined;
+      const enrichedFallback = enrichTextbookAttributes(formTopicId || formCategory, formCategory, formSubject);
 
       const payload = {
         subject: formSubject,
-        gradeTier: activeGradeTier,
+        gradeTier: formGradeTier,
         category: formCategory.trim(),
         topic: formTopic.trim(),
         topicId: formTopicId || undefined,
         title: formTitle.trim(),
         theory: formTheory.trim(),
         is_standard: isStandardOverride !== undefined ? isStandardOverride : formIsStandard,
-        loai: formLoai.trim() || undefined,
-        bai: parsedBai,
+        loai: formLoai.trim() || enrichedFallback.loai || 'Chương trình chuẩn',
+        bai: parsedBai !== undefined ? parsedBai : (enrichedFallback.bai || 1),
         hamNguyenTo: formHamNguyenTo
       };
 
@@ -704,6 +734,19 @@ export const LectureBankManager: React.FC = () => {
                 >
                   {Object.values(SUBJECTS_CONFIG).map(sub => (
                     <option key={sub.id} value={sub.id} className="bg-slate-900 text-white">{sub.icon} {sub.name}</option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="space-y-1 block">
+                <span className="text-slate-400 font-semibold">Khối lớp (Tầng học)</span>
+                <select
+                  value={formGradeTier}
+                  onChange={(e) => setFormGradeTier(Number(e.target.value) as GradeTier)}
+                  className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan cursor-pointer text-xs font-bold text-synth-cyan"
+                >
+                  {[6, 7, 8, 9, 10, 11, 12].map(g => (
+                    <option key={g} value={g} className="bg-slate-900 text-white">Lớp {g}</option>
                   ))}
                 </select>
               </label>

@@ -163,6 +163,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
   const [editSource, setEditSource] = useState('');
   const [editImageUrl, setEditImageUrl] = useState('');
   const [editSubject, setEditSubject] = useState<SubjectId>(selectedSect || 'english');
+  const [editGradeTier, setEditGradeTier] = useState<GradeTier>(gradeTier);
   const [editLoai, setEditLoai] = useState('');
   const [editBai, setEditBai] = useState('');
   const [editPedagogicalPhase, setEditPedagogicalPhase] = useState<NonNullable<Question['pedagogicalPhase']>>('comprehension');
@@ -179,23 +180,43 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
 
   const distinctCategories = useMemo(() => {
     const set = new Set<string>();
-    ['general', 'reading', 'grammar', 'vocabulary', 'algebra', 'geometry', 'real-geometry'].forEach(c => set.add(c));
+    const presets: Record<string, string[]> = {
+      toan: ['real-geometry', 'algebra', 'geometry', 'plane-geometry', 'solid-geometry', 'modeling', 'statistics', 'calculus', 'general'],
+      english: ['grammar', 'reading', 'vocabulary', 'pronunciation', 'rewrite', 'cloze', 'listening', 'speaking', 'general'],
+      van: ['van-hoc', 'tieng-viet', 'tap-lam-van', 'reading', 'essay', 'general'],
+      ly: ['co-ban', 'thi-nghiem', 'li-thuyet', 'bai-tap-tinh-toan', 'general'],
+      hoa: ['co-ban', 'vo-co', 'huu-co', 'thi-nghiem', 'general'],
+      sinh: ['di-truyen', 'te-bao', 'sinh-thai', 'general']
+    };
+    (presets[editSubject] || ['general', 'reading', 'grammar', 'algebra', 'geometry']).forEach(c => set.add(c));
+
     subjectQuestions.forEach(q => {
       if (q.category?.trim()) set.add(q.category.trim());
     });
     return Array.from(set).sort();
-  }, [subjectQuestions]);
+  }, [subjectQuestions, editSubject]);
 
   const distinctLoai = useMemo(() => {
     const set = new Set<string>();
+    const presets: Record<string, string[]> = {
+      toan: ['Đại số', 'Hình học', 'Thống kê & Xác suất', 'Hình học & Đo lường', 'Đại số & Giải tích', 'Giải tích', 'Chuyên đề học tập'],
+      english: ['Grammar', 'Reading', 'Vocabulary', 'Phonetics & Pronunciation', 'Sentence Transformation', 'Listening & Speaking'],
+      van: ['Văn học', 'Tiếng Việt', 'Tập làm văn', 'Đọc hiểu văn bản'],
+      ly: ['Vật lý đại cương', 'Cơ học', 'Điện học', 'Quang học'],
+      hoa: ['Hóa học đại cương', 'Hóa học vô cơ', 'Hóa học hữu cơ'],
+      sinh: ['Sinh học tế bào', 'Di truyền học', 'Sinh thái học & Tiến hóa']
+    };
+    (presets[editSubject] || ['Chương trình chuẩn', 'Lý thuyết cơ bản', 'Chuyên đề']).forEach(l => set.add(l));
+
     subjectQuestions.forEach(q => {
       if (q.loai?.trim()) set.add(q.loai.trim());
     });
     return Array.from(set).sort();
-  }, [subjectQuestions]);
+  }, [subjectQuestions, editSubject]);
 
   const distinctBai = useMemo(() => {
     const set = new Set<number>();
+    [1, 2, 3, 4, 5, 5.5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25].forEach(n => set.add(n));
     subjectQuestions.forEach(q => {
       if (q.bai !== undefined && q.bai !== null && !isNaN(q.bai)) set.add(q.bai);
     });
@@ -226,7 +247,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
       source: editSource,
       imageUrl: editImageUrl || undefined,
       subject: editSubject,
-      gradeTier
+      gradeTier: editGradeTier
     };
   }, [
     isOpen,
@@ -242,7 +263,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
     editSource,
     editImageUrl,
     editSubject,
-    gradeTier
+    editGradeTier
   ]);
 
   useEffect(() => {
@@ -265,9 +286,13 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
         setEditCorrectAnswer('Lựa chọn A');
         setEditSource('Custom Ingest');
         setEditImageUrl('');
-        setEditSubject(selectedSect || 'english');
-        setEditLoai('');
-        setEditBai('');
+        const subj = selectedSect || 'english';
+        setEditSubject(subj);
+        setEditGradeTier(gradeTier);
+
+        const enriched = enrichTextbookAttributes('', '', subj);
+        setEditLoai(enriched.loai || 'Chương trình chuẩn');
+        setEditBai(String(enriched.bai || 1));
         setEditPedagogicalPhase('comprehension');
         setFormAttempted(false);
       } else if (editingQuestion) {
@@ -282,16 +307,20 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
         setEditCorrectAnswer(Array.isArray(q.correctAnswer) ? q.correctAnswer.join('\n') : q.correctAnswer);
         setEditSource(q.source || '');
         setEditImageUrl(q.imageUrl || '');
-        setEditSubject(q.subject || 'english');
-        setEditLoai(q.loai || '');
-        setEditBai(q.bai !== undefined ? String(q.bai) : '');
+        const subj = q.subject || selectedSect || 'english';
+        setEditSubject(subj);
+        setEditGradeTier((q.gradeTier || q.grade || gradeTier) as GradeTier);
+
+        const enriched = enrichTextbookAttributes(q.topicId || q.category, q.category, subj);
+        setEditLoai(q.loai?.trim() || enriched.loai || 'Chương trình chuẩn');
+        setEditBai(q.bai !== undefined && q.bai !== null ? String(q.bai) : String(enriched.bai || 1));
         setEditPedagogicalPhase(q.pedagogicalPhase || 'comprehension');
         setFormAttempted(false);
       }
     } else {
       wasOpenRef.current = false;
     }
-  }, [isOpen, isAddingNew, editingQuestion, selectedSect]);
+  }, [isOpen, isAddingNew, editingQuestion, selectedSect, gradeTier]);
 
   if (!isOpen) return null;
 
@@ -333,7 +362,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
       source: editSource,
       imageUrl: editImageUrl || undefined,
       subject: editSubject,
-      gradeTier,
+      gradeTier: editGradeTier,
       loai: editLoai.trim() || undefined,
       bai: parsedBai,
       pedagogicalPhase: editPedagogicalPhase,
@@ -364,22 +393,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
     if (!editingQuestion) return;
 
     setIsSaving(true);
-    const parsedOptions = editOptions.split('\n').map(o => o.trim()).filter(Boolean);
-    const parsedCorrectAnswer = editCorrectAnswer.split('\n').map(a => a.trim()).filter(Boolean);
-
     const payload: Partial<Question> = {
-      type: editType,
-      prompt: editPrompt,
-      explanation: editExplanation,
-      category: editCategory,
-      topicId: editTopicId || undefined,
-      difficulty: editDifficulty,
-      options: parsedOptions.length > 0 ? parsedOptions : undefined,
-      correctAnswer: parsedCorrectAnswer.length > 1 ? parsedCorrectAnswer : parsedCorrectAnswer[0] || '',
-      source: editSource,
-      imageUrl: editImageUrl || undefined,
-      subject: editSubject,
-      gradeTier,
       metadata: {
         ...(editingQuestion.metadata || {}),
         isStandard: false
@@ -403,6 +417,22 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
           <HelpCircle className="w-5 h-5" />
           {isAddingNew ? 'TẠO CÂU HỎI MỚI' : 'CHỈNH SỬA CÂU HỎI'}
         </span>
+      }
+      headerExtra={
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setIsPreviewMode(!isPreviewMode)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
+              isPreviewMode
+                ? 'bg-synth-cyan text-black shadow-lg shadow-synth-cyan/30'
+                : 'bg-white/10 text-slate-200 hover:bg-white/20 border border-white/10'
+            }`}
+          >
+            {isPreviewMode ? <Edit2 className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+            {isPreviewMode ? 'Chế độ Sửa' : 'Xem Trước'}
+          </button>
+        </div>
       }
       bodyClassName="p-4 sm:p-6 flex flex-col h-full min-h-0 bg-synth-bg"
     >
