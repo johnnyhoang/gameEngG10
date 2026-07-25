@@ -45,6 +45,8 @@ router.get('/questions/custom', async (req: any, res) => {
       scopeCode: row.scope_code || undefined,
       loai: row.loai || undefined,
       bai: row.bai !== null && row.bai !== undefined ? Number(row.bai) : undefined,
+      chapterName: row.chapter_name || undefined,
+      lessonName: row.lesson_name || undefined,
       timesOpened: row.times_opened || 0,
       timesAnsweredCorrectly: row.times_answered_correctly || 0,
       timesSkipped: row.times_skipped || 0,

@@ -17,6 +17,50 @@ router.get('/admin/textbook-mappings', authMiddleware, activeProfileMiddleware, 
   }
 });
 
+// GET /api/curriculum/textbooks: Tải danh mục Chương và Bài chuẩn SGK theo subject & gradeTier
+router.get('/curriculum/textbooks', authMiddleware, activeProfileMiddleware, async (req: any, res) => {
+  const { subject, gradeTier } = req.query;
+  try {
+    let query = 'SELECT * FROM ge10_curriculum_textbooks';
+    const params: any[] = [];
+    const conditions: string[] = [];
+
+    if (subject) {
+      params.push(subject);
+      conditions.push(`subject = $${params.length}`);
+    }
+    if (gradeTier && ![NaN, 0].includes(Number(gradeTier))) {
+      params.push(Number(gradeTier));
+      conditions.push(`grade_tier = $${params.length}`);
+    }
+
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+    query += ' ORDER BY grade_tier ASC, display_order ASC';
+
+    const result = await pool.query(query, params);
+    res.json({
+      success: true,
+      textbooks: result.rows.map((row: any) => ({
+        id: row.id,
+        subject: row.subject,
+        gradeTier: row.grade_tier,
+        chapterNumber: row.chapter_number,
+        chapterTitle: row.chapter_title,
+        chapterFullName: row.chapter_full_name,
+        lessonNumber: row.lesson_number,
+        lessonTitle: row.lesson_title,
+        lessonFullName: row.lesson_full_name,
+        displayOrder: row.display_order
+      }))
+    });
+  } catch (error: any) {
+    console.error('Error fetching curriculum textbooks:', error?.message || error);
+    res.status(500).json({ error: 'Failed to fetch curriculum textbooks.', details: error?.message });
+  }
+});
+
 const requireSuperAdmin = (req: any, res: any, next: any) => {
   const superAdminEmail = process.env.SUPER_ADMIN_EMAIL;
   if (!superAdminEmail || req.user?.email !== superAdminEmail) {

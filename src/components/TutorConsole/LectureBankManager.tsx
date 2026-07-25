@@ -3,7 +3,7 @@ import { BookOpen, Plus, Trash2, Search, RefreshCw, ChevronLeft, ChevronRight, E
 import { FullscreenModal } from '../Common/FullscreenModal';
 import { LessonStudyView } from '../LessonStudyView';
 import { SUBJECTS_CONFIG } from '../../types/game';
-import type { SubjectId, GradeTier, HamNguyenTo } from '../../types/game';
+import type { SubjectId, GradeTier, HamNguyenTo, CurriculumTextbookItem } from '../../types/game';
 import { toast } from '../../utils/toast';
 import { supabase } from '../../utils/supabaseClient';
 import { useGameState } from '../../hooks/useGameState';
@@ -21,6 +21,8 @@ interface Lesson {
   is_standard?: boolean;
   loai?: string;
   bai?: number;
+  chapterName?: string;
+  lessonName?: string;
   hamNguyenTo?: HamNguyenTo;
   times_opened?: number;
   times_completed?: number;
@@ -154,6 +156,9 @@ export const LectureBankManager: React.FC = () => {
   const [formIsStandard, setFormIsStandard] = useState(false);
   const [formLoai, setFormLoai] = useState('');
   const [formBai, setFormBai] = useState('');
+  const [formChapterName, setFormChapterName] = useState('');
+  const [formLessonName, setFormLessonName] = useState('');
+  const [curriculumItems, setCurriculumItems] = useState<CurriculumTextbookItem[]>([]);
   const [formHamNguyenTo, setFormHamNguyenTo] = useState<HamNguyenTo>('thach');
   const [isSaving, setIsSaving] = useState(false);
   const [formAttempted, setFormAttempted] = useState(false);
@@ -164,6 +169,41 @@ export const LectureBankManager: React.FC = () => {
   useEffect(() => {
     setVisibleCount(6);
   }, [searchQuery, currentSubject]);
+
+  useEffect(() => {
+    const fetchCurriculum = async () => {
+      try {
+        const session = await supabase.auth.getSession();
+        const token = session.data.session?.access_token;
+        if (!token) return;
+        const res = await fetch(`${backendUrl}/api/curriculum/textbooks?subject=${formSubject}&gradeTier=${formGradeTier}`, {
+          headers: { Authorization: `Bearer ${token}`, 'X-Profile-Id': localStorage.getItem('ge10_selected_profile_id') || '' }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCurriculumItems(data.textbooks || []);
+        }
+      } catch (e) {
+        console.error('Error fetching curriculum:', e);
+      }
+    };
+    if (isModalOpen) {
+      fetchCurriculum();
+    }
+  }, [formSubject, formGradeTier, isModalOpen]);
+
+  const availableChapters = useMemo(() => {
+    const set = new Set<string>();
+    curriculumItems.forEach(item => {
+      if (item.chapterFullName?.trim()) set.add(item.chapterFullName.trim());
+    });
+    return Array.from(set);
+  }, [curriculumItems]);
+
+  const availableLessonsForChapter = useMemo(() => {
+    if (!formChapterName) return curriculumItems;
+    return curriculumItems.filter(item => item.chapterFullName === formChapterName);
+  }, [curriculumItems, formChapterName]);
 
   const fetchLessons = async () => {
     setLoading(true);
@@ -269,6 +309,8 @@ export const LectureBankManager: React.FC = () => {
     setFormTitle('');
     setFormTheory('');
     setFormIsStandard(false);
+    setFormChapterName('');
+    setFormLessonName('');
 
     const enriched = enrichTextbookAttributes('', '', currentSubject);
     setFormLoai(enriched.loai || 'Chương trình chuẩn');
@@ -290,6 +332,8 @@ export const LectureBankManager: React.FC = () => {
     setFormTitle(lesson.title);
     setFormTheory(lesson.theory);
     setFormIsStandard(lesson.is_standard || false);
+    setFormChapterName(lesson.chapterName || '');
+    setFormLessonName(lesson.lessonName || '');
 
     const enriched = enrichTextbookAttributes(lesson.topicId || lesson.category, lesson.category, lesson.subject);
     setFormLoai(lesson.loai?.trim() || enriched.loai || 'Chương trình chuẩn');
@@ -331,7 +375,9 @@ export const LectureBankManager: React.FC = () => {
         is_standard: isStandardOverride !== undefined ? isStandardOverride : formIsStandard,
         loai: formLoai.trim() || enrichedFallback.loai || 'Chương trình chuẩn',
         bai: parsedBai !== undefined ? parsedBai : (enrichedFallback.bai || 1),
-        hamNguyenTo: formHamNguyenTo
+        hamNguyenTo: formHamNguyenTo,
+        chapterName: formChapterName.trim() || undefined,
+        lessonName: formLessonName.trim() || undefined
       };
 
       const url = editingLesson 
@@ -801,6 +847,60 @@ export const LectureBankManager: React.FC = () => {
                   placeholder="vd: Động từ + V-ing..."
                   className={`w-full p-2.5 rounded-lg border ${formAttempted && !formTitle.trim() ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-synth-gray/20 focus:border-synth-cyan'} text-white outline-none text-xs`}
                 />
+              </label>
+
+              <label className="space-y-1 block sm:col-span-2 lg:col-span-2">
+                <span className="text-slate-400 font-semibold flex items-center gap-1">
+                  📚 Chọn Chương (SGK Chuẩn)
+                </span>
+                <select
+                  value={formChapterName}
+                  onChange={(e) => {
+                    const ch = e.target.value;
+                    setFormChapterName(ch);
+                    const matchedItem = curriculumItems.find(item => item.chapterFullName === ch);
+                    if (matchedItem) {
+                      setFormLoai(matchedItem.chapterTitle);
+                    }
+                  }}
+                  className="w-full p-2.5 rounded-lg border border-synth-cyan/30 bg-synth-gray/30 text-synth-cyan font-semibold outline-none focus:border-synth-cyan cursor-pointer text-xs"
+                >
+                  <option value="" className="bg-slate-900 text-slate-400">-- Chọn Chương SGK chuẩn (vd: Chương I...) --</option>
+                  {availableChapters.map(ch => (
+                    <option key={ch} value={ch} className="bg-slate-900 text-white font-medium">
+                      {ch}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              <label className="space-y-1 block sm:col-span-2 lg:col-span-2">
+                <span className="text-slate-400 font-semibold flex items-center gap-1">
+                  📖 Chọn Bài Học (SGK Chuẩn)
+                </span>
+                <select
+                  value={formLessonName}
+                  onChange={(e) => {
+                    const les = e.target.value;
+                    setFormLessonName(les);
+                    const matchedItem = curriculumItems.find(item => item.lessonFullName === les);
+                    if (matchedItem) {
+                      setFormChapterName(matchedItem.chapterFullName);
+                      setFormLoai(matchedItem.chapterTitle);
+                      const numStr = matchedItem.lessonNumber.replace(/[^0-9.]/g, '');
+                      if (numStr) setFormBai(numStr);
+                      if (!formTitle.trim()) setFormTitle(matchedItem.lessonTitle);
+                    }
+                  }}
+                  className="w-full p-2.5 rounded-lg border border-synth-cyan/30 bg-synth-gray/30 text-synth-cyan font-semibold outline-none focus:border-synth-cyan cursor-pointer text-xs"
+                >
+                  <option value="" className="bg-slate-900 text-slate-400">-- Chọn Bài học SGK chuẩn (vd: Bài 1...) --</option>
+                  {availableLessonsForChapter.map(les => (
+                    <option key={les.id} value={les.lessonFullName} className="bg-slate-900 text-white font-medium">
+                      {les.lessonFullName}
+                    </option>
+                  ))}
+                </select>
               </label>
 
               <label className="space-y-1 block">

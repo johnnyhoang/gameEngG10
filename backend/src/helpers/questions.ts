@@ -33,12 +33,14 @@ export const persistCustomQuestion = async (userId: string, question: any) => {
   const scopeCode = question.scopeCode || buildScopeCode(subject, gradeTier, question.loai || question.category, parsedBai);
   const pedagogicalPhase = question.pedagogicalPhase || 'comprehension';
   const relatedLessonIds = Array.isArray(question.relatedLessonIds) ? question.relatedLessonIds : null;
+  const chapterName = question.chapterName || null;
+  const lessonName = question.lessonName || null;
 
   await pool.query(
     `INSERT INTO ge10_custom_questions (
-       id, user_id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, image_url, metadata, lesson_id, is_confused, loai, bai, related_lesson_ids, pedagogical_phase, scope_code
+       id, user_id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, image_url, metadata, lesson_id, is_confused, loai, bai, related_lesson_ids, pedagogical_phase, scope_code, chapter_name, lesson_name
      )
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
      ON CONFLICT (id) DO UPDATE SET
        type = EXCLUDED.type,
        category = EXCLUDED.category,
@@ -59,7 +61,9 @@ export const persistCustomQuestion = async (userId: string, question: any) => {
        bai = EXCLUDED.bai,
        related_lesson_ids = EXCLUDED.related_lesson_ids,
        pedagogical_phase = EXCLUDED.pedagogical_phase,
-       scope_code = EXCLUDED.scope_code`,
+       scope_code = EXCLUDED.scope_code,
+       chapter_name = EXCLUDED.chapter_name,
+       lesson_name = EXCLUDED.lesson_name`,
     [
       question.id,
       userId,
@@ -82,7 +86,9 @@ export const persistCustomQuestion = async (userId: string, question: any) => {
       parsedBai || null,
       relatedLessonIds,
       pedagogicalPhase,
-      scopeCode
+      scopeCode,
+      chapterName,
+      lessonName
     ]
   );
 };

@@ -782,7 +782,7 @@ function buildScopeCode(subject: string, gradeTier: number, loai?: string, bai?:
 // POST /api/admin/lessons
 router.post('/admin/lessons', authMiddleware, async (req: any, res) => {
   const accountId = req.profile.id;
-  const { subject, gradeTier, category, topic, title, theory, is_standard, loai, bai, hamNguyenTo, topicId } = req.body;
+  const { subject, gradeTier, category, topic, title, theory, is_standard, loai, bai, hamNguyenTo, topicId, chapterName, lessonName } = req.body;
 
   if (!subject || ![6, 7, 8, 9, 10, 11, 12].includes(Number(gradeTier)) || !category || !topic || !title || theory === undefined) {
     return res.status(400).json({ error: 'Missing required parameters.' });
@@ -799,8 +799,8 @@ router.post('/admin/lessons', authMiddleware, async (req: any, res) => {
     const scopeCode = buildScopeCode(subject, Number(gradeTier), loai, parsedBai);
 
     await pool.query(
-      `INSERT INTO ge10_lessons (id, subject, grade_tier, category, topic, title, theory, is_standard, loai, bai, ham_nguyen_to, topic_id, scope_code)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+      `INSERT INTO ge10_lessons (id, subject, grade_tier, category, topic, title, theory, is_standard, loai, bai, ham_nguyen_to, topic_id, scope_code, chapter_name, lesson_name)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)`,
       [
         lessonId,
         subject,
@@ -814,12 +814,14 @@ router.post('/admin/lessons', authMiddleware, async (req: any, res) => {
         parsedBai || null,
         hamNguyenTo || null,
         topicId || null,
-        scopeCode
+        scopeCode,
+        chapterName || null,
+        lessonName || null
       ]
     );
 
     await logAuditEvent(actorProfileId, 'create_lesson', lessonId, { subject, category, title });
-    res.json({ success: true, lesson: { id: lessonId, subject, category, topic, title, theory, is_standard: is_standard || false, topicId, scopeCode } });
+    res.json({ success: true, lesson: { id: lessonId, subject, category, topic, title, theory, is_standard: is_standard || false, topicId, scopeCode, chapterName, lessonName } });
   } catch (error: any) {
     console.error('Error creating lesson:', error);
     res.status(500).json({ error: 'Không thể tạo bài giảng.', details: error.message });
@@ -830,7 +832,7 @@ router.post('/admin/lessons', authMiddleware, async (req: any, res) => {
 router.put('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) => {
   const accountId = req.profile.id;
   const { lessonId } = req.params;
-  const { subject, gradeTier, category, topic, title, theory, is_standard, loai, bai, hamNguyenTo, topicId } = req.body;
+  const { subject, gradeTier, category, topic, title, theory, is_standard, loai, bai, hamNguyenTo, topicId, chapterName, lessonName } = req.body;
 
   if (!subject || ![6, 7, 8, 9, 10, 11, 12].includes(Number(gradeTier)) || !category || !topic || !title || theory === undefined) {
     return res.status(400).json({ error: 'Missing required parameters.' });
@@ -847,8 +849,26 @@ router.put('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) => 
 
     const updateRes = await pool.query(
       `UPDATE ge10_lessons 
-       SET subject = $1, grade_tier = $2, category = $3, topic = $4, title = $5, theory = $6, is_standard = $7, loai = $8, bai = $9, ham_nguyen_to = $10, topic_id = $11, scope_code = $12
-       WHERE id = $13`,
+       SET subject = $1, grade_tier = $2, category = $3, topic = $4, title = $5, theory = $6, is_standard = $7, loai = $8, bai = $9, ham_nguyen_to = $10, topic_id = $11, scope_code = $12, chapter_name = $13, lesson_name = $14
+       WHERE id = $15`,
+      [
+        subject,
+        gradeTier,
+        category,
+        topic,
+        title,
+        theory,
+        is_standard !== undefined ? is_standard : false,
+        loai || null,
+        parsedBai || null,
+        hamNguyenTo || null,
+        topicId || null,
+        scopeCode,
+        chapterName || null,
+        lessonName || null,
+        lessonId
+      ]
+    );
       [
         subject,
         gradeTier,

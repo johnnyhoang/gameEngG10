@@ -84,6 +84,8 @@ const MIGRATION_FILES = [
   '20260718_cs_robotics_engineering_questions.sql',
   '20260718_cs_robotics_engineering_integration.sql',
   '20260725_tutor_quests.sql',
+  '20260725_upgrade_lesson_question_correlation.sql',
+  '20260725_curriculum_textbooks_schema.sql',
 ];
 
 async function ensureMigrationsTable() {

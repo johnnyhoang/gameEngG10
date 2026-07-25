@@ -17,5 +17,7 @@ export interface Lesson {
   is_standard?: boolean;
   loai?: string;
   bai?: number;
+  chapterName?: string;
+  lessonName?: string;
   hamNguyenTo?: HamNguyenTo;
 }

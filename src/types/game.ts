@@ -124,6 +124,19 @@ export interface PlayerProfile {
 
 export type PedagogicalPhase = 'illustration' | 'comprehension' | 'mastery' | 'challenge';
 
+export interface CurriculumTextbookItem {
+  id: string;
+  subject: SubjectId;
+  gradeTier: GradeTier;
+  chapterNumber: string;
+  chapterTitle: string;
+  chapterFullName: string;
+  lessonNumber: string;
+  lessonTitle: string;
+  lessonFullName: string;
+  displayOrder: number;
+}
+
 export interface Question {
   id: string;
   type: QuestionType;
@@ -149,6 +162,8 @@ export interface Question {
   relatedLessonIds?: string[];
   pedagogicalPhase?: PedagogicalPhase;
   scopeCode?: string;
+  chapterName?: string;
+  lessonName?: string;
   skipSeverity?: number;
   /** Số lần câu hỏi được mở/sử dụng */
   timesOpened?: number;

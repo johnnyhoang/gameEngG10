@@ -2,11 +2,14 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { ChevronLeft, ChevronRight, Eye, Edit2, ChevronDown, HelpCircle } from 'lucide-react';
 import { FullscreenModal } from '../../Common/FullscreenModal';
 import { PlayArea } from '../../PlayArea';
-import type { GradeTier, Question, SubjectId } from '../../../types/game';
+import type { GradeTier, Question, SubjectId, CurriculumTextbookItem } from '../../../types/game';
 import { SUBJECTS_CONFIG } from '../../../types/game';
 import { useGameState } from '../../../hooks/useGameState';
 import { toast } from '../../../utils/toast';
+import { supabase } from '../../../utils/supabaseClient';
 import { DUNGEONS_CONFIG, enrichTextbookAttributes } from '../../../utils/textbookEnricher';
+
+const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
 
 interface QuestionFormModalProps {
   isOpen: boolean;
@@ -166,11 +169,49 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
   const [editGradeTier, setEditGradeTier] = useState<GradeTier>(gradeTier);
   const [editLoai, setEditLoai] = useState('');
   const [editBai, setEditBai] = useState('');
+  const [editChapterName, setEditChapterName] = useState('');
+  const [editLessonName, setEditLessonName] = useState('');
+  const [curriculumItems, setCurriculumItems] = useState<CurriculumTextbookItem[]>([]);
   const [editPedagogicalPhase, setEditPedagogicalPhase] = useState<NonNullable<Question['pedagogicalPhase']>>('comprehension');
   const [isSaving, setIsSaving] = useState(false);
   const [formAttempted, setFormAttempted] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
   const wasOpenRef = useRef(false);
+
+  useEffect(() => {
+    const fetchCurriculum = async () => {
+      try {
+        const session = await supabase.auth.getSession();
+        const token = session.data.session?.access_token;
+        if (!token) return;
+        const res = await fetch(`${backendUrl}/api/curriculum/textbooks?subject=${editSubject}&gradeTier=${editGradeTier}`, {
+          headers: { Authorization: `Bearer ${token}`, 'X-Profile-Id': localStorage.getItem('ge10_selected_profile_id') || '' }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          setCurriculumItems(data.textbooks || []);
+        }
+      } catch (e) {
+        console.error('Error fetching curriculum:', e);
+      }
+    };
+    if (isOpen) {
+      fetchCurriculum();
+    }
+  }, [editSubject, editGradeTier, isOpen]);
+
+  const availableChapters = useMemo(() => {
+    const set = new Set<string>();
+    curriculumItems.forEach(item => {
+      if (item.chapterFullName?.trim()) set.add(item.chapterFullName.trim());
+    });
+    return Array.from(set);
+  }, [curriculumItems]);
+
+  const availableLessonsForChapter = useMemo(() => {
+    if (!editChapterName) return curriculumItems;
+    return curriculumItems.filter(item => item.chapterFullName === editChapterName);
+  }, [curriculumItems, editChapterName]);
 
   // Distinct options calculated for current editSubject
   const subjectQuestions = useMemo(() => {
@@ -293,6 +334,8 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
         const enriched = enrichTextbookAttributes('', '', subj);
         setEditLoai(enriched.loai || 'Chương trình chuẩn');
         setEditBai(String(enriched.bai || 1));
+        setEditChapterName('');
+        setEditLessonName('');
         setEditPedagogicalPhase('comprehension');
         setFormAttempted(false);
       } else if (editingQuestion) {
@@ -310,6 +353,8 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
         const subj = q.subject || selectedSect || 'english';
         setEditSubject(subj);
         setEditGradeTier((q.gradeTier || q.grade || gradeTier) as GradeTier);
+        setEditChapterName(q.chapterName || '');
+        setEditLessonName(q.lessonName || '');
 
         const enriched = enrichTextbookAttributes(q.topicId || q.category, q.category, subj);
         setEditLoai(q.loai?.trim() || enriched.loai || 'Chương trình chuẩn');
@@ -365,6 +410,8 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
       gradeTier: editGradeTier,
       loai: editLoai.trim() || undefined,
       bai: parsedBai,
+      chapterName: editChapterName.trim() || undefined,
+      lessonName: editLessonName.trim() || undefined,
       pedagogicalPhase: editPedagogicalPhase,
       metadata: {
         ...(editingQuestion?.metadata || {}),
@@ -567,6 +614,59 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
                     </option>
                   );
                 })}
+              </select>
+            </label>
+
+            <label className="space-y-1 block sm:col-span-2 lg:col-span-2">
+              <span className="text-slate-400 font-semibold flex items-center gap-1">
+                📚 Chọn Chương (SGK Chuẩn)
+              </span>
+              <select
+                value={editChapterName}
+                onChange={(e) => {
+                  const ch = e.target.value;
+                  setEditChapterName(ch);
+                  const matchedItem = curriculumItems.find(item => item.chapterFullName === ch);
+                  if (matchedItem) {
+                    setEditLoai(matchedItem.chapterTitle);
+                  }
+                }}
+                className="w-full p-2.5 rounded-lg border border-synth-cyan/30 bg-synth-gray/30 text-synth-cyan font-semibold outline-none focus:border-synth-cyan cursor-pointer text-xs"
+              >
+                <option value="" className="bg-slate-900 text-slate-400">-- Chọn Chương SGK chuẩn (vd: Chương I...) --</option>
+                {availableChapters.map(ch => (
+                  <option key={ch} value={ch} className="bg-slate-900 text-white font-medium">
+                    {ch}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="space-y-1 block sm:col-span-2 lg:col-span-2">
+              <span className="text-slate-400 font-semibold flex items-center gap-1">
+                📖 Chọn Bài Học (SGK Chuẩn)
+              </span>
+              <select
+                value={editLessonName}
+                onChange={(e) => {
+                  const les = e.target.value;
+                  setEditLessonName(les);
+                  const matchedItem = curriculumItems.find(item => item.lessonFullName === les);
+                  if (matchedItem) {
+                    setEditChapterName(matchedItem.chapterFullName);
+                    setEditLoai(matchedItem.chapterTitle);
+                    const numStr = matchedItem.lessonNumber.replace(/[^0-9.]/g, '');
+                    if (numStr) setEditBai(numStr);
+                  }
+                }}
+                className="w-full p-2.5 rounded-lg border border-synth-cyan/30 bg-synth-gray/30 text-synth-cyan font-semibold outline-none focus:border-synth-cyan cursor-pointer text-xs"
+              >
+                <option value="" className="bg-slate-900 text-slate-400">-- Chọn Bài học SGK chuẩn (vd: Bài 1...) --</option>
+                {availableLessonsForChapter.map(les => (
+                  <option key={les.id} value={les.lessonFullName} className="bg-slate-900 text-white font-medium">
+                    {les.lessonFullName}
+                  </option>
+                ))}
               </select>
             </label>
 
