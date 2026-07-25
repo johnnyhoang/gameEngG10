@@ -993,6 +993,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
         updateQuestion={updateQuestion}
         navPosition={editingIndex >= 0 ? { current: editingIndex + 1, total: filteredQuestions.length } : null}
         onNavigate={handleNavigateEditing}
+        existingQuestions={questions}
       />
     </div>
   );

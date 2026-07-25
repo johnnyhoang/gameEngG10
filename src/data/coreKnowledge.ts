@@ -34,14 +34,6 @@ export function inferTopicId(category: string, subjectId?: SubjectId): string {
       if (normalizedCategory.includes('lịch sử') || normalizedCategory.includes('history')) return 'hist-history';
       return 'hist-geography';
     }
-    // Fallback sang chuyên đề mặc định của môn đó
-    if (subjectId === 'english') return 'eng-grammar';
-    if (subjectId === 'math') return 'math-quadratic';
-    if (subjectId === 'literature') return 'lit-reading';
-    if (subjectId === 'civics') return 'civ-civics';
-    if (subjectId === 'technology') return 'tech-technology';
-    if (subjectId === 'informatics') return 'info-informatics';
-    if (subjectId === 'arts') return 'arts-arts';
   }
   return 'misc';
 }

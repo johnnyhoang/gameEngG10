@@ -9,7 +9,6 @@ import { createPlayerSlice } from './slices/createPlayerSlice';
 import { createAdminSlice } from './slices/createAdminSlice';
 import { createClassRewardSlice } from './slices/createClassRewardSlice';
 import { createTextbookMappingsSlice } from './slices/createTextbookMappingsSlice';
-import { normalizePersistedRubyState } from '../utils/rubyCompatibility';
 
 export const useGameState = create<StoreState>()(
   persist(
@@ -43,8 +42,7 @@ export const useGameState = create<StoreState>()(
         // Các data này được fetch lại từ server khi selectProfile().
       }),
       merge: (persistedState: any, currentState: any) => {
-        const migratedState = normalizePersistedRubyState(persistedState);
-        return { ...currentState, ...(migratedState as object) } as any;
+        return { ...currentState, ...(persistedState as object) } as any;
       },
     }
   )

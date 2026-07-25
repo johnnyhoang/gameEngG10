@@ -29,18 +29,13 @@ export const StoryApp: React.FC<StoryAppProps> = ({ activeSectId, uiTheme, grade
     return shuffleWithSeed(activeStoryQuest.options, activeStoryQuest.id);
   }, [activeStoryQuest?.id, activeStoryQuest?.options]);
 
-  const initStoryQuest = (subject: string) => {
-    const isCoreSubject = activeSectId === 'math' || activeSectId === 'english' || activeSectId === 'literature';
-    const targetSubject = isCoreSubject ? subject : (activeSectId || 'math');
-
+  const initStoryQuest = () => {
+    const targetSubject = activeSectId || 'math';
     const list = filterQuestionsInScope(questions, targetSubject as any, gradeTier);
     if (list.length > 0) {
       setActiveStoryQuest(list[Math.floor(Math.random() * list.length)]);
     } else {
-      const fallbackList = filterQuestionsInScope(questions, subject as any, gradeTier);
-      if (fallbackList.length > 0) {
-        setActiveStoryQuest(fallbackList[Math.floor(Math.random() * fallbackList.length)]);
-      }
+      setActiveStoryQuest(null);
     }
   };
 
@@ -48,7 +43,7 @@ export const StoryApp: React.FC<StoryAppProps> = ({ activeSectId, uiTheme, grade
     setStoryStep(1);
     setStoryLives(3);
     setStoryInventory([]);
-    initStoryQuest('math');
+    initStoryQuest();
   };
 
   const handleStoryAnswer = (selectedOption: string) => {
@@ -58,8 +53,8 @@ export const StoryApp: React.FC<StoryAppProps> = ({ activeSectId, uiTheme, grade
     const selectedOptionStr = String(selectedOption ?? '').trim().toLowerCase();
     if (selectedOptionStr === correctAnsStr) {
       toast.success('Chuẩn, bạn vượt qua thử thách này rồi.');
-      if (storyStep === 1) { setStoryInventory(prev => [...prev, '🔑 Chìa Khóa Vàng']); setStoryStep(2); initStoryQuest('english'); }
-      else if (storyStep === 2) { setStoryInventory(prev => [...prev, '🧭 La Bàn Cổ']); setStoryStep(3); initStoryQuest('literature'); }
+      if (storyStep === 1) { setStoryInventory(prev => [...prev, '🔑 Chìa Khóa Vàng']); setStoryStep(2); initStoryQuest(); }
+      else if (storyStep === 2) { setStoryInventory(prev => [...prev, '🧭 La Bàn Cổ']); setStoryStep(3); initStoryQuest(); }
       else if (storyStep === 3) { 
         setStoryInventory(prev => [...prev, '📜 Cuộn Sách Cổ']); 
         setStoryStep(4); 
@@ -74,7 +69,7 @@ export const StoryApp: React.FC<StoryAppProps> = ({ activeSectId, uiTheme, grade
         setStoryStep(5); 
         onGameComplete?.({ correctAnswers: storyStep - 1, timeSpent: 0, score: Math.round(((storyStep - 1) / 3) * 100), passed: false });
       } else { 
-        initStoryQuest(activeStoryQuest.subject as any); 
+        initStoryQuest(); 
       }
     }
   };

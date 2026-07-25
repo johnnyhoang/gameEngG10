@@ -31,7 +31,7 @@
 - **Cô lập dữ liệu:** Dữ liệu phải được cô lập nghiêm ngặt theo thứ tự: **Tầng lớp → Môn học → Hồ sơ → Quyền truy cập**. Không để state, cache, query hoặc UI làm rò rỉ dữ liệu giữa các ngữ cảnh.
 - **Quản lý danh tính:** Một tài khoản Google có thể có nhiều profile (hồ sơ), nhưng mỗi profile là một danh tính và tiến trình độc lập. Vô hiệu hóa quyền bằng `is_active = false`; không xóa profile/lịch sử trừ khi có yêu cầu nghiệp vụ rõ ràng và luồng xóa được kiểm soát.
 - **Bảo mật & Phân quyền:** Quyền truy cập phải được kiểm tra và chặn ở backend. Ẩn nút trên UI không phải là phân quyền thực sự. Tuân thủ ma trận quyền trong `SUB_SPEC_FAMILY_ROLE.md`.
-- **Database Rule:** Mọi thay đổi liên quan đến schema, default value, migration phải được đồng bộ và rà soát xuyên suốt từ DB lên Frontend.
+- **Database Rule:** Mọi thay đổi liên quan đến schema, default value, migration phải được đồng bộ và rà soát xuyên suốt từ DB lên Frontend. Khi có thay đổi về dữ liệu/schema (Data/Schema changes), AI phải tự động thực hiện chạy migration ngay lập tức.
 
 ## 5. Ngôn ngữ, Trải nghiệm sản phẩm & Linh vật
 
@@ -68,4 +68,19 @@
   2. **Commit & Push:** Tiến hành commit toàn bộ các thay đổi hợp lệ với thông điệp rõ ràng, sau đó push lên nhánh hiện tại (ví dụ: `main`) trên GitHub để kích hoạt Vercel tự động deploy trên môi trường production.
   3. **Local Docker Update:** Ở máy local của người dùng, thực hiện build lại và khởi động lại Docker container bằng lệnh thích hợp (ví dụ: `docker-compose up -d --build`).
   4. Báo cáo chi tiết kết quả từng bước (Checkcode, Git Push, Docker Up) cho người dùng.
+
+## 9. Triết lý Thiết kế Hệ thống & Quy tắc Fallback (System Design & Fallback Rules)
+
+- **Ưu tiên sự Chính xác (Accuracy over Availability):** Ưu tiên tính chính xác tuyệt đối của nội dung và dữ liệu hơn là việc duy trì trạng thái học tập liên tục bằng mọi giá. Không tự động thích ứng dữ liệu bằng các cơ chế tự chế hoặc fallback im lặng.
+- **Không Offline Backup:** Khi hệ thống offline (mất kết nối mạng hoặc lỗi server), coi như thất bại (`failed`), tuyệt đối không sử dụng bộ câu hỏi cục bộ dự phòng (local fallback questions) hay các phương án chấm điểm thô tại client.
+- **Không sử dụng Mock/Dữ liệu mẫu:** Toàn bộ dữ liệu giả lập, dữ liệu mock (ví dụ: tài khoản bắt đầu bằng `mock-`) hoặc dữ liệu tĩnh được định sẵn trong code (như `MATH_PAIRS`, `LITERATURE_PAIRS`, `ENGLISH_PAIRS` trong minigame) phải được loại bỏ triệt để và chuyển hẳn (migrate) vào database.
+- **Không Fallback nghiệp vụ chéo/mặc định:**
+  - Nếu thiếu câu hỏi cho môn học/khối lớp hiện tại, hiển thị trạng thái lỗi/empty cụ thể thay vì bốc bù câu hỏi môn học khác (như môn Toán mặc định trong minigame phiêu lưu).
+  - Không tự ý fallback chuyên đề mặc định (topic mapping fallback) khi dữ liệu thiếu hoặc không khớp; không có chuyên đề hợp lệ thì báo lỗi/failed.
+  - Không fallback im lặng cấu hình chuẩn (manifest) cho các môn phụ; mọi môn học phải được định nghĩa chuẩn xác, nếu thiếu thì failed.
+- **Quy tắc về Danh tính & Tiền tệ:**
+  - **Tên hiển thị (Fullname):** Thực hiện lấy phần đầu của email gán cho `fullname` trong lần đăng nhập đầu tiên khi tạo hồ sơ. Không duy trì fallback động ở các lần truy cập sau.
+  - **Chuyển đổi Tiền tệ (Ruby Migration):** Dọn dẹp triệt để mọi thứ liên quan đến tiền tệ cũ (Coins, NP), không sử dụng logic tương thích ngược hay fallback động khi đọc dữ liệu.
+- **Bảo vệ UX tối đa:** Chỉ chấp nhận cơ chế fallback mang tính kỹ thuật thuần túy để ngăn chặn ứng dụng bị đơ hoặc lỗi giao diện (như `<Suspense fallback={...}>` để hiển thị loading spinner khi tải component động, hoặc timeout khi tích hợp API bên ngoài để tránh treo giao diện).
+
 

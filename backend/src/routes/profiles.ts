@@ -77,8 +77,8 @@ router.post('/profiles/quick-start', authMiddleware, async (req: any, res) => {
     // Create a new profile automatically
     const profileId = 'prof-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
     
-    // Fallbacks for name and avatar from user_metadata
-    const name = req.user.user_metadata?.full_name || email?.split('@')[0] || 'User';
+    // Set canonical name once at profile creation time from email prefix
+    const name = email ? email.split('@')[0] : 'User';
     const avatarUrl = req.user.user_metadata?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80';
 
     await pool.query(

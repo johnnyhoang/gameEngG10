@@ -1,22 +1,20 @@
-# Handoff - GameEngG10 Question Mapping & Game Algorithm
+# HANDOFF - GameEngG10
 
-## Trạng thái hiện tại
-- **Đã hoàn thành phân bổ dữ liệu câu hỏi môn Toán lớp 9**:
-  - Đã xuất 101 câu hỏi môn Toán lớp 9 trong database.
-  - Phân tích ngữ nghĩa sâu bằng AI Antigravity ngoại tuyến để đảm bảo chính xác 100% về nghiệp vụ.
-  - Thực thi cập nhật 64 câu hỏi bị lệch bài giảng lên database.
-  - Loại bỏ hoàn toàn sự phụ thuộc vào Regex trong runtime để phân loại câu hỏi.
-- **Đã sửa lỗi logic bốc câu hỏi backend & frontend**:
-  - Backend lọc nghiêm ngặt câu hỏi theo đúng `lesson_id` hoặc cùng `category` của bài học.
-  - Hỗ trợ truyền tham số `lessonQuizCount` linh hoạt từ client (10 câu cho Arena, 3 câu cho Study View).
-  - Loại bỏ fallback tự ý bù câu hỏi ngoài category của bài học.
+## Trạng thái hệ thống hiện tại
+1. **Dữ liệu 100% Động từ Database**:
+   - Đã tạo bảng `ge10_match_pairs` trong PostgreSQL và migrate 24 cặp thẻ bài cho Minigame Ghép Cặp Bài Trùng.
+   - Loại bỏ 100% các mảng tĩnh `ENGLISH_PAIRS`, `MATH_PAIRS`, `LITERATURE_PAIRS`, `GENERAL_PAIRS` hardcode trong code.
+2. **Nâng cấp Giao diện Soạn Thảo & Hiệu Đính Bài Giảng + Câu Hỏi (Đồng bộ Fullscreen Modal)**:
+   - Chuyển biểu mẫu Soạn Thảo / Hiệu Đính Bài Giảng và Chỉnh Sửa Câu Hỏi từ SideDrawer sang **Fullscreen Modal** toàn màn hình.
+   - Tối ưu khu vực **Đề bài, Giải thích lời giải & Các lựa chọn** tự động mở rộng theo chiều cao màn hình với font mono chuyên nghiệp, hỗ trợ soạn thảo Markdown thoải mái.
+   - Đồng bộ component `TypeableCombobox` cho các trường: **Kỹ năng (Category)**, **Phân loại SGK**, **Số thứ tự Bài (Số thực/lẻ)**, và **Nguồn (Source)**.
+   - Danh sách gợi ý dropdown được truy vấn động (`distinct`) từ chính dữ liệu các câu hỏi / bài giảng hiện có của môn học & khối lớp tương ứng, hỗ trợ vừa chọn mẫu vừa gõ mới tự do.
 
-## Các file đã chỉnh sửa/tạo mới
-- [backend/src/routes/game.ts](file:///d:/Hoa%20Hoang/Apps/gameEngG10/backend/src/routes/game.ts): Sửa API khởi tạo session, lọc nghiêm ngặt câu hỏi và nhận `lessonQuizCount`.
-- [src/components/PlayArea.tsx](file:///d:/Hoa%20Hoang/Apps/gameEngG10/src/components/PlayArea.tsx): Truyền `lessonQuizCount` và loại bỏ fallback bù câu hỏi ngoài category.
-- [scratch/import_math_mappings.js](file:///d:/Hoa%20Hoang/Apps/gameEngG10/scratch/import_math_mappings.js): Script import mapping câu hỏi vào DB.
-- [scratch/math_questions_mapped.json](file:///d:/Hoa%20Hoang/Apps/gameEngG10/scratch/math_questions_mapped.json): Dữ liệu ánh xạ 101 câu hỏi Toán lớp 9 chuẩn hóa bằng AI.
+## Các file chính đã cập nhật
+- [src/components/TutorConsole/Modals/QuestionFormModal.tsx](file:///d:/Hoa%20Hoang/Apps/gameEngG10/src/components/TutorConsole/Modals/QuestionFormModal.tsx): Chuyển sang FullscreenModal, nâng cấp giao diện soạn thảo đề bài/lời giải rộng rãi, tích hợp TypeableCombobox gợi ý distinct.
+- [src/components/TutorConsole/QuestionBankManager.tsx](file:///d:/Hoa%20Hoang/Apps/gameEngG10/src/components/TutorConsole/QuestionBankManager.tsx): Truyền danh sách `existingQuestions` để tính gợi ý distinct động cho câu hỏi.
+- [src/components/TutorConsole/LectureBankManager.tsx](file:///d:/Hoa%20Hoang/Apps/gameEngG10/src/components/TutorConsole/LectureBankManager.tsx): Chuyển SideDrawer sang FullscreenModal, tích hợp TypeableCombobox với gợi ý distinct động theo môn/lớp.
 
 ## Bước tiếp theo (Next Steps)
-1. Tiến hành deploy dự án lên production nếu người dùng yêu cầu (chạy build local đã pass 100%).
-2. Tiếp tục áp dụng phương pháp xuất dữ liệu câu hỏi và dùng AI phân tích ngoại tuyến tương tự đối với các môn học khác của lớp 9 (như Vật lý, Hóa học, Sinh học, Lịch sử, Địa lý) để chuẩn hóa liên kết `lesson_id` trong DB.
+- Tiến hành phân bổ/phân tích AI cho dữ liệu câu hỏi của các môn học khác ngoài môn Toán (như Tiếng Anh, Ngữ Văn, Khoa học...) theo đúng cấu hình chuyên đề và bài học trên DB.
+

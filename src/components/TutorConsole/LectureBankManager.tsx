@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { BookOpen, Plus, Trash2, Search, RefreshCw, ChevronLeft, ChevronRight, Eye, Edit2 } from 'lucide-react';
-import { SideDrawer } from '../Common/SideDrawer';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { BookOpen, Plus, Trash2, Search, RefreshCw, ChevronLeft, ChevronRight, Eye, Edit2, ChevronDown } from 'lucide-react';
+import { FullscreenModal } from '../Common/FullscreenModal';
 import { LessonStudyView } from '../LessonStudyView';
 import { SUBJECTS_CONFIG } from '../../types/game';
 import type { SubjectId } from '../../types/game';
@@ -28,6 +28,105 @@ interface Lesson {
 }
 
 const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
+
+interface TypeableComboboxProps {
+  value: string;
+  onChange: (val: string) => void;
+  options: string[];
+  placeholder?: string;
+  required?: boolean;
+  type?: 'text' | 'number';
+  step?: string;
+  className?: string;
+  id?: string;
+}
+
+const TypeableCombobox: React.FC<TypeableComboboxProps> = ({
+  value,
+  onChange,
+  options,
+  placeholder,
+  required,
+  type = 'text',
+  step,
+  className,
+  id
+}) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const filteredOptions = useMemo(() => {
+    if (!value || !value.trim()) return options;
+    const lower = value.toLowerCase().trim();
+    return options.filter(opt => opt.toLowerCase().includes(lower));
+  }, [options, value]);
+
+  return (
+    <div ref={containerRef} className="relative w-full">
+      <div className="relative flex items-center">
+        <input
+          id={id}
+          type={type}
+          step={step}
+          required={required}
+          value={value}
+          onChange={(e) => {
+            onChange(e.target.value);
+            if (!isOpen) setIsOpen(true);
+          }}
+          onFocus={() => setIsOpen(true)}
+          placeholder={placeholder}
+          className={`${className || ''} pr-8`}
+        />
+        <button
+          type="button"
+          onClick={() => setIsOpen(prev => !prev)}
+          className="absolute right-2 text-slate-400 hover:text-white p-1 cursor-pointer transition-colors"
+          tabIndex={-1}
+          aria-label="Toggle options"
+        >
+          <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180 text-synth-cyan' : ''}`} />
+        </button>
+      </div>
+
+      {isOpen && options.length > 0 && (
+        <div className="absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-slate-900/95 border border-synth-cyan/30 rounded-xl shadow-2xl backdrop-blur-md py-1">
+          {filteredOptions.length > 0 ? (
+            filteredOptions.map((opt, idx) => (
+              <div
+                key={idx}
+                onClick={() => {
+                  onChange(opt);
+                  setIsOpen(false);
+                }}
+                className={`px-3 py-2 text-xs cursor-pointer transition-colors hover:bg-synth-cyan/20 hover:text-synth-cyan flex items-center justify-between ${
+                  opt === value ? 'bg-synth-cyan/15 text-synth-cyan font-bold' : 'text-slate-200'
+                }`}
+              >
+                <span>{opt}</span>
+                {opt === value && <span className="text-[10px] text-synth-cyan font-mono">Đang chọn</span>}
+              </div>
+            ))
+          ) : (
+            <div className="px-3 py-2 text-[11px] text-slate-400 italic">
+              Nhập giá trị mới: "{value}"
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export const LectureBankManager: React.FC = () => {
   const activeGradeTier = useGameState(state => state.activeGradeTier);
@@ -93,6 +192,51 @@ export const LectureBankManager: React.FC = () => {
     fetchLessons();
   }, [activeGradeTier]);
 
+  // Distinct options derived from current subject's lessons in current grade
+  const subjectLessons = useMemo(() => {
+    return lessons.filter(l => l.subject === formSubject);
+  }, [lessons, formSubject]);
+
+  const distinctCategories = useMemo(() => {
+    const set = new Set<string>();
+    subjectLessons.forEach(l => {
+      if (l.category?.trim()) set.add(l.category.trim());
+    });
+    return Array.from(set).sort();
+  }, [subjectLessons]);
+
+  const distinctTopics = useMemo(() => {
+    const set = new Set<string>();
+    subjectLessons.forEach(l => {
+      if (l.topic?.trim()) set.add(l.topic.trim());
+    });
+    return Array.from(set).sort();
+  }, [subjectLessons]);
+
+  const distinctTitles = useMemo(() => {
+    const set = new Set<string>();
+    subjectLessons.forEach(l => {
+      if (l.title?.trim()) set.add(l.title.trim());
+    });
+    return Array.from(set).sort();
+  }, [subjectLessons]);
+
+  const distinctLoai = useMemo(() => {
+    const set = new Set<string>();
+    subjectLessons.forEach(l => {
+      if (l.loai?.trim()) set.add(l.loai.trim());
+    });
+    return Array.from(set).sort();
+  }, [subjectLessons]);
+
+  const distinctBai = useMemo(() => {
+    const set = new Set<number>();
+    subjectLessons.forEach(l => {
+      if (l.bai !== undefined && l.bai !== null && !isNaN(l.bai)) set.add(l.bai);
+    });
+    return Array.from(set).sort((a, b) => a - b).map(n => String(n));
+  }, [subjectLessons]);
+
   const handleOpenCreateModal = () => {
     setEditingLesson(null);
     setFormSubject(currentSubject);
@@ -104,7 +248,7 @@ export const LectureBankManager: React.FC = () => {
     setFormLoai('');
     setFormBai('');
     setFormHamNguyenTo('thach');
-    setFormAttempted(true);
+    setFormAttempted(false);
     setIsPreviewMode(false);
     setIsModalOpen(true);
   };
@@ -465,54 +609,67 @@ export const LectureBankManager: React.FC = () => {
       )}
       </div>
 
-      {/* CREATE/EDIT SIDE DRAWER */}
-      <SideDrawer
+      {/* FULLSCREEN CREATE/EDIT MODAL */}
+      <FullscreenModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        widthClass="max-w-2xl"
         title={
-          <span className="text-synth-cyan flex items-center gap-2">
-            <BookOpen className="w-4 h-4" /> {editingLesson ? 'Hiệu Đính Bài Giảng' : 'Soạn Thảo Bài Giảng Mới'}
+          <span className="text-synth-cyan flex items-center gap-2 font-orbitron text-sm sm:text-base">
+            <BookOpen className="w-5 h-5" /> {editingLesson ? 'HIỆU ĐÍNH BÀI GIẢNG' : 'SOẠN THẢO BÀI GIẢNG MỚI'}
           </span>
         }
+        bodyClassName="p-4 sm:p-6 flex flex-col h-full min-h-0 bg-synth-bg"
       >
         {editingLesson && (
-          <div className="flex items-center justify-between gap-2 px-5 py-2 border-b border-white/5 bg-white/5">
-            <button
-              type="button"
-              disabled={isSaving || editingIndex <= 0}
-              onClick={() => handleNavigateEditing(-1)}
-              className="px-3 py-1.5 rounded-lg border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer uppercase font-orbitron font-bold text-[10px] tracking-wider flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <ChevronLeft className="w-3.5 h-3.5" /> Bài trước
-            </button>
-            <span className="text-[10px] font-orbitron font-bold text-slate-300 uppercase tracking-wider">
-              Bài {editingIndex + 1}/{filteredLessons.length}
-            </span>
-            <button
-              type="button"
-              disabled={isSaving || editingIndex >= filteredLessons.length - 1}
-              onClick={() => handleNavigateEditing(1)}
-              className="px-3 py-1.5 rounded-lg border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer uppercase font-orbitron font-bold text-[10px] tracking-wider flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              Bài sau <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-xl border border-white/10 bg-white/5 shrink-0 mb-4">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button
+                type="button"
+                disabled={isSaving || editingIndex <= 0}
+                onClick={() => handleNavigateEditing(-1)}
+                className="px-3 py-1.5 rounded-lg border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer uppercase font-orbitron font-bold text-[10px] sm:text-xs tracking-wider flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <ChevronLeft className="w-4 h-4" /> Bài trước
+              </button>
+              <span className="text-[10px] sm:text-xs font-orbitron font-bold text-synth-cyan uppercase tracking-wider bg-synth-cyan/10 px-3 py-1.5 rounded-lg border border-synth-cyan/20">
+                Bài {editingIndex + 1}/{filteredLessons.length}
+              </span>
+              <button
+                type="button"
+                disabled={isSaving || editingIndex >= filteredLessons.length - 1}
+                onClick={() => handleNavigateEditing(1)}
+                className="px-3 py-1.5 rounded-lg border border-white/10 text-slate-300 hover:bg-white/10 hover:text-white transition-colors cursor-pointer uppercase font-orbitron font-bold text-[10px] sm:text-xs tracking-wider flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Bài sau <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3 text-xs font-orbitron font-bold">
+              <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg border border-white/5">
+                <span className="text-slate-400 text-[10px] uppercase">👁️ Tổng lượt mở</span>
+                <span className="text-white text-xs">{editingLesson.times_opened || 0}</span>
+              </div>
+              <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg border border-white/5">
+                <span className="text-slate-400 text-[10px] uppercase">✅ Học hoàn tất</span>
+                <span className="text-emerald-400 text-xs">{editingLesson.times_completed || 0}</span>
+              </div>
+            </div>
           </div>
         )}
 
         {isPreviewMode ? (
-          <div className="flex-1 overflow-auto bg-black relative flex flex-col border border-synth-cyan/30 rounded-xl m-4">
-            <div className="p-3 border-b border-white/10 bg-white/5 flex justify-between items-center sticky top-0 z-10 backdrop-blur-md">
+          <div className="flex-1 flex flex-col min-h-0 bg-black rounded-xl border border-synth-cyan/30 overflow-hidden">
+            <div className="p-3 border-b border-white/10 bg-white/5 flex justify-between items-center shrink-0">
               <span className="text-synth-cyan font-bold font-orbitron text-xs uppercase tracking-wider">👁️ Chế độ xem trước</span>
               <button
                 type="button"
                 onClick={() => setIsPreviewMode(false)}
-                className="px-4 py-2 bg-synth-magenta/20 text-synth-magenta border border-synth-magenta/40 hover:bg-synth-magenta/30 rounded-lg text-[10px] font-bold uppercase tracking-wider transition-colors flex items-center gap-1 cursor-pointer"
+                className="px-4 py-2 bg-synth-magenta/20 text-synth-magenta border border-synth-magenta/40 hover:bg-synth-magenta/30 rounded-lg text-xs font-bold uppercase tracking-wider transition-colors flex items-center gap-1 cursor-pointer"
               >
                 <Edit2 className="w-3.5 h-3.5" /> Tiếp tục sửa
               </button>
             </div>
-            <div className="p-4 flex-1">
+            <div className="p-4 flex-1 overflow-y-auto min-h-0">
               <LessonStudyView
                 draftLesson={{
                   id: editingLesson?.id || 'draft',
@@ -531,171 +688,166 @@ export const LectureBankManager: React.FC = () => {
             </div>
           </div>
         ) : (
-        <form onSubmit={handleSaveLesson} className="p-5 space-y-4 text-xs text-left">
-              {editingLesson && (
-                <div className="p-3.5 rounded-xl border border-synth-cyan/20 bg-synth-cyan/5 grid grid-cols-2 gap-4 text-center">
-                  <div>
-                    <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">👁️ Tổng lượt mở</span>
-                    <span className="text-sm font-bold text-white mt-1 block">{editingLesson.times_opened || 0}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 block text-[9px] uppercase font-bold tracking-wider">✅ Học hoàn tất</span>
-                    <span className="text-sm font-bold text-emerald-400 mt-1 block">{editingLesson.times_completed || 0}</span>
-                  </div>
-                </div>
-              )}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <label className="space-y-1 block">
-                  <span className="text-slate-400 font-semibold">Môn phái học tập</span>
-                  <select
-                    value={formSubject}
-                    onChange={(e) => setFormSubject(e.target.value as SubjectId)}
-                    className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan cursor-pointer"
-                  >
-                    {Object.values(SUBJECTS_CONFIG).map(sub => (
-                      <option key={sub.id} value={sub.id}>{sub.icon} {sub.name}</option>
-                    ))}
-                  </select>
-                </label>
-
-                <label className="space-y-1 block">
-                  <span className="text-slate-400 font-semibold">Danh mục chuyên đề (vd: Reading, Ngữ pháp, Đại số...)</span>
-                  <input
-                    type="text"
-                    required
-                    value={formCategory}
-                    onChange={(e) => setFormCategory(e.target.value)}
-                    placeholder="Ví dụ: Reading, Ngữ pháp, Đại số..."
-                    className={`w-full p-2.5 rounded-lg border ${formAttempted && !formCategory.trim() ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-synth-gray/20 focus:border-synth-cyan'} text-white outline-none`}
-                  />
-                </label>
-              </div>
-
-              <div className="grid grid-cols-1 gap-4">
-                <label className="space-y-1 block">
-                  <span className="text-slate-400 font-semibold">Chủ đề bài giảng (vd: Cấu trúc động từ đi kèm, Đồ thị hàm số...)</span>
-                  <input
-                    type="text"
-                    required
-                    value={formTopic}
-                    onChange={(e) => setFormTopic(e.target.value)}
-                    placeholder="Ví dụ: Cấu trúc động từ đi kèm, Đồ thị hàm số..."
-                    className={`w-full p-2.5 rounded-lg border ${formAttempted && !formTopic.trim() ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-synth-gray/20 focus:border-synth-cyan'} text-white outline-none`}
-                  />
-                </label>
-
-                <label className="space-y-1 block">
-                  <span className="text-slate-400 font-semibold">Tiêu đề bài giảng (vd: Động từ + V-ing)</span>
-                  <input
-                    type="text"
-                    required
-                    value={formTitle}
-                    onChange={(e) => setFormTitle(e.target.value)}
-                    placeholder="Ví dụ: Động từ đi kèm To-Infinitive và Gerund, Cách vẽ đồ thị bậc 1..."
-                    className={`w-full p-2.5 rounded-lg border ${formAttempted && !formTitle.trim() ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-synth-gray/20 focus:border-synth-cyan'} text-white outline-none`}
-                  />
-                </label>
-              </div>
-              <div className="grid grid-cols-3 gap-4 border-t border-white/5 pt-3 mt-3">
-                <label className="space-y-1 block">
-                  <span className="text-slate-400 font-semibold text-[11px]">Loại SGK (Học Đường)</span>
-                  <input
-                    type="text"
-                    value={formLoai}
-                    onChange={(e) => setFormLoai(e.target.value)}
-                    placeholder="Đại số, Hình học, Ngữ pháp..."
-                    className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
-                  />
-                </label>
-
-                <label className="space-y-1 block">
-                  <span className="text-slate-400 font-semibold text-[11px]">Số thứ tự Bài (Số thực/lẻ)</span>
-                  <input
-                    type="number"
-                    step="any"
-                    value={formBai}
-                    onChange={(e) => setFormBai(e.target.value)}
-                    placeholder="1, 5.5, 9..."
-                    className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
-                  />
-                </label>
-
-                <label className="space-y-1 block">
-                  <span className="text-slate-400 font-semibold text-[11px]">Hầm Nguyên Tố</span>
-                  <select
-                    value={formHamNguyenTo}
-                    onChange={(e) => setFormHamNguyenTo(e.target.value as HamNguyenTo)}
-                    className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/25 text-white outline-none focus:border-synth-cyan text-xs cursor-pointer"
-                  >
-                    {Object.entries(DUNGEONS_CONFIG).map(([key, details]) => (
-                      <option key={key} value={key} className="bg-slate-900 text-white">
-                        {details.label}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              </div>
+          <form onSubmit={handleSaveLesson} className="flex-1 flex flex-col min-h-0 space-y-4 text-xs text-left">
+            {/* Top Metadata Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-synth-gray/10 p-4 rounded-xl border border-white/5 shrink-0">
+              <label className="space-y-1 block">
+                <span className="text-slate-400 font-semibold">Môn phái học tập</span>
+                <select
+                  value={formSubject}
+                  onChange={(e) => setFormSubject(e.target.value as SubjectId)}
+                  className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan cursor-pointer text-xs"
+                >
+                  {Object.values(SUBJECTS_CONFIG).map(sub => (
+                    <option key={sub.id} value={sub.id} className="bg-slate-900 text-white">{sub.icon} {sub.name}</option>
+                  ))}
+                </select>
+              </label>
 
               <label className="space-y-1 block">
-                <span className="text-slate-400 font-semibold">Nội dung Lý Thuyết / Truyền thụ kiến thức (Hỗ trợ Markdown)</span>
-                <textarea
+                <span className="text-slate-400 font-semibold">Danh mục chuyên đề</span>
+                <TypeableCombobox
+                  value={formCategory}
+                  onChange={setFormCategory}
+                  options={distinctCategories}
                   required
-                  value={formTheory}
-                  onChange={(e) => setFormTheory(e.target.value)}
-                  placeholder="Nhập nội dung lý thuyết chi tiết để học sinh đọc học tại Học Đường..."
-                  className={`w-full p-2.5 rounded-lg border ${formAttempted && !formTheory.trim() ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-synth-gray/20 focus:border-synth-cyan'} text-white outline-none h-44 resize-none font-mono leading-relaxed`}
+                  placeholder="vd: Reading, Ngữ pháp, Đại số..."
+                  className={`w-full p-2.5 rounded-lg border ${formAttempted && !formCategory.trim() ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-synth-gray/20 focus:border-synth-cyan'} text-white outline-none text-xs`}
                 />
               </label>
 
-              {/* Action Buttons */}
-              <div className="flex justify-between items-center gap-3 border-t border-white/10 pt-4 mt-2">
+              <label className="space-y-1 block">
+                <span className="text-slate-400 font-semibold">Chủ đề bài giảng</span>
+                <TypeableCombobox
+                  value={formTopic}
+                  onChange={setFormTopic}
+                  options={distinctTopics}
+                  required
+                  placeholder="vd: Cấu trúc động từ, Đồ thị..."
+                  className={`w-full p-2.5 rounded-lg border ${formAttempted && !formTopic.trim() ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-synth-gray/20 focus:border-synth-cyan'} text-white outline-none text-xs`}
+                />
+              </label>
+
+              <label className="space-y-1 block">
+                <span className="text-slate-400 font-semibold">Tiêu đề bài giảng</span>
+                <TypeableCombobox
+                  value={formTitle}
+                  onChange={setFormTitle}
+                  options={distinctTitles}
+                  required
+                  placeholder="vd: Động từ + V-ing..."
+                  className={`w-full p-2.5 rounded-lg border ${formAttempted && !formTitle.trim() ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-synth-gray/20 focus:border-synth-cyan'} text-white outline-none text-xs`}
+                />
+              </label>
+
+              <label className="space-y-1 block">
+                <span className="text-slate-400 font-semibold">Loại SGK (Học Đường)</span>
+                <TypeableCombobox
+                  value={formLoai}
+                  onChange={setFormLoai}
+                  options={distinctLoai}
+                  placeholder="Đại số, Hình học, Ngữ pháp..."
+                  className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
+                />
+              </label>
+
+              <label className="space-y-1 block">
+                <span className="text-slate-400 font-semibold">Số thứ tự Bài (Số thực/lẻ)</span>
+                <TypeableCombobox
+                  value={formBai}
+                  onChange={setFormBai}
+                  options={distinctBai}
+                  type="number"
+                  step="any"
+                  placeholder="1, 5.5, 9..."
+                  className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
+                />
+              </label>
+
+              <label className="space-y-1 block sm:col-span-2 lg:col-span-2">
+                <span className="text-slate-400 font-semibold">Hầm Nguyên Tố</span>
+                <select
+                  value={formHamNguyenTo}
+                  onChange={(e) => setFormHamNguyenTo(e.target.value as HamNguyenTo)}
+                  className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/25 text-white outline-none focus:border-synth-cyan text-xs cursor-pointer"
+                >
+                  {Object.entries(DUNGEONS_CONFIG).map(([key, details]) => (
+                    <option key={key} value={key} className="bg-slate-900 text-white">
+                      {details.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+
+            {/* Main Theory Textarea Section - VERY SPACIOUS */}
+            <div className="flex-1 flex flex-col min-h-0 space-y-1.5">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-300 font-semibold text-xs flex items-center gap-1.5">
+                  📝 Nội dung Lý Thuyết / Truyền thụ kiến thức (Hỗ trợ Markdown)
+                </span>
+                <span className="text-[10px] text-synth-cyan/80 font-mono">
+                  {formTheory.length} ký tự
+                </span>
+              </div>
+              <textarea
+                required
+                value={formTheory}
+                onChange={(e) => setFormTheory(e.target.value)}
+                placeholder="Nhập nội dung lý thuyết chi tiết để học sinh đọc học tại Học Đường..."
+                className={`w-full flex-1 min-h-[250px] p-4 rounded-xl border ${formAttempted && !formTheory.trim() ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-black/40 focus:border-synth-cyan'} text-white outline-none resize-none font-mono text-sm leading-relaxed tracking-wide shadow-inner`}
+              />
+            </div>
+
+            {/* Action Buttons Footer */}
+            <div className="flex justify-between items-center gap-3 border-t border-white/10 pt-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="px-5 py-2.5 border border-white/10 rounded-xl text-slate-300 hover:bg-white/5 transition-colors cursor-pointer uppercase font-orbitron font-bold text-xs tracking-wider"
+              >
+                Hủy bỏ
+              </button>
+              <div className="flex items-center gap-2.5">
                 <button
                   type="button"
-                  onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 border border-white/10 rounded-lg text-slate-300 hover:bg-white/5 transition-colors cursor-pointer uppercase font-orbitron font-bold text-[10px] tracking-wider"
+                  onClick={() => setIsPreviewMode(!isPreviewMode)}
+                  className="px-4 py-2.5 bg-synth-magenta/20 text-synth-magenta border border-synth-magenta/40 rounded-xl hover:bg-synth-magenta/30 transition-colors uppercase font-orbitron font-bold text-xs tracking-wider flex items-center gap-1.5 cursor-pointer"
                 >
-                  Hủy bỏ
+                  {isPreviewMode ? <Edit2 className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  {isPreviewMode ? 'Tiếp tục Sửa' : 'Xem Thử'}
                 </button>
-                <div className="flex gap-2">
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="px-6 py-2.5 bg-synth-cyan text-black rounded-xl hover:synth-glow-cyan transition-all font-orbitron font-bold text-xs tracking-wider uppercase cursor-pointer disabled:opacity-50"
+                >
+                  {isSaving ? 'Đang lưu...' : editingLesson ? 'Cập Nhật 💾' : 'Tạo mới 💾'}
+                </button>
+                {editingLesson?.is_standard ? (
                   <button
                     type="button"
-                    onClick={() => setIsPreviewMode(!isPreviewMode)}
-                    className="px-4 py-2 bg-synth-magenta/20 text-synth-magenta border border-synth-magenta/40 rounded-lg hover:bg-synth-magenta/30 transition-colors uppercase font-orbitron font-bold text-[10px] tracking-wider flex items-center gap-1 cursor-pointer"
-                  >
-                    {isPreviewMode ? <Edit2 className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                    {isPreviewMode ? 'Tiếp tục Sửa' : 'Xem Thử'}
-                  </button>
-                  <button
-                    type="submit"
                     disabled={isSaving}
-                    className="px-5 py-2 bg-synth-cyan text-black rounded-lg hover:synth-glow-cyan transition-all font-orbitron font-bold text-[10px] tracking-wider uppercase cursor-pointer disabled:opacity-50"
+                    onClick={(e) => handleSaveLesson(e, false)}
+                    className="px-4 py-2.5 bg-red-600/20 border border-red-500/40 text-red-400 font-bold rounded-xl hover:bg-red-600 hover:text-white transition-all font-orbitron text-xs tracking-wider uppercase cursor-pointer disabled:opacity-50"
                   >
-                    {isSaving ? 'Đang lưu...' : editingLesson ? 'Cập Nhật 💾' : 'Tạo mới 💾'}
+                    ❌ Chưa Đạt Chuẩn
                   </button>
-                  {editingLesson?.is_standard ? (
-                    <button
-                      type="button"
-                      disabled={isSaving}
-                      onClick={(e) => handleSaveLesson(e, false)}
-                      className="px-4 py-2 bg-red-600/20 border border-red-500/40 text-red-400 font-bold rounded-lg hover:bg-red-600 hover:text-white transition-all font-orbitron text-[10px] tracking-wider uppercase cursor-pointer disabled:opacity-50"
-                    >
-                      ❌ Chưa Đạt Chuẩn
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled={isSaving}
-                      onClick={(e) => handleSaveLesson(e, true)}
-                      className="px-4 py-2 bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-black font-orbitron rounded-lg hover:shadow-[0_0_10px_rgba(245,158,11,0.4)] transition-all text-[10px] tracking-wider uppercase cursor-pointer disabled:opacity-50"
-                    >
-                      🏆 Đạt Chuẩn
-                    </button>
-                  )}
-                </div>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={isSaving}
+                    onClick={(e) => handleSaveLesson(e, true)}
+                    className="px-5 py-2.5 bg-gradient-to-r from-yellow-500 to-amber-600 text-black font-black font-orbitron rounded-xl hover:shadow-[0_0_12px_rgba(245,158,11,0.4)] transition-all text-xs tracking-wider uppercase cursor-pointer disabled:opacity-50"
+                  >
+                    🏆 Đạt Chuẩn
+                  </button>
+                )}
               </div>
-            </form>
+            </div>
+          </form>
         )}
-      </SideDrawer>
+      </FullscreenModal>
     </div>
   );
 };

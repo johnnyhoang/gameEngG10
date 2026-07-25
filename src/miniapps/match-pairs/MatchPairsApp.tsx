@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, Award } from 'lucide-react';
 import { toast } from '../../utils/toast';
 import type { UiThemeId } from '../../types/game';
 import { useGameState } from '../../hooks/useGameState';
+import { gameService } from '../../services/gameService';
 
 export interface MatchPairsAppProps {
   activeSectId?: string;
@@ -17,39 +18,6 @@ interface MatchItem {
   pairId: string;
   isMatched: boolean;
 }
-
-const ENGLISH_PAIRS = [
-  { word: 'Procrastinate', mean: 'Trì hoãn, khất lần' },
-  { word: 'Benevolent', mean: 'Nhân từ, rộng lượng' },
-  { word: 'Elaborate', mean: 'Chi tiết, tỉ mỉ' },
-  { word: 'Abundant', mean: 'Dồi dào, phong phú' },
-  { word: 'Obsolete', mean: 'Lỗi thời, cổ xưa' },
-  { word: 'Resilient', mean: 'Kiên cường, bền bỉ' }
-];
-const MATH_PAIRS = [
-  { word: 'Diện tích đường tròn', mean: 'S = π * r²' },
-  { word: 'Hệ thức Pythagoras', mean: 'a² = b² + c²' },
-  { word: 'Thể tích hình trụ', mean: 'V = π * r² * h' },
-  { word: 'Diện tích tam giác', mean: 'S = ½ * a * h' },
-  { word: 'Hệ thức Vi-ét (Tổng)', mean: 'x₁ + x₂ = -b/a' },
-  { word: 'Thể tích hình nón', mean: 'V = ⅓ * π * r² * h' }
-];
-const LITERATURE_PAIRS = [
-  { word: 'Xuân Quỳnh', mean: 'Tác phẩm "Sóng"' },
-  { word: 'Nam Cao', mean: 'Tác phẩm "Lão Hạc"' },
-  { word: 'Nguyễn Du', mean: 'Tác phẩm "Truyện Kiều"' },
-  { word: 'Nguyễn Minh Châu', mean: 'Tác phẩm "Chiếc thuyền ngoài xa"' },
-  { word: 'Tô Hoài', mean: 'Tác phẩm "Dế Mèn Phiêu Lưu Ký"' },
-  { word: 'Chính Hữu', mean: 'Tác phẩm "Đồng chí"' }
-];
-const GENERAL_PAIRS = [
-  { word: 'Phương pháp Feynman', mean: 'Học bằng cách dạy lại cho người khác' },
-  { word: 'Active Recall', mean: 'Chủ động gợi nhớ thông tin để học sâu' },
-  { word: 'Spaced Repetition', mean: 'Lặp lại ngắt quãng để chống quên' },
-  { word: 'Pomodoro', mean: 'Học tập tập trung 25 phút, nghỉ 5 phút' },
-  { word: 'Growth Mindset', mean: 'Tư duy phát triển, không ngại sai lầm' },
-  { word: 'Maikawaii', mean: 'Bé Heo linh vật siêu đáng yêu của Học Viện' }
-];
 
 export const MatchPairsApp: React.FC<MatchPairsAppProps> = ({ 
   activeSectId, 
@@ -66,7 +34,7 @@ export const MatchPairsApp: React.FC<MatchPairsAppProps> = ({
   const [selectedCards, setSelectedCards] = useState<string[]>([]);
   const [matchStatus, setMatchStatus] = useState<'playing' | 'victory'>('playing');
 
-  const initMatchGame = () => {
+  const initMatchGame = async () => {
     // 1. Cố gắng lấy câu hỏi MCQ của môn học hiện tại
     const mcqQuestions = questions.filter(q => 
       (q.subject === activeSectId || (!q.subject && activeSectId === 'english')) &&
@@ -80,7 +48,7 @@ export const MatchPairsApp: React.FC<MatchPairsAppProps> = ({
         .sort(() => 0.5 - Math.random())
         .slice(0, 5)
         .map(q => {
-          const promptStr = q.prompt.replace(/\*\*.*?\*\*/g, '').trim(); // Bỏ bớt header markdown nếu có
+          const promptStr = q.prompt.replace(/\*\*.*?\*\*/g, '').trim();
           const shortPrompt = promptStr.length > 55 ? promptStr.substring(0, 52) + '...' : promptStr;
           const correctAns = Array.isArray(q.correctAnswer) ? q.correctAnswer[0] : q.correctAnswer;
           return {
@@ -89,13 +57,17 @@ export const MatchPairsApp: React.FC<MatchPairsAppProps> = ({
           };
         });
     } else {
-      // 2. Fallback về dữ liệu tĩnh
-      let source = GENERAL_PAIRS;
-      if (activeSectId === 'math') source = MATH_PAIRS;
-      else if (activeSectId === 'literature') source = LITERATURE_PAIRS;
-      else if (activeSectId === 'english') source = ENGLISH_PAIRS;
-      
-      pairs = [...source].sort(() => 0.5 - Math.random()).slice(0, 5);
+      // 2. Lấy dữ liệu cặp ghép đôi từ Database
+      const dbPairs = await gameService.getMatchPairs(matchSubject, 9);
+      if (dbPairs.length > 0) {
+        pairs = [...dbPairs].sort(() => 0.5 - Math.random()).slice(0, 5);
+      }
+    }
+
+    if (pairs.length === 0) {
+      setMatchCards([]);
+      setMatchStatus('playing');
+      return;
     }
 
     const cards: MatchItem[] = [];
@@ -138,6 +110,20 @@ export const MatchPairsApp: React.FC<MatchPairsAppProps> = ({
       }
     }
   };
+
+  if (matchCards.length === 0) {
+    return (
+      <div className={`glass-panel rounded-3xl border p-8 text-center space-y-6 ${isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-magenta/30'}`}>
+        <Award className="w-16 h-16 mx-auto text-synth-orange" />
+        <h3 className={`font-orbitron font-black text-xl uppercase ${isUnicorn ? 'text-violet-900' : 'text-white'}`}>
+          CHƯA CÓ ĐỀ PHÙ HỢP 📭
+        </h3>
+        <p className="text-xs text-slate-400 leading-relaxed max-w-md mx-auto">
+          Chưa có đủ cặp thẻ từ vựng hoặc công thức cho môn <span className="font-bold uppercase text-synth-orange">{matchSubject}</span> trong cơ sở dữ liệu. Vui lòng liên hệ Giáo viên/Admin để thêm dữ liệu nhé!
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className={`glass-panel rounded-3xl border p-6 text-center space-y-6 ${isUnicorn ? 'border-violet-200/35 bg-white/70' : 'border-synth-magenta/30'}`}>

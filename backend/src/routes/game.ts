@@ -148,34 +148,7 @@ router.post('/game/session/start', async (req: any, res) => {
       poolSelected = shuffle(questions.filter(q => failedQuestionIds.includes(q.id)));
     } else if (sessionType === 'lesson') {
       const targetCount = Number(lessonQuizCount) || 3;
-      let lessonCategory = '';
-      if (lessonId) {
-        const lessonRes = await pool.query(
-          'SELECT category FROM ge10_lessons WHERE id = $1',
-          [lessonId]
-        );
-        if (lessonRes.rowCount > 0) {
-          lessonCategory = lessonRes.rows[0].category;
-        }
-      }
-
       let lessonPool = questions.filter(q => q.lessonId === lessonId || q.metadata?.lessonId === lessonId);
-      if (lessonPool.length < targetCount && lessonCategory) {
-        const byCategory = questions.filter(q => 
-          q.category === lessonCategory && 
-          q.lessonId !== lessonId && 
-          (!q.metadata || q.metadata.lessonId !== lessonId)
-        );
-        lessonPool = [...lessonPool, ...shuffle(byCategory)];
-      }
-      if (lessonPool.length < targetCount) {
-        const legacyCat = questions.filter(q => 
-          q.category === lessonId && 
-          !lessonPool.some(p => p.id === q.id)
-        );
-        lessonPool = [...lessonPool, ...shuffle(legacyCat)];
-      }
-
       poolSelected = shuffle(lessonPool).slice(0, targetCount);
     } else {
       // Practice / Normal / Survival: group by attempts, shuffle within groups, concatenate
@@ -549,6 +522,31 @@ router.post('/exploration/clear', async (req: any, res) => {
   } catch (err: any) {
     console.error('[POST /exploration/clear] Error:', err);
     res.status(500).json({ error: 'Failed to clear exploration progress', details: err.message });
+  }
+});
+
+// GET /api/game/match-pairs
+router.get('/game/match-pairs', async (req: any, res) => {
+  const { subject, gradeTier } = req.query;
+  const targetSubject = (subject as string) || 'english';
+  const targetGrade = Number(gradeTier) || 9;
+
+  try {
+    const pairsRes = await pool.query(
+      `SELECT left_text as word, right_text as mean 
+       FROM ge10_match_pairs 
+       WHERE is_active = TRUE 
+         AND (subject = $1 OR subject = 'general')
+         AND grade_tier = $2
+       ORDER BY RANDOM()
+       LIMIT 6`,
+      [targetSubject, targetGrade]
+    );
+
+    res.json({ pairs: pairsRes.rows });
+  } catch (err: any) {
+    console.error('[GET /game/match-pairs] Error:', err);
+    res.status(500).json({ error: 'Failed to fetch match pairs', details: err.message });
   }
 });
 

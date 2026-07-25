@@ -68,5 +68,18 @@ export const gameService = {
       return await res.json();
     }
     throw new Error('Failed to submit game session results');
+  },
+  getMatchPairs: async (subject: string, gradeTier: number = 9): Promise<{ word: string; mean: string }[]> => {
+    const token = await gameService.getAccessToken();
+    if (!token) return [];
+
+    const res = await fetch(`${backendUrl}/api/game/match-pairs?subject=${encodeURIComponent(subject)}&gradeTier=${gradeTier}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data.pairs || [];
+    }
+    return [];
   }
 };

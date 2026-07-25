@@ -3,7 +3,7 @@ import { useGameState } from '../hooks/useGameState';
 import { useSect } from '../contexts/SectContext';
 import type { Question } from '../types/game';
 import { SUBJECTS_CONFIG } from '../types/game';
-import { devWarnOutOfScope, questionInScope } from '../utils/learningScope';
+import { devWarnOutOfScope } from '../utils/learningScope';
 import { getAssessmentProvider, getQuestionPresentation, getSubjectHint, getSubjectActivities, getSubjectModule, getGeometryVisualization } from '../subject-modules/registry';
 import { Scratchpad } from './Scratchpad';
 
@@ -205,6 +205,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, less
 
   // Đã nạp xong pool câu hỏi cho phòng này chưa (phân biệt "đang tải" với "pool rỗng")
   const [initDone, setInitDone] = useState(false);
+  const [initError, setInitError] = useState<boolean>(false);
 
   // Initialize questions for this run
   useEffect(() => {
@@ -227,11 +228,6 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, less
           setTimeLeft(0);
           setInitDone(true);
         }
-        return;
-      }
-      // Phiên dev-backdoor (mock-*) không có backend thật — dùng thẳng bộ câu hỏi local.
-      if (playerIdRef.current?.startsWith('mock-')) {
-        runLocalFallback();
         return;
       }
       try {
@@ -266,99 +262,12 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, less
           setInitDone(true);
         }
       } catch (err) {
-        console.error('Failed to start online game session, falling back to local pool:', err);
+        console.error('Failed to start online game session:', err);
         if (active) {
-          runLocalFallback();
+          setInitError(true);
+          setInitDone(true);
         }
       }
-    };
-
-    const runLocalFallback = () => {
-      // Pool local phải lọc chặt CẢ môn lẫn lớp — tuyệt đối không nới sang môn/lớp khác
-      // khi thiếu câu (thiếu thì hiện trạng thái "chưa đủ câu hỏi" thay vì lộ nội dung sai).
-      const subjectQuestions = questionsRef.current.filter(q =>
-        questionInScope(q, activeSectId as any, activeGradeTier)
-      );
-      const fallbackQuestions = subjectQuestions;
-
-      let pool: Question[] = [];
-      const count = mode === 'boss' ? 5 : mode === 'survival' ? 15 : 10;
-
-      if (mode === 'boss') {
-        const bossTag = bossId === 'b-2024' ? '2024'
-          : bossId === 'b-2025' ? '2025'
-          : bossId === 'b-2026' ? '2026'
-          : bossId === 'b-hk1' ? 'HK1'
-          : bossId === 'b-hk2' ? 'HK2'
-          : '2026';
-        const examPool = fallbackQuestions.filter(q => q.source.includes(bossTag));
-        const fullExamPool = examPool.length > 0 ? examPool : fallbackQuestions;
-        const examSample = fullExamPool.length > 20
-          ? [...fullExamPool].sort(() => Math.random() - 0.5).slice(0, 20)
-          : fullExamPool;
-        pool = [...examSample].sort(() => Math.random() - 0.5).slice(0, count);
-      } else if (mode === 'revenge') {
-        pool = subjectQuestions.filter(q => failedQuestionIdsRef.current.includes(q.id));
-      } else if (mode === 'lesson') {
-        const lesson = lessonsRef.current.find(l => l.id === lessonId);
-        if (lesson) {
-          // Priority 1: questions directly linked to this lesson via lessonId field
-          pool = fallbackQuestions.filter(q => q.lessonId === lessonId || (q as any).metadata?.lessonId === lessonId);
-          // Priority 2: questions matching same category (legacy & fallback)
-          if (pool.length < lessonQuizCount) {
-            const byCategory = fallbackQuestions.filter(q => q.category === lesson.category && !pool.some(p => p.id === q.id));
-            pool = [...pool, ...byCategory];
-          }
-          pool = pool.slice(0, lessonQuizCount);
-        }
-      } else {
-        const weightMode = (mode === 'survival' || mode === 'preview')
-          ? 'mixed'
-          : (mode as 'grammar' | 'reading' | 'vocabulary' | 'pronunciation' | 'mixed');
-        for (let i = 0; i < count; i++) {
-          const q = getQuestionByWeightRef.current(weightMode);
-          if (q && ((q as any).subject || 'english') === activeSectId && !pool.some(existing => existing.id === q.id)) {
-            pool.push(q);
-          }
-        }
-        if (pool.length === 0) {
-          const activities = getSubjectActivities(activeSectId);
-          const activity = activities.find(a => a.modeKey === mode || a.id === mode || a.legacyMode === mode);
-          
-          let topicIds: string[] = [];
-          if (mode === 'mixed') {
-            topicIds = Array.from(new Set(activities.flatMap(a => a.topicIds ?? [])));
-          } else if (activity?.topicIds) {
-            topicIds = [...activity.topicIds];
-          }
-
-          pool = fallbackQuestions.filter(q => {
-            if (topicIds.length === 0 || topicIds.includes('*')) return true;
-            const qTopicId = q.topicId;
-            if (!qTopicId) return false;
-            const normalizedQTopicId = qTopicId.replace(/-g\d+$/, '');
-            return topicIds.includes(normalizedQTopicId) || topicIds.includes(qTopicId);
-          }).slice(0, count);
-        }
-      }
-
-      setSessionId('');
-      setCurrentQuestions(pool.sort(() => Math.random() - 0.5));
-      setCurrentIndex(0);
-      setAnswersSubmitted([]);
-      setRewardsEarned({ ruby: 0, xp: 0 });
-      setSessionAnswered(0);
-      setSessionCorrect(0);
-      setRunFinished(false);
-      runEndHandledRef.current = false;
-      setRunMistakes(0);
-
-      if (mode === 'boss') {
-        setTimeLeft(20 * 60);
-      } else {
-        setTimeLeft(0);
-      }
-      setInitDone(true);
     };
 
     initOnlineSession();
@@ -471,22 +380,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, less
       let finalRuby = rewardsEarned.ruby;
       let finalXp = rewardsEarned.xp;
 
-      if (mode !== 'preview') {
+      if (mode !== 'preview' && sessionId) {
         try {
-          if (!sessionId) {
-            // Fallback if session wasn't started online
-            if (isDefeat) {
-              applyDefeatPenalty(rewardsEarned.ruby, rewardsEarned.xp);
-              finalRuby = Math.floor(rewardsEarned.ruby / 2);
-              finalXp = Math.floor(rewardsEarned.xp / 2);
-            } else if (mode === 'boss') {
-              const bossBonusIndex = bossId === 'b-2024' || bossId === 'b-hk1' ? 0
-                : bossId === 'b-2025' || bossId === 'b-hk2' ? 1
-                : bossId === 'b-2026' ? 2
-                : undefined;
-              completeBossVictory(bossBonusIndex);
-            }
-          } else {
           const bossBonusIndex = bossId === 'b-2024' || bossId === 'b-hk1' ? 0
             : bossId === 'b-2025' || bossId === 'b-hk2' ? 1
             : bossId === 'b-2026' ? 2
@@ -518,24 +413,12 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, less
             finalXp = res.xpGained;
             setRewardsEarned({ ruby: finalRuby, xp: finalXp });
           }
-        }
-      } catch (err) {
-        console.error('Failed to submit session result, run fallback:', err);
-        if (isDefeat) {
-          applyDefeatPenalty(rewardsEarned.ruby, rewardsEarned.xp);
-          finalRuby = Math.floor(rewardsEarned.ruby / 2);
-          finalXp = Math.floor(rewardsEarned.xp / 2);
-        } else if (mode === 'boss') {
-          const bossBonusIndex = bossId === 'b-2024' || bossId === 'b-hk1' ? 0
-            : bossId === 'b-2025' || bossId === 'b-hk2' ? 1
-            : bossId === 'b-2026' ? 2
-            : undefined;
-          completeBossVictory(bossBonusIndex);
+        } catch (err) {
+          console.error('Failed to submit session result:', err);
         }
       }
-    }
 
-    // Store final ActivityResult — render phases will consume this
+      // Store final ActivityResult — render phases will consume this
       setActivityResult({
         status,
         score: sessionCorrect,
@@ -647,22 +530,6 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, less
       .replace(/[₁]/g, '1')
       .replace(/[₂]/g, '2');
 
-    const runOldGradingBackup = () => {
-      const answers = Array.isArray(activeQuestion.correctAnswer)
-        ? activeQuestion.correctAnswer
-        : [activeQuestion.correctAnswer];
-      const normalizedTyped = cleanAnswer(typedAnswer);
-      const matchedAnswers = answers.filter(ans => {
-        const normalizedAns = cleanAnswer(ans);
-        return normalizedAns.length >= 4 && normalizedTyped.includes(normalizedAns);
-      });
-      const matched = matchedAnswers.length;
-      const computedScoreRatio = answers.length > 0 ? Math.min(1, matched / answers.length) : 0;
-      const computedIsCorrect = computedScoreRatio >= 0.6;
-      setLastRubricScore(Math.round(computedScoreRatio * 10));
-      setLastRubricMissing(answers.filter(ans => !matchedAnswers.includes(ans)));
-      return { isCorrect: computedIsCorrect, scoreRatio: computedScoreRatio };
-    };
 
     const assessmentProvider = getAssessmentProvider(activeSectId, activeQuestion);
 
@@ -709,14 +576,11 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, less
         setAiSuggestions(suggestions);
       } catch (err: any) {
         if (currentQuestionIdRef.current !== questionIdBeingGraded) return;
-        console.error('Lỗi khi gọi AI chấm bài, chuyển sang backup:', err);
-        localAiWarningMessage = activeSectId === 'math'
-          ? 'Trợ Giáo MIKA chấm Toán tự luận dự phòng (So khớp chuỗi).'
-          : 'Trợ Giáo MIKA phải chấm dự phòng. Kết quả vẫn ổn, nhưng nên coi như mốc tham chiếu.';
+        console.error('Lỗi khi gọi AI chấm bài:', err);
+        localAiWarningMessage = 'Không thể chấm điểm tự luận do lỗi kết nối hệ thống chấm AI. Câu trả lời của bạn được ghi nhận là không chính xác.';
         setAiWarningMessage(localAiWarningMessage);
-        const fallbackResult = runOldGradingBackup();
-        isCorrect = fallbackResult.isCorrect;
-        scoreRatio = fallbackResult.scoreRatio;
+        isCorrect = false;
+        scoreRatio = 0;
       } finally {
         if (currentQuestionIdRef.current === questionIdBeingGraded) {
           setIsAiGrading(false);
@@ -915,6 +779,29 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, less
           setSessionCorrect(0);
         }}
       />
+    );
+  }
+
+  if (initError) {
+    return (
+      <div className="glass-panel rounded-2xl border border-red-500/30 p-8 max-w-xl mx-auto text-center space-y-6">
+        <div className="w-16 h-16 mx-auto text-red-500 flex items-center justify-center bg-red-950/20 rounded-full border border-red-500/20 text-3xl">
+          ⚠️
+        </div>
+        <h2 className="font-orbitron font-black text-2xl text-white uppercase tracking-wider">
+          MẤT KẾT NỐI MÁY CHỦ ❌
+        </h2>
+        <p className="text-sm text-synth-text-muted leading-relaxed">
+          Không thể kết nối với máy chủ hoặc nộp kết quả phiên chơi. Vui lòng kiểm tra lại đường truyền mạng.
+        </p>
+        <button
+          type="button"
+          onClick={handleEscape}
+          className="px-6 py-3 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-red-500 text-black hover:bg-red-600 cursor-pointer transition-all duration-300 shadow-[0_0_15px_rgba(239,68,68,0.4)]"
+        >
+          Trở Lại Bản Đồ 🗺️
+        </button>
+      </div>
     );
   }
 

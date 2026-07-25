@@ -119,15 +119,15 @@ export async function seedTopicsAndActivities(pool: Pool) {
     // English
     { id: 'act-boss-eng-2024', topic_id: 'eng-grammar', title: 'Đại Ca HCMC 2024', config: { boss_id: 'b-2024', boss_tag: '2024', energy: 100 } },
     { id: 'act-boss-eng-2025', topic_id: 'eng-grammar', title: 'Cự Long HCMC 2025', config: { boss_id: 'b-2025', boss_tag: '2025', energy: 100 } },
-    { id: 'act-boss-eng-2026', topic_id: 'eng-grammar', title: 'Cổ Long HCMC 2026 (Mock)', config: { boss_id: 'b-2026', boss_tag: '2026', energy: 100 } },
+    { id: 'act-boss-eng-2026', topic_id: 'eng-grammar', title: 'Cổ Long HCMC 2026', config: { boss_id: 'b-2026', boss_tag: '2026', energy: 100 } },
     // Math
     { id: 'act-boss-math-2024', topic_id: 'math-quadratic', title: 'Đại Ca Toán HCMC 2024', config: { boss_id: 'b-2024', boss_tag: '2024', energy: 100 } },
     { id: 'act-boss-math-2025', topic_id: 'math-quadratic', title: 'Cự Long Toán HCMC 2025', config: { boss_id: 'b-2025', boss_tag: '2025', energy: 100 } },
-    { id: 'act-boss-math-2026', topic_id: 'math-quadratic', title: 'Cổ Long Toán HCMC 2026 (Mock)', config: { boss_id: 'b-2026', boss_tag: '2026', energy: 100 } },
+    { id: 'act-boss-math-2026', topic_id: 'math-quadratic', title: 'Cổ Long Toán HCMC 2026', config: { boss_id: 'b-2026', boss_tag: '2026', energy: 100 } },
     // Literature
     { id: 'act-boss-lit-2024', topic_id: 'lit-reading', title: 'Đại Ca Văn HCMC 2024', config: { boss_id: 'b-2024', boss_tag: '2024', energy: 100 } },
     { id: 'act-boss-lit-2025', topic_id: 'lit-reading', title: 'Cự Long Văn HCMC 2025', config: { boss_id: 'b-2025', boss_tag: '2025', energy: 100 } },
-    { id: 'act-boss-lit-2026', topic_id: 'lit-reading', title: 'Cổ Long Văn HCMC 2026 (Mock)', config: { boss_id: 'b-2026', boss_tag: '2026', energy: 100 } },
+    { id: 'act-boss-lit-2026', topic_id: 'lit-reading', title: 'Cổ Long Văn HCMC 2026', config: { boss_id: 'b-2026', boss_tag: '2026', energy: 100 } },
 
     // Science
     { id: 'act-boss-sci-hk1', topic_id: 'sci-physics', title: 'Khảo Hạch Khoa học - Học Kỳ 1', config: { boss_id: 'b-hk1', boss_tag: 'HK1', energy: 100 } },

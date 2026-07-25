@@ -8,7 +8,6 @@ import { logActivity, mapServerTopics } from '../helpers';
 import { toast } from '../../utils/toast';
 import { authService } from '../../services/authService';
 import { DEFAULT_GRADE_TIER } from '../../types/game';
-import { normalizeRubyPayload } from '../../utils/rubyCompatibility';
 import { enrichTextbookAttributes } from '../../utils/textbookEnricher';
 import { learningService } from '../../services/learningService';
 import { textbookMappingService } from '../../services/textbookMappingService';
@@ -51,7 +50,7 @@ export const createAuthSlice: StateCreator<
       // Clear every profile-scoped value before loading the next profile.
       // Account/session/profile-list state intentionally remains available.
       set(getProfileScopedResetState());
-      const data = normalizeRubyPayload(await authService.selectProfile(profileId));
+      const data = await authService.selectProfile(profileId);
       if (!data.player || !data.pet) {
         // Hồ sơ player_profiles/pet_states lẽ ra luôn được tạo cùng lúc với ge10_users
         // (xem backend routes/profiles.ts). Thiếu ở đây nghĩa là dữ liệu server bị lỗi —
@@ -225,7 +224,7 @@ export const createAuthSlice: StateCreator<
     // Real Supabase login
     try {
       await authService.syncUser();
-      const data = normalizeRubyPayload(await authService.fetchCurrentProfile());
+      const data = await authService.fetchCurrentProfile();
       if (!data.player || !data.pet) {
         // Hồ sơ player_profiles/pet_states lẽ ra luôn được tạo cùng lúc với ge10_users
         // (xem backend routes/profiles.ts). Thiếu ở đây nghĩa là dữ liệu server bị lỗi —
