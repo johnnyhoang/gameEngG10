@@ -15,6 +15,7 @@ interface Lesson {
   subject: string;
   category: string;
   topic: string;
+  topicId?: string;
   title: string;
   theory: string;
   grade_tier: number;
@@ -131,6 +132,7 @@ const TypeableCombobox: React.FC<TypeableComboboxProps> = ({
 export const LectureBankManager: React.FC = () => {
   const activeGradeTier = useGameState(state => state.activeGradeTier);
   const currentSubject = useGameState(state => state.currentSubject);
+  const topics = useGameState(state => state.topics || []);
   const [lessons, setLessons] = useState<Lesson[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -146,6 +148,7 @@ export const LectureBankManager: React.FC = () => {
   const [formSubject, setFormSubject] = useState<SubjectId>(currentSubject);
   const [formCategory, setFormCategory] = useState('');
   const [formTopic, setFormTopic] = useState('');
+  const [formTopicId, setFormTopicId] = useState('');
   const [formTitle, setFormTitle] = useState('');
   const [formTheory, setFormTheory] = useState('');
   const [formIsStandard, setFormIsStandard] = useState(false);
@@ -156,8 +159,6 @@ export const LectureBankManager: React.FC = () => {
   const [formAttempted, setFormAttempted] = useState(false);
   const [deletingIds, setDeletingIds] = useState<Record<string, boolean>>({});
   const [isPreviewMode, setIsPreviewMode] = useState(false);
-
-  // Lazy Load Paging (Page Size 6)
   const [visibleCount, setVisibleCount] = useState(6);
 
   useEffect(() => {
@@ -242,6 +243,7 @@ export const LectureBankManager: React.FC = () => {
     setFormSubject(currentSubject);
     setFormCategory('');
     setFormTopic('');
+    setFormTopicId('');
     setFormTitle('');
     setFormTheory('');
     setFormIsStandard(false);
@@ -258,6 +260,7 @@ export const LectureBankManager: React.FC = () => {
     setFormSubject(lesson.subject as SubjectId);
     setFormCategory(lesson.category);
     setFormTopic(lesson.topic);
+    setFormTopicId(lesson.topicId || '');
     setFormTitle(lesson.title);
     setFormTheory(lesson.theory);
     setFormIsStandard(lesson.is_standard || false);
@@ -292,6 +295,7 @@ export const LectureBankManager: React.FC = () => {
         gradeTier: activeGradeTier,
         category: formCategory.trim(),
         topic: formTopic.trim(),
+        topicId: formTopicId || undefined,
         title: formTitle.trim(),
         theory: formTheory.trim(),
         is_standard: isStandardOverride !== undefined ? isStandardOverride : formIsStandard,
@@ -726,6 +730,22 @@ export const LectureBankManager: React.FC = () => {
                   placeholder="vd: Cấu trúc động từ, Đồ thị..."
                   className={`w-full p-2.5 rounded-lg border ${formAttempted && !formTopic.trim() ? 'border-red-500/80 bg-red-500/5 focus:border-red-500' : 'border-white/10 bg-synth-gray/20 focus:border-synth-cyan'} text-white outline-none text-xs`}
                 />
+              </label>
+
+              <label className="space-y-1 block">
+                <span className="text-slate-400 font-semibold">Topic Lõi (Core Taxonomy)</span>
+                <select
+                  value={formTopicId}
+                  onChange={(e) => setFormTopicId(e.target.value)}
+                  className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs cursor-pointer"
+                >
+                  <option value="" className="bg-slate-900 text-white">-- Chưa gắn Topic Lõi --</option>
+                  {topics.filter((t: any) => t.subjectId === formSubject).map((t: any) => (
+                    <option key={t.id} value={t.id} className="bg-slate-900 text-white">
+                      {t.label || t.name || t.id} ({t.id})
+                    </option>
+                  ))}
+                </select>
               </label>
 
               <label className="space-y-1 block">

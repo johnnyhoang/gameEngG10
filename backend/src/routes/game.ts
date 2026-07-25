@@ -96,7 +96,12 @@ router.post('/game/session/start', async (req: any, res) => {
       isConfused: row.is_confused,
       gradeTier: row.grade_tier,
       attempts: Number(row.student_attempts) || 0,
-      lessonId: row.lesson_id
+      lessonId: row.lesson_id,
+      relatedLessonIds: row.related_lesson_ids || undefined,
+      pedagogicalPhase: row.pedagogical_phase || 'comprehension',
+      scopeCode: row.scope_code || undefined,
+      loai: row.loai || undefined,
+      bai: row.bai !== null && row.bai !== undefined ? Number(row.bai) : undefined
     }));
 
     let poolSelected: typeof questions = [];
@@ -148,8 +153,24 @@ router.post('/game/session/start', async (req: any, res) => {
       poolSelected = shuffle(questions.filter(q => failedQuestionIds.includes(q.id)));
     } else if (sessionType === 'lesson') {
       const targetCount = Number(lessonQuizCount) || 3;
-      let lessonPool = questions.filter(q => q.lessonId === lessonId || q.metadata?.lessonId === lessonId);
-      poolSelected = shuffle(lessonPool).slice(0, targetCount);
+      let targetLesson: any = null;
+      if (lessonId) {
+        const lRes = await pool.query('SELECT * FROM ge10_lessons WHERE id = $1', [lessonId]);
+        if (lRes.rows.length > 0) targetLesson = lRes.rows[0];
+      }
+
+      let lessonPool = questions.filter(q => {
+        if (q.lessonId === lessonId || q.metadata?.lessonId === lessonId) return true;
+        if (Array.isArray(q.relatedLessonIds) && q.relatedLessonIds.includes(lessonId)) return true;
+        if (targetLesson && targetLesson.scope_code && q.scopeCode === targetLesson.scope_code) return true;
+        if (targetLesson && targetLesson.loai && targetLesson.bai !== null && targetLesson.bai !== undefined && q.loai === targetLesson.loai && q.bai === Number(targetLesson.bai)) return true;
+        return false;
+      });
+
+      const comprehensionPool = lessonPool.filter(q => q.pedagogicalPhase === 'comprehension' || !q.pedagogicalPhase);
+      const activePool = comprehensionPool.length >= targetCount ? comprehensionPool : lessonPool;
+
+      poolSelected = shuffle(activePool.length > 0 ? activePool : questions).slice(0, targetCount);
     } else {
       // Practice / Normal / Survival: group by attempts, shuffle within groups, concatenate
       const attemptsGroups: { [key: number]: typeof questions } = {};

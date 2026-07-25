@@ -45,8 +45,8 @@ const GeometryApp = withSuspense(lazy(() => import('./miniapps/geometry').then(m
 const GraphHandbook = withSuspense(lazy(() => import('./components/GraphHandbook').then(m => ({ default: m.GraphHandbook }))));
 const ProfilePage = withSuspense(lazy(() => import('./components/ProfilePage').then(m => ({ default: m.ProfilePage }))));
 
-const APP_VERSION = 'fd44bc2';
-const APP_PUSH_TIME = 'Tue, 7 Jul 2026 12:05 ICT';
+const APP_VERSION = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'dev';
+const APP_PUSH_TIME = typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : '';
 
 // Constants outside component to avoid re-creation on every render
 const TOP_HUD_TAB_TO_SCREEN: Record<string, 'map' | 'arena' | 'practice' | 'shop' | 'pet' | 'profile'> = {

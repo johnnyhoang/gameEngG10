@@ -1,28 +1,44 @@
 import { pool } from '../db.js';
 import crypto from 'crypto';
 
+function buildScopeCode(subject: string, gradeTier: number, loai?: string, bai?: number): string {
+  const normLoai = loai ? loai.toLowerCase().trim().replace(/[^a-z0-9]+/g, '-') : 'general';
+  const baiStr = bai !== undefined && bai !== null && !isNaN(bai) ? `b${bai}` : '';
+  return `${subject}_g${gradeTier}_${normLoai}_${baiStr}`.replace(/_+$/g, '');
+}
+
 export const persistCustomQuestion = async (userId: string, question: any) => {
   const gradeTier = Number(question.gradeTier ?? question.grade);
   const subject = question.subject;
   if (![6, 7, 8, 9, 10, 11, 12].includes(gradeTier) || !subject) {
     throw new Error('Question requires a valid gradeTier and subject.');
   }
-  let lessonId = null;
-  try {
-    const lessonRes = await pool.query(
-      'SELECT id FROM ge10_lessons WHERE category = $1 AND grade_tier = $2 AND subject = $3 LIMIT 1',
-      [question.category, gradeTier, subject]
-    );
-    if (lessonRes.rows.length > 0) {
-      lessonId = lessonRes.rows[0].id;
+  const explicitLessonId = question.lessonId || null;
+  let lessonId = explicitLessonId;
+  if (!lessonId) {
+    try {
+      const lessonRes = await pool.query(
+        'SELECT id FROM ge10_lessons WHERE category = $1 AND grade_tier = $2 AND subject = $3 LIMIT 1',
+        [question.category, gradeTier, subject]
+      );
+      if (lessonRes.rows.length > 0) {
+        lessonId = lessonRes.rows[0].id;
+      }
+    } catch (e: any) {
+      console.error('Lỗi khi truy vấn lesson_id cho câu hỏi:', e.message);
     }
-  } catch (e: any) {
-    console.error('Lỗi khi truy vấn lesson_id cho câu hỏi:', e.message);
   }
 
+  const parsedBai = question.bai !== undefined && question.bai !== null && question.bai !== '' ? parseFloat(question.bai) : undefined;
+  const scopeCode = question.scopeCode || buildScopeCode(subject, gradeTier, question.loai || question.category, parsedBai);
+  const pedagogicalPhase = question.pedagogicalPhase || 'comprehension';
+  const relatedLessonIds = Array.isArray(question.relatedLessonIds) ? question.relatedLessonIds : null;
+
   await pool.query(
-    `INSERT INTO ge10_custom_questions (id, user_id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, image_url, metadata, lesson_id, is_confused)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+    `INSERT INTO ge10_custom_questions (
+       id, user_id, type, category, topic_id, prompt, options, correct_answer, explanation, difficulty, source, subject, grade_tier, image_url, metadata, lesson_id, is_confused, loai, bai, related_lesson_ids, pedagogical_phase, scope_code
+     )
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
      ON CONFLICT (id) DO UPDATE SET
        type = EXCLUDED.type,
        category = EXCLUDED.category,
@@ -38,7 +54,12 @@ export const persistCustomQuestion = async (userId: string, question: any) => {
        image_url = EXCLUDED.image_url,
        metadata = EXCLUDED.metadata,
        lesson_id = EXCLUDED.lesson_id,
-       is_confused = EXCLUDED.is_confused`,
+       is_confused = EXCLUDED.is_confused,
+       loai = EXCLUDED.loai,
+       bai = EXCLUDED.bai,
+       related_lesson_ids = EXCLUDED.related_lesson_ids,
+       pedagogical_phase = EXCLUDED.pedagogical_phase,
+       scope_code = EXCLUDED.scope_code`,
     [
       question.id,
       userId,
@@ -56,7 +77,12 @@ export const persistCustomQuestion = async (userId: string, question: any) => {
       question.imageUrl || question.image_url || null,
       question.metadata ? JSON.stringify(question.metadata) : null,
       lessonId,
-      question.isConfused || false
+      question.isConfused || false,
+      question.loai || null,
+      parsedBai || null,
+      relatedLessonIds,
+      pedagogicalPhase,
+      scopeCode
     ]
   );
 };

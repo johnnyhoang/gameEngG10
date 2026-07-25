@@ -165,6 +165,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
   const [editSubject, setEditSubject] = useState<SubjectId>(selectedSect || 'english');
   const [editLoai, setEditLoai] = useState('');
   const [editBai, setEditBai] = useState('');
+  const [editPedagogicalPhase, setEditPedagogicalPhase] = useState<NonNullable<Question['pedagogicalPhase']>>('comprehension');
   const [isSaving, setIsSaving] = useState(false);
   const [formAttempted, setFormAttempted] = useState(false);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -267,6 +268,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
         setEditSubject(selectedSect || 'english');
         setEditLoai('');
         setEditBai('');
+        setEditPedagogicalPhase('comprehension');
         setFormAttempted(false);
       } else if (editingQuestion) {
         const q = editingQuestion;
@@ -283,6 +285,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
         setEditSubject(q.subject || 'english');
         setEditLoai(q.loai || '');
         setEditBai(q.bai !== undefined ? String(q.bai) : '');
+        setEditPedagogicalPhase(q.pedagogicalPhase || 'comprehension');
         setFormAttempted(false);
       }
     } else {
@@ -333,6 +336,7 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
       gradeTier,
       loai: editLoai.trim() || undefined,
       bai: parsedBai,
+      pedagogicalPhase: editPedagogicalPhase,
       metadata: {
         ...(editingQuestion?.metadata || {}),
         isStandard: forceStandard ? true : (editingQuestion?.metadata?.isStandard || false)
@@ -570,6 +574,20 @@ export const QuestionFormModal: React.FC<QuestionFormModalProps> = ({
                 onChange={(e) => setEditDifficulty(Number(e.target.value) || 5)}
                 className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs"
               />
+            </label>
+
+            <label className="space-y-1 block">
+              <span className="text-slate-400 font-semibold">Phân đoạn sư phạm (Pedagogical Phase)</span>
+              <select
+                value={editPedagogicalPhase}
+                onChange={(e) => setEditPedagogicalPhase(e.target.value as any)}
+                className="w-full p-2.5 rounded-lg border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan cursor-pointer text-xs"
+              >
+                <option value="illustration" className="bg-slate-900 text-white">📖 Minh hoạ khái niệm (Xem trong bài giảng)</option>
+                <option value="comprehension" className="bg-slate-900 text-white">✅ Kiểm tra củng cố (Tập sau bài giảng)</option>
+                <option value="mastery" className="bg-slate-900 text-white">🏆 Luyện tập thành thạo (Chuyên đề)</option>
+                <option value="challenge" className="bg-slate-900 text-white">🔥 Vận dụng cao / Thử thách Boss</option>
+              </select>
             </label>
 
             <label className="space-y-1 block">

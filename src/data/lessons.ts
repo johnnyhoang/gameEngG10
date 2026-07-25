@@ -5,6 +5,8 @@ export interface Lesson {
   subject: SubjectId;
   /** Legacy content without this field is normalized to grade 9 at the registry boundary. */
   gradeTier?: GradeTier;
+  topicId?: string;
+  scopeCode?: string;
   examples?: string[];
   practicePoints?: string[];
   difficulty?: number;

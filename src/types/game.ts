@@ -122,6 +122,8 @@ export interface PlayerProfile {
   activeGradeTier?: GradeTier;
 }
 
+export type PedagogicalPhase = 'illustration' | 'comprehension' | 'mastery' | 'challenge';
+
 export interface Question {
   id: string;
   type: QuestionType;
@@ -144,6 +146,9 @@ export interface Question {
   isConfused?: boolean;
   skipReason?: 'quá khó' | 'quá dài' | 'quá khùng';
   lessonId?: string;
+  relatedLessonIds?: string[];
+  pedagogicalPhase?: PedagogicalPhase;
+  scopeCode?: string;
   skipSeverity?: number;
   /** Số lần câu hỏi được mở/sử dụng */
   timesOpened?: number;
