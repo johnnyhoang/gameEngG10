@@ -2,30 +2,22 @@
 
 ## 1. Trạng thái hiện tại (Current Status)
 - **Vừa hoàn thành:** 
-   - **Nâng cấp bài giảng (3-5 trang / 3.000-4.000 từ) và viết lại ngân hàng 1.000+ câu hỏi chuẩn hóa cho toàn bộ các môn Bậc Đại Học CS & Robotics**:
-      - **Software Engineering (`cs_software_engineering`)**: 10 bài giảng nâng cấp (~3.200-4.000 ký tự mỗi bài, kèm bảng so sánh, ví dụ code Java/SQL/YAML, sơ đồ ASCII, ví dụ thực tế Netflix/Google) + 100 câu hỏi trắc nghiệm mới (4 đáp án cân bằng độ dài ±20%, xoay vòng vị trí A/B/C/D, distractor kỹ thuật thuyết phục).
-      - **10 Môn Robotics Đại Học**:
-         1. `cs_robotics_fundamentals` (10 bài ~3.510 ký tự/bài + 100 câu)
-         2. `cs_robot_mechanics` (10 bài ~5.808 ký tự/bài + 100 câu)
-         3. `cs_robot_perception` (10 bài ~3.932 ký tự/bài + 100 câu)
-         4. `cs_navigation_motion` (10 bài ~2.332 ký tự/bài + 100 câu)
-         5. `cs_robot_intelligence` (10 bài ~4.265 ký tự/bài + 100 câu)
-         6. `cs_robot_programming` (10 bài ~3.198 ký tự/bài + 100 câu)
-         7. `cs_embedded_hardware` (10 bài ~2.474 ký tự/bài + 100 câu)
-         8. `cs_human_interaction` (10 bài ~4.857 ký tự/bài + 100 câu)
-         9. `cs_robotics_engineering` (10 bài ~3.427 ký tự/bài + 100 câu)
-         10. `cs_specialized_robotics` (10 bài ~2.194 ký tự/bài + 100 câu)
-      - **6 Môn Khoa Học Máy Tính (Computer Science)**:
-         1. `cs_programming` (10 bài ~2.873 ký tự/bài + 100 câu)
-         2. `cs_algorithms_structures` (10 bài ~2.240 ký tự/bài + 100 câu)
-         3. `cs_computer_systems` (10 bài ~3.798 ký tự/bài + 100 câu)
-         4. `cs_database_data` (10 bài ~3.552 ký tự/bài + 100 câu)
-         5. `cs_networking_security` (10 bài ~3.713 ký tự/bài + 100 câu)
-         6. `cs_artificial_intelligence` (10 bài ~3.558 ký tự/bài + 100 câu)
-   - **Đã nạp trực tiếp và kiểm tra trong PostgreSQL**:
-      - Toàn bộ dữ liệu bài giảng và câu hỏi được nạp vào DB qua Node.js parameterized queries (`.cjs` scripts), đảm bảo 100% chuẩn mã UTF-8.
-      - Đã liên kết đúng `lesson_id` giữa `ge10_custom_questions` và `ge10_lessons`.
-      - Đã commit & push lên GitHub repository (`main` branch).
+   - **Khắc phục Lỗi lệch Đề thi & Câu hỏi (Không cùng loại)**:
+      - Sửa đổi router `/game/session/start` tại backend [game.ts](file:///d:/Hoa%20Hoang/Apps/gameEngG10/backend/src/routes/game.ts) để tự động tra cứu `category` của bài học, lọc câu hỏi nghiêm ngặt theo đúng `lesson_id` và `category` của bài học đó. Loại bỏ hoàn toàn cơ chế fallback bốc ngẫu nhiên câu hỏi ngoài category khi thiếu đề.
+      - Nhận tham số `lessonQuizCount` động từ client (thay vì bị giới hạn cứng 3 câu cho mỗi bài thi).
+      - Cập nhật frontend [PlayArea.tsx](file:///d:/Hoa%20Hoang/Apps/gameEngG10/src/components/PlayArea.tsx) để truyền `lessonQuizCount` động lên backend và xóa bỏ logic tự ý nhét câu hỏi lệch category ở frontend.
+   - **Sửa lỗi hiển thị Chuyên đề & Khoa thi**:
+      - Khắc phục lỗi thiếu trường `subject` trong hàm `mapServerTopics` tại [helpers.ts](file:///d:/Hoa%20Hoang/Apps/gameEngG10/src/store/helpers.ts), giải quyết triệt để lỗi giao diện báo "Chưa có chuyên đề thử thách..." và "Môn học này chưa thiết lập Khoa Thi" cho toàn bộ các môn học lớp 9.
+   - **Đồng bộ hóa dữ liệu môn Nghệ thuật**:
+      - Di trú cột `subject` từ `'art'` sang `'arts'` trong các bảng `ge10_lessons` và `ge10_textbook_mappings`, đảm bảo hiển thị đúng 5 bài học và 5 mappings SGK Nghệ thuật ở frontend.
+   - **Tự động Phân bổ dữ liệu Câu hỏi Lớp 9**:
+      - Viết và chạy thành công script [associate_questions_lessons_g9.js](file:///d:/Hoa%20Hoang/Apps/gameEngG10/scratch/associate_questions_lessons_g9.js) thực hiện so khớp từ khóa tiếng Việt/Anh thông minh, tự động liên kết thành công **589 câu hỏi** trong DB với `lesson_id` bài học tương ứng (Toán, Văn, Anh, KHTN, Sử Địa, Tin học, Công nghệ, GDCD, Nghệ thuật).
+   - **Ánh xạ Sách giáo khoa lớp 9 (Kết nối tri thức)**:
+      - Nạp 111 ánh xạ SGK mới vào bảng `ge10_textbook_mappings` trên Supabase PostgreSQL.
+      - Map toàn bộ 142 bài học lớp 9 vào các bài học SGK tương ứng của 9 môn học với độ tương đồng >70%.
+      - Các bài học nâng cao được xếp sau các bài SGK bằng số thứ tự `bai` lớn hơn.
+   - **Kiểm thử**:
+      - Chạy kiểm thử thành công bằng lệnh `npm run build` cục bộ mà không gặp lỗi bundle hay compile nào.
 - **Task đang làm dở:** Không có.
 - **Blockers:** Local Docker Desktop chưa được bật, khiến lệnh `docker-compose up -d --build` ở local bị lỗi kết nối Docker daemon.
 
@@ -37,24 +29,16 @@
    4. Cập nhật file `HANDOFF.md` này để bàn giao cho phiên tiếp theo.
 
 ## 3. Lịch sử thay đổi gần đây (Recent Changes)
+- **2026-07-25:**
+   - **Sửa lỗi lệch đề thi & Lọc câu hỏi nghiêm ngặt**:
+      - Loại bỏ fallback câu hỏi khác category ở cả backend và frontend.
+      - Nhận và gửi tham số `lessonQuizCount` linh hoạt cho bài thi bài học.
+   - **Sửa lỗi hiển thị & Tự động Phân bổ Dữ liệu Câu hỏi Lớp 9**:
+      - Sửa lỗi lọc topics ở frontend, hiển thị Chuyên đề và Khoa thi cho tất cả các môn lớp 9.
+      - Đồng bộ subject `'art'` sang `'arts'` trong DB.
+      - Liên kết thành công 589 câu hỏi lớp 9 với `lesson_id` tương ứng bằng script phân tích từ khóa thông minh.
+   - **Ánh xạ Sách giáo khoa Lớp 9 KNTT**:
+      - Hoàn tất nạp 111 ánh xạ SGK mới cho lớp 9. Map 142/142 bài học thành công, xử lý nhóm "Ngoài sách giáo khoa" tự động xếp sau các bài chính quy.
 - **2026-07-23:**
    - **Tích hợp Quy trình Deploy tự động & Cập nhật `.agents/AGENTS.md`**:
       - Thêm mục `## 8. Quy trình Deploy tự động` vào `AGENTS.md` quy định rõ quy trình: checkcode -> commit & push GitHub -> rebuild Docker local.
-      - Thực hiện deploy: Chạy thành công `npm run build` kiểm tra, thực hiện `git add .`, `git commit` và `git push` thành công lên GitHub repository để kích hoạt Vercel tự động build & deploy môi trường production.
-- **2026-07-22:**
-   - **Tinh chỉnh Typography - Giảm bold text không cần thiết trên toàn bộ giao diện sĩ tử**:
-      - Chuyển đổi các chữ `font-bold` và `font-black` sang `font-semibold` / `font-medium` một cách chọn lọc trên các màn hình chính phía Học sinh (`TopHUD`, `ActivityLog`, `LearningLedger`, `AcademyTab`, `PracticeHall`, `Arena`, `ItemShop`).
-      - Làm mềm các nhãn thông tin phụ, badge chỉ số (Lvl, Ruby, XP), thẻ SGK, trạng thái phần thưởng, mô tả vật phẩm và các nút hành động phụ để giao diện thanh thoát và cao cấp hơn, giữ lại bold thực sự cho tiêu đề và số liệu trọng tâm.
-   - **Nâng cấp giao diện Admin Dashboard & Nhật ký hoạt động (Mobile First) + Auto Refresh Shop**:
-      - Thêm nút "Đồng bộ dữ liệu" (Reload Dashboard) ở header Phòng Điều Hành để cập nhật nhanh tức thời.
-      - Tự động gọi `fetchAuditLogs` sau mỗi thao tác quản trị (nạp năng lượng, duyệt quà...) giúp đồng bộ hóa lịch sử ngay lập tức.
-      - Phân trang nhật ký (hiển thị 10 dòng đầu kèm nút Tải thêm nhật ký).
-      - Tối ưu hóa UI mobile cho phần nhật ký quyết nghị bằng dạng danh sách các thẻ (Cards) thay vì bảng dữ liệu cồng kềnh, cải thiện đáng kể trải nghiệm di động.
-      - Thiết lập `setInterval` tự động làm mới giá cả, số lượng quà tặng lớp và ví Ruby của học sinh trong Cửa hàng (ItemShop) định kỳ 1 phút/lần.
-- **2026-07-20:**
-   - **Hoàn thành nâng cấp chất lượng bài giảng & câu hỏi cho tất cả 17 môn CS & Robotics Đại Học**:
-      - Viết lại 170 bài giảng với độ dài 3-5 trang (2.500–5.800 ký tự mỗi bài), tích hợp sơ đồ ASCII, bảng so sánh, code ví dụ thực tế.
-      - Tạo 1.700 câu hỏi trắc nghiệm mới, loại bỏ hoàn toàn pattern "câu dài nhất là đúng", xoay vòng vị trí đáp án A/B/C/D đồng đều, các lựa chọn sai (distractors) có tính thuyết phục kỹ thuật cao.
-      - Push toàn bộ code và dữ liệu di trú lên GitHub repository.
-- **2026-07-18:**
-   - **Hoàn thành trọn vẹn 10 môn chuyên ngành Robotics:** Tạo, tích hợp và chạy di trú toàn bộ 100 bài giảng, 1000 câu hỏi chất lượng cao và cấu hình đấu Boss cho 10 môn học thuộc ngành Robotics của Bậc Đại Học - CS.

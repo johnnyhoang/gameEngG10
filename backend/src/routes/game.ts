@@ -57,7 +57,7 @@ function shuffle<T>(array: T[]): T[] {
 
 // POST /api/game/session/start
 router.post('/game/session/start', async (req: any, res) => {
-  const { profileId, sessionType, subject, gradeTier, bossId, lessonId, failedQuestionIds = [] } = req.body;
+  const { profileId, sessionType, subject, gradeTier, bossId, lessonId, failedQuestionIds = [], lessonQuizCount } = req.body;
 
   if (!profileId || !sessionType || !subject || ![6, 7, 8, 9, 10, 11, 12].includes(Number(gradeTier))) {
     return res.status(400).json({ error: 'Missing or invalid profileId, sessionType, subject, or gradeTier.' });
@@ -147,13 +147,36 @@ router.post('/game/session/start', async (req: any, res) => {
     } else if (sessionType === 'revenge') {
       poolSelected = shuffle(questions.filter(q => failedQuestionIds.includes(q.id)));
     } else if (sessionType === 'lesson') {
-      let lessonPool = questions.filter(q => q.lessonId === lessonId || q.metadata?.lessonId === lessonId || q.category === lessonId);
-      lessonPool = shuffle(lessonPool);
-      poolSelected = lessonPool.slice(0, 3);
-      if (poolSelected.length < 3) {
-        const extra = shuffle(questions.filter(q => !poolSelected.some(p => p.id === q.id)));
-        poolSelected = [...poolSelected, ...extra].slice(0, 3);
+      const targetCount = Number(lessonQuizCount) || 3;
+      let lessonCategory = '';
+      if (lessonId) {
+        const lessonRes = await pool.query(
+          'SELECT category FROM ge10_lessons WHERE id = $1',
+          [lessonId]
+        );
+        if (lessonRes.rowCount > 0) {
+          lessonCategory = lessonRes.rows[0].category;
+        }
       }
+
+      let lessonPool = questions.filter(q => q.lessonId === lessonId || q.metadata?.lessonId === lessonId);
+      if (lessonPool.length < targetCount && lessonCategory) {
+        const byCategory = questions.filter(q => 
+          q.category === lessonCategory && 
+          q.lessonId !== lessonId && 
+          (!q.metadata || q.metadata.lessonId !== lessonId)
+        );
+        lessonPool = [...lessonPool, ...shuffle(byCategory)];
+      }
+      if (lessonPool.length < targetCount) {
+        const legacyCat = questions.filter(q => 
+          q.category === lessonId && 
+          !lessonPool.some(p => p.id === q.id)
+        );
+        lessonPool = [...lessonPool, ...shuffle(legacyCat)];
+      }
+
+      poolSelected = shuffle(lessonPool).slice(0, targetCount);
     } else {
       // Practice / Normal / Survival: group by attempts, shuffle within groups, concatenate
       const attemptsGroups: { [key: number]: typeof questions } = {};

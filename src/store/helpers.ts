@@ -107,6 +107,7 @@ export const mapServerTopics = (topics: any[]): any[] => {
   return (topics || []).map((t: any) => ({
     id: t.id,
     subjectId: t.subject || t.subjectId,
+    subject: t.subject || t.subjectId,
     gradeTier: t.grade_tier ?? t.gradeTier ?? 9,
     group: t.group || 'co_ban',
     label: t.name || t.label,

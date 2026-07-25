@@ -21,13 +21,15 @@ export const TopHUD: React.FC<TopHUDProps> = ({
   const { t } = useTranslate();
   const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false);
   // Granular player selectors — chỉ re-render khi field cụ thể thay đổi
-  const player = useGameState(state => state.player);
+  const playerRuby = useGameState(state => state.player.ruby);
   const playerXp = useGameState(state => state.player.xp);
   const playerLevel = useGameState(state => state.player.level);
+  const playerStreak = useGameState(state => state.player.streak);
   const playerBadges = useGameState(state => state.player.badges);
   const playerEnergy = useGameState(state => state.player.energy);
   const playerEnergyDepletedAt = useGameState(state => state.player.energyDepletedAt);
   const playerResetHours = useGameState(state => state.player.resetHours);
+  const playerMaxEnergy = useGameState(state => state.player.maxEnergy ?? 100);
   const currentUser = useGameState(state => state.currentUser);
   const logout = useGameState(state => state.logout);
   const deselectProfile = useGameState(state => state.deselectProfile);
@@ -179,9 +181,9 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                   <span
                     onClick={() => showHelp('xp')}
                     className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-synth-purple/30 text-synth-cyan border border-synth-cyan/20 uppercase font-orbitron cursor-pointer hover:bg-synth-purple/50 shrink-0"
-                    title={`Danh hiệu: ${getStudentRankForLevel(player.level).name} — Cấp độ ${player.level}. Nhấp để xem hướng dẫn.`}
+                    title={`Danh hiệu: ${getStudentRankForLevel(playerLevel).name} — Cấp độ ${playerLevel}. Nhấp để xem hướng dẫn.`}
                   >
-                    {getStudentRankForLevel(player.level).icon} Lvl.{player.level}
+                    {getStudentRankForLevel(playerLevel).icon} Lvl.{playerLevel}
                   </span>
                 ) : (
                   <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded uppercase font-orbitron shrink-0 ${
@@ -201,7 +203,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                   <div
                     className="h-full bg-gradient-to-r from-synth-cyan to-synth-purple"
                     style={{ width: `${xpPercent}%` }}
-                    title={`EXP ${player.xp}/${xpNeeded}`}
+                    title={`EXP ${playerXp}/${xpNeeded}`}
                   />
                 </div>
               )}
@@ -217,7 +219,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                 >
                   <Zap className={`w-4 h-4 shrink-0 ${isEnergyDepleted ? 'text-red-400 fill-red-400' : 'text-synth-cyan fill-synth-cyan animate-pulse'}`} />
                   <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${isEnergyDepleted ? 'text-red-400' : 'text-white'}`}>
-                    {isEnergyDepleted ? `Hồi lúc ${energyResetLabel}` : `${player.energy}/${player.maxEnergy ?? 100}`}
+                    {isEnergyDepleted ? `Hồi lúc ${energyResetLabel}` : `${playerEnergy}/${playerMaxEnergy}`}
                   </span>
                 </div>
               </>
@@ -244,16 +246,16 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                 <>
                   <div className="w-px h-8 bg-white/10 shrink-0" />
 
-                  <div className={statItemClass} onClick={() => showHelp('nanite')} title={player.ruby < 0 ? 'Ruby đang ÂM — trả nợ bằng cách rèn luyện thêm!' : 'Ruby — Nhấp để xem hướng dẫn'}>
-                    <Coins className={`w-4 h-4 shrink-0 ${player.ruby < 0 ? 'text-red-400 fill-red-400' : 'text-synth-orange fill-synth-orange'}`} />
-                    <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${player.ruby < 0 ? 'text-red-400' : 'text-white'}`}>{player.ruby}</span>
+                  <div className={statItemClass} onClick={() => showHelp('nanite')} title={playerRuby < 0 ? 'Ruby đang ÂM — trả nợ bằng cách rèn luyện thêm!' : 'Ruby — Nhấp để xem hướng dẫn'}>
+                    <Coins className={`w-4 h-4 shrink-0 ${playerRuby < 0 ? 'text-red-400 fill-red-400' : 'text-synth-orange fill-synth-orange'}`} />
+                    <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${playerRuby < 0 ? 'text-red-400' : 'text-white'}`}>{playerRuby}</span>
                   </div>
 
                   <div className="w-px h-8 bg-white/10 shrink-0" />
 
                   <div className={statItemClass} onClick={() => showHelp('streak')} title="Chuỗi học tập — Nhấp để xem hướng dẫn">
-                    <Flame className={`w-4 h-4 shrink-0 ${player.streak > 0 ? 'text-orange-500 fill-orange-500' : 'text-synth-gray'}`} />
-                    <span className="text-xs font-semibold font-orbitron text-white whitespace-nowrap">{player.streak}d</span>
+                    <Flame className={`w-4 h-4 shrink-0 ${playerStreak > 0 ? 'text-orange-500 fill-orange-500' : 'text-synth-gray'}`} />
+                    <span className="text-xs font-semibold font-orbitron text-white whitespace-nowrap">{playerStreak}d</span>
                     {hasShield && (
                       <span title="Thẻ Chuyên Cần đang bảo vệ Chuỗi học tập!">
                         <Shield className="w-3.5 h-3.5 text-synth-cyan fill-synth-cyan/20 shrink-0" />
@@ -350,7 +352,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                       onClick={() => showHelp('xp')}
                       className="text-[9px] font-semibold px-1.5 py-0.5 rounded bg-synth-purple/30 text-synth-cyan border border-synth-cyan/20 uppercase font-orbitron cursor-pointer hover:bg-synth-purple/50 shrink-0"
                     >
-                      {getStudentRankForLevel(player.level).icon} Lvl.{player.level}
+                      {getStudentRankForLevel(playerLevel).icon} Lvl.{playerLevel}
                     </span>
                   </div>
                   <div className="w-20 sm:w-24 h-1.5 bg-synth-gray rounded-full overflow-hidden border border-synth-cyan/10">
@@ -370,7 +372,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
               >
                 <Zap className={`w-4 h-4 shrink-0 ${isEnergyDepleted ? 'text-red-400 fill-red-400' : 'text-synth-cyan fill-synth-cyan animate-pulse'}`} />
                 <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${isEnergyDepleted ? 'text-red-400' : 'text-white'}`}>
-                  {isEnergyDepleted ? `Hồi lúc ${energyResetLabel}` : `${player.energy}/${player.maxEnergy ?? 100}`}
+                  {isEnergyDepleted ? `Hồi lúc ${energyResetLabel}` : `${playerEnergy}/${playerMaxEnergy}`}
                 </span>
               </div>
 
@@ -389,14 +391,14 @@ export const TopHUD: React.FC<TopHUDProps> = ({
 
               {/* Ruby */}
               <div className={statItemClass} onClick={() => showHelp('nanite')} title="Ruby">
-                <Coins className={`w-4 h-4 shrink-0 ${player.ruby < 0 ? 'text-red-400 fill-red-400' : 'text-synth-orange fill-synth-orange'}`} />
-                <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${player.ruby < 0 ? 'text-red-400' : 'text-white'}`}>{player.ruby}</span>
+                <Coins className={`w-4 h-4 shrink-0 ${playerRuby < 0 ? 'text-red-400 fill-red-400' : 'text-synth-orange fill-synth-orange'}`} />
+                <span className={`text-xs font-semibold font-orbitron whitespace-nowrap ${playerRuby < 0 ? 'text-red-400' : 'text-white'}`}>{playerRuby}</span>
               </div>
 
               {/* Streak */}
               <div className={statItemClass} onClick={() => showHelp('streak')} title="Chuỗi học tập">
-                <Flame className={`w-4 h-4 shrink-0 ${player.streak > 0 ? 'text-orange-500 fill-orange-500' : 'text-synth-gray'}`} />
-                <span className="text-xs font-semibold font-orbitron text-white whitespace-nowrap">{player.streak}d</span>
+                <Flame className={`w-4 h-4 shrink-0 ${playerStreak > 0 ? 'text-orange-500 fill-orange-500' : 'text-synth-gray'}`} />
+                <span className="text-xs font-semibold font-orbitron text-white whitespace-nowrap">{playerStreak}d</span>
                 {hasShield && (
                   <span title="Thẻ Chuyên Cần đang bảo vệ Chuỗi học tập!">
                     <Shield className="w-3.5 h-3.5 text-synth-cyan fill-synth-cyan/20 shrink-0" />

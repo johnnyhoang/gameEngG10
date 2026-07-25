@@ -6,8 +6,8 @@ import type { SubjectId } from '../types/game';
 import { filterQuestionsInScope, filterLessonsInScope } from '../utils/learningScope';
 import { getSubjectActivities } from '../subject-modules/registry';
 import {
-  Compass, Sword, ShieldAlert, Star, Zap, BookOpen,
-  Skull, BookMarked, Heart, Volume2
+  Compass, Sword, Star, Zap, BookOpen,
+  BookMarked, Heart, Volume2
 } from 'lucide-react';
 import { toast } from '../utils/toast';
 import { FogCard } from './FogCard';
@@ -40,10 +40,10 @@ export function Arena({ onStartPlay }: ArenaProps) {
   const lessonsProgress = useGameState(state => state.lessonsProgress);
   const isUnicorn = isLightTheme(uiTheme);
 
-  const [visibleLessonsCount, setVisibleLessonsCount] = useState(6);
+  const [visibleLessonsCount, setVisibleLessonsCount] = useState(20);
 
   useEffect(() => {
-    setVisibleLessonsCount(6);
+    setVisibleLessonsCount(20);
   }, [activeSectId, activeGradeTier]);
 
   const subjectLessonsSorted = useMemo(() => {
@@ -183,14 +183,14 @@ export function Arena({ onStartPlay }: ArenaProps) {
             <h3 className={`font-orbitron font-black text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
               📝 Thi theo Bài học
             </h3>
-            <p className="text-[10px] text-slate-400">Hệ thống bài thi chuẩn hóa theo SGK, sắp xếp tuần tự</p>
+            <p className="text-[10px] text-slate-400">Hệ thống bài thi chuẩn hóa theo SGK, sắp xếp tuần tự — Luyện đề thi thử chuẩn cấu trúc để tích lũy kiến thức thực chiến.</p>
           </div>
           <span className="text-[10px] font-orbitron font-semibold text-slate-400">
             Tổng cộng: {subjectLessonsSorted.length} bài
           </span>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
           {subjectLessonsSorted.length === 0 ? (
             <div className="col-span-2 glass-panel rounded-2xl border border-dashed border-white/10 p-6 text-center text-xs text-slate-400">
               📭 Chưa có bài học nào được nạp cho môn học này.
@@ -214,42 +214,35 @@ export function Arena({ onStartPlay }: ArenaProps) {
                     >
                       <div
                         onClick={(e) => { e.stopPropagation(); handleLaunchZone('lesson', cost, lesson.id, 'arena'); }}
-                        className={`glass-panel rounded-2xl border p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full ${
+                        className={`glass-panel rounded-xl border p-3 flex flex-col gap-1.5 cursor-pointer relative overflow-hidden transition-all duration-300 h-full ${
                           subjectQuestionCount === 0
                             ? 'opacity-40 border-slate-700 bg-slate-900/10 pointer-events-none'
                             : 'border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent glass-panel-hover'
                         }`}
                       >
-                        <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold bg-synth-blue border border-synth-cyan/20 text-white z-10">
-                          <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {cost}
+                        <div className="flex items-start justify-between gap-1">
+                          <h4 className="font-orbitron font-black text-[11px] text-synth-cyan leading-tight line-clamp-2 flex-1">
+                            {lesson.bai ? `Bài ${lesson.bai}: ` : ''}{lesson.title}
+                          </h4>
+                          <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-orbitron font-semibold bg-synth-blue border border-synth-cyan/20 text-white shrink-0">
+                            <Zap className="w-2.5 h-2.5 text-synth-cyan fill-synth-cyan" /> {cost}
+                          </div>
                         </div>
-                        <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
-                          <BookOpen className="w-8 h-8 text-synth-cyan" />
+                        <div className={`text-[8px] font-semibold uppercase tracking-[0.18em] ${
+                          lesson.loai === 'Chưa phân loại SGK' ? 'text-red-400 font-bold' : 'text-slate-400'
+                        }`}>
+                          {lesson.loai === 'Chưa phân loại SGK' 
+                            ? '⚠️ CHƯA PHÂN LOẠI SGK' 
+                            : `${dungeonConfig.label} • ${lesson.loai || 'Luyện thi'}`}
                         </div>
-                        <div className="space-y-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <h4 className="font-orbitron font-black text-sm text-synth-cyan">
-                              {lesson.bai ? `Bài ${lesson.bai}: ` : ''}{lesson.title}
-                            </h4>
-                            {isCompleted && (
-                              <span className="text-[9px] font-orbitron font-semibold bg-synth-green/20 text-synth-green border border-synth-green/30 px-1.5 py-0.5 rounded">
-                                ĐÃ HOÀN THÀNH
-                              </span>
-                            )}
-                          </div>
-                          <div className={`text-[9px] font-semibold uppercase tracking-[0.24em] ${
-                            lesson.loai === 'Chưa phân loại SGK' ? 'text-red-400 font-bold' : 'text-slate-400'
-                          }`}>
-                            {lesson.loai === 'Chưa phân loại SGK' 
-                              ? '⚠️ LỖI: CHƯA PHÂN LOẠI SGK' 
-                              : `${dungeonConfig.label} • ${lesson.loai || 'Luyện thi theo bài'}`}
-                          </div>
-                          <p className="text-xs text-slate-300 leading-relaxed line-clamp-2">
-                            Luyện đề thi thử chuẩn cấu trúc cho nội dung bài học này để tích lũy kiến thức thực chiến.
-                          </p>
-                          <div className="text-[10px] font-semibold font-orbitron pt-1 text-slate-400">
-                            Phần thưởng: <span className="text-white">+15 XP / +5 Ruby</span>
-                          </div>
+                        <div className="flex items-center justify-between mt-auto pt-1">
+                          {isCompleted ? (
+                            <span className="text-[8px] font-orbitron font-semibold bg-synth-green/20 text-synth-green border border-synth-green/30 px-1.5 py-0.5 rounded">
+                              ĐÃ HOÀN THÀNH
+                            </span>
+                          ) : (
+                            <span className="text-[8px] font-semibold font-orbitron text-slate-500">+15 XP / +5 Ruby</span>
+                          )}
                         </div>
                       </div>
                     </FogCard>
@@ -263,7 +256,7 @@ export function Arena({ onStartPlay }: ArenaProps) {
         {visibleLessonsCount < subjectLessonsSorted.length && (
           <div className="flex justify-center pt-2">
             <button
-              onClick={() => setVisibleLessonsCount(prev => prev + 6)}
+              onClick={() => setVisibleLessonsCount(prev => prev + 20)}
               className="px-6 py-2 rounded-xl border border-synth-cyan/30 hover:border-synth-cyan bg-synth-cyan/10 hover:bg-synth-cyan/20 text-synth-cyan font-orbitron font-semibold text-xs uppercase tracking-wider transition-all duration-200 cursor-pointer"
             >
               Xem thêm bài thi ⚔️
@@ -283,7 +276,7 @@ export function Arena({ onStartPlay }: ArenaProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
           {rankedCards.length === 0 ? (
             <div className="col-span-2 glass-panel rounded-2xl border border-dashed border-white/10 p-6 text-center text-xs text-slate-400">
               📭 Chưa có chuyên đề thử thách nào được cấu hình cho môn này. Vui lòng liên hệ Giáo viên/Admin để thiết lập.
@@ -300,28 +293,21 @@ export function Arena({ onStartPlay }: ArenaProps) {
                 >
                   <div
                     onClick={(e) => { e.stopPropagation(); handleLaunchZone(card.mode, challengeEnergyCosts[1] ?? 30); }}
-                    className={`glass-panel rounded-2xl border p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full ${
+                    className={`glass-panel rounded-xl border p-3 flex flex-col gap-1.5 cursor-pointer relative overflow-hidden transition-all duration-300 h-full ${
                       subjectQuestionCount === 0
                         ? 'opacity-40 border-slate-700 bg-slate-900/10 pointer-events-none'
                         : 'border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/10 via-synth-purple/10 to-transparent glass-panel-hover'
                     }`}
                   >
-                    <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold bg-synth-blue border border-synth-cyan/20 text-white z-10">
-                      <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
-                    </div>
-                    <div className="w-14 h-14 rounded-xl border border-synth-cyan/30 bg-synth-cyan/10 flex items-center justify-center shrink-0">
-                      {card.icon}
-                    </div>
-                    <div className="space-y-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="font-orbitron font-black text-sm text-synth-cyan">🏰 {card.title}</h4>
-                      </div>
-                      <div className="text-[9px] font-semibold uppercase tracking-[0.24em] text-slate-400">{card.subtitle}</div>
-                      <p className="text-xs text-slate-300 leading-relaxed line-clamp-2">{card.description}</p>
-                      <div className="text-[10px] font-semibold font-orbitron pt-1 text-slate-400">
-                        Phần thưởng: <span className="text-white">{card.reward}</span>
+                    <div className="flex items-start justify-between gap-1">
+                      <h4 className="font-orbitron font-black text-[11px] text-synth-cyan leading-tight flex-1">🏰 {card.title}</h4>
+                      <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-orbitron font-semibold bg-synth-blue border border-synth-cyan/20 text-white shrink-0">
+                        <Zap className="w-2.5 h-2.5 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
                       </div>
                     </div>
+                    <div className="text-[8px] font-semibold uppercase tracking-[0.18em] text-slate-400">{card.subtitle}</div>
+                    <p className="text-[10px] text-slate-300 leading-snug line-clamp-2">{card.description}</p>
+                    <div className="text-[8px] font-semibold font-orbitron mt-auto pt-1 text-slate-500">{card.reward}</div>
                   </div>
                 </FogCard>
               </div>
@@ -339,23 +325,20 @@ export function Arena({ onStartPlay }: ArenaProps) {
             >
               <div
                 onClick={(e) => { e.stopPropagation(); handleLaunchZone('mixed', challengeEnergyCosts[1] ?? 30); }}
-                className={`glass-panel rounded-2xl border p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full ${
+                className={`glass-panel rounded-xl border p-3 flex flex-col gap-1.5 cursor-pointer relative overflow-hidden transition-all duration-300 h-full ${
                   subjectQuestionCount === 0
                     ? 'opacity-40 border-slate-700 bg-slate-900/10 pointer-events-none'
                     : 'border-synth-cyan/30 hover:border-synth-cyan bg-gradient-to-br from-synth-cyan/5 to-transparent glass-panel-hover'
                 }`}
               >
-                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold bg-synth-blue border border-synth-cyan/20 text-white z-10">
-                  <Zap className="w-3 h-3 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
+                <div className="flex items-start justify-between gap-1">
+                  <h4 className="font-orbitron font-semibold text-[11px] text-white leading-tight flex-1">🌀 Luyện ngẫu nhiên</h4>
+                  <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-orbitron font-semibold bg-synth-blue border border-synth-cyan/20 text-white shrink-0">
+                    <Zap className="w-2.5 h-2.5 text-synth-cyan fill-synth-cyan" /> {challengeEnergyCosts[1] ?? 30}
+                  </div>
                 </div>
-                <div className="w-14 h-14 rounded-xl border border-white/5 bg-synth-gray/50 flex items-center justify-center shrink-0">
-                  <Star className="w-7 h-7 text-synth-cyan" />
-                </div>
-                <div className="space-y-1 min-w-0">
-                  <h4 className="font-orbitron font-semibold text-sm text-white">🌀 Luyện tập ngẫu nhiên</h4>
-                  <p className="text-xs text-slate-400 leading-relaxed">10 câu hỏi ngẫu nhiên từ toàn bộ chuyên đề, ưu tiên câu yếu.</p>
-                  <div className="text-[10px] font-semibold font-orbitron pt-1 text-slate-400">Phần thưởng: <span className="text-white">+15 XP / +5 Ruby</span></div>
-                </div>
+                <p className="text-[10px] text-slate-400 leading-snug line-clamp-2">10 câu ngẫu nhiên toàn chuyên đề, ưu tiên câu yếu.</p>
+                <div className="text-[8px] font-semibold font-orbitron mt-auto pt-1 text-slate-500">+15 XP / +5 Ruby</div>
               </div>
             </FogCard>
           </div>
@@ -377,27 +360,24 @@ export function Arena({ onStartPlay }: ArenaProps) {
                   }
                   handleLaunchZone('revenge', challengeEnergyCosts[2] ?? 30);
                 }}
-                className={`glass-panel rounded-2xl border p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300 h-full ${
+                className={`glass-panel rounded-xl border p-3 flex flex-col gap-1.5 cursor-pointer relative overflow-hidden transition-all duration-300 h-full ${
                   (!failedQuestionIds || failedQuestionIds.length === 0 || subjectQuestionCount === 0)
                     ? 'opacity-40 border-slate-700 bg-slate-900/10 pointer-events-none'
                     : 'border-synth-orange/30 hover:border-synth-orange bg-gradient-to-br from-synth-orange/5 to-transparent glass-panel-hover'
                 }`}
               >
-                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold bg-synth-blue border border-synth-orange/20 text-white z-10">
-                  <Zap className="w-3 h-3 text-synth-orange fill-synth-orange" /> {challengeEnergyCosts[2] ?? 30}
+                <div className="flex items-start justify-between gap-1">
+                  <h4 className="font-orbitron font-semibold text-[11px] text-synth-orange leading-tight flex-1">💀 Sửa sai truy tung</h4>
+                  <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-orbitron font-semibold bg-synth-blue border border-synth-orange/20 text-white shrink-0">
+                    <Zap className="w-2.5 h-2.5 text-synth-orange fill-synth-orange" /> {challengeEnergyCosts[2] ?? 30}
+                  </div>
                 </div>
-                <div className="w-14 h-14 rounded-xl border border-white/5 bg-synth-gray/50 flex items-center justify-center shrink-0">
-                  <ShieldAlert className="w-7 h-7 text-synth-orange" />
-                </div>
-                <div className="space-y-1 min-w-0">
-                  <h4 className="font-orbitron font-semibold text-sm text-synth-orange">💀 Sửa sai truy tung</h4>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    {(!failedQuestionIds || failedQuestionIds.length === 0)
-                      ? 'Chưa có câu sai nào để phục thù.'
-                      : 'Tập hợp câu hỏi đã làm sai để giải lại và sửa lỗi lầm.'}
-                  </p>
-                  <div className="text-[10px] font-semibold font-orbitron pt-1 text-slate-400">Phần thưởng: <span className="text-white">XP hồi phục / Xoá sai</span></div>
-                </div>
+                <p className="text-[10px] text-slate-400 leading-snug line-clamp-2">
+                  {(!failedQuestionIds || failedQuestionIds.length === 0)
+                    ? 'Chưa có câu sai nào để phục thù.'
+                    : 'Giải lại câu sai để sửa lỗi lầm.'}
+                </p>
+                <div className="text-[8px] font-semibold font-orbitron mt-auto pt-1 text-slate-500">XP hồi phục / Xoá sai</div>
               </div>
             </FogCard>
           </div>
@@ -413,7 +393,7 @@ export function Arena({ onStartPlay }: ArenaProps) {
           <p className="text-[10px] text-slate-400">Khảo thí 5 câu trích từ đề thi thật tuyển sinh/học kỳ các năm trước, trong 20 phút</p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
           {bosses.length === 0 ? (
             <div className="col-span-3 glass-panel rounded-2xl border border-dashed border-white/10 p-6 text-center text-xs text-slate-400">
               📭 Môn học này chưa thiết lập Khoa Thi.
@@ -430,37 +410,37 @@ export function Arena({ onStartPlay }: ArenaProps) {
                 >
                   <div
                     onClick={(e) => { e.stopPropagation(); handleLaunchZone('boss', boss.energy, boss.id); }}
-                    className={`glass-panel glass-panel-hover rounded-2xl p-5 flex flex-col justify-between cursor-pointer relative min-h-[160px] transition-all duration-300 h-full ${
+                    className={`glass-panel glass-panel-hover rounded-xl p-3 flex flex-col justify-between cursor-pointer relative min-h-[100px] transition-all duration-300 h-full ${
                       isUnicorn
                         ? 'border-violet-200/35 hover:border-violet-300 bg-gradient-to-t from-white/80 to-fuchsia-50/60 shadow-[0_14px_30px_rgba(192,132,252,0.1)]'
                         : 'border-synth-magenta/20 hover:border-synth-magenta bg-gradient-to-t from-synth-magenta/5 to-transparent'
                     }`}
                   >
-                    <div className={`absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold z-10 ${
-                      isUnicorn ? 'bg-white/80 border border-violet-200/40 text-violet-700' : 'bg-synth-blue border border-synth-magenta/30 text-synth-magenta'
-                    }`}>
-                      <Zap className={`w-3 h-3 ${isUnicorn ? 'text-fuchsia-500 fill-fuchsia-500' : 'text-synth-magenta fill-synth-magenta'}`} /> {boss.energy}
-                    </div>
-
-                    <div className="space-y-2">
-                      <span className={`text-[9px] font-semibold font-orbitron px-2 py-0.5 rounded uppercase ${
-                        isUnicorn ? 'bg-fuchsia-100/80 text-violet-700 border border-violet-200/40' : 'bg-synth-magenta/15 text-synth-magenta border border-synth-magenta/30'
-                      }`}>
-                        Học Vị: Khoa Thi
-                      </span>
-                      <h4 className={`font-orbitron font-bold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
+                    <div className="space-y-1">
+                      <div className="flex items-start justify-between gap-1">
+                        <span className={`text-[8px] font-semibold font-orbitron px-1.5 py-0.5 rounded uppercase ${
+                          isUnicorn ? 'bg-fuchsia-100/80 text-violet-700 border border-violet-200/40' : 'bg-synth-magenta/15 text-synth-magenta border border-synth-magenta/30'
+                        }`}>
+                          Khoa Thi
+                        </span>
+                        <div className={`flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-orbitron font-semibold shrink-0 ${
+                          isUnicorn ? 'bg-white/80 border border-violet-200/40 text-violet-700' : 'bg-synth-blue border border-synth-magenta/30 text-synth-magenta'
+                        }`}>
+                          <Zap className={`w-2.5 h-2.5 ${isUnicorn ? 'text-fuchsia-500 fill-fuchsia-500' : 'text-synth-magenta fill-synth-magenta'}`} /> {boss.energy}
+                        </div>
+                      </div>
+                      <h4 className={`font-orbitron font-bold text-[11px] leading-tight ${ isUnicorn ? 'text-violet-800' : 'text-white'}`}>
                         {boss.name}
                       </h4>
-                      <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'} leading-relaxed`}>
+                      <p className={`text-[9px] leading-snug ${ isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
                         {isChuyenSau
-                          ? `Đề thi chuẩn cấu trúc sở GD HCMC năm ${boss.tag}. 5 câu trích đề, phạm 3 lỗi là kết thúc!`
-                          : `Đề thi ${boss.tag === 'HK1' ? 'Học Kỳ 1' : 'Học Kỳ 2'} lớp 9. 5 câu trích đề, phạm 3 lỗi là kết thúc!`}
+                          ? `Đề thi chuẩn GD HCMC ${boss.tag} — 5 câu, phạm 3 lỗi là thua`
+                          : `${boss.tag === 'HK1' ? 'HK1' : 'HK2'} lớp 9 — 5 câu, phạm 3 lỗi là thua`}
                       </p>
                     </div>
-
-                    <div className="border-t border-synth-gray/50 pt-3 mt-3 flex justify-between items-center text-xs font-semibold">
-                      <span className={isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}>Bonus hoàn thành:</span>
-                      <span className={`font-orbitron font-semibold flex items-center gap-1 ${isUnicorn ? 'text-violet-700' : 'text-synth-green'}`}>
+                    <div className="border-t border-synth-gray/30 pt-1.5 mt-1.5 flex justify-between items-center">
+                      <span className={`text-[8px] font-semibold ${ isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}`}>Bonus:</span>
+                      <span className={`font-orbitron font-semibold text-[9px] flex items-center gap-0.5 ${ isUnicorn ? 'text-violet-700' : 'text-synth-green'}`}>
                         +{bossCompletionBonusRuby[index] ?? [100, 150, 200][index]} Ruby
                       </span>
                     </div>
@@ -492,25 +472,18 @@ export function Arena({ onStartPlay }: ArenaProps) {
             >
               <div
                 onClick={(e) => { e.stopPropagation(); handleLaunchZone('survival', challengeEnergyCosts[0] ?? 30); }}
-                className="glass-panel glass-panel-hover rounded-2xl border border-red-500/40 hover:border-red-400 bg-gradient-to-br from-red-500/10 via-orange-500/5 to-transparent p-5 flex gap-4 cursor-pointer relative overflow-hidden transition-all duration-300"
+                className="glass-panel glass-panel-hover rounded-xl border border-red-500/40 hover:border-red-400 bg-gradient-to-br from-red-500/10 via-orange-500/5 to-transparent p-3 flex flex-col gap-1.5 cursor-pointer relative overflow-hidden transition-all duration-300"
               >
-                <div className="absolute top-4 right-4 flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-orbitron font-semibold bg-red-500/20 border border-red-500/40 text-red-400 z-10">
-                  <Zap className="w-3 h-3 text-red-400 fill-red-400" /> {challengeEnergyCosts[0] ?? 30}
-                </div>
-                <div className="w-14 h-14 rounded-xl border border-red-500/30 bg-red-500/10 flex items-center justify-center shrink-0">
-                  <Skull className="w-8 h-8 text-red-400" />
-                </div>
-                <div className="space-y-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h4 className="font-orbitron font-semibold text-sm text-red-400">⚔️ Trường Thi Sinh Tồn</h4>
-                  </div>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    15 câu hỏi hỗn hợp liên tục – trả lời sai mất 1 mạng <Heart className="inline w-3 h-3 text-red-400 fill-red-400" />. Chỉ có 3 mạng, trả lời đúng liên tiếp nhận thưởng cấp số nhân!
-                  </p>
-                  <div className="text-[10px] font-semibold font-orbitron pt-1 text-slate-400">
-                    Phần thưởng: <span className="text-red-300">+1.5× XP & Ruby mỗi câu đúng / Combo multiplier</span>
+                <div className="flex items-start justify-between gap-1">
+                  <h4 className="font-orbitron font-semibold text-[11px] text-red-400 leading-tight flex-1">⚔️ Trường Thi Sinh Tồn</h4>
+                  <div className="flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[9px] font-orbitron font-semibold bg-red-500/20 border border-red-500/40 text-red-400 shrink-0">
+                    <Zap className="w-2.5 h-2.5 text-red-400 fill-red-400" /> {challengeEnergyCosts[0] ?? 30}
                   </div>
                 </div>
+                <p className="text-[10px] text-slate-300 leading-snug">
+                  15 câu liên tục – sai mất 1 mạng <Heart className="inline w-2.5 h-2.5 text-red-400 fill-red-400" />. Chỉ 3 mạng, đúng liên tiếp x nhân thưởng!
+                </p>
+                <div className="text-[8px] font-semibold font-orbitron pt-1 text-red-300/70">+1.5× XP & Ruby / Combo multiplier</div>
               </div>
             </FogCard>
           </div>

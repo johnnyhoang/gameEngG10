@@ -242,7 +242,8 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, less
           gradeTier: activeGradeTier,
           bossId,
           lessonId,
-          failedQuestionIds: failedQuestionIdsRef.current
+          failedQuestionIds: failedQuestionIdsRef.current,
+          lessonQuizCount
         });
 
         if (active) {
@@ -309,10 +310,6 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, less
             pool = [...pool, ...byCategory];
           }
           pool = pool.slice(0, lessonQuizCount);
-        }
-        if (pool.length < lessonQuizCount) {
-          const extra = fallbackQuestions.filter(q => !pool.some(p => p.id === q.id));
-          pool = [...pool, ...extra].slice(0, lessonQuizCount);
         }
       } else {
         const weightMode = (mode === 'survival' || mode === 'preview')

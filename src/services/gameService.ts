@@ -12,6 +12,7 @@ export interface StartSessionParams {
   bossId?: string;
   lessonId?: string;
   failedQuestionIds?: string[];
+  lessonQuizCount?: number;
 }
 
 export interface EndSessionParams {

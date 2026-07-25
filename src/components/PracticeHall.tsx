@@ -533,8 +533,8 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
                       <span className="text-[10px] text-slate-400 font-orbitron">{dungeonLessons.length} Bài học</span>
                     </div>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-2">
-                      {dungeonLessons.slice(0, visibleLessonCounts[dungeon.id] ?? 6).map(lesson => {
+                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2">
+                      {dungeonLessons.slice(0, visibleLessonCounts[dungeon.id] ?? 20).map(lesson => {
                         const isCompleted = lessonsProgress[lesson.id] || false;
                         return (
                           <div key={lesson.id} className="relative h-full w-full">
@@ -597,13 +597,13 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
                         );
                       })}
                     </div>
-                    {(visibleLessonCounts[dungeon.id] ?? 6) < dungeonLessons.length && (
+                    {(visibleLessonCounts[dungeon.id] ?? 20) < dungeonLessons.length && (
                       <div className="flex justify-center pt-3">
                         <button
                           type="button"
                           onClick={() => setVisibleLessonCounts(current => ({
                             ...current,
-                            [dungeon.id]: (current[dungeon.id] ?? 6) + 6
+                      [dungeon.id]: (current[dungeon.id] ?? 20) + 20
                           }))}
                           className="px-4 py-1.5 rounded-lg border border-white/10 hover:border-white/20 bg-white/5 hover:bg-white/10 text-slate-300 font-orbitron font-semibold text-[10px] uppercase tracking-wider transition-all duration-200 cursor-pointer"
                         >
