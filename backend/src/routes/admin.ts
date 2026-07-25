@@ -869,22 +869,6 @@ router.put('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) => 
         lessonId
       ]
     );
-      [
-        subject,
-        gradeTier,
-        category,
-        topic,
-        title,
-        theory,
-        is_standard !== undefined ? is_standard : false,
-        loai || null,
-        parsedBai || null,
-        hamNguyenTo || null,
-        topicId || null,
-        scopeCode,
-        lessonId
-      ]
-    );
 
     if (updateRes.rowCount === 0) {
       return res.status(404).json({ error: 'Bài giảng không tồn tại.' });
