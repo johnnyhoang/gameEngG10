@@ -13,6 +13,11 @@ import { QuestionTextInput } from './QuestionTextInput';
 import { ExplanationBox } from './ExplanationBox';
 import { MarkdownRenderer } from '../Common/MarkdownRenderer';
 
+/** Strip leading A. / B. / C. / D. from option text */
+const stripOptionPrefix = (text: string): string =>
+  text.trim().replace(/^[A-D]\s*[.)>]\s*/i, '').trim();
+
+
 export interface FinalResultScreenProps {
   result: ActivityResult;
   mode: string;
@@ -241,9 +246,13 @@ export const FinalResultScreen: React.FC<FinalResultScreenProps> = ({
               <div className="space-y-2">
                 {shuffledReviewOptions.map((option, idx) => {
                   const cleanOpt = option.trim();
-                  const isSelected = reviewItem.userAnswer === cleanOpt;
+                  const displayOpt = stripOptionPrefix(cleanOpt);
                   const correctAnsStr = Array.isArray(q.correctAnswer) ? q.correctAnswer[0] : q.correctAnswer;
-                  const isCorrectChoice = cleanOpt.toLowerCase() === correctAnsStr.toLowerCase();
+                  const correctStripped = stripOptionPrefix((correctAnsStr || '').trim());
+                  const isSelected = reviewItem.userAnswer === cleanOpt || reviewItem.userAnswer === displayOpt;
+                  const isCorrectChoice =
+                    cleanOpt.toLowerCase() === (correctAnsStr || '').toLowerCase() ||
+                    displayOpt.toLowerCase() === correctStripped.toLowerCase();
                   return (
                     <div
                       key={idx}
@@ -258,13 +267,18 @@ export const FinalResultScreen: React.FC<FinalResultScreenProps> = ({
                       <span className="font-orbitron font-bold uppercase tracking-wider min-w-[20px] pt-0.5">
                         {String.fromCharCode(65 + idx)}.
                       </span>
-                      <div className="flex-1 space-y-1">
-                        <p>{option}</p>
+                      <div className="flex-1 space-y-1 min-w-0">
+                        <MarkdownRenderer
+                          content={displayOpt}
+                          className="text-xs leading-snug [&>p]:mb-0 [&>p]:text-inherit [&_*]:text-inherit"
+                        />
                         <div className="text-[10px] text-slate-400 italic">
                           {isCorrectChoice ? (
-                            <span className="text-emerald-400 font-bold">
-                              ✔️ Đáp án đúng. {q.explanation || 'Quy tắc ngữ pháp/kiến thức cơ bản áp dụng.'}
-                            </span>
+                            <div className="text-emerald-400 font-bold">
+                              ✔️ Đáp án đúng.{q.explanation ? (
+                                <MarkdownRenderer content={q.explanation} className="inline ml-1 [&>p]:inline [&>p]:mb-0 [&_*]:text-emerald-400" />
+                              ) : ' Quy tắc ngữ pháp/kiến thức cơ bản áp dụng.'}
+                            </div>
                           ) : isSelected ? (
                             <span className="text-red-400 font-bold">
                               ❌ Đệ tử chọn câu này, nhưng chưa chính xác. Hãy xem phân tích đáp án đúng bên trên.
@@ -290,9 +304,13 @@ export const FinalResultScreen: React.FC<FinalResultScreenProps> = ({
                   Câu hỏi bị bỏ qua
                 </h5>
                 <p>Sĩ Tử đã bỏ qua câu hỏi này hoặc hết thời gian làm bài trước khi gửi kết quả.</p>
-                <p className="text-emerald-400 font-semibold pt-1">
-                  Đáp án đúng cần điền: {reviewItem.correctAnswer}
-                </p>
+                <div className="text-emerald-400 font-semibold pt-1 flex flex-wrap items-baseline gap-1">
+                  <span>Đáp án đúng cần điền:</span>
+                  <MarkdownRenderer
+                    content={reviewItem.correctAnswer || ''}
+                    className="inline [&>p]:inline [&>p]:mb-0 [&_*]:text-emerald-400"
+                  />
+                </div>
                 {q.explanation && (
                   <div className="text-slate-300 italic pt-1 flex flex-col gap-1">
                     <strong>Luận giải:</strong>

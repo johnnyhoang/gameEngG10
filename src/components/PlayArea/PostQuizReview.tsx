@@ -377,9 +377,11 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
                       />
                       <div className="text-[10px] text-slate-400 italic">
                         {isCorrectChoice ? (
-                          <span className="text-emerald-400 font-bold">
-                            ✔️ Đáp án đúng. {q.explanation || 'Quy tắc ngữ pháp/kiến thức cơ bản áp dụng.'}
-                          </span>
+                          <div className="text-emerald-400 font-bold">
+                            ✔️ Đáp án đúng.{q.explanation ? (
+                              <MarkdownRenderer content={q.explanation} className="inline ml-1 [&>p]:inline [&>p]:mb-0 [&_*]:text-emerald-400" />
+                            ) : ' Quy tắc ngữ pháp/kiến thức cơ bản áp dụng.'}
+                          </div>
                         ) : isSelected ? (
                           <span className="text-red-400 font-bold">
                             ❌ Đệ tử chọn câu này, nhưng chưa chính xác. Hãy xem phân tích đáp án đúng bên trên.
@@ -405,9 +407,13 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
                 Câu hỏi bị bỏ qua
               </h5>
               <p>Sĩ Tử đã bỏ qua câu hỏi này hoặc hết thời gian làm bài trước khi gửi kết quả.</p>
-              <p className="text-emerald-400 font-semibold pt-1">
-                Đáp án đúng cần điền: {reviewItem.correctAnswer}
-              </p>
+              <div className="text-emerald-400 font-semibold pt-1 flex flex-wrap items-baseline gap-1">
+                <span>Đáp án đúng cần điền:</span>
+                <MarkdownRenderer
+                  content={reviewItem.correctAnswer || ''}
+                  className="inline [&>p]:inline [&>p]:mb-0 [&_*]:text-emerald-400"
+                />
+              </div>
               {q.explanation && (
                 <div className="text-slate-300 italic pt-1 flex flex-col gap-1">
                   <strong>Luận giải:</strong>

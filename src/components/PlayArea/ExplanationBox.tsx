@@ -38,11 +38,17 @@ export const ExplanationBox: React.FC<ExplanationBoxProps> = ({
             Điểm ước tính: <span className="font-bold underline text-theme-text-success">{lastRubricScore ?? 0}/10</span>
           </p>
         ) : (
-          <p className="text-theme-text-highlight mb-2 font-medium">
-            Đáp án chuẩn: <span className="font-bold underline text-theme-text-success">
-              {Array.isArray(activeQuestion.correctAnswer) ? activeQuestion.correctAnswer.join(' | ') : activeQuestion.correctAnswer}
+          <div className="text-theme-text-highlight mb-2 font-medium flex flex-wrap items-baseline gap-1">
+            <span>Đáp án chuẩn:</span>
+            <span className="font-bold underline text-theme-text-success">
+              <MarkdownRenderer
+                content={Array.isArray(activeQuestion.correctAnswer)
+                  ? activeQuestion.correctAnswer.join(' | ')
+                  : (activeQuestion.correctAnswer || '')}
+                className="inline [&>p]:inline [&>p]:mb-0 [&_*]:text-theme-text-success"
+              />
             </span>
-          </p>
+          </div>
         )}
 
         {aiWarningMessage && (
@@ -55,8 +61,10 @@ export const ExplanationBox: React.FC<ExplanationBoxProps> = ({
           <div className="text-theme-text-highlight/90 space-y-1">
             <p className="font-bold uppercase tracking-wider text-[10px]">Ý còn thiếu / cần mạnh hơn</p>
             <ul className="list-disc pl-4 space-y-0.5 text-theme-text-highlight/80">
-              {lastRubricMissing.slice(0, 5).map(item => (
-                <li key={item}>{item}</li>
+              {lastRubricMissing.slice(0, 5).map((item, idx) => (
+                <li key={idx}>
+                  <MarkdownRenderer content={item} className="inline [&>p]:inline [&>p]:mb-0" />
+                </li>
               ))}
             </ul>
           </div>
@@ -92,8 +100,10 @@ export const ExplanationBox: React.FC<ExplanationBoxProps> = ({
           <div className="text-theme-text-highlight/90 space-y-1">
             <p className="font-bold uppercase tracking-wider text-[10px]">Rubric gợi ý</p>
             <ol className="list-decimal pl-4 space-y-0.5 text-theme-text-highlight/80">
-              {activeQuestion.metadata.solutionSteps.map(step => (
-                <li key={step}>{step}</li>
+              {activeQuestion.metadata.solutionSteps.map((step, idx) => (
+                <li key={idx}>
+                  <MarkdownRenderer content={step} className="inline [&>p]:inline [&>p]:mb-0" />
+                </li>
               ))}
             </ol>
             <p className="text-synth-text-muted text-[10px] italic">Chỉ chấm, không viết hộ đáp án hoàn chỉnh.</p>
