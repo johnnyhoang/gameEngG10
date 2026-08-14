@@ -10,59 +10,97 @@ import 'katex/dist/katex.min.css';
 import 'highlight.js/styles/github-dark.css';
 
 /**
- * Preprocesses raw text/markdown to convert Vietnamese math notations,
- * sub-part letterings (a), b), c)), arrows, degrees, and un-bracketed LaTeX
- * into clean Markdown and LaTeX math expressions.
+ * Robustly preprocesses raw text/markdown to convert Vietnamese math notations,
+ * sub-part letterings (a), b), c)), unicode symbols, subscripts, superscripts,
+ * arrows, degrees, and un-bracketed math expressions into clean LaTeX math syntax ($...$).
+ * Also protects against markdown italic parser eating asterisks (*) and underscores (_) in math.
  */
 export function preprocessMathContent(raw: string): string {
   if (!raw) return '';
 
   let text = raw;
 
-  // Convert LaTeX inline delimiters \( ... \) and \[ ... \] to $ ... $ and $$ ... $$
+  // 1. Normalize LaTeX delimiters \( ... \) and \[ ... \] to $ ... $ and $$ ... $$
   text = text.replace(/\\\(([\s\S]*?)\\\)/g, '$$$1$$');
   text = text.replace(/\\\[([\s\S]*?)\\\]/g, '$$$$$1$$$$');
 
-  // 1. Convert sub-parts like "a) ", "b) ", "c) ", "d) " into distinct new paragraph blocks if concatenated in plain text
+  // 2. Convert sub-parts like "a) ", "b) ", "c) ", "d) " into distinct new paragraph blocks if concatenated in plain text
   text = text.replace(/([.!?;\n]|\b)\s*([a-dA-D1-9])\)\s+(?=[A-Z0-9\$\\áàảãạăắằẳẵặâấầnẩẫậéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵđ])/g, (_match, p1, p2, offset) => {
     if (offset === 0 || p1 === '\n') {
-      return `**${p2})** `;
+      return `\n\n**${p2})** `;
     }
     return `${p1}\n\n**${p2})** `;
   });
 
-  // 2. Process non-math parts (outside $...$ and $$...$$)
+  // 3. Process non-math parts (outside existing $...$ and $$...$$)
   const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[^$\n]+?\$)/g);
 
   const processedParts = parts.map((part, index) => {
-    if (index % 2 === 1) return part;
+    // If this part is already wrapped in $...$ or $$...$$, clean internal escape issues
+    if (index % 2 === 1) {
+      let inner = part;
+      // Convert unicode superscripts/subscripts inside LaTeX
+      inner = inner.replace(/²/g, '^2').replace(/³/g, '^3').replace(/⁴/g, '^4');
+      inner = inner.replace(/₁/g, '_1').replace(/₂/g, '_2').replace(/₃/g, '_3');
+      // Convert plain * to \cdot inside math
+      inner = inner.replace(/\s*\*\s*/g, ' \\cdot ');
+      return inner;
+    }
 
     let s = part;
+
+    // Convert unicode superscripts (e.g. AD² -> $AD^2$, x³ -> $x^3$)
+    s = s.replace(/²/g, '^2');
+    s = s.replace(/³/g, '^3');
+    s = s.replace(/⁴/g, '^4');
+
+    // Convert unicode subscripts (e.g. x₁ -> x_1, x₂ -> x_2)
+    s = s.replace(/₁/g, '_1');
+    s = s.replace(/₂/g, '_2');
+    s = s.replace(/₃/g, '_3');
 
     // Convert arrows
     s = s.replace(/==>/g, '$\\Rightarrow$');
     s = s.replace(/(?<=\s|^)=>(?=\s|$)/g, '$\\Rightarrow$');
     s = s.replace(/<==>/g, '$\\Leftrightarrow$');
     s = s.replace(/(?<=\s|^)<=>\s*/g, '$\\Leftrightarrow$ ');
+    s = s.replace(/(?<=\s|^)->(?=\s|$)/g, '$\\rightarrow$');
 
     // Convert degrees: "90 độ" -> "$90^\circ$", "90°" -> "$90^\circ$"
-    s = s.replace(/\b(\d+)\s*độ\b/gi, '$$1^\\circ$$');
-    s = s.replace(/\b(\d+)\s*°/g, '$$1^\\circ$$');
+    s = s.replace(/\b(\d+(?:[.,]\d+)?)\s*độ\b/gi, '$$$1^\\circ$$');
+    s = s.replace(/\b(\d+(?:[.,]\d+)?)\s*°(?!\w)/g, '$$$1^\\circ$$');
 
-    // Convert unicode superscripts (e.g. AD² -> $AD^2$)
-    s = s.replace(/\b([A-Za-z0-9]+)²\b/g, '$$$1^2$$');
-    s = s.replace(/\b([A-Za-z0-9]+)³\b/g, '$$$1^3$$');
+    // Convert delta words: "Delta phẩy" / "delta phẩy" / "Delta'" -> "$\Delta'$"
+    s = s.replace(/\b(?:Delta|delta)\s*(?:phẩy|')\b/gi, '$$\\Delta\'$$');
+    s = s.replace(/\b(?:Delta|delta)\b/gi, '$$\\Delta$$');
+    s = s.replace(/Δ'/g, '$$\\Delta\'$$');
+    s = s.replace(/Δ/g, '$$\\Delta$$');
 
     // Convert angle notation: "góc ACB" -> "$\widehat{ACB}$"
-    s = s.replace(/\bgóc\s+([A-Z]{1,4})\b/gi, '$\\widehat{$1}$');
+    s = s.replace(/\bgóc\s+([A-Z]{1,4})\b/gi, '$$\\widehat{$1}$$');
 
     // Convert triangle notation: "tam giác ABC" -> "$\Delta ABC$"
-    s = s.replace(/\btam giác\s+([A-Z]{3})\b/gi, '$\\Delta $1$');
+    s = s.replace(/\btam giác\s+([A-Z]{3})\b/gi, '$$\\Delta $1$$');
 
-    // Convert middle dot products: "DC . DB" or "DC · DB" -> "$DC \cdot DB$"
+    // Convert middle dot / cross products: "DC . DB" or "DC · DB" -> "$DC \cdot DB$"
     s = s.replace(/\b([A-Z]{1,3})\s*[·\.]\s*([A-Z]{1,3})\b/g, '$$$1 \\cdot $2$$');
 
-    // Convert unbracketed LaTeX commands like \sqrt{3}, \frac{1}{2}, R\sqrt{2}/2, etc. that lack $...$
+    // Convert unicode symbols
+    s = s.replace(/π/g, '$\\pi$');
+    s = s.replace(/≤/g, '$\\le$');
+    s = s.replace(/≥/g, '$\\ge$');
+    s = s.replace(/≠/g, '$\\ne$');
+    s = s.replace(/≈/g, '$\\approx$');
+    s = s.replace(/±/g, '$\\pm$');
+
+    // Convert sqrt functions: "sqrt(41)" -> "$\sqrt{41}$", "√3" -> "$\sqrt{3}$"
+    s = s.replace(/sqrt\(([^)]+)\)/gi, '$$\\sqrt{$1}$$');
+    s = s.replace(/√(\d+|[A-Za-z])/g, '$$\\sqrt{$1}$$');
+
+    // Convert variables with index like x1, x2 (when not part of a normal word)
+    s = s.replace(/\b([xXyYzZstmnukabcpqrS])([12345])\b/g, '$$$1_$2$$');
+
+    // Convert unbracketed LaTeX commands like \sqrt{3}, \frac{1}{2}, \cdot, etc. that lack $...$
     s = s.replace(/([A-Za-z0-9_\^]*\\[a-zA-Z]+(?:\{[^{}]*\}|\[[^[\]]*\]|[\w\^]+)*(?:\s*[\/\+\-\=\*]\s*[A-Za-z0-9_\^\.]*)?)/g, (m) => {
       const trimmed = m.trim();
       if (trimmed && !trimmed.startsWith('$') && !trimmed.endsWith('$')) {
@@ -71,10 +109,18 @@ export function preprocessMathContent(raw: string): string {
       return m;
     });
 
+    // Protect math multiplications with * (e.g. 5 * 3, x_1 * x_2) so markdown italic doesn't swallow them
+    s = s.replace(/([A-Za-z0-9_\^\)\$\}]+)\s*\*\s*([A-Za-z0-9_\^\(\$\{\\]+)/g, '$$$1 \\cdot $2$$');
+
     return s;
   });
 
-  return processedParts.join('');
+  let result = processedParts.join('');
+
+  // Clean up any double dollar collisions created by consecutive replacements: "$$a$ $b$$" -> "$$a b$$" or "$a$$b$" -> "$a b$"
+  result = result.replace(/\$\s*\$/g, ' ');
+
+  return result;
 }
 
 interface MarkdownRendererProps {
@@ -92,7 +138,10 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     <div className={`markdown-renderer max-w-none text-left select-text ${className}`}>
       <ReactMarkdown
         remarkPlugins={[remarkMath, remarkGfm]}
-        rehypePlugins={[rehypeKatex, rehypeHighlight]}
+        rehypePlugins={[
+          [rehypeKatex, { throwOnError: false, strict: false }],
+          rehypeHighlight
+        ]}
         components={{
           h1: ({ node, ...props }) => (
             <h1 className="font-orbitron font-black text-xl md:text-2xl text-white mt-6 mb-3 uppercase tracking-wide border-b border-white/10 pb-2" {...props} />
@@ -123,14 +172,14 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
           p: ({ node, ...props }) => (
             <p className="text-sm md:text-base text-slate-300 mb-3.5 leading-relaxed" {...props} />
           ),
-          code: ({ node, className, children, ...props }: any) => {
-            const isInline = !className || !className.includes('language-');
+          code: ({ node, className: codeClassName, children, ...props }: any) => {
+            const isInline = !codeClassName || !codeClassName.includes('language-');
             return isInline ? (
               <code className="px-1.5 py-0.5 rounded bg-synth-gray/30 text-synth-magenta text-xs font-mono font-bold border border-white/5 mx-0.5" {...props}>
                 {children}
               </code>
             ) : (
-              <code className={`${className} block p-4 rounded-xl bg-black/40 border border-white/5 text-xs md:text-sm font-mono overflow-x-auto`} {...props}>
+              <code className={`${codeClassName} block p-4 rounded-xl bg-black/40 border border-white/5 text-xs md:text-sm font-mono overflow-x-auto`} {...props}>
                 {children}
               </code>
             );
@@ -162,3 +211,4 @@ export const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({
     </div>
   );
 };
+

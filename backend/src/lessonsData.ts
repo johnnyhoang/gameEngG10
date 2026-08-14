@@ -122,17 +122,17 @@ export const SEED_LESSONS: SeedLesson[] = [
     category: 'parabol-line',
     theory: `# Tương giao giữa Parabol (P) và Đường thẳng (d)
 
-Cho Parabol (P): $y = ax^2$ ($a \\neq 0$) và đường thẳng (d): $y = mx + n$.
+Cho Parabol $(P): y = ax^2$ ($a \neq 0$) và đường thẳng $(d): y = mx + n$.
 
 ## 1. Thiết lập phương trình hoành độ giao điểm
-Hoành độ giao điểm của (P) và (d) là nghiệm của phương trình:
-$$ax^2 = mx + n \\Leftrightarrow ax^2 - mx - n = 0$$
+Hoành độ giao điểm của $(P)$ và $(d)$ là nghiệm của phương trình:
+$$ax^2 = mx + n \Leftrightarrow ax^2 - mx - n = 0$$
 Đây là phương trình bậc hai có dạng $Ax^2 + Bx + C = 0$.
 
-## 2. Biện luận số giao điểm dựa vào Delta ($\\Delta$)
-- **$\\Delta > 0$:** Phương trình có hai nghiệm phân biệt $\\Rightarrow$ (d) cắt (P) tại hai điểm phân biệt.
-- **$\\Delta = 0$:** Phương trình có nghiệm kép $\\Rightarrow$ (d) tiếp xúc với (P) (gọi là tiếp tuyến).
-- **$\\Delta < 0$:** Phương trình vô nghiệm $\\Rightarrow$ (d) không cắt (P).`
+## 2. Biện luận số giao điểm dựa vào biệt thức Delta ($\Delta$)
+- **$\Delta > 0$:** Phương trình có hai nghiệm phân biệt $\Rightarrow$ $(d)$ cắt $(P)$ tại hai điểm phân biệt.
+- **$\Delta = 0$:** Phương trình có nghiệm kép $\Rightarrow$ $(d)$ tiếp xúc với $(P)$ (gọi là tiếp tuyến).
+- **$\Delta < 0$:** Phương trình vô nghiệm $\Rightarrow$ $(d)$ không cắt $(P)$.`
   },
   {
     id: 'math-viet',
@@ -142,17 +142,17 @@ $$ax^2 = mx + n \\Leftrightarrow ax^2 - mx - n = 0$$
     category: 'viet-relation',
     theory: `# Hệ thức Vi-ét và Ứng dụng
 
-Nếu phương trình bậc hai $ax^2 + bx + c = 0$ ($a \\neq 0$) có hai nghiệm $x_1, x_2$, ta có:
+Nếu phương trình bậc hai $ax^2 + bx + c = 0$ ($a \neq 0$) có hai nghiệm $x_1, x_2$, ta có:
 
 ## 1. Hệ thức Vi-ét
-- **Tổng hai nghiệm:** $S = x_1 + x_2 = -\\frac{b}{a}$
-- **Tích hai nghiệm:** $P = x_1 \\cdot x_2 = \\frac{c}{a}$
+- **Tổng hai nghiệm:** $S = x_1 + x_2 = -\frac{b}{a}$
+- **Tích hai nghiệm:** $P = x_1 \cdot x_2 = \frac{c}{a}$
 
 ## 2. Các biểu thức đối xứng thường gặp
-Khi làm bài tập, cần biến đổi các biểu thức chứa $x_1, x_2$ về dạng chỉ chứa S và P:
+Khi làm bài tập, cần biến đổi các biểu thức chứa $x_1, x_2$ về dạng chỉ chứa $S$ và $P$:
 - $x_1^2 + x_2^2 = (x_1+x_2)^2 - 2x_1x_2 = S^2 - 2P$
 - $(x_1 - x_2)^2 = S^2 - 4P$
-- $\\frac{1}{x_1} + \\frac{1}{x_2} = \\frac{x_1+x_2}{x_1x_2} = \\frac{S}{P}$`
+- $\frac{1}{x_1} + \frac{1}{x_2} = \frac{x_1+x_2}{x_1x_2} = \frac{S}{P}$`
   },
   {
     id: 'math-finance',
@@ -165,13 +165,14 @@ Khi làm bài tập, cần biến đổi các biểu thức chứa $x_1, x_2$ v�
 Các bài toán tài chính tuyển sinh 10 thường xoay quanh vấn đề tăng giá, giảm giá, thuế và tiền lãi gửi tiết kiệm.
 
 ## 1. Bài toán Tăng/Giảm giá
-- Nếu giá ban đầu là A, sau khi tăng thêm $x\\%$ thì giá mới là: $A \\cdot (1 + x\\%)$.
-- Sau khi giảm giá $y\\%$ thì giá mới là: $A \\cdot (1 - y\\%)$.
-- Khuyến mãi nhiều đợt (ví dụ giảm $10\\%$ đợt 1 rồi giảm tiếp $5\\%$ đợt 2): Giá cuối = $A \\cdot (1 - 10\\%) \\cdot (1 - 5\\%)$.
+- Nếu giá ban đầu là $A$, sau khi tăng thêm $x\%$ thì giá mới là: $A \cdot (1 + x\%)$.
+- Sau khi giảm giá $y\%$ thì giá mới là: $A \cdot (1 - y\%)$.
+- Khuyến mãi nhiều đợt (ví dụ giảm $10\%$ đợt 1 rồi giảm tiếp $5\%$ đợt 2):
+  $$\text{Giá cuối} = A \cdot (1 - 10\%) \cdot (1 - 5\%)$$
 
 ## 2. Công thức tính Thuế (VAT)
-- Thuế VAT thường cộng thêm $8\\%$ hoặc $10\\%$ vào giá gốc:
-  $$\\text{Giá sau thuế} = \\text{Giá trước thuế} \\cdot (1 + \\text{thuế VAT}\\%)$$`
+- Thuế VAT thường cộng thêm $8\%$ hoặc $10\%$ vào giá gốc:
+  $$\text{Giá sau thuế} = \text{Giá trước thuế} \cdot (1 + \text{thuế VAT}\%)$$`
   },
   {
     id: 'math-plane-geom',
@@ -184,9 +185,9 @@ Các bài toán tài chính tuyển sinh 10 thường xoay quanh vấn đề tă
 Một tứ giác có cả 4 đỉnh cùng nằm trên một đường tròn được gọi là tứ giác nội tiếp.
 
 ## 1. Các dấu hiệu chứng minh phổ biến nhất
-- **Dấu hiệu 1:** Tứ giác có tổng hai góc đối bằng $180^\\circ$. (Góc A + Góc C = $180^\\circ$ hoặc Góc B + Góc D = $180^\\circ$).
+- **Dấu hiệu 1:** Tứ giác có tổng hai góc đối bằng $180^\circ$. ($ \widehat{A} + \widehat{C} = 180^\circ$ hoặc $\widehat{B} + \widehat{D} = 180^\circ$).
 - **Dấu hiệu 2:** Tứ giác có góc ngoài tại một đỉnh bằng góc trong tại đỉnh đối diện.
-- **Dấu hiệu 3:** Tứ giác có hai đỉnh kề nhau cùng nhìn cạnh chứa hai đỉnh còn lại dưới hai góc bằng nhau (ví dụ: $\\widehat{DAC} = \\widehat{DBC}$).
+- **Dấu hiệu 3:** Tứ giác có hai đỉnh kề nhau cùng nhìn cạnh chứa hai đỉnh còn lại dưới hai góc bằng nhau (ví dụ: $\widehat{DAC} = \widehat{DBC}$).
 - **Dấu hiệu 4:** Tứ giác có điểm cách đều cả 4 đỉnh (ví dụ giao điểm hai đường chéo là tâm đường tròn ngoại tiếp).`
   },
   {
@@ -200,18 +201,18 @@ Một tứ giác có cả 4 đỉnh cùng nằm trên một đường tròn đư
 Tập trung vào các công thức diện tích, thể tích của 3 hình cốt lõi lớp 9.
 
 ## 1. Hình Trụ (Cylinder)
-- **Diện tích xung quanh:** $S_{xq} = 2\\pi r h$
-- **Thể tích:** $V = \\pi r^2 h$
+- **Diện tích xung quanh:** $S_{xq} = 2\pi r h$
+- **Thể tích:** $V = \pi r^2 h$
 
 ## 2. Hình Nón (Cone)
-- **Diện tích xung quanh:** $S_{xq} = \\pi r l$ ($l$ là đường sinh)
-- **Thể tích:** $V = \\frac{1}{3}\\pi r^2 h$
+- **Diện tích xung quanh:** $S_{xq} = \pi r l$ ($l$ là đường sinh)
+- **Thể tích:** $V = \frac{1}{3}\pi r^2 h$
 
 ## 3. Hình Cầu (Sphere)
-- **Diện tích mặt cầu:** $S = 4\\pi r^2$
-- **Thể tích cầu:** $V = \\frac{4}{3}\\pi r^3$
+- **Diện tích mặt cầu:** $S = 4\pi r^2$
+- **Thể tích cầu:** $V = \frac{4}{3}\pi r^3$
 
-> **Lưu ý đơn vị:** Đề thi toán thực tế thường cho số đo các đại lượng ở các đơn vị khác nhau (m, dm, cm, lít...). Luôn đổi về cùng một đơn vị chuẩn trước khi tính toán ($1 \\text{ dm}^3 = 1 \\text{ lít}$).`
+> **Lưu ý đơn vị:** Đề thi toán thực tế thường cho số đo các đại lượng ở các đơn vị khác nhau (m, dm, cm, lít...). Luôn đổi về cùng một đơn vị chuẩn trước khi tính toán ($1\text{ dm}^3 = 1\text{ lít}$).`
   },
   {
     id: 'math-quadratic-formula',
@@ -221,26 +222,26 @@ Tập trung vào các công thức diện tích, thể tích của 3 hình cốt
     category: 'real-equations',
     theory: `# Công thức nghiệm và nghiệm thu gọn
 
-Phương pháp giải phương trình bậc hai một ẩn $ax^2 + bx + c = 0$ ($a \\neq 0$).
+Phương pháp giải phương trình bậc hai một ẩn $ax^2 + bx + c = 0$ ($a \neq 0$).
 
-## 1. Công thức nghiệm tổng quát (Delta $\\Delta$)
-- Tính biệt thức: $\\Delta = b^2 - 4ac$.
+## 1. Công thức nghiệm tổng quát (Delta $\Delta$)
+- Tính biệt thức: $\Delta = b^2 - 4ac$.
 - Các trường hợp nghiệm:
-  - $\\Delta > 0$: Phương trình có 2 nghiệm phân biệt:
-    $$x_1 = \\frac{-b + \\sqrt{\\Delta}}{2a}, \\quad x_2 = \\frac{-b - \\sqrt{\\Delta}}{2a}$$
-  - $\\Delta = 0$: Phương trình có nghiệm kép:
-    $$x_1 = x_2 = -\\frac{b}{2a}$$
-  - $\\Delta < 0$: Phương trình vô nghiệm.
+  - $\Delta > 0$: Phương trình có 2 nghiệm phân biệt:
+    $$x_1 = \frac{-b + \sqrt{\Delta}}{2a}, \quad x_2 = \frac{-b - \sqrt{\Delta}}{2a}$$
+  - $\Delta = 0$: Phương trình có nghiệm kép:
+    $$x_1 = x_2 = -\frac{b}{2a}$$
+  - $\Delta < 0$: Phương trình vô nghiệm.
 
-## 2. Công thức nghiệm thu gọn (Delta phẩy $\\Delta'$)
-Sử dụng khi hệ số $b$ chẵn (đặt $b = 2b'$ hay $b' = \\frac{b}{2}$):
-- Tính biệt thức thu gọn: $\\Delta' = b'^2 - ac$.
+## 2. Công thức nghiệm thu gọn (Delta phẩy $\Delta'$)
+Sử dụng khi hệ số $b$ chẵn (đặt $b = 2b'$ hay $b' = \frac{b}{2}$):
+- Tính biệt thức thu gọn: $\Delta' = b'^2 - ac$.
 - Các trường hợp nghiệm:
-  - $\\Delta' > 0$: Phương trình có 2 nghiệm phân biệt:
-    $$x_1 = \\frac{-b' + \\sqrt{\\Delta'}}{a}, \\quad x_2 = \\frac{-b' - \\sqrt{\\Delta'}}{a}$$
-  - $\\Delta' = 0$: Phương trình có nghiệm kép:
-    $$x_1 = x_2 = -\\frac{b'}{a}$$
-  - $\\Delta' < 0$: Phương trình vô nghiệm.`
+  - $\Delta' > 0$: Phương trình có 2 nghiệm phân biệt:
+    $$x_1 = \frac{-b' + \sqrt{\Delta'}}{a}, \quad x_2 = \frac{-b' - \sqrt{\Delta'}}{a}$$
+  - $\Delta' = 0$: Phương trình có nghiệm kép:
+    $$x_1 = x_2 = -\frac{b'}{a}$$
+  - $\Delta' < 0$: Phương trình vô nghiệm.`
   },
   {
     id: 'math-quadratic-discriminant',
@@ -250,19 +251,19 @@ Sử dụng khi hệ số $b$ chẵn (đặt $b = 2b'$ hay $b' = \\frac{b}{2}$):
     category: 'real-equations',
     theory: `# Biện luận số nghiệm của phương trình
 
-Sử dụng biệt thức $\\Delta$ hoặc $\\Delta'$ để biện luận sự tồn tại và tính chất nghiệm của phương trình bậc hai chứa tham số $m$.
+Sử dụng biệt thức $\Delta$ hoặc $\Delta'$ để biện luận sự tồn tại và tính chất nghiệm của phương trình bậc hai chứa tham số $m$.
 
 ## 1. Điều kiện số nghiệm
-Cho phương trình bậc hai $ax^2 + bx + c = 0$ ($a \\neq 0$):
-- **Để phương trình có nghiệm:** $\\Delta \\geq 0$.
-- **Để phương trình có 2 nghiệm phân biệt:** $\\Delta > 0$.
-- **Để phương trình có nghiệm kép (hoặc tiếp xúc):** $\\Delta = 0$.
-- **Để phương trình vô nghiệm:** $\\Delta < 0$.
+Cho phương trình bậc hai $ax^2 + bx + c = 0$ ($a \neq 0$):
+- **Để phương trình có nghiệm:** $\Delta \ge 0$.
+- **Để phương trình có 2 nghiệm phân biệt:** $\Delta > 0$.
+- **Để phương trình có nghiệm kép (hoặc tiếp xúc):** $\Delta = 0$.
+- **Để phương trình vô nghiệm:** $\Delta < 0$.
 
 ## 2. Trường hợp hệ số $a$ chứa tham số
 > **Lưu ý đặc biệt:** Nếu hệ số $a$ chứa tham số (ví dụ: $(m-1)x^2 + 2x + 3 = 0$), ta phải chia làm 2 trường hợp:
 - **Trường hợp 1:** $a = 0$ (phương trình trở thành bậc nhất).
-- **Trường hợp 2:** $a \\neq 0$ (biện luận $\\Delta$ bình thường).`
+- **Trường hợp 2:** $a \neq 0$ (biện luận $\Delta$ bình thường).`
   },
   {
     id: 'math-viet-advanced',
@@ -275,14 +276,14 @@ Cho phương trình bậc hai $ax^2 + bx + c = 0$ ($a \\neq 0$):
 Vận dụng hệ thức Vi-ét để xét dấu nghiệm và giải các bài toán thực tế phức tạp.
 
 ## 1. Xét dấu hai nghiệm của phương trình bậc hai
-Dựa vào tổng $S = x_1 + x_2 = -\\frac{b}{a}$ và tích $P = x_1x_2 = \\frac{c}{a}$:
-- **Hai nghiệm trái dấu:** $P < 0$ (không cần xét $\\Delta$ vì khi $P < 0$ thì $ac < 0 \\Rightarrow \\Delta > 0$).
-- **Hai nghiệm cùng dấu:** $\\Delta \\geq 0$ và $P > 0$.
-- **Hai nghiệm cùng dương:** $\\Delta \\geq 0$, $P > 0$ và $S > 0$.
-- **Hai nghiệm cùng âm:** $\\Delta \\geq 0$, $P > 0$ và $S < 0$.
+Dựa vào tổng $S = x_1 + x_2 = -\frac{b}{a}$ và tích $P = x_1 \cdot x_2 = \frac{c}{a}$:
+- **Hai nghiệm trái dấu:** $P < 0$ (không cần xét $\Delta$ vì khi $P < 0$ thì $ac < 0 \Rightarrow \Delta > 0$).
+- **Hai nghiệm cùng dấu:** $\Delta \ge 0$ và $P > 0$.
+- **Hai nghiệm cùng dương:** $\Delta \ge 0$, $P > 0$ và $S > 0$.
+- **Hai nghiệm cùng âm:** $\Delta \ge 0$, $P > 0$ và $S < 0$.
 
 ## 2. Tìm hai số khi biết tổng và tích
-Nếu hai số có tổng là $S$ và tích là $P$ (với $S^2 \\geq 4P$) thì hai số đó là nghiệm của phương trình:
+Nếu hai số có tổng là $S$ và tích là $P$ (với $S^2 \ge 4P$) thì hai số đó là nghiệm của phương trình:
 $$X^2 - SX + P = 0$$`
   },
   {
@@ -293,23 +294,23 @@ $$X^2 - SX + P = 0$$`
     category: 'real-geometry',
     theory: `# Tỉ số lượng giác của góc nhọn
 
-Khái niệm tỉ số lượng giác (sin, cos, tan, cot) trong tam giác vuông.
+Khái niệm tỉ số lượng giác ($\sin, \cos, \tan, \cot$) trong tam giác vuông.
 
 ## 1. Công thức định nghĩa
-Cho tam giác vuông tại $A$ có góc nhọn $\\alpha$:
-- $\\sin \\alpha = \\frac{\\text{Cạnh đối}}{\\text{Cạnh huyền}}$
-- $\\cos \\alpha = \\frac{\\text{Cạnh kề}}{\\text{Cạnh huyền}}$
-- $\\tan \\alpha = \\frac{\\text{Cạnh đối}}{\\text{Cạnh kề}}$
-- $\\cot \\alpha = \\frac{\\text{Cạnh kề}}{\\text{Cạnh đối}}$
+Cho tam giác vuông tại $A$ có góc nhọn $\alpha$:
+- $\sin \alpha = \frac{\text{Cạnh đối}}{\text{Cạnh huyền}}$
+- $\cos \alpha = \frac{\text{Cạnh kề}}{\text{Cạnh huyền}}$
+- $\tan \alpha = \frac{\text{Cạnh đối}}{\text{Cạnh kề}}$
+- $\cot \alpha = \frac{\text{Cạnh kề}}{\text{Cạnh đối}}$
 
 > **Mẹo học thuộc:** *Sin đi học, Cos không hư, Tan đoàn kết, Cot kết đoàn.*
 
 ## 2. Các tỉ số đặc biệt và góc phụ nhau
-- Nếu hai góc phụ nhau (tổng bằng $90^\\circ$): $\\sin \\alpha = \\cos(90^\\circ - \\alpha)$, $\\tan \\alpha = \\cot(90^\\circ - \\alpha)$.
+- Nếu hai góc phụ nhau (tổng bằng $90^\circ$): $\sin \alpha = \cos(90^\circ - \alpha)$, $\tan \alpha = \cot(90^\circ - \alpha)$.
 - Bảng góc đặc biệt:
-  - $\\sin 30^\\circ = \\cos 60^\\circ = \\frac{1}{2}$
-  - $\\sin 45^\\circ = \\cos 45^\\circ = \\frac{\\sqrt{2}}{2}$
-  - $\\sin 60^\\circ = \\cos 30^\\circ = \\frac{\\sqrt{3}}{2}$`
+  - $\sin 30^\circ = \cos 60^\circ = \frac{1}{2}$
+  - $\sin 45^\circ = \cos 45^\circ = \frac{\sqrt{2}}{2}$
+  - $\sin 60^\circ = \cos 30^\circ = \frac{\sqrt{3}}{2}$`
   },
   {
     id: 'math-trig-applied-1',
@@ -323,10 +324,10 @@ Phương pháp tìm tất cả các cạnh và các góc chưa biết của mộ
 
 ## 1. Công thức tính cạnh
 Trong tam giác vuông, mỗi cạnh góc vuông bằng:
-- Cạnh huyền nhân với $\\sin$ góc đối hoặc nhân với $\\cos$ góc kề:
-  $$b = a \\cdot \\sin B = a \\cdot \\cos C$$
-- Cạnh góc vuông kia nhân với $\\tan$ góc đối hoặc nhân với $\\cot$ góc kề:
-  $$b = c \\cdot \\tan B = c \\cdot \\cot C$$
+- Cạnh huyền nhân với $\sin$ góc đối hoặc nhân với $\cos$ góc kề:
+  $$b = a \cdot \sin B = a \cdot \cos C$$
+- Cạnh góc vuông kia nhân với $\tan$ góc đối hoặc nhân với $\cot$ góc kề:
+  $$b = c \cdot \tan B = c \cdot \cot C$$
 
 ## 2. Các bước giải tam giác vuông
 - **Trường hợp biết hai cạnh:** Sử dụng định lý Pitago tính cạnh thứ ba, dùng tỉ số lượng giác để tính góc.
@@ -343,16 +344,16 @@ Trong tam giác vuông, mỗi cạnh góc vuông bằng:
 Ứng dụng tỉ số lượng giác để giải quyết các bài toán đo chiều cao và khoảng cách thực tế (không thể đo trực tiếp).
 
 ## 1. Bài toán đo chiều cao vật thể (như tòa nhà, cây)
-- Đứng cách gốc vật một khoảng $d$. Sử dụng giác kế đo góc ngẩng $\\alpha$ nhìn lên đỉnh.
+- Đứng cách gốc vật một khoảng $d$. Sử dụng giác kế đo góc ngẩng $\alpha$ nhìn lên đỉnh.
 - Chiều cao vật thể $H$ được tính theo công thức:
-  $$H = h + d \\cdot \\tan \\alpha$$
+  $$H = h + d \cdot \tan \alpha$$
   (với $h$ là chiều cao từ mắt người đo đến mặt đất).
 
 ## 2. Bài toán đo khoảng cách ngang (như con sông)
 - Chọn một mốc đối diện bên kia sông. Đo khoảng cách kề dọc bờ sông là $a$.
-- Đo góc nhìn $\\beta$ từ đầu khoảng cách đến mốc bên kia sông.
+- Đo góc nhìn $\beta$ từ đầu khoảng cách đến mốc bên kia sông.
 - Chiều rộng con sông $W$ là:
-  $$W = a \\cdot \\tan \\beta$$`
+  $$W = a \cdot \tan \beta$$`
   },
   {
     id: 'math-circle-angle-1',
@@ -366,15 +367,15 @@ Khái niệm và mối liên hệ giữa các loại góc liên quan đến đư
 
 ## 1. Góc ở tâm
 - Là góc có đỉnh trùng với tâm đường tròn.
-- Số đo góc ở tâm bằng số đo cung bị chắn: $\\widehat{AOB} = \\text{sđ} \\overparen{AB}$.
+- Số đo góc ở tâm bằng số đo cung bị chắn: $\widehat{AOB} = \text{sđ}\overgroup{AB}$.
 
 ## 2. Góc nội tiếp
 - Là góc có đỉnh nằm trên đường tròn và hai cạnh chứa hai dây cung.
-- Số đo góc nội tiếp bằng nửa số đo cung bị chắn: $\\widehat{ACB} = \\frac{1}{2} \\text{sđ} \\overparen{AB}$.
+- Số đo góc nội tiếp bằng nửa số đo cung bị chắn: $\widehat{ACB} = \frac{1}{2} \text{sđ}\overgroup{AB}$.
 
 ## 3. Các hệ quả quan trọng
-- Trong một đường tròn, góc nội tiếp bằng nửa góc ở tâm cùng chắn một cung: $\\widehat{ACB} = \\frac{1}{2}\\widehat{AOB}$.
-- Góc nội tiếp chắn nửa đường tròn là góc vuông ($90^\\circ$).`
+- Trong một đường tròn, góc nội tiếp bằng nửa góc ở tâm cùng chắn một cung: $\widehat{ACB} = \frac{1}{2}\widehat{AOB}$.
+- Góc nội tiếp chắn nửa đường tròn là góc vuông ($90^\circ$).`
   },
   {
     id: 'math-circle-angle-2',
@@ -388,13 +389,13 @@ Khái niệm và mối liên hệ giữa các loại góc liên quan đến đư
 
 ## 1. Định lý
 Góc tạo bởi tia tiếp tuyến và dây cung đi qua tiếp điểm có số đo bằng nửa số đo của cung bị chắn.
-- Ví dụ: Ax là tiếp tuyến tại A, AB là dây cung.
-  $$\\widehat{xAB} = \\frac{1}{2} \\text{sđ} \\overparen{AB}$$
+- Ví dụ: $Ax$ là tiếp tuyến tại $A$, $AB$ là dây cung:
+  $$\widehat{xAB} = \frac{1}{2} \text{sđ}\overgroup{AB}$$
 
 ## 2. Hệ quả quan trọng nhất (Thường dùng trong bài toán chứng minh)
 Trong một đường tròn, góc tạo bởi tia tiếp tuyến và dây cung và góc nội tiếp cùng chắn một cung thì bằng nhau.
-- Ví dụ: C là một điểm trên đường tròn, thì:
-  $$\\widehat{xAB} = \\widehat{ACB}$$`
+- Ví dụ: $C$ là một điểm trên đường tròn, thì:
+  $$\widehat{xAB} = \widehat{ACB}$$`
   },
   {
     id: 'math-circle-tangent-1',
@@ -408,14 +409,14 @@ Các định lý cơ bản về tiếp tuyến đường tròn và tính chất 
 
 ## 1. Tính chất tiếp tuyến
 Nếu một đường thẳng là tiếp tuyến của đường tròn thì nó vuông góc với bán kính đi qua tiếp điểm:
-$$d \\perp OB \\text{ tại tiếp điểm } B$$
+$$d \perp OB \text{ tại tiếp điểm } B$$
 
 ## 2. Tính chất hai tiếp tuyến cắt nhau
 Nếu hai tiếp tuyến của đường tròn $(O)$ cắt nhau tại $A$ (với tiếp điểm là $B$ và $C$):
 - $AB = AC$ (điểm cắt cách đều hai tiếp điểm).
-- $AO$ là tia phân giác của góc $\\widehat{BAC}$.
-- $OA$ là tia phân giác của góc $\\widehat{BOC}$.
-- Giao điểm $AO$ và $BC$ là trung điểm của $BC$ và $AO \\perp BC$.`
+- $AO$ là tia phân giác của góc $\widehat{BAC}$.
+- $OA$ là tia phân giác của góc $\widehat{BOC}$.
+- Giao điểm $AO$ và $BC$ là trung điểm của $BC$ và $AO \perp BC$.`
   },
   {
     id: 'math-circle-tangent-2',
@@ -430,12 +431,12 @@ Phương pháp chứng minh một đường thẳng là tiếp tuyến của đ�
 ## 1. Phương pháp chứng minh trực tiếp
 Để chứng minh đường thẳng $d$ là tiếp tuyến của đường tròn $(O; R)$ tại tiếp điểm $H$:
 - **Bước 1:** Chứng minh điểm $H$ thuộc đường tròn ($OH = R$).
-- **Bước 2:** Chứng minh đường thẳng $d$ vuông góc với bán kính tại $H$ ($d \\perp OH$).
+- **Bước 2:** Chứng minh đường thẳng $d$ vuông góc với bán kính tại $H$ ($d \perp OH$).
 
 ## 2. Các dạng toán hay gặp tuyển sinh 10
 - Chứng minh tam giác chứa tiếp tuyến vuông góc (dùng hệ thức lượng hoặc định lý Pitago đảo).
-- Sử dụng tính chất góc nội tiếp chắn nửa đường tròn tạo góc $90^\\circ$.
-- Chứng minh hai góc bằng nhau để suy ra góc tiếp xúc bằng $90^\\circ$.`
+- Sử dụng tính chất góc nội tiếp chắn nửa đường tròn tạo góc $90^\circ$.
+- Chứng minh hai góc bằng nhau để suy ra góc tiếp xúc bằng $90^\circ$.`
   },
   {
     id: 'math-word-problem-1',
@@ -456,10 +457,11 @@ Quy trình giải bài toán bằng cách lập hệ hai phương trình bậc n
 - **Bước 3: Trả lời:** Kiểm tra nghiệm với điều kiện và kết luận.
 
 ## 2. Các dạng toán chuyển động và năng suất
-- **Toán chuyển động:** $S = v \\cdot t$. Chú ý dòng nước ngược/xuôi: $v_{xuôi} = v_{thực} + v_{nước}$, $v_{ngược} = v_{thực} - v_{nước}$.
+- **Toán chuyển động:** $S = v \cdot t$. Chú ý dòng nước ngược/xuôi:
+  $$v_{\text{xuôi}} = v_{\text{thực}} + v_{\text{nước}}, \quad v_{\text{ngược}} = v_{\text{thực}} - v_{\text{nước}}$$
 - **Toán năng suất/Làm chung làm riêng:**
-  - Năng suất $\\times$ Thời gian = Công việc.
-  - làm chung trong 1 ngày = $\\frac{1}{x} + \\frac{1}{y} = \\frac{1}{t_{chung}}$.`
+  - $\text{Năng suất} \times \text{Thời gian} = \text{Công việc}$.
+  - Làm chung trong 1 ngày: $\frac{1}{x} + \frac{1}{y} = \frac{1}{t_{\text{chung}}}$.`
   },
   {
     id: 'math-word-problem-2',
@@ -478,8 +480,8 @@ Phương pháp lập phương trình bậc hai giải bài toán thực tế.
 - Giải phương trình và loại nghiệm âm hoặc không thỏa mãn ý nghĩa vật lý.
 
 ## 2. Các dạng toán kinh tế và diện tích
-- **Toán tăng giảm phần trăm:** Giá trị sau khi đổi = Giá trị đầu $\\cdot (1 \\pm r\\%)$.
-- **Toán diện tích/hình học:** Áp dụng công thức diện tích hình chữ nhật ($S = a \\cdot b$), hình vuông để lập phương trình liên hệ chiều dài/chiều rộng.`
+- **Toán tăng giảm phần trăm:** Giá trị sau khi đổi = $\text{Giá trị đầu} \cdot (1 \pm r\%)$.
+- **Toán diện tích/hình học:** Áp dụng công thức diện tích hình chữ nhật ($S = a \cdot b$), hình vuông để lập phương trình liên hệ chiều dài/chiều rộng.`
   },
 
   // 3. Literature Lessons
@@ -1044,16 +1046,16 @@ Tiếp tục các cụm động từ thông dụng nhất hỗ trợ viết lạ
     category: 'real-equations',
     theory: `# Phương trình tích
 
-Phương pháp giải phương trình dạng tích $A(x) \\cdot B(x) = 0$.
+Phương pháp giải phương trình dạng tích $A(x) \cdot B(x) = 0$.
 
 ## 1. Công thức giải cơ bản
-Phương trình $A(x) \\cdot B(x) = 0$ tương đương với:
-$$A(x) = 0 \\quad \\text{hoặc} \\quad B(x) = 0$$
+Phương trình $A(x) \cdot B(x) = 0$ tương đương với:
+$$A(x) = 0 \quad \text{hoặc} \quad B(x) = 0$$
 
 ## 2. Các bước giải phương trình tích phức tạp
-- **Bước 1:** Chuyển tất cả các hạng tử sang vế trái để vế phải bằng 0.
+- **Bước 1:** Chuyển tất cả các hạng tử sang vế trái để vế phải bằng $0$.
 - **Bước 2:** Phân tích đa thức ở vế trái thành nhân tử (dùng hằng đẳng thức, đặt nhân tử chung, hoặc nhóm hạng tử).
-- **Bước 3:** Cho từng nhân tử bằng 0 và giải tìm nghiệm.
+- **Bước 3:** Cho từng nhân tử bằng $0$ và giải tìm nghiệm.
 - **Bước 4:** Kết luận tập nghiệm $S$.`
   },
   {
@@ -1067,14 +1069,14 @@ $$A(x) = 0 \\quad \\text{hoặc} \\quad B(x) = 0$$
 Quy trình giải phương trình chứa ẩn ở mẫu thức để tránh nghiệm ngoại lai.
 
 ## 1. Quy trình gồm 4 bước chuẩn
-- **Bước 1: Tìm điều kiện xác định (ĐKXĐ):** Tìm các giá trị của ẩn làm cho các mẫu thức khác 0.
+- **Bước 1: Tìm điều kiện xác định (ĐKXĐ):** Tìm các giá trị của ẩn làm cho các mẫu thức khác $0$.
 - **Bước 2: Quy đồng mẫu hai vế:** Tìm mẫu thức chung (MTC), quy đồng và khử mẫu hai vế.
 - **Bước 3: Giải phương trình vừa nhận được.**
 - **Bước 4: Đối chiếu điều kiện và kết luận:** Loại bỏ các giá trị không thỏa mãn ĐKXĐ.
 
 ## 2. Ví dụ thực hành
-Giải phương trình: $\\frac{x+2}{x-2} - \\frac{1}{x} = 2$.
-- ĐKXĐ: $x \\neq 0$ và $x \\neq 2$.
+Giải phương trình: $\frac{x+2}{x-2} - \frac{1}{x} = 2$.
+- ĐKXĐ: $x \neq 0$ và $x \neq 2$.
 - MTC: $x(x-2)$.`
   },
   {
@@ -1109,10 +1111,11 @@ Biện luận số nghiệm của hệ hai phương trình bậc nhất hai ẩn
 
 ## 1. Điều kiện tồn tại nghiệm
 Cho hệ phương trình:
-$$\\begin{cases} ax + by = c \\\\ a'x + b'y = c' \\end{cases}$$
-- **Hệ có nghiệm duy nhất:** $\\frac{a}{a'} \\neq \\frac{b}{b'}$.
-- **Hệ vô nghiệm:** $\\frac{a}{a'} = \\frac{b}{b'} \\neq \frac{c}{c'}$.
-- **Hệ vô số nghiệm:** $\\frac{a}{a'} = \\frac{b}{b'} = \\frac{c}{c'}$.
+$$\begin{cases} ax + by = c \\ a'x + b'y = c' \end{cases}$$
+- **Hệ có nghiệm duy nhất:** $\frac{a}{a'} \neq \frac{b}{b'}$.
+- **Hệ vô nghiệm:** $\frac{a}{a'} = \frac{b}{b'} \neq \frac{c}{c'}$.
+- **Hệ vô số nghiệm:** $\frac{a}{a'} = \frac{b}{b'} = \frac{c}{c'}$.
+
 *(Lưu ý: Chỉ lập tỉ số khi các hệ số dưới mẫu khác 0. Nếu chứa tham số $m$ ở mẫu, cần xét các trường hợp $m$ làm mẫu bằng 0 riêng).*`
   },
   {
@@ -1128,10 +1131,10 @@ Các hệ thức cơ bản giữa cạnh và đường cao trong tam giác vuôn
 ## 1. Các hệ thức trong tam giác vuông
 Cho tam giác $ABC$ vuông tại $A$, đường cao $AH$ chia cạnh huyền $BC$ thành hai hình chiếu $HB$ và $HC$:
 - Định lý Pitago: $a^2 = b^2 + c^2$
-- Hệ thức 1 (Cạnh góc vuông và hình chiếu): $b^2 = a \\cdot b'$ và $c^2 = a \\cdot c'$
-- Hệ thức 2 (Đường cao và hình chiếu): $h^2 = b' \\cdot c'$
-- Hệ thức 3 (Đường cao và hai cạnh góc vuông): $a \\cdot h = b \\cdot c$
-- Hệ thức 4 (Đường cao nghịch đảo): $\\frac{1}{h^2} = \\frac{1}{b^2} + \\frac{1}{c^2}$`
+- Hệ thức 1 (Cạnh góc vuông và hình chiếu): $b^2 = a \cdot b'$ và $c^2 = a \cdot c'$
+- Hệ thức 2 (Đường cao và hình chiếu): $h^2 = b' \cdot c'$
+- Hệ thức 3 (Đường cao và hai cạnh góc vuông): $a \cdot h = b \cdot c$
+- Hệ thức 4 (Đường cao nghịch đảo): $\frac{1}{h^2} = \frac{1}{b^2} + \frac{1}{c^2}$`
   },
   {
     id: 'lit-modern-conflict-1',
@@ -1322,19 +1325,19 @@ Hướng dẫn cấu trúc lập luận bày tỏ sự đồng ý hoặc không 
     category: 'real-geometry',
     theory: `# Các hệ thức lượng giác cơ bản
 
-Các công thức liên hệ giữa các tỉ số lượng giác của một góc nhọn $\\alpha$.
+Các công thức liên hệ giữa các tỉ số lượng giác của một góc nhọn $\alpha$.
 
 ## 1. Hệ thức lượng giác cốt lõi
-Với mọi góc nhọn $\\alpha$, ta luôn có:
-- $\\sin^2 \\alpha + \\cos^2 \\alpha = 1$
-- $\\tan \\alpha = \\frac{\\sin \\alpha}{\\cos \\alpha}$
-- $\\cot \\alpha = \\frac{\\cos \\alpha}{\\sin \\alpha}$
-- $\\tan \\alpha \\cdot \\cot \\alpha = 1$
-- $1 + \\tan^2 \\alpha = \\frac{1}{\\cos^2 \\alpha}$
-- $1 + \\cot^2 \\alpha = \\frac{1}{\\sin^2 \\alpha}$
+Với mọi góc nhọn $\alpha$, ta luôn có:
+- $\sin^2 \alpha + \cos^2 \alpha = 1$
+- $\tan \alpha = \frac{\sin \alpha}{\cos \alpha}$
+- $\cot \alpha = \frac{\cos \alpha}{\sin \alpha}$
+- $\tan \alpha \cdot \cot \alpha = 1$
+- $1 + \tan^2 \alpha = \frac{1}{\cos^2 \alpha}$
+- $1 + \cot^2 \alpha = \frac{1}{\sin^2 \alpha}$
 
 ## 2. Ứng dụng giải toán
-- Tính các tỉ số lượng giác còn lại của góc $\\alpha$ khi biết một tỉ số lượng giác.
+- Tính các tỉ số lượng giác còn lại của góc $\alpha$ khi biết một tỉ số lượng giác.
 - Chứng minh đẳng thức lượng giác, rút gọn biểu thức lượng giác đơn giản.`
   },
   {
@@ -1373,7 +1376,7 @@ Gọi $d$ là khoảng cách từ tâm $O$ đến đường thẳng, $R$ là bá
 - **Tiếp xúc nhau:** $d = R$ (có 1 điểm chung). Đường thẳng được gọi là tiếp tuyến.
 - **Không giao nhau:** $d > R$ (không có điểm chung).
 
-## 2. Vị trí tương đối giữa hai đường tròn $(O; R)$ và $(O'; r)$ (với $R \\geq r$)
+## 2. Vị trí tương đối giữa hai đường tròn $(O; R)$ và $(O'; r)$ (với $R \ge r$)
 Gọi $d = OO'$ là khoảng cách giữa hai tâm:
 - **Cắt nhau:** $R - r < d < R + r$ (có 2 điểm chung).
 - **Tiếp xúc ngoài:** $d = R + r$ (có 1 điểm chung).
@@ -1392,15 +1395,16 @@ Gọi $d = OO'$ là khoảng cách giữa hai tâm:
 Các công thức tính chu vi, diện tích đường tròn và hình quạt tròn.
 
 ## 1. Độ dài đường tròn và cung tròn
-- **Chu vi đường tròn:** $C = 2\\pi R = \\pi d$ (với $d$ là đường kính).
-- **Độ dài cung tròn $n^\\circ$:**
-  $$l = \\frac{\\pi R n}{180}$$
+- **Chu vi đường tròn:** $C = 2\pi R = \pi d$ (với $d$ là đường kính).
+- **Độ dài cung tròn $n^\circ$:**
+  $$l = \frac{\pi R n}{180}$$
 
 ## 2. Diện tích hình tròn và hình quạt tròn
-- **Diện tích hình tròn:** $S = \\pi R^2$.
-- **Diện tích hình quạt tròn bán kính $R$, cung $n^\\circ$:**
-  $$S_{q} = \\frac{\\pi R^2 n}{360} = \\frac{l \\cdot R}{2}$$
-*(Lưu ý: Trong các bài thi tuyển sinh thực tế, ta thường dùng giá trị xấp xỉ $\\pi \\approx 3,14$).*`
+- **Diện tích hình tròn:** $S = \pi R^2$.
+- **Diện tích hình quạt tròn bán kính $R$, cung $n^\circ$:**
+  $$S_{q} = \frac{\pi R^2 n}{360} = \frac{l \cdot R}{2}$$
+
+*(Lưu ý: Trong các bài thi tuyển sinh thực tế, ta thường dùng giá trị xấp xỉ $\pi \approx 3{,}14$).*`
   },
   {
     id: 'math-circle-polygon',
@@ -1416,9 +1420,9 @@ Dấu hiệu nhận biết và ứng dụng của tứ giác nội tiếp trong 
 Tứ giác có bốn đỉnh nằm trên một đường tròn được gọi là tứ giác nội tiếp đường tròn.
 
 ## 2. Dấu hiệu nhận biết cốt lõi (Thường dùng để chứng minh)
-- **Dấu hiệu 1:** Tứ giác có tổng hai góc đối diện bằng $180^\\circ$.
+- **Dấu hiệu 1:** Tứ giác có tổng hai góc đối diện bằng $180^\circ$.
 - **Dấu hiệu 2:** Tứ giác có góc ngoài tại một đỉnh bằng góc trong tại đỉnh đối diện.
-- **Dấu hiệu 3:** Tứ giác có hai đỉnh kề nhau cùng nhìn cạnh chứa hai đỉnh còn lại dưới một góc bằng nhau (ví dụ: $\\widehat{ADB} = \\widehat{ACB}$).
+- **Dấu hiệu 3:** Tứ giác có hai đỉnh kề nhau cùng nhìn cạnh chứa hai đỉnh còn lại dưới một góc bằng nhau (ví dụ: $\widehat{ADB} = \widehat{ACB}$).
 - **Dấu hiệu 4:** Tứ giác có bốn đỉnh cách đều một điểm xác định.`
   },
   {
@@ -1631,13 +1635,13 @@ Phương pháp tính diện tích xung quanh, diện tích toàn phần và th�
 
 ## 1. Công thức cơ bản
 Cho hình trụ có bán kính đáy $R$ và chiều cao $h$:
-- **Diện tích xung quanh:** $S_{xq} = 2\\pi R h$.
-- **Diện tích toàn phần (gồm 2 đáy):** $S_{tp} = S_{xq} + 2S_{đáy} = 2\\pi R h + 2\\pi R^2$.
-- **Thể tích:** $V = S_{đáy} \\cdot h = \\pi R^2 h$.
+- **Diện tích xung quanh:** $S_{xq} = 2\pi R h$.
+- **Diện tích toàn phần (gồm 2 đáy):** $S_{tp} = S_{xq} + 2S_{\text{đáy}} = 2\pi R h + 2\pi R^2$.
+- **Thể tích:** $V = S_{\text{đáy}} \cdot h = \pi R^2 h$.
 
 ## 2. Ứng dụng thực tế và cách giải
-- Đọc kỹ đề bài để phân biệt giữa bán kính $R$ và đường kính $d$ ($R = d/2$).
-- Xác định hình trụ có hở nắp hay không để tính diện tích toàn phần chính xác (ví dụ lon nước ngọt hở 1 nắp thì $S_{tp} = S_{xq} + \\pi R^2$).
+- Đọc kỹ đề bài để phân biệt giữa bán kính $R$ và đường kính $d$ ($R = \frac{d}{2}$).
+- Xác định hình trụ có hở nắp hay không để tính diện tích toàn phần chính xác (ví dụ lon nước ngọt hở 1 nắp thì $S_{tp} = S_{xq} + \pi R^2$).
 - Đồng bộ đơn vị đo trước khi tính toán.`
   },
   {
@@ -1652,14 +1656,14 @@ Công thức tính toán diện tích, thể tích hình nón và hình nón c�
 
 ## 1. Hình nón
 Cho hình nón có bán kính đáy $R$, chiều cao $h$, và đường sinh $l$:
-- Quan hệ: $l = \\sqrt{R^2 + h^2}$ (định lý Pitago).
-- **Diện tích xung quanh:** $S_{xq} = \\pi R l$.
-- **Diện tích toàn phần:** $S_{tp} = \\pi R l + \\pi R^2$.
-- **Thể tích:** $V = \\frac{1}{3}\\pi R^2 h$.
+- Quan hệ: $l = \sqrt{R^2 + h^2}$ (định lý Pitago).
+- **Diện tích xung quanh:** $S_{xq} = \pi R l$.
+- **Diện tích toàn phần:** $S_{tp} = \pi R l + \pi R^2$.
+- **Thể tích:** $V = \frac{1}{3}\pi R^2 h$.
 
 ## 2. Hình nón cụt
 Cho hình nón cụt có hai bán kính đáy là $R_1, R_2$ ($R_1 > R_2$) và chiều cao $h$:
-- **Thể tích:** $V = \\frac{1}{3}\\pi h (R_1^2 + R_2^2 + R_1 R_2)$.`
+- **Thể tích:** $V = \frac{1}{3}\pi h (R_1^2 + R_2^2 + R_1 R_2)$.`
   },
   {
     id: 'math-cone-sphere-combined',
@@ -1673,8 +1677,8 @@ Phương pháp tính toán diện tích và thể tích hình cầu, cùng các 
 
 ## 1. Công thức hình cầu
 Cho hình cầu có bán kính $R$:
-- **Diện tích mặt cầu:** $S = 4\\pi R^2 = \\pi d^2$ (với $d = 2R$).
-- **Thể tích hình cầu:** $V = \\frac{4}{3}\\pi R^3$.
+- **Diện tích mặt cầu:** $S = 4\pi R^2 = \pi d^2$ (với $d = 2R$).
+- **Thể tích hình cầu:** $V = \frac{4}{3}\pi R^3$.
 
 ## 2. Bài toán kết hợp hình khối thực tế
 - Thường gặp dạng: đồ chơi có một đầu là hình bán cầu (nửa hình cầu), thân là hình trụ hoặc hình nón.

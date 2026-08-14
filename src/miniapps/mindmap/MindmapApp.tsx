@@ -2,6 +2,7 @@ import type { UiThemeId } from '../../types/game';
 import React, { useState } from 'react';
 import { HelpCircle } from 'lucide-react';
 import { toast } from '../../utils/toast';
+import { MarkdownRenderer } from '../../components/Common/MarkdownRenderer';
 
 interface MindmapNode {
   id: string;
@@ -16,16 +17,16 @@ const MINDMAP_DATA: Record<'math' | 'english' | 'literature', MindmapNode> = {
     id: 'm1', label: 'Đại Số & Hình Học 9',
     children: [
       { id: 'm1-1', label: 'Hàm số bậc nhất & bậc hai', children: [
-        { id: 'm1-1-1', label: 'Hàm số y = ax + b', details: 'Hàm số đồng biến khi a > 0, nghịch biến khi a < 0. Đồ thị là đường thẳng cắt trục tung tại (0, b).', formula: 'y = ax + b' },
-        { id: 'm1-1-2', label: 'Hàm số y = ax²', details: 'Đồ thị parabol đỉnh O(0,0), đối xứng qua trục tung.', formula: 'y = ax²' }
+        { id: 'm1-1-1', label: 'Hàm số $y = ax + b$', details: 'Hàm số đồng biến khi $a > 0$, nghịch biến khi $a < 0$. Đồ thị là đường thẳng cắt trục tung tại $(0; b)$.', formula: '$$y = ax + b$$' },
+        { id: 'm1-1-2', label: 'Hàm số $y = ax^2$', details: 'Đồ thị parabol đỉnh $O(0; 0)$, đối xứng qua trục tung $Oy$.', formula: '$$y = ax^2$$' }
       ]},
       { id: 'm1-2', label: 'Hệ thức Vi-ét', children: [
-        { id: 'm1-2-1', label: 'Định lý Vi-ét thuận', details: 'Nếu phương trình bậc hai ax² + bx + c = 0 có hai nghiệm x₁, x₂ thì tổng và tích các nghiệm tuân theo hệ thức Vi-ét.', formula: 'x₁ + x₂ = -b/a\nx₁ * x₂ = c/a' },
-        { id: 'm1-2-2', label: 'Định lý Vi-ét đảo', details: 'Nếu hai số có tổng là S và tích là P thì hai số đó là nghiệm của phương trình t² - St + P = 0.', formula: 't² - St + P = 0' }
+        { id: 'm1-2-1', label: 'Định lý Vi-ét thuận', details: 'Nếu phương trình bậc hai $ax^2 + bx + c = 0$ ($a \\neq 0$) có hai nghiệm $x_1, x_2$ thì tổng và tích các nghiệm tuân theo hệ thức Vi-ét.', formula: '$$x_1 + x_2 = -\\frac{b}{a}, \\quad x_1 \\cdot x_2 = \\frac{c}{a}$$' },
+        { id: 'm1-2-2', label: 'Định lý Vi-ét đảo', details: 'Nếu hai số có tổng là $S$ và tích là $P$ thì hai số đó là nghiệm của phương trình $t^2 - St + P = 0$.', formula: '$$t^2 - St + P = 0$$' }
       ]},
       { id: 'm1-3', label: 'Hình Học Không Gian', children: [
-        { id: 'm1-3-1', label: 'Hình Trụ', details: 'R là bán kính đáy, h là chiều cao.', formula: 'V = π * r² * h\nS_xq = 2 * π * r * h' },
-        { id: 'm1-3-2', label: 'Hình Nón', details: 'R là bán kính đáy, h là chiều cao, l là đường sinh.', formula: 'V = ⅓ * π * r² * h\nS_xq = π * r * l' }
+        { id: 'm1-3-1', label: 'Hình Trụ', details: '$r$ là bán kính đáy, $h$ là chiều cao.', formula: '$$V = \\pi r^2 h, \\quad S_{xq} = 2\\pi r h$$' },
+        { id: 'm1-3-2', label: 'Hình Nón', details: '$r$ là bán kính đáy, $h$ là chiều cao, $l$ là đường sinh.', formula: '$$V = \\frac{1}{3}\\pi r^2 h, \\quad S_{xq} = \\pi r l$$' }
       ]}
     ]
   },
@@ -120,12 +121,18 @@ export const MindmapApp: React.FC<MindmapAppProps> = ({ activeSectId, uiTheme, o
           {activeNodeDetails ? (
             <div className="space-y-4">
               <span className="text-[9px] font-bold tracking-wider text-synth-magenta font-orbitron uppercase border border-synth-magenta/30 px-2 py-0.5 rounded bg-synth-magenta/5">Lý Thuyết Rút Gọn</span>
-              <h4 className="font-orbitron font-bold text-sm text-white">{activeNodeDetails.label}</h4>
-              <p className="text-xs leading-relaxed text-slate-300 bg-white/5 p-3 rounded-xl border border-white/5">{activeNodeDetails.details}</p>
+              <h4 className="font-orbitron font-bold text-sm text-white">
+                <MarkdownRenderer content={activeNodeDetails.label} />
+              </h4>
+              <div className="text-xs leading-relaxed text-slate-300 bg-white/5 p-3 rounded-xl border border-white/5">
+                <MarkdownRenderer content={activeNodeDetails.details || ''} />
+              </div>
               {activeNodeDetails.formula && (
                 <div className="space-y-1.5">
                   <span className="text-[9px] font-bold text-slate-400 font-orbitron uppercase">Cấu trúc / Công thức:</span>
-                  <pre className="bg-[#050608] border border-synth-cyan/35 p-3 rounded-xl text-synth-cyan font-bold font-mono text-[10px] overflow-x-auto whitespace-pre-line">{activeNodeDetails.formula}</pre>
+                  <div className="bg-[#050608] border border-synth-cyan/35 p-3 rounded-xl text-synth-cyan text-xs overflow-x-auto">
+                    <MarkdownRenderer content={activeNodeDetails.formula} />
+                  </div>
                 </div>
               )}
             </div>

@@ -86,6 +86,7 @@ const MIGRATION_FILES = [
   '20260725_tutor_quests.sql',
   '20260725_upgrade_lesson_question_correlation.sql',
   '20260725_curriculum_textbooks_schema.sql',
+  '20260814_format_math_latex.sql',
 ];
 
 async function ensureMigrationsTable() {
