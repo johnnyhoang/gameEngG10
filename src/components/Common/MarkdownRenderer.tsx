@@ -59,6 +59,37 @@ export function preprocessMathContent(raw: string): string {
     s = s.replace(/₂/g, '_2');
     s = s.replace(/₃/g, '_3');
 
+    // Convert specific common math phrases first
+    s = s.replace(/\(?\b[Ll]ấy\s+(?:\\pi|π)\s*(?:\\approx|≈)\s*3(?:,|.)14\b\)?/g, '($\\text{Lấy } \\pi \\approx 3{,}14$)');
+    s = s.replace(/\bParabol\s*(?:\((?:P|p)\)\s*:\s*)?y\s*=\s*ax\^2(?:\s*\(\s*a\s*(?:\\ne|≠)\s*0\s*\))?/g, 'Parabol $(P): y = ax^2$ ($a \\neq 0$)');
+    s = s.replace(/\bax\^2\s*[\+\-]\s*bx\s*[\+\-]\s*c\s*=\s*0\b/g, '$ax^2 + bx + c = 0$');
+    s = s.replace(/\bx\^2\s*[\+\-]\s*px\s*[\+\-]\s*q\s*=\s*0\b/g, '$x^2 + px + q = 0$');
+
+    // Convert Vi-et variable pairs
+    s = s.replace(/\bx_1\s*,\s*x_2\b/g, '$x_1, x_2$');
+    s = s.replace(/\bx_1\s*\+\s*x_2\b/g, '$x_1 + x_2$');
+    s = s.replace(/\bx_1\s*(?:\\cdot|\*)\s*x_2\b/g, '$x_1 \\cdot x_2$');
+    s = s.replace(/\bx_1\s*x_2\b/g, '$x_1 x_2$');
+
+    // Convert Delta discriminant equations
+    s = s.replace(/\\?Delta'\s*=\s*b'\^2\s*-\s*ac/gi, '$\\Delta\' = b\'^2 - ac$');
+    s = s.replace(/\\?Delta\s*=\s*b\^2\s*-\s*4ac/gi, '$\\Delta = b^2 - 4ac$');
+
+    // Convert general Delta notations
+    s = s.replace(/\b(?:Delta|delta)\s*(?:phẩy|')\b/gi, '$\\Delta\'$');
+    s = s.replace(/\b(?:Delta|delta)\b/gi, '$\\Delta$');
+    s = s.replace(/Δ'/g, '$\\Delta\'$');
+    s = s.replace(/Δ/g, '$\\Delta$');
+
+    // Convert angle notation ONLY for uppercase geometric points: "góc ACB", "góc A", "góc xOy" (no 'i' flag!)
+    s = s.replace(/\bgóc\s+([A-Z]{1,4}|[a-z][A-Z][a-z])\b/g, '$$\\widehat{$1}$$');
+
+    // Convert triangle notation ONLY for uppercase points: "tam giác ABC" (no 'i' flag!)
+    s = s.replace(/\btam giác\s+([A-Z]{3})\b/g, '$$\\Delta $1$$');
+
+    // Convert middle dot / cross products: "DC . DB" or "DC · DB" -> "$DC \cdot DB$"
+    s = s.replace(/\b([A-Z]{1,3})\s*[·\.]\s*([A-Z]{1,3})\b/g, '$$$1 \\cdot $2$$');
+
     // Convert arrows
     s = s.replace(/==>/g, '$\\Rightarrow$');
     s = s.replace(/(?<=\s|^)=>(?=\s|$)/g, '$\\Rightarrow$');
@@ -69,21 +100,6 @@ export function preprocessMathContent(raw: string): string {
     // Convert degrees: "90 độ" -> "$90^\circ$", "90°" -> "$90^\circ$"
     s = s.replace(/\b(\d+(?:[.,]\d+)?)\s*độ\b/gi, '$$$1^\\circ$$');
     s = s.replace(/\b(\d+(?:[.,]\d+)?)\s*°(?!\w)/g, '$$$1^\\circ$$');
-
-    // Convert delta words: "Delta phẩy" / "delta phẩy" / "Delta'" -> "$\Delta'$"
-    s = s.replace(/\b(?:Delta|delta)\s*(?:phẩy|')\b/gi, '$$\\Delta\'$$');
-    s = s.replace(/\b(?:Delta|delta)\b/gi, '$$\\Delta$$');
-    s = s.replace(/Δ'/g, '$$\\Delta\'$$');
-    s = s.replace(/Δ/g, '$$\\Delta$$');
-
-    // Convert angle notation: "góc ACB" -> "$\widehat{ACB}$"
-    s = s.replace(/\bgóc\s+([A-Z]{1,4})\b/gi, '$$\\widehat{$1}$$');
-
-    // Convert triangle notation: "tam giác ABC" -> "$\Delta ABC$"
-    s = s.replace(/\btam giác\s+([A-Z]{3})\b/gi, '$$\\Delta $1$$');
-
-    // Convert middle dot / cross products: "DC . DB" or "DC · DB" -> "$DC \cdot DB$"
-    s = s.replace(/\b([A-Z]{1,3})\s*[·\.]\s*([A-Z]{1,3})\b/g, '$$$1 \\cdot $2$$');
 
     // Convert unicode symbols
     s = s.replace(/π/g, '$\\pi$');
@@ -97,14 +113,11 @@ export function preprocessMathContent(raw: string): string {
     s = s.replace(/sqrt\(([^)]+)\)/gi, '$$\\sqrt{$1}$$');
     s = s.replace(/√(\d+|[A-Za-z])/g, '$$\\sqrt{$1}$$');
 
-    // Convert variables with index like x1, x2 (when not part of a normal word)
-    s = s.replace(/\b([xXyYzZstmnukabcpqrS])([12345])\b/g, '$$$1_$2$$');
-
-    // Convert unbracketed LaTeX commands like \sqrt{3}, \frac{1}{2}, \cdot, etc. that lack $...$
-    s = s.replace(/([A-Za-z0-9_\^]*\\[a-zA-Z]+(?:\{[^{}]*\}|\[[^[\]]*\]|[\w\^]+)*(?:\s*[\/\+\-\=\*]\s*[A-Za-z0-9_\^\.]*)?)/g, (m) => {
+    // Convert unbracketed LaTeX expressions containing backslash commands like \pi, \approx, \Delta, \ne, \le, \ge, etc.
+    s = s.replace(/(?:(?<=\s|^|\()|^)([A-Za-z0-9_\^]*\\[a-zA-Z]+(?:\{[^{}]*\}|\[[^[\]]*\]|[\w\^]+)*(?:\s*[\/\+\-\=\*\<\>]\s*[A-Za-z0-9_\^\.]*)*)(?=\s|$|\)|\.|\,)/g, (m) => {
       const trimmed = m.trim();
       if (trimmed && !trimmed.startsWith('$') && !trimmed.endsWith('$')) {
-        return ` $${trimmed}$ `;
+        return `$${trimmed}$`;
       }
       return m;
     });
