@@ -82,12 +82,12 @@ export const ProfileSelectionScreen: React.FC = () => {
   const roleCards = [
     {
       key: 'student',
-      label: 'Sĩ Tử 🌱',
+      label: 'Học Sinh 🌱',
       icon: <GraduationCap className="w-5 h-5 text-synth-cyan" />,
       colorClass: 'border-synth-cyan/30 hover:border-synth-cyan hover:bg-synth-cyan/5 text-synth-cyan shadow-[0_0_15px_rgba(0,240,255,0.03)]',
       exists: !!existingStudent,
       name: existingStudent?.name || 'Chưa khởi tạo',
-      desc: 'Sĩ Tử vào học tập & rèn luyện',
+      desc: 'Học Sinh vào học tập & rèn luyện',
       isLoading: quickStarting === 'student',
       isSelecting: selectingProfileId === existingStudent?.id,
       theme: existingStudent?.uiTheme || 'current',
@@ -106,16 +106,16 @@ export const ProfileSelectionScreen: React.FC = () => {
     },
   ];
 
-  // Chỉ thêm card Phó Viện Trưởng nếu có profile tương ứng hoạt động
+  // Chỉ thêm card Viện Phó nếu có profile tương ứng hoạt động
   if (existingHieuPho) {
     roleCards.push({
       key: 'pho_vien',
-      label: 'Phó Viện Trưởng 🛡️',
+      label: 'Viện Phó 🛡️',
       icon: <Shield className="w-5 h-5 text-purple-400" />,
       colorClass: 'border-purple-400/30 hover:border-purple-400 hover:bg-purple-400/5 text-purple-400 shadow-[0_0_15px_rgba(192,132,252,0.03)]',
       exists: true,
       name: existingHieuPho.name,
-      desc: 'Được Ban Giám Hiệu ủy thác quản trị trường',
+      desc: 'Được Viện Trưởng ủy thác quản trị Học Viện',
       isLoading: false,
       isSelecting: selectingProfileId === existingHieuPho.id,
       theme: existingHieuPho.uiTheme || 'current',
@@ -260,7 +260,7 @@ export const ProfileSelectionScreen: React.FC = () => {
               );
             } else {
               // Option cho hồ sơ chưa khởi tạo: Hiển thị box nhỏ gọn dạng [icon - Trở thành Giáo Viên]
-              const displayLabel = card.key === 'student' ? 'Trở thành Sĩ Tử 🌱' : 'Trở thành Chủ Nhiệm 📋';
+              const displayLabel = card.key === 'student' ? 'Trở thành Học Sinh 🌱' : 'Trở thành Chủ Nhiệm 📋';
               return (
                 <button
                   key={card.key}

@@ -287,11 +287,11 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, less
         setTabSwitches(prev => {
           const nextVal = prev + 1;
           if (nextVal >= 3) {
-            toast.error('Giám Học xử phạt: Sĩ Tử chuyển tab quá 3 lần, bài thi bị hủy bỏ! ⚖️');
+            toast.error('Giám Học xử phạt: Học Sinh chuyển tab quá 3 lần, bài thi bị hủy bỏ! ⚖️');
             setRunMistakes(3); // Ép defeat
             setRunFinished(true);
           } else {
-            toast.error(`Giám Học nhắc nhở: Sĩ Tử không được chuyển tab khi đang thi! Cảnh cáo lần ${nextVal}/3. ⚖️`);
+            toast.error(`Giám Học nhắc nhở: Học Sinh không được chuyển tab khi đang thi! Cảnh cáo lần ${nextVal}/3. ⚖️`);
           }
           return nextVal;
         });
@@ -932,7 +932,7 @@ export const PlayArea: React.FC<PlayAreaProps> = ({ mode, bossId, lessonId, less
       {/* Tab switch warnings (Anti-cheating) */}
       {(mode === 'boss' || mode === 'survival') && tabSwitches > 0 && (
         <div className="text-[10px] text-red-400 font-bold uppercase tracking-wider bg-red-950/20 border border-red-900/30 p-2.5 rounded-xl text-center animate-pulse">
-          ⚠️ Giám Học cảnh cáo: Sĩ Tử đã chuyển tab {tabSwitches}/3 lần. Chuyển tab 3 lần bài thi sẽ bị hủy!
+          ⚠️ Giám Học cảnh cáo: Học Sinh đã chuyển tab {tabSwitches}/3 lần. Chuyển tab 3 lần bài thi sẽ bị hủy!
         </div>
       )}
 

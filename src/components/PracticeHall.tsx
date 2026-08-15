@@ -61,13 +61,6 @@ const MAT_THAT_CARDS = [
   }
 ] as const;
 
-const SUBJECT_TOOL_INTRODUCTIONS: Record<string, string> = {
-  math: 'Bộ công cụ vẽ hình học 3D, dựng đồ thị hàm số và hình phẳng giúp đệ tử trực quan hóa các định lý, bài tập thực hành Toán học.',
-  english: 'Các công cụ tương tác hỗ trợ phát âm, tra cứu từ điển ngữ cảnh và luyện phản xạ giao tiếp tiếng Anh.',
-  literature: 'Bản đồ tư duy phân tích tác phẩm văn học, sơ đồ cốt truyện và bảng tra cứu dẫn chứng Ngữ Văn.',
-  default: 'Các công cụ tương tác hỗ trợ học tập trực quan giúp đệ tử dễ dàng lĩnh hội kiến thức môn học.'
-};
-
 const SUBJECT_META: Record<string, any> = {
   english: {
     label: 'Tiếng Anh',
@@ -479,10 +472,7 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
               <Target className="w-4 h-4 text-synth-cyan" />
               Công cụ học tập tương tác
             </h2>
-            <p className="text-[9px] text-slate-400 leading-normal mb-3">
-              {SUBJECT_TOOL_INTRODUCTIONS[selectedSubject] || SUBJECT_TOOL_INTRODUCTIONS.default}
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
               {availableToolCards.map(card => {
                 const onOpen = card.id === 'handbook3d'
                   ? onOpenWorkshop3D
@@ -522,9 +512,6 @@ export const PracticeHall: React.FC<PracticeHallProps> = ({
               <h2 className="font-orbitron font-black text-sm text-white uppercase tracking-wider">
                 {track.lessonTitle}
               </h2>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Chọn chuyên đề để học lý thuyết cốt lõi và làm các bài luyện liên quan.
-              </p>
             </div>
 
             {/* TAB CHO TỪNG HẦM NGUYÊN TỐ */}

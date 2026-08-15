@@ -3,7 +3,7 @@
 Tài liệu này quy định chi tiết Ruby và điểm kinh nghiệm (XP) trong GameEngG10. Ruby là tài nguyên ảo, không phải tiền và không có tỷ giá tiền mặt.
 
 ## 1. Nguyên tắc Cốt lõi của Kinh Nghiệm (XP)
-- **Luật Bất Cảm:** Điểm Kinh Nghiệm (XP) là thước đo nỗ lực học tập của Sĩ Tử. **XP chỉ có thể tăng hoặc đứng im, KHÔNG BAO GIỜ bị trừ** trong bất kỳ tình huống nào (kể cả khi bị phạt, chăm pet, hay bỏ học).
+- **Luật Bất Cảm:** Điểm Kinh Nghiệm (XP) là thước đo nỗ lực học tập của Học Sinh. **XP chỉ có thể tăng hoặc đứng im, KHÔNG BAO GIỜ bị trừ** trong bất kỳ tình huống nào (kể cả khi bị phạt, chăm pet, hay bỏ học).
 - Cấp độ (Level) được tính toán dựa trên tổng XP tích lũy. XP không bao giờ giảm đồng nghĩa Level không bao giờ tụt.
 
 ### 1.1 Các mốc nhận XP (học văn Tinh tấn)
@@ -20,12 +20,12 @@ Tài liệu này quy định chi tiết Ruby và điểm kinh nghiệm (XP) tron
 Bảng định nghĩa **duy nhất** cho quan hệ XP → Level → Danh hiệu nằm tại **CORE_SPECS §7.2** (6 danh hiệu: Tân Sinh → Học Sĩ). Không tồn tại bảng thứ hai.
 - **Công thức lên cấp (theo code hiện hành):** từ Level *n* lên Level *n+1* cần **n × 200 XP**.
 - Khi vượt ngưỡng: hệ thống hiển thị **chúc mừng thăng cấp**, ghi log truyền công; chạm mốc danh hiệu (Level 5/15/30/50/80) thì tặng badge + thưởng đột biến (CORE_SPECS §7.3).
-- *(Bảng cũ "Cấp 1–5: Tân Sinh / Tú Tài / Sĩ Tử / Trạng Nguyên / Chưởng Môn theo mốc XP thô" đã bị **bãi bỏ** vì trùng lặp và lệch tên gọi với §7.2.)*
+- *(Bảng cũ "Cấp 1–5: Tân Sinh / Tú Tài / Học Sinh / Trạng Nguyên / Chưởng Môn theo mốc XP thô" đã bị **bãi bỏ** vì trùng lặp và lệch tên gọi với §7.2.)*
 
 ---
 
 ## 2. Nguyên tắc Cốt lõi của Ruby (Ruby - Coins)
-- Ruby là đơn vị tiền tệ trao đổi trong game. Có thể **tăng và giảm** liên tục dựa trên các quyết định và kết quả tương tác của Sĩ Tử.
+- Ruby là đơn vị tiền tệ trao đổi trong game. Có thể **tăng và giảm** liên tục dựa trên các quyết định và kết quả tương tác của Học Sinh.
 - Có thể dùng Ruby để mua học cụ, mở phong cách và đổi Quà Khuyến Học; không thể đổi Ruby trực tiếp thành tiền.
 
 ### 2.1 Các tình huống Tăng Ruby (Thu Nhập)

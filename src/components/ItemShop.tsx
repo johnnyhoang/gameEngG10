@@ -27,6 +27,8 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
   const buyTheme = useGameState(state => state.buyTheme);
   const setUiTheme = useGameState(state => state.setUiTheme);
   const redeemReward = useGameState(state => state.redeemReward);
+  const cancelRewardRedemption = useGameState(state => state.cancelRewardRedemption);
+  const fetchMyRewards = useGameState(state => state.fetchMyRewards);
   const uiTheme = useGameState(state => state.uiTheme);
   const isUnicorn = isLightTheme(uiTheme);
   const unlockedThemes = playerUnlockedThemes || DEFAULT_UNLOCKED_THEMES;
@@ -76,6 +78,16 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
     return map;
   }, [classRewardRedemptions]);
 
+  const pendingSchoolRedemptionMap = useMemo(() => {
+    const map = new Map<string, typeof rewardRedemptions[0]>();
+    for (const r of rewardRedemptions) {
+      if (r.status === 'pending' && !map.has(r.rewardId)) {
+        map.set(r.rewardId, r);
+      }
+    }
+    return map;
+  }, [rewardRedemptions]);
+
   // Memoize filtered redemptions cho phần lịch sử đổi quà
   const activeRedemptions = useMemo(
     () => classRewardRedemptions.filter(r => r.status !== 'cancelled'),
@@ -84,14 +96,17 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
 
   // Dùng ref để luưu stable ref của store actions, tránh restart interval khi re-render
   const fetchClassRewardsRef = useRef(fetchClassRewards);
+  const fetchMyRewardsRef = useRef(fetchMyRewards);
   const syncWithServerRef = useRef(syncWithServer);
   fetchClassRewardsRef.current = fetchClassRewards;
+  fetchMyRewardsRef.current = fetchMyRewards;
   syncWithServerRef.current = syncWithServer;
 
   useEffect(() => {
     setClassRewardsLoading(true);
     Promise.all([
       fetchClassRewardsRef.current(),
+      fetchMyRewardsRef.current?.(),
       syncWithServerRef.current?.(),
     ]).finally(() => {
       setClassRewardsLoading(false);
@@ -100,6 +115,7 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
     // Tự động refresh mỗi 1 phút — dùng ref để interval không bị restart khi action re-instantiate
     const intervalId = setInterval(() => {
       fetchClassRewardsRef.current();
+      fetchMyRewardsRef.current?.();
       syncWithServerRef.current?.();
     }, 60 * 1000);
 
@@ -172,6 +188,10 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
   const handleRedeem = (id: string, title: string) => {
     const reward = rewards.find(r => r.id === id);
     if (!reward) return;
+    if (!reward.isUnlimited && reward.remainingQuantity <= 0) {
+      toast.error(t('Phần thưởng này đã hết số lượng!', 'This reward is out of stock!'));
+      return;
+    }
     if (playerRuby < reward.costRuby) {
       toast.error(t('Ruby chưa đủ để đổi phần thưởng này!', 'Not enough Ruby to redeem this reward!'));
       return;
@@ -180,14 +200,36 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
       isOpen: true,
       cost: reward.costRuby,
       actionDescription: t(`đổi phần thưởng "${title}"`, `redeem reward "${title}"`),
-      onConfirm: () => {
-        const success = redeemReward(id);
-        if (success) {
-          toast.success(t(`🎁 Đã đổi "${title}"! Chờ Chủ Nhiệm Chính trao quà ngoài đời nhé.`, `🎁 Redeemed "${title}"! Wait for your tutor to hand it out.`));
+      isLoading: false,
+      onConfirm: async () => {
+        setConfirmModal(prev => ({ ...prev, isLoading: true }));
+        try {
+          const success = await redeemReward(id);
+          if (success) {
+            toast.success(t(`🎁 Đã đổi "${title}"! Chờ Ban Lãnh Đạo Viện trao quà ngoài đời nhé.`, `🎁 Redeemed "${title}"! Wait for the academy staff to hand it out.`));
+          }
+        } catch (err) {
+          console.error(err);
+          toast.error(t('Đổi phần thưởng thất bại.', 'Failed to redeem reward.'));
+        } finally {
+          setConfirmModal(prev => ({ ...prev, isOpen: false, isLoading: false }));
         }
-        setConfirmModal(prev => ({ ...prev, isOpen: false }));
       }
     });
+  };
+
+  const handleCancelSchoolRedemption = async (redemptionId: string) => {
+    if (cancellingIds[redemptionId]) return;
+    setCancellingIds(prev => ({ ...prev, [redemptionId]: true }));
+    try {
+      await cancelRewardRedemption(redemptionId);
+      toast.success(t('Đã rút lại yêu cầu đổi quà.', 'Request cancelled successfully.'));
+    } catch (err) {
+      console.error(err);
+      toast.error(t('Không thể rút lại yêu cầu.', 'Failed to cancel request.'));
+    } finally {
+      setCancellingIds(prev => ({ ...prev, [redemptionId]: false }));
+    }
   };
 
   const handleRedeemClass = async (rewardId: string, title: string) => {
@@ -261,9 +303,6 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
           <h2 className={`font-orbitron text-lg font-black uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
             🛒 {t("Cửa Hàng Quà Tặng", "Gift Shop")}
           </h2>
-          <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
-            {t("Tiêu hao Ruby tích lũy để đổi các vật phẩm học tập và đặc quyền giao diện.", "Spend your accumulated Ruby to redeem learning items and UI theme privileges.")}
-          </p>
         </div>
         <div className={`flex items-center gap-2 px-4 py-2 rounded-xl font-orbitron font-semibold ${
           isUnicorn ? 'bg-white/80 border border-violet-200/40 text-violet-700' : 'bg-synth-blue border border-synth-orange/30'
@@ -310,7 +349,6 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
                 <div className="space-y-1">
                   <h4 className={`font-orbitron font-semibold text-sm ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{t("Thẻ Gợi Ý", "Hint Card")}</h4>
                   <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'} leading-normal`}>{t("Gợi mở hướng giải hoặc loại bỏ một đáp án nhiễu trong câu hỏi đang làm.", "Reveal a hint or eliminate a wrong option in the active question.")}</p>
-                  <span className={`text-[9px] font-semibold font-orbitron ${isUnicorn ? 'text-amber-600' : 'text-synth-orange'}`}>{t("Dùng ngay trong câu hỏi đang làm", "Use directly in the active question")}</span>
                   {player.ruby < 50 && <span className="text-[9px] font-semibold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
                 </div>
               </div>
@@ -333,9 +371,6 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
           <h3 className={`font-orbitron font-semibold text-sm uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
             🎡 {t("Vòng Quay May Mắn (Cuối Tuần)", "Weekend Lucky Wheel")}
           </h3>
-          <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}`}>
-            {t("Quay để nhận phần quà ngẫu nhiên từ học viện vào mỗi dịp cuối tuần!", "Spin to receive a random gift from the academy every weekend!")}
-          </p>
           {/* Danh sách giải thưởng có thể trúng */}
           <div className="pt-2">
             <span className="text-[10px] font-orbitron font-semibold uppercase tracking-wider text-slate-400 block mb-1.5">🎁 Phần quà có trong vòng quay:</span>
@@ -389,7 +424,6 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
           <h3 className={`font-orbitron font-semibold text-sm uppercase tracking-wider flex items-center gap-2 ${isUnicorn ? 'text-violet-700' : 'text-synth-cyan'}`}>
             <Palette className="w-4 h-4" /> {t("Kho Giao Diện (Phong Cách Học Đường)", "School Theme Catalog")}
           </h3>
-          <p className={`text-xs ${isUnicorn ? 'text-violet-600/70' : 'text-synth-text-muted'}`}>{t("Mở khóa phong cách giao diện cá tính để cá nhân hóa không gian học tập của bạn.", "Unlock personalized UI styles to customize your learning space.")}</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {UI_THEMES.map(theme => {
@@ -454,34 +488,53 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {rewards.map(reward => {
+                const isOutOfStock = !reward.isUnlimited && reward.remainingQuantity <= 0;
                 const isAffordable = player.ruby >= reward.costRuby;
-                const canRedeem = isAffordable;
+                const canRedeem = !isOutOfStock && isAffordable;
+                const pendingRedemption = pendingSchoolRedemptionMap.get(reward.id);
+                const alreadyPending = !!pendingRedemption;
                 return (
                   <div key={reward.id} className="relative">
                     <div className={`glass-panel rounded-2xl p-4 flex justify-between items-center transition-all duration-200 h-full ${
                       !isAffordable ? 'opacity-70' : ''
-                    } ${isUnicorn ? 'border-violet-200/25 bg-white/75 hover:bg-white/90' : 'border border-white/5 bg-synth-gray/20 hover:bg-synth-gray/30'}`}>
+                    } ${isUnicorn ? 'border-violet-200/25 bg-white/75 hover:bg-white/90' : 'border border-white/5 bg-synth-gray/20 hover:bg-synth-gray/30'} ${isOutOfStock ? 'opacity-50' : ''}`}>
                       <div className="flex gap-3 items-center min-w-0">
                         <div className="w-10 h-10 rounded-lg bg-synth-blue/60 border border-white/5 flex items-center justify-center shrink-0 text-xl">🎁</div>
                         <div className="space-y-0.5 min-w-0">
                           <h4 className={`font-semibold text-sm truncate ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{reward.title}</h4>
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className={`text-[10px] font-semibold font-orbitron ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-orange'}`}>{reward.costRuby} Ruby</span>
-                            {!isAffordable && <span className="text-[9px] font-semibold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
+                            <span className={`text-[10px] font-semibold font-orbitron px-1 rounded border ${reward.isUnlimited ? 'text-synth-green border-synth-green/30 bg-synth-green/5' : isOutOfStock ? 'text-red-400 border-red-400/30 bg-red-400/5' : 'text-synth-cyan border-synth-cyan/30 bg-synth-cyan/5'}`}>
+                              {reward.isUnlimited ? t('Không giới hạn', 'Unlimited') : `${t('Còn', 'Left')} ${reward.remainingQuantity}/${reward.quantity}`}
+                            </span>
+                            {!isAffordable && !isOutOfStock && <span className="text-[9px] font-semibold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
                           </div>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2 ml-2 shrink-0">
-                        <button onClick={(e) => { e.stopPropagation(); handleRedeem(reward.id, reward.title); }} disabled={!canRedeem}
-                          className={`px-3.5 py-2 rounded-xl font-orbitron font-semibold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-45 disabled:cursor-not-allowed ${
-                            !canRedeem
-                              ? 'bg-slate-800 text-slate-500 border border-slate-700'
-                              : isUnicorn 
-                                ? 'bg-gradient-to-r from-fuchsia-300 to-violet-300 text-violet-900 hover:brightness-105' 
-                                : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.3)]'
-                          }`}>
-                          {t('Đổi Quà', 'Redeem')}
-                        </button>
+                      <div className="flex flex-col gap-1.5 items-end ml-2 shrink-0">
+                        {alreadyPending ? (
+                          <>
+                            <span className="text-[10px] px-2 py-1 rounded font-orbitron font-semibold text-synth-orange border border-synth-orange/30 bg-synth-orange/10 animate-pulse">{t('Chờ Trao', 'Pending')}</span>
+                            <button
+                              disabled={cancellingIds[pendingRedemption!.id]}
+                              onClick={(e) => { e.stopPropagation(); handleCancelSchoolRedemption(pendingRedemption!.id); }}
+                              className="flex items-center gap-1 text-[10px] text-synth-text-muted hover:text-synth-magenta transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                            >
+                              <RotateCcw className="w-3 h-3" /> {cancellingIds[pendingRedemption!.id] ? t('Đang hủy...', 'Cancelling...') : t('Rút lại', 'Cancel')}
+                            </button>
+                          </>
+                        ) : (
+                          <button onClick={(e) => { e.stopPropagation(); handleRedeem(reward.id, reward.title); }} disabled={!canRedeem}
+                            className={`px-3.5 py-2 rounded-xl font-orbitron font-semibold text-xs uppercase tracking-wider cursor-pointer transition-all duration-300 disabled:opacity-45 disabled:cursor-not-allowed ${
+                              !canRedeem
+                                ? 'bg-slate-800 text-slate-500 border border-slate-700'
+                                : isUnicorn
+                                  ? 'bg-gradient-to-r from-fuchsia-300 to-violet-300 text-violet-900 hover:brightness-105'
+                                  : 'bg-synth-orange text-black hover:shadow-[0_0_10px_rgba(249,115,22,0.3)]'
+                            }`}>
+                            {isOutOfStock ? t('Hết Hàng', 'Out of Stock') : t('Đổi Quà', 'Redeem')}
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -505,7 +558,7 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {classRewards.map(reward => {
-                const isOutOfStock = reward.remaining <= 0;
+                const isOutOfStock = !reward.isUnlimited && reward.remaining <= 0;
                 const isAffordable = playerRuby >= reward.costRuby;
                 const canRedeem = !isOutOfStock && isAffordable;
                 // O(1) lookup thay vì O(N) filter lặp lại trong mỗi item
@@ -523,8 +576,8 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
                           {reward.teacherName && <p className="text-[10px] text-synth-text-muted">{t('từ ', 'from ')}{reward.teacherName}</p>}
                           <div className="flex items-center gap-2 flex-wrap">
                             <span className={`text-[10px] font-semibold font-orbitron ${isUnicorn ? 'text-fuchsia-600' : 'text-synth-orange'}`}>{reward.costRuby} Ruby</span>
-                            <span className={`text-[10px] font-semibold font-orbitron px-1 rounded border ${isOutOfStock ? 'text-red-400 border-red-400/30 bg-red-400/5' : 'text-synth-cyan border-synth-cyan/30 bg-synth-cyan/5'}`}>
-                              {t('Còn', 'Left')} {reward.remaining}/{reward.quantity}
+                            <span className={`text-[10px] font-semibold font-orbitron px-1 rounded border ${reward.isUnlimited ? 'text-synth-green border-synth-green/30 bg-synth-green/5' : isOutOfStock ? 'text-red-400 border-red-400/30 bg-red-400/5' : 'text-synth-cyan border-synth-cyan/30 bg-synth-cyan/5'}`}>
+                              {reward.isUnlimited ? t('Không giới hạn', 'Unlimited') : `${t('Còn', 'Left')} ${reward.remaining}/${reward.quantity}`}
                             </span>
                             {!isAffordable && !isOutOfStock && <span className="text-[9px] font-semibold text-red-400 font-orbitron flex items-center gap-1">⚠️ Thiếu Ruby</span>}
                           </div>
@@ -595,7 +648,19 @@ export const ItemShop: React.FC<ItemShopProps> = ({ onSpinWheel }) => {
                     <span className={`text-xs font-semibold block ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>{redemption.rewardTitle}</span>
                     <span className="text-[10px] text-synth-text-muted">{new Date(redemption.timestamp).toLocaleString('vi-VN')}</span>
                   </div>
-                  {getRedemptionStatusBadge(redemption.status)}
+                  <div className="flex items-center gap-2">
+                    {getRedemptionStatusBadge(redemption.status)}
+                    {redemption.status === 'pending' && (
+                      <button
+                        disabled={cancellingIds[redemption.id]}
+                        onClick={() => handleCancelSchoolRedemption(redemption.id)}
+                        className="text-[10px] text-synth-text-muted hover:text-synth-magenta transition-colors cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                        title={t('Rút lại', 'Cancel')}
+                      >
+                        {cancellingIds[redemption.id] ? '...' : <RotateCcw className="w-3 h-3" />}
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

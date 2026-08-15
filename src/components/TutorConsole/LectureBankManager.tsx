@@ -506,9 +506,6 @@ export const LectureBankManager: React.FC = () => {
             <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
               📚 KHO BÀI GIẢNG
             </h3>
-            <div className="text-xs text-synth-text-muted leading-relaxed max-w-4xl space-y-1">
-              <p>Soạn thảo, hiệu đính lý thuyết cho các chương mục luyện tập trong Học Đường.</p>
-            </div>
           </div>
           <button
             onClick={handleOpenCreateModal}

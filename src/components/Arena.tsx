@@ -202,7 +202,6 @@ export function Arena({ onStartPlay }: ArenaProps) {
             <h3 className={`font-orbitron font-black text-sm uppercase tracking-wider ${isUnicorn ? 'text-violet-800' : 'text-white'}`}>
               📝 Thi theo Bài học
             </h3>
-            <p className="text-[10px] text-slate-400">Hệ thống bài thi chuẩn hóa theo SGK, sắp xếp tuần tự — Luyện đề thi thử chuẩn cấu trúc để tích lũy kiến thức thực chiến.</p>
           </div>
           <span className="text-[10px] font-orbitron font-semibold text-slate-400">
             Tổng cộng: {filteredSubjectLessons.length} bài
@@ -520,7 +519,6 @@ export function Arena({ onStartPlay }: ArenaProps) {
             <h3 className={`font-orbitron font-black text-sm uppercase tracking-wider ${isUnicorn ? 'text-red-800' : 'text-red-400'}`}>
               🛡️ Vực Sinh Tồn (Survival Mode)
             </h3>
-            <p className="text-[10px] text-slate-400">Thử thách leo tháp sinh tồn cực hạn dưới giới hạn 3 mạng đỏ</p>
           </div>
 
           <div className="relative">

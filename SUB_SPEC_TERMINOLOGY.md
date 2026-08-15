@@ -1,5 +1,7 @@
 # Sub-Spec: Tự Điển Thuật Ngữ & Ngôn Ngữ Sản Phẩm
 
+*Cập nhật 2026-08-15 (Viện Trưởng yêu cầu chuẩn hóa lại): đổi Sĩ Tử → Học Sinh, Chủ Nhiệm Chính/Phụ → Chủ Nhiệm/Trợ Giảng (gọi chung Giáo Viên), Phó Viện Trưởng → Viện Phó, Ban Giám Hiệu → Ban Lãnh Đạo Viện, Phòng Hiệu Trưởng → Tổng Quan, thêm Học Viện/Viện làm tên tổ chức duy nhất và Khu Vực Chủ Nhiệm (PROVISIONAL). Các entry đổi tên vẫn giữ nguyên code/DB value theo nguyên tắc §2.4 bên dưới — xem [TERMINOLOGY_MIGRATION_INVENTORY.md](./TERMINOLOGY_MIGRATION_INVENTORY.md) cho impact chi tiết.*
+
 Tài liệu này là **single source of truth** cho mọi tên gọi, khái niệm, hành động, nội dung hiển thị và message của GameEngG10. `CORE_SPECS.md` và các sub-spec khác chỉ tham chiếu, không tạo định nghĩa cạnh tranh.
 
 ## 1. Bản sắc ngôn ngữ
@@ -32,14 +34,17 @@ Quy trình thêm hoặc đổi thuật ngữ:
 
 | Tên tiếng Việt (UI) | Tên tiếng Anh | Code/technical term | Loại | Định nghĩa và công dụng | Trạng thái |
 | :--- | :--- | :--- | :--- | :--- | :---: |
-| **Viện Trưởng** 👑 | Institute Head / Super Admin | `truong_vien` | Role | Người quản trị cao nhất của toàn học viện. | APPROVED |
-| **Phó Viện Trưởng** 🛡️ | Deputy Institute Head / Moderator | `pho_vien` | Role | Người được Viện Trưởng ủy quyền quản trị trong phạm vi cho phép. | APPROVED |
-| **Chủ Nhiệm Chính** 👨‍👩‍👧 | Primary Teacher / Primary Parent | `tutor` | Role | Người chịu trách nhiệm chính cho lớp hoặc nhóm học sinh. | APPROVED |
-| **Chủ Nhiệm Phụ** 👤 | Supporting Teacher / Secondary Parent | `secondary_tutor` | Role | Người hỗ trợ lớp với quyền do Chủ Nhiệm Chính ủy quyền. | APPROVED |
-| **Giảng Sư** 📖 | Teacher / Content Creator | `teacher` | Role (future) | Người giảng dạy, biên soạn và hướng dẫn học liệu. | APPROVED |
+| **Học Viện** 🏛️ / **Viện** | Institute | *(không có code value riêng — tên duy nhất của tổ chức trong toàn app)* | Product concept | Tên duy nhất của tổ chức giáo dục trong ứng dụng. Không dùng "trường", "trường học" hay tên nào khác để gọi tổ chức. | APPROVED |
+| **Viện Trưởng** 👑 | Institute Head | `truong_vien` | Role | Người quản trị cao nhất của toàn Học Viện. | APPROVED |
+| **Viện Phó** 🛡️ | Deputy Institute Head | `pho_vien` | Role | Người được Viện Trưởng ủy quyền quản trị trong phạm vi cho phép. Không gọi "Phó Viện Trưởng", "Hiệu Phó" hay tên nào khác. | APPROVED |
+| **Ban Lãnh Đạo Viện** | Institute Leadership | *(gộp `truong_vien` + `pho_vien`)* | Role group | Tên gọi chung khi nhắc tới Viện Trưởng và Viện Phó cùng lúc. Không dùng "Ban Giám Hiệu" hay tên nào khác. | APPROVED |
+| **Giáo Viên** | Teacher | *(gộp `tutor` + `secondary_tutor`)* | Role group | Tên gọi chung duy nhất cho người quản lý lớp học — gồm Chủ Nhiệm và Trợ Giảng. Không có khái niệm "chủ nhiệm chính/phụ" hay vai trò giáo viên nào khác ngoài hai vai trò này. | APPROVED |
+| **Chủ Nhiệm** 👨‍👩‍👧 | Teacher | `tutor` | Role | Giáo viên chịu trách nhiệm chính cho một lớp, có đầy đủ quyền quản lý lớp đó. Không gọi "Chủ Nhiệm Chính". | APPROVED |
+| **Trợ Giảng** 👤 | Assistant Teacher | `secondary_tutor` | Role | Giáo viên hỗ trợ lớp, được Chủ Nhiệm cấp quyền theo từng mục. Không gọi "Chủ Nhiệm Phụ" hay "Phó Chủ Nhiệm". | APPROVED |
+| **Giảng Sư** 📖 | Teacher / Content Creator | `teacher` | Role (future) | Người giảng dạy, biên soạn và hướng dẫn học liệu — **khác** với Chủ Nhiệm/Trợ Giảng, chưa triển khai. Người biên soạn spec/code không dùng từ này để chỉ Chủ Nhiệm/Trợ Giảng. | APPROVED |
 | **Khảo Quan** 📝 | Examiner / Grader | `grader` | Role (future) | Người chấm và đánh giá bài làm. | APPROVED |
-| **Trợ Giáo MIKA** 🤖 | MIKA AI Teaching Assistant | `aiCompanion`, `ai_teacher`, `Gemini` | Character/service | Trợ giáo AI hướng dẫn Sĩ Tử; không thay thế vai trò quyết định của Giảng Sư. | APPROVED |
-| **Sĩ Tử** 🌱 | Student / Learner | `student`, `player`, `user` | Role | Người học tham gia rèn luyện và chuẩn bị cho các kỳ khảo thí. | APPROVED |
+| **Trợ Giáo MIKA** 🤖 | MIKA AI Teaching Assistant | `aiCompanion`, `ai_teacher`, `Gemini` | Character/service | Trợ giáo AI hướng dẫn Học Sinh; không thay thế vai trò quyết định của Giảng Sư, Chủ Nhiệm hay Trợ Giảng. | APPROVED |
+| **Học Sinh** 🌱 | Student / Learner | `student`, `player`, `user` | Role | Người học tham gia rèn luyện và chuẩn bị cho các kỳ khảo thí. Không gọi "Sĩ Tử", "Thiếu hiệp" hay tên nào khác khi nhắc tới vai trò này, kể cả trong message/toast/AI copy. | APPROVED |
 | **Giám Học** ⚖️ | Discipline Supervisor | `disciplineVoice`, `systemVoice` | System character | Giọng hệ thống nhắc quy củ và xử lý hành vi bỏ qua thử thách; không phải tài khoản thật. | APPROVED |
 | **Trường Thi** 🏛️ | Examination Hall | `PlayArea`, `Arena`, `arena` | Module | Khu luyện tập và khảo thí có áp lực thời gian hoặc giới hạn lỗi. | APPROVED |
 | **Ôn Luyện** | Practice Mode | `practice`, `mixed` | Mode | Luyện tự do hoặc tổng hợp theo mảng kiến thức. | APPROVED |
@@ -68,19 +73,20 @@ Quy trình thêm hoặc đổi thuật ngữ:
 | **Bộ Hiển Thị Câu Hỏi Chuyên Môn** | Question Renderer | `QuestionRendererContribution`, `question-renderer` | UI contribution | Quy tắc trình bày câu hỏi đặc thù như tách ngữ liệu đọc hiểu khỏi yêu cầu trả lời. | APPROVED |
 | **Danh Mục Quà Khuyến Học** 🎁 | Learning Reward Catalog | `tutorReward`, `rewardQuantity`, `markTutorRewardDelivered` | Feature | Danh mục quà ngoài đời do người quản lý tạo, định lượng và xác nhận trao. | APPROVED |
 | **Phút Đèn Sách** ⏱️ | Learning Minutes | `learningMinutes`, `estimatedMinutes` | Metric | Tổng thời gian học, chỉ số North Star. | APPROVED |
-| **Bảng Bài Tập** 📜 | Assigned Learning Tasks | `tutorQuest` | Feature | Nhiệm vụ học tập do người quản lý giao cho Sĩ Tử. | APPROVED |
-| **Sổ Tu Học** 📖 | Learning Journey Ledger | `LearningLedger`, `mission-ledger` | Global module | Module chung dưới TopHUD, hiển thị Nhập Môn, Nhiệm Vụ Hôm Nay và Tiến Độ Tu Học trên mọi trang Sĩ Tử. | APPROVED |
+| **Bảng Bài Tập** 📜 | Assigned Learning Tasks | `tutorQuest` | Feature | Nhiệm vụ học tập do Giáo Viên giao cho Học Sinh. | APPROVED |
+| **Sổ Tu Học** 📖 | Learning Journey Ledger | `LearningLedger`, `mission-ledger` | Global module | Module chung dưới TopHUD, hiển thị Nhập Môn, Nhiệm Vụ Hôm Nay và Tiến Độ Tu Học trên mọi trang Học Sinh. | APPROVED |
 | **Nhập Môn** 🌱 | Onboarding Journey | `onboarding` | Mission group | Chuỗi cột mốc chỉ hoàn thành một lần trong đời profile để khám phá và làm quen với học viện. | APPROVED |
 | **Nhiệm Vụ Hôm Nay** 📋 | Daily Missions | `daily` | Mission group | Mục tiêu học tập theo ngày, sinh từ capability và nội dung thật của profile; reset theo timezone học viện. | APPROVED |
 | **Tiến Độ Tu Học** 📈 | Learning Progress | `learning-progress` | Progress summary | Tóm tắt Level, XP, chuỗi học, bài hoàn thành và cột mốc kế tiếp của profile. | APPROVED |
 | **Phong Cách Học Đường** 🎭 | School Style / Appearance Theme | `uiTheme`, `UiThemeId`, `ProfileThemeModal` | Feature | Giao diện cá nhân hóa theo hồ sơ. | APPROVED |
-| **Quà Khuyến Học** 🎁 | Learning Reward | `rewards`, `TutorReward`, `claimTutorReward` | Feature | Món quà thực tế mà Sĩ Tử có thể xem, đổi và chờ xác nhận trao. | APPROVED |
+| **Quà Khuyến Học** 🎁 | Learning Reward | `rewards`, `TutorReward`, `claimTutorReward` | Feature | Món quà thực tế mà Học Sinh có thể xem, đổi và chờ xác nhận trao. | APPROVED |
 | **Nhà Của MIKA** 🐷 | MIKA's Home / Pet Sanctuary | `PetSanctuary`, `pet` | Module | Nơi chăm sóc và tương tác với Heo Maikawaii. | APPROVED |
 | **Nhật Ký MIKA** | MIKA Memory Journal | `petAlbum`, `memoryAlbum` | Feature | Lưu hình ảnh và nhật ký hành trình của MIKA. | APPROVED |
-| **Hồ Sơ Sĩ Tử** 👑 | Student Profile | `ProfileThemeModal`, `isProfileOpen` | Module | Quản lý hồ sơ, danh hiệu, phong cách và môn học của Sĩ Tử. | APPROVED |
-| **Phòng Điều Hành** | Administration Console | `TutorConsole`, `tutor` | Module | Không gian quản lý dành cho Viện Trưởng, Phó Viện Trưởng, Chủ Nhiệm Chính và Chủ Nhiệm Phụ theo quyền. | APPROVED |
+| **Hồ Sơ Học Sinh** 👑 | Student Profile | `ProfileThemeModal`, `isProfileOpen` | Module | Quản lý hồ sơ, danh hiệu, phong cách và môn học của Học Sinh. | APPROVED |
+| **Phòng Điều Hành** | Administration Console | `TutorConsole`, `tutor` | Module | Không gian quản lý dành cho Viện Trưởng, Viện Phó, Chủ Nhiệm và Trợ Giảng theo quyền — trang chính đơn giản hóa tối đa, không lặp lại thông tin đã có ở Khu Vực Chủ Nhiệm. | APPROVED |
 | **Sổ Danh Bộ** 🏛️ | Member Register | `chinh_dien` | Module | Quản lý danh sách, hồ sơ và vai trò thành viên. | APPROVED |
-| **Phòng Hiệu Trưởng** 📖 | Principal's Room / Academic Affairs | `phong_hieu_truong` | Module | Nơi Hiệu Trưởng/Viện Trưởng quản lý học viện, xem báo cáo, thống kê và sơ đồ tổ chức. | APPROVED |
+| **Tổng Quan** 📖 | Overview | `phong_hieu_truong` | Module | Tab tổng quan trong Phòng Điều Hành: báo cáo, thống kê và sơ đồ tổ chức của Viện. Không gọi "Phòng Hiệu Trưởng". | APPROVED |
+| **Khu Vực Chủ Nhiệm** 🏫 | Homeroom Area | *(mới — chưa gán code id)* | Module | Khu vực riêng của mỗi lớp, nơi DUY NHẤT hiển thị thông tin Chủ Nhiệm/Trợ Giảng của lớp đó và nơi DUY NHẤT cấp/thu quyền cho Trợ Giảng. Không lặp lại các thông tin này ở bất kỳ trang nào khác. | PROVISIONAL — chờ triển khai (xem SUB_SPEC_FAMILY_ROLE.md §3) |
 | **Kho Đề Thi** 📚 | Question Bank | `van_quyen_cac`, `QuestionBank` | Module | Quản lý câu hỏi, đề thi và quy trình import đề. | APPROVED |
 | **Phòng Tài Vụ** 💰 | Resources & Rewards Administration | `ngan_cac` | Module | Quản lý tài nguyên, cấu hình gameplay và quà khuyến học. | APPROVED |
 | **Cẩm Nang Học Đường** 📖 | School Handbook | `AcademyHandbook`, `handbookPages` | Feature | Hướng dẫn sử dụng và giải thích quy tắc trong ứng dụng. | APPROVED |

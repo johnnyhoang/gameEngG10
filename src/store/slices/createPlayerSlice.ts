@@ -2,7 +2,6 @@ import type { StateCreator } from 'zustand';
 import type { StoreState } from '../types';
 import { INITIAL_PLAYER, INITIAL_PET, FREE_UI_THEME } from '../initialState';
 import { UI_THEMES } from '../../theme/uiThemes';
-import type { RewardRedemption } from '../../types/game';
 import { DEFAULT_GRADE_TIER } from '../../types/game';
 import { questionInScope } from '../../utils/learningScope';
 import { logActivity, checkLevelUp, mapServerTopics } from '../helpers';
@@ -14,13 +13,14 @@ import { playerService } from '../../services/playerService';
 import { getSubjectActivities } from '../../subject-modules/registry';
 import { recordMissionEvent } from '../../services/missionLedgerService';
 import { getHoChiMinhDateString } from '../../utils/date';
+import { schoolRewardService } from '../../services/schoolRewardService';
 
 export const createPlayerSlice: StateCreator<
   StoreState,
   [],
   [],
   Pick<StoreState, 
-    'player' | 'pet' | 'questions' | 'lessons' | 'lessonsProgress' | 'explorationProgress' | 'pageExplorationStates' | 'categoryStats' | 'rewards' | 'rewardRedemptions' | 'challenges' | 'challengeTemplates' | 'logs' | 'activeCombo' | 'maxCombo' | 'lastSyncTime' | 'profiles' | 'petStates' | 'categoryStatsAll' | 'answerQuestion' | 'useEnergy' | 'addEnergy' | 'tickEnergyRegen' | 'ratchetMasteryRank' | 'buyStreakShield' | 'buyHint' | 'buyTheme' | 'redeemReward' | 'feedPet' | 'spinWheel' | 'openMysteryBox' | 'masterLesson' | 'applyDefeatPenalty' | 'completeBossVictory' | 'completeLevel3Page' | 'awardRubyAndXp' | 'clearExploration' | 'resetProgress' | 'checkDailyReset' | 'getAdaptiveQuestion' | 'getQuestionByWeight' | 'syncSessionResult' | 'syncWithServer' | 'pullServerState'
+    'player' | 'pet' | 'questions' | 'lessons' | 'lessonsProgress' | 'explorationProgress' | 'pageExplorationStates' | 'categoryStats' | 'rewards' | 'rewardRedemptions' | 'challenges' | 'challengeTemplates' | 'logs' | 'activeCombo' | 'maxCombo' | 'lastSyncTime' | 'profiles' | 'petStates' | 'categoryStatsAll' | 'answerQuestion' | 'useEnergy' | 'addEnergy' | 'tickEnergyRegen' | 'ratchetMasteryRank' | 'buyStreakShield' | 'buyHint' | 'buyTheme' | 'redeemReward' | 'cancelRewardRedemption' | 'fetchMyRewards' | 'feedPet' | 'spinWheel' | 'openMysteryBox' | 'masterLesson' | 'applyDefeatPenalty' | 'completeBossVictory' | 'completeLevel3Page' | 'awardRubyAndXp' | 'clearExploration' | 'resetProgress' | 'checkDailyReset' | 'getAdaptiveQuestion' | 'getQuestionByWeight' | 'syncSessionResult' | 'syncWithServer' | 'pullServerState'
   >
 > = (set, get) => ({
   player: INITIAL_PLAYER,
@@ -370,35 +370,30 @@ export const createPlayerSlice: StateCreator<
           return true;
         },
 
-  redeemReward: (rewardId) => {
-          // Đổi Danh Mục Quà Khuyến Học (CORE_SPECS §3.2): hành động CHỦ Ý — bắt buộc đủ Ruby, không cho âm.
+  redeemReward: async (rewardId) => {
+          // Đổi Danh Mục Quà Khuyến Học của trường (CORE_SPECS §3.2). Trước đây hàm này chỉ trừ
+          // Ruby trong state cục bộ rồi trông chờ syncWithServer() đẩy lên — không transaction,
+          // không trừ tồn kho ở server, dễ mất đồng bộ (bug "đổi quà xong không trừ tiền"). Giờ
+          // gọi thẳng route atomic POST /api/school-rewards/:id/redeem rồi tải lại state thật từ
+          // server (giống hệt pattern redeemClassReward/createClassRewardSlice.ts).
           const state = get();
           const reward = state.rewards.find(r => r.id === rewardId);
-          if (!reward || state.player.ruby < reward.costRuby) return false;
+          if (!reward) return false;
+          if (!reward.isUnlimited && state.player.ruby < reward.costRuby) return false;
 
-          const redemption: RewardRedemption = {
-            id: `rr-${Date.now()}`,
-            rewardId: reward.id,
-            rewardTitle: reward.title,
-            costRuby: reward.costRuby,
-            status: 'pending',
-            timestamp: Date.now()
-          };
+          const result = await schoolRewardService.redeem(rewardId);
+          if (!result.success) {
+            if (result.error === 'not_enough_ruby') toast.error('Ruby chưa đủ để đổi phần thưởng này!');
+            else if (result.error === 'out_of_stock') toast.error('Phần thưởng này đã hết số lượng!');
+            else toast.error(result.error || 'Không thể đổi phần thưởng.');
+            return false;
+          }
 
-          set(prev => ({
-            player: {
-              ...prev.player,
-              ruby: prev.player.ruby - reward.costRuby
-            },
-            rewards: prev.rewards,
-            rewardRedemptions: [redemption, ...prev.rewardRedemptions]
-          }));
-
+          await Promise.all([get().fetchMyRewards(), get().syncWithServer()]);
           logActivity(get, set, 'shop', 'Đổi Quà Khuyến Học', `Đã đổi "${reward.title}" — chờ người quản lý trao quà ngoài đời`, -reward.costRuby, 0);
-          get().syncWithServer();
           void recordMissionEvent({
             profileId: state.currentUser?.id || state.player.id,
-            idempotencyKey: `shop-redemption:${redemption.id}`,
+            idempotencyKey: `shop-redemption:${result.redemptionId}`,
             eventType: 'shop_item_redeemed',
             gradeTier: state.activeGradeTier,
             subjectId: state.currentSubject,
@@ -406,6 +401,30 @@ export const createPlayerSlice: StateCreator<
             entityId: rewardId,
           });
           return true;
+        },
+
+  cancelRewardRedemption: async (redemptionId) => {
+          // Học sinh tự huỷ yêu cầu đổi quà TRƯỜNG đang chờ — hoàn Ruby + tồn kho (nếu không
+          // unlimited), atomic ở server (DELETE /api/school-rewards/redemptions/:id).
+          const ok = await schoolRewardService.cancelRedemption(redemptionId);
+          if (!ok) {
+            toast.error('Không thể rút lại yêu cầu này.');
+            return false;
+          }
+          toast.success('Đã rút lại yêu cầu. Ruby đã được hoàn trả.');
+          await Promise.all([get().fetchMyRewards(), get().syncWithServer()]);
+          return true;
+        },
+
+  fetchMyRewards: async () => {
+          const { currentUser } = get();
+          if (!currentUser?.id || currentUser.id.startsWith('mock-')) return;
+          try {
+            const data = await schoolRewardService.fetch();
+            set({ rewards: data.rewards, rewardRedemptions: data.redemptions });
+          } catch (e) {
+            console.error('[fetchMyRewards]', e);
+          }
         },
 
   feedPet: () => {
@@ -439,7 +458,7 @@ export const createPlayerSlice: StateCreator<
             'pet_interact',
             didLevelUp ? 'Cho thú nuôi ăn (Thăng cấp! 🎉)' : 'Cho thú nuôi ăn',
             didLevelUp
-              ? `Chăm sóc Pet chu đáo giúp con thăng cấp lên Level ${newLevel}! Chúc mừng Sĩ Tử! 🎉`
+              ? `Chăm sóc Pet chu đáo giúp con thăng cấp lên Level ${newLevel}! Chúc mừng Học Sinh! 🎉`
               : 'Pet của con rất vui mừng và đầy năng lượng!',
             -rubyCost,
             xpGain
@@ -658,7 +677,7 @@ export const createPlayerSlice: StateCreator<
   completeBossVictory: (bonusIndex?: number) => {
           const state = get();
           const bonusXP = 150;
-          // Bonus Điểm khi hạ Boss — quảng bá trên Boss Card, do Chủ Viện/Phó Viện Trưởng cấu hình (CORE_SPECS §2.1).
+          // Bonus Điểm khi hạ Boss — quảng bá trên Boss Card, do Viện Trưởng/Viện Phó cấu hình (CORE_SPECS §2.1).
           // Thay hoàn toàn thưởng tiền mặt cũ; Boss không bao giờ thưởng tiền.
           const rubyBonusOptions = state.gameSettings.bossCompletionBonusRuby ?? [100, 150, 200];
           // Dùng đúng bonusIndex của Boss vừa đánh để khớp số đã quảng bá trên Boss Card;

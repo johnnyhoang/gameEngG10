@@ -11,6 +11,7 @@ export const createClassRewardSlice: StateCreator<
     | 'classRewards'
     | 'classRewardRedemptions'
     | 'isOrphanStudent'
+    | 'canManageClassRewards'
     | 'fetchClassRewards'
     | 'createClassReward'
     | 'deleteClassReward'
@@ -22,6 +23,7 @@ export const createClassRewardSlice: StateCreator<
   classRewards: [],
   classRewardRedemptions: [],
   isOrphanStudent: false,
+  canManageClassRewards: false,
 
   fetchClassRewards: async () => {
     const { currentUser } = get();
@@ -32,14 +34,15 @@ export const createClassRewardSlice: StateCreator<
         classRewards: data.rewards,
         classRewardRedemptions: data.redemptions,
         isOrphanStudent: data.isOrphan,
+        canManageClassRewards: data.canManage ?? false,
       });
     } catch (e) {
       console.error('[fetchClassRewards]', e);
     }
   },
 
-  createClassReward: async (title, costRuby, quantity) => {
-    const result = await classRewardService.create(title, costRuby, quantity);
+  createClassReward: async (title, costRuby, quantity, isUnlimited) => {
+    const result = await classRewardService.create(title, costRuby, quantity, isUnlimited);
     if (result.success) {
       toast.success(`🎁 Đã tạo phúc lợi "${title}" cho lớp!`);
       await get().fetchClassRewards();

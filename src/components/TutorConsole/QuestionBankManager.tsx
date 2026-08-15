@@ -419,9 +419,6 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
               <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
                 🗃️ NGÂN HÀNG CÂU HỎI
               </h3>
-              <div className="text-xs text-synth-text-muted leading-relaxed max-w-4xl space-y-1">
-                <p>Quản lý toàn bộ danh sách câu hỏi trắc nghiệm, thống kê độ phủ chuyên đề và chuẩn bị đề thi.</p>
-              </div>
             </div>
             <button
               onClick={startAddNew}
@@ -530,7 +527,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                       className="w-full p-2.5 rounded-xl border border-white/10 bg-synth-gray/20 text-white text-xs cursor-pointer outline-none focus:border-synth-cyan"
                     >
                       <option value="all">Tất cả câu</option>
-                      <option value="confused">Sĩ Tử báo chưa hiểu 🧠 ({sectQuestions.filter(q => q.isConfused).length})</option>
+                      <option value="confused">Học Sinh báo chưa hiểu 🧠 ({sectQuestions.filter(q => q.isConfused).length})</option>
                     </select>
                   </label>
                   <label className="space-y-1 text-[10px] block">
@@ -611,7 +608,7 @@ export const QuestionBankManager: React.FC<QuestionBankManagerProps> = ({
                                 )}
                                 {q.isConfused && (
                                   <span className="text-[9px] px-1.5 py-0.5 rounded bg-red-500/20 text-red-400 font-bold uppercase font-orbitron border border-red-500/40">
-                                    Sĩ Tử báo chưa hiểu 🧠
+                                    Học Sinh báo chưa hiểu 🧠
                                   </span>
                                 )}
                                 <span className="text-[9px] px-1.5 py-0.5 rounded bg-synth-cyan/20 text-synth-cyan font-bold uppercase font-orbitron">

@@ -27,11 +27,9 @@ interface StudentProfileViewProps {
   activeRedemptions: any[];
   schoolRewards: any[];
   fetchSchoolRewards: () => Promise<void>;
-  createSchoolReward: (title: string, costRuby: number, quantity: number) => Promise<boolean>;
+  createSchoolReward: (title: string, costRuby: number, quantity: number, isUnlimited?: boolean) => Promise<boolean>;
   deleteSchoolReward: (rewardId: string) => Promise<boolean>;
-  updateSchoolReward: (id: string, title: string, costRuby: number, quantity: number, remainingQuantity: number) => Promise<boolean>;
-  markRewardDelivered: (redemptionId: string) => void;
-  cancelRedemption: (redemptionId: string) => void;
+  updateSchoolReward: (id: string, title: string, costRuby: number, quantity: number, remainingQuantity: number, isUnlimited?: boolean) => Promise<boolean>;
   // Quest props
   tutorQuests: any[];
   addTutorQuest: (title: string, description: string, rewardRuby: number) => void;
@@ -58,8 +56,6 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
   createSchoolReward,
   deleteSchoolReward,
   updateSchoolReward,
-  markRewardDelivered,
-  cancelRedemption,
   tutorQuests,
   addTutorQuest,
   completeTutorQuest,
@@ -87,7 +83,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
     return (
       <div className="glass-panel rounded-2xl border border-white/5 p-8 text-center space-y-3">
         <p className="text-xs text-synth-text-muted">
-          Chọn tài khoản Sĩ Tử tại tab <strong className="text-synth-magenta">Sổ Danh Bộ</strong> (bấm "Xem Hồ Sơ") để theo dõi báo cáo, tiến độ và nạp năng lượng.
+          Chọn tài khoản Học Sinh tại tab <strong className="text-synth-magenta">Sổ Danh Bộ</strong> (bấm "Xem Hồ Sơ") để theo dõi báo cáo, tiến độ và nạp năng lượng.
         </p>
       </div>
     );
@@ -191,7 +187,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
             </ResponsiveContainer>
           ) : (
             <div className="h-full flex items-center justify-center text-synth-text-muted">
-              Sĩ Tử chưa bắt đầu làm bài luyện tập.
+              Học Sinh chưa bắt đầu làm bài luyện tập.
             </div>
           )}
         </div>
@@ -270,7 +266,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
           </div>
         ) : (
           <div className="glass-panel rounded-2xl border border-white/5 p-5 flex flex-col h-[350px] items-center justify-center text-center text-xs text-slate-400">
-            <span>🔒 Chỉ Ban Giám Hiệu và Chủ Nhiệm mới xem được hàng đợi duyệt bỏ qua.</span>
+            <span>🔒 Chỉ Ban Lãnh Đạo Viện và Chủ Nhiệm mới xem được hàng đợi duyệt bỏ qua.</span>
           </div>
         )}
 
@@ -339,14 +335,12 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
           createSchoolReward={createSchoolReward}
           deleteSchoolReward={deleteSchoolReward}
           updateSchoolReward={updateSchoolReward}
-          markRewardDelivered={markRewardDelivered}
-          cancelRedemption={cancelRedemption}
           adminMarkRewardDelivered={adminMarkRewardDelivered}
           adminCancelRedemption={adminCancelRedemption}
         />
       </div>
 
-      {/* 5. Bảng Bài Tập Giao Sĩ Tử */}
+      {/* 5. Bảng Bài Tập Giao Học Sinh */}
       {studentUser?.id && (
         <div className="glass-panel rounded-2xl border border-white/5 p-5">
           <QuestManager
@@ -370,10 +364,6 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
         widthClass="max-w-md"
       >
         <div className="p-5 space-y-4">
-          <p className="text-xs text-slate-300">
-            Nạp đầy năng lượng để Sĩ Tử hoàn thành các thử thách học tập tại Trường Thi.
-          </p>
-
           {/* Visual Progress Bar showing exact current level */}
           <div className="space-y-2 bg-white/3 p-3.5 rounded-xl border border-white/5">
             <div className="flex justify-between text-[10px] font-bold text-slate-400 font-mono">
@@ -427,10 +417,10 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
             </button>
           </div>
 
-          {/* Cấu hình Năng Lượng Tối Đa + giờ hồi RIÊNG cho Sĩ Tử (SUB_SPEC_ENERGY §2) */}
+          {/* Cấu hình Năng Lượng Tối Đa + giờ hồi RIÊNG cho Học Sinh (SUB_SPEC_ENERGY §2) */}
           <div className="pt-3 mt-1 border-t border-white/5 space-y-3">
             <h5 className="text-[10px] font-bold uppercase tracking-wider text-synth-text-muted">
-              ⚙️ Cấu Hình Riêng Cho Sĩ Tử
+              ⚙️ Cấu Hình Riêng Cho Học Sinh
             </h5>
             <div className="grid grid-cols-2 gap-3">
               <label className="space-y-1 text-xs">
@@ -481,7 +471,7 @@ export const StudentProfileView: React.FC<StudentProfileViewProps> = ({
             </button>
             {!canManageEnergy && (
               <p className="text-[9px] text-yellow-500/80 italic mt-2 leading-tight">
-                ⚠️ Tài khoản của bạn hiện là Chủ nhiệm phụ, chỉ Chủ nhiệm chính mới có quyền thay đổi Năng lượng của Sĩ Tử này.
+                ⚠️ Tài khoản của bạn hiện là Trợ Giảng, chỉ Chủ Nhiệm mới có quyền thay đổi Năng lượng của Học Sinh này.
               </p>
             )}
           </div>

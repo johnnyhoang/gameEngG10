@@ -51,12 +51,12 @@ export const PET_STAGE_LABELS: Record<PetStage, string> = {
 export type UiThemeId = 'current' | 'cute-pink-pastel' | 'space-adventure' | 'fantasy-forest' | 'pixel-arcade' | 'unicorn-dream';
 
 export interface GameSettings {
-  /** Bonus Điểm (Ruby) khi hạ Boss — quảng bá ngay trên Boss Card, do Chủ Viện/Phó Viện Trưởng đặt (CORE_SPECS §2.1). Thay thế hoàn toàn tiền thưởng VND cũ. */
+  /** Bonus Điểm (Ruby) khi hạ Boss — quảng bá ngay trên Boss Card, do Viện Trưởng/Viện Phó đặt (CORE_SPECS §2.1). Thay thế hoàn toàn tiền thưởng VND cũ. */
   bossCompletionBonusRuby: [number, number, number];
   challengeEnergyCosts: [number, number, number, number];
   baseXP?: number;
   baseRuby?: number;
-  /** Giá Ruby để mở khóa một Phong Cách Học Đường (UI theme) — do Viện Trưởng/Phó Viện Trưởng cấu hình. */
+  /** Giá Ruby để mở khóa một Phong Cách Học Đường (UI theme) — do Viện Trưởng/Viện Phó cấu hình. */
   themeUnlockCost?: number;
   updatedAt: number;
 }
@@ -249,8 +249,10 @@ export interface TutorReward {
   costRuby: number;
   /** Tổng số lượng chủ nhiệm tạo ra ban đầu. */
   quantity: number;
-  /** Số lượng còn lại có thể đổi — giảm mỗi khi Sĩ Tử đổi, hết thì ẩn/disable. */
+  /** Số lượng còn lại có thể đổi — giảm mỗi khi Học Sinh đổi, hết thì ẩn/disable. */
   remainingQuantity: number;
+  /** true = không giới hạn số lượng, quantity/remainingQuantity bị bỏ qua. */
+  isUnlimited?: boolean;
   timestamp: number;
 }
 
@@ -277,6 +279,8 @@ export interface ClassReward {
   costRuby: number;
   quantity: number;
   remaining: number;
+  /** true = không giới hạn số lượng, quantity/remaining bị bỏ qua. */
+  isUnlimited?: boolean;
   createdAt: number;
 }
 
@@ -543,7 +547,7 @@ export const STUDENT_RANKS: StudentRank[] = [
   { id: 'tu-tai', name: 'Tú Tài', icon: '🥋', minLevel: 5, description: 'Đã bắt đầu học tập kiến thức chuyên sâu của các môn học.' },
   { id: 'cu-nhan', name: 'Cử Nhân', icon: '📖', minLevel: 15, description: 'Có nền tảng vững vàng, đã tự mình vượt qua nhiều thử thách.' },
   { id: 'tien-si', name: 'Tiến Sĩ', icon: '⭐', minLevel: 30, description: 'Đạt được những thành tích nổi bật và độ chính xác cao khi giải bài.' },
-  { id: 'trang-nguyen', name: 'Trạng Nguyên', icon: '🎓', minLevel: 50, description: 'Học vấn thượng thừa, nằm trong danh sách các Sĩ Tử đứng đầu học viện.' },
+  { id: 'trang-nguyen', name: 'Trạng Nguyên', icon: '🎓', minLevel: 50, description: 'Học vấn thượng thừa, nằm trong danh sách các Học Sinh đứng đầu học viện.' },
   { id: 'hoc-si', name: 'Học Sĩ', icon: '👑', minLevel: 80, description: 'Đỉnh phong kiến thức, danh hiệu cao nhất chỉ dành cho rất ít người xuất chúng.' }
 ];
 

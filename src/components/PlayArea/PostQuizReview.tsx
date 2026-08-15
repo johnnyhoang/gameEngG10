@@ -105,7 +105,7 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
             <p className="text-xs text-synth-text-muted">
               {isDefeat
                 ? 'Đệ tử đã phạm đủ 3 lỗi sai. Chỉ giữ lại 50% nanite tích lũy.'
-                : 'Sĩ Tử đã vượt qua toàn bộ thử thách xuất sắc! Hãy xem lại phân tích đáp án bên dưới.'}
+                : 'Học Sinh đã vượt qua toàn bộ thử thách xuất sắc! Hãy xem lại phân tích đáp án bên dưới.'}
             </p>
           </div>
 
@@ -410,7 +410,7 @@ export const PostQuizReview: React.FC<PostQuizReviewProps> = ({
               <h5 className="font-orbitron font-bold uppercase text-white tracking-wide text-[10px]">
                 Câu hỏi bị bỏ qua
               </h5>
-              <p>Sĩ Tử đã bỏ qua câu hỏi này hoặc hết thời gian làm bài trước khi gửi kết quả.</p>
+              <p>Học Sinh đã bỏ qua câu hỏi này hoặc hết thời gian làm bài trước khi gửi kết quả.</p>
               <div className="text-emerald-400 font-semibold pt-1 flex flex-wrap items-baseline gap-1">
                 <span>Đáp án đúng cần điền:</span>
                 <MarkdownRenderer

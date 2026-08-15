@@ -3,7 +3,7 @@ import { Palette, Sparkles } from 'lucide-react';
 import { UI_THEMES } from '../theme/uiThemes';
 import type { UiThemeId, UserProfile } from '../types/game';
 import { useGameState } from '../hooks/useGameState';
-import { getStudentRankForLevel, STUDENT_RANKS } from '../types/game';
+import { STUDENT_RANKS } from '../types/game';
 import { toast } from '../utils/toast';
 import { AcademyHandbook } from './AcademyHandbook';
 import { ActivityLog } from './ActivityLog';
@@ -203,37 +203,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           {/* CỘT TRÁI: Học Tích & Giáo Viên (col-span-7) */}
           <div className="lg:col-span-7 space-y-6">
             
-            {/* 1. Chỉ số học tập (General Stats) */}
-            {currentUser.role === 'student' && (
-              <div className="grid grid-cols-2 gap-4 bg-white/5 p-5 rounded-2xl border border-white/5 text-xs">
-                <div className="p-3.5 rounded-xl border border-white/5 bg-white/5">
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron mb-1">{t('Danh hiệu học tập', 'Academic Title')}</span>
-                  <span className="font-orbitron font-black text-synth-cyan text-sm leading-snug flex items-center gap-1">
-                    <span>{getStudentRankForLevel(player.level).icon}</span>
-                    <span>{getStudentRankForLevel(player.level).name}</span>
-                  </span>
-                  <span className="block text-[10px] text-slate-400 font-semibold mt-1">{t('Cấp', 'Level')} {player.level}</span>
-                </div>
-                <div className="p-3.5 rounded-xl border border-white/5 bg-white/5">
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron mb-1">{t('Tích lũy điểm số', 'Accumulated Points')}</span>
-                  <span className="font-orbitron font-black text-synth-magenta text-sm">{player.xp} XP</span>
-                </div>
-                <div className="p-3.5 rounded-xl border border-white/5 bg-white/5">
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron mb-1">{t('Ruby tích lũy', 'Accumulated Ruby')}</span>
-                  <span className="font-orbitron font-black text-synth-orange text-sm">{player.ruby} Ruby</span>
-                </div>
-                <div className="p-3.5 rounded-xl border border-white/5 bg-white/5">
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider font-orbitron mb-1">{t('Chuỗi học tập', 'Learning Streak')}</span>
-                  <span className="font-orbitron font-black text-synth-green text-sm">{player.streak} {t('Ngày', 'Days')}</span>
-                </div>
-              </div>
-            )}
+            {/* Chỉ số Level/XP/Ruby/Streak đã hiển thị thường trực trên header — trang Hồ Sơ chỉ
+                thêm thông tin chưa có ở đâu khác: Cây Danh Hiệu đầy đủ ngay dưới đây. */}
 
             {/* Cây Danh Hiệu */}
             {currentUser.role === 'student' && (
               <div className={`p-5 rounded-2xl border ${isLight ? 'border-violet-200/50 bg-violet-50/20' : 'border-white/10 bg-white/5'} space-y-3`}>
                 <h3 className={`font-orbitron font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 ${isLight ? 'text-violet-800' : 'text-synth-cyan'}`}>
-                  <span>🏆</span> {t('Cây Danh Hiệu Sĩ Tử', 'Academic Titles Tree')}
+                  <span>🏆</span> {t('Cây Danh Hiệu Học Sinh', 'Academic Titles Tree')}
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                   {STUDENT_RANKS.map(rank => {
@@ -480,7 +457,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           <div className="lg:col-span-5 space-y-6">
             <div className={`p-5 rounded-2xl border ${isLight ? 'border-violet-200/35 bg-white/60' : 'border-white/10 bg-slate-950/40'} flex flex-col h-full max-h-[600px] overflow-hidden`}>
               <h3 className={`font-orbitron font-bold text-xs uppercase tracking-wider mb-4 flex items-center gap-1.5 ${isLight ? 'text-violet-800' : 'text-synth-cyan'}`}>
-                <span>📊</span> {t('Nhật Ký Hoạt Động Sĩ Tử', 'Student Activity Log')}
+                <span>📊</span> {t('Nhật Ký Hoạt Động Học Sinh', 'Student Activity Log')}
               </h3>
               <div className="flex-1 overflow-y-auto pr-1">
                 <ActivityLog />

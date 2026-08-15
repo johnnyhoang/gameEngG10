@@ -15,13 +15,16 @@ import { generateGradingSignature } from './ai.js';
 const router = express.Router();
 router.use(authMiddleware, activeProfileMiddleware);
 
+// Phải khớp CHÍNH XÁC với STUDENT_RANKS ở src/types/game.ts (frontend) — một danh sách danh
+// hiệu duy nhất cho toàn app. Trước đây file này có 1 bảng khác hẳn (Thiếu Hiệp, Cao Thủ...)
+// khiến toast thăng cấp và Hồ Sơ Học Sinh hiển thị 2 tên khác nhau cho cùng 1 mốc Level.
 export const STUDENT_RANKS = [
-  { id: 'tan-de-tu', name: 'Tân Đệ Tử', icon: '🌱', minLevel: 1 },
-  { id: 'de-tu', name: 'Đệ Tử', icon: '🥋', minLevel: 5 },
-  { id: 'thieu-hiep', name: 'Thiếu Hiệp', icon: '⚔️', minLevel: 15 },
-  { id: 'cao-thu', name: 'Cao Thủ', icon: '⭐', minLevel: 30 },
-  { id: 'dai-hiep', name: 'Đại Hiệp', icon: '🐉', minLevel: 50 },
-  { id: 'tong-su', name: 'Tông Sư', icon: '👑', minLevel: 80 }
+  { id: 'tan-sinh', name: 'Tân Sinh', icon: '🌱', minLevel: 1 },
+  { id: 'tu-tai', name: 'Tú Tài', icon: '🥋', minLevel: 5 },
+  { id: 'cu-nhan', name: 'Cử Nhân', icon: '📖', minLevel: 15 },
+  { id: 'tien-si', name: 'Tiến Sĩ', icon: '⭐', minLevel: 30 },
+  { id: 'trang-nguyen', name: 'Trạng Nguyên', icon: '🎓', minLevel: 50 },
+  { id: 'hoc-si', name: 'Học Sĩ', icon: '👑', minLevel: 80 }
 ];
 
 export function getStudentRankForLevel(level: number) {

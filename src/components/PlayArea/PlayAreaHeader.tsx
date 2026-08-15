@@ -49,11 +49,11 @@ export const PlayAreaHeader: React.FC<PlayAreaHeaderProps> = ({
   totalQuestions,
   isMuted,
   activeCombo,
-  timeLeft,
+  timeLeft: _timeLeft,
   activeSectId,
   onToggleMute,
   onShowScratchpad,
-  formatTime,
+  formatTime: _formatTime,
   mode
 }) => {
   const subjectId = activeSectId as SubjectId;
@@ -143,12 +143,7 @@ export const PlayAreaHeader: React.FC<PlayAreaHeaderProps> = ({
         )}
       </div>
 
-      {/* Timer */}
-      {timeLeft > 0 && (
-        <div className="px-3 py-1 rounded bg-synth-gray border border-white/10 text-xs font-orbitron text-white">
-          Thời hạn: {formatTime(timeLeft)}
-        </div>
-      )}
+      {/* Đồng hồ đếm ngược đã hiển thị đầy đủ (kèm thanh tiến trình) ở BossTimerBar bên dưới — không lặp lại ở đây. */}
     </div>
   );
 };

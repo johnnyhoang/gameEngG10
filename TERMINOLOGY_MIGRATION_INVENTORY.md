@@ -1,6 +1,6 @@
 # Inventory Chuẩn Hóa Thuật Ngữ
 
-Ngày rà soát: **2026-07-16** *(cập nhật: đổi parent→tutor)*
+Ngày rà soát: **2026-07-16** *(cập nhật: đổi parent→tutor)*; **2026-08-15** *(đợt 2 — xem hàng cuối bảng §2)*
 Nguồn chuẩn: [SUB_SPEC_TERMINOLOGY.md](./SUB_SPEC_TERMINOLOGY.md)
 
 ## 1. Nguyên tắc migration
@@ -32,6 +32,7 @@ Nguồn chuẩn: [SUB_SPEC_TERMINOLOGY.md](./SUB_SPEC_TERMINOLOGY.md)
 | Currency | NP/coins → **Ruby** | 55+ file frontend/backend/schema; xem backlog T2A | Domain/API/DB migration đã triển khai trong code |
 | Sự kiện/hành động | Kỳ Ngộ Học Đường → **Thử Thách Bất Ngờ**; Logout → **Rời Học Viện**; skip punishment → **Bỏ qua** | `CORE_SPECS.md`, `SUB_SPEC_ENERGY.md`, handbook, `MienPhatDialog.tsx`, `PlayArea.tsx`, admin slice | Display + behavior; Bỏ qua đã đổi không trừ Ruby, giới hạn 3/ngày |
 | **[CONTRACT — KHÔNG REVERT]** DB column & API field: `parent_id/parent_name/parent_email/parent_avatar` → **`tutor_id/tutor_name/tutor_email/tutor_avatar`** trong `ge10_class_links`; status `pending_parent` → **`pending_tutor`**; role `parent` → **`tutor`** | `backend/migrations/20260716_rename_parent_to_tutor.sql`, `src/types/game.ts` (`ClassLink`), `AcademyTab.tsx`, `ProfilePage.tsx`, `WorldMap.tsx`, `TutorConsole.tsx`, `TutorConsole/ClassLinksManager.tsx`, `TutorConsole/OrgChart.tsx`, `TutorConsole/SettingsManager.tsx`, `TutorConsole/StudentDirectory.tsx` | **DB/API/type contract đã deploy** — migration 2026-07-16 merge dữ liệu `ge10_parent_rewards` → `ge10_tutor_rewards` rồi drop bảng cũ. Không được đưa `parent_*` về lại bất kỳ layer nào. |
+| **Đợt 2 (2026-08-15) — chuẩn hóa vai trò & tổ chức:** Sĩ Tử/Thiếu hiệp → **Học Sinh**; Chủ Nhiệm Chính → **Chủ Nhiệm**; Chủ Nhiệm Phụ/Phó Chủ Nhiệm → **Trợ Giảng** (gọi chung **Giáo Viên**); Phó Viện Trưởng → **Viện Phó**; Chủ Viện → **Viện Trưởng**; Ban Giám Hiệu → **Ban Lãnh Đạo Viện**; Phòng Hiệu Trưởng → **Tổng Quan**; "trường/trường học" khi chỉ tổ chức → **Học Viện/Viện**; Quà TRƯỜNG → **Quà TOÀN VIỆN** | `CORE_SPECS.md`, `SUB_SPEC_FAMILY_ROLE.md`, `SUB_SPEC_CLASS_REWARDS.md`, `SUB_SPEC_UI_RULES.md`, `SUB_SPEC_XP_NP.md`, `SUB_SPEC_TERMINOLOGY.md`, và toàn bộ `TutorConsole/*`, `ProfilePage.tsx`, `TopHUD.tsx`, `WorldMap.tsx`, backend routes/seed (danh sách đầy đủ — xem đợt code riêng) | Display + docs; giữ nguyên toàn bộ code value/DB value/route id hiện có (`student`, `tutor`, `secondary_tutor`, `pho_vien`, `truong_vien`, `phong_hieu_truong`, `school_reward_templates`...). Code/backend chưa migrate — đang ở đợt kế tiếp. |
 
 ## 3. Feature/function đang ẩn hoặc chưa enable
 

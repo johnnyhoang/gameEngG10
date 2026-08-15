@@ -303,7 +303,7 @@ export const FinalResultScreen: React.FC<FinalResultScreenProps> = ({
                 <h5 className="font-orbitron font-bold uppercase text-white tracking-wide text-[10px]">
                   Câu hỏi bị bỏ qua
                 </h5>
-                <p>Sĩ Tử đã bỏ qua câu hỏi này hoặc hết thời gian làm bài trước khi gửi kết quả.</p>
+                <p>Học Sinh đã bỏ qua câu hỏi này hoặc hết thời gian làm bài trước khi gửi kết quả.</p>
                 <div className="text-emerald-400 font-semibold pt-1 flex flex-wrap items-baseline gap-1">
                   <span>Đáp án đúng cần điền:</span>
                   <MarkdownRenderer

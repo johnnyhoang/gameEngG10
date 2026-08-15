@@ -3,6 +3,7 @@ import { toast } from '../../utils/toast';
 import { SearchSuggest } from '../Common/SearchSuggest';
 import { RefreshCw } from 'lucide-react';
 import { useGameState } from '../../hooks/useGameState';
+import { getRoleLabel } from '../../utils/roleHelpers';
 
 interface AdminConnectionManagerProps {
   currentUser: any;
@@ -30,7 +31,7 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
     try {
       const ok = await respondClassInvite(linkId, accept);
       if (ok) {
-        toast.success(accept ? 'Đã chấp nhận kết nối Ban Giám Hiệu!' : 'Đã từ chối kết nối.');
+        toast.success(accept ? 'Đã chấp nhận kết nối Ban Lãnh Đạo Viện!' : 'Đã từ chối kết nối.');
         await fetchClassLinks();
       }
     } catch (err) {
@@ -108,7 +109,7 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
       {inviteAdminConnection && (
         <div className="flex flex-col sm:flex-row gap-2">
           <SearchSuggest
-            placeholder="Mời Viện Trưởng / Phó Viện Trưởng theo tên hoặc email..."
+            placeholder="Mời Viện Trưởng / Viện Phó theo tên hoặc email..."
             roleFilter="admin_board"
             value={inviteEmail}
             onChange={setInviteEmail}
@@ -144,7 +145,7 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
                   )}
                   <div>
                     <span className="text-xs text-white font-bold block">
-                      {link.peer_name} <span className="text-[9px] text-synth-magenta px-1 rounded bg-synth-magenta/15 font-orbitron">{link.peer_role === 'truong_vien' ? 'Viện Trưởng 👑' : 'Phó Viện Trưởng 🛡️'}</span>
+                      {link.peer_name} <span className="text-[9px] text-synth-magenta px-1 rounded bg-synth-magenta/15 font-orbitron">{getRoleLabel(link.peer_role).name} {getRoleLabel(link.peer_role).icon}</span>
                     </span>
                     <span className="text-[10px] text-slate-400 font-sans">{link.peer_email}</span>
                   </div>
@@ -198,7 +199,7 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
                   )}
                   <div>
                     <span className="text-xs text-white font-bold block">
-                      {link.peer_name} <span className="text-[9px] text-slate-400 px-1 rounded bg-white/10 font-orbitron">{link.peer_role === 'truong_vien' ? 'Viện Trưởng 👑' : 'Phó Viện Trưởng 🛡️'}</span>
+                      {link.peer_name} <span className="text-[9px] text-slate-400 px-1 rounded bg-white/10 font-orbitron">{getRoleLabel(link.peer_role).name} {getRoleLabel(link.peer_role).icon}</span>
                     </span>
                     <span className="text-[10px] text-slate-400 font-sans">{link.peer_email}</span>
                   </div>
@@ -225,9 +226,8 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
         <div className="flex items-center justify-between">
           <div>
             <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-2">
-              🤝 Ban Giám Hiệu Đồng Hành ({activeConnections.length})
+              🤝 Ban Lãnh Đạo Viện Đồng Hành ({activeConnections.length})
             </h4>
-            <p className="text-[11px] text-slate-400 mt-1">Các thành viên Ban Giám Hiệu cùng cộng tác quản lý trong học viện.</p>
           </div>
           <button
             onClick={handleRefresh}
@@ -240,7 +240,7 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
         </div>
 
         {activeConnections.length === 0 ? (
-          <p className="text-xs text-synth-text-muted italic py-2">Chưa kết nối với thành viên Ban Giám Hiệu nào khác.</p>
+          <p className="text-xs text-synth-text-muted italic py-2">Chưa kết nối với thành viên Ban Lãnh Đạo Viện nào khác.</p>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {activeConnections.map(link => (
@@ -259,13 +259,13 @@ export const AdminConnectionManager: React.FC<AdminConnectionManagerProps> = ({
                     </span>
                     <span className="text-[10px] text-slate-400 block">{link.peer_email}</span>
                     <span className="inline-block text-[9px] font-bold text-synth-magenta uppercase tracking-wider font-orbitron mt-0.5">
-                      {link.peer_role === 'truong_vien' ? 'Viện Trưởng 👑' : 'Phó Viện Trưởng 🛡️'}
+                      {getRoleLabel(link.peer_role).name} {getRoleLabel(link.peer_role).icon}
                     </span>
                   </div>
                 </div>
                 <button
                   disabled={processingIds[link.id]}
-                  onClick={() => handleLeaveClass(link.id, 'Bạn có chắc muốn hủy kết nối đồng hành với thành viên Ban Giám Hiệu này không?', 'Đã hủy kết nối đồng hành.')}
+                  onClick={() => handleLeaveClass(link.id, 'Bạn có chắc muốn hủy kết nối đồng hành với thành viên Ban Lãnh Đạo Viện này không?', 'Đã hủy kết nối đồng hành.')}
                   className="px-3 py-1.5 rounded-lg border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-xs uppercase cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[100px]"
                 >
                   {processingIds[link.id] ? (

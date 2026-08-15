@@ -9,7 +9,7 @@ Tài liệu đặc tả này định hình ý tưởng cốt lõi, kiến trúc 
 ### 1.1 Sứ mệnh (Mission)
 **GameEngG10** là nền tảng học tập trò chơi hóa (gamification) cho **toàn bộ giáo dục phổ thông** (trọng tâm cấp 2 và cấp 3), xây dựng một thế giới học tập lấy cảm hứng từ **trường học, học phủ và văn hóa giáo dục truyền thống Việt Nam**. Thế giới được tổ chức theo các **Bậc Học** tương ứng từng lớp học (xem §1.4). Hiện tại chỉ mới phát triển **Tầng Lớp 9**. Riêng 3 môn Toán, Ngữ Văn, Tiếng Anh của Tầng Lớp 9, kho kiến thức tập trung bám sát ôn luyện tuyển sinh vào lớp 10 (theo cấu trúc đề của Sở GD&ĐT TP.HCM). Nền tảng giải quyết bài toán:
 *   **Học sinh:** Biến việc ôn luyện căng thẳng, khô khan thành các đợt chinh phục thử thách (chế độ chơi), tăng phản xạ tư duy và trực quan hóa kiến thức phức tạp (đồ thị, hình học).
-*   **Chủ Nhiệm Chính:** Đồng hành, quản lý và khích lệ bằng cách liên kết kết quả học tập trong ứng dụng với Quà Khuyến Học ngoài đời.
+*   **Chủ Nhiệm:** Đồng hành, quản lý và khích lệ bằng cách liên kết kết quả học tập trong ứng dụng với Quà Khuyến Học ngoài đời.
 
 ### 1.2 Mô hình Phân Quyền Vai Trò & Đa Hồ Sơ (Multi-Profile)
 Chi tiết về định nghĩa Role và Lớp Chủ Nhiệm xem **[SUB_SPEC_FAMILY_ROLE.md](./SUB_SPEC_FAMILY_ROLE.md)**; contract xác thực, phân quyền và cô lập profile xem **[SUB_SPEC_AUTH_PROFILE.md](./SUB_SPEC_AUTH_PROFILE.md)**.
@@ -29,32 +29,32 @@ Các môn học được tổ chức thành các **Môn Phái Độc Lập** ho�
     *   *Trường Thi:* Gồm các chế độ Ôn Luyện, Khoa Thi (Đề thi HK1, thi HK2), và Revenge (Không có Khảo Thí Liên Hoàn).
     *   *Học Đường:* Gồm các Chuyên đề Môn học (Lớp 9), công cụ học tập phụ trợ (học lý thuyết, sổ tay, nguồn) và Kho Nền Tảng tương tác (đang phát triển, hiện giữ chỗ bằng thẻ "sắp khai mở" — xem §2.2, chỉ Toán có đủ 3 xưởng).
     *   *Công Viên Thư Giãn:* Sử dụng Minigame Khung chung với các câu hỏi tương tác cơ bản (Match Pairs, MCQ, điền từ), không có minigame chuyên sâu riêng.
-*   **Cô lập ngữ cảnh tuyệt đối (Absolute Context Isolation):** Ở cùng một thời điểm, Sĩ Tử chỉ thuộc về duy nhất một Môn phái đang hoạt động (Active Sect). Toàn bộ nội dung hiển thị trong ứng dụng (bao gồm bản đồ, bài tập Trường Thi, bài học trong Học Đường và vật phẩm trong Shop Học Cụ) tự động lọc theo Môn phái đó.
-*   **Modal Chuyển Môn Phái Toàn Cục:** Để tạo sự linh hoạt, thao tác đổi môn phái được thực hiện thông qua một UI Modal dùng chung ở mọi nơi. Có thể gọi modal này từ TopHUD, trong trang Hồ Sơ Sĩ Tử, trên Navigation admin, hoặc tại Vùng Điều Hướng Trung Tâm (World Map Hub - nơi danh sách môn phái được hiển thị công khai để chọn nhanh). Đứng bất cứ đâu cũng có thể đổi môn phái dễ dàng.
+*   **Cô lập ngữ cảnh tuyệt đối (Absolute Context Isolation):** Ở cùng một thời điểm, Học Sinh chỉ thuộc về duy nhất một Môn phái đang hoạt động (Active Sect). Toàn bộ nội dung hiển thị trong ứng dụng (bao gồm bản đồ, bài tập Trường Thi, bài học trong Học Đường và vật phẩm trong Shop Học Cụ) tự động lọc theo Môn phái đó.
+*   **Modal Chuyển Môn Phái Toàn Cục:** Để tạo sự linh hoạt, thao tác đổi môn phái được thực hiện thông qua một UI Modal dùng chung ở mọi nơi. Có thể gọi modal này từ TopHUD, trong trang Hồ Sơ Học Sinh, trên Navigation admin, hoặc tại Vùng Điều Hướng Trung Tâm (World Map Hub - nơi danh sách môn phái được hiển thị công khai để chọn nhanh). Đứng bất cứ đâu cũng có thể đổi môn phái dễ dàng.
 
 ---
 
 ### 1.4 Nguyên lý Bậc Học (Grade Tier Isolation)
 Toàn bộ thế giới học đường được phân tầng theo **lớp học (grade)** — mỗi lớp là **một Bậc Học** độc lập:
 *   **Một tầng = một lớp học:** Tầng Lớp 9 là tầng duy nhất đang vận hành. Các Tầng Lớp 10, 11, 12 (và các lớp cấp 2 còn lại) sẽ mở dần về sau, với cơ cấu môn phái điều chỉnh tương ứng từng tầng (chưa làm tới).
-*   **Cô lập 100% theo Bậc Học:** Khi Sĩ Tử ở một Bậc Học, toàn bộ các trang (bản đồ, Trường Thi, Học Đường, Công Viên Thư Giãn, Shop Học Cụ, Cẩm Nang Học Đường, Kho Đề Thi, khám phá và bảng xếp hạng) chỉ hiển thị dữ liệu của bậc đó. Cô lập Bậc Học đứng **trên** cô lập Môn Phái (§1.3): *Bậc Học → Môn Phái → Nội dung*.
+*   **Cô lập 100% theo Bậc Học:** Khi Học Sinh ở một Bậc Học, toàn bộ các trang (bản đồ, Trường Thi, Học Đường, Công Viên Thư Giãn, Shop Học Cụ, Cẩm Nang Học Đường, Kho Đề Thi, khám phá và bảng xếp hạng) chỉ hiển thị dữ liệu của bậc đó. Cô lập Bậc Học đứng **trên** cô lập Môn Phái (§1.3): *Bậc Học → Môn Phái → Nội dung*.
 
 *   **Một app, mọi Bậc Học và Môn học:** Grade và subject chỉ là hai thuộc tính của `LearningContext`; không xây component, hook, route, type hoặc bảng riêng theo từng grade/môn. Chọn context nào thì toàn bộ app phục vụ context đó bằng cùng implementation. Contract chi tiết và kế hoạch compatibility xem **[SUB_SPEC_LEARNING_CONTEXT.md](./SUB_SPEC_LEARNING_CONTEXT.md)**.
 *   **Mô-đun Chuyên Môn (Subject Module):** Mỗi môn có thể đóng góp công cụ, hoạt động, mini-game, renderer câu hỏi, bộ đánh giá và metadata riêng qua registry build-time. App shell chỉ cung cấp các điểm gắn ổn định, không hardcode nhánh theo môn và không để module chuyên môn làm tràn thiết kế lõi. Kiến trúc chi tiết xem **[ARCHITECTURE_SPEC_SUBJECT_MODULES.md](./ARCHITECTURE_SPEC_SUBJECT_MODULES.md)**.
-*   **Chuyển tầng duy nhất tại Hồ Sơ Sĩ Tử:** Thiếu hiệp chỉ có thể **nâng/hạ tầng** của mình trong trang Hồ Sơ Sĩ Tử (khác với đổi Môn Phái vốn có modal toàn cục §1.3). Tiến trình của mỗi tầng được bảo lưu riêng khi rời tầng và khôi phục khi quay lại.
+*   **Chuyển tầng duy nhất tại Hồ Sơ Học Sinh:** Học Sinh chỉ có thể **nâng/hạ tầng** của mình trong trang Hồ Sơ Học Sinh (khác với đổi Môn Phái vốn có modal toàn cục §1.3). Tiến trình của mỗi tầng được bảo lưu riêng khi rời tầng và khôi phục khi quay lại.
 *   **Cơ cấu Tầng Lớp 9:** giữ nguyên 9 môn phái — 3 môn **Yêu Cầu Cao** (Toán, Văn, Anh — bám tuyển sinh 10) + 6 môn **Yêu Cầu Cơ Bản** (§1.3).
 
-> ⚠️ **Câu hỏi mở — PM Review 2026-07-17 (cần quyết định trước khi mở Tầng 10):** "Tiến trình của mỗi tầng được bảo lưu riêng" (dòng trên) mô tả rõ cho Đẳng Cấp Môn Phái (§7.4, đã có `maxAchievedMasteryRank` theo từng môn) và dữ liệu nội dung (`LearningContext`). Nhưng **Level/XP/Danh hiệu kiếm hiệp (§7.2) và Ruby lại là thuộc tính toàn cục của `PlayerProfile`, không có field nào theo `gradeTier`** — nghĩa là một Sĩ Tử đang 👑 Học Sĩ Level 80 ở Tầng 9 sẽ giữ nguyên danh hiệu đó ngay khi vừa mở khóa Tầng 10, dù chưa học một chữ nào ở tầng mới. Đây có phải hành vi mong muốn (Level là thước đo "kinh nghiệm sống" xuyên suốt hành trình, không reset theo tầng), hay Level/XP/Ruby cũng cần cô lập theo tầng như Đẳng Cấp Môn Phái? Cần chốt trước khi triển khai Tầng 10/11/12, vì ảnh hưởng trực tiếp tới thiết kế database và trải nghiệm "mở tầng mới" của Sĩ Tử.
+> ⚠️ **Câu hỏi mở — PM Review 2026-07-17 (cần quyết định trước khi mở Tầng 10):** "Tiến trình của mỗi tầng được bảo lưu riêng" (dòng trên) mô tả rõ cho Đẳng Cấp Môn Phái (§7.4, đã có `maxAchievedMasteryRank` theo từng môn) và dữ liệu nội dung (`LearningContext`). Nhưng **Level/XP/Danh hiệu kiếm hiệp (§7.2) và Ruby lại là thuộc tính toàn cục của `PlayerProfile`, không có field nào theo `gradeTier`** — nghĩa là một Học Sinh đang 👑 Học Sĩ Level 80 ở Tầng 9 sẽ giữ nguyên danh hiệu đó ngay khi vừa mở khóa Tầng 10, dù chưa học một chữ nào ở tầng mới. Đây có phải hành vi mong muốn (Level là thước đo "kinh nghiệm sống" xuyên suốt hành trình, không reset theo tầng), hay Level/XP/Ruby cũng cần cô lập theo tầng như Đẳng Cấp Môn Phái? Cần chốt trước khi triển khai Tầng 10/11/12, vì ảnh hưởng trực tiếp tới thiết kế database và trải nghiệm "mở tầng mới" của Học Sinh.
 
 ## 2. Kiến Trúc Mô-đun & Bản Đồ Học Tập (World Map)
 
 Hệ thống được thiết kế phân tách rõ ràng thành hai môi trường hoạt động độc lập với các mô-đun chức năng cụ thể:
 
-### 2.1 Môi trường Sĩ Tử (Học sinh)
+### 2.1 Môi trường Học Sinh (Học sinh)
 
 Môi trường dành cho học sinh tập trung vào trải nghiệm học tập, học tập và rèn luyện kỹ năng thông qua bản đồ game worldmap (`WorldMap`) — hub trung tâm dẫn vào 5 module chính bên dưới:
 
-Mọi trang Sĩ Tử cùng dùng **Sổ Tu Học** tích hợp gọn gàng bên trong khối Chào đầu trang của trang Học Viện. Sổ gồm **Nhập Môn** (cột mốc một lần theo profile), **Nhiệm Vụ Hôm Nay** (mục tiêu reset theo ngày) và **Tiến Độ Tu Học** (Level, XP, chuỗi học và tổng quan tiến trình). Tiến độ được backend tính từ domain event idempotent, không do UI tự cộng và không dùng JSON blob làm nguồn sự thật. Contract chi tiết xem **[SUB_SPEC_MISSION_LEDGER.md](./SUB_SPEC_MISSION_LEDGER.md)**.
+Mọi trang Học Sinh cùng dùng **Sổ Tu Học** tích hợp gọn gàng bên trong khối Chào đầu trang của trang Học Viện. Sổ gồm **Nhập Môn** (cột mốc một lần theo profile), **Nhiệm Vụ Hôm Nay** (mục tiêu reset theo ngày) và **Tiến Độ Tu Học** (Level, XP, chuỗi học và tổng quan tiến trình). Tiến độ được backend tính từ domain event idempotent, không do UI tự cộng và không dùng JSON blob làm nguồn sự thật. Contract chi tiết xem **[SUB_SPEC_MISSION_LEDGER.md](./SUB_SPEC_MISSION_LEDGER.md)**.
 
 #### A. Năm Module Chính
 
@@ -62,9 +62,9 @@ Mọi trang Sĩ Tử cùng dùng **Sổ Tu Học** tích hợp gọn gàng bên 
 Nơi kiểm tra năng lực và rèn luyện phản xạ thi cử dưới các chế độ chơi áp lực cao:
 *   **Ôn Luyện:** Luyện ngẫu nhiên theo mảng kiến thức (Grammar, Vocab, Reading, Pronunciation).
 *   **Khảo Thí Liên Hoàn (Survival):** Giới hạn **3 lần sai trong một lượt chơi** (bộ đếm lỗi nội bộ của lượt — hệ thống Tim sinh mệnh/vật phẩm hồi tim đã bị **xóa bỏ hoàn toàn** khỏi app). Sai đủ 3 câu là kết thúc đợt luyện.
-*   **Khoa Thi (Boss Battle):** Trường Thi thi thử theo thời gian thực (20 phút). Đề Boss được **trích chọn từ đề thi thật** các năm (2024, 2025, 2026): mỗi đề thật số hóa được ~20 câu, mỗi lượt Boss chỉ rút **5 câu** (~1/5 đề). Phần thưởng quy hết về **Điểm**: điểm trên từng câu đúng + một khoản **bonus hoàn thành lớn** được quảng bá ngay trên Boss Card, mức bonus do **Chủ Viện / Phó Viện Trưởng** quy định. Boss **không thưởng tiền** dưới bất kỳ hình thức nào.
+*   **Khoa Thi (Boss Battle):** Trường Thi thi thử theo thời gian thực (20 phút). Đề Boss được **trích chọn từ đề thi thật** các năm (2024, 2025, 2026): mỗi đề thật số hóa được ~20 câu, mỗi lượt Boss chỉ rút **5 câu** (~1/5 đề). Phần thưởng quy hết về **Điểm**: điểm trên từng câu đúng + một khoản **bonus hoàn thành lớn** được quảng bá ngay trên Boss Card, mức bonus do **Viện Trưởng / Viện Phó** quy định. Boss **không thưởng tiền** dưới bất kỳ hình thức nào.
 *   **Sửa Bài Sai (Revenge):** Chế độ ôn tập riêng các câu trả lời sai trong lịch sử để khắc phục lỗ hổng kiến thức.
-*   **Quy tắc Khấu trừ Năng Lượng (Energy Upfront Deduction):** Năng Lượng được khấu trừ một lần ngay khi Sĩ Tử xác nhận bắt đầu. Khi đã vào lượt thi, đặc biệt là Khoa Thi 20 phút, Sĩ Tử được làm bài liên tục đến hết dù Năng Lượng cạn giữa chừng.
+*   **Quy tắc Khấu trừ Năng Lượng (Energy Upfront Deduction):** Năng Lượng được khấu trừ một lần ngay khi Học Sinh xác nhận bắt đầu. Khi đã vào lượt thi, đặc biệt là Khoa Thi 20 phút, Học Sinh được làm bài liên tục đến hết dù Năng Lượng cạn giữa chừng.
 
 ##### 2. 🕳️ Học Đường (Training Cave / HangLuyenCong)
 Không gian tự học, hệ thống hóa lý thuyết sâu sắc theo từng môn:
@@ -101,7 +101,7 @@ Xuất hiện tại Vùng Điều Hướng Trung Tâm (World Map Hub). Đây là
 Vận hành nền kinh tế vi mô trong học viện. Tiêu hao **Ruby** để đổi các vật phẩm và đặc quyền:
 *   📜 **Thẻ Nhắc Bài:** Gợi mở hướng giải hoặc loại bỏ đáp án nhiễu (trước đây gọi là Gợi ý / Hint).
 *   🛡️ **Thẻ Chuyên Cần:** Duy trì chuỗi học tập (Streak) khi bỏ lỡ một ngày, tránh bị reset chuỗi (trước đây gọi là Khiên giữ chuỗi / Streak Shield).
-*   🎭 **Phong Cách Học Đường:** Mở khóa các phong cách giao diện cá tính như Đào Hoa, Trúc Lâm, Tinh Không, Tuyết Sơn... để Sĩ Tử cá nhân hóa không gian học tập.
+*   🎭 **Phong Cách Học Đường:** Mở khóa các phong cách giao diện cá tính như Đào Hoa, Trúc Lâm, Tinh Không, Tuyết Sơn... để Học Sinh cá nhân hóa không gian học tập.
 *   🎁 **Quà Khuyến Học:** Đổi Ruby lấy Quà Khuyến Học do Chủ Nhiệm tạo, có số lượng giới hạn — cơ chế chi tiết xem §3.2.
 *   ~~❤️ Hồi Nguyên Đan~~ — **đã xóa bỏ** cùng toàn bộ hệ thống Tim sinh mệnh (xem §2.1 Khảo Thí Liên Hoàn).
 
@@ -115,51 +115,51 @@ Vận hành nền kinh tế vi mô trong học viện. Tiêu hao **Ruby** để 
     *   **Thần Heo Maikawaii (Legend):** Thần thú tối thượng mũm mĩm siêu cấp, đeo vòng kim cô vàng lấp lánh và cưỡi mây Cân Đẩu Vân.
 *   **Cơ chế tương tác thông minh:**
     *   *Thọt lét (Tickle):* Khi click thọt lét chú heo, heo sẽ nhảy dựng lên vui sướng và nói các câu thoại ngộ nghĩnh, linh tinh khó hiểu.
-    *   *Nhắc nhở bài vở (Study Reminder):* Nhắc Sĩ Tử môn học hôm nay nên ôn luyện dựa trên năng lượng/tiến trình.
+    *   *Nhắc nhở bài vở (Study Reminder):* Nhắc Học Sinh môn học hôm nay nên ôn luyện dựa trên năng lượng/tiến trình.
     *   *Khen thưởng (Praise):* Nhận biết điểm số, số câu đúng và Ruby nhận được trong ngày của học sinh để đưa ra những lời khen ngợi ngọt ngào.
 *   Học sinh cho thú ăn để duy trì tâm trạng vui vẻ và tăng cấp cho thú. Việc cho thú ăn **chỉ tiêu tốn Ruby** — tuyệt đối **không trừ XP** (tuân thủ Luật Bất Cảm §3.1; xem SUB_SPEC_XP_NP).
 *   **Nhật Ký MIKA (Pet Memory Album):**
-    *   *Xem lại hành trình:* Tích hợp tính năng album kỷ niệm cho phép Sĩ Tử lật xem lại hành trình của Heo Maikawaii qua các nút bấm Next/Prev. Album chứa các hình ảnh từ thuở sơ khai qua từng giai đoạn phát triển, các câu chuyện kỷ niệm đáng nhớ và những bức hình chụp chung kỷ niệm giữa Sĩ Tử và thú cưng.
-    *   *Ẩn giấu tương lai:* Thiếu hiệp không thể xem trước hình ảnh ở các giai đoạn tương lai chưa đạt tới. Chỉ khi kiên trì chăm sóc, nâng cấp và phát triển Heo Maikawaii thành công, album mới mở khóa thêm nhiều hình ảnh và nội dung mới.
+    *   *Xem lại hành trình:* Tích hợp tính năng album kỷ niệm cho phép Học Sinh lật xem lại hành trình của Heo Maikawaii qua các nút bấm Next/Prev. Album chứa các hình ảnh từ thuở sơ khai qua từng giai đoạn phát triển, các câu chuyện kỷ niệm đáng nhớ và những bức hình chụp chung kỷ niệm giữa Học Sinh và thú cưng.
+    *   *Ẩn giấu tương lai:* Học Sinh không thể xem trước hình ảnh ở các giai đoạn tương lai chưa đạt tới. Chỉ khi kiên trì chăm sóc, nâng cấp và phát triển Heo Maikawaii thành công, album mới mở khóa thêm nhiều hình ảnh và nội dung mới.
     *   *Hoàn thiện giao diện:* Phần giao diện (UI) của Nhật Ký MIKA sẽ được ClaudeCode tiến hành review, audit kỹ lưỡng và phát triển tiếp tục để tối ưu hóa trải nghiệm trực quan.
 *   **Cơ Chế "Thú Về Chuồng" (Pet Stable & Overlay)**:
     *   **Nguyên tắc cốt lõi:** Heo Maikawaii KHÔNG chiếm không gian layout thường trực (hiện tại là cột trái cố định trên desktop, `aside w-72`). Bình thường heo ở trong **Chuồng Heo** — một nút/avatar nhỏ núp gọn ở một góc màn hình (ví dụ góc dưới-phải, kiểu "chat bubble" các web hiện đại). Toàn bộ không gian trung tâm được trả lại cho nội dung học tập.
     *   **Heo là "Người Gác Cổng" duy nhất — hợp nhất với Cẩm Nang Học Đường (§2.7):** Đăng nhập/Đăng xuất không còn là 2 lớp popup tách rời (trang Cẩm Nang riêng rồi tới Heo chào riêng) như trước. Heo trực tiếp mang trang Cẩm Nang ngẫu nhiên (tiêu đề + nội dung) ra trình bày ngay trong overlay của chính mình — chỉ còn **một lớp popup duy nhất** tại các mốc đăng nhập/đăng xuất.
     *   **Các thời điểm heo xuất hiện** (dưới dạng **overlay đè lên layout hiện tại**, nền phía sau làm mờ nhẹ để tập trung vào heo):
         1.  *Gác Cổng lúc đăng nhập (Login Gate):* Ngay khi đăng nhập, Heo xuất hiện mang theo một trang Cẩm Nang ngẫu nhiên để chào và dặn dò một lần. Sau đó heo về chuồng, chỉ ra tiếp khi được gọi hoặc khi có lý do dưới đây.
-        2.  *Gác Cổng lúc đăng xuất (Logout Gate — "Rời Học Viện"):* Khi Sĩ Tử bấm **Rời Học Viện** (Đăng xuất), Heo xuất hiện mang theo một trang Cẩm Nang khác để dặn dò trước khi rời học đường. Để tránh giữ chân cưỡng ép (dark pattern), Sĩ Tử hoặc Chủ nhiệm có thể bấm nút "Rời học viện ngay" để hoàn tất đăng xuất ngay lập tức mà không bắt buộc phải thực hiện thọt lét/tương tác thú cưng.
-        3.  *Triệu hồi thủ công:* Thiếu hiệp bấm vào Chuồng Heo bất cứ lúc nào để chủ động gọi heo ra.
+        2.  *Gác Cổng lúc đăng xuất (Logout Gate — "Rời Học Viện"):* Khi Học Sinh bấm **Rời Học Viện** (Đăng xuất), Heo xuất hiện mang theo một trang Cẩm Nang khác để dặn dò trước khi rời học đường. Để tránh giữ chân cưỡng ép (dark pattern), Học Sinh hoặc Chủ nhiệm có thể bấm nút "Rời học viện ngay" để hoàn tất đăng xuất ngay lập tức mà không bắt buộc phải thực hiện thọt lét/tương tác thú cưng.
+        3.  *Triệu hồi thủ công:* Học Sinh bấm vào Chuồng Heo bất cứ lúc nào để chủ động gọi heo ra.
         4.  *Nhắc học (Idle Reminder):* Quá lâu không có tương tác nào trong app (ngưỡng mặc định 10 phút không thao tác), heo tự ra nhắc nhở học tiếp.
         5.  *Đòi ăn (Hunger):* Khi quá lâu chưa được cho ăn (dựa trên field `lastFed` sẵn có), heo tự ra đòi ăn.
-        6.  *Báo hết Năng Lượng (Energy Depleted):* Khi Năng Lượng của Sĩ Tử về 0, heo xuất hiện thông báo đã hết năng lượng, phải nghỉ ngơi, kèm thời điểm hồi lại — chi tiết luật hồi xem **[SUB_SPEC_ENERGY.md](./SUB_SPEC_ENERGY.md)**.
-    *   **Cách duy nhất cất heo về chuồng — áp dụng đồng bộ cho MỌI trigger, kể cả Gác Cổng:** overlay **KHÔNG có nút đóng (X)** và **KHÔNG có nút xác nhận riêng kiểu "Đã Lĩnh Ngộ"**. Thiếu hiệp bắt buộc phải *cho ăn*, *tương tác* (vuốt ve/khen) hoặc *thọt lét (Tickle)* thì heo mới chịu về chuồng — kể cả lúc đăng nhập/đăng xuất. Thọt lét là lối thoát miễn phí không tốn tài nguyên; cho ăn vẫn tốn Ruby theo đúng quy tắc hiện hành ở mục trên (không trừ XP).
+        6.  *Báo hết Năng Lượng (Energy Depleted):* Khi Năng Lượng của Học Sinh về 0, heo xuất hiện thông báo đã hết năng lượng, phải nghỉ ngơi, kèm thời điểm hồi lại — chi tiết luật hồi xem **[SUB_SPEC_ENERGY.md](./SUB_SPEC_ENERGY.md)**.
+    *   **Cách duy nhất cất heo về chuồng — áp dụng đồng bộ cho MỌI trigger, kể cả Gác Cổng:** overlay **KHÔNG có nút đóng (X)** và **KHÔNG có nút xác nhận riêng kiểu "Đã Lĩnh Ngộ"**. Học Sinh bắt buộc phải *cho ăn*, *tương tác* (vuốt ve/khen) hoặc *thọt lét (Tickle)* thì heo mới chịu về chuồng — kể cả lúc đăng nhập/đăng xuất. Thọt lét là lối thoát miễn phí không tốn tài nguyên; cho ăn vẫn tốn Ruby theo đúng quy tắc hiện hành ở mục trên (không trừ XP).
     *   **Chống dồn dập (anti-spam):** Các trigger tự động (idle/đói/hết Năng Lượng) dùng chung cooldown tối thiểu **30 phút** giữa các lần bật overlay — MIKA chỉ tự xuất hiện tối đa một lần mỗi 30 phút bất kể lý do (theo yêu cầu Viện Trưởng 2026-07-10). Cooldown được lưu qua localStorage; đóng overlay không cho trigger khác bật lại ngay.
-    *   **Kỷ luật thi cử — không gián đoạn lượt làm bài:** Khi Sĩ Tử đang ở Trường Thi, Khoa Thi hoặc bài ôn luyện, mọi trigger tự động (idle/đói/hết Năng Lượng) bị **hoãn lại** và chỉ hiện sau khi trở về Bản Đồ. Trigger gọi thủ công vẫn bị khóa trong lúc làm bài.
+    *   **Kỷ luật thi cử — không gián đoạn lượt làm bài:** Khi Học Sinh đang ở Trường Thi, Khoa Thi hoặc bài ôn luyện, mọi trigger tự động (idle/đói/hết Năng Lượng) bị **hoãn lại** và chỉ hiện sau khi trở về Bản Đồ. Trigger gọi thủ công vẫn bị khóa trong lúc làm bài.
     *   **Chuồng Heo vẫn là cổng vào Nhà Của MIKA đầy đủ:** Từ overlay hoặc nút Chuồng Heo đều mở được toàn bộ Nhà Của MIKA (Nhật Ký MIKA, cho ăn chủ động, xem tiến hóa) — không mất tính năng nào, chỉ đổi cách hiển thị từ "luôn nằm sẵn trên layout" sang "gọi ra khi cần".
     *   **Hệ quả layout (re-layout diện rộng):** Mọi trang trước đây phải chừa `aside w-72` cho thú (Công Viên Thư Giãn/Bản Đồ, và gián tiếp ảnh hưởng độ rộng khả dụng của Bách Hóa, Học Đường, Lầu Thư Giãn khi xem trên cùng khung `main` chung) được thiết kế lại để card, box, công cụ rộng rãi hơn, hiển thị nhiều thông tin hơn trên cùng một màn hình — xem chi tiết Mục 5.
 
 #### B. Một Module Phụ
 
-##### 1. 👑 Hồ Sơ Sĩ Tử (Profile Page)
-Hồ sơ cá nhân của Sĩ Tử — nơi tra cứu tiến trình học tập:
+##### 1. 👑 Hồ Sơ Học Sinh (Profile Page)
+Hồ sơ cá nhân của Học Sinh — nơi tra cứu tiến trình học tập:
 *   **Modal Switch Môn Phái:** Gọi modal chọn Môn phái đang hoạt động (Active Sect). Sau khi chọn, toàn bộ nội dung (Bản Đồ, Trường Thi, Học Đường...) tự động lọc theo Môn phái vừa chọn.
 *   **Đẳng Cấp Môn Phái (Sect Mastery):** Hiển thị đẳng cấp học tập độc lập theo từng môn phái (Nhập Môn → Xuất Chúng), Nội Công rèn luyện (tổng câu trả lời đúng) và Thời Gian rèn luyện ước lượng — công thức chi tiết xem §7.4.
-*   **Danh hiệu & tiến trình chung:** Danh hiệu kiếm hiệp (Tân Sinh, Tú Tài, Sĩ Tử...) ánh xạ từ Level (§7.2), badges và lịch sử truyền công.
+*   **Danh hiệu & tiến trình chung:** Danh hiệu học vấn (Tân Sinh, Tú Tài, Cử Nhân...) ánh xạ từ Level (§7.2), badges và lịch sử truyền công.
 *   **Cổng hành động chuyển màn nhanh (Exit Gates):** 2 nút ở chân trang — 🚪 *Bôn Tẩu Học Đường* (về Bản Đồ) và ⚔️ *Vào Học Đường* (đi thẳng vào luyện tập theo môn phái vừa chọn).
 *   **Cẩm Nang Học Đường:** Lối vào để lật xem toàn bộ cuốn cẩm nang bất kỳ lúc nào (xem §2.7).
 
 ### 2.6 ⚙️ Phòng Điều Hành (Admin Console)
 Hệ thống quản lý, giám sát và cung cấp tài nguyên, được phân chia thành các khu vực chuyên biệt:
-*   🏛️ **Sổ Danh Bộ:** Trung tâm quyền lực và phân quyền. Quản lý tài khoản Sĩ Tử, thăng cấp/hạ cấp vai trò. Đây là nơi quản lý học sinh ở quy mô toàn viện (không chia theo môn phái).
-*   📖 **Phòng Học Vụ:** Nơi lưu trữ thông tin, báo cáo, cơ mật của toàn viện. Dashboard tổng quan thống kê kết quả học tập của Sĩ Tử, số lượng câu hỏi, bài học và hiệu quả tu học chung của toàn bộ môn phái.
+*   🏛️ **Sổ Danh Bộ:** Trung tâm quyền lực và phân quyền. Quản lý tài khoản Học Sinh, thăng cấp/hạ cấp vai trò. Đây là nơi quản lý học sinh ở quy mô toàn viện (không chia theo môn phái).
+*   📖 **Phòng Học Vụ:** Nơi lưu trữ thông tin, báo cáo, cơ mật của toàn viện. Dashboard tổng quan thống kê kết quả học tập của Học Sinh, số lượng câu hỏi, bài học và hiệu quả tu học chung của toàn bộ môn phái.
 *   📚 **Kho Đề Thi:** Kho tri thức và quản lý đề thi (CRUD, nạp đề thi bằng AI). Viện Trưởng bắt buộc phải chọn ngữ cảnh môn phái cụ thể tại mỗi thời điểm quản lý.
 *   📖 **Kho Bài Giảng (Lecture Bank):** Nơi quản lý ngân hàng bài giảng lý thuyết. Soạn thảo, hiệu đính lý thuyết cho các chuyên đề của Học Đường.
     *   **Paging & Lazy Load:** Tương tự Kho Đề Thi, danh sách bài giảng hiển thị 10 bài đầu tiên và tự động lazy load thêm 10 bài tiếp theo khi scroll xuống dưới.
     *   **Thêm & Sửa qua Modal:** Biểu mẫu Thêm mới hoặc Hiệu đính bài giảng được hiển thị dưới dạng **Hộp thoại Modal** nổi trên màn hình, tách biệt hoàn toàn khỏi layout trang chính.
-    *   **Quy tắc Đạt Chuẩn (is_standard):** Modal hỗ trợ nút "Đạt Chuẩn 🏆" và "Chưa Đạt Chuẩn ❌". Bài giảng đạt chuẩn sẽ hiển thị badge đạt chuẩn và có một icon tick xanh lá nhỏ `✔️` tuyệt đối góc trái trên. Trong giao diện đọc lý thuyết của Sĩ Tử (`LessonStudyView`), bài giảng đạt chuẩn hiển thị kèm icon tick xanh `✓` cạnh tiêu đề.
+    *   **Quy tắc Đạt Chuẩn (is_standard):** Modal hỗ trợ nút "Đạt Chuẩn 🏆" và "Chưa Đạt Chuẩn ❌". Bài giảng đạt chuẩn sẽ hiển thị badge đạt chuẩn và có một icon tick xanh lá nhỏ `✔️` tuyệt đối góc trái trên. Trong giao diện đọc lý thuyết của Học Sinh (`LessonStudyView`), bài giảng đạt chuẩn hiển thị kèm icon tick xanh `✓` cạnh tiêu đề.
     *   **Xóa bài giảng:** Có hộp thoại xác nhận (Delete Confirmation) chi tiết trước khi tiến hành xóa vĩnh viễn khỏi Database.
-*   👑 **Hồ Sơ Sĩ Tử:** Hồ sơ cá nhân của Sĩ Tử (profile), hiển thị danh hiệu kiếm hiệp (Tân Sinh, Tú Tài, Sĩ Tử...), cấp độ tu học, badges và lịch sử truyền công.
-*   💰 **Phòng Tài Vụ:** Quản lý kho tài nguyên, **Danh Mục Quà Khuyến Học** (tạo/sửa số lượng, xác nhận "Đã Trao" — §3.2), cấu hình Năng Lượng của từng Sĩ Tử (`maxEnergy`, `resetHours` — SUB_SPEC_ENERGY), định mức Ruby/XP và bonus Khoa Thi.
+*   👑 **Hồ Sơ Học Sinh:** Hồ sơ cá nhân của Học Sinh (profile), hiển thị danh hiệu học vấn (Tân Sinh, Tú Tài, Cử Nhân...), cấp độ tu học, badges và lịch sử truyền công.
+*   💰 **Phòng Tài Vụ:** Quản lý kho tài nguyên, **Danh Mục Quà Khuyến Học** (tạo/sửa số lượng, xác nhận "Đã Trao" — §3.2), cấu hình Năng Lượng của từng Học Sinh (`maxEnergy`, `resetHours` — SUB_SPEC_ENERGY), định mức Ruby/XP và bonus Khoa Thi.
 
 ### 2.7 📖 Cẩm Nang Học Đường (AcademyHandbook)
 Sổ tay quy tắc, kinh nghiệm tu hành của học viện được biên soạn dưới dạng sách cổ cẩm nang:
@@ -168,12 +168,12 @@ Sổ tay quy tắc, kinh nghiệm tu hành của học viện được biên so�
 *   **Điểm chạm tương tác:**
     *   *Gác Cổng qua Heo (Login/Logout) — xem §2.5 "Thú Về Chuồng":* Trang cẩm nang không tự hiện bằng modal sách riêng kèm nút "Đã Lĩnh Ngộ" nữa. Heo mang **1 trang ngẫu nhiên** ra trình bày ngay trong overlay của chính heo khi **đăng nhập** và khi bấm **Rời Học Viện** (đăng xuất). Cách duy nhất đóng overlay (và hoàn tất đăng xuất nếu là mốc logout) là cho ăn / tương tác / thọt lét heo — không còn nút xác nhận đọc riêng.
     *   *Phúc lợi đọc trang (đề xuất):* Lần cất heo về chuồng đầu tiên trong ngày tại Login Gate tặng **+5 Ruby** (kế thừa phần thưởng của nút "Đã Lĩnh Ngộ" cũ, 1 lần/ngày).
-    *   *Tra cứu chủ động:* Thiếu hiệp có thể mở toàn bộ cuốn cẩm nang (giao diện sách đầy đủ, lật từng trang) trong trang Hồ Sơ Sĩ Tử để xem lại bất cứ lúc nào — trải nghiệm này giữ nguyên.
+    *   *Tra cứu chủ động:* Học Sinh có thể mở toàn bộ cuốn cẩm nang (giao diện sách đầy đủ, lật từng trang) trong trang Hồ Sơ Học Sinh để xem lại bất cứ lúc nào — trải nghiệm này giữ nguyên.
 *   **Quyền quản trị của Viện Trưởng:** Viện Trưởng có thể nạp thêm các trang dặn dò (Quy định riêng của gia đình, nhắc nhở ôn bài, lịch học thực tế) vào cuốn cẩm nang. Các trang mới này tự động được đưa vào vòng random mà heo mang ra tại các mốc Gác Cổng.
 
 ### 2.9 Quy Tắc Thiết Kế UI Popup & Cảnh Báo (Minimalism) *(đánh số 2.9 để tránh trùng §2.8 Map Hierarchy bên dưới)*
 - **Tuyệt đối Đơn Giản (Minimalist Popups):** Mọi popup cảnh báo/thông báo trong ứng dụng chỉ được phép gồm **1 Icon phân loại** (dấu chấm than, hộp quà, mặt buồn...) và **1 câu thông báo trọng tâm**. Lược bỏ hoàn toàn các title, label rườm rà.
-- **Cảnh báo thoát giữa chừng:** Khi Sĩ Tử đang làm dở bài và bấm thoát ra Bản Đồ, một popup đơn giản sẽ hiện lên nhắc nhở: *"Nếu con không hoàn tất, vài hôm nữa khu vực này sẽ bị sương mù che phủ lại đấy!"*. Tùy chọn: Ở lại làm tiếp hoặc Vẫn Thoát.
+- **Cảnh báo thoát giữa chừng:** Khi Học Sinh đang làm dở bài và bấm thoát ra Bản Đồ, một popup đơn giản sẽ hiện lên nhắc nhở: *"Nếu con không hoàn tất, vài hôm nữa khu vực này sẽ bị sương mù che phủ lại đấy!"*. Tùy chọn: Ở lại làm tiếp hoặc Vẫn Thoát.
 - **Đây chỉ là một phần của bộ quy tắc UI bắt buộc.** Toàn bộ nguyên tắc UI luôn phải tuân theo (theme token, style Fog Card, minimalism popup, linh vật duy nhất...) được tổng hợp tại **[SUB_SPEC_UI_RULES.md](./SUB_SPEC_UI_RULES.md)**.
 
 ## 2.8 Cấu Trúc Giao Diện 5-Tab Học Sinh & 3-Tab Giáo Viên Thực Tế
@@ -182,7 +182,7 @@ Toàn bộ hệ thống giao diện của GameEngG10 đã được tái cấu tr
 
 ### 2.8.1 Môi trường Học Sinh: 1 Trang 5 Tab (AcademyHub)
 Học sinh khi đăng nhập sẽ chỉ tương tác trên giao diện duy nhất 5 tab tại [AcademyHub](./src/components/AcademyHub.tsx):
-1. **Học Viện (`Academy`)**: Tích hợp Sổ Tu Học (`LearningLedger`) dưới dạng panel thu gọn mặc định bên trong khối Chào đầu trang (Hero Greeting), lời chào Sĩ tử, gợi ý điểm yếu từ Trợ giảng AI (`weakLesson`), các chỉ số và badge Phong cách hiện tại của Sĩ tử, và Bảng Nhiệm Vụ Quest. Cột bên phải hiển thị profile rút gọn và nhật ký hoạt động (`ActivityLog`).
+1. **Học Viện (`Academy`)**: Tích hợp Sổ Tu Học (`LearningLedger`) dưới dạng panel thu gọn mặc định bên trong khối Chào đầu trang (Hero Greeting), lời chào Học Sinh, gợi ý điểm yếu từ Trợ Giáo MIKA (`weakLesson`), các chỉ số và badge Phong cách hiện tại của Học Sinh, và Bảng Nhiệm Vụ Quest. Cột bên phải hiển thị profile rút gọn và nhật ký hoạt động (`ActivityLog`). *(Lưu ý: "Trợ Giáo MIKA" chỉ dùng cho AI gợi ý bài học — không nhầm với vai trò "Trợ Giảng" là giáo viên hỗ trợ lớp.)*
 2. **Hang Luyện (Knowledge Hall)**: Trang tự học chuyên đề (`PracticeHall.tsx`) kết hợp sổ tay lỗi sai và bài giảng lý thuyết.
 3. **Trường Thi (Challenge Hall)**: Đấu trường rèn luyện thi cử (`Arena.tsx`) với 4 phòng luyện tập thi đấu.
 4. **Khu Thám Hiểm (Adventure Zone)**: Khu minigame thư giãn trí tuệ (`RelaxationZone.tsx`).
@@ -190,12 +190,12 @@ Học sinh khi đăng nhập sẽ chỉ tương tác trên giao diện duy nhấ
 
 ### 2.8.2 Môi trường Giáo viên / Viện Trưởng: 3 Tab Tinh Giản (TutorConsole)
 Giao diện quản trị của giáo viên được rút gọn còn 3 tab chính tại [TutorConsole](./src/components/TutorConsole.tsx):
-1. **Phòng Hiệu Trưởng / Giáo Viên (`phong_hieu_truong`)**: Trung tâm quản trị tích hợp Sơ đồ tổ chức (`OrgChart`), danh sách học sinh liên kết/toàn trường, danh sách nhân sự phân quyền và Cấu hình hệ thống game (`SettingsManager`) dưới dạng các sub-tab con. Các phần thống kê tổng quát, lời chào và Bảng Vàng (Leaderboard) được bọc trong một Accordion (Collapsible Panel) mặc định thu gọn để tối ưu hóa không gian cuộn trang.
+1. **Tổng Quan (`phong_hieu_truong`)**: Trung tâm quản trị tích hợp Sơ đồ tổ chức (`OrgChart`), danh sách học sinh liên kết/toàn viện, danh sách nhân sự phân quyền và Cấu hình hệ thống game (`SettingsManager`) dưới dạng các sub-tab con. Các phần thống kê tổng quát, lời chào và Bảng Vàng (Leaderboard) được bọc trong một Accordion (Collapsible Panel) mặc định thu gọn để tối ưu hóa không gian cuộn trang.
 2. **Bài Giảng (`tang_kinh_cac`)**: Phòng quản lý thư viện bài giảng lý thuyết (`LectureBankManager`).
 3. **Đề Thi (`van_quyen_cac`)**: Ngân hàng câu hỏi trắc nghiệm của học viện (`QuestionBankManager`).
 
 ### 2.8.3 Nguyên tắc Không Sử dụng Trang Phụ (Modal & Overlay)
-- Toàn bộ các tương tác cấp sâu hơn (như Xưởng hình học 3D, Plane, Graph, màn hình học bài chi tiết hoặc Xem chi tiết hồ sơ Sĩ tử `StudentProfileView` từ danh sách của giáo viên) đều được mở dưới dạng **Modal Overlay hoặc Side Panel** trực tiếp đè lên trên Hub chính.
+- Toàn bộ các tương tác cấp sâu hơn (như Xưởng hình học 3D, Plane, Graph, màn hình học bài chi tiết hoặc Xem chi tiết hồ sơ Học Sinh `StudentProfileView` từ danh sách của giáo viên) đều được mở dưới dạng **Modal Overlay hoặc Side Panel** trực tiếp đè lên trên Hub chính.
 - Khi đóng Modal, hệ thống tự động đưa người dùng trở lại Tab chính hiện tại trước đó mà không làm mất trạng thái.
 
 ### 2.8.4 Đồng bộ Ngữ Cảnh Học Tập
@@ -217,7 +217,7 @@ Những thay đổi cốt lõi cần lưu ý:
 3. **Luật Chuỗi Tinh Tấn (Streak):** Mất chuỗi **KHÔNG bị trừ Ruby**. Thay vào đó, chuỗi càng dài thưởng càng leo thang: giữ chuỗi sang ngày thứ 2 được cộng điểm, ngày thứ 3 cộng thêm, ngày thứ 4 trở đi cộng thêm nữa (bảng số cụ thể tại SUB_SPEC_XP_NP §2.1). Mất chuỗi chỉ đơn giản reset thưởng về mốc ngày 1. Thẻ Chuyên Cần vẫn dùng để bảo toàn chuỗi khi lỡ 1 ngày.
 
 #### Cơ Chế "Bỏ qua" (Bỏ Qua Thử Thách)
-- Sĩ Tử được dùng **Bỏ qua** để bỏ qua câu hỏi khó, tối đa **3 lượt mỗi ngày**.
+- Học Sinh được dùng **Bỏ qua** để bỏ qua câu hỏi khó, tối đa **3 lượt mỗi ngày**.
 - Bỏ qua **không trừ Ruby** và không phụ thuộc số dư Ruby.
 - Trước khi xác nhận, popup yêu cầu chọn một lý do: 🥵 Quá khó, 📜 Quá dài, 🤪 Lỗi đề.
 - Lý do này được ghi nhận lại để Viện Trưởng xem xét điều chỉnh chất lượng Câu hỏi trong ngân hàng.
@@ -226,22 +226,21 @@ Những thay đổi cốt lõi cần lưu ý:
 
 > ❌ **Bãi bỏ:** mọi quy tắc quy đổi Ruby thành tiền thật, Ví VND và thưởng tiền mặt từ Boss. **Ruby là tài nguyên ảo trong ứng dụng, không phải tiền và không có tỷ giá tiền mặt.**
 
-Chi tiết về cơ chế hoạt động của **Quà Khuyến Học (Class Rewards)**, luồng giao dịch atomic trừ điểm/hoàn điểm, rút lại yêu cầu pending của học sinh và phê duyệt phát thưởng của Giáo viên, vui lòng xem tại đặc tả riêng **SUB_SPEC_CLASS_REWARDS.md**.
+Chi tiết đầy đủ về 2 tầng quà (Quà TOÀN VIỆN dùng chung cho học sinh mồ côi + Quà LỚP riêng từng lớp), luồng giao dịch atomic trừ điểm/hoàn điểm, mô hình sở hữu chung khi Trợ Giảng được cấp quyền, cờ "không giới hạn", và bảng API/phân quyền đầy đủ, vui lòng xem tại đặc tả riêng **[SUB_SPEC_CLASS_REWARDS.md](./SUB_SPEC_CLASS_REWARDS.md)** (audit + viết lại 2026-08-15, thay thế bản nháp chưa từng tồn tại trước đó).
 
-> ⚠️ **GAP xác nhận — PM Review 2026-07-17 (chưa sửa):** File `SUB_SPEC_CLASS_REWARDS.md` được tham chiếu ở trên **không tồn tại trong repo** — link chết trong tài liệu chuẩn. Code thực tế (`backend/src/routes/classRewards.ts`, bảng `ge10_class_rewards`/`ge10_class_reward_redemptions`, theo `teacher_id`) đã hoạt động đúng nguyên tắc atomic/pending/deliver/cancel mô tả ở trên, nhưng theo `HANDOFF.md` 2026-07-17 còn tồn tại song song một khái niệm **"Quà Khuyến Học Của Trường"** khác với "Của Lớp" (khả năng là hệ `ParentReward`/`ge10_reward_redemptions` cũ từ Task #35, chưa được xác minh còn dùng hay đã thay thế hoàn toàn) — chưa có tài liệu nào mô tả rõ 2 hệ này khác nhau ở đâu, học sinh mồ côi (Đại Sảnh Đường, §3.3) thực sự lấy quà từ nguồn nào. Xem TODO mục **PMR-2**.
-*   **Chủ nhiệm tự tạo Phần Thưởng:** Mỗi chủ nhiệm tự tạo danh mục phần thưởng riêng cho lớp mình và tự định giá bằng Ruby. Chỉ học sinh thuộc lớp của chủ nhiệm/phó chủ nhiệm đó mới nhìn thấy và đổi được. Học sinh chưa có lớp (orphan) sẽ nhìn thấy danh mục quà tặng toàn trường do Viện Trưởng/Phó tạo.
-*   **Số lượng giới hạn (khan hiếm có chủ đích):** Mỗi phần thưởng có số lượng cụ thể (`quantity`). Ai kiếm đủ điểm đổi sớm thì lấy trước; mỗi lần đổi số lượng giảm xuống, hết là thôi.
-*   **Cơ chế Rút Lại (Cancel/Refund):** Khi giáo viên chưa bấm "Phát Thưởng", học sinh có thể tự hủy yêu cầu đổi quà ngay lập tức để nhận lại 100% số Ruby đã tiêu và trả lại số lượng tồn kho cho quà tặng.
-*   **Luồng trao thưởng ngoài app:** Việc trao quà diễn ra hoàn toàn **ngoài đời thực**; chủ nhiệm bấm nút **"Phát Thưởng" (confirm delivery)** để đóng yêu cầu. Không có giao dịch tiền thật chạy bên trong hệ thống.
-*   **Boss không thưởng tiền:** Phần thưởng Boss quy hết về Điểm + bonus hoàn thành cấu hình bởi Chủ Viện / Phó Viện Trưởng (xem §2.1).
+*   **Chủ nhiệm tự tạo Phần Thưởng:** Mỗi lớp (khoá theo Chủ Nhiệm) có 1 danh mục phần thưởng riêng, tự định giá bằng Ruby; Trợ Giảng thao tác lên CHÍNH danh mục đó khi được cấp quyền (không tạo danh mục riêng). Chỉ học sinh thuộc lớp đó mới nhìn thấy và đổi được. Học sinh chưa có lớp (orphan) thấy danh mục quà tặng toàn viện do Viện Trưởng/Viện Phó CRUD; lớp mới khởi tạo tự động nhân bản (1 lần) toàn bộ danh mục quà toàn viện tại thời điểm đó làm danh mục khởi đầu.
+*   **Số lượng giới hạn hoặc không giới hạn:** Mỗi phần thưởng có `quantity` cụ thể (khan hiếm có chủ đích — đổi sớm thì lấy trước, hết là thôi), **hoặc** được đánh dấu **"không giới hạn"** (`is_unlimited`) — dùng cho quà toàn viện mở cho học sinh mồ côi, không cần nhập số giả (không còn hack `quantity = 999999`).
+*   **Cơ chế Rút Lại (Cancel/Refund):** Khi chưa được duyệt/"Phát Thưởng", học sinh có thể tự hủy yêu cầu đổi quà ngay lập tức để nhận lại 100% số Ruby đã tiêu và trả lại số lượng tồn kho cho quà tặng (bỏ qua bước hoàn tồn kho nếu quà đó không giới hạn) — áp dụng cho cả quà toàn viện lẫn quà lớp.
+*   **Luồng trao thưởng ngoài app:** Việc trao quà diễn ra hoàn toàn **ngoài đời thực**; người có quyền duyệt bấm nút **"Phát Thưởng" (confirm delivery)** để đóng yêu cầu. Không có giao dịch tiền thật chạy bên trong hệ thống.
+*   **Boss không thưởng tiền:** Phần thưởng Boss quy hết về Điểm + bonus hoàn thành cấu hình bởi Viện Trưởng / Viện Phó (xem §2.1).
 
 ### 3.3 Phút Đèn Sách (Learning Minutes) — thước đo North Star
 *   **Nguồn phút được ghi nhận:**
     1.  Mỗi *bài làm* (ải, lượt Arena, Boss) có **số phút quy định trước** (`estimatedMinutes`).
     2.  Mỗi *bài đọc / bài giảng lý thuyết* có số phút quy định trước.
     3.  Mỗi *mini-game* tự trả về **số phút chơi thực tế** qua sự kiện `onGameComplete({ timeSpent })` (SUB_SPEC_MINIGAME_HUB §2.2).
-*   **Tổng hợp:** Cộng dồn thành **Phút Đèn Sách** theo ngày và theo tuần, bổ theo từng Sĩ Tử / môn phái / tầng.
-*   **Nơi sử dụng:** Hồ Sơ Sĩ Tử (học sinh tự xem), báo cáo Chủ nhiệm, dashboard Phòng Học Vụ, và là chỉ số xương sống của hệ thống Leaderboard (§7.5). Đây là thước đo "north star" của sản phẩm: *tổng phút học tập thu hoạch mỗi ngày/tuần*.
+*   **Tổng hợp:** Cộng dồn thành **Phút Đèn Sách** theo ngày và theo tuần, bổ theo từng Học Sinh / môn phái / tầng.
+*   **Nơi sử dụng:** Hồ Sơ Học Sinh (học sinh tự xem), báo cáo Chủ nhiệm, dashboard Phòng Học Vụ, và là chỉ số xương sống của hệ thống Leaderboard (§7.5). Đây là thước đo "north star" của sản phẩm: *tổng phút học tập thu hoạch mỗi ngày/tuần*.
 
 ### 3.4 Thử Thách Bất Ngờ (Random Encounter) — *(đã duyệt thiết kế 2026-07-10)*
 1.  **Bản chất:** Page Cấp 3 đặc biệt (§2.8.4) do **Heo Maikawaii dẫn ra** (đúng luật linh vật duy nhất §2.5), xuất hiện ngẫu nhiên dưới dạng node phát sáng, **không bao giờ bị sương mù** che.
@@ -314,7 +313,7 @@ Khi học sinh làm câu nghị luận xã hội/nghị luận văn học (hoặ
     *   *Khối Định Danh:* 1 khối duy nhất gồm avatar, tên, danh hiệu/cấp độ (hoặc badge Viện Trưởng), thanh EXP và Năng Lượng — thông tin "về người chơi" gộp chung 1 nơi.
     *   *Khối Tài Nguyên:* 1 khối duy nhất gồm Ruby và Chuỗi rèn luyện (kèm icon Thẻ Chuyên Cần nếu có) — các chỉ số kinh tế/tiến trình gộp chung 1 nơi, phân cách bằng vạch mảnh, không dùng nhãn chữ 2 dòng (chỉ icon + số + tooltip) để tiết kiệm không gian. *(Tim sinh mệnh và Ví Thưởng VND đã bị xóa bỏ khỏi hệ thống — xem §2.1 và §3.2.)*
     *   *Điều hướng nhanh:* Nút vào Shop Học Cụ và Học Đường dùng icon gọn (ẩn chữ ở màn hình hẹp, chỉ hiện icon + tooltip).
-    *   *Nút Hồ Sơ Sĩ Tử:* Mang theo 1 chấm màu nhỏ theo màu môn phái đang hoạt động (xem §1.3 Global Switch) — đây là nơi duy nhất để đổi môn phái, HUD không có dropdown môn phái riêng.
+    *   *Nút Hồ Sơ Học Sinh:* Mang theo 1 chấm màu nhỏ theo màu môn phái đang hoạt động (xem §1.3 Global Switch) — đây là nơi duy nhất để đổi môn phái, HUD không có dropdown môn phái riêng.
     *   *Nút Rời Học Viện:* Tên gọi cho hành động Đăng xuất (logout) — thay tên cũ "Thoái Ẩn". Bấm vào sẽ kích hoạt Logout Gate của Heo Maikawaii (§2.5) trước khi hoàn tất đăng xuất.
     *   *Giao diện Responsive trên Mobile:* Để tránh khuất nút Đăng xuất trên màn hình nhỏ: (1) Ẩn các nút điều hướng nhanh của học sinh (đã có ở Bottom Nav); (2) Gom Khối Định Danh và Khối Tài Nguyên thành 1 box chung duy nhất tự xuống dòng và luôn căn giữa; (3) Khóa cố định Logo và Đăng xuất trên cùng hàng đầu tiên để bảo đảm nút Đăng xuất luôn hiển thị đầy đủ và dễ thao tác.
 *   **Bố cục "Chuồng Heo" thay thế cột thú cố định**: Cột trái `aside w-72` chiếm chỗ Heo Maikawaii thường trực trên desktop bị loại bỏ. Thay vào đó:
@@ -343,17 +342,17 @@ Toàn bộ thuật ngữ trong giao diện, tài liệu và code phải phục v
 
 | Vai trò nguyên bản | Thuật ngữ Kiếm hiệp | Code value | Ý nghĩa hiển thị trên hệ thống |
 | :--- | :--- | :--- | :--- |
-| **Super Admin / Institute Head** | **Viện Trưởng** 👑 | `truong_vien` | Chủ nhân tối cao của học viện — toàn quyền tuyệt đối, bổ nhiệm Phó Viện Trưởng, xóa tài khoản, xem audit log. |
-| **Moderator / Deputy Admin** | **Phó Viện Trưởng** 🛡️ | `pho_vien` | Được Viện Trưởng ủy quyền — quản lý ngân hàng câu hỏi, xem toàn bộ học sinh, promote trong phạm vi cho phép. |
-| **Primary Parent** | **Chủ Nhiệm Chính** 👨‍👩‍👧 | `tutor` | Người chịu trách nhiệm chính của Lớp Chủ Nhiệm — tạo phần thưởng, giao nhiệm vụ, cấu hình Năng Lượng và quản lý học sinh. |
-| **Secondary Parent** | **Chủ Nhiệm Phụ** 👤 | `secondary_tutor` | Được Viện Trưởng mời — quyền do Viện Trưởng cấu hình bật/tắt từng mục. |
+| **Super Admin / Institute Head** | **Viện Trưởng** 👑 | `truong_vien` | Chủ nhân tối cao của học viện — toàn quyền tuyệt đối, bổ nhiệm Viện Phó, xóa tài khoản, xem audit log. |
+| **Moderator / Deputy Admin** | **Viện Phó** 🛡️ | `pho_vien` | Được Viện Trưởng ủy quyền — quản lý ngân hàng câu hỏi, xem toàn bộ học sinh, promote trong phạm vi cho phép. |
+| **Primary Parent** | **Chủ Nhiệm** 👨‍👩‍👧 | `tutor` | Người chịu trách nhiệm chính của Lớp Chủ Nhiệm — tạo phần thưởng, giao nhiệm vụ, cấu hình Năng Lượng và quản lý học sinh. |
+| **Secondary Parent** | **Trợ Giảng** 👤 | `secondary_tutor` | Được Chủ Nhiệm mời cùng quản lý lớp — quyền do Chủ Nhiệm cấu hình bật/tắt từng mục. |
 | **Teacher / Content Creator** | **Giảng Sư** 📖 | `teacher` *(future)* | Thầy cô truyền dạy học văn và kiến thức của các môn phái. |
 | **Grader / Examiner** | **Khảo Quan** 📝 | `grader` *(future)* | Người phụ trách chấm điểm bài luận và đánh giá học lực. |
-| **AI Teacher (Gemini)** | **Trợ Giáo MIKA** 🤖 | `aiCompanion` | Vị thầy thông tuệ ảo đồng hành hướng dẫn Sĩ Tử mọi lúc mọi nơi. |
-| **Student / Player** | **Sĩ Tử** 🌱 | `student` | Cách gọi chung cho người học tham gia học tập. |
-| **Discipline Voice (hệ thống)** | **Giám Học** ⚖️ | `disciplineVoice` | Giọng nói kỷ luật, nghiêm khắc của học viện — chỉ xuất hiện khi Sĩ Tử có hành vi né tránh thử thách. Không phải tài khoản/vai trò thật, chỉ là nhân vật tường thuật trong UI. |
+| **AI Teacher (Gemini)** | **Trợ Giáo MIKA** 🤖 | `aiCompanion` | Vị thầy thông tuệ ảo đồng hành hướng dẫn Học Sinh mọi lúc mọi nơi. |
+| **Student / Player** | **Học Sinh** 🌱 | `student` | Cách gọi chung cho người học tham gia học tập. |
+| **Discipline Voice (hệ thống)** | **Giám Học** ⚖️ | `disciplineVoice` | Giọng nói kỷ luật, nghiêm khắc của học viện — chỉ xuất hiện khi Học Sinh có hành vi né tránh thử thách. Không phải tài khoản/vai trò thật, chỉ là nhân vật tường thuật trong UI. |
 
-### 7.2 Hệ thống Cấp bậc tu học của Thiếu hiệp (Student Ranks & Level Mapping)
+### 7.2 Hệ thống Cấp bậc tu học của Học Sinh (Student Ranks & Level Mapping)
 
 > 🏛️ **Luật Một Bảng (Single Source of Truth):** Bảng dưới đây là **bảng định nghĩa DUY NHẤT** của toàn hệ thống cho quan hệ XP → Level → Danh hiệu. Mọi bảng cấp bậc khác (kể cả bảng "Cấp 1–5: Tân Sinh… Chưởng Môn theo XP" từng có trong SUB_SPEC_XP_NP) đều **bị bãi bỏ**.
 > **Công thức lên cấp (theo code hiện hành):** từ Level *n* lên Level *n+1* cần **n × 200 XP**. XP tích lũy để chạm Level *n* = `100 × n × (n−1)`. Khi vượt ngưỡng, hệ thống hiển thị **chúc mừng thăng cấp** (popup + log truyền công); chạm mốc danh hiệu thì tặng thêm badge và thưởng đột biến (§7.3).
@@ -364,7 +363,7 @@ Toàn bộ thuật ngữ trong giao diện, tài liệu và code phải phục v
 | 🥋 **Tú Tài** | `🥋` | **Level 5 - 14** | 2.000 | Đã bắt đầu tu học kiến thức chuyên sâu của các môn phái. |
 | 📖 **Cử Nhân** | `⚔️` | **Level 15 - 29** | 21.000 | Có nền tảng vững vàng, đã tự mình vượt qua nhiều thử thách. |
 | ⭐ **Tiến Sĩ** | `⭐` | **Level 30 - 49** | 87.000 | Đạt được những thành tích nổi bật và độ chính xác cao khi giải bài. |
-| 🐉 **Trạng Nguyên** | `🐉` | **Level 50 - 79** | 245.000 | học vấn thượng thừa, nằm trong danh sách các Sĩ Tử đứng đầu môn phái. |
+| 🐉 **Trạng Nguyên** | `🐉` | **Level 50 - 79** | 245.000 | học vấn thượng thừa, nằm trong danh sách các Học Sinh đứng đầu môn phái. |
 | 👑 **Học Sĩ** | `👑` | **Level 80+** | 632.000 | Đỉnh phong học văn, danh hiệu cao nhất chỉ dành cho rất ít người xuất chúng. |
 
 ### 7.3 Kiến trúc tích hợp Cấp bậc (Architectural Integration)
@@ -400,15 +399,15 @@ Toàn bộ thuật ngữ trong giao diện, tài liệu và code phải phục v
     ```
 3.  **Vị trí hiển thị trên giao diện (UI Integration spots):**
     *   *Top HUD:* Thay thế số level thuần túy bằng sự kết hợp giữa rank icon và số level (ví dụ: hiển thị `⚔️ Lvl 18` thay vì `Lvl 18`).
-    *   *Bảng Chủ Nhiệm Chính:* Hiển thị danh hiệu hiện tại bên cạnh thông tin tiến độ học tập của Sĩ Tử.
+    *   *Bảng Chủ Nhiệm:* Hiển thị danh hiệu hiện tại bên cạnh thông tin tiến độ học tập của Học Sinh.
     *   *Leaderboard & Profile:* Hiển thị đầy đủ danh hiệu kèm cấp độ (ví dụ: `🐉 Trạng Nguyên (Level 54)`).
 4.  **Cơ chế Thăng hạng (Rank Up Perks):**
-    *   Khi Sĩ Tử đạt cấp độ cột mốc chuyển giao cấp bậc (ví dụ chạm Level 5, 15, 30, 50, 80), hệ thống sẽ ghi nhận một log hoạt động thăng hạng đặc biệt trong Nhật ký truyền công (`HistoryLog`).
+    *   Khi Học Sinh đạt cấp độ cột mốc chuyển giao cấp bậc (ví dụ chạm Level 5, 15, 30, 50, 80), hệ thống sẽ ghi nhận một log hoạt động thăng hạng đặc biệt trong Nhật ký truyền công (`HistoryLog`).
     *   Học viện sẽ tự động thêm huy hiệu tương ứng của cấp bậc đó vào danh sách `badges` lưu trong PostgreSQL (`ge10_player_profiles.badges`) và thưởng thêm một lượng Coin/XP đột biến để chúc mừng.
 
 ### 7.4 Đẳng cấp học tập theo Môn Phái (Sect Mastery Ranks)
 
-Để Sĩ Tử đánh giá chính xác mức độ đầu tư học tập của mình trên từng môn học cụ thể (biết phái nào luyện ít, cần luyện thêm), hệ thống áp dụng hệ thống Đẳng cấp Môn phái độc lập dựa trên tỉ lệ hoàn thành bài học và câu hỏi:
+Để Học Sinh đánh giá chính xác mức độ đầu tư học tập của mình trên từng môn học cụ thể (biết phái nào luyện ít, cần luyện thêm), hệ thống áp dụng hệ thống Đẳng cấp Môn phái độc lập dựa trên tỉ lệ hoàn thành bài học và câu hỏi:
 
 1.  **Hệ thống Đẳng cấp:**
     *   🌱 **Nhập Môn:** Tỉ lệ hoàn thành < 15%
@@ -416,20 +415,20 @@ Toàn bộ thuật ngữ trong giao diện, tài liệu và code phải phục v
     *   ⚔️ **Tiểu Thành:** Tỉ lệ hoàn thành từ 40% đến dưới 65%
     *   🔥 **Tinh Thông:** Tỉ lệ hoàn thành từ 65% đến dưới 85%
     *   ⭐ **Đại Thành:** Tỉ lệ hoàn thành từ 85% đến dưới 98%
-    *   🏆 **Xuất Chúng:** Tỉ lệ hoàn thành từ 98% trở lên (khi Sĩ Tử học hết lý thuyết và làm hết bài tập của môn phái đó).
+    *   🏆 **Xuất Chúng:** Tỉ lệ hoàn thành từ 98% trở lên (khi Học Sinh học hết lý thuyết và làm hết bài tập của môn phái đó).
 
 2.  **Công thức tính Tỉ lệ Hoàn thành:**
     $$\text{Tỷ lệ Hoàn thành} = \left(\frac{\text{Số bài học đã xong}}{\text{Tổng số bài học}}\right) \times 50\% + \left(\frac{\text{Số câu trả lời đúng}}{\text{Tổng số câu hỏi của môn}}\right) \times 50\%$$
 
-3.  **Quy tắc Trang Hồ Sơ Sĩ Tử (Profile Page):**
-    *   Thiếu hiệp có thể click vào thẻ môn phái trong profile để chuyển đổi môn phái tu học toàn cục.
+3.  **Quy tắc Trang Hồ Sơ Học Sinh (Profile Page):**
+    *   Học Sinh có thể click vào thẻ môn phái trong profile để chuyển đổi môn phái tu học toàn cục.
     *   Hiển thị **Nội công rèn luyện** (tổng số câu trả lời chính xác của môn phái đó).
     *   Hiển thị **Thời gian rèn luyện** (ước lượng bằng: $\text{Số câu đúng} \times 1.5$ phút).
-    *   **Cổng hành động chuyển màn nhanh (Exit Gates):** Sau khi thay đổi thân phận và phong vị vừa ý, Sĩ Tử có 2 cổng hành động trực quan ở chân trang để đi thẳng đến khu vực cần thiết:
+    *   **Cổng hành động chuyển màn nhanh (Exit Gates):** Sau khi thay đổi thân phận và phong vị vừa ý, Học Sinh có 2 cổng hành động trực quan ở chân trang để đi thẳng đến khu vực cần thiết:
         *   *🚪 Bôn Tẩu Học Đường:* Đóng hồ sơ và chuyển màn hình về Bản đồ môn phái (Main Map).
         *   *⚔️ Vào Học Đường:* Đóng hồ sơ và đi thẳng tới Học Đường để bắt đầu làm bài luyện tập.
 
-4.  **Luật Bất Thoái (One-way Mastery):** Đẳng cấp môn phái **đã đạt sẽ không bao giờ tự tụt** — kể cả khi Viện Trưởng import thêm câu hỏi/bài học làm mẫu số của công thức tăng lên. Hệ thống lưu đẳng cấp cao nhất từng đạt (`maxAchievedRank`) theo từng môn phái và luôn hiển thị mức cao nhất đó. Tỉ lệ % chi tiết bên dưới đẳng cấp vẫn phản ánh số thực để Sĩ Tử biết còn bao nhiêu nội dung mới.
+4.  **Luật Bất Thoái (One-way Mastery):** Đẳng cấp môn phái **đã đạt sẽ không bao giờ tự tụt** — kể cả khi Viện Trưởng import thêm câu hỏi/bài học làm mẫu số của công thức tăng lên. Hệ thống lưu đẳng cấp cao nhất từng đạt (`maxAchievedRank`) theo từng môn phái và luôn hiển thị mức cao nhất đó. Tỉ lệ % chi tiết bên dưới đẳng cấp vẫn phản ánh số thực để Học Sinh biết còn bao nhiêu nội dung mới.
 
 ### 7.5 Hệ Thống Bảng Xếp Hạng (Leaderboards theo vai trò)
 
@@ -437,14 +436,14 @@ Nguyên tắc chung: (1) mỗi vai trò chỉ thấy leaderboard trong **phạm 
 
 | Vai trò | Nơi xem | Phạm vi & Chiều xếp hạng |
 | :--- | :--- | :--- |
-| 🌱 **Sĩ Tử** | Trang Hồ Sơ Sĩ Tử | Hạng của bản thân trong Lớp Chủ Nhiệm / Lớp — theo Phút Đèn Sách, Điểm kiếm trong kỳ, Chuỗi ngày, Đẳng cấp môn phái. Chỉ thấy tên/avatar các bạn cùng nhóm; không lộ dữ liệu nhóm khác. |
+| 🌱 **Học Sinh** | Trang Hồ Sơ Học Sinh | Hạng của bản thân trong Lớp Chủ Nhiệm / Lớp — theo Phút Đèn Sách, Điểm kiếm trong kỳ, Chuỗi ngày, Đẳng cấp môn phái. Chỉ thấy tên/avatar các bạn cùng nhóm; không lộ dữ liệu nhóm khác. |
 | 👨‍👩‍👧 **Chủ nhiệm Chính** | TutorConsole | Xếp hạng các con trong nhóm mình — theo Phút Đèn Sách, Điểm kiếm/kỳ, tỉ lệ đúng, số chuyên đề đạt Tinh Thông, số lần Skip. |
 | 👤 **Chủ nhiệm Phụ** | TutorConsole | Như Chủ nhiệm Chính (nếu có quyền xem báo cáo) — chỉ lớp chủ nhiệm mình. |
-| 🛡️ **Phó Viện Trưởng** | Phòng Điều Hành (Phòng Học Vụ) | Như Chủ Nhiệm nhưng trên toàn bộ phạm vi viện, kèm bảng so sánh giữa các lớp. |
+| 🛡️ **Viện Phó** | Phòng Điều Hành (Phòng Học Vụ) | Như Chủ Nhiệm nhưng trên toàn bộ phạm vi viện, kèm bảng so sánh giữa các lớp. |
 | 👑 **Viện Trưởng** | Phòng Học Vụ (Toàn Viện) | Toàn viện, mọi chiều: top Phút Đèn Sách, top Điểm, top tiến bộ (delta mastery), heatmap chuyên đề yếu toàn viện, thống kê Skip và lý do lỗi đề. |
 
 *   **An toàn trẻ em:** học sinh được ẩn danh hóa (biệt danh) trên mọi bảng vượt ra ngoài lớp chủ nhiệm của mình; tài khoản chuyển vai trò tự động ẩn khỏi bảng (§1.2).
-*   *(Ghi chú: chi tiết quyền của Chủ Viện/Phó Viện Trưởng sẽ đồng bộ lại khi SUB_SPEC_FAMILY_ROLE bản mới được nạp về — xem §1.2.)*
+*   *(Ghi chú: chi tiết quyền của Viện Trưởng/Viện Phó sẽ đồng bộ lại khi SUB_SPEC_FAMILY_ROLE bản mới được nạp về — xem §1.2.)*
 
 ---
 

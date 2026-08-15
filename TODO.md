@@ -184,7 +184,7 @@ Tài liệu này lưu trữ định hướng phát triển các tính năng họ
 - [x] **Bật RLS và thu hẹp Data API grants cho các bảng dữ liệu người dùng**
   - *Phát hiện production 2026-07-13:* Toàn bộ 32 bảng `ge10_*` có RLS tắt; role `anon` và `authenticated` đang có `SELECT/INSERT/UPDATE/DELETE/TRUNCATE/REFERENCES/TRIGGER` trực tiếp.
   - *Impact:* Có nguy cơ BOLA/IDOR, đọc hoặc sửa dữ liệu ngoài hồ sơ/lớp nếu Data API public đang expose schema `public`.
-  - *Phải làm sau khi xác nhận:* Kiểm kê frontend/backend consumer trực tiếp; thiết kế ownership/class/admin policy cho từng bảng; bật RLS; thu hồi quyền không cần thiết; giữ backend service path hoạt động; test theo `anon`, `authenticated`, Chủ Nhiệm, Phó Viện Trưởng và Viện Trưởng.
+  - *Phải làm sau khi xác nhận:* Kiểm kê frontend/backend consumer trực tiếp; thiết kế ownership/class/admin policy cho từng bảng; bật RLS; thu hồi quyền không cần thiết; giữ backend service path hoạt động; test theo `anon`, `authenticated`, Chủ Nhiệm, Viện Phó và Viện Trưởng.
   - *Rủi ro:* Bật RLS hoặc revoke hàng loạt khi chưa có policy đúng có thể làm API hiện tại ngừng hoạt động. Không triển khai chung với migration Ruby.
   - *Acceptance:* Không role public nào đọc/sửa dữ liệu ngoài scope; backend và các luồng Ruby/quà/lịch sử/session vẫn hoạt động; security test và rollback script đạt.
   - *Kết quả 2026-07-13:* Frontend chỉ dùng Supabase Auth, toàn bộ data đi qua Express API. Migration hardening đã bật RLS và revoke Data API grants cho toàn bộ bảng `ge10_*`; RPC nội bộ không còn public execute; backend owner smoke test đạt.
@@ -426,7 +426,7 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
 - [x] **H1 — Chuẩn hóa capability theo môn và sửa contract route (ưu tiên kiến trúc)**
   - *Mục tiêu:* Tính năng chuyên môn chỉ hiện trong đúng môn; route FE–BE có đúng một tiền tố `/api`.
   - *Phải sửa:* Registry/navigation Công viên Thư Giãn và Kho Nền Tảng; route AI Toán và route admin đang khai báo `/api` lặp.
-  - *Impact:* Xưởng Toán Hình 3D/Hình/Đồ Thị chỉ hiện ở Toán; các mini-app tiếng Anh chỉ hiện ở Tiếng Anh; quản lý role và duyệt Phó Viện Trưởng hoạt động lại.
+  - *Impact:* Xưởng Toán Hình 3D/Hình/Đồ Thị chỉ hiện ở Toán; các mini-app tiếng Anh chỉ hiện ở Tiếng Anh; quản lý role và duyệt Viện Phó hoạt động lại.
   - *Rủi ro:* Ẩn nhầm feature dùng chung hoặc làm đổi URL consumer; cần kiểm tra toàn bộ registry và fetch caller.
   - *Acceptance:* Matrix subject × feature đúng; bốn endpoint không còn `/api/api`; build và route tests đạt.
   - *Kết quả:* Có registry capability theo môn; English Skill Districts chỉ thuộc Tiếng Anh, ba Xưởng Toán chỉ thuộc Toán và screen tự thoát khi đổi môn; bốn route FE–BE đã bỏ prefix lặp.
@@ -567,7 +567,7 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
 - [x] **STH1 — Chuẩn hóa spec và contract dữ liệu**
   - *Mục tiêu:* Tách Nhập Môn, Nhiệm Vụ Hôm Nay và Tiến Độ Tu Học; backend là nguồn sự thật.
   - *Phải sửa:* Core Specs, terminology, sub-spec; định nghĩa event, period, status, reward và idempotency.
-  - *Impact:* Toàn bộ gameplay event và shell Sĩ Tử.
+  - *Impact:* Toàn bộ gameplay event và shell Học Sinh.
   - *Rủi ro:* Trộn nhiệm vụ một lần với daily hoặc dùng account ID làm owner.
   - *Acceptance:* Thuật ngữ/contract thống nhất; mọi record sở hữu bởi active profile.
   - *Kết quả:* Core Specs, từ điển và `SUB_SPEC_MISSION_LEDGER.md` đã chốt ba nhóm, event contract, period/status/reward và profile ownership.
@@ -591,7 +591,7 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
 - [x] **STH4 — Sổ Tu Học trong app shell**
   - *Dependency:* STH2.
   - *Phải sửa:* Component/hook/service mới, mount dưới TopHUD cho mọi student screen; compact khi làm bài; bỏ block daily mission riêng ở WorldMap.
-  - *Impact:* Layout toàn app Sĩ Tử và mobile.
+  - *Impact:* Layout toàn app Học Sinh và mobile.
   - *Rủi ro:* Chiếm diện tích/che câu hỏi, fetch lặp theo screen.
   - *Acceptance:* Một instance toàn cục; summary luôn thấy; panel đầy đủ loading/empty/error; không render ở auth/admin.
   - *Kết quả:* `LearningLedger` mount một lần dưới TopHUD trên mọi student screen, compact khi làm bài; block Daily Quest JSON cũ đã bỏ khỏi WorldMap.
@@ -610,7 +610,7 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
 
 - [x] **RA2 — Full release gate**
 
-# Bổ sung Toast Thông Báo cho mọi sự kiện thay đổi Dữ Liệu Sĩ Tử (2026-07-13)
+# Bổ sung Toast Thông Báo cho mọi sự kiện thay đổi Dữ Liệu Học Sinh (2026-07-13)
 
 - [x] **TS1 — Tích hợp Toast thay đổi tài nguyên và năng lượng trong Player Slice**
   - *Mục tiêu:* Cộng/trừ Ruby, XP, Năng lượng, quay số, mở hòm, thắng boss, cho thú nuôi ăn, và vượt qua thử thách đều có Toast báo.
@@ -633,7 +633,7 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
 - [x] **RA3 — Entry tạm cho Hòm Bí Mật**
   - *Mục tiêu:* Giữ feature `openMysteryBox` có dấu vết rõ trên UI nhưng không mở lại reward client-side thiếu chống nhận lặp.
   - *Phải sửa:* Thêm thẻ disabled trong Sổ Tu Học, ghi rõ đang hoàn thiện; không gọi action và không thay đổi Ruby/XP.
-  - *Acceptance:* Sĩ Tử thấy Hòm Bí Mật trong Tiến Độ Tu Học; không thể click nhận thưởng; build pass.
+  - *Acceptance:* Học Sinh thấy Hòm Bí Mật trong Tiến Độ Tu Học; không thể click nhận thưởng; build pass.
 
 # Cấu trúc và mô tả các loại câu hỏi trắc nghiệm (2026-07-13)
 
@@ -643,10 +643,10 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
   - *Kết quả:* Đã tạo tài liệu `SUB_SPEC_QUESTION_TYPES.md` đầy đủ thông tin, cấu trúc rõ ràng, chuẩn hóa theo từ điển và kiểm chứng build thành công.
 
 
-# Phòng Hiệu Trưởng & Sơ Đồ Tổ Chức (2026-07-14)
+# Tổng Quan & Sơ Đồ Tổ Chức (2026-07-14)
 
 - [x] **PHT1 — Cấu hình phòng Hiệu Trưởng và Sơ Đồ Tổ Chức**
-  - *Mục tiêu:* Đổi tên Phòng Ban điều hành thành Phòng Hiệu Trưởng; thêm tab Sơ Đồ Tổ Chức hiển thị diagram cây phân cấp (Viện chủ -> Phó viện chủ -> Chủ nhiệm chính -> Phó chủ nhiệm -> Sĩ tử).
+  - *Mục tiêu:* Đổi tên Phòng Ban điều hành thành Tổng Quan; thêm tab Sơ Đồ Tổ Chức hiển thị diagram cây phân cấp (Viện Trưởng -> Viện Phó -> Chủ nhiệm -> Trợ Giảng -> Học Sinh).
   - *Phải sửa:* `src/components/TutorConsole.tsx`, `SUB_SPEC_TERMINOLOGY.md`, `SUB_SPEC_FAMILY_ROLE.md`.
   - *Phải làm:* Đổi tên tab `thien_co_cac` và banner chào mừng; thêm sub-tab `org_chart`; tích hợp component `<OrgChart />`.
   - *Rủi ro:* Bố cục bị tràn trên màn hình nhỏ; lọc sai các mối liên kết hoặc hiển thị sai vai trò.
@@ -658,8 +658,8 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
   - *Phải làm:* 
     - Lọc dữ liệu từ `adminStudents` và `adminLinks` thành 5 tầng rõ ràng.
     - Vẽ cây phân cấp trực quan bằng CSS Flexbox/Grid và đường SVG mỏng.
-    - Hiển thị mối nối giữa Phó Viện Trưởng với Viện Trưởng, Chủ Nhiệm Phụ (Phó Chủ Nhiệm) với Chủ Nhiệm Chính và nối ngang với nhau.
-    - Nhóm học sinh tự do (chưa gán lớp) dưới quyền Ban Giám Hiệu.
+    - Hiển thị mối nối giữa Viện Phó với Viện Trưởng, Trợ Giảng với Chủ Nhiệm và nối ngang với nhau.
+    - Nhóm học sinh tự do (chưa gán lớp) dưới quyền Ban Lãnh Đạo Viện.
     - Chỉ hiển thị Tên hoặc Email (tuyệt đối không hiển thị ID/foreign key của DB).
     - Thêm tooltip thông tin chi tiết mượt mà.
   - *Acceptance:* Đầy đủ liên kết mượt mà; tooltip hoạt động chuẩn; kiểm tra tính đúng đắn của dữ liệu trên từng vai trò.
@@ -751,7 +751,7 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
     - Loại bỏ danh mục static import khổng lồ của `questions.ts` khỏi app shell chính.
   - *Thời điểm triển khai:* Nên làm khi ngân hàng đề thi phình to (từ vài nghìn câu trở lên) để giảm tải payload tải về ban đầu và loại hẳn lớp lọc phức tạp ở client.
 
-## T10 — Refactor Tối giản hóa và Tối ưu hóa UI Sĩ Tử
+## T10 — Refactor Tối giản hóa và Tối ưu hóa UI Học Sinh
 
 - [x] **T10.1 — Cấu trúc lại Sổ Tu Học (Learning Ledger)**
   - *Mục tiêu:* Cho phép mở sẵn sổ tu học khi học sinh ở trang Bản Đồ.
@@ -816,38 +816,37 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
   - *Phải làm:* Khảo sát dùng Supabase Session/Transaction Pooler (pgbouncer) cho connection string thay vì kết nối trực tiếp; đánh giá `max` phù hợp với giới hạn kết nối DB thật.
   - *Rủi ro:* Đổi connection string/pooling sai có thể gây downtime toàn bộ backend — cần test kỹ ở staging trước khi áp production.
 
-# PM Review 2026-07-17 — Thế giới Học Sinh & Quản Trị (Phụ Huynh/Chủ Nhiệm/Viện Trưởng/Phó Viện Trưởng)
+# PM Review 2026-07-17 — Thế giới Học Sinh & Quản Trị (Phụ Huynh/Chủ Nhiệm/Viện Trưởng/Viện Phó)
 
 > Nguồn: rà soát CORE_SPECS + toàn bộ SUB_SPEC liên quan gia đình/quản trị, đối chiếu code thực tế (`createAdminSlice.ts`, `classRewards.ts`, `TutorConsole/*`) từ góc nhìn giám đốc sản xuất game giáo dục. Toàn bộ mục dưới đây **chỉ mô tả phạm vi/việc cần làm, CHƯA code**. Đã ghi flag tương ứng trực tiếp vào `CORE_SPECS.md` §2.1/§1.4/§3.2 và `SUB_SPEC_FAMILY_ROLE.md` §6 — xem các file đó để có bối cảnh đầy đủ trước khi triển khai.
 
 - [ ] **PMR-1 — Đưa "Bảng Bài Tập" (Parent Quests) lên backend thật, gắn vào Mission Ledger** *(ưu tiên cao nhất — tính năng đang không hoạt động đúng thiết kế)*
   - *Hiện trạng lỗi:* `tutorQuests`/`addTutorQuest`/`completeTutorQuest`/`claimTutorQuest` (`src/store/slices/createAdminSlice.ts:27,400-450`, dùng trong `QuestManager.tsx`, `WorldMap.tsx`, `AcademyTab.tsx`, `StudentProfileView.tsx`) là state Zustand cục bộ, không có API, không `studentId`, không bảng DB.
-  - *Phải sửa:* Thiết kế bảng `ge10_tutor_quests` (id, tutor_id, student_id hoặc null=cả nhóm, title, description, reward_ruby, status, created_at, completed_at, claimed_at) + route CRUD có kiểm tra quan hệ `ge10_class_links` (chỉ Chủ Nhiệm Chính/Phụ có quyền mới tạo được cho đúng học sinh mình quản lý, theo đúng `SUB_SPEC_AUTH_PROFILE.md`); cân nhắc mô hình hoá thành `mission_key` động trong `ge10_mission_definitions` (period `once`/custom) thay vì bảng riêng, để tái dùng engine idempotency đã có ở `SUB_SPEC_MISSION_LEDGER.md` thay vì xây một cơ chế thưởng song song thứ ba.
+  - *Phải sửa:* Thiết kế bảng `ge10_tutor_quests` (id, tutor_id, student_id hoặc null=cả nhóm, title, description, reward_ruby, status, created_at, completed_at, claimed_at) + route CRUD có kiểm tra quan hệ `ge10_class_links` (chỉ Chủ Nhiệm/Phụ có quyền mới tạo được cho đúng học sinh mình quản lý, theo đúng `SUB_SPEC_AUTH_PROFILE.md`); cân nhắc mô hình hoá thành `mission_key` động trong `ge10_mission_definitions` (period `once`/custom) thay vì bảng riêng, để tái dùng engine idempotency đã có ở `SUB_SPEC_MISSION_LEDGER.md` thay vì xây một cơ chế thưởng song song thứ ba.
   - *Phải làm thêm:* Quyết định cơ chế "hoàn thành tự động" thật (đối chiếu số bài đã làm/điểm đạt được) thay vì nút "Đánh dấu hoàn thành" thủ công của Chủ Nhiệm — hoặc nếu giữ thủ công thì sửa lại copy trong CORE_SPECS §2.1 3B cho khớp thực tế thay vì hứa "tự động dựa trên tài nguyên có sẵn".
   - *Impact:* `createAdminSlice.ts`, `QuestManager.tsx`, `StudentProfileView.tsx`, `WorldMap.tsx`, `AcademyTab.tsx`, migration DB mới, route mới (`missionLedger.ts` hoặc route riêng).
   - *Rủi ro:* Học sinh hiện tại có thể đang có `tutorQuests` cũ trong localStorage — cần migration/hydrate một lần, không được xoá âm thầm gây mất "nhiệm vụ đang làm dở" của học sinh.
-  - *Acceptance:* Nhiệm vụ tạo trên thiết bị Chủ Nhiệm phải xuất hiện trên thiết bị khác của đúng Học Sinh được giao (không phải toàn bộ Sĩ Tử); đổi profile trong cùng trình duyệt không rò dữ liệu; refresh/relogin không mất nhiệm vụ.
+  - *Acceptance:* Nhiệm vụ tạo trên thiết bị Chủ Nhiệm phải xuất hiện trên thiết bị khác của đúng Học Sinh được giao (không phải toàn bộ Học Sinh); đổi profile trong cùng trình duyệt không rò dữ liệu; refresh/relogin không mất nhiệm vụ.
 
-- [ ] **PMR-2 — Viết lại `SUB_SPEC_CLASS_REWARDS.md` từ code thực tế và làm rõ quan hệ "Quà Của Lớp" vs "Quà Của Trường"**
-  - *Hiện trạng:* CORE_SPECS §3.2 tham chiếu file này nhưng file không tồn tại. `HANDOFF.md` 2026-07-17 nhắc tới 2 khái niệm "Quà Khuyến Học Của Lớp" (đã xác nhận = `ge10_class_rewards`/`ge10_class_reward_redemptions` trong `classRewards.ts`, theo `teacher_id`, atomic redeem/cancel/deliver) và "Quà Khuyến Học Của Trường" mà chưa rõ có phải hệ `ParentReward`/`ge10_reward_redemptions` cũ từ Task #35 hay không.
-  - *Phải làm:* Đọc `economy.ts`/`RewardManager.tsx`/schema liên quan để xác nhận có đúng 2 hệ song song hay đã hợp nhất; nếu còn song song, quyết định giữ cả hai (đặc tả rõ ranh giới: "Của Trường" phục vụ ai, "Của Lớp" phục vụ ai) hay hợp nhất về một model catalog + scope (`class` | `school`).
-  - *Impact:* Tài liệu chuẩn (spec mới), không bắt buộc đổi code nếu quyết định giữ nguyên kiến trúc hiện tại — chỉ bắt buộc nếu quyết định hợp nhất.
-  - *Acceptance:* File `SUB_SPEC_CLASS_REWARDS.md` tồn tại, mô tả đúng 100% hành vi code hiện hành (bảng, endpoint, trạng thái redemption, quyền theo vai trò); CORE_SPECS §3.2 hết cảnh báo link chết.
+- [x] **PMR-2 — Viết lại `SUB_SPEC_CLASS_REWARDS.md` từ code thực tế và làm rõ quan hệ "Quà Của Lớp" vs "Quà Của Trường"** *(hoàn thành 2026-08-15, trong đợt audit toàn bộ hệ thống quà/phát thưởng)*
+  - Xác nhận đúng 2 hệ song song, không hợp nhất: "Của Trường" (`ge10_school_reward_templates`, CRUD bởi Ban Lãnh Đạo Viện, phục vụ học sinh mồ côi) và "Của Lớp" (`ge10_class_rewards`, theo `teacher_id` = Chủ Nhiệm, phục vụ học sinh có lớp) — ranh giới đặc tả đầy đủ tại `SUB_SPEC_CLASS_REWARDS.md`.
+  - Nhân tiện phát hiện và sửa 2 bug nghiêm trọng cùng đợt: (1) quà TRƯỜNG không có route redeem atomic ở server — client tự trừ Ruby cục bộ rồi đẩy qua endpoint sync chung, không transaction, không trừ tồn kho ("đổi quà không trừ tiền"); (2) quyền quản lý quà LỚP của Trợ Giảng bị bỏ qua hoàn toàn ở backend (chỉ check role thô, không đọc `secondary_permissions`), và Trợ Giảng tạo quà dưới hồ sơ riêng thay vì danh mục chung của lớp. Xem `SUB_SPEC_CLASS_REWARDS.md` §3.2 và §4.1 để biết chi tiết + route/file đã sửa.
+  - Thêm cờ `is_unlimited` (thay hack `quantity = 999999`) cho cả quà trường và quà lớp.
 
-- [ ] **PMR-3 — Notification chủ động cho Chủ Nhiệm/Viện Trưởng/Phó Viện Trưởng** *(SUB_SPEC_FAMILY_ROLE.md §6.1)*
-  - *Mục tiêu:* Chủ Nhiệm/Ban Giám Hiệu biết có việc cần xử lý mà không cần tự mở app kiểm tra thủ công.
-  - *Cần quyết định trước khi thiết kế kỹ thuật:* kênh ưu tiên (in-app badge trước, hay email digest, hay Telegram/Zalo thật như CORE_SPECS §6.4 gợi ý); tần suất (real-time vs tổng hợp ngày/tuần); danh sách sự kiện kích hoạt (yêu cầu đổi quà mới, đơn ứng tuyển Phó Viện Trưởng, học sinh cạn Năng Lượng lặp lại, kết nối lớp đang chờ duyệt).
+- [ ] **PMR-3 — Notification chủ động cho Chủ Nhiệm/Viện Trưởng/Viện Phó** *(SUB_SPEC_FAMILY_ROLE.md §6.1)*
+  - *Mục tiêu:* Chủ Nhiệm/Ban Lãnh Đạo Viện biết có việc cần xử lý mà không cần tự mở app kiểm tra thủ công.
+  - *Cần quyết định trước khi thiết kế kỹ thuật:* kênh ưu tiên (in-app badge trước, hay email digest, hay Telegram/Zalo thật như CORE_SPECS §6.4 gợi ý); tần suất (real-time vs tổng hợp ngày/tuần); danh sách sự kiện kích hoạt (yêu cầu đổi quà mới, đơn ứng tuyển Viện Phó, học sinh cạn Năng Lượng lặp lại, kết nối lớp đang chờ duyệt).
   - *Phải làm (sau khi chốt phạm vi):* Service backend phát sự kiện (có thể tái dùng bảng `ge10_learning_events`/audit log làm nguồn), cơ chế gửi (email qua provider có sẵn hay chỉ in-app), UI hiển thị.
   - *Impact:* Backend mới (service/route), TutorConsole, Admin Console.
   - *Rủi ro:* Nếu chọn kênh ngoài (email/Telegram) cần thu thập thêm thông tin liên hệ, kéo theo cân nhắc privacy/consent.
 
 - [ ] **PMR-4 — Widget "Cần Xử Lý Hôm Nay" gộp action-item** *(SUB_SPEC_FAMILY_ROLE.md §6.2)*
-  - *Mục tiêu:* Một nơi duy nhất liệt kê: yêu cầu đổi quà đang `pending`, đơn ứng tuyển Phó Viện Trưởng đang chờ, lời mời kết nối lớp đang chờ duyệt (`pending_student`/`pending_primary`/`pending_tutor`), sắp theo thời gian chờ.
-  - *Phải sửa:* Component mới trong `Phòng Hiệu Trưởng`/TutorConsole tổng hợp từ API đã có của `RewardManager`, `VicePrincipalApplicationsManager`, `ClassLinksManager` — không cần API mới, chỉ cần lớp tổng hợp UI.
+  - *Mục tiêu:* Một nơi duy nhất liệt kê: yêu cầu đổi quà đang `pending`, đơn ứng tuyển Viện Phó đang chờ, lời mời kết nối lớp đang chờ duyệt (`pending_student`/`pending_primary`/`pending_tutor`), sắp theo thời gian chờ.
+  - *Phải sửa:* Component mới trong `Tổng Quan`/TutorConsole tổng hợp từ API đã có của `RewardManager`, `VicePrincipalApplicationsManager`, `ClassLinksManager` — không cần API mới, chỉ cần lớp tổng hợp UI.
   - *Acceptance:* Số lượng item khớp đúng dữ liệu từng tab con; click item nhảy thẳng tới đúng tab/modal xử lý.
 
 - [ ] **PMR-5 — Thao tác hàng loạt (bulk actions) cho lớp đông học sinh** *(SUB_SPEC_FAMILY_ROLE.md §6.3)*
-  - *Mục tiêu:* Chọn nhiều Sĩ Tử trong `MemberRoster`/`StudentDirectory` rồi áp dụng cùng lúc: cấu hình Năng Lượng mặc định, giao cùng một Nhiệm vụ (phụ thuộc PMR-1 hoàn tất trước).
+  - *Mục tiêu:* Chọn nhiều Học Sinh trong `MemberRoster`/`StudentDirectory` rồi áp dụng cùng lúc: cấu hình Năng Lượng mặc định, giao cùng một Nhiệm vụ (phụ thuộc PMR-1 hoàn tất trước).
   - *Phải sửa:* `MemberRoster.tsx`/`StudentDirectory.tsx` (checkbox chọn nhiều), route `adminSetEnergyConfig` mở rộng nhận mảng `studentIds`, `addTutorQuest`(PMR-1) nhận mảng target.
   - *Rủi ro:* Áp dụng nhầm hàng loạt khó rollback hơn thao tác đơn lẻ — cần màn xác nhận rõ số lượng học sinh bị ảnh hưởng trước khi submit.
 
@@ -857,15 +856,15 @@ Các tính năng mang tính chất tương tác nhẹ nhàng, kết hợp học 
   - *Impact:* `admin.ts` (revoke/promote routes), schema `ge10_users`.
 
 - [ ] **PMR-7 — Cảnh báo bất thường đơn giản trên Audit Log** *(SUB_SPEC_FAMILY_ROLE.md §6.5)*
-  - *Mục tiêu:* Không cần AI — chỉ rule ngưỡng đơn giản (ví dụ: một Phó Viện Trưởng thực hiện >N thao tác nhạy cảm/giờ) đẩy cảnh báo vào widget PMR-4.
+  - *Mục tiêu:* Không cần AI — chỉ rule ngưỡng đơn giản (ví dụ: một Viện Phó thực hiện >N thao tác nhạy cảm/giờ) đẩy cảnh báo vào widget PMR-4.
   - *Phải làm:* Thêm điều kiện đếm theo `actor_id` + khung giờ trên bảng `ge10_admin_audit_log` đã có sẵn, không cần bảng mới.
 
 - [ ] **PMR-8 — Cơ chế cho học sinh mồ côi (Đại Sảnh Đường) ở quy mô lớn** *(SUB_SPEC_FAMILY_ROLE.md §6.6)*
-  - *Mục tiêu:* Giảm điểm nghẽn khi có hàng trăm học sinh chưa có lớp cùng lúc dồn về Viện Trưởng/Phó Viện Trưởng.
+  - *Mục tiêu:* Giảm điểm nghẽn khi có hàng trăm học sinh chưa có lớp cùng lúc dồn về Viện Trưởng/Viện Phó.
   - *Phải làm (sau khi chốt hướng):* hoặc (a) cho Chủ Nhiệm tự "nhận" học sinh mồ côi từ danh sách công khai (ngược hướng với luồng mời hiện tại), hoặc (b) gợi ý tự động theo sĩ số còn trống của từng Chủ Nhiệm.
 
 - [ ] **PMR-9 — Đường xử lý tranh chấp Reward Catalog cấp viện** *(SUB_SPEC_FAMILY_ROLE.md §6.7)*
-  - *Câu hỏi cần chốt:* Viện Trưởng/Phó Viện Trưởng có được quyền "can thiệp khẩn cấp" xử lý `RewardRedemption` treo của một lớp khi Chủ Nhiệm đã bị vô hiệu hóa (`is_active=false`)/ngừng phản hồi không?
+  - *Câu hỏi cần chốt:* Viện Trưởng/Viện Phó có được quyền "can thiệp khẩn cấp" xử lý `RewardRedemption` treo của một lớp khi Chủ Nhiệm đã bị vô hiệu hóa (`is_active=false`)/ngừng phản hồi không?
   - *Phải làm (nếu chốt có):* Thêm permission có điều kiện trong `classRewards.ts` (chỉ cho phép khi `teacher.is_active = false`), audit log ghi rõ hành động thay mặt.
 
 - [ ] **PMR-10 — Vòng lặp phản hồi cho lý do "Bỏ qua" (Skip)**

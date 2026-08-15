@@ -54,6 +54,9 @@ export interface StoreState {
   classRewardRedemptions: ClassRewardRedemption[];
   /** true nếu student chưa vào lớp nào → hiện school rewards thay vì class rewards. */
   isOrphanStudent: boolean;
+  /** Server-side: actor hiện tại (Chủ Nhiệm, hoặc Trợ Giảng được cấp quyền) có được tạo/sửa/xoá/
+   *  duyệt quà của lớp mình không — thay cho việc FE tự suy đoán quyền theo role. */
+  canManageClassRewards: boolean;
   challenges: Challenge[];
   /** Mẫu nhiệm vụ từ DB (ge10_challenge_templates) — dùng để reset/khởi tạo lại challenges, thay INITIAL_CHALLENGES hardcode cũ. */
   challengeTemplates: Challenge[];
@@ -82,8 +85,13 @@ export interface StoreState {
   buyStreakShield: () => boolean;
   buyHint: () => boolean;
   buyTheme: (themeId: UiThemeId) => boolean;
-  /** Đổi một Danh Mục Quà Khuyến Học: trừ Ruby + giảm remainingQuantity + tạo RewardRedemption 'pending'. */
-  redeemReward: (rewardId: string) => boolean;
+  /** Đổi một Danh Mục Quà Khuyến Học của trường: gọi POST /api/school-rewards/:id/redeem
+   *  (atomic ở server — trừ Ruby + tồn kho + tạo RewardRedemption 'pending' trong 1 transaction). */
+  redeemReward: (rewardId: string) => Promise<boolean>;
+  /** Học sinh tự huỷ yêu cầu đổi quà TRƯỜNG đang chờ — hoàn Ruby + tồn kho (nếu không unlimited). */
+  cancelRewardRedemption: (redemptionId: string) => Promise<boolean>;
+  /** Tải lại quà toàn viện + lượt đổi của chính hồ sơ đang active, qua route atomic /api/school-rewards. */
+  fetchMyRewards: () => Promise<void>;
   feedPet: () => boolean;
   spinWheel: () => { rewardType: string; amount: number; message: string };
   openMysteryBox: () => { rewardType: string; amount: number; message: string };
@@ -115,20 +123,16 @@ export interface StoreState {
   skipReviews: any[];
   fetchSkipReviews: (studentId: string) => Promise<void>;
   resolveSkipReview: (reviewId: string) => Promise<boolean>;
-  /** Chủ nhiệm xác nhận đã trao quà ngoài đời cho lượt đổi này (thay "duyệt" cũ). */
-  markRewardDelivered: (redemptionId: string) => void;
-  /** Hủy lượt đổi: hoàn Ruby + trả lại remainingQuantity cho catalog item (thay "từ chối" cũ). */
-  cancelRedemption: (redemptionId: string) => void;
   /** Danh Mục Quà Khuyến Học CHUNG của trường — CRUD chỉ dành cho truong_vien/pho_vien. */
   schoolRewards: TutorReward[];
   fetchSchoolRewards: () => Promise<void>;
-  createSchoolReward: (title: string, costRuby: number, quantity: number) => Promise<boolean>;
+  createSchoolReward: (title: string, costRuby: number, quantity: number, isUnlimited?: boolean) => Promise<boolean>;
   deleteSchoolReward: (rewardId: string) => Promise<boolean>;
-  updateSchoolReward: (id: string, title: string, costRuby: number, quantity: number, remainingQuantity: number) => Promise<boolean>;
+  updateSchoolReward: (id: string, title: string, costRuby: number, quantity: number, remainingQuantity: number, isUnlimited?: boolean) => Promise<boolean>;
 
   // === CLASS REWARDS (Quà Khuyến Học) ===
   fetchClassRewards: () => Promise<void>;
-  createClassReward: (title: string, costRuby: number, quantity: number) => Promise<boolean>;
+  createClassReward: (title: string, costRuby: number, quantity: number, isUnlimited?: boolean) => Promise<boolean>;
   deleteClassReward: (rewardId: string) => Promise<boolean>;
   redeemClassReward: (rewardId: string) => Promise<boolean>;
   cancelClassRedemption: (redemptionId: string) => Promise<boolean>;

@@ -6,6 +6,7 @@ import { useGameState } from '../hooks/useGameState';
 import { getStudentRankForLevel, SUBJECTS_CONFIG, getGradeTierConfig } from '../types/game';
 import { isLightTheme } from '../theme/uiThemes';
 import { xpNeededForLevel } from '../utils/leveling';
+import { getRoleLabel } from '../utils/roleHelpers';
 
 interface TopHUDProps {
   currentScreen: 'map' | 'arena' | 'play' | 'shop' | 'tutor' | 'pet' | 'logs' | 'practice' | 'profile';
@@ -141,7 +142,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                               isUnicorn ? 'hover:bg-violet-50 text-violet-700' : 'hover:bg-white/5 text-synth-cyan'
                             }`}
                           >
-                            👤 Hồ Sơ Sĩ Tử
+                            👤 Hồ Sơ Học Sinh
                           </button>
                         )}
                         <button
@@ -192,9 +193,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                     currentUser?.role === 'tutor' ? 'bg-synth-orange/30 text-synth-orange border border-synth-orange/20' :
                     'bg-pink-500/30 text-pink-400 border border-pink-500/20'
                   }`}>
-                    {currentUser?.role === 'truong_vien' ? 'Viện Trưởng 👑' :
-                     currentUser?.role === 'pho_vien' ? 'Phó Viện Trưởng 🛡️' :
-                     currentUser?.role === 'tutor' ? 'Chủ Nhiệm Chính 📋' : 'Chủ Nhiệm Phụ 📋'}
+                    {getRoleLabel(currentUser?.role).name} {getRoleLabel(currentUser?.role).icon}
                   </span>
                 )}
               </div>
@@ -312,7 +311,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                                   isUnicorn ? 'hover:bg-violet-50 text-violet-700' : 'hover:bg-white/5 text-synth-cyan'
                                 }`}
                               >
-                                👤 Hồ Sơ Sĩ Tử
+                                👤 Hồ Sơ Học Sinh
                               </button>
                             )}
                             <button
@@ -432,9 +431,7 @@ export const TopHUD: React.FC<TopHUDProps> = ({
                     currentUser?.role === 'tutor' ? 'bg-synth-orange/30 text-synth-orange border border-synth-orange/20' :
                     'bg-pink-500/30 text-pink-400 border border-pink-500/20'
                   }`}>
-                    {currentUser?.role === 'truong_vien' ? 'Viện Trưởng 👑' :
-                     currentUser?.role === 'pho_vien' ? 'Phó Viện Trưởng 🛡️' :
-                     currentUser?.role === 'tutor' ? 'Chủ Nhiệm Chính 📋' : 'Chủ Nhiệm Phụ 📋'}
+                    {getRoleLabel(currentUser?.role).name} {getRoleLabel(currentUser?.role).icon}
                   </span>
                 </div>
               </div>
@@ -455,15 +452,15 @@ export const TopHUD: React.FC<TopHUDProps> = ({
           )}
         </div>
 
-        {/* Cụm 3: Điều hướng nhanh + Hồ Sơ Sĩ Tử + Thoái Ẩn */}
+        {/* Cụm 3: Điều hướng nhanh + Hồ Sơ Học Sinh + Thoái Ẩn */}
         <div className="flex items-center gap-2 order-2 md:order-none ml-auto">
 
 
-          {/* Nav chính Phòng Điều Hành cho Giáo viên / Ban Giám Hiệu — cùng vị trí với nav học sinh */}
+          {/* Nav chính Phòng Điều Hành cho Giáo Viên / Ban Lãnh Đạo Viện — cùng vị trí với nav học sinh */}
           {isConsoleUser && currentScreen === 'tutor' && (
             <div className="hidden md:flex items-center gap-2">
               {([
-                { tab: 'management', icon: '🏫', label: t('Hiệu Trưởng', 'Principal'), title: t('Phòng Hiệu Trưởng ✦ Trung tâm quản lý nhân sự và báo cáo', 'Principal Room ✦ Personnel & Reports Center'), show: true },
+                { tab: 'management', icon: '🏫', label: t('Tổng Quan', 'Overview'), title: t('Tổng Quan ✦ Trung tâm quản lý nhân sự và báo cáo', 'Overview ✦ Personnel & Reports Center'), show: true },
                 { tab: 'lectures', icon: '📖', label: t('Bài Giảng', 'Lectures'), title: t('Kho Bài Giảng ✦ Soạn thảo lý thuyết chuyên đề', 'Lecture Bank ✦ Theory Lectures'), show: true },
                 { tab: 'questions', icon: '📚', label: t('Đề Thi', 'Questions'), title: t('Kho Đề Thi ✦ Soạn thảo và import đề thi', 'Question Bank ✦ Manage Questions'), show: true },
                 { tab: 'settings', icon: '⚙️', label: t('Cấu Hình', 'Settings'), title: t('Cấu Hình ✦ Tinh chỉnh hệ thống và học viện', 'Settings ✦ System Configurations'), show: true },

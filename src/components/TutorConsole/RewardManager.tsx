@@ -12,11 +12,9 @@ interface RewardManagerProps {
   isSchoolAdmin: boolean;
   schoolRewards: any[];
   fetchSchoolRewards: () => Promise<void>;
-  createSchoolReward: (title: string, costRuby: number, quantity: number) => Promise<boolean>;
+  createSchoolReward: (title: string, costRuby: number, quantity: number, isUnlimited?: boolean) => Promise<boolean>;
   deleteSchoolReward: (rewardId: string) => Promise<boolean>;
-  updateSchoolReward: (id: string, title: string, costRuby: number, quantity: number, remainingQuantity: number) => Promise<boolean>;
-  markRewardDelivered: (redemptionId: string) => void;
-  cancelRedemption: (redemptionId: string) => void;
+  updateSchoolReward: (id: string, title: string, costRuby: number, quantity: number, remainingQuantity: number, isUnlimited?: boolean) => Promise<boolean>;
   adminMarkRewardDelivered: (studentId: string, redemptionId: string) => Promise<void>;
   adminCancelRedemption: (studentId: string, redemptionId: string) => Promise<void>;
 }
@@ -31,8 +29,6 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
   createSchoolReward,
   deleteSchoolReward,
   updateSchoolReward,
-  markRewardDelivered,
-  cancelRedemption,
   adminMarkRewardDelivered,
   adminCancelRedemption
 }) => {
@@ -43,10 +39,16 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
   const createClassReward = useGameState(state => state.createClassReward);
   const deleteClassReward = useGameState(state => state.deleteClassReward);
   const deliverClassRedemption = useGameState(state => state.deliverClassRedemption);
+  // Quyền quản lý quà LỚP tính ở server (Chủ Nhiệm luôn true; Trợ Giảng phụ thuộc
+  // secondary_permissions.can_approve_rewards) — không suy đoán lại ở FE theo role thô, tránh
+  // lệch với backend (đã từng là 1 bug: `canApproveReward` prop truyền vào tab "lớp của tôi"
+  // chỉ check `isTutorRole(role)`, bỏ qua hoàn toàn cờ cấp quyền của Trợ Giảng).
+  const canManageClassRewards = useGameState(state => state.canManageClassRewards);
 
   const [classTitle, setClassTitle] = useState('');
   const [classCost, setClassCost] = useState(200);
   const [classQty, setClassQty] = useState(5);
+  const [classUnlimited, setClassUnlimited] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [isClassFormOpen, setIsClassFormOpen] = useState(false);
   const [isPersonalFormOpen, setIsPersonalFormOpen] = useState(false);
@@ -69,15 +71,14 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
     }
   };
 
+  // Mục "Nhật ký Đổi Quà Cá Nhân" (Section 2B) chỉ render khi đã chọn viewingStudentId — luôn
+  // dùng nhánh admin (Ban Lãnh Đạo Viện/Chủ Nhiệm duyệt quà TRƯỜNG của 1 học sinh cụ thể qua
+  // /api/admin/deliver-reward, /api/admin/cancel-redemption).
   const handleApproveRedemption = async (redemptionId: string) => {
-    if (processingRedemptions[redemptionId]) return;
+    if (!viewingStudentId || processingRedemptions[redemptionId]) return;
     setProcessingRedemptions(prev => ({ ...prev, [redemptionId]: true }));
     try {
-      if (viewingStudentId) {
-        await adminMarkRewardDelivered(viewingStudentId, redemptionId);
-      } else {
-        await markRewardDelivered(redemptionId);
-      }
+      await adminMarkRewardDelivered(viewingStudentId, redemptionId);
       toast.success('Đã xác nhận trao phần quà thành công! 🎁');
     } catch (err) {
       console.error(err);
@@ -88,15 +89,11 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
   };
 
   const handleCancelRedemption = async (redemptionId: string) => {
-    if (processingRedemptions[redemptionId]) return;
-    if (window.confirm('Bạn có chắc muốn hủy đơn đổi quà này và hoàn lại Ruby cho Sĩ Tử?')) {
+    if (!viewingStudentId || processingRedemptions[redemptionId]) return;
+    if (window.confirm('Bạn có chắc muốn hủy đơn đổi quà này và hoàn lại Ruby cho Học Sinh?')) {
       setProcessingRedemptions(prev => ({ ...prev, [redemptionId]: true }));
       try {
-        if (viewingStudentId) {
-          await adminCancelRedemption(viewingStudentId, redemptionId);
-        } else {
-          await cancelRedemption(redemptionId);
-        }
+        await adminCancelRedemption(viewingStudentId, redemptionId);
         toast.success('Đã hủy và hoàn Ruby thành công! 💎');
       } catch (err) {
         console.error(err);
@@ -110,7 +107,8 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
   // ── Danh Mục Quà Khuyến Học CHUNG của trường (form state) ──
   const [rewardTitle, setRewardTitle] = useState('');
   const [rewardCost, setRewardCost] = useState(200);
-  const [rewardQuantity, setRewardQuantity] = useState(999999);
+  const [rewardQuantity, setRewardQuantity] = useState(1);
+  const [rewardUnlimited, setRewardUnlimited] = useState(true);
   const [isCreatingSchoolReward, setIsCreatingSchoolReward] = useState(false);
 
   // ── Sửa Quà Khuyến Học của trường ──
@@ -119,6 +117,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
   const [editRewardCost, setEditRewardCost] = useState(200);
   const [editRewardQuantity, setEditRewardQuantity] = useState(1);
   const [editRewardRemaining, setEditRewardRemaining] = useState(1);
+  const [editRewardUnlimited, setEditRewardUnlimited] = useState(false);
   const [isUpdatingSchoolReward, setIsUpdatingSchoolReward] = useState(false);
   const [isEditDrawerOpen, setIsEditDrawerOpen] = useState(false);
 
@@ -128,22 +127,23 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
     setEditRewardCost(reward.costRuby);
     setEditRewardQuantity(reward.quantity);
     setEditRewardRemaining(reward.remainingQuantity);
+    setEditRewardUnlimited(!!reward.isUnlimited);
     setIsEditDrawerOpen(true);
   };
 
   const handleUpdateSchoolReward = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editRewardTitle.trim()) { toast.error('Vui lòng điền tên phần quà!'); return; }
-    if (editRewardCost <= 0 || editRewardQuantity <= 0 || editRewardRemaining < 0) {
+    if (editRewardCost <= 0 || (!editRewardUnlimited && (editRewardQuantity <= 0 || editRewardRemaining < 0))) {
       toast.error('Chi phí, số lượng phải lớn hơn 0, số lượng còn lại không được âm!');
       return;
     }
-    if (editRewardRemaining > editRewardQuantity) {
+    if (!editRewardUnlimited && editRewardRemaining > editRewardQuantity) {
       toast.error('Số lượng còn lại không được lớn hơn tổng số lượng!');
       return;
     }
     setIsUpdatingSchoolReward(true);
-    const ok = await updateSchoolReward(editRewardId, editRewardTitle.trim(), editRewardCost, editRewardQuantity, editRewardRemaining);
+    const ok = await updateSchoolReward(editRewardId, editRewardTitle.trim(), editRewardCost, editRewardQuantity, editRewardRemaining, editRewardUnlimited);
     if (ok) {
       toast.success('Đã cập nhật Quà Khuyến Học của trường thành công!');
       setIsEditDrawerOpen(false);
@@ -166,22 +166,22 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
   const handleCreateClassReward = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!classTitle.trim()) { toast.error('Vui lòng điền tên phúc lợi!'); return; }
-    if (classCost <= 0 || classQty <= 0) { toast.error('Chi phí và số lượng phải lớn hơn 0!'); return; }
+    if (classCost <= 0 || (!classUnlimited && classQty <= 0)) { toast.error('Chi phí và số lượng phải lớn hơn 0!'); return; }
     setIsCreating(true);
-    const ok = await createClassReward(classTitle.trim(), classCost, classQty);
-    if (ok) { setClassTitle(''); setClassCost(200); setClassQty(5); setIsClassFormOpen(false); }
+    const ok = await createClassReward(classTitle.trim(), classCost, classQty, classUnlimited);
+    if (ok) { setClassTitle(''); setClassCost(200); setClassQty(5); setClassUnlimited(false); setIsClassFormOpen(false); }
     setIsCreating(false);
   };
 
   const handleCreateSchoolReward = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!rewardTitle.trim()) { toast.error('Vui lòng điền tên phần quà!'); return; }
-    if (rewardCost <= 0 || rewardQuantity <= 0) { toast.error('Chi phí và số lượng phải lớn hơn 0!'); return; }
+    if (rewardCost <= 0 || (!rewardUnlimited && rewardQuantity <= 0)) { toast.error('Chi phí và số lượng phải lớn hơn 0!'); return; }
     setIsCreatingSchoolReward(true);
-    const ok = await createSchoolReward(rewardTitle.trim(), rewardCost, rewardQuantity);
+    const ok = await createSchoolReward(rewardTitle.trim(), rewardCost, rewardQuantity, rewardUnlimited);
     if (ok) {
       toast.success('Đã tạo Quà Khuyến Học của trường thành công!');
-      setRewardTitle(''); setRewardCost(200); setRewardQuantity(999999);
+      setRewardTitle(''); setRewardCost(200); setRewardQuantity(1); setRewardUnlimited(true);
       setIsPersonalFormOpen(false);
     } else {
       toast.error('Tạo Quà Khuyến Học thất bại.');
@@ -208,9 +208,6 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
           <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider">
             🏫 Quà Khuyến Học
           </h4>
-          <span className="text-[10px] text-synth-text-muted ml-1">
-            — Tạo một lần, cả lớp thấy. Số lượng giảm khi Sĩ Tử đổi.
-          </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -222,13 +219,13 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
               </h5>
               <button
                 onClick={() => setIsClassFormOpen(true)}
-                disabled={!canApproveReward}
+                disabled={!canManageClassRewards}
                 className="px-3 py-1.5 rounded-lg bg-synth-orange text-black font-orbitron font-bold text-[10px] uppercase tracking-wider hover:synth-glow-orange cursor-pointer transition-all flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
               >
                 <Plus className="w-3.5 h-3.5" /> Thêm Quà
               </button>
             </div>
-            {!canApproveReward && (
+            {!canManageClassRewards && (
               <p className="text-[9px] text-yellow-500/80 italic leading-tight">
                 ⚠️ Bạn chưa được cấp quyền quản lý Quà Khuyến Học của lớp này.
               </p>
@@ -248,7 +245,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                 <div className="space-y-1.5 max-h-52 overflow-y-auto pr-1">
                   {classRewards.map(reward => {
                     const pct = reward.quantity > 0 ? (reward.remaining / reward.quantity) * 100 : 0;
-                    const isOut = reward.remaining <= 0;
+                    const isOut = !reward.isUnlimited && reward.remaining <= 0;
                     return (
                       <div key={reward.id} className="bg-white/5 rounded-lg px-3 py-2 space-y-1">
                         <div className="flex justify-between items-center">
@@ -259,7 +256,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                             <span className="text-[10px] font-orbitron text-synth-orange font-bold">
                               {reward.costRuby} Ruby
                             </span>
-                            {canApproveReward && (
+                            {canManageClassRewards && (
                               <button
                                 onClick={() => deleteClassReward(reward.id)}
                                 className="text-synth-magenta hover:opacity-70 cursor-pointer"
@@ -271,17 +268,21 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                           </div>
                         </div>
                         {/* Progress bar remaining */}
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 h-1.5 rounded-full bg-white/10">
-                            <div
-                              className={`h-full rounded-full transition-all ${isOut ? 'bg-red-500/50' : 'bg-synth-cyan'}`}
-                              style={{ width: `${pct}%` }}
-                            />
+                        {reward.isUnlimited ? (
+                          <span className="text-[10px] font-orbitron font-bold text-synth-green">Không giới hạn</span>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 h-1.5 rounded-full bg-white/10">
+                              <div
+                                className={`h-full rounded-full transition-all ${isOut ? 'bg-red-500/50' : 'bg-synth-cyan'}`}
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                            <span className={`text-[10px] font-orbitron font-bold shrink-0 ${isOut ? 'text-red-400' : 'text-synth-cyan'}`}>
+                              {isOut ? 'Hết' : `${reward.remaining}/${reward.quantity}`}
+                            </span>
                           </div>
-                          <span className={`text-[10px] font-orbitron font-bold shrink-0 ${isOut ? 'text-red-400' : 'text-synth-cyan'}`}>
-                            {isOut ? 'Hết' : `${reward.remaining}/${reward.quantity}`}
-                          </span>
-                        </div>
+                        )}
                       </div>
                     );
                   })}
@@ -331,7 +332,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                       ) : (
                         <span className="w-5 h-5 rounded-full bg-synth-purple/30 flex items-center justify-center text-[10px]">🧑</span>
                       )}
-                      <span className="text-xs font-semibold text-white truncate">{red.studentName || 'Sĩ Tử'}</span>
+                      <span className="text-xs font-semibold text-white truncate">{red.studentName || 'Học Sinh'}</span>
                     </div>
                     <p className="text-[11px] text-synth-text-muted truncate">→ {red.rewardTitle}</p>
                     <div className="flex items-center gap-2">
@@ -344,7 +345,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
 
                   <div className="shrink-0">
                     {red.status === 'pending' ? (
-                      canApproveReward ? (
+                      canManageClassRewards ? (
                         <button
                           disabled={processingRedemptions[red.id]}
                           onClick={() => handleDeliverClassRedemption(red.id)}
@@ -383,7 +384,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
 
       {/* ═══════════════════════════════════════════════════════
           SECTION 2A: DANH MỤC QUÀ CHUNG CỦA TRƯỜNG (chỉ truong_vien/pho_vien sửa)
-          Một danh sách duy nhất cho toàn viện — Sĩ Tử tự do (chưa có Chủ Nhiệm) thấy
+          Một danh sách duy nhất cho toàn viện — Học Sinh tự do (chưa có Chủ Nhiệm) thấy
           danh sách này; giáo viên mới clone danh sách này khi hồ sơ được tạo.
           ═══════════════════════════════════════════════════════ */}
       {!viewingStudentId && isSchoolAdmin && (
@@ -394,7 +395,6 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                 <h4 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase tracking-wider">
                   🏛️ Quà Khuyến Học Của Trường
                 </h4>
-                <span className="text-[10px] text-synth-text-muted/60 block mt-1">— Danh sách CHUNG toàn viện. Sĩ Tử chưa vào lớp thấy danh sách này.</span>
               </div>
               <button
                 onClick={() => setIsPersonalFormOpen(true)}
@@ -417,7 +417,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                       <span className="text-white truncate">{reward.title}</span>
                       <div className="flex items-center gap-2 shrink-0">
                         <span className="text-synth-cyan font-bold font-orbitron text-[10px]">
-                          {reward.costRuby} Ruby · Còn {reward.remainingQuantity}/{reward.quantity}
+                          {reward.costRuby} Ruby · {reward.isUnlimited ? 'Không giới hạn' : `Còn ${reward.remainingQuantity}/${reward.quantity}`}
                         </span>
                         <button onClick={() => handleOpenEditDrawer(reward)} className="text-synth-cyan hover:opacity-70 cursor-pointer mr-1" title="Sửa quà">
                           <Edit className="w-3.5 h-3.5" />
@@ -441,23 +441,19 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
       {viewingStudentId && (
         <div className="space-y-4 pt-2 border-t border-white/5">
         <div className="flex items-center gap-2">
-          <h4 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase tracking-wider">
-            👤 Nhật Ký Đổi Quà Cá Nhân
+          <h4 className="font-orbitron font-bold text-xs text-synth-text-muted uppercase tracking-wider flex items-center gap-1.5">
+            <Award className="w-3.5 h-3.5" /> Nhật Ký Đổi Quà Cá Nhân
           </h4>
-          <span className="text-[10px] text-synth-text-muted/60">— Lượt đổi quà trường của Sĩ Tử đang xem (khi tự do)</span>
         </div>
 
         {!viewingStudentId ? (
           <div className="glass-panel rounded-2xl border border-white/5 p-6 text-center">
             <p className="text-xs text-synth-text-muted">
-              Chọn tài khoản Sĩ Tử tại tab <strong className="text-synth-magenta">Sổ Danh Bộ</strong> → "Xem Hoạt Động" để xem lịch sử đổi quà.
+              Chọn tài khoản Học Sinh tại tab <strong className="text-synth-magenta">Sổ Danh Bộ</strong> → "Xem Hoạt Động" để xem lịch sử đổi quà.
             </p>
           </div>
         ) : (
           <div className="glass-panel rounded-2xl border border-white/5 p-5 space-y-4">
-            <h5 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-1.5">
-              <Award className="w-3.5 h-3.5" /> Nhật Ký Đổi Quà Cá Nhân
-            </h5>
             <div className="space-y-2 max-h-72 overflow-y-auto">
               {activeRedemptions.length > 0 ? activeRedemptions.map((redemption: any) => (
                   <div key={redemption.id} className="bg-synth-gray/20 rounded-xl p-4 border border-white/5 flex justify-between items-center">
@@ -532,7 +528,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
               type="text"
               value={classTitle}
               onChange={e => setClassTitle(e.target.value)}
-              disabled={!canApproveReward}
+              disabled={!canManageClassRewards}
               placeholder="Ví dụ: Sticker ngôi sao, Giờ chơi game"
               className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange disabled:opacity-50"
             />
@@ -545,7 +541,7 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                 min={1}
                 value={classCost}
                 onChange={e => setClassCost(Number(e.target.value))}
-                disabled={!canApproveReward}
+                disabled={!canManageClassRewards}
                 className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange disabled:opacity-50"
               />
             </div>
@@ -556,17 +552,27 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
                 min={1}
                 value={classQty}
                 onChange={e => setClassQty(Number(e.target.value))}
-                disabled={!canApproveReward}
+                disabled={!canManageClassRewards || classUnlimited}
                 className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-orange disabled:opacity-50"
               />
             </div>
           </div>
+          <label className="flex items-center gap-2 text-[10px] text-synth-text-muted uppercase cursor-pointer">
+            <input
+              type="checkbox"
+              checked={classUnlimited}
+              onChange={e => setClassUnlimited(e.target.checked)}
+              disabled={!canManageClassRewards}
+              className="accent-synth-orange"
+            />
+            Không giới hạn số lượng
+          </label>
           <p className="text-[10px] text-synth-text-muted">
             🎁 Quà trao ngoài đời thực — bấm "Phát Thưởng" khi đã thực hiện.
           </p>
           <button
             type="submit"
-            disabled={!canApproveReward || isCreating}
+            disabled={!canManageClassRewards || isCreating}
             className="w-full py-2.5 rounded-xl font-orbitron font-bold text-xs uppercase tracking-wider bg-synth-orange text-black hover:synth-glow-orange cursor-pointer transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isCreating ? 'Đang tạo...' : '+ Tạo Quà Khuyến Học Cho Lớp'}
@@ -608,11 +614,21 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
             <div className="flex flex-col gap-1">
               <label className="text-[10px] text-synth-text-muted uppercase">Số lượng</label>
               <input type="number" min={1} value={rewardQuantity} onChange={e => setRewardQuantity(Number(e.target.value))}
-                disabled={isCreatingSchoolReward}
+                disabled={isCreatingSchoolReward || rewardUnlimited}
                 className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-cyan disabled:opacity-50"
               />
             </div>
           </div>
+          <label className="flex items-center gap-2 text-[10px] text-synth-text-muted uppercase cursor-pointer">
+            <input
+              type="checkbox"
+              checked={rewardUnlimited}
+              onChange={e => setRewardUnlimited(e.target.checked)}
+              disabled={isCreatingSchoolReward}
+              className="accent-synth-cyan"
+            />
+            Không giới hạn số lượng (dành cho học sinh chưa vào lớp)
+          </label>
           <button
             type="submit"
             disabled={isCreatingSchoolReward}
@@ -657,18 +673,28 @@ export const RewardManager: React.FC<RewardManagerProps> = ({
             <div className="flex flex-col gap-1">
               <label className="text-[10px] text-synth-text-muted uppercase">Số lượng</label>
               <input type="number" min={1} value={editRewardQuantity} onChange={e => setEditRewardQuantity(Number(e.target.value))}
-                disabled={isUpdatingSchoolReward}
+                disabled={isUpdatingSchoolReward || editRewardUnlimited}
                 className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-cyan disabled:opacity-50"
               />
             </div>
             <div className="flex flex-col gap-1">
               <label className="text-[10px] text-synth-text-muted uppercase">Còn lại</label>
               <input type="number" min={0} value={editRewardRemaining} onChange={e => setEditRewardRemaining(Number(e.target.value))}
-                disabled={isUpdatingSchoolReward}
+                disabled={isUpdatingSchoolReward || editRewardUnlimited}
                 className="p-3 rounded-lg border border-white/10 bg-synth-gray/20 text-white text-xs outline-none focus:border-synth-cyan disabled:opacity-50"
               />
             </div>
           </div>
+          <label className="flex items-center gap-2 text-[10px] text-synth-text-muted uppercase cursor-pointer">
+            <input
+              type="checkbox"
+              checked={editRewardUnlimited}
+              onChange={e => setEditRewardUnlimited(e.target.checked)}
+              disabled={isUpdatingSchoolReward}
+              className="accent-synth-cyan"
+            />
+            Không giới hạn số lượng
+          </label>
           <button
             type="submit"
             disabled={isUpdatingSchoolReward}

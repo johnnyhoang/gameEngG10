@@ -136,7 +136,7 @@ export const LogoutConfirmModal: React.FC<LogoutConfirmModalProps> = ({
                 Đang đăng xuất...
               </h4>
               <p className={`text-xs ${isUnicorn ? 'text-slate-500' : 'text-slate-400'} animate-pulse`}>
-                {isStudent ? 'Hẹn gặp lại Sĩ Tử tại học viện!' : 'Hẹn gặp lại bạn!'}
+                {isStudent ? 'Hẹn gặp lại Học Sinh tại học viện!' : 'Hẹn gặp lại bạn!'}
               </p>
             </div>
           </div>

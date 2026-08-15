@@ -13,7 +13,6 @@ export function LearningLedger({ compact: _compact = false, defaultExpanded: _de
   const { t } = useTranslate();
   const profileId = useGameState(state => state.currentUser?.id);
   const gradeTier = useGameState(state => state.activeGradeTier);
-  const player = useGameState(state => state.player);
   const [missions, setMissions] = useState<MissionAssignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -63,13 +62,9 @@ export function LearningLedger({ compact: _compact = false, defaultExpanded: _de
           <MissionGroup title={t("🌱 Nhập Môn", "🌱 Onboarding")} items={onboarding} />
           <MissionGroup title={t("📋 Nhiệm Vụ Hôm Nay", "📋 Today's Missions")} items={daily} />
           <div className="rounded-xl border border-white/5 bg-white/5 p-3">
-            <h3 className="mb-2 font-orbitron text-[10px] font-bold uppercase text-synth-orange">{t("📈 Tiên Độ Tu Học", "📈 Study Progress")}</h3>
-            <div className="space-y-2 text-xs text-slate-300">
-              <p>Level <strong className="font-semibold text-white">{player.level}</strong></p>
-               <p>{t("Điểm Tu Học", "Experience")} <strong className="font-semibold text-white">{player.xp} XP</strong></p>
-              <p>{t("Chuỗi Chuyên Cần", "Study Streak")} <strong className="font-semibold text-white">{player.streak} {t("ngày", "days")}</strong></p>
-            </div>
-            <div className="mt-3 rounded-lg border border-dashed border-synth-orange/30 bg-synth-orange/5 p-2.5" aria-disabled="true">
+            <h3 className="mb-2 font-orbitron text-[10px] font-bold uppercase text-synth-orange">{t("📈 Tiến Độ Tu Học", "📈 Study Progress")}</h3>
+            {/* Level/XP/Streak đã hiển thị thường trực trên header — không lặp lại ở đây. */}
+            <div className="rounded-lg border border-dashed border-synth-orange/30 bg-synth-orange/5 p-2.5" aria-disabled="true">
               <div className="flex items-center gap-2">
                 <span className="text-lg" aria-hidden="true">🎁</span>
                 <div className="min-w-0 flex-1">

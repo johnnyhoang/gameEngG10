@@ -105,13 +105,13 @@ export const adminService = {
     throw new Error('Failed to fetch school reward templates');
   },
 
-  createSchoolReward: async (title: string, costRuby: number, quantity: number): Promise<boolean> => {
+  createSchoolReward: async (title: string, costRuby: number, quantity: number, isUnlimited?: boolean): Promise<boolean> => {
     const token = await adminService.getAccessToken();
     if (!token) return false;
     const res = await fetch(`${backendUrl}/api/admin/school-rewards`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
-      body: JSON.stringify({ title, costRuby, quantity })
+      body: JSON.stringify({ title, costRuby, quantity, isUnlimited })
     });
     return res.ok;
   },
@@ -126,13 +126,13 @@ export const adminService = {
     return res.ok;
   },
 
-  updateSchoolReward: async (id: string, title: string, costRuby: number, quantity: number, remainingQuantity: number): Promise<boolean> => {
+  updateSchoolReward: async (id: string, title: string, costRuby: number, quantity: number, remainingQuantity: number, isUnlimited?: boolean): Promise<boolean> => {
     const token = await adminService.getAccessToken();
     if (!token) return false;
     const res = await fetch(`${backendUrl}/api/admin/school-rewards/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
-      body: JSON.stringify({ title, costRuby, quantity, remainingQuantity })
+      body: JSON.stringify({ title, costRuby, quantity, remainingQuantity, isUnlimited })
     });
     return res.ok;
   },

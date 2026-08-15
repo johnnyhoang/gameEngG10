@@ -408,7 +408,7 @@ function App() {
   };
 
   const handleStartLessonPracticeFromMap = (lessonId: string) => {
-    // Khi kích hoạt từ WorldMap/AcademyTab → 10 câu (tương đương Arena)
+    // Khi kích hoạt từ AcademyTab → 10 câu (tương đương Arena)
     setLessonQuizCount(10);
     handleStartPlay('lesson', lessonId);
   };

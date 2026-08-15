@@ -4,7 +4,6 @@ import { pool } from '../db.js';
 interface GameSettings {
   bossCompletionBonusRuby: [number, number, number];
   challengeEnergyCosts: [number, number, number, number];
-  maxEnergy: number;
   baseXP: number;
   baseRuby: number;
   themeUnlockCost: number;
@@ -38,22 +37,23 @@ export const loadAllGameSettings = async (): Promise<GameSettings> => {
   const boss = settingsMap['boss_completion_bonus_ruby'] || {};
   const energyCosts = settingsMap['challenge_energy_costs'] || {};
 
+  // Fallback khớp ĐÚNG giá trị seed thật trong schema.sql (chỉ dùng nếu dòng setting
+  // bị thiếu trong DB — bình thường schema.sql đã seed sẵn, không nên rơi vào nhánh này).
   cachedSettings = {
     bossCompletionBonusRuby: [
-      Number(boss['easy'] ?? 10),
-      Number(boss['medium'] ?? 20),
-      Number(boss['hard'] ?? 30)
+      Number(boss['easy'] ?? 100),
+      Number(boss['medium'] ?? 150),
+      Number(boss['hard'] ?? 200)
     ],
     challengeEnergyCosts: [
       Number(energyCosts['1'] ?? 10),
-      Number(energyCosts['2'] ?? 20),
-      Number(energyCosts['3'] ?? 30),
-      Number(energyCosts['4'] ?? 40)
+      Number(energyCosts['2'] ?? 10),
+      Number(energyCosts['3'] ?? 15),
+      Number(energyCosts['4'] ?? 10)
     ],
-    maxEnergy: Number(settingsMap['max_energy']?.['value'] ?? 1000),
-    baseXP: Number(settingsMap['base_xp']?.['value'] ?? 10),
+    baseXP: Number(settingsMap['base_xp']?.['value'] ?? 15),
     baseRuby: Number(settingsMap['base_ruby']?.['value'] ?? 5),
-    themeUnlockCost: Number(settingsMap['theme_unlock_cost']?.['value'] ?? 100)
+    themeUnlockCost: Number(settingsMap['theme_unlock_cost']?.['value'] ?? 200)
   };
 
   settingsCacheExpiresAt = now + CACHE_TTL_MS;
@@ -69,11 +69,6 @@ export const loadBossCompletionBonusRuby = async (): Promise<[number, number, nu
 export const loadChallengeEnergyCosts = async (): Promise<[number, number, number, number]> => {
   const s = await loadAllGameSettings();
   return s.challengeEnergyCosts;
-};
-
-export const loadMaxEnergy = async (): Promise<number> => {
-  const s = await loadAllGameSettings();
-  return s.maxEnergy;
 };
 
 export const loadBaseXP = async (): Promise<number> => {
@@ -131,16 +126,6 @@ export const saveThemeUnlockCost = async (themeUnlockCost: number) => {
      VALUES ('theme_unlock_cost', $1::jsonb)
      ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
     [JSON.stringify({ value: themeUnlockCost })]
-  );
-  invalidateSettingsCache();
-};
-
-export const saveMaxEnergy = async (maxEnergy: number) => {
-  await pool.query(
-    `INSERT INTO ge10_game_settings (setting_key, setting_json)
-     VALUES ('max_energy', $1::jsonb)
-     ON CONFLICT (setting_key) DO UPDATE SET setting_json = EXCLUDED.setting_json`,
-    [JSON.stringify({ value: maxEnergy })]
   );
   invalidateSettingsCache();
 };

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { getStudentRankForLevel } from '../../types/game';
-import { isAdmin } from '../../utils/roleHelpers';
+import { isAdmin, getRoleLabel } from '../../utils/roleHelpers';
 
 interface MemberRosterProps {
   currentUser: any;
@@ -21,6 +21,8 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
   const [teacherStudentTab, setTeacherStudentTab] = useState<'mine' | 'co_managed'>('mine');
 
   const isCallerAdmin = isAdmin(currentUser?.role);
+  // Thông tin Chủ Nhiệm/Trợ Giảng của LỚP MÌNH đã có đầy đủ (kèm cấp quyền) tại Khu Vực Chủ Nhiệm
+  // bên dưới — Sổ Danh Bộ chỉ còn hiển thị 2 tab này cho Ban Lãnh Đạo Viện (cần nhìn toàn viện).
 
   // Filter students strictly by role
   const allStudents = useMemo(() => {
@@ -81,7 +83,7 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
   const getStudentCoManagers = (studentId: string) => {
     const links = (adminLinks || []).filter(l => l.student_id === studentId);
     const managers = links.map(l => {
-      const roleName = l.link_type === 'primary' ? 'Chủ Nhiệm Chính' : 'Chủ Nhiệm Phụ';
+      const roleName = l.link_type === 'primary' ? 'Chủ Nhiệm' : 'Trợ Giảng';
       return `${l.tutor_name} (${roleName})`;
     });
     return managers.length > 0 ? managers.join(', ') : 'Chưa nhận lớp';
@@ -109,10 +111,12 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
             {/* Roster Tabs */}
             <div className="flex gap-1 bg-black/40 p-1 rounded-lg border border-white/5 text-[10px] uppercase font-bold font-orbitron overflow-x-auto">
               {[
-                { key: 'students', label: `Sĩ Tử (${allStudents.length})` },
-                { key: 'primary_teachers', label: `Chủ Nhiệm Chính (${primaryTeachers.length})` },
-                { key: 'secondary_teachers', label: `Chủ Nhiệm Phụ (${secondaryTeachers.length})` },
-                { key: 'admins', label: `Ban Giám Hiệu (${schoolAdmins.length})` }
+                { key: 'students', label: `Học Sinh (${allStudents.length})` },
+                ...(isCallerAdmin ? [
+                  { key: 'primary_teachers', label: `Chủ Nhiệm (${primaryTeachers.length})` },
+                  { key: 'secondary_teachers', label: `Trợ Giảng (${secondaryTeachers.length})` },
+                ] : []),
+                { key: 'admins', label: `Ban Lãnh Đạo Viện (${schoolAdmins.length})` }
               ].map(tab => (
                 <button
                   key={tab.key}
@@ -148,7 +152,7 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
                     : 'border-white/5 text-slate-400 hover:text-white'
                 }`}
               >
-                Lớp tham gia phụ (Phó chủ nhiệm) ({coManagedClassStudents.length})
+                Lớp tôi trợ giảng ({coManagedClassStudents.length})
               </button>
             </div>
           )}
@@ -160,7 +164,7 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
                 <thead>
                   <tr className="border-b border-white/10 text-slate-400 font-orbitron uppercase text-[9px] tracking-wider">
                     <th className="py-2.5 px-3">Khoa Danh</th>
-                    <th className="py-2.5 px-3">Sĩ Tử</th>
+                    <th className="py-2.5 px-3">Học Sinh</th>
                     <th className="py-2.5 px-3">Cấp Độ</th>
                     <th className="py-2.5 px-3">Danh Hiệu Học Tập</th>
                     <th className="py-2.5 px-3">Chuỗi Chuyên Cần</th>
@@ -173,7 +177,7 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
                   {activeDisplayStudents.length === 0 ? (
                     <tr>
                       <td colSpan={8} className="py-8 text-center text-synth-text-muted italic">
-                        Không có Sĩ Tử nào trong danh sách.
+                        Không có Học Sinh nào trong danh sách.
                       </td>
                     </tr>
                   ) : (
@@ -210,7 +214,7 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
                               <button
                                 disabled={inspectLoading}
                                 onClick={() => onInspectStudent(stud.id)}
-                                title="Xem hoạt động, tiến độ và báo cáo của Sĩ Tử"
+                                title="Xem hoạt động, tiến độ và báo cáo của Học Sinh"
                                 className="px-3 py-1 rounded-lg bg-synth-cyan/10 hover:bg-synth-cyan/20 border border-synth-cyan/30 text-[10px] uppercase font-bold text-synth-cyan cursor-pointer transition-colors"
                               >
                                 {inspectLoading ? 'Đang tải...' : '🔍 Xem Hồ Sơ'}
@@ -229,16 +233,16 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-white/10 text-slate-400 font-orbitron uppercase text-[9px] tracking-wider">
-                    <th className="py-2.5 px-3">Tên Chủ Nhiệm Chính</th>
+                    <th className="py-2.5 px-3">Tên Chủ Nhiệm</th>
                     <th className="py-2.5 px-3">Email</th>
-                    <th className="py-2.5 px-3">Sĩ Tử Phụ Trách (Chủ Nhiệm Chính)</th>
+                    <th className="py-2.5 px-3">Học Sinh Phụ Trách (Chủ Nhiệm)</th>
                   </tr>
                 </thead>
                 <tbody>
                   {primaryTeachers.length === 0 ? (
                     <tr>
                       <td colSpan={3} className="py-8 text-center text-synth-text-muted italic">
-                        Không có Chủ Nhiệm Chính nào.
+                        Không có Chủ Nhiệm nào.
                       </td>
                     </tr>
                   ) : (
@@ -267,16 +271,16 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-white/10 text-slate-400 font-orbitron uppercase text-[9px] tracking-wider">
-                    <th className="py-2.5 px-3">Tên Chủ Nhiệm Phụ</th>
+                    <th className="py-2.5 px-3">Tên Trợ Giảng</th>
                     <th className="py-2.5 px-3">Email</th>
-                    <th className="py-2.5 px-3">Sĩ Tử Đồng Hành (Chủ Nhiệm Phụ)</th>
+                    <th className="py-2.5 px-3">Học Sinh Đồng Hành (Trợ Giảng)</th>
                   </tr>
                 </thead>
                 <tbody>
                   {secondaryTeachers.length === 0 ? (
                     <tr>
                       <td colSpan={3} className="py-8 text-center text-synth-text-muted italic">
-                        Không có Chủ Nhiệm Phụ nào.
+                        Không có Trợ Giảng nào.
                       </td>
                     </tr>
                   ) : (
@@ -305,7 +309,7 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-white/10 text-slate-400 font-orbitron uppercase text-[9px] tracking-wider">
-                    <th className="py-2.5 px-3">Ban Giám Hiệu</th>
+                    <th className="py-2.5 px-3">Ban Lãnh Đạo Viện</th>
                     <th className="py-2.5 px-3">Email</th>
                     <th className="py-2.5 px-3">Chức Vụ Học Viện</th>
                   </tr>
@@ -314,7 +318,7 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
                   {schoolAdmins.length === 0 ? (
                     <tr>
                       <td colSpan={3} className="py-8 text-center text-synth-text-muted italic">
-                        Không tìm thấy thành viên ban giám hiệu.
+                        Không tìm thấy thành viên Ban Lãnh Đạo Viện.
                       </td>
                     </tr>
                   ) : (
@@ -333,7 +337,7 @@ export const MemberRoster: React.FC<MemberRosterProps> = ({
                           <span className={`px-1.5 py-0.5 rounded font-bold uppercase text-[9px] ${
                             admin.role === 'truong_vien' ? 'bg-synth-magenta/20 text-synth-magenta' : 'bg-synth-yellow/20 text-synth-yellow'
                           }`}>
-                            {admin.role === 'truong_vien' ? 'Viện Trưởng 👑' : 'Phó Viện Trưởng 🛡️'}
+                            {getRoleLabel(admin.role).name} {getRoleLabel(admin.role).icon}
                           </span>
                         </td>
                       </tr>

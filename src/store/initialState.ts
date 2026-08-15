@@ -15,7 +15,7 @@ export const FREE_UI_THEME: UiThemeId = 'current';
 // nguồn dữ liệu, chỉ tránh undefined trong lúc đang tải (xem createAuthSlice.ts).
 export const DEFAULT_GAME_SETTINGS: GameSettings = {
   bossCompletionBonusRuby: [100, 150, 200],
-  challengeEnergyCosts: [30, 30, 30, 30],
+  challengeEnergyCosts: [10, 10, 15, 10],
   baseXP: 15,
   baseRuby: 5,
   themeUnlockCost: 200,
@@ -75,6 +75,7 @@ export function getProfileScopedResetState(): Partial<StoreState> {
     classLinks: [],
     secondaryTutors: [],
     isOrphanStudent: true,
+    canManageClassRewards: false,
     challenges: [],
     logs: [],
     activeCombo: 0,

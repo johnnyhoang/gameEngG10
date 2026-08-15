@@ -105,7 +105,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
       title: hbTitle,
       content: hbContent
     });
-    toast.success('Đã nạp thêm trang dặn dò thành công vào cẩm nang của Sĩ Tử! ✍️');
+    toast.success('Đã nạp thêm trang dặn dò thành công vào cẩm nang của Học Sinh! ✍️');
     setHbTitle('');
     setHbContent('');
     setIsHbFormOpen(false);
@@ -120,14 +120,11 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
           <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
             ⚙️ QUY TẮC HOẠT ĐỘNG
           </h3>
-          <div className="text-xs text-synth-text-muted leading-relaxed max-w-4xl space-y-1">
-            <p>Cấu hình thông số quy tắc thưởng và cẩm nang học đường cho toàn viện.</p>
-          </div>
         </div>
       </div>
 
       <div className="p-5 space-y-6">
-      {/* 1. Cấu hình game settings (Phòng Hiệu Trưởng — CORE_SPECS §2.1) */}
+      {/* 1. Cấu hình game settings (Tổng Quan — CORE_SPECS §2.1) */}
       <div className="space-y-5">
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -150,7 +147,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
               ⚡ Chi Phí Vào Trường Thi
             </h4>
             <p className="text-[10px] text-synth-text-muted mt-0.5 mb-2">
-              Năng Lượng Sĩ Tử phải trả cho mỗi lượt vào Trường Thi.
+              Năng Lượng Học Sinh phải trả cho mỗi lượt vào Trường Thi.
             </p>
             {[
               { label: 'Cấp độ 1', value: challengeCost1, setter: setChallengeCost1 },
@@ -168,7 +165,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
               🎯 Thưởng Mỗi Câu Đúng
             </h4>
             <p className="text-[10px] text-synth-text-muted mt-0.5 mb-2">
-              Điểm cơ bản cộng cho Sĩ Tử với mỗi câu trả lời đúng.
+              Điểm cơ bản cộng cho Học Sinh với mỗi câu trả lời đúng.
             </p>
             <SettingRow label="XP cơ bản" unit="XP" value={baseXPVal} onChange={setBaseXPVal} min={1} />
             <SettingRow label="Ruby cơ bản" unit="Ruby" value={baseRubyVal} onChange={setBaseRubyVal} min={1} />
@@ -188,7 +185,7 @@ export const SettingsManager: React.FC<SettingsManagerProps> = ({
 
         <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between bg-white/5 rounded-xl border border-white/5 p-4">
           <p className="text-[10px] text-synth-text-muted leading-relaxed">
-            Các cấu hình này áp dụng chung cho tất cả Sĩ Tử (Cấp độ thử thách và lượng điểm nhận được). Riêng Năng Lượng Tối Đa + giờ hồi thì chỉnh RIÊNG cho từng Sĩ Tử: vào 🏫 Phòng Điều Hành → 👥 Sổ Danh Bộ → bấm vào Sĩ Tử cần chỉnh.
+            Các cấu hình này áp dụng chung cho tất cả Học Sinh (Cấp độ thử thách và lượng điểm nhận được). Riêng Năng Lượng Tối Đa + giờ hồi thì chỉnh RIÊNG cho từng Học Sinh: vào 🏫 Phòng Điều Hành → 👥 Sổ Danh Bộ → bấm vào Học Sinh cần chỉnh.
           </p>
           <button
             onClick={handleSaveSettings}

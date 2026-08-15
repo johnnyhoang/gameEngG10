@@ -264,7 +264,7 @@ router.post('/class-links/invite', authMiddleware, async (req: any, res) => {
           const primaryParentName = existCheck.rows[0].tutor_name || 'Chủ Nhiệm khác';
           return res.status(409).json({
             code: 'STUDENT_HAS_PRIMARY',
-            error: `Học sinh này đã có Chủ Nhiệm Chính là "${primaryParentName}". Bạn có muốn kết nối làm Chủ Nhiệm Phụ không?`,
+            error: `Học sinh này đã có Chủ Nhiệm là "${primaryParentName}". Bạn có muốn kết nối làm Trợ Giảng không?`,
             primaryParentName
           });
         }
@@ -507,11 +507,11 @@ router.post('/class-links/respond', authMiddleware, async (req: any, res) => {
       }
       if (!accept) {
         await pool.query('DELETE FROM ge10_class_links WHERE id = $1', [linkId]);
-        return res.json({ success: true, message: 'Đã từ chối kết nối Ban Giám Hiệu.' });
+        return res.json({ success: true, message: 'Đã từ chối kết nối Ban Lãnh Đạo Viện.' });
       }
       await pool.query("UPDATE ge10_class_links SET status = 'active', updated_at = NOW() WHERE id = $1", [linkId]);
       await logAuditEvent(profileId, 'respond_admin_connection', link.tutor_id, { accept: true });
-      return res.json({ success: true, message: 'Đã kết nối Ban Giám Hiệu thành công!' });
+      return res.json({ success: true, message: 'Đã kết nối Ban Lãnh Đạo Viện thành công!' });
     }
 
     if (link.status === 'pending_primary') {
@@ -620,24 +620,24 @@ router.post('/class-links/leave', authMiddleware, async (req: any, res) => {
     if (linkCheck.rowCount === 0) return res.status(404).json({ error: 'Link not found' });
     const link = linkCheck.rows[0];
 
-    // Hủy yêu cầu ứng tuyển Phó Viện Trưởng
+    // Hủy yêu cầu ứng tuyển Viện Phó
     if (link.link_type === 'vice_principal') {
       if (link.tutor_id !== profileId) {
         return res.status(403).json({ error: 'Unauthorized' });
       }
       await pool.query('DELETE FROM ge10_class_links WHERE id = $1', [linkId]);
       await logAuditEvent(profileId, 'cancel_vice_principal_request', null, { linkId });
-      return res.json({ success: true, message: 'Đã hủy yêu cầu ứng tuyển Phó Viện Trưởng.' });
+      return res.json({ success: true, message: 'Đã hủy yêu cầu ứng tuyển Viện Phó.' });
     }
 
-    // Hủy / Xóa kết nối Ban Giám Hiệu
+    // Hủy / Xóa kết nối Ban Lãnh Đạo Viện
     if (link.link_type === 'admin_connection') {
       if (link.tutor_id !== profileId && link.student_id !== profileId) {
         return res.status(403).json({ error: 'Unauthorized' });
       }
       await pool.query('DELETE FROM ge10_class_links WHERE id = $1', [linkId]);
       await logAuditEvent(profileId, 'leave_admin_connection', link.tutor_id === profileId ? link.student_id : link.tutor_id, { linkId });
-      return res.json({ success: true, message: 'Đã hủy kết nối Ban Giám Hiệu.' });
+      return res.json({ success: true, message: 'Đã hủy kết nối Ban Lãnh Đạo Viện.' });
     }
 
     // Primary link delete: delete all primary and secondary links for this student
@@ -758,7 +758,7 @@ router.post('/class-links/apply-vice-principal', authMiddleware, async (req: any
     }
     const role = check.rows[0].role;
     if (role !== 'tutor' && role !== 'secondary_tutor') {
-      return res.status(400).json({ error: 'Chỉ Giáo viên (Chủ nhiệm) mới có thể gửi đơn xin làm Phó Viện Trưởng.' });
+      return res.status(400).json({ error: 'Chỉ Giáo Viên (Chủ Nhiệm) mới có thể gửi đơn xin làm Viện Phó.' });
     }
 
     // 2. Check if they already have a pho_vien profile
@@ -767,7 +767,7 @@ router.post('/class-links/apply-vice-principal', authMiddleware, async (req: any
       [accountId]
     );
     if (pvCheck.rowCount && pvCheck.rowCount > 0 && pvCheck.rows[0].is_active) {
-      return res.status(400).json({ error: 'Tài khoản của bạn đã được cấp quyền Phó Viện Trưởng rồi!' });
+      return res.status(400).json({ error: 'Tài khoản của bạn đã được cấp quyền Viện Phó rồi!' });
     }
 
     // 3. Check if they already applied
@@ -776,7 +776,7 @@ router.post('/class-links/apply-vice-principal', authMiddleware, async (req: any
       [profileId]
     );
     if (appliedCheck.rowCount && appliedCheck.rowCount > 0) {
-      return res.status(400).json({ error: 'Yêu cầu ứng tuyển Phó Viện Trưởng của bạn đã tồn tại và đang chờ duyệt!' });
+      return res.status(400).json({ error: 'Yêu cầu ứng tuyển Viện Phó của bạn đã tồn tại và đang chờ duyệt!' });
     }
 
     // 4. Create the application
@@ -788,14 +788,14 @@ router.post('/class-links/apply-vice-principal', authMiddleware, async (req: any
     );
 
     await logAuditEvent(profileId, 'apply_vice_principal', null, { linkId });
-    res.json({ success: true, message: 'Đã gửi yêu cầu ứng tuyển Phó Viện Trưởng thành công!' });
+    res.json({ success: true, message: 'Đã gửi yêu cầu ứng tuyển Viện Phó thành công!' });
   } catch (error: any) {
     console.error('Error applying for vice principal:', error);
-    res.status(500).json({ error: 'Không thể gửi yêu cầu ứng tuyển Phó Viện Trưởng.', details: error.message });
+    res.status(500).json({ error: 'Không thể gửi yêu cầu ứng tuyển Viện Phó.', details: error.message });
   }
 });
 
-// POST /api/class-links/invite-admin-connection: Gửi yêu cầu kết nối Ban Giám Hiệu (Viện Trưởng / Phó Viện Trưởng)
+// POST /api/class-links/invite-admin-connection: Gửi yêu cầu kết nối Ban Lãnh Đạo Viện (Viện Trưởng / Viện Phó)
 router.post('/class-links/invite-admin-connection', authMiddleware, async (req: any, res) => {
   const { senderProfileId, targetEmail } = req.body;
 
@@ -810,7 +810,7 @@ router.post('/class-links/invite-admin-connection', authMiddleware, async (req: 
       [senderProfileId]
     );
     if (senderCheck.rowCount === 0) {
-      return res.status(403).json({ error: 'Forbidden: Chỉ Ban Giám Hiệu mới có thể kết nối với nhau.' });
+      return res.status(403).json({ error: 'Forbidden: Chỉ Ban Lãnh Đạo Viện mới có thể kết nối với nhau.' });
     }
 
     // 2. Find target admin profile by email
@@ -819,7 +819,7 @@ router.post('/class-links/invite-admin-connection', authMiddleware, async (req: 
       [targetEmail.trim()]
     );
     if (targetCheck.rowCount === 0) {
-      return res.status(404).json({ error: 'Không tìm thấy tài khoản Viện Trưởng hoặc Phó Viện Trưởng với email này.' });
+      return res.status(404).json({ error: 'Không tìm thấy tài khoản Viện Trưởng hoặc Viện Phó với email này.' });
     }
     const targetProfileId = targetCheck.rows[0].id;
 
@@ -846,7 +846,7 @@ router.post('/class-links/invite-admin-connection', authMiddleware, async (req: 
     );
 
     await logAuditEvent(senderProfileId, 'invite_admin_connection', targetProfileId, {});
-    res.json({ success: true, message: 'Đã gửi yêu cầu kết nối Ban Giám Hiệu thành công!' });
+    res.json({ success: true, message: 'Đã gửi yêu cầu kết nối Ban Lãnh Đạo Viện thành công!' });
   } catch (error: any) {
     console.error('Error inviting admin connection:', error);
     res.status(500).json({ error: 'Không thể gửi yêu cầu kết nối.', details: error.message });

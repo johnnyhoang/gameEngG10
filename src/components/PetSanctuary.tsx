@@ -15,20 +15,20 @@ const PET_STAGE_LABELS: Record<PetStage, string> = {
 
 const STAGE_MEMORIES: Record<PetStage, { story: string; photoConcept: string }> = {
   egg: {
-    story: "Mầm Nấm sương mai ngậm mưa bông rơi rụng trên thảm lá khô. Đây là ngày đầu tiên Sĩ Tử đặt chân đến Sân Thú, truyền Năng Lượng ấm áp đánh thức Heo Maikawaii khỏi giấc ngủ ngàn năm.",
-    photoConcept: "Ảnh chụp ngày đầu nhập môn: Sĩ Tử chạm tay vào mầm nấm 🍄"
+    story: "Mầm Nấm sương mai ngậm mưa bông rơi rụng trên thảm lá khô. Đây là ngày đầu tiên Học Sinh đặt chân đến Sân Thú, truyền Năng Lượng ấm áp đánh thức Heo Maikawaii khỏi giấc ngủ ngàn năm.",
+    photoConcept: "Ảnh chụp ngày đầu nhập môn: Học Sinh chạm tay vào mầm nấm 🍄"
   },
   baby: {
-    story: "Cây nấm múp míp nứt vỡ ra chú heo hồng hào, nhỏ xíu xiu. Kỷ niệm những miếng bánh khô chia đôi bên bếp lửa học viện, những câu thoại ngây ngô và tiếng cười khúc khích khi được Sĩ Tử thọc lét nhột tai.",
-    photoConcept: "Ảnh chụp chung đầu tiên: Sĩ Tử ôm heo con múp míp ngủ gục bên lò sưởi 🔥"
+    story: "Cây nấm múp míp nứt vỡ ra chú heo hồng hào, nhỏ xíu xiu. Kỷ niệm những miếng bánh khô chia đôi bên bếp lửa học viện, những câu thoại ngây ngô và tiếng cười khúc khích khi được Học Sinh thọc lét nhột tai.",
+    photoConcept: "Ảnh chụp chung đầu tiên: Học Sinh ôm heo con múp míp ngủ gục bên lò sưởi 🔥"
   },
   adult: {
-    story: "Heo con oai phong khoác băng trán đỏ, đeo kiếm gỗ sau lưng bôn tẩu học đường cùng Sĩ Tử. Tấm hình chụp chung tại Trường Thi đầy kiêu hãnh: Heo luôn giương kiếm đỡ bụi cỏ gai, đồng hành qua hàng trăm đề thi thử thách.",
-    photoConcept: "Ảnh chụp nơi Trường Thi: Sĩ Tử làm bài, Heo giương kiếm gỗ bảo vệ ⚔️"
+    story: "Heo con oai phong khoác băng trán đỏ, đeo kiếm gỗ sau lưng bôn tẩu học đường cùng Học Sinh. Tấm hình chụp chung tại Trường Thi đầy kiêu hãnh: Heo luôn giương kiếm đỡ bụi cỏ gai, đồng hành qua hàng trăm đề thi thử thách.",
+    photoConcept: "Ảnh chụp nơi Trường Thi: Học Sinh làm bài, Heo giương kiếm gỗ bảo vệ ⚔️"
   },
   legend: {
     story: "Cảnh giới đỉnh phong! Thần Heo đắc đạo, cưỡi mây vàng Cân Đẩu Vân, đầu đội vòng kim cô lấp lánh hào quang. Khoảnh khắc cả hai cùng nhau ngắm học đường rộng lớn, chuẩn bị cho kỳ thi tuyển sinh lớp 10 vĩ đại.",
-    photoConcept: "Ảnh chụp đỉnh vinh quang: Sĩ Tử cùng Thần Heo ngắm mây ngàn từ đỉnh Tuyết Sơn 👑"
+    photoConcept: "Ảnh chụp đỉnh vinh quang: Học Sinh cùng Thần Heo ngắm mây ngàn từ đỉnh Tuyết Sơn 👑"
   }
 };
 
@@ -57,7 +57,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
   const [interacting, setInteracting] = useState(false);
   const [tickled, setTickled] = useState(false);
   const [rubySpent, setRubySpent] = useState<{ amount: number; key: number } | null>(null);
-  const [speech, setSpeech] = useState('Ủn ỉn... chào Sĩ Tử! Hôm nay ta cùng tinh tấn học tập nhé! 🌸');
+  const [speech, setSpeech] = useState('Ủn ỉn... chào Học Sinh! Hôm nay ta cùng tinh tấn học tập nhé! 🌸');
   const [confirmModal, setConfirmModal] = useState<{
     isOpen: boolean;
     cost: number;
@@ -99,7 +99,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
         if (success) {
           setInteracting(true);
           setRubySpent({ amount: 10, key: Date.now() });
-          setSpeech('Chao ôi... ngon quá! Ngon múp míp luôn á! Cảm ơn Sĩ Tử! 🍖🐷 (-10 Ruby)');
+          setSpeech('Chao ôi... ngon quá! Ngon múp míp luôn á! Cảm ơn Học Sinh! 🍖🐷 (-10 Ruby)');
           onInteract?.();
           setTimeout(() => {
             setInteracting(false);
@@ -131,8 +131,8 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
 
     const speechOptions = [
       // Study Reminders
-      "Hôm nay Sĩ Tử đã ôn luyện chuyên đề nào ở Học Đường chưa? Ôn ngay kẻo lười nhé! 📐",
-      "Năng Lượng của Sĩ Tử đang dồi dào, mau vào Học Đường ôn luyện thôi nào! 📖",
+      "Hôm nay Học Sinh đã ôn luyện chuyên đề nào ở Học Đường chưa? Ôn ngay kẻo lười nhé! 📐",
+      "Năng Lượng của Học Sinh đang dồi dào, mau vào Học Đường ôn luyện thôi nào! 📖",
       "Nhớ duy trì Streak học tập đều đặn nhé! Đứt chuỗi Heo Maikawaii sẽ buồn ngủ lắm đó! 😴",
       "Mỗi ngày một chút tinh tấn, kiến thức của nàng sẽ đạt cảnh giới Xuất Chúng! 🏆",
       "Trường Thi đang rộn rã trống trận, ta vào tỷ thí một trận xem tài trí ra sao đi! 🏟️",
@@ -141,7 +141,7 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
 
     // Add praises if student has accomplished tasks today
     if (todayCorrect > 0) {
-      speechOptions.push(`Oa! Hôm nay Sĩ Tử đã trả lời đúng ${todayCorrect} câu hỏi rồi! Giỏi quá đi! Ta tặng một nụ hôn heo! 💋`);
+      speechOptions.push(`Oa! Hôm nay Học Sinh đã trả lời đúng ${todayCorrect} câu hỏi rồi! Giỏi quá đi! Ta tặng một nụ hôn heo! 💋`);
       speechOptions.push("Ta thấy hôm nay nàng làm bài xuất sắc cực kỳ, đúng là tài trí phi phàm! 🌟");
     } else {
       speechOptions.push("Hôm nay nàng chưa làm đúng câu nào sao? Vào Học Đường cày chút Ruby thôi!");
@@ -205,9 +205,9 @@ export const PetSanctuary: React.FC<PetSanctuaryProps> = ({ variant = 'sidebar',
   useEffect(() => {
     if (triggerReason) {
       if (triggerReason === 'login') {
-        setSpeech('Chào ngày mới, Sĩ Tử! ☀️ Hôm nay ta cùng tinh tấn học tập nhé! 🌸');
+        setSpeech('Chào ngày mới, Học Sinh! ☀️ Hôm nay ta cùng tinh tấn học tập nhé! 🌸');
       } else if (triggerReason === 'idle') {
-        setSpeech('Nếu hôm nay Sĩ Tử bận hoặc mệt thì nghỉ ngơi đi nhé. Heo sẽ đưa Sĩ Tử rời viện nếu không chọn học tiếp. 🐷🌙');
+        setSpeech('Nếu hôm nay Học Sinh bận hoặc mệt thì nghỉ ngơi đi nhé. Heo sẽ đưa Học Sinh rời viện nếu không chọn học tiếp. 🐷🌙');
       } else if (triggerReason === 'hunger') {
         setSpeech('Heo đói rã ruột rồi nè! Hãy cho Heo ăn bánh để Heo có sức đồng hành nhé! 🍖🐷');
       } else if (triggerReason === 'energy-depleted') {

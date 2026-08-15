@@ -66,7 +66,7 @@ export const RubyConfirmModal: React.FC<RubyConfirmModalProps> = ({
         {/* Dialog Content */}
         <div className="space-y-3 mb-6 px-2">
           <p className={`text-sm font-serif italic ${isUnicorn ? 'text-slate-600' : 'text-slate-300'}`}>
-            "Sĩ Tử có đồng ý tiêu tốn <span className="font-bold text-synth-orange font-orbitron">{cost} Ruby</span> để {actionDescription} không?"
+            "Học Sinh có đồng ý tiêu tốn <span className="font-bold text-synth-orange font-orbitron">{cost} Ruby</span> để {actionDescription} không?"
           </p>
         </div>
 

@@ -14,7 +14,7 @@ export const createAdminSlice: StateCreator<
   [],
   [],
   Pick<StoreState, 
-    'adminStudents' | 'adminLinks' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'tutorQuests' | 'markRewardDelivered' | 'cancelRedemption' | 'schoolRewards' | 'fetchSchoolRewards' | 'createSchoolReward' | 'deleteSchoolReward' | 'updateSchoolReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'addQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'adminSetEnergyConfig' | 'updateGameSettings' | 'addTutorQuest' | 'completeTutorQuest' | 'deleteTutorQuest' | 'claimTutorQuest' | 'fetchTutorQuests' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
+    'adminStudents' | 'adminLinks' | 'selectedStudentProfile' | 'failedQuestionIds' | 'recentlyPlayedQuestionIds' | 'tutorQuests' | 'schoolRewards' | 'fetchSchoolRewards' | 'createSchoolReward' | 'deleteSchoolReward' | 'updateSchoolReward' | 'importQuestions' | 'deleteQuestion' | 'updateQuestion' | 'addQuestion' | 'flagQuestionConfused' | 'fetchAdminStudents' | 'promoteUser' | 'fetchStudentProfile' | 'adminMarkRewardDelivered' | 'adminCancelRedemption' | 'adminSetEnergy' | 'adminSetEnergyConfig' | 'updateGameSettings' | 'addTutorQuest' | 'completeTutorQuest' | 'deleteTutorQuest' | 'claimTutorQuest' | 'fetchTutorQuests' | 'auditLogs' | 'fetchAuditLogs' | 'skipReviews' | 'fetchSkipReviews' | 'resolveSkipReview'
   >
 > = (set, get) => ({
   adminStudents: [],
@@ -68,39 +68,10 @@ export const createAdminSlice: StateCreator<
     }
   },
 
-  markRewardDelivered: (redemptionId) => {
-          // Xác nhận đã trao quà thật ngoài đời (CORE_SPECS §3.2) — app không quản lý tiền,
-          // hành động này chỉ đóng yêu cầu, không có bất kỳ giao dịch tiền nào chạy trong hệ thống.
-          const state = get();
-          const redemption = state.rewardRedemptions.find(r => r.id === redemptionId);
-          if (!redemption || redemption.status !== 'pending') return;
-
-          set(prev => ({
-            rewardRedemptions: prev.rewardRedemptions.map(r =>
-              r.id === redemptionId ? { ...r, status: 'delivered', deliveredAt: Date.now() } : r
-            )
-          }));
-
-          logActivity(get, set, 'parent_approve', 'Đã Trao Quà', `Người quản lý xác nhận đã trao "${redemption.rewardTitle}" ngoài đời.`, 0, 0);
-        },
-
-  cancelRedemption: (redemptionId) => {
-          // Hủy lượt đổi: hoàn Ruby cho Sĩ Tử + trả lại remainingQuantity cho catalog item.
-          const state = get();
-          const redemption = state.rewardRedemptions.find(r => r.id === redemptionId);
-          if (!redemption || redemption.status !== 'pending') return;
-
-          set(prev => ({
-            player: {
-              ...prev.player,
-              ruby: prev.player.ruby + redemption.costRuby
-            },
-            rewards: prev.rewards.map(r => r.id === redemption.rewardId ? { ...r, remainingQuantity: r.remainingQuantity + 1 } : r),
-            rewardRedemptions: prev.rewardRedemptions.filter(r => r.id !== redemptionId)
-          }));
-
-          logActivity(get, set, 'parent_approve', 'Hoàn trả Ruby', `Hủy lượt đổi "${redemption.rewardTitle}". Đã hoàn lại ${redemption.costRuby} Ruby`, redemption.costRuby, 0);
-        },
+  // markRewardDelivered/cancelRedemption (biến thể không cần studentId) đã bị xoá — trước đây
+  // là code chết (RewardManager.tsx chỉ render nút khi có viewingStudentId, lúc đó luôn ưu tiên
+  // nhánh adminMarkRewardDelivered/adminCancelRedemption) và tự mutate state cục bộ, không hề
+  // gọi backend — 1 dạng khác của bug "đổi quà không trừ tiền" nếu lỡ trở nên reachable.
 
   schoolRewards: [],
 
@@ -113,6 +84,7 @@ export const createAdminSlice: StateCreator<
         costRuby: row.cost_ruby,
         quantity: row.quantity,
         remainingQuantity: row.remaining_quantity,
+        isUnlimited: row.is_unlimited,
         timestamp: Number(row.created_at)
       })) });
     } catch (e) {
@@ -120,11 +92,11 @@ export const createAdminSlice: StateCreator<
     }
   },
 
-  createSchoolReward: async (title, costRuby, quantity) => {
-    const ok = await adminService.createSchoolReward(title, costRuby, Math.max(1, Math.round(quantity)));
+  createSchoolReward: async (title, costRuby, quantity, isUnlimited) => {
+    const ok = await adminService.createSchoolReward(title, costRuby, Math.max(1, Math.round(quantity || 1)), isUnlimited);
     if (ok) {
       await Promise.all([get().fetchSchoolRewards(), get().fetchAuditLogs()]);
-      logActivity(get, set, 'parent_approve', 'Thêm Quà Khuyến Học của trường', `Quà mới: "${title}" trị giá ${costRuby} Ruby, số lượng ${quantity}`, 0, 0);
+      logActivity(get, set, 'parent_approve', 'Thêm Quà Khuyến Học của trường', `Quà mới: "${title}" trị giá ${costRuby} Ruby, số lượng ${isUnlimited ? 'không giới hạn' : quantity}`, 0, 0);
     }
     return ok;
   },
@@ -138,17 +110,18 @@ export const createAdminSlice: StateCreator<
     return ok;
   },
 
-  updateSchoolReward: async (id, title, costRuby, quantity, remainingQuantity) => {
+  updateSchoolReward: async (id, title, costRuby, quantity, remainingQuantity, isUnlimited) => {
     const ok = await adminService.updateSchoolReward(
       id,
       title,
       costRuby,
       Math.max(1, Math.round(quantity)),
-      Math.max(0, Math.round(remainingQuantity))
+      Math.max(0, Math.round(remainingQuantity)),
+      isUnlimited
     );
     if (ok) {
       await Promise.all([get().fetchSchoolRewards(), get().fetchAuditLogs()]);
-      logActivity(get, set, 'parent_approve', 'Cập nhật Quà Khuyến Học của trường', `Cập nhật quà: "${title}" trị giá ${costRuby} Ruby, số lượng còn lại ${remainingQuantity}/${quantity}`, 0, 0);
+      logActivity(get, set, 'parent_approve', 'Cập nhật Quà Khuyến Học của trường', `Cập nhật quà: "${title}" trị giá ${costRuby} Ruby, số lượng còn lại ${isUnlimited ? 'không giới hạn' : `${remainingQuantity}/${quantity}`}`, 0, 0);
     }
     return ok;
   },
@@ -373,7 +346,7 @@ export const createAdminSlice: StateCreator<
               return;
             }
             await Promise.all([get().fetchStudentProfile(studentUserId), get().fetchAuditLogs()]);
-            toast.success(`Đã cập nhật trần Năng Lượng ${clampedMax} và thời gian hồi ${resetHours} giờ cho Sĩ Tử.`);
+            toast.success(`Đã cập nhật trần Năng Lượng ${clampedMax} và thời gian hồi ${resetHours} giờ cho Học Sinh.`);
           } catch (e) {
             console.error('Error updating student energy config:', e);
             toast.error('Lỗi kết nối khi cập nhật cấu hình Năng Lượng.');
@@ -428,7 +401,7 @@ export const createAdminSlice: StateCreator<
                   q.id === questId ? res.quest : q
                 )
               }));
-              toast.success('Đã xác nhận hoàn thành nhiệm vụ! Sĩ Tử có thể nhận thưởng.');
+              toast.success('Đã xác nhận hoàn thành nhiệm vụ! Học Sinh có thể nhận thưởng.');
             } else {
               toast.error(res.error || 'Lỗi khi hoàn tất nhiệm vụ.');
             }

@@ -1,5 +1,7 @@
 # Sub-Spec: Hệ Thống Phân Quyền & Lớp Chủ Nhiệm (Family & Role System)
-*Cập nhật: 2026-07-13 — Bổ sung cơ chế duyệt ứng tuyển Phó Viện Trưởng, Xin đồng hành và roster phân quyền*
+*Cập nhật: 2026-08-15 — Sửa §3.2/§3.3/§4: làm rõ cơ chế uỷ quyền quà của Trợ Giảng và mô hình quà TOÀN VIỆN dùng chung (xem [SUB_SPEC_CLASS_REWARDS.md](./SUB_SPEC_CLASS_REWARDS.md)), theo sau audit toàn bộ hệ thống quà/phát thưởng.*
+*Cập nhật trước: 2026-07-13 — Bổ sung cơ chế duyệt ứng tuyển Viện Phó, Xin làm Trợ Giảng và roster phân quyền*
+*Cập nhật 2026-08-15 (đợt 2): chuẩn hóa thuật ngữ theo [SUB_SPEC_TERMINOLOGY.md](./SUB_SPEC_TERMINOLOGY.md) — Chủ Nhiệm Chính/Phụ → Chủ Nhiệm/Trợ Giảng, Sĩ Tử → Học Sinh, Phó Viện Trưởng → Viện Phó, Ban Giám Hiệu → Ban Lãnh Đạo Viện, Phòng Hiệu Trưởng → Tổng Quan.*
 
 Tài liệu này xác định các vai trò (Role) trong hệ thống GameEngG10, cấu trúc Lớp Chủ Nhiệm, quyền hạn và cách thức kết nối giữa các vai trò theo kiến trúc Đa Hồ Sơ (Multi-Profile).
 
@@ -16,8 +18,8 @@ Mỗi tài khoản Google (Google Account) đăng nhập vào ứng dụng khôn
 | # | Hồ Sơ | Cách Tạo | Cách Vô Hiệu Hóa | Có thể phục hồi? |
 |:--|:-------|:---------|:-----------------|:----------------|
 | 1 | **Học Sinh** (`student`) | Tự tạo | Admin set `is_active = false` | ✅ Có |
-| 2 | **Chủ Nhiệm Chính** (`tutor`) | Tự tạo | Admin set `is_active = false` | ✅ Có |
-| 3 | **Phó Viện Trưởng** (`pho_vien`) | Viện Trưởng chỉ định → **hệ thống INSERT profile mới** | Viện Trưởng thu hồi → `is_active = false` | ✅ Có (reactivate) |
+| 2 | **Chủ Nhiệm** (`tutor`) | Tự tạo | Admin set `is_active = false` | ✅ Có |
+| 3 | **Viện Phó** (`pho_vien`) | Viện Trưởng chỉ định → **hệ thống INSERT profile mới** | Viện Trưởng thu hồi → `is_active = false` | ✅ Có (reactivate) |
 | 4 | **Viện Trưởng** (`truong_vien`) | Viện Trưởng khác chỉ định → **hệ thống INSERT profile mới** | Viện Trưởng thu hồi → `is_active = false` | ✅ Có (reactivate) |
 
 > ⚠️ **Không bao giờ DELETE profile** — dữ liệu lịch sử hoạt động luôn được giữ lại. Khi bị thu hồi quyền, cột `is_active` được set `FALSE`. Người dùng sẽ không thấy profile này trên màn hình chọn hồ sơ và không thể truy cập nó cho đến khi được reactivate.
@@ -27,8 +29,8 @@ Mỗi tài khoản Google (Google Account) đăng nhập vào ứng dụng khôn
 - **Tự Tạo Hồ Sơ Thường:** Người dùng có thể tự tạo hồ sơ **Học Sinh** hoặc **Chủ Nhiệm** bất kỳ lúc nào.
 - **Biệt Lập Tuyệt Đối:** Mỗi hồ sơ là một tiến trình game và quyền hạn hoàn toàn tách biệt. Hai hồ sơ cùng tài khoản Google hoạt động song song mà không ảnh hưởng lẫn nhau.
 - **Account Không Tham Gia Nghiệp Vụ:** Hành vi không được thay đổi theo việc account đang có một hay nhiều profile. Hai profile cùng account được xét quyền, quan hệ, tiến trình và tương tác giống hai profile thuộc hai account khác nhau; `account_id` chỉ nối profile với phiên xác thực.
-- **Chuyển Đổi Linh Hoạt (Switch Role):** Khi đăng nhập, màn hình chọn hồ sơ **luôn hiển thị các profile đang `is_active = true`** của tài khoản đó. Điều này cho phép người dùng (kể cả có quyền Viện Trưởng/Phó Viện Trưởng) có thể tự do lựa chọn hoặc tạo mới hồ sơ Học Sinh / Chủ Nhiệm khi cần thiết.
-- **Hồ Sơ Quản Trị Được Tạo Động:** Khi Viện Trưởng chỉ định ai đó làm Phó Viện Trưởng/Viện Trưởng, hệ thống **tự động INSERT một profile mới** với vai trò đó gắn vào `account_id` của người được chỉ định. Khi bị thu hồi, profile đó bị **vô hiệu hóa** (`is_active = false`) — không bị xóa — và có thể được reactivate bởi Viện Trưởng bất cứ lúc nào.
+- **Chuyển Đổi Linh Hoạt (Switch Role):** Khi đăng nhập, màn hình chọn hồ sơ **luôn hiển thị các profile đang `is_active = true`** của tài khoản đó. Điều này cho phép người dùng (kể cả có quyền Viện Trưởng/Viện Phó) có thể tự do lựa chọn hoặc tạo mới hồ sơ Học Sinh / Chủ Nhiệm khi cần thiết.
+- **Hồ Sơ Quản Trị Được Tạo Động:** Khi Viện Trưởng chỉ định ai đó làm Viện Phó/Viện Trưởng, hệ thống **tự động INSERT một profile mới** với vai trò đó gắn vào `account_id` của người được chỉ định. Khi bị thu hồi, profile đó bị **vô hiệu hóa** (`is_active = false`) — không bị xóa — và có thể được reactivate bởi Viện Trưởng bất cứ lúc nào.
 
 
 ---
@@ -43,18 +45,18 @@ Hệ thống chia thành **3 tầng chức năng** với **5 vai trò cụ thể
 
 #### 🌱 Học Sinh (Student)
 - **Code value:** `'student'`
-- **Thuật ngữ UI:** Sĩ Tử 🌱
+- **Thuật ngữ UI:** Học Sinh 🌱
 - Là trung tâm của ứng dụng. Tham gia giải bài, kiếm XP/Ruby, nuôi thú ảo.
-- Chỉ có quyền truy cập vào Môi trường Sĩ Tử (World Map, Trường Thi, Học Đường...).
+- Chỉ có quyền truy cập vào Môi trường Học Sinh (World Map, Trường Thi, Học Đường...).
 - Một Học Sinh (Con) có thể chưa có Chủ Nhiệm, và có thể mời người khác làm Chủ Nhiệm của mình.
 
 ---
 
 ### Tầng 2: Người Đồng Hành Gia Đình
 
-#### 👨‍👩‍👧 Chủ Nhiệm Chính (Primary Tutor)
+#### 👨‍👩‍👧 Chủ Nhiệm (Primary Tutor)
 - **Code value:** `'tutor'`
-- **Thuật ngữ UI:** Chủ Nhiệm Chính 👨‍👩‍👧
+- **Thuật ngữ UI:** Chủ Nhiệm 👨‍👩‍👧
 - Đóng vai trò người ra quyết định chính trong một Lớp Chủ Nhiệm.
 - **Quyền hạn:**
   - Nhận/mời nhiều Học Sinh làm con (những Học Sinh chưa có Chủ Nhiệm).
@@ -63,27 +65,27 @@ Hệ thống chia thành **3 tầng chức năng** với **5 vai trò cụ thể
   - Tạo Nhiệm vụ giao cho con (Parent Quests).
   - Xem báo cáo học tập của tất cả học sinh trong lớp chủ nhiệm.
   - Cấu hình Năng Lượng (`maxEnergy`, `resetHours`) cho từng con.
-  - Mời Chủ nhiệm Phụ tham gia nhóm.
+  - Mời Trợ Giảng tham gia nhóm.
   - "Rời con" (kick Học Sinh khỏi lớp chủ nhiệm).
 - **Không được phép:** Quản lý ngân hàng câu hỏi, xem học sinh ngoài gia đình mình.
 
-#### 👤 Chủ Nhiệm Phụ (Secondary Tutor)
+#### 👤 Trợ Giảng (Secondary Tutor)
 - **Code value:** `'secondary_tutor'`
-- **Thuật ngữ UI:** Chủ Nhiệm Phụ (hiển thị chung Phòng Điều Hành, badge màu khác)
-- Là người đồng hành cùng Chủ nhiệm Chính. Được Chủ nhiệm Chính mời vào Lớp Chủ Nhiệm.
+- **Thuật ngữ UI:** Trợ Giảng (hiển thị chung Phòng Điều Hành, badge màu khác)
+- Là người đồng hành cùng Chủ nhiệm. Được Chủ nhiệm mời vào Lớp Chủ Nhiệm.
 - Chia sẻ chung danh sách học sinh trong nhóm.
-- **Quyền do Chủ nhiệm Chính cấu hình bật/tắt từng mục:**
+- **Quyền do Chủ nhiệm cấu hình bật/tắt từng mục:**
   - Được phép duyệt đổi quà (on/off — mặc định: off).
   - Được phép tạo Nhiệm vụ mới (on/off — mặc định: off).
   - Chỉ được xem báo cáo (Read-only — mặc định: on).
-- **Luôn không được phép:** Kick Học Sinh, mời Chủ nhiệm Phụ khác, cấu hình Energy.
+- **Luôn không được phép:** Kick Học Sinh, mời Trợ Giảng khác, cấu hình Energy.
 - **Lưu trữ:** `ge10_class_links.link_type = 'secondary'` + permissions JSON
 
 ---
 
 ### Tầng 3: Người Quản Trị Học Viện
 
-> ⚠️ Profile Viện Trưởng và Phó Viện Trưởng **không tự tạo được** — hệ thống tự động sinh profile mới gắn vào tài khoản Google của người được chỉ định. Khi bị thu hồi quyền, profile được đặt `is_active = false`, không xóa lịch sử và có thể được kích hoạt lại.
+> ⚠️ Profile Viện Trưởng và Viện Phó **không tự tạo được** — hệ thống tự động sinh profile mới gắn vào tài khoản Google của người được chỉ định. Khi bị thu hồi quyền, profile được đặt `is_active = false`, không xóa lịch sử và có thể được kích hoạt lại.
 
 #### 👑 Viện Trưởng (Super Admin)
 - **Code value:** `'truong_vien'`
@@ -91,18 +93,18 @@ Hệ thống chia thành **3 tầng chức năng** với **5 vai trò cụ thể
 - **Tương đương cũ:** `'admin'` — toàn bộ quyền cũ giữ nguyên, đổi tên.
 - Chủ nhân tối cao của Học Viện. Không bị giới hạn bởi bất kỳ ràng buộc phân quyền nào.
 - **Cơ chế profile:** Khi được chỉ định, hệ thống INSERT một profile `truong_vien` mới vào `ge10_users` gắn với `account_id` của người đó. Khi bị thu hồi, profile này được đặt `is_active = false`.
-- **Quyền hạn đầy đủ (bao gồm tất cả quyền của Phó Viện Trưởng, cộng thêm):**
-  - Bổ nhiệm Phó Viện Trưởng → hệ thống tự sinh profile Phó Viện Trưởng cho người được chọn
-  - Thu hồi Phó Viện Trưởng → hệ thống vô hiệu hóa profile Phó Viện Trưởng của người đó
+- **Quyền hạn đầy đủ (bao gồm tất cả quyền của Viện Phó, cộng thêm):**
+  - Bổ nhiệm Viện Phó → hệ thống tự sinh profile Viện Phó cho người được chọn
+  - Thu hồi Viện Phó → hệ thống vô hiệu hóa profile Viện Phó của người đó
   - Bổ nhiệm Viện Trưởng mới → hệ thống tự sinh profile Viện Trưởng cho người được chọn
   - Xóa tài khoản vĩnh viễn
   - Cấu hình Boss Bounty toàn hệ thống
   - Xem audit log đầy đủ
   - Override mọi cài đặt hệ thống
 
-#### 🛡️ Phó Viện Trưởng (Moderator)
+#### 🛡️ Viện Phó (Moderator)
 - **Code value:** `'pho_vien'`
-- **Thuật ngữ UI:** Phó Viện Trưởng 🛡️
+- **Thuật ngữ UI:** Viện Phó 🛡️
 - Được Viện Trưởng ủy quyền quản lý học viện. Có quyền quản trị nội dung và học sinh nhưng bị giới hạn ở cấp độ phân quyền.
 - **Cơ chế profile:** Khi được chỉ định, hệ thống INSERT một profile `pho_vien` mới vào `ge10_users` gắn với `account_id` của người đó. Khi bị thu hồi, profile này được đặt `is_active = false`.
 - **Quyền hạn:**
@@ -114,7 +116,7 @@ Hệ thống chia thành **3 tầng chức năng** với **5 vai trò cụ thể
   - Xem Phòng Học Vụ — dashboard đầy đủ.
   - Cấu hình bonus Boss Card.
 - **Không được phép:**
-  - Thăng/hạ vai trò Phó Viện Trưởng hoặc Viện Trưởng.
+  - Thăng/hạ vai trò Viện Phó hoặc Viện Trưởng.
   - Xóa tài khoản.
   - Xem audit log hành động admin.
 
@@ -124,16 +126,16 @@ Hệ thống chia thành **3 tầng chức năng** với **5 vai trò cụ thể
 
 Lớp Chủ Nhiệm là không gian liên kết giữa Người Quản Trị (Chủ nhiệm) và Học sinh.
 
-- **Nguyên tắc "1 Cha":** Mỗi Học Sinh (Con) tại một thời điểm chỉ có duy nhất **01 Chủ nhiệm Chính**.
-- Một Chủ nhiệm Chính có thể quản lý **nhiều Học sinh** (ví dụ: gia đình có 3 con, hoặc lớp học có 40 học sinh).
-- Một Chủ nhiệm Chính có thể mời **nhiều Chủ nhiệm Phụ** tham gia cùng quản lý.
+- **Nguyên tắc "1 Cha":** Mỗi Học Sinh (Con) tại một thời điểm chỉ có duy nhất **01 Chủ nhiệm**.
+- Một Chủ nhiệm có thể quản lý **nhiều Học sinh** (ví dụ: gia đình có 3 con, hoặc lớp học có 40 học sinh).
+- Một Chủ nhiệm có thể mời **nhiều Trợ Giảng** tham gia cùng quản lý.
 
 ### 3.1 Cơ Chế Mời và Kết Nối
 Tất cả các lời mời kết nối được xử lý thông qua việc nhập Email Google hoặc quét mã QR Code sau này. Bố cục giao diện kết nối (`FamilyManager.tsx`) được thiết kế trực quan dạng **lưới 2 cột x 2 hàng (Grid layout 2x2)** gồm 4 hành động:
 1.  **Mời Thành Viên Lớp Học:** Giáo viên chủ nhiệm mời Học sinh vào lớp bằng cách nhập Email Google của học sinh.
-2.  **Mời Giáo Viên Phụ Đồng Hành:** Giáo viên chủ nhiệm chính mời người khác cùng đồng hành quản lý lớp làm Chủ nhiệm phụ.
-3.  **Xin Đồng Hành Lớp Khác:** Giáo viên phụ (hoặc giáo viên muốn hỗ trợ) gửi yêu cầu liên kết với Giáo viên chủ nhiệm chính của lớp đó.
-4.  **Ứng Tuyển Làm Phó Viện Trưởng Trường Học:** Giáo viên tự nộp đơn ứng tuyển làm Phó Viện Trưởng của trường. Đơn này xuất hiện công khai trên trang quản trị Phòng Học Vụ của Viện Trưởng để phê duyệt (hoặc từ chối) trực tiếp, giúp lược bỏ quy trình liên hệ/gửi email tay rườm rà.
+2.  **Mời Trợ Giảng:** Chủ Nhiệm mời người khác cùng quản lý lớp làm Trợ Giảng.
+3.  **Xin Làm Trợ Giảng Lớp Khác:** Giáo viên gửi yêu cầu làm Trợ Giảng tới Chủ Nhiệm của lớp đó.
+4.  **Ứng Tuyển Làm Viện Phó:** Giáo viên tự nộp đơn ứng tuyển làm Viện Phó của Học Viện. Đơn này xuất hiện công khai trên trang quản trị Phòng Học Vụ của Viện Trưởng để phê duyệt (hoặc từ chối) trực tiếp, giúp lược bỏ quy trình liên hệ/gửi email tay rườm rà.
 
 - **Kết nối bằng Email Google (bãi bỏ ID):**
   - Mọi lời mời kết nối đều sử dụng **Email Google** làm định danh kết nối thay vì ID hồ sơ DB rườm rà.
@@ -141,7 +143,7 @@ Tất cả các lời mời kết nối được xử lý thông qua việc nh�
 - **Thầy/Cô mời Học Sinh (Chủ Nhiệm mời Con):**
   - Chủ Nhiệm nhập Email Google của Học Sinh để gửi lời mời.
   - Hệ thống kiểm tra: Nếu Học Sinh **chưa có Chủ Nhiệm**, hệ thống tạo liên kết chính (`primary`) với trạng thái chờ Học Sinh duyệt (`pending_student`).
-  - Nếu Học Sinh **đã có Chủ Nhiệm chính**, hệ thống sẽ cảnh báo (alert). Chủ Nhiệm có thể chọn gửi lời mời làm **Phó Chủ Nhiệm (Chủ Nhiệm Phụ)** để cùng quản lý. Liên kết này được gửi dưới dạng `secondary` với trạng thái chờ Chủ Nhiệm chính của Học Sinh duyệt (`pending_primary`).
+  - Nếu Học Sinh **đã có Chủ Nhiệm**, hệ thống sẽ cảnh báo (alert). Chủ Nhiệm có thể chọn gửi lời mời làm **Trợ Giảng** để cùng quản lý. Liên kết này được gửi dưới dạng `secondary` với trạng thái chờ Chủ Nhiệm của Học Sinh duyệt (`pending_primary`).
 - **Con xin kết nối với Thầy/Cô (Học Sinh mời Chủ Nhiệm):**
   - Học Sinh chưa có Chủ Nhiệm có thể nhập Email Google của một Thầy/Cô để xin vào lớp.
   - Thầy/Cô nhận được yêu cầu kết nối dưới dạng chờ duyệt (`pending_tutor`) và có quyền chấp nhận hoặc từ chối.
@@ -151,47 +153,47 @@ Tất cả các lời mời kết nối được xử lý thông qua việc nh�
   - Học Sinh cũng có quyền rời nhóm tự do (thực chất là rời lớp/giải phóng bản thân).
   - Sau khi rời, Học Sinh có thể tự do gia nhập lớp chủ nhiệm mới.
 
-### 3.2 Quy Tắc Ủy Quyền Chủ Nhiệm Phụ
-Chủ nhiệm Chính toggle các quyền sau cho từng Chủ nhiệm Phụ (mặc định: chỉ xem):
+### 3.2 Quy Tắc Ủy Quyền Trợ Giảng
+Chủ nhiệm toggle các quyền sau cho từng Trợ Giảng (mặc định: chỉ xem):
 
 | Quyền | Mặc định | Mô tả |
 |:---|:---:|:---|
 | Xem báo cáo học tập | ✅ ON | Luôn được phép, không thể tắt |
-| Duyệt đổi quà (Phần Thưởng) | ❌ OFF | Có thể bật — dùng Ruby chung nhóm |
+| Duyệt đổi quà (Phần Thưởng) | ❌ OFF | Có thể bật — 1 cờ `can_approve_rewards` duy nhất, dùng chung cho cả tạo/sửa/xoá LẪN duyệt quà của lớp. Khi bật, Trợ Giảng thao tác lên CHÍNH danh mục quà của Chủ Nhiệm (không phải danh mục riêng) — chi tiết cơ chế và endpoint tại [SUB_SPEC_CLASS_REWARDS.md](./SUB_SPEC_CLASS_REWARDS.md) §4.1 |
 | Tạo Nhiệm vụ mới | ❌ OFF | Có thể bật |
-| Cấu hình Energy | ❌ LOCKED | Không thể bật — chỉ Chủ nhiệm Chính |
+| Cấu hình Energy | ❌ LOCKED | Không thể bật — chỉ Chủ nhiệm |
 
-### 3.3 Đại Sảnh Đường (Lớp mặc định của trường)
+### 3.3 Đại Sảnh Đường (Lớp mặc định của Viện)
 Đối với những Học Sinh chưa kết nối với bất kỳ lớp học hay Chủ nhiệm nào (học sinh mồ côi):
-- **Danh mục quà tặng mặc định**: Hệ thống tự động khởi tạo danh mục quà tặng mặc định (ví dụ: Ly trà sữa, 1h chơi iPad...) lưu trực tiếp theo tài khoản học sinh.
-- **Quản lý lâm thời**: Ban Giám Hiệu gồm **Viện Trưởng** (`truong_vien`) và **Phó Viện Trưởng** (`pho_vien`) sẽ trực tiếp đóng vai trò là **Chủ nhiệm lâm thời** của học sinh đó.
-- **Quyền hạn**: Viện Trưởng / Phó Viện Trưởng có quyền nạp Năng Lượng, giao Bảng Bài Tập riêng cho Sĩ Tử và duyệt yêu cầu đổi Quà Khuyến Học từ Phòng Điều Hành toàn viện.
+- **Danh mục quà tặng CHUNG toàn viện**: Không có bản sao riêng cho từng học sinh — mọi học sinh mồ côi đọc thẳng **cùng 1** danh mục dùng chung (`ge10_school_reward_templates`, quản lý qua `/api/admin/school-rewards`), có thể đánh dấu từng quà "không giới hạn số lượng" thay vì phải nhập số cụ thể. Chi tiết cơ chế đầy đủ (đổi/huỷ/duyệt, atomic transaction) tại [SUB_SPEC_CLASS_REWARDS.md](./SUB_SPEC_CLASS_REWARDS.md) §3.
+- **Quản lý lâm thời**: Ban Lãnh Đạo Viện gồm **Viện Trưởng** (`truong_vien`) và **Viện Phó** (`pho_vien`) sẽ trực tiếp đóng vai trò là **Chủ nhiệm lâm thời** của học sinh đó.
+- **Quyền hạn**: Viện Trưởng / Viện Phó có quyền nạp Năng Lượng, giao Bảng Bài Tập riêng cho Học Sinh và duyệt/huỷ yêu cầu đổi Quà Khuyến Học từ Phòng Điều Hành toàn viện; học sinh mồ côi cũng có thể tự rút lại yêu cầu đang chờ duyệt (giống cơ chế Rút Lại của quà lớp, CORE_SPECS §3.2).
 
 ### 3.4 Danh Sách Nhân Sự & Học Viên (Roster)
 Bảng Roster trong Phòng Học Vụ (`SettingsManager.tsx`) thay thế hoàn toàn bảng xếp hạng Leaderboard cũ, đóng vai trò là sổ quản lý nhân sự phân quyền:
 *   **Phân chia tab chính:**
-    1.  `Sĩ Tử`: Danh sách học sinh.
-    2.  `Chủ Nhiệm`: Danh sách giáo viên chủ nhiệm chính.
-    3.  `Đồng Hành`: Danh sách giáo viên phụ hỗ trợ.
-    4.  `Ban Giám Hiệu`: Danh sách Viện Trưởng và Phó Viện Trưởng.
+    1.  `Học Sinh`: Danh sách học sinh.
+    2.  `Chủ Nhiệm`: Danh sách giáo viên chủ nhiệm.
+    3.  `Trợ Giảng`: Danh sách Trợ Giảng.
+    4.  `Ban Lãnh Đạo Viện`: Danh sách Viện Trưởng và Viện Phó.
 *   **Phân quyền hiển thị theo vai trò (Role-based filtering):**
-    *   **Giáo viên (Chủ nhiệm/Phụ):** Chỉ được nhìn thấy học sinh trong phạm vi các lớp mình phụ trách. Tab `Sĩ Tử` của giáo viên chia thành 2 sub-tabs:
+    *   **Giáo viên (Chủ Nhiệm/Trợ Giảng):** Chỉ được nhìn thấy học sinh trong phạm vi các lớp mình phụ trách. Tab `Học Sinh` của giáo viên chia thành 2 sub-tabs:
         - `Lớp của tôi (Chủ nhiệm)`: Hiện học sinh liên kết chính (`primary`).
-        - `Lớp đồng hành phụ`: Hiện học sinh liên kết phụ (`secondary`).
-    *   **Ban giám hiệu:** Nhìn thấy toàn bộ học sinh trong trường học (tất cả các lớp).
+        - `Lớp tôi trợ giảng`: Hiện học sinh liên kết phụ (`secondary`).
+    *   **Ban Lãnh Đạo Viện:** Nhìn thấy toàn bộ học sinh trong Viện (tất cả các lớp).
 *   **Các cột hiển thị chi tiết:**
-    *   *Học sinh:* Hạng, Tên & Avatar, Cấp độ (LV), Danh hiệu (theo Level), Chuỗi tinh tấn (Streak), Người quản lý trực tiếp (danh sách giáo viên chủ nhiệm & hỗ trợ), Tổng số XP tích lũy.
-    *   *Giáo viên:* Tên & Avatar, Email, Danh sách Học sinh phụ trách (chủ nhiệm hoặc hỗ trợ).
-    *   *Ban giám hiệu:* Tên & Avatar, Email, Vai trò (Viện Trưởng hoặc Phó Viện Trưởng).
+    *   *Học sinh:* Hạng, Tên & Avatar, Cấp độ (LV), Danh hiệu (theo Level), Chuỗi tinh tấn (Streak), Người quản lý trực tiếp (danh sách Chủ Nhiệm & Trợ Giảng), Tổng số XP tích lũy.
+    *   *Giáo viên:* Tên & Avatar, Email, Danh sách Học sinh phụ trách (chủ nhiệm hoặc trợ giảng).
+    *   *Ban Lãnh Đạo Viện:* Tên & Avatar, Email, Vai trò (Viện Trưởng hoặc Viện Phó).
 
 ### 3.5 Sơ Đồ Tổ Chức (Organization Chart)
 
-Nằm trong **Phòng Hiệu Trưởng** (`phong_hieu_truong`), sơ đồ tổ chức hiển thị trực quan các liên kết nhân sự dưới dạng cây phân cấp (Diagram):
-1.  **Nhóm Viện Chủ (Viện Trưởng 👑):** Ở tầng cao nhất, đại diện cho những người sở hữu toàn quyền học viện.
-2.  **Nhóm Phó Viện Chủ (Phó Viện Trưởng 🛡️):** Tầng tiếp theo, được kết nối với nhóm Viện Chủ qua các liên kết quản trị.
-3.  **Chủ Nhiệm Chính (👨‍👩‍👧):** Tầng thứ ba, đại diện cho những giáo viên chủ nhiệm quản lý các lớp học.
-4.  **Phó Chủ Nhiệm (👤):** Tầng thứ tư, nối trực tiếp với Chủ Nhiệm Chính tương ứng (qua liên kết `secondary` giữa 2 giáo viên) và nối ngang/chéo với các Phó Chủ Nhiệm khác trong lớp học.
-5.  **Sĩ Tử (Học Sinh 🌱):** Hiển thị gọn gàng dưới chân của từng giáo viên chủ nhiệm phụ trách (cả chính và phụ). Những học sinh tự do (chưa gán lớp) sẽ được hiển thị dưới dạng nhóm riêng do Ban Giám Hiệu (Viện Trưởng/Phó Viện Trưởng) quản lý trực tiếp.
+Nằm trong **Tổng Quan** (`phong_hieu_truong`), sơ đồ tổ chức hiển thị trực quan các liên kết nhân sự dưới dạng cây phân cấp (Diagram):
+1.  **Nhóm Viện Trưởng (👑):** Ở tầng cao nhất, đại diện cho những người sở hữu toàn quyền Học Viện.
+2.  **Nhóm Viện Phó (🛡️):** Tầng tiếp theo, được kết nối với nhóm Viện Trưởng qua các liên kết quản trị.
+3.  **Chủ Nhiệm (👨‍👩‍👧):** Tầng thứ ba, đại diện cho những giáo viên chủ nhiệm quản lý các lớp học.
+4.  **Trợ Giảng (👤):** Tầng thứ tư, nối trực tiếp với Chủ Nhiệm tương ứng (qua liên kết `secondary` giữa 2 giáo viên) và nối ngang/chéo với các Trợ Giảng khác trong lớp học.
+5.  **Học Sinh (🌱):** Hiển thị gọn gàng dưới chân của từng giáo viên phụ trách (cả Chủ Nhiệm và Trợ Giảng). Những học sinh tự do (chưa gán lớp) sẽ được hiển thị dưới dạng nhóm riêng do Ban Lãnh Đạo Viện (Viện Trưởng/Viện Phó) quản lý trực tiếp.
 
 **Quy tắc bảo mật thông tin UI:**
 - Tuyệt đối không hiển thị ID cơ sở dữ liệu (`id`, `uuid`, `profile_id`...) của các tài khoản trên giao diện sơ đồ.
@@ -205,7 +207,8 @@ Nằm trong **Phòng Hiệu Trưởng** (`phong_hieu_truong`), sơ đồ tổ ch
 |:---|:---:|:---:|:---:|:---:|:---:|
 | Chơi game / học bài | ✅ | — | — | — | — |
 | Xem báo cáo con mình | — | ✅ | ✅ | — | — |
-| Tạo/Duyệt Phần Thưởng | — | ✅ | ⚙️ | — | — |
+| Tạo/Duyệt Phần Thưởng CỦA LỚP | — | ✅ | ⚙️ | — | — |
+| CRUD + Duyệt Phần Thưởng CỦA TRƯỜNG (học sinh mồ côi) | — | — | — | ✅ | ✅ |
 | Giao Nhiệm vụ (Quest) | — | ✅ | ⚙️ | — | — |
 | Kết nối gia đình | — | ✅ | ❌ | — | — |
 | Cấu hình Energy con | — | ✅ | ❌ | ✅ | ✅ |
@@ -215,13 +218,13 @@ Nằm trong **Phòng Hiệu Trưởng** (`phong_hieu_truong`), sơ đồ tổ ch
 | Import đề AI | — | ❌ | ❌ | ✅ | ✅ |
 | Cấu hình Boss Bounty | — | ❌ | ❌ | ✅ | ✅ |
 | Promote student → parent | — | ❌ | ❌ | ✅ | ✅ |
-| Promote → Phó Viện Trưởng | — | ❌ | ❌ | ❌ | ✅ |
+| Promote → Viện Phó | — | ❌ | ❌ | ❌ | ✅ |
 | Promote → Viện Trưởng | — | ❌ | ❌ | ❌ | ✅ |
 | Xem Phòng Học Vụ (full) | — | ❌ | ❌ | ✅ | ✅ |
 | Xóa tài khoản vĩnh viễn | — | ❌ | ❌ | ❌ | ✅ |
 | Xem Audit Log | — | ❌ | ❌ | ❌ | ✅ |
 
-> ⚙️ = tùy cấu hình của Chủ nhiệm Chính
+> ⚙️ = tùy cấu hình của Chủ nhiệm
 
 ---
 
@@ -231,12 +234,12 @@ Nằm trong **Phòng Hiệu Trưởng** (`phong_hieu_truong`), sơ đồ tổ ch
 1. Migrate `'admin'` → `'truong_vien'` trong DB và tất cả code checks.
 2. Cập nhật Types TypeScript.
 3. Thêm `'pho_vien'` vào backend authorization.
-4. UI TutorConsole: phân biệt badge Viện Trưởng vs. Phó Viện Trưởng, thêm nút "Bổ nhiệm Phó Viện Trưởng".
+4. UI TutorConsole: phân biệt badge Viện Trưởng vs. Viện Phó, thêm nút "Bổ nhiệm Viện Phó".
 
-### Sprint 2 — Chủ Nhiệm Phụ
+### Sprint 2 — Trợ Giảng
 1. Thêm `link_type` và `secondary_permissions` vào `ge10_class_links`.
 2. API: invite secondary parent, manage permissions.
-3. UI: Chủ nhiệm Chính manage Chủ nhiệm Phụ trong TutorConsole.
+3. UI: Chủ nhiệm manage Trợ Giảng trong TutorConsole.
 
 ### Sprint 3 — Audit & Security
 1. Bảng `ge10_admin_audit_log`.
@@ -251,16 +254,16 @@ Rà soát từ góc nhìn vận hành (không phải bug code) sau khi đối ch
 
 ### 6.1 Thiếu kênh thông báo chủ động (Notification Gap)
 - **Hiện trạng:** Không có push/email/Telegram/Zalo nào tồn tại trong code (`backend/src` không có route/service notification nào). §6.4 của CORE_SPECS chỉ nêu ý tưởng "Cổng kết nối Viện Trưởng liên ứng dụng" ở tầng roadmap, chưa đặc tả.
-- **Hệ quả:** Chủ Nhiệm/Viện Trưởng/Phó Viện Trưởng phải tự mở app định kỳ để biết có yêu cầu đổi quà đang chờ, đơn ứng tuyển Phó Viện Trưởng mới, học sinh cạn Năng Lượng liên tục... Với mô hình "đồng hành" mà §1.1 đặt làm sứ mệnh, đây là khoảng trống lớn nhất.
+- **Hệ quả:** Chủ Nhiệm/Viện Trưởng/Viện Phó phải tự mở app định kỳ để biết có yêu cầu đổi quà đang chờ, đơn ứng tuyển Viện Phó mới, học sinh cạn Năng Lượng liên tục... Với mô hình "đồng hành" mà §1.1 đặt làm sứ mệnh, đây là khoảng trống lớn nhất.
 - **Câu hỏi cần Viện Trưởng quyết:** Ưu tiên kênh nào trước (email tóm tắt hàng ngày/tuần, hay in-app badge đếm số việc cần xử lý, hay tích hợp Telegram/Zalo thật)? Có cần cấu hình được tần suất không?
 
 ### 6.2 Thiếu "Bảng Cần Xử Lý" tổng hợp (Actionable Dashboard)
-- **Hiện trạng:** Yêu cầu đổi quà pending, đơn ứng tuyển Phó Viện Trưởng, kết nối lớp đang chờ (`pending_student`/`pending_primary`/`pending_tutor`) đều nằm rải rác ở từng tab riêng (`RewardManager`, `VicePrincipalApplicationsManager`, `ClassLinksManager`).
-- **Đề xuất:** Một widget "Cần Xử Lý Hôm Nay" ở đầu Phòng Hiệu Trưởng/TutorConsole, gộp toàn bộ action-item đang chờ duyệt từ mọi module trên, sắp theo mức độ khẩn cấp/thời gian chờ.
+- **Hiện trạng:** Yêu cầu đổi quà pending, đơn ứng tuyển Viện Phó, kết nối lớp đang chờ (`pending_student`/`pending_primary`/`pending_tutor`) đều nằm rải rác ở từng tab riêng (`RewardManager`, `VicePrincipalApplicationsManager`, `ClassLinksManager`).
+- **Đề xuất:** Một widget "Cần Xử Lý Hôm Nay" ở đầu Tổng Quan/TutorConsole, gộp toàn bộ action-item đang chờ duyệt từ mọi module trên, sắp theo mức độ khẩn cấp/thời gian chờ.
 
 ### 6.3 Thiếu thao tác hàng loạt cho lớp quy mô lớn (Bulk Actions)
 - **Hiện trạng:** §3 tự nêu ví dụ "lớp học có 40 học sinh", nhưng cấu hình Năng Lượng (`adminSetEnergyConfig`), giao Nhiệm vụ, duyệt đổi quà đều là thao tác **từng học sinh một**, không có "áp dụng cho cả lớp"/chọn nhiều.
-- **Đề xuất:** Cho phép chọn nhiều Sĩ Tử trong Roster rồi áp dụng cấu hình Năng Lượng mặc định hoặc giao cùng một nhiệm vụ hàng loạt.
+- **Đề xuất:** Cho phép chọn nhiều Học Sinh trong Roster rồi áp dụng cấu hình Năng Lượng mặc định hoặc giao cùng một nhiệm vụ hàng loạt.
 
 ### 6.4 Rủi ro quản trị khi có nhiều Viện Trưởng ngang quyền (Governance Gap)
 - **Hiện trạng:** §2 Tầng 3 không có khái niệm "Viện Trưởng sáng lập"/bất khả xâm phạm — bất kỳ Viện Trưởng nào cũng có thể thu hồi quyền của Viện Trưởng khác (kể cả người tạo ra mình) mà không cần xác nhận thứ hai.
@@ -269,14 +272,14 @@ Rà soát từ góc nhìn vận hành (không phải bug code) sau khi đối ch
 
 ### 6.5 Audit Log passive, không có cảnh báo bất thường
 - **Hiện trạng:** `ge10_admin_audit_log` chỉ Viện Trưởng chủ động vào xem (`AuditLogsManager.tsx`); không có ngưỡng cảnh báo tự động (ví dụ: promote hàng loạt trong thời gian ngắn, đổi bonus Boss lệch xa mặc định).
-- **Đề xuất:** Không cần AI phức tạp — chỉ cần rule đơn giản (ví dụ >5 thao tác nhạy cảm/giờ từ một Phó Viện Trưởng) đẩy vào "Cần Xử Lý" (§6.2) để Viện Trưởng để ý.
+- **Đề xuất:** Không cần AI phức tạp — chỉ cần rule đơn giản (ví dụ >5 thao tác nhạy cảm/giờ từ một Viện Phó) đẩy vào "Cần Xử Lý" (§6.2) để Viện Trưởng để ý.
 
 ### 6.6 Học sinh mồ côi (Đại Sảnh Đường) không có auto-assign khi quy mô lớn
-- **Hiện trạng:** §3.3 giao toàn bộ học sinh chưa có lớp cho Viện Trưởng/Phó Viện Trưởng làm chủ nhiệm lâm thời thủ công — ở quy mô một trường thật (hàng trăm học sinh mới mỗi năm học), đây sẽ là điểm nghẽn.
+- **Hiện trạng:** §3.3 giao toàn bộ học sinh chưa có lớp cho Viện Trưởng/Viện Phó làm chủ nhiệm lâm thời thủ công — ở quy mô một trường thật (hàng trăm học sinh mới mỗi năm học), đây sẽ là điểm nghẽn.
 - **Đề xuất:** Cân nhắc cơ chế gợi ý/tự gán lớp theo sĩ số còn trống, hoặc cho phép Chủ Nhiệm tự "nhận" học sinh mồ côi từ danh sách công khai thay vì chỉ nhận qua lời mời.
 
 ### 6.7 Thiếu kênh khiếu nại/tranh chấp cấp viện cho Reward Catalog
-- **Hiện trạng:** Ma trận §4 không cho Viện Trưởng/Phó Viện Trưởng quyền chỉnh sửa Reward Catalog của một Chủ Nhiệm cụ thể (đúng nguyên tắc tự trị của lớp), nhưng cũng không có đường nào để can thiệp khi phát sinh tranh chấp (Chủ Nhiệm ngừng hoạt động/không phát thưởng, học sinh khiếu nại bị từ chối oan).
+- **Hiện trạng:** Ma trận §4 không cho Viện Trưởng/Viện Phó quyền chỉnh sửa Reward Catalog của một Chủ Nhiệm cụ thể (đúng nguyên tắc tự trị của lớp), nhưng cũng không có đường nào để can thiệp khi phát sinh tranh chấp (Chủ Nhiệm ngừng hoạt động/không phát thưởng, học sinh khiếu nại bị từ chối oan).
 - **Câu hỏi cần Viện Trưởng quyết:** Có cần một quyền "can thiệp khẩn cấp" (ví dụ chỉ khi Chủ Nhiệm bị vô hiệu hóa `is_active=false`) để Viện Trưởng xử lý các `RewardRedemption` còn treo của lớp đó không?
 
 *(Chi tiết kỹ thuật/phạm vi triển khai từng mục xem TODO.md — mục PMR-3 đến PMR-8.)*

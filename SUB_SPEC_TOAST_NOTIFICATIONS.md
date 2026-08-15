@@ -19,7 +19,7 @@ Tài liệu này đặc tả quy chuẩn hiển thị thông báo Toast cho mọ
 | Bại trận Trường Thi | Error | `💀 Thất bại giữa trận! Con bị tước đi 50% chiến lợi phẩm: -{ruby} Ruby 💎 và -{xp} XP ✨. Thú cưng buồn bã 🐷.` | `applyDefeatPenalty` (store) |
 | Hạ Boss thành công | Success | `🔥 Đại Thắng Boss! Nhận ngay +{ruby} Ruby 💎 và +{xp} XP ✨! 🎉` | `completeBossVictory` (store) |
 | Trả lời đúng Riddle | Success | *(Tự động kích hoạt qua `awardRubyAndXp`)* | `RiddleGames.tsx` |
-| Trả lời sai Riddle | Error | `Nhầm rồi Sĩ Tử! Hãy thử sức ở câu sau nhé! 🐷` | `RiddleGames.tsx` |
+| Trả lời sai Riddle | Error | `Nhầm rồi Học Sinh! Hãy thử sức ở câu sau nhé! 🐷` | `RiddleGames.tsx` |
 
 ### B. Năng Lượng (Energy)
 | Sự kiện | Loại | Nội dung Toast chuẩn | Vị trí xử lý |
@@ -31,8 +31,8 @@ Tài liệu này đặc tả quy chuẩn hiển thị thông báo Toast cho mọ
 ### C. Cấp Độ (Level)
 | Sự kiện | Loại | Nội dung Toast chuẩn | Vị trí xử lý |
 | :--- | :---: | :--- | :--- |
-| Thăng Cấp Sĩ Tử | Success | `🎉 Chúc mừng Sĩ Tử thăng cấp lên Cấp {level}! ✨` | `checkLevelUp` (helpers) |
-| Thăng Cấp Danh Hiệu | Success | `🏆 Tuyệt vời! Sĩ Tử thăng cấp danh hiệu lên: {icon} {name}! 🎉 (+100 Ruby 💎)` | `checkLevelUp` (helpers) |
+| Thăng Cấp Học Sinh | Success | `🎉 Chúc mừng Học Sinh thăng cấp lên Cấp {level}! ✨` | `checkLevelUp` (helpers) |
+| Thăng Cấp Danh Hiệu | Success | `🏆 Tuyệt vời! Học Sinh thăng cấp danh hiệu lên: {icon} {name}! 🎉 (+100 Ruby 💎)` | `checkLevelUp` (helpers) |
 
 ### D. Thú Nuôi (Pet Sanctuary)
 | Sự kiện | Loại | Nội dung Toast chuẩn | Vị trí xử lý |

@@ -2,16 +2,18 @@ export const isAdmin = (role?: string) => role === 'truong_vien' || role === 'ph
 export const isSuperAdmin = (role?: string) => role === 'truong_vien';
 export const isTutorRole = (role?: string) => role === 'tutor' || role === 'secondary_tutor';
 
-export type PermissionAction =
-  | 'VIEW_AUDIT_LOGS'
-  | 'PROMOTE_TO_ADMIN'
-  | 'PROMOTE_TO_USER'
-  | 'MANAGE_CONTENT'
-  | 'REFILL_ENERGY'
-  | 'SET_ENERGY_CONFIG'
-  | 'APPROVE_REWARD'
-  | 'CREATE_MISSION'
-  | 'VIEW_STUDENT_PROFILE';
+// Nguồn DUY NHẤT cho tên hiển thị vai trò — mọi nơi trong UI phải đọc từ đây,
+// không tự viết lại chuỗi role === 'x' ? 'Y' : 'Z' rải rác (xem SUB_SPEC_TERMINOLOGY.md).
+export const ROLE_LABELS: Record<string, { name: string; icon: string }> = {
+  truong_vien: { name: 'Viện Trưởng', icon: '👑' },
+  pho_vien: { name: 'Viện Phó', icon: '🛡️' },
+  tutor: { name: 'Chủ Nhiệm', icon: '📋' },
+  secondary_tutor: { name: 'Trợ Giảng', icon: '📋' },
+  student: { name: 'Học Sinh', icon: '🌱' },
+};
+
+export const getRoleLabel = (role?: string): { name: string; icon: string } =>
+  ROLE_LABELS[role || ''] || { name: 'Không rõ', icon: '❓' };
 
 export const canPromoteTo = (actorRole: string, targetRole: string): boolean => {
   if (actorRole === 'truong_vien') return true;
@@ -19,53 +21,4 @@ export const canPromoteTo = (actorRole: string, targetRole: string): boolean => 
     return targetRole === 'student' || targetRole === 'tutor';
   }
   return false;
-};
-
-/**
- * Kiểm tra quyền hạn của User đối với một action cụ thể (Dùng chung cho UI và API check).
- * @param role Thân phận của người dùng
- * @param action Hành động muốn thực hiện
- * @param secondaryPermissions Quyền phụ (dành cho Secondary Tutor)
- * @returns boolean
- */
-export const hasPermission = (
-  role: string | undefined,
-  action: PermissionAction,
-  secondaryPermissions?: {
-    can_approve_rewards?: boolean;
-    can_create_missions?: boolean;
-    read_only?: boolean;
-  }
-): boolean => {
-  if (!role) return false;
-  if (secondaryPermissions) { /* bypass unused warning */ }
-
-  // Viện Trưởng có toàn quyền
-  if (role === 'truong_vien') return true;
-
-  switch (action) {
-    case 'VIEW_AUDIT_LOGS':
-    case 'PROMOTE_TO_ADMIN':
-      return role === 'truong_vien' || role === 'pho_vien';
-
-    case 'PROMOTE_TO_USER':
-    case 'MANAGE_CONTENT':
-      return role === 'truong_vien' || role === 'pho_vien';
-
-    case 'REFILL_ENERGY':
-    case 'SET_ENERGY_CONFIG':
-      return role === 'truong_vien' || role === 'pho_vien' || role === 'tutor';
-
-    case 'APPROVE_REWARD':
-      return role === 'pho_vien' || role === 'tutor' || role === 'secondary_tutor';
-
-    case 'CREATE_MISSION':
-      return role === 'pho_vien' || role === 'tutor' || role === 'secondary_tutor';
-
-    case 'VIEW_STUDENT_PROFILE':
-      return role === 'pho_vien' || role === 'tutor' || role === 'secondary_tutor';
-
-    default:
-      return false;
-  }
 };

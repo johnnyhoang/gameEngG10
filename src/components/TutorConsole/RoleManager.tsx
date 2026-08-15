@@ -7,9 +7,9 @@ import { authService } from '../../services/authService';
 const backendUrl = import.meta.env.VITE_BACKEND_URL || (import.meta.env.PROD ? '' : 'http://localhost:3000');
 
 const ROLES_CONFIG = [
-  { key: 'student',     label: 'Sĩ Tử',    icon: '🌱', color: 'synth-cyan' },
-  { key: 'tutor',      label: 'Chủ Nhiệm Chính', icon: '📋', color: 'synth-orange' },
-  { key: 'pho_vien',    label: 'Phó Viện Trưởng',    icon: '🛡️', color: 'purple-400' },
+  { key: 'student',     label: 'Học Sinh',    icon: '🌱', color: 'synth-cyan' },
+  { key: 'tutor',      label: 'Chủ Nhiệm', icon: '📋', color: 'synth-orange' },
+  { key: 'pho_vien',    label: 'Viện Phó',    icon: '🛡️', color: 'purple-400' },
   { key: 'truong_vien', label: 'Viện Trưởng', icon: '👑', color: 'synth-magenta' },
 ];
 

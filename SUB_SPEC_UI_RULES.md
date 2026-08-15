@@ -47,7 +47,7 @@ Môi trường học sinh (`AcademyHub.tsx`) quản lý 5 tab chính liên kết
 
 ### 7.2 Cấu trúc 3-Tab Giáo viên / Viện Trưởng (TutorConsole)
 Môi trường quản trị (`TutorConsole.tsx`) tinh giản còn 3 tab chính:
-1. **Phòng Hiệu Trưởng / Phòng Giáo Viên (`phong_hieu_truong`)**: Chứa thống kê, danh sách học sinh liên kết/toàn trường, danh sách cán bộ nhân sự (Giáo viên, duyệt phó viện trưởng, phân quyền) và Cài đặt hệ thống (SettingsManager) thông qua hệ thống sub-tab con.
+1. **Tổng Quan (`phong_hieu_truong`)**: Chứa thống kê, danh sách học sinh liên kết/toàn viện, danh sách cán bộ nhân sự (Giáo viên, duyệt Viện Phó, phân quyền) và Cài đặt hệ thống (SettingsManager) thông qua hệ thống sub-tab con.
 2. **Bài Giảng (`tang_kinh_cac`)**: Phòng quản lý Knowledge (LectureBankManager).
 3. **Đề Thi (`van_quyen_cac`)**: Ngân hàng câu hỏi trắc nghiệm (QuestionBankManager).
 

@@ -120,8 +120,8 @@ CREATE TABLE IF NOT EXISTS ge10_history_logs (
 -- tạo index trên cột tham chiếu nên nếu thiếu sẽ full scan khi bảng lớn dần.
 CREATE INDEX IF NOT EXISTS idx_history_logs_user_timestamp ON ge10_history_logs(user_id, timestamp DESC);
 
--- Danh Mục Quà Khuyến Học CHUNG của trường (CORE_SPECS §3.2) — MỘT danh sách duy nhất cho
--- toàn viện, Viện Trưởng/Phó Viện Trưởng quản lý qua /api/admin/school-rewards. Giáo viên có
+-- Danh Mục Quà Khuyến Học CHUNG toàn viện (CORE_SPECS §3.2) — MỘT danh sách duy nhất cho
+-- toàn viện, Viện Trưởng/Viện Phó quản lý qua /api/admin/school-rewards. Giáo viên có
 -- danh mục riêng (ge10_class_rewards, clone từ đây khi hồ sơ giáo viên được tạo); học sinh mồ côi
 -- (không có giáo viên) đọc thẳng bảng này. Không có user_id vì đây không phải bản sao theo từng người.
 CREATE TABLE IF NOT EXISTS ge10_school_reward_templates (

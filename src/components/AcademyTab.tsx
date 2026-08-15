@@ -120,10 +120,10 @@ export function AcademyTab({ onStudyLesson, onStartLessonPractice }: AcademyTabP
               <div className="space-y-3">
                 <div className="space-y-1">
                   <p className={`text-xs font-orbitron font-semibold uppercase tracking-[0.2em] ${isUnicorn ? 'text-violet-500' : 'text-synth-cyan/70'}`}>
-                    {getGreeting()}, {t('Sĩ Tử', 'Scholar')}
+                    {getGreeting()}, {t('Học Sinh', 'Scholar')}
                   </p>
                   <h1 className={`font-orbitron font-bold text-2xl md:text-3xl uppercase tracking-wide ${isUnicorn ? 'text-violet-900' : 'text-white'}`}>
-                    {currentUser?.name || t('Sĩ Tử mới', 'New Scholar')} 👋
+                    {currentUser?.name || t('Học Sinh mới', 'New Scholar')} 👋
                   </h1>
                 </div>
 

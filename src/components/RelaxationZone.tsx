@@ -269,9 +269,6 @@ export const RelaxationZone: React.FC<RelaxationZoneProps> = ({ onBack: _onBack 
               Công Viên Thư Giãn
             </h1>
           </div>
-          <p className={`text-xs ${isUnicorn ? 'text-violet-700/70' : 'text-synth-text-muted'}`}>
-            Khu trò chơi trí tuệ — thư giãn bổ ích bằng cách vận dụng kho kiến thức.
-          </p>
         </div>
       </div>
 

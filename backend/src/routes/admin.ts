@@ -78,7 +78,7 @@ router.get('/admin/users', authMiddleware, async (req: any, res) => {
 
         relatedUsers.push(...coTeachersRes.rows);
 
-        // Lấy thêm Ban Giám Hiệu (Viện Trưởng/Phó Viện Trưởng) để giáo viên liên hệ
+        // Lấy thêm Ban Lãnh Đạo Viện (Viện Trưởng/Viện Phó) để giáo viên liên hệ
         const adminsRes = await pool.query(`
           SELECT u.id, u.name, u.email, u.avatar_url, u.role
           FROM ge10_users u
@@ -99,7 +99,7 @@ router.get('/admin/users', authMiddleware, async (req: any, res) => {
 
         linksRows = linksRes.rows;
       } else {
-        // Nếu lớp trống, vẫn trả về Ban Giám Hiệu để giáo viên liên hệ
+        // Nếu lớp trống, vẫn trả về Ban Lãnh Đạo Viện để giáo viên liên hệ
         const adminsRes = await pool.query(`
           SELECT u.id, u.name, u.email, u.avatar_url, u.role
           FROM ge10_users u
@@ -126,7 +126,7 @@ router.get('/admin/users', authMiddleware, async (req: any, res) => {
 router.get('/admin/users-all', authMiddleware, async (req: any, res) => {
   try {
     if (!req.profile || !['truong_vien', 'pho_vien'].includes(req.profile.role)) {
-      return res.status(403).json({ error: 'Forbidden: Chỉ Ban Giám Hiệu mới có thể xem toàn bộ danh sách profile.' });
+      return res.status(403).json({ error: 'Forbidden: Chỉ Ban Lãnh Đạo Viện mới có thể xem toàn bộ danh sách profile.' });
     }
 
     // Trả về tất cả profiles kể cả inactive — RoleManager sẽ group theo account_id
@@ -145,7 +145,7 @@ router.get('/admin/users-all', authMiddleware, async (req: any, res) => {
 router.post('/admin/update-user-role', authMiddleware, async (req: any, res) => {
   try {
     if (req.profile.role !== 'truong_vien' && req.profile.role !== 'pho_vien') {
-      return res.status(403).json({ error: 'Forbidden: Chỉ Ban Giám Hiệu mới có quyền quản lý vai trò.' });
+      return res.status(403).json({ error: 'Forbidden: Chỉ Ban Lãnh Đạo Viện mới có quyền quản lý vai trò.' });
     }
 
     const { targetAccountId, roleKey, active } = req.body;
@@ -179,11 +179,11 @@ router.post('/admin/update-user-role', authMiddleware, async (req: any, res) => 
         const newProfileId = `u-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         
         // Chuẩn hóa tên (Xóa hậu tố cũ nếu có và thêm hậu tố vai trò mới)
-        const cleanName = baseInfo.name.replace(/\s*\((?:Hiệu Trưởng|Hiệu Phó|Viện Trưởng|Phó Viện Trưởng|Chủ Nhiệm|Chủ Nhiệm Chính|Học Sinh|Sĩ Tử)\)/g, '');
+        const cleanName = baseInfo.name.replace(/\s*\((?:Hiệu Trưởng|Hiệu Phó|Viện Trưởng|Phó Viện Trưởng|Viện Phó|Chủ Nhiệm|Chủ Nhiệm Chính|Trợ Giảng|Chủ Nhiệm Phụ|Học Sinh|Sĩ Tử)\)/g, '');
         let roleSuffix = '';
         if (roleKey === 'truong_vien') roleSuffix = 'Viện Trưởng';
-        else if (roleKey === 'pho_vien') roleSuffix = 'Phó Viện Trưởng';
-        else if (roleKey === 'tutor') roleSuffix = 'Chủ Nhiệm Chính';
+        else if (roleKey === 'pho_vien') roleSuffix = 'Viện Phó';
+        else if (roleKey === 'tutor') roleSuffix = 'Chủ Nhiệm';
         else if (roleKey === 'student') roleSuffix = 'Học Sinh';
         
         const finalName = roleSuffix ? `${cleanName} (${roleSuffix})` : cleanName;
@@ -213,11 +213,11 @@ router.post('/admin/update-user-role', authMiddleware, async (req: any, res) => 
   }
 });
 
-// GET /api/admin/vice-principal-applications: Lấy tất cả yêu cầu ứng tuyển Phó Viện Trưởng đang chờ duyệt (Chỉ dành cho Viện Trưởng)
+// GET /api/admin/vice-principal-applications: Lấy tất cả yêu cầu ứng tuyển Viện Phó đang chờ duyệt (Chỉ dành cho Viện Trưởng)
 router.get('/admin/vice-principal-applications', authMiddleware, async (req: any, res) => {
   try {
     if (req.profile.role !== 'truong_vien' && req.profile.role !== 'pho_vien') {
-      return res.status(403).json({ error: 'Forbidden: Chỉ Ban Giám Hiệu mới có quyền duyệt đơn ứng tuyển Phó Viện Trưởng.' });
+      return res.status(403).json({ error: 'Forbidden: Chỉ Ban Lãnh Đạo Viện mới có quyền duyệt đơn ứng tuyển Viện Phó.' });
     }
 
     const appsRes = await pool.query(`
@@ -235,11 +235,11 @@ router.get('/admin/vice-principal-applications', authMiddleware, async (req: any
   }
 });
 
-// POST /api/admin/respond-vice-principal: Duyệt hoặc từ chối yêu cầu ứng tuyển Phó Viện Trưởng (Chỉ dành cho Viện Trưởng)
+// POST /api/admin/respond-vice-principal: Duyệt hoặc từ chối yêu cầu ứng tuyển Viện Phó (Chỉ dành cho Viện Trưởng)
 router.post('/admin/respond-vice-principal', authMiddleware, async (req: any, res) => {
   try {
     if (req.profile.role !== 'truong_vien' && req.profile.role !== 'pho_vien') {
-      return res.status(403).json({ error: 'Forbidden: Chỉ Ban Giám Hiệu mới có quyền duyệt đơn ứng tuyển.' });
+      return res.status(403).json({ error: 'Forbidden: Chỉ Ban Lãnh Đạo Viện mới có quyền duyệt đơn ứng tuyển.' });
     }
 
     const { applicationId, accept } = req.body;
@@ -270,7 +270,7 @@ router.post('/admin/respond-vice-principal', authMiddleware, async (req: any, re
     const targetAccountId = teacherInfo.account_id;
 
     if (accept) {
-      // 3. Kích hoạt hoặc Tạo mới profile pho_vien (Phó Viện Trưởng) cho tài khoản này
+      // 3. Kích hoạt hoặc Tạo mới profile pho_vien (Viện Phó) cho tài khoản này
       const profileCheck = await pool.query(
         "SELECT id FROM ge10_users WHERE account_id = $1 AND role = 'pho_vien'",
         [targetAccountId]
@@ -282,10 +282,10 @@ router.post('/admin/respond-vice-principal', authMiddleware, async (req: any, re
         targetProfileId = profileCheck.rows[0].id;
         await pool.query("UPDATE ge10_users SET is_active = TRUE WHERE id = $1", [targetProfileId]);
       } else {
-        // Chưa có profile -> Tạo mới profile Phó Viện Trưởng
+        // Chưa có profile -> Tạo mới profile Viện Phó
         targetProfileId = `u-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        const cleanName = teacherInfo.name.replace(/\s*\((?:Hiệu Trưởng|Hiệu Phó|Viện Trưởng|Phó Viện Trưởng|Chủ Nhiệm|Chủ Nhiệm Chính|Học Sinh|Sĩ Tử)\)/g, '');
-        const finalName = `${cleanName} (Phó Viện Trưởng)`;
+        const cleanName = teacherInfo.name.replace(/\s*\((?:Hiệu Trưởng|Hiệu Phó|Viện Trưởng|Phó Viện Trưởng|Viện Phó|Chủ Nhiệm|Chủ Nhiệm Chính|Trợ Giảng|Chủ Nhiệm Phụ|Học Sinh|Sĩ Tử)\)/g, '');
+        const finalName = `${cleanName} (Viện Phó)`;
 
         await pool.query(
           `INSERT INTO ge10_users (id, account_id, name, email, avatar_url, role, is_active)
@@ -301,7 +301,7 @@ router.post('/admin/respond-vice-principal', authMiddleware, async (req: any, re
       // Cập nhật trạng thái đơn ứng tuyển sang active
       await pool.query("UPDATE ge10_class_links SET status = 'active' WHERE id = $1", [applicationId]);
 
-      // Tự động kết nối đồng hành Ban Giám Hiệu
+      // Tự động kết nối đồng hành Ban Lãnh Đạo Viện
       const adminConnId = `lnk-adm-${Date.now()}`;
       await pool.query(
         `INSERT INTO ge10_class_links (id, tutor_id, student_id, status, link_type)
@@ -317,7 +317,7 @@ router.post('/admin/respond-vice-principal', authMiddleware, async (req: any, re
       await logAuditEvent(teacherProfileId, 'reject_vice_principal_request', null, { applicationId });
     }
 
-    res.json({ success: true, message: accept ? 'Đã duyệt thăng cấp Phó Viện Trưởng thành công!' : 'Đã từ chối đơn ứng tuyển.' });
+    res.json({ success: true, message: accept ? 'Đã duyệt thăng cấp Viện Phó thành công!' : 'Đã từ chối đơn ứng tuyển.' });
   } catch (error: any) {
     console.error('Error responding to VP application:', error);
     res.status(500).json({ error: 'Failed to process application.', details: error.message });
@@ -328,7 +328,7 @@ router.post('/admin/respond-vice-principal', authMiddleware, async (req: any, re
 router.get('/admin/audit-logs', authMiddleware, async (req: any, res) => {
   try {
     if (req.profile.role !== 'truong_vien' && req.profile.role !== 'pho_vien') {
-      return res.status(403).json({ error: 'Forbidden: Ban Giám Hiệu mới có quyền truy cập nhật ký.' });
+      return res.status(403).json({ error: 'Forbidden: Ban Lãnh Đạo Viện mới có quyền truy cập nhật ký.' });
     }
 
     const logsRes = await pool.query('SELECT * FROM ge10_audit_logs ORDER BY created_at DESC LIMIT 200');
@@ -438,8 +438,9 @@ router.post('/admin/cancel-redemption', authMiddleware, async (req: any, res) =>
       );
 
       if (reward_id) {
+        // Không giới hạn (is_unlimited) thì không có tồn kho để hoàn lại.
         await client.query(
-          'UPDATE ge10_school_reward_templates SET remaining_quantity = remaining_quantity + 1 WHERE id = $1',
+          'UPDATE ge10_school_reward_templates SET remaining_quantity = remaining_quantity + 1 WHERE id = $1 AND is_unlimited = FALSE',
           [reward_id]
         );
       }
@@ -908,13 +909,13 @@ router.delete('/admin/lessons/:lessonId', authMiddleware, async (req: any, res) 
 
 // ─────────────────────────────────────────────
 // Danh Mục Quà Khuyến Học CHUNG của trường (ge10_school_reward_templates) — CRUD chỉ dành
-// cho Viện Trưởng/Phó Viện Trưởng. Đây là nguồn duy nhất (không còn hardcode trong code):
+// cho Viện Trưởng/Viện Phó. Đây là nguồn duy nhất (không còn hardcode trong code):
 // giáo viên mới clone từ đây khi tạo hồ sơ; học sinh mồ côi đọc thẳng bảng này.
 // ─────────────────────────────────────────────
 async function requireAcademyAdmin(req: any, res: any): Promise<boolean> {
   const role = req.profile?.role;
   if (role !== 'truong_vien' && role !== 'pho_vien') {
-    res.status(403).json({ error: 'Forbidden: Chỉ Viện Trưởng/Phó Viện Trưởng được quản lý Danh Mục Quà của trường.' });
+    res.status(403).json({ error: 'Forbidden: Chỉ Viện Trưởng/Viện Phó được quản lý Danh Mục Quà toàn viện.' });
     return false;
   }
   return true;
@@ -935,19 +936,21 @@ router.get('/admin/school-rewards', async (req: any, res) => {
 // POST /api/admin/school-rewards
 router.post('/admin/school-rewards', async (req: any, res) => {
   if (!(await requireAcademyAdmin(req, res))) return;
-  const { title, quantity } = req.body;
+  const { title } = req.body;
   const costRuby = req.body.costRuby;
-  if (!title?.trim() || !costRuby || !quantity || costRuby <= 0 || quantity <= 0) {
+  const isUnlimited = req.body.isUnlimited === true;
+  const quantity = isUnlimited ? 1 : req.body.quantity;
+  if (!title?.trim() || !costRuby || costRuby <= 0 || (!isUnlimited && (!quantity || quantity <= 0))) {
     return res.status(400).json({ error: 'Missing or invalid fields: title, costRuby, quantity' });
   }
   try {
     const id = `sch-rew-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     await pool.query(
-      `INSERT INTO ge10_school_reward_templates (id, title, cost_ruby, quantity, remaining_quantity, created_at)
-       VALUES ($1, $2, $3, $4, $4, $5)`,
-      [id, title.trim(), costRuby, quantity, Date.now()]
+      `INSERT INTO ge10_school_reward_templates (id, title, cost_ruby, quantity, remaining_quantity, is_unlimited, created_at)
+       VALUES ($1, $2, $3, $4, $4, $5, $6)`,
+      [id, title.trim(), costRuby, quantity, isUnlimited, Date.now()]
     );
-    await logAuditEvent(req.profile.id, 'create_school_reward', id, { title, costRuby, quantity });
+    await logAuditEvent(req.profile.id, 'create_school_reward', id, { title, costRuby, quantity, isUnlimited });
     res.json({ success: true, id });
   } catch (error: any) {
     console.error('Error creating school reward template:', error.message);
@@ -961,16 +964,18 @@ router.put('/admin/school-rewards/:id', async (req: any, res) => {
   const { id } = req.params;
   const { title, quantity, remainingQuantity } = req.body;
   const costRuby = req.body.costRuby;
+  const isUnlimited = typeof req.body.isUnlimited === 'boolean' ? req.body.isUnlimited : null;
   try {
     const result = await pool.query(
       `UPDATE ge10_school_reward_templates
        SET title = COALESCE($1, title),
            cost_ruby = COALESCE($2, cost_ruby),
            quantity = COALESCE($3, quantity),
-           remaining_quantity = COALESCE($4, remaining_quantity)
-       WHERE id = $5
+           remaining_quantity = COALESCE($4, remaining_quantity),
+           is_unlimited = COALESCE($5, is_unlimited)
+       WHERE id = $6
        RETURNING id`,
-      [title?.trim() || null, costRuby || null, quantity || null, remainingQuantity ?? null, id]
+      [title?.trim() || null, costRuby || null, quantity || null, remainingQuantity ?? null, isUnlimited, id]
     );
     if (result.rowCount === 0) return res.status(404).json({ error: 'Reward template not found.' });
     await logAuditEvent(req.profile.id, 'update_school_reward', id, req.body);

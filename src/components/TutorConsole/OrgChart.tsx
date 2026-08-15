@@ -33,7 +33,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
     return adminStudents.filter(u => u.role === 'student');
   }, [adminStudents]);
 
-  // 2. Tìm học sinh thuộc từng giáo viên (chủ nhiệm chính hoặc phụ)
+  // 2. Tìm học sinh thuộc từng giáo viên (chủ nhiệm hoặc trợ giảng)
   const studentsByTeacher = useMemo(() => {
     const map = new Map<string, any[]>();
     
@@ -56,7 +56,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
     return map;
   }, [allStudents, adminLinks]);
 
-  // 3. Tìm Phó Chủ Nhiệm (Secondary Parent) gắn với Chủ Nhiệm Chính
+  // 3. Tìm Trợ Giảng (Secondary Parent) gắn với Chủ Nhiệm
   // Theo DB: tutor_id = Primary Tutor, student_id = Secondary Tutor, link_type = 'secondary'
   const secondaryTeachersByPrimary = useMemo(() => {
     const map = new Map<string, any[]>();
@@ -82,7 +82,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
     return map;
   }, [adminLinks, secondaryTeachers]);
 
-  // 4. Tìm các Sĩ Tử Tự Do (chưa có lớp/chưa được gán cho ai)
+  // 4. Tìm các Học Sinh Tự Do (chưa có lớp/chưa được gán cho ai)
   const freeStudents = useMemo(() => {
     const linkedStudentIds = new Set(
       adminLinks
@@ -112,7 +112,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
         {/* TẦNG 1: VIỆN CHỦ (VIỆN TRƯỞNG) */}
         <div className="flex flex-col items-center">
           <span className="text-[8px] uppercase font-bold tracking-widest text-synth-magenta font-orbitron mb-1.5 flex items-center gap-1">
-            <Crown className="w-3 h-3 text-synth-magenta" /> Ban Giám Hiệu (Viện Trưởng)
+            <Crown className="w-3 h-3 text-synth-magenta" /> Ban Lãnh Đạo Viện (Viện Trưởng)
           </span>
           <div className="flex flex-wrap justify-center gap-3">
             {admins.map(admin => {
@@ -144,7 +144,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
                     <p className="opacity-70">Email: {admin.email}</p>
                     <p className="opacity-70">Vai trò: Viện Trưởng tối cao</p>
                     <p className="text-synth-magenta font-orbitron font-bold text-[8px] mt-0.5 flex items-center gap-0.5">
-                      <Crown className="w-2 h-2 text-synth-magenta" /> BAN GIÁM HIỆU
+                      <Crown className="w-2 h-2 text-synth-magenta" /> BAN LÃNH ĐẠO VIỆN
                     </p>
                   </div>
                 </div>
@@ -169,11 +169,11 @@ export const OrgChart: React.FC<OrgChartProps> = ({
           </svg>
         )}
 
-        {/* TẦNG 2: PHÓ VIỆN CHỦ (PHÓ VIỆN TRƯỞNG) */}
+        {/* TẦNG 2: VIỆN PHÓ */}
         {viceAdmins.length > 0 && (
           <div className="flex flex-col items-center">
             <span className="text-[8px] uppercase font-bold tracking-widest text-purple-400 font-orbitron mb-1.5 flex items-center gap-1">
-              <Shield className="w-3 h-3 text-purple-400" /> Phó Viện Trưởng
+              <Shield className="w-3 h-3 text-purple-400" /> Viện Phó
             </span>
             <div className="flex flex-wrap justify-center gap-3">
               {viceAdmins.map(vice => {
@@ -192,7 +192,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
                       <div className="truncate min-w-0 flex-1">
                         <div className="flex items-center gap-0.5 truncate">
                           <Shield className="w-2 h-2 text-purple-400 flex-shrink-0" />
-                          <span className="text-[8px] text-purple-400 uppercase font-orbitron font-bold tracking-wider truncate">Phó Viện Trưởng</span>
+                          <span className="text-[8px] text-purple-400 uppercase font-orbitron font-bold tracking-wider truncate">Viện Phó</span>
                           {isSelf && <span className="text-[7px] bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 rounded px-0.5 font-orbitron font-black ml-0.5 flex-shrink-0">Bạn</span>}
                         </div>
                         <span className="block text-[11px] font-bold text-white truncate mt-0.5">{displayName(vice)}</span>
@@ -205,7 +205,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
                       <p className="opacity-70">Email: {vice.email}</p>
                       <p className="opacity-70">Quyền hạn: Điều phối & Quản trị nội dung</p>
                       <p className="text-purple-400 font-orbitron font-bold text-[8px] mt-0.5 flex items-center gap-0.5">
-                        <Shield className="w-2 h-2 text-purple-400" /> BAN GIÁM HIỆU
+                        <Shield className="w-2 h-2 text-purple-400" /> BAN LÃNH ĐẠO VIỆN
                       </p>
                     </div>
                   </div>
@@ -233,7 +233,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
           </div>
         )}
 
-        {/* TẦNG 3 & 4: CHỦ NHIỆM CHÍNH & PHÓ CHỦ NHIỆM (THEO LỚP) */}
+        {/* TẦNG 3 & 4: CHỦ NHIỆM & TRỢ GIẢNG (THEO LỚP) */}
         <div className="w-full space-y-4">
           <div className="text-center">
             <span className="text-[8px] uppercase font-bold tracking-widest text-synth-cyan font-orbitron flex items-center justify-center gap-1">
@@ -274,7 +274,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
                       <span className="text-[7px] uppercase tracking-wider font-bold text-slate-400 font-orbitron">Ban Chủ Nhiệm</span>
                       
                       <div className="flex items-center justify-center gap-4 w-full relative">
-                        {/* 1. Chủ Nhiệm Chính */}
+                        {/* 1. Chủ Nhiệm */}
                         <div className="relative group">
                           <div className={`flex flex-col items-center p-2 rounded-lg bg-slate-950/50 border ${isPrimarySelf ? 'border-yellow-400 shadow-[0_0_8px_rgba(234,179,8,0.15)]' : 'border-synth-cyan/30'} w-28 hover:border-synth-cyan transition-colors`}>
                             <img 
@@ -298,7 +298,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
                           </div>
                         </div>
 
-                        {/* Đường nối ngang nét đứt bằng SVG nếu có Phó Chủ Nhiệm */}
+                        {/* Đường nối ngang nét đứt bằng SVG nếu có Trợ Giảng */}
                         {secondaries.length > 0 && (
                           <svg className="absolute w-8 h-4 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2" overflow="visible">
                             <line x1="0" y1="50%" x2="100%" y2="50%" stroke="#f97316" strokeWidth="1.2" strokeDasharray="3 3" strokeOpacity="0.7" />
@@ -306,7 +306,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
                           </svg>
                         )}
 
-                        {/* 2. Danh sách Phó Chủ Nhiệm của lớp */}
+                        {/* 2. Danh sách Trợ Giảng của lớp */}
                         {secondaries.map(sec => {
                           const isSecondarySelf = sec.id === currentUser?.id;
                           return (
@@ -319,7 +319,7 @@ export const OrgChart: React.FC<OrgChartProps> = ({
                                 />
                                 <div className="flex items-center gap-0.5 mt-1.5 truncate max-w-full">
                                   <User className="w-2 h-2 text-orange-400 flex-shrink-0" />
-                                  <span className="text-[7px] text-orange-400 font-bold uppercase font-orbitron tracking-wider truncate">Phó Chủ Nhiệm</span>
+                                  <span className="text-[7px] text-orange-400 font-bold uppercase font-orbitron tracking-wider truncate">Trợ Giảng</span>
                                 </div>
                                 {isSecondarySelf && <span className="text-[7px] bg-yellow-400/20 text-yellow-400 border border-yellow-400/40 rounded px-0.5 font-orbitron font-black mt-0.5 flex-shrink-0">Bạn</span>}
                                 <span className="text-[10px] font-bold text-white truncate max-w-full text-center mt-0.5">{displayName(sec)}</span>
@@ -337,16 +337,16 @@ export const OrgChart: React.FC<OrgChartProps> = ({
                       </div>
                     </div>
 
-                    {/* Đường nối dọc xuống Sĩ tử bằng SVG mỏng */}
+                    {/* Đường nối dọc xuống Học Sinh bằng SVG mỏng */}
                     <svg className="w-px h-4" overflow="visible">
                       <line x1="0" y1="0" x2="0" y2="100%" stroke="#00f0ff" strokeWidth="1" strokeOpacity="0.4" />
                     </svg>
 
-                    {/* Danh sách Sĩ tử của lớp */}
+                    {/* Danh sách Học Sinh của lớp */}
                     <div className="w-full space-y-2">
                       <div className="flex items-center justify-between px-1">
                         <span className="text-[7px] text-slate-400 uppercase tracking-widest font-orbitron flex items-center gap-0.5">
-                          <GraduationCap className="w-2.5 h-2.5 text-synth-green" /> Sĩ Tử Lớp ({classStudents.length})
+                          <GraduationCap className="w-2.5 h-2.5 text-synth-green" /> Học Sinh Lớp ({classStudents.length})
                         </span>
                       </div>
 
@@ -410,14 +410,14 @@ export const OrgChart: React.FC<OrgChartProps> = ({
           </svg>
         )}
 
-        {/* TẦNG CUỐI: SĨ TỬ TỰ DO (CHƯA CÓ LỚP) */}
+        {/* TẦNG CUỐI: HỌC SINH TỰ DO (CHƯA CÓ LỚP) */}
         {freeStudents.length > 0 && (
           <div className="glass-panel border border-slate-800 rounded-2xl p-4 bg-slate-950/30 max-w-sm min-w-[280px] space-y-3 flex flex-col items-center">
             <div className="text-center space-y-0.5">
               <span className="text-[8px] uppercase tracking-widest font-black text-slate-400 font-orbitron flex items-center justify-center gap-1">
-                🌱 SĨ TỬ TỰ DO ({freeStudents.length})
+                🌱 HỌC SINH TỰ DO ({freeStudents.length})
               </span>
-              <p className="text-[8px] text-slate-500">Ban Giám Hiệu chịu trách nhiệm quản lý lâm thời</p>
+              <p className="text-[8px] text-slate-500">Ban Lãnh Đạo Viện chịu trách nhiệm quản lý lâm thời</p>
             </div>
 
             <div className="grid grid-cols-2 gap-1.5 w-full">

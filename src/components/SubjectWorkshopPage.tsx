@@ -97,7 +97,7 @@ export function SubjectWorkshopPage({
       sections: [
         {
           title: '1. Xưởng Toán Hình để làm gì',
-          body: 'Xưởng này dành cho tam giác, tứ giác, đường tròn và các yếu tố phụ trong bài hình học phẳng lớp 9. Công cụ giúp Sĩ Tử nhìn ra cấu trúc hình, dựng đường cao, trung tuyến, song song, vuông góc, đánh dấu góc và các yếu tố chứng minh.'
+          body: 'Xưởng này dành cho tam giác, tứ giác, đường tròn và các yếu tố phụ trong bài hình học phẳng lớp 9. Công cụ giúp Học Sinh nhìn ra cấu trúc hình, dựng đường cao, trung tuyến, song song, vuông góc, đánh dấu góc và các yếu tố chứng minh.'
         },
         {
           title: '2. Ý nghĩa từng khu vực',

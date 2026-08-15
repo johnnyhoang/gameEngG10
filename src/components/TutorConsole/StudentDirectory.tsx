@@ -9,14 +9,14 @@ type SortKey = 'name' | 'level' | 'xp' | 'ruby' | 'streak';
 interface StudentDirectoryProps {
   /** Toàn bộ học sinh toàn viện (role === 'student') từ /api/admin/users */
   students: any[];
-  /** Toàn bộ link active toàn viện — để tra Chủ Nhiệm Chính của từng em */
+  /** Toàn bộ link active toàn viện — để tra Chủ Nhiệm của từng em */
   adminLinks: any[];
   inspectLoading: boolean;
   onInspect: (studentId: string) => void;
 }
 
 /**
- * Sổ danh bộ học sinh toàn trường cho Viện Trưởng / Phó Viện Trưởng:
+ * Sổ danh bộ học sinh toàn viện cho Viện Trưởng / Viện Phó:
  * hiện TẤT CẢ học sinh (kể cả chưa vào lớp nào), có tìm kiếm / lọc / sắp xếp
  * và lazy-load từng trang khi cuộn xuống.
  */
@@ -32,7 +32,7 @@ export const StudentDirectory: React.FC<StudentDirectoryProps> = ({
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const sentinelRef = useRef<HTMLDivElement | null>(null);
 
-  // Tra Chủ Nhiệm Chính của từng học sinh từ link primary đang active
+  // Tra Chủ Nhiệm của từng học sinh từ link primary đang active
   const primaryTeacherByStudent = useMemo(() => {
     const map = new Map<string, string>();
     (adminLinks || [])
@@ -88,7 +88,7 @@ export const StudentDirectory: React.FC<StudentDirectoryProps> = ({
     <div className="rounded-2xl border border-white/5 bg-white/5 p-5 space-y-4">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider shrink-0">
-          👥 Sổ Danh Bộ Sĩ Tử Toàn Học Viện
+          👥 Sổ Danh Bộ Học Sinh Toàn Học Viện
           <span className="ml-2 px-1.5 py-0.5 rounded bg-white/10 text-[9px] text-slate-300 font-orbitron">
             {filtered.length}/{students.length}
           </span>
@@ -112,7 +112,7 @@ export const StudentDirectory: React.FC<StudentDirectoryProps> = ({
             className="px-2.5 py-2 rounded-xl border border-white/10 bg-synth-gray/20 text-white outline-none focus:border-synth-cyan text-xs cursor-pointer"
             title="Lọc theo tình trạng lớp học"
           >
-            <option value="all">Tất cả Sĩ Tử</option>
+            <option value="all">Tất cả Học Sinh</option>
             <option value="linked">Đã có lớp</option>
             <option value="unlinked">Chưa có lớp ({unlinkedCount})</option>
           </select>
@@ -139,7 +139,7 @@ export const StudentDirectory: React.FC<StudentDirectoryProps> = ({
               key={s.id}
               disabled={inspectLoading}
               onClick={() => onInspect(s.id)}
-              title="Bấm để xem hoạt động, tiến độ và báo cáo của Sĩ Tử"
+              title="Bấm để xem hoạt động, tiến độ và báo cáo của Học Sinh"
               className="text-left p-3.5 rounded-xl bg-synth-gray/20 border border-white/5 hover:border-synth-cyan/40 hover:bg-white/[0.06] transition-all cursor-pointer group disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {/* Hàng 1: avatar + tên + email + trạng thái lớp */}
@@ -153,18 +153,18 @@ export const StudentDirectory: React.FC<StudentDirectoryProps> = ({
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5">
-                    <span className="font-bold text-white text-sm truncate">{s.name || s.email || 'Sĩ Tử'}</span>
+                    <span className="font-bold text-white text-sm truncate">{s.name || s.email || 'Học Sinh'}</span>
                     {teacherName ? (
                       <span
                         className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded shrink-0 bg-synth-cyan/20 border border-synth-cyan/40 text-synth-cyan max-w-[110px] truncate"
-                        title={`Chủ Nhiệm Chính: ${teacherName}`}
+                        title={`Chủ Nhiệm: ${teacherName}`}
                       >
                         {teacherName}
                       </span>
                     ) : (
                       <span
                         className="px-1.5 py-0.5 text-[8px] font-black uppercase tracking-wider rounded shrink-0 bg-yellow-500/15 border border-yellow-500/40 text-yellow-400"
-                        title="Sĩ Tử chưa vào lớp chủ nhiệm nào"
+                        title="Học Sinh chưa vào lớp chủ nhiệm nào"
                       >
                         Chưa có lớp
                       </span>
@@ -200,7 +200,7 @@ export const StudentDirectory: React.FC<StudentDirectoryProps> = ({
         })}
         {visible.length === 0 && (
           <p className="text-xs text-synth-text-muted italic py-4 col-span-3 text-center">
-            Không tìm thấy Sĩ Tử nào khớp điều kiện lọc.
+            Không tìm thấy Học Sinh nào khớp điều kiện lọc.
           </p>
         )}
       </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { getRoleLabel } from '../../utils/roleHelpers';
 
 interface AuditLogsManagerProps {
   auditLogs: any[];
@@ -42,7 +43,7 @@ export const AuditLogsManager: React.FC<AuditLogsManagerProps> = ({ auditLogs, f
       case 'invite_secondary_parent':
       case 'invite_family':
         actionBadgeColor = 'bg-synth-purple/10 text-synth-purple border border-synth-purple/20';
-        actionName = log.action === 'invite_family' ? 'Mời Học Sinh' : 'Mời Chủ Nhiệm Phụ';
+        actionName = log.action === 'invite_family' ? 'Mời Học Sinh' : 'Mời Trợ Giảng';
         break;
       case 'update_secondary_permissions':
         actionBadgeColor = 'bg-orange-500/10 text-orange-400 border border-orange-500/20';
@@ -133,10 +134,10 @@ export const AuditLogsManager: React.FC<AuditLogsManagerProps> = ({ auditLogs, f
           detailText = `Nạp đầy Năng Lượng lên ${p.targetEnergy}%`;
           break;
         case 'promote_user':
-          detailText = `Bổ nhiệm vai trò mới: ${p.targetRole === 'pho_vien' ? 'Phó Viện Trưởng 🛡️' : p.targetRole === 'tutor' ? 'Chủ Nhiệm Chính' : 'Sĩ Tử'}`;
+          detailText = `Bổ nhiệm vai trò mới: ${getRoleLabel(p.targetRole).name} ${getRoleLabel(p.targetRole).icon}`;
           break;
         case 'invite_secondary_parent':
-          detailText = 'Gửi thư mời làm Giáo viên đồng hành (Chủ nhiệm phụ)';
+          detailText = 'Gửi thư mời làm Trợ Giảng';
           break;
         case 'invite_family':
           detailText = `Mời vào lớp học (Kiểu: ${p.linkType === 'primary' ? 'Chính' : 'Phụ'})`;
@@ -148,16 +149,16 @@ export const AuditLogsManager: React.FC<AuditLogsManagerProps> = ({ auditLogs, f
           detailText = `Cập nhật quyền hạn: [${rights.join(', ') || 'Chỉ xem'}]`;
           break;
         case 'approve_vice_principal_request':
-          detailText = 'Chấp thuận đơn ứng tuyển làm Phó Viện Trưởng';
+          detailText = 'Chấp thuận đơn ứng tuyển làm Viện Phó';
           break;
         case 'reject_vice_principal_request':
-          detailText = 'Từ chối đơn ứng tuyển làm Phó Viện Trưởng';
+          detailText = 'Từ chối đơn ứng tuyển làm Viện Phó';
           break;
         case 'cancel_vice_principal_request':
-          detailText = 'Hủy đơn xin ứng tuyển làm Phó Viện Trưởng';
+          detailText = 'Hủy đơn xin ứng tuyển làm Viện Phó';
           break;
         case 'apply_vice_principal':
-          detailText = 'Gửi đơn ứng tuyển làm Phó Viện Trưởng của trường';
+          detailText = 'Gửi đơn ứng tuyển làm Viện Phó của trường';
           break;
         case 'create_lesson':
           detailText = `Tạo bài học mới: "${p.title || 'Không tên'}" (Môn: ${p.subject || '—'}, Danh mục: ${p.category || '—'})`;
@@ -169,25 +170,25 @@ export const AuditLogsManager: React.FC<AuditLogsManagerProps> = ({ auditLogs, f
           detailText = 'Xóa bài học khỏi hệ thống';
           break;
         case 'create_school_reward':
-          detailText = `Tạo quà trường mới: "${p.title || 'Không tên'}" (Giá: ${p.costRuby || 0} Ruby, Số lượng: ${p.quantity || 0})`;
+          detailText = `Tạo quà toàn viện mới: "${p.title || 'Không tên'}" (Giá: ${p.costRuby || 0} Ruby, Số lượng: ${p.quantity || 0})`;
           break;
         case 'update_school_reward':
-          detailText = `Cập nhật quà trường: "${p.title || 'Không tên'}" (Giá: ${p.costRuby || 0} Ruby, Số lượng: ${p.quantity || 0})`;
+          detailText = `Cập nhật quà toàn viện: "${p.title || 'Không tên'}" (Giá: ${p.costRuby || 0} Ruby, Số lượng: ${p.quantity || 0})`;
           break;
         case 'delete_school_reward':
-          detailText = 'Xóa quà trường khỏi danh mục chung';
+          detailText = 'Xóa quà toàn viện khỏi danh mục chung';
           break;
         case 'request_secondary_tutor':
           detailText = 'Gửi yêu cầu xin làm Giáo viên đồng hành lớp học';
           break;
         case 'invite_admin_connection':
-          detailText = 'Gửi lời mời kết nối quản trị Ban Giám Hiệu';
+          detailText = 'Gửi lời mời kết nối quản trị Ban Lãnh Đạo Viện';
           break;
         case 'respond_admin_connection':
-          detailText = `${p.accept ? 'Đồng ý' : 'Từ chối'} yêu cầu kết nối Ban Giám Hiệu`;
+          detailText = `${p.accept ? 'Đồng ý' : 'Từ chối'} yêu cầu kết nối Ban Lãnh Đạo Viện`;
           break;
         case 'leave_admin_connection':
-          detailText = 'Hủy liên kết quản trị Ban Giám Hiệu';
+          detailText = 'Hủy liên kết quản trị Ban Lãnh Đạo Viện';
           break;
         case 'respond_family_invite':
           detailText = `${p.accept ? 'Đồng ý' : 'Từ chối'} lời mời vào lớp (Kiểu: ${p.linkType === 'primary' ? 'Chính' : 'Phụ'})`;
@@ -235,7 +236,7 @@ export const AuditLogsManager: React.FC<AuditLogsManagerProps> = ({ auditLogs, f
                     <span className={`text-[8px] font-black uppercase font-orbitron tracking-wider ${
                       log.actor_role === 'truong_vien' ? 'text-synth-magenta' : log.actor_role === 'pho_vien' ? 'text-synth-yellow' : 'text-synth-cyan'
                     }`}>
-                      {log.actor_role === 'truong_vien' ? 'Viện Trưởng' : log.actor_role === 'pho_vien' ? 'Phó Viện Trưởng' : 'Chủ Nhiệm Chính'}
+                      {getRoleLabel(log.actor_role).name}
                     </span>
                   </div>
                   <span className="text-[9px] text-synth-text-muted font-mono whitespace-nowrap shrink-0 mt-0.5">
@@ -302,7 +303,7 @@ export const AuditLogsManager: React.FC<AuditLogsManagerProps> = ({ auditLogs, f
                       <span className={`text-[9px] font-black uppercase font-orbitron ${
                         log.actor_role === 'truong_vien' ? 'text-synth-magenta' : log.actor_role === 'pho_vien' ? 'text-synth-yellow' : 'text-synth-cyan'
                       }`}>
-                        {log.actor_role === 'truong_vien' ? 'Viện Trưởng' : log.actor_role === 'pho_vien' ? 'Phó Viện Trưởng' : 'Chủ Nhiệm Chính'}
+                        {getRoleLabel(log.actor_role).name}
                       </span>
                     </td>
                     <td className="py-2 px-3">

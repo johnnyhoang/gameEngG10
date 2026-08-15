@@ -96,23 +96,33 @@ export const persistCustomQuestion = async (userId: string, question: any) => {
 /**
  * Nhân bản Danh Mục Quà Khuyến Học của TRƯỜNG (ge10_school_reward_templates — bảng dùng
  * chung toàn viện, quản lý qua /api/admin/school-rewards) vào danh mục riêng của một
- * giáo viên (ge10_class_rewards). Gọi khi hồ sơ giáo viên được tạo (routes/profiles.ts);
- * cũng an toàn để gọi lại nhiều lần (chỉ clone khi giáo viên đó chưa có quà nào).
+ * giáo viên (ge10_class_rewards). Gọi khi hồ sơ giáo viên được tạo (routes/profiles.ts).
+ *
+ * Chỉ nhân bản ĐÚNG 1 LẦN trong đời hồ sơ — dùng cờ `ge10_users.class_rewards_seeded`,
+ * KHÔNG dùng "đang có 0 quà" làm điều kiện. Lý do: nếu giáo viên chủ động xoá hết quà mặc
+ * định (không muốn dùng), họ phải được toàn quyền giữ danh mục rỗng — không bị hệ thống tự
+ * "mọc lại" quà mỗi lần trang tải lại. An toàn khi gọi lại nhiều lần (no-op nếu đã seeded).
+ *
+ * Chỉ nhân bản ĐÚNG 1 quà (mẫu đầu tiên của danh mục toàn viện) làm khởi đầu — không copy
+ * nguyên cả danh mục. Chủ Nhiệm/Trợ Giảng (được cấp quyền) tự thêm/sửa/xoá tiếp theo nhu cầu
+ * thật của lớp mình, tránh danh mục "rác" đầy quà không liên quan ngay từ đầu.
  */
 export const ensureDefaultClassRewards = async (teacherId: string) => {
-  const rewardsRes = await pool.query('SELECT id FROM ge10_class_rewards WHERE teacher_id = $1', [teacherId]);
-  if (rewardsRes.rowCount === 0) {
-    const templatesRes = await pool.query(
-      'SELECT title, cost_ruby, quantity FROM ge10_school_reward_templates ORDER BY created_at'
+  const userRes = await pool.query('SELECT class_rewards_seeded FROM ge10_users WHERE id = $1', [teacherId]);
+  if (userRes.rows[0]?.class_rewards_seeded) return;
+
+  const templatesRes = await pool.query(
+    'SELECT title, cost_ruby, quantity, is_unlimited FROM ge10_school_reward_templates ORDER BY created_at LIMIT 1'
+  );
+  for (const t of templatesRes.rows) {
+    const id = `cls-rew-${teacherId}-${crypto.randomUUID()}`;
+    await pool.query(
+      `INSERT INTO ge10_class_rewards (id, teacher_id, title, cost_ruby, quantity, remaining, is_unlimited, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       ON CONFLICT (id) DO NOTHING`,
+      [id, teacherId, t.title, t.cost_ruby, t.quantity, t.quantity, t.is_unlimited, Date.now()]
     );
-    for (const t of templatesRes.rows) {
-      const id = `cls-rew-${teacherId}-${crypto.randomUUID()}`;
-      await pool.query(
-        `INSERT INTO ge10_class_rewards (id, teacher_id, title, cost_ruby, quantity, remaining, created_at)
-         VALUES ($1, $2, $3, $4, $5, $6, $7)
-         ON CONFLICT (id) DO NOTHING`,
-        [id, teacherId, t.title, t.cost_ruby, t.quantity, t.quantity, Date.now()]
-      );
-    }
   }
+
+  await pool.query('UPDATE ge10_users SET class_rewards_seeded = TRUE WHERE id = $1', [teacherId]);
 };

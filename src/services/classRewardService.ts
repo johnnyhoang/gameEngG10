@@ -18,6 +18,7 @@ function mapReward(r: any): ClassReward {
     costRuby: r.cost_ruby ?? r.cost_coins,
     quantity: r.quantity,
     remaining: r.remaining,
+    isUnlimited: r.is_unlimited,
     createdAt: r.created_at,
   };
 }
@@ -43,6 +44,9 @@ export const classRewardService = {
     rewards: ClassReward[];
     redemptions: ClassRewardRedemption[];
     isOrphan: boolean;
+    /** Server-side: có được tạo/sửa/xoá/duyệt quà của lớp này không (Chủ Nhiệm luôn true;
+     *  Trợ Giảng phụ thuộc secondary_permissions.can_approve_rewards). undefined nếu là học sinh. */
+    canManage?: boolean;
   }> => {
     const token = await getToken();
     if (!token) return { rewards: [], redemptions: [], isOrphan: false };
@@ -57,6 +61,7 @@ export const classRewardService = {
       rewards: (data.rewards || []).map(mapReward),
       redemptions: (data.redemptions || []).map(mapRedemption),
       isOrphan: data.isOrphan ?? false,
+      canManage: data.canManage,
     };
   },
 
@@ -64,7 +69,8 @@ export const classRewardService = {
   create: async (
     title: string,
     costRuby: number,
-    quantity: number
+    quantity: number,
+    isUnlimited?: boolean
   ): Promise<{ success: boolean; error?: string }> => {
     const token = await getToken();
     if (!token) return { success: false, error: 'No access token' };
@@ -72,7 +78,7 @@ export const classRewardService = {
     const res = await fetch(`${backendUrl}/api/class-rewards`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}`, ...activeProfileHeaders() },
-      body: JSON.stringify({ title, costRuby, quantity }),
+      body: JSON.stringify({ title, costRuby, quantity, isUnlimited }),
     });
     if (res.ok) return { success: true };
     const err = await res.json();

@@ -5,7 +5,6 @@ import { ensureDefaultClassRewards } from '../helpers/questions.js';
 import {
   loadBossCompletionBonusRuby,
   loadChallengeEnergyCosts,
-  loadMaxEnergy,
   loadBaseXP,
   loadBaseRuby,
   loadThemeUnlockCost,
@@ -261,7 +260,6 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
     const allSettings = await loadAllGameSettings();
     const bossCompletionBonusRuby = allSettings.bossCompletionBonusRuby;
     const challengeEnergyCosts = allSettings.challengeEnergyCosts;
-    const maxEnergy = allSettings.maxEnergy;
     const baseXP = allSettings.baseXP;
     const baseRuby = allSettings.baseRuby;
     const themeUnlockCost = allSettings.themeUnlockCost;
@@ -299,6 +297,7 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
       costCoins: row.cost_ruby, // legacy API alias
       quantity: row.quantity,
       remainingQuantity: row.remaining_quantity,
+      isUnlimited: row.is_unlimited,
       timestamp: Number(row.timestamp)
     }));
 
@@ -385,7 +384,6 @@ router.get('/profile/:id', authMiddleware, async (req: any, res) => {
         bossCompletionBonusRuby,
         bossCompletionBonusNP: bossCompletionBonusRuby,
         challengeEnergyCosts,
-        maxEnergy,
         baseXP,
         baseRuby,
         baseCoins: baseRuby,
@@ -453,7 +451,6 @@ router.post('/profile/:id/sync', authMiddleware, activeProfileMiddleware, async 
     pet,
     categoryStats,
     logs: rawLogs,
-    rewardRedemptions: rawRewardRedemptions,
     challenges: rawChallenges,
     lessonsProgress
   } = req.body;
@@ -461,12 +458,6 @@ router.post('/profile/:id/sync', authMiddleware, activeProfileMiddleware, async 
   const logs = Array.isArray(rawLogs)
     ? rawLogs.map((log: any) => ({ ...log, rubyChanged: log.rubyChanged ?? log.coinsChanged ?? 0 }))
     : rawLogs;
-  const rewardRedemptions = Array.isArray(rawRewardRedemptions)
-    ? rawRewardRedemptions.map((redemption: any) => ({
-        ...redemption,
-        costRuby: redemption.costRuby ?? redemption.costCoins
-      }))
-    : rawRewardRedemptions;
   const challenges = Array.isArray(rawChallenges)
     ? rawChallenges.map((challenge: any) => ({
         ...challenge,
@@ -608,6 +599,7 @@ router.post('/profile/:id/sync', authMiddleware, activeProfileMiddleware, async 
                 costCoins: row.cost_ruby,
                 quantity: row.quantity,
                 remainingQuantity: row.remaining_quantity,
+                isUnlimited: row.is_unlimited,
                 timestamp: Number(row.timestamp)
               })),
               rewardRedemptions: redemptionsRes.rows.map((row: any) => ({
@@ -733,29 +725,16 @@ router.post('/profile/:id/sync', authMiddleware, activeProfileMiddleware, async 
       );
     }
 
-    // 5. Danh Mục Quà Khuyến Học của trường (ge10_school_reward_templates) là bảng DÙNG CHUNG
-    // toàn viện — KHÔNG ghi đè từ sync của từng học sinh nữa (trước đây mỗi user có bản
-    // clone riêng nên sync trực tiếp an toàn; giờ chỉ Viện Trưởng/Phó Viện Trưởng được sửa,
-    // qua /api/admin/school-rewards). `rewards` trong payload sync bị bỏ qua có chủ đích.
-
-    // 5b. Sync reward redemptions (Batch INSERT)
-    if (rewardRedemptions && Array.isArray(rewardRedemptions) && rewardRedemptions.length > 0) {
-      const values: any[] = [];
-      const placeholders: string[] = [];
-      rewardRedemptions.forEach((rr, index) => {
-        const offset = index * 8;
-        placeholders.push(`($${offset + 1}, $${offset + 2}, $${offset + 3}, $${offset + 4}, $${offset + 5}, $${offset + 6}, $${offset + 7}, $${offset + 8})`);
-        values.push(rr.id, userId, rr.rewardId, rr.rewardTitle, rr.costRuby, rr.status, rr.timestamp, rr.deliveredAt || null);
-      });
-      await client.query(
-        `INSERT INTO ge10_reward_redemptions (id, user_id, reward_id, reward_title, cost_ruby, status, timestamp, delivered_at)
-         VALUES ${placeholders.join(', ')}
-         ON CONFLICT (id) DO UPDATE SET
-           status = EXCLUDED.status,
-           delivered_at = EXCLUDED.delivered_at`,
-        values
-      );
-    }
+    // 5. Danh Mục Quà Khuyến Học toàn viện (ge10_school_reward_templates) là bảng DÙNG CHUNG
+    // toàn viện — KHÔNG ghi đè từ sync của từng học sinh nữa (chỉ Viện Trưởng/Viện Phó
+    // được sửa, qua /api/admin/school-rewards). `rewards` trong payload sync bị bỏ qua có chủ đích.
+    //
+    // 5b. Yêu cầu đổi quà (ge10_reward_redemptions) CŨNG bị bỏ qua có chủ đích — route sync
+    // chung này không có transaction và tin tưởng dữ liệu client gửi lên (không trừ Ruby,
+    // không trừ tồn kho, client tự set cả `status`). Toàn bộ vòng đời redemption (tạo/huỷ) giờ
+    // đi qua route atomic riêng: POST/DELETE /api/school-rewards (routes/schoolRewards.ts) cho
+    // quà toàn viện, POST/DELETE /api/class-rewards (routes/classRewards.ts) cho quà lớp. Duyệt/huỷ
+    // bởi Ban Lãnh Đạo Viện vẫn ở /api/admin/deliver-reward và /api/admin/cancel-redemption.
 
     // 6. Sync challenges list JSON
     if (challenges) {

@@ -92,7 +92,7 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
 
   const handleApplyVicePrincipal = async () => {
     if (!applyVicePrincipal) return;
-    if (window.confirm('Bạn có chắc muốn ứng tuyển làm Phó Viện Trưởng của trường không?')) {
+    if (window.confirm('Bạn có chắc muốn ứng tuyển làm Viện Phó của trường không?')) {
       setIsApplyingVicePrincipal(true);
       try {
         const res = await applyVicePrincipal();
@@ -138,8 +138,8 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
     sp => sp.status === 'active'
   );
 
-  // Với Chủ Nhiệm Phụ: các đơn "xin đồng hành" mình đã gửi đi, đang chờ giáo viên chính duyệt
-  // (cùng status pending_primary nhưng ngược chiều với incomingTeacherRequests của Chủ Nhiệm Chính)
+  // Với Trợ Giảng: các đơn "xin đồng hành" mình đã gửi đi, đang chờ giáo viên chính duyệt
+  // (cùng status pending_primary nhưng ngược chiều với incomingTeacherRequests của Chủ Nhiệm)
   const outgoingCoTeachRequests = isSecondaryTeacher
     ? secondaryTutors.filter(sp => sp.status === 'pending_primary')
     : [];
@@ -174,7 +174,7 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
           {incomingStudentRequests.length > 0 && (
             <div className="rounded-2xl border border-synth-orange/20 bg-synth-orange/5 p-4 space-y-3">
               <h4 className="font-orbitron font-bold text-xs text-synth-orange uppercase tracking-wider flex items-center gap-2">
-                📥 Sĩ Tử Xin Gia Nhập Lớp ({incomingStudentRequests.length})
+                📥 Học Sinh Xin Gia Nhập Lớp ({incomingStudentRequests.length})
               </h4>
               <div className="space-y-2">
                 {incomingStudentRequests.map(link => (
@@ -188,14 +188,14 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                         </div>
                       )}
                       <div>
-                        <span className="text-xs text-white font-bold block">{link.student_name || 'Sĩ Tử'}</span>
+                        <span className="text-xs text-white font-bold block">{link.student_name || 'Học Sinh'}</span>
                         <span className="text-[10px] text-slate-400 font-sans">{link.student_email}</span>
                       </div>
                     </div>
                     <div className="flex gap-2">
                       <button
                         disabled={processingIds[link.id]}
-                        onClick={() => handleRespondInvite(link.id, true, 'Đã nhận Sĩ Tử vào lớp!')}
+                        onClick={() => handleRespondInvite(link.id, true, 'Đã nhận Học Sinh vào lớp!')}
                         className="px-3 py-1.5 rounded bg-synth-green text-black font-bold text-[10px] uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[50px]"
                       >
                         {processingIds[link.id] ? (
@@ -226,9 +226,9 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
           {incomingTeacherRequests.length > 0 && (
             <div className="rounded-2xl border border-synth-purple/20 bg-synth-purple/5 p-4 space-y-3">
               <h4 className="font-orbitron font-bold text-xs text-synth-purple uppercase tracking-wider flex items-center gap-2">
-                📥 Chủ Nhiệm Phụ Xin Đồng Hành ({incomingTeacherRequests.length})
+                📥 Trợ Giảng Xin Đồng Hành ({incomingTeacherRequests.length})
               </h4>
-              <p className="text-[11px] text-slate-300">Chủ nhiệm phụ xin cùng quản lý toàn bộ Sĩ Tử trong lớp của bạn.</p>
+              <p className="text-[11px] text-slate-300">Trợ Giảng xin cùng quản lý toàn bộ Học Sinh trong lớp của bạn.</p>
               <div className="space-y-2">
                 {incomingTeacherRequests.map(sp => (
                   <div key={sp.id} className="flex items-center justify-between p-3 rounded-xl bg-black/40 border border-white/10">
@@ -241,14 +241,14 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                         </div>
                       )}
                       <div>
-                        <span className="text-xs text-white font-bold block">{sp.tutor_name || 'Chủ nhiệm phụ'}</span>
+                        <span className="text-xs text-white font-bold block">{sp.tutor_name || 'Trợ Giảng'}</span>
                         <span className="text-[10px] text-slate-400 font-sans">{sp.tutor_email}</span>
                       </div>
                     </div>
                     <div className="flex gap-2">
                       <button
                         disabled={processingIds[sp.id]}
-                        onClick={() => handleRespondInvite(sp.id, true, 'Đã duyệt Chủ Nhiệm Phụ!')}
+                        onClick={() => handleRespondInvite(sp.id, true, 'Đã duyệt Trợ Giảng!')}
                         className="px-3 py-1.5 rounded bg-synth-green text-black font-bold text-[10px] uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[50px]"
                       >
                         {processingIds[sp.id] ? (
@@ -281,10 +281,10 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
       {isSecondaryTeacher && classLinks.filter(l => l.status === 'pending_tutor' && l.link_type === 'secondary').length > 0 && (
         <div className="rounded-2xl border border-synth-magenta/20 bg-synth-magenta/5 p-4 space-y-3">
           <h4 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-2">
-             📩 Lời Mời Đồng Hành Từ Chủ Nhiệm Chính
+             📩 Lời Mời Đồng Hành Từ Chủ Nhiệm
           </h4>
           <p className="text-xs text-slate-300">
-            Bạn được mời làm Chủ Nhiệm Phụ quản lý chung cho lớp học sau:
+            Bạn được mời làm Trợ Giảng quản lý chung cho lớp học sau:
           </p>
           <div className="space-y-2">
             {classLinks.filter(l => l.status === 'pending_tutor' && l.link_type === 'secondary').map(link => (
@@ -298,14 +298,14 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                     </div>
                   )}
                   <div>
-                    <span className="text-xs text-white font-bold block">Lớp của Chủ Nhiệm Chính: {link.tutor_name || 'Chủ nhiệm'}</span>
+                    <span className="text-xs text-white font-bold block">Lớp của Chủ Nhiệm: {link.tutor_name || 'Chủ nhiệm'}</span>
                     <span className="text-[10px] text-slate-400 font-mono">{link.tutor_email}</span>
                   </div>
                 </div>
                 <div className="flex gap-2">
                   <button
                     disabled={processingIds[link.id]}
-                    onClick={() => handleRespondInvite(link.id, true, 'Đã chấp nhận làm Chủ Nhiệm Phụ!')}
+                    onClick={() => handleRespondInvite(link.id, true, 'Đã chấp nhận làm Trợ Giảng!')}
                     className="px-3 py-1.5 rounded bg-synth-green text-black font-bold text-xs uppercase cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[60px]"
                   >
                     {processingIds[link.id] ? (
@@ -339,12 +339,12 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
           <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-3 flex flex-col justify-between">
             <div>
               <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">Mời Thành Viên Lớp Học</h4>
-              <p className="text-[10px] text-slate-400 mt-1">Tìm kiếm và mời Sĩ Tử gia nhập lớp học của bạn để quản lý và học tập.</p>
+              <p className="text-[10px] text-slate-400 mt-1">Tìm kiếm và mời Học Sinh gia nhập lớp học của bạn để quản lý và học tập.</p>
             </div>
             <div className="space-y-2">
               <div className="flex gap-2">
                 <SearchSuggest
-                  placeholder="Tìm Sĩ Tử theo tên/email..."
+                  placeholder="Tìm Học Sinh theo tên/email..."
                   roleFilter="student"
                   value={inviteStudentEmail}
                   onChange={setInviteStudentEmail}
@@ -360,10 +360,10 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                       toast.success('Đã gửi lời mời thành công!');
                       setInviteStudentEmail('');
                     } else if (result.conflictCode === 'STUDENT_HAS_PRIMARY') {
-                      if (window.confirm(`${result.error}\n\nBạn có muốn gửi lời mời làm Chủ Nhiệm Phụ để cùng quản lý không?`)) {
+                      if (window.confirm(`${result.error}\n\nBạn có muốn gửi lời mời làm Trợ Giảng để cùng quản lý không?`)) {
                         const secRes = await sendClassInvite(inviteStudentEmail.trim(), true);
                         if (secRes.success) {
-                          toast.success('Đã gửi lời mời làm Chủ Nhiệm Phụ thành công!');
+                          toast.success('Đã gửi lời mời làm Trợ Giảng thành công!');
                           setInviteStudentEmail('');
                         } else {
                           toast.error(secRes.error || 'Thao tác thất bại.');
@@ -385,10 +385,10 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
               {outgoingStudentInvites.length > 0 && (
                 <div className="pt-2 border-t border-white/5 space-y-1.5">
                   <span className="block text-[9px] text-synth-orange font-bold uppercase tracking-wider">
-                    ⏳ Chờ Sĩ Tử chấp nhận ({outgoingStudentInvites.length})
+                    ⏳ Chờ Học Sinh chấp nhận ({outgoingStudentInvites.length})
                   </span>
                   {outgoingStudentInvites.map(link =>
-                    renderOutgoingInvite(link.id, link.student_name || 'Sĩ Tử', link.student_email)
+                    renderOutgoingInvite(link.id, link.student_name || 'Học Sinh', link.student_email)
                   )}
                 </div>
               )}
@@ -400,8 +400,8 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
         {isPrimaryTeacher && (
           <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-3 flex flex-col justify-between">
             <div>
-              <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">Mời Chủ Nhiệm Phụ Đồng Hành</h4>
-              <p className="text-[10px] text-slate-400 mt-1">Mời đồng nghiệp làm Chủ Nhiệm Phụ cùng quản lý và hỗ trợ Sĩ Tử trong lớp.</p>
+              <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider">Mời Trợ Giảng Đồng Hành</h4>
+              <p className="text-[10px] text-slate-400 mt-1">Mời đồng nghiệp làm Trợ Giảng cùng quản lý và hỗ trợ Học Sinh trong lớp.</p>
             </div>
             <div className="space-y-2">
               <div className="flex gap-2">
@@ -419,7 +419,7 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                     setIsInvitingTeacher(true);
                     const success = await inviteSecondary(inviteTeacherEmail.trim());
                     if (success) {
-                      toast.success('Đã gửi lời mời Chủ nhiệm phụ thành công!');
+                      toast.success('Đã gửi lời mời Trợ Giảng thành công!');
                       setInviteTeacherEmail('');
                     }
                     setIsInvitingTeacher(false);
@@ -435,10 +435,10 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
               {isPrimaryTeacher && outgoingTeacherInvites.length > 0 && (
                 <div className="pt-2 border-t border-white/5 space-y-1.5">
                   <span className="block text-[9px] text-synth-orange font-bold uppercase tracking-wider">
-                    ⏳ Chờ chủ nhiệm phụ chấp nhận ({outgoingTeacherInvites.length})
+                    ⏳ Chờ trợ giảng chấp nhận ({outgoingTeacherInvites.length})
                   </span>
                   {outgoingTeacherInvites.map(sp =>
-                    renderOutgoingInvite(sp.id, sp.tutor_name || 'Chủ nhiệm phụ', sp.tutor_email)
+                    renderOutgoingInvite(sp.id, sp.tutor_name || 'Trợ Giảng', sp.tutor_email)
                   )}
                 </div>
               )}
@@ -450,12 +450,12 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
         <div className="rounded-2xl border border-white/5 bg-white/5 p-4 space-y-3 flex flex-col justify-between">
           <div>
             <h4 className="font-orbitron font-bold text-xs text-synth-purple uppercase tracking-wider">Xin Đồng Hành Lớp Khác</h4>
-            <p className="text-[10px] text-slate-400 mt-1">Xin làm Chủ Nhiệm Phụ hỗ trợ quản lý Sĩ Tử cho lớp của đồng nghiệp. Nhập email của họ.</p>
+            <p className="text-[10px] text-slate-400 mt-1">Xin làm Trợ Giảng hỗ trợ quản lý Học Sinh cho lớp của đồng nghiệp. Nhập email của họ.</p>
           </div>
           <div className="space-y-2">
             <div className="flex gap-2">
               <SearchSuggest
-                placeholder="Nhập email Chủ nhiệm chính..."
+                placeholder="Nhập email Chủ Nhiệm..."
                 roleFilter="tutor"
                 value={requestClassEmail}
                 onChange={setRequestClassEmail}
@@ -468,7 +468,7 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                   setIsRequestingClass(true);
                   const result = await inviteSecondaryRequest(requestClassEmail.trim());
                   if (result.success) {
-                    toast.success('Đã gửi yêu cầu kết nối thành công! Vui lòng chờ Chủ nhiệm chính phê duyệt.');
+                    toast.success('Đã gửi yêu cầu kết nối thành công! Vui lòng chờ Chủ Nhiệm phê duyệt.');
                     setRequestClassEmail('');
                   } else {
                     toast.error(result.error || 'Gửi yêu cầu thất bại.');
@@ -486,24 +486,24 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
             {outgoingCoTeachRequests.length > 0 && (
               <div className="pt-2 border-t border-white/5 space-y-1.5">
                 <span className="block text-[9px] text-synth-orange font-bold uppercase tracking-wider">
-                  ⏳ Chờ chủ nhiệm chính duyệt ({outgoingCoTeachRequests.length})
+                  ⏳ Chờ chủ nhiệm duyệt ({outgoingCoTeachRequests.length})
                 </span>
                 {outgoingCoTeachRequests.map(sp =>
-                  renderOutgoingInvite(sp.id, sp.tutor_name || 'Chủ nhiệm chính', sp.tutor_email)
+                  renderOutgoingInvite(sp.id, sp.tutor_name || 'Chủ Nhiệm', sp.tutor_email)
                 )}
               </div>
             )}
           </div>
         </div>
 
-        {/* Card 4: Ứng Tuyển Làm Phó Viện Trưởng Trường Học */}
+        {/* Card 4: Ứng Tuyển Làm Viện Phó */}
         {(isPrimaryTeacher || isSecondaryTeacher) && (
           <div className="rounded-2xl border border-synth-magenta/20 bg-synth-magenta/5 p-4 space-y-3 flex flex-col justify-between">
             <div>
               <h4 className="font-orbitron font-bold text-xs text-synth-magenta uppercase tracking-wider flex items-center gap-2">
-                🛡️ Ứng Tuyển Làm Phó Viện Trưởng Trường Học
+                🛡️ Ứng Tuyển Làm Viện Phó
               </h4>
-              <p className="text-[10px] text-slate-400 mt-1">Ứng tuyển làm Phó Viện Trưởng trường học để hỗ trợ Ban Giám Hiệu quản lý toàn diện.</p>
+              <p className="text-[10px] text-slate-400 mt-1">Ứng tuyển làm Viện Phó để hỗ trợ Ban Lãnh Đạo Viện quản lý toàn diện.</p>
             </div>
             {vicePrincipalApplication ? (
               <div className="flex items-center justify-between p-2 rounded-xl bg-black/40 border border-white/5">
@@ -516,7 +516,7 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                 </div>
                 <button
                   disabled={processingIds[vicePrincipalApplication.id]}
-                  onClick={() => handleLeaveClass(vicePrincipalApplication.id, 'Bạn có chắc muốn hủy đơn ứng cử Phó Viện Trưởng này không?', 'Đã hủy đơn ứng cử Phó Viện Trưởng.')}
+                  onClick={() => handleLeaveClass(vicePrincipalApplication.id, 'Bạn có chắc muốn hủy đơn ứng cử Viện Phó này không?', 'Đã hủy đơn ứng cử Viện Phó.')}
                   className="px-2.5 py-1 rounded border border-red-500/40 bg-red-500/10 text-red-400 hover:bg-red-500/20 font-bold text-[9px] uppercase cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[70px]"
                 >
                   {processingIds[vicePrincipalApplication.id] ? (
@@ -546,16 +546,16 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
         <div className="rounded-2xl border border-synth-purple/20 bg-synth-purple/5 p-4 space-y-4">
           <div>
             <h4 className="font-orbitron font-bold text-xs text-synth-purple uppercase tracking-wider flex items-center gap-2">
-              👥 Đội Ngũ Chủ Nhiệm Phụ
+              👥 Đội Ngũ Trợ Giảng
             </h4>
-            <p className="text-[11px] text-slate-300 mt-1">Các chủ nhiệm phụ này có quyền truy cập, theo dõi báo cáo và hỗ trợ lớp của bạn.</p>
+            <p className="text-[11px] text-slate-300 mt-1">Các trợ giảng này có quyền truy cập, theo dõi báo cáo và hỗ trợ lớp của bạn.</p>
           </div>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-white/10 text-synth-purple uppercase font-orbitron text-[9px] tracking-wider">
-                  <th className="py-2 px-3">Chủ Nhiệm Phụ</th>
+                  <th className="py-2 px-3">Trợ Giảng</th>
                   <th className="py-2 px-3">Quyền Hạn</th>
                   <th className="py-2 px-3 text-right">Hành Động</th>
                 </tr>
@@ -576,7 +576,7 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                             </div>
                           )}
                           <div>
-                            <span className="font-bold text-white block">{sp.tutor_name || 'Chủ nhiệm phụ'}</span>
+                            <span className="font-bold text-white block">{sp.tutor_name || 'Trợ Giảng'}</span>
                             <span className="text-[10px] text-slate-400">{sp.tutor_email}</span>
                           </div>
                         </div>
@@ -608,7 +608,7 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                       <td className="py-3 px-3 text-right">
                         <button
                           disabled={processingIds[sp.id]}
-                          onClick={() => handleLeaveClass(sp.id, `Bạn có chắc muốn mời Chủ nhiệm phụ ${sp.tutor_name || sp.tutor_email} ra khỏi lớp không?`, 'Đã xóa Chủ nhiệm phụ khỏi lớp.')}
+                          onClick={() => handleLeaveClass(sp.id, `Bạn có chắc muốn mời Trợ Giảng ${sp.tutor_name || sp.tutor_email} ra khỏi lớp không?`, 'Đã xóa Trợ Giảng khỏi lớp.')}
                           className="px-2 py-1 text-[9px] border border-red-500/30 hover:border-red-500/60 bg-red-500/10 text-red-400 rounded uppercase font-bold cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[100px]"
                         >
                           {processingIds[sp.id] ? (
@@ -632,9 +632,9 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
         <div className="rounded-2xl border border-synth-cyan/20 bg-synth-cyan/5 p-4 space-y-4">
           <div>
             <h4 className="font-orbitron font-bold text-xs text-synth-cyan uppercase tracking-wider flex items-center gap-2">
-              🏛️ Lớp Học Đang Đồng Hành (Chủ Nhiệm Phụ)
+              🏛️ Lớp Học Đang Đồng Hành (Trợ Giảng)
             </h4>
-            <p className="text-[11px] text-slate-300 mt-1">Bạn đang hỗ trợ quản lý Sĩ Tử cho các chủ nhiệm chính sau:</p>
+            <p className="text-[11px] text-slate-300 mt-1">Bạn đang hỗ trợ quản lý Học Sinh cho các chủ nhiệm sau:</p>
           </div>
 
           <div className="space-y-3">
@@ -649,7 +649,7 @@ export const ClassLinksManager: React.FC<ClassLinksManagerProps> = ({
                     </div>
                   )}
                   <div>
-                    <span className="text-xs text-white font-bold block">Chủ Nhiệm Chính: {sp.tutor_name}</span>
+                    <span className="text-xs text-white font-bold block">Chủ Nhiệm: {sp.tutor_name}</span>
                     <span className="text-[10px] text-slate-400">{sp.tutor_email}</span>
                   </div>
                 </div>

@@ -2,7 +2,7 @@
 
 ## 1. Phạm vi sản phẩm
 
-`Sổ Tu Học` là module toàn cục dành cho Sĩ Tử, đặt ngay dưới `TopHUD` trong app shell để mọi trang học tập đều thấy. Module không xuất hiện ở đăng nhập, chọn profile hoặc Phòng Điều Hành. Mặc định hiển thị thanh tóm tắt gọn; mở rộng mới hiển thị ba nhóm:
+`Sổ Tu Học` là module toàn cục dành cho Học Sinh, đặt ngay dưới `TopHUD` trong app shell để mọi trang học tập đều thấy. Module không xuất hiện ở đăng nhập, chọn profile hoặc Phòng Điều Hành. Mặc định hiển thị thanh tóm tắt gọn; mở rộng mới hiển thị ba nhóm:
 
 - **Nhập Môn:** cột mốc một lần theo profile, không reset.
 - **Nhiệm Vụ Hôm Nay:** mục tiêu theo ngày và timezone `Asia/Bangkok`.

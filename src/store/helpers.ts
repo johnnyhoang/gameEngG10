@@ -50,7 +50,7 @@ export const checkLevelUp = (
       // Lên cấp thường không tự thưởng Ruby (chỉ mốc danh hiệu mới thưởng đột biến — CORE_SPECS §7.3);
       // log chỉ ghi nhận sự kiện, không claim số Ruby không thực sự được cộng.
       logActivity(get, set, 'exercise', 'Thăng cấp!', `Bạn vừa chạm Level ${level}.`, 0, 0);
-      toast.success(`🎉 Chúc mừng Sĩ Tử thăng cấp lên Cấp ${level}! ✨`);
+      toast.success(`🎉 Chúc mừng Học Sinh thăng cấp lên Cấp ${level}! ✨`);
       eventBus.publish('PET_GROWTH', { levelUp: true });
     }
   };
@@ -69,11 +69,11 @@ export const checkLevelUp = (
         get, set,
         'challenge',
         'Thăng cấp danh hiệu!',
-        `Chúc mừng Sĩ Tử đã thăng cấp danh hiệu lên ${newRank.icon} ${newRank.name}! Nhận thêm +100 Ruby và +${rankUpBonusXp} XP.`,
+        `Chúc mừng Học Sinh đã thăng cấp danh hiệu lên ${newRank.icon} ${newRank.name}! Nhận thêm +100 Ruby và +${rankUpBonusXp} XP.`,
         100,
         rankUpBonusXp
       );
-      toast.success(`🏆 Tuyệt vời! Sĩ Tử thăng danh hiệu lên: ${newRank.icon} ${newRank.name}! 🎉 (+100 Ruby 💎)`);
+      toast.success(`🏆 Tuyệt vời! Học Sinh thăng danh hiệu lên: ${newRank.icon} ${newRank.name}! 🎉 (+100 Ruby 💎)`);
     }
   }
 

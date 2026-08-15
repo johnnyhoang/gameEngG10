@@ -20,8 +20,6 @@ import { ControlPanel } from './TutorConsole/ControlPanel';
 
 export const TutorConsole: React.FC = () => {
   const { t } = useTranslate();
-  const markRewardDelivered = useGameState(state => state.markRewardDelivered);
-  const cancelRedemption = useGameState(state => state.cancelRedemption);
   const schoolRewards = useGameState(state => state.schoolRewards);
   const fetchSchoolRewards = useGameState(state => state.fetchSchoolRewards);
   const createSchoolReward = useGameState(state => state.createSchoolReward);
@@ -189,7 +187,7 @@ export const TutorConsole: React.FC = () => {
     }
   };
 
-  // Phân quyền Chủ nhiệm phụ
+  // Phân quyền Trợ Giảng
   const currentStudentLink = classLinks.find(l => l.student_id === viewingStudentId && l.status === 'active');
   const isPrimaryLink = currentStudentLink?.link_type === 'primary';
   const isSecondaryLink = currentStudentLink?.link_type === 'secondary';
@@ -219,7 +217,7 @@ export const TutorConsole: React.FC = () => {
             <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="space-y-1">
                   <h3 className="font-orbitron font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
-                    🏫 PHÒNG ĐIỀU HÀNH — {isAdmin(currentUser?.role) ? 'BAN GIÁM HIỆU' : 'LỚP CHỦ NHIỆM'}
+                    🏫 PHÒNG ĐIỀU HÀNH — {isAdmin(currentUser?.role) ? 'BAN LÃNH ĐẠO VIỆN' : 'LỚP CHỦ NHIỆM'}
                     <button
                       onClick={() => showHelp('parent-console')}
                       className="w-5 h-5 rounded-full bg-synth-magenta/20 border border-synth-magenta/40 text-synth-magenta text-[10px] font-black flex items-center justify-center hover:bg-synth-magenta/40 cursor-pointer transition-colors shrink-0"
@@ -228,21 +226,6 @@ export const TutorConsole: React.FC = () => {
                       ?
                     </button>
                   </h3>
-                  <div className="text-xs text-synth-text-muted leading-relaxed max-w-4xl space-y-1">
-                    {isAdmin(currentUser?.role) ? (
-                      <p>Theo dõi toàn bộ Sĩ Tử và cán bộ trong viện, quản lý liên kết lớp học, cấu hình quy tắc thưởng (Ruby) và xem lịch sử hoạt động.</p>
-                    ) : (
-                      <>
-                        <p>
-                          Vai trò hiện tại:{' '}
-                          <span className="font-bold text-synth-magenta uppercase font-orbitron">
-                            {currentUser?.role === 'tutor' ? 'Chủ Nhiệm Chính' : 'Chủ Nhiệm Phụ'}
-                          </span>
-                        </p>
-                        <p>Theo dõi Sĩ Tử lớp bạn phụ trách, quản lý liên kết lớp học, giao nhiệm vụ và duyệt đổi quà khuyến học.</p>
-                      </>
-                    )}
-                  </div>
                 </div>
 
                 <button
@@ -260,7 +243,7 @@ export const TutorConsole: React.FC = () => {
             {/* Quick Stats Grid — chỉ hiện chỉ số có ý nghĩa với vai trò hiện tại */}
               <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="glass-panel border border-white/5 rounded-2xl p-3.5 flex flex-col justify-between hover:border-synth-cyan/30 transition-all duration-300 group bg-white/3">
-                  <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-cyan transition-colors">👥 Tổng Số Sĩ Tử</span>
+                  <span className="text-[9px] uppercase text-slate-400 font-bold font-orbitron tracking-wider group-hover:text-synth-cyan transition-colors">👥 Tổng Số Học Sinh</span>
                   <span className="text-2xl font-black text-synth-cyan font-orbitron mt-1">{totalStudents}</span>
                 </div>
                 <div className="glass-panel border border-white/5 rounded-2xl p-3.5 flex flex-col justify-between hover:border-synth-magenta/30 transition-all duration-300 group bg-white/3">
@@ -316,8 +299,11 @@ export const TutorConsole: React.FC = () => {
               />
 
               {!isAdmin(currentUser?.role) && (
-                <div className="space-y-6">
-                  {/* Quản lý liên kết lớp của giáo viên */}
+                <div className="space-y-3">
+                  {/* Khu Vực Chủ Nhiệm — nơi DUY NHẤT hiển thị Chủ Nhiệm/Trợ Giảng của lớp và cấp quyền cho Trợ Giảng */}
+                  <h4 className="font-orbitron font-bold text-xs text-white uppercase tracking-wider flex items-center gap-2">
+                    🏫 Khu Vực Chủ Nhiệm
+                  </h4>
                   <ClassLinksManager
                     currentUser={currentUser}
                     classLinks={classLinks}
@@ -367,17 +353,17 @@ export const TutorConsole: React.FC = () => {
                 createSchoolReward={createSchoolReward as any}
                 deleteSchoolReward={deleteSchoolReward as any}
                 updateSchoolReward={updateSchoolReward as any}
-                markRewardDelivered={markRewardDelivered as any}
-                cancelRedemption={cancelRedemption as any}
                 adminMarkRewardDelivered={adminMarkRewardDelivered as any}
                 adminCancelRedemption={adminCancelRedemption as any}
               />
 
-              <OrgChart
-                currentUser={currentUser}
-                adminStudents={adminStudents}
-                adminLinks={adminLinks}
-              />
+              {isAdmin(currentUser?.role) && (
+                <OrgChart
+                  currentUser={currentUser}
+                  adminStudents={adminStudents}
+                  adminLinks={adminLinks}
+                />
+              )}
 
               {isAdmin(currentUser?.role) && (
                 <AuditLogsManager
@@ -421,23 +407,11 @@ export const TutorConsole: React.FC = () => {
       {viewingStudentId && selectedStudentProfile && (
         <div className="fixed inset-0 z-[150] bg-synth-bg/95 backdrop-blur-md flex flex-col p-4 md:p-6 overflow-auto animate-fade-in">
           <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col space-y-4">
-            {/* Header Modal */}
+            {/* Header Modal — danh tính Học Sinh (avatar/tên/email) đã hiển thị đầy đủ trong StudentProfileView bên dưới, ở đây chỉ còn nhãn + nút đóng */}
             <div className="flex justify-between items-center border-b border-white/10 pb-4">
-              <div className="flex items-center gap-3">
-                <img
-                  src={selectedStudentProfile.studentUser?.avatar_url || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&q=80'}
-                  alt={selectedStudentProfile.studentUser?.name}
-                  className="w-10 h-10 rounded-2xl border border-synth-cyan/40 object-cover"
-                />
-                <div>
-                  <span className="text-[10px] text-synth-cyan uppercase font-bold tracking-wider font-orbitron">
-                    {t('Quản lý hồ sơ Sĩ Tử', 'Student Profile Management')}
-                  </span>
-                  <h3 className="font-bold text-white text-base leading-tight mt-0.5">
-                    {selectedStudentProfile.studentUser?.name} ({selectedStudentProfile.studentUser?.email})
-                  </h3>
-                </div>
-              </div>
+              <span className="text-[10px] text-synth-cyan uppercase font-bold tracking-wider font-orbitron">
+                {t('Quản lý hồ sơ Học Sinh', 'Student Profile Management')}
+              </span>
               <button
                 onClick={() => setViewingStudentId(null)}
                 className="px-4 py-2 rounded-xl bg-synth-gray/30 border border-white/10 text-xs text-white hover:bg-white/10 hover:border-white/20 font-bold font-orbitron cursor-pointer transition-colors"
@@ -468,8 +442,6 @@ export const TutorConsole: React.FC = () => {
                 createSchoolReward={createSchoolReward as any}
                 deleteSchoolReward={deleteSchoolReward as any}
                 updateSchoolReward={updateSchoolReward as any}
-                markRewardDelivered={markRewardDelivered as any}
-                cancelRedemption={cancelRedemption as any}
                 tutorQuests={tutorQuests.filter((q: any) => q.studentId === selectedStudentProfile?.studentUser?.id)}
                 addTutorQuest={(title: string, description: string, rewardRuby: number) => {
                   if (selectedStudentProfile?.studentUser?.id) {
@@ -522,7 +494,7 @@ export const TutorConsole: React.FC = () => {
         <div className="fixed inset-0 z-[200] flex flex-col items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-fade-in">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-synth-cyan mb-3"></div>
           <p className="font-orbitron text-xs text-synth-cyan font-bold tracking-widest uppercase animate-pulse">
-            Đang tải hồ sơ Sĩ Tử...
+            Đang tải hồ sơ Học Sinh...
           </p>
         </div>
       )}

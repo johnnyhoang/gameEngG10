@@ -165,7 +165,7 @@ export function RiddleGames() {
       if (mode === 'ruby-riddle') {
         setSessionWrong(current => current + 1);
       }
-      toast.error('Nhầm rồi Sĩ Tử! Hãy thử sức ở câu sau nhé! 🐷');
+      toast.error('Nhầm rồi Học Sinh! Hãy thử sức ở câu sau nhé! 🐷');
     }
   };
 
@@ -226,7 +226,7 @@ export function RiddleGames() {
       <div className="mb-3 flex items-center gap-2">
         <span className="text-2xl">🐷</span>
         <div>
-          <h3 className="font-orbitron text-sm font-black uppercase text-white">Heo mời Sĩ Tử khởi động</h3>
+          <h3 className="font-orbitron text-sm font-black uppercase text-white">Heo mời Học Sinh khởi động</h3>
           <p className="text-[10px] text-slate-400">Chọn một màn giải đố nhanh trước khi vào Trường Thi.</p>
         </div>
       </div>
