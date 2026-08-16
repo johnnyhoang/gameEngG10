@@ -11,6 +11,7 @@ import {
 import type { ReferenceExam, ExamCategoryType } from '../../types/referenceExam';
 import { PdfViewerModal } from './PdfViewerModal';
 import { ExamEditModal } from './ExamEditModal';
+import { toast } from '../../utils/toast';
 
 const LOCAL_STORAGE_DOWNLOADED_KEY = 'mika_downloaded_exam_ids';
 const LOCAL_STORAGE_CUSTOM_EXAMS_KEY = 'mika_custom_reference_exams';
@@ -18,9 +19,13 @@ const LOCAL_STORAGE_CUSTOM_EXAMS_KEY = 'mika_custom_reference_exams';
 export const ReferenceExamsPage: React.FC = () => {
   const { activeSectId, activeGradeTier } = useSect();
   const currentUser = useGameState(state => state.currentUser);
+  const awardRubyAndXp = useGameState(state => state.awardRubyAndXp);
   const uiTheme = useGameState(state => state.uiTheme);
   const setSectModalOpen = useGameState(state => state.setSectModalOpen);
   const isLight = isLightTheme(uiTheme);
+
+  const profileId = currentUser?.id || 'guest';
+  const completedStorageKey = `mika_completed_exams_${profileId}`;
 
   // Quyền CRUD cho Viện Trưởng (admin) & Viện Phó (tutor)
   const isStaff = currentUser?.role === 'admin' || currentUser?.role === 'tutor';
@@ -55,7 +60,20 @@ export const ReferenceExamsPage: React.FC = () => {
     return new Set<string>();
   });
 
+  // State các ID đề thi HỌC SINH ĐÃ LÀM XONG
+  const [completedIds, setCompletedIds] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem(completedStorageKey);
+      if (saved) return new Set(JSON.parse(saved));
+    } catch {
+      // fallback
+    }
+    return new Set<string>();
+  });
+
+  // Filter states
   const [selectedCategory, setSelectedCategory] = useState<ExamCategoryType | 'all'>('all');
+  const [completionFilter, setCompletionFilter] = useState<'all' | 'completed' | 'pending'>('all');
   const [searchQuery, setSearchQuery] = useState('');
 
   // State cho PDF Viewer Modal
@@ -72,9 +90,19 @@ export const ReferenceExamsPage: React.FC = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [examToEdit, setExamToEdit] = useState<ReferenceExam | null>(null);
 
-  // Lưu custom exams vào localStorage và thử fetch từ backend
+  // Cập nhật completedIds khi đổi profile
   useEffect(() => {
-    // Fetch từ backend nếu có
+    try {
+      const saved = localStorage.getItem(completedStorageKey);
+      if (saved) setCompletedIds(new Set(JSON.parse(saved)));
+      else setCompletedIds(new Set());
+    } catch {
+      setCompletedIds(new Set());
+    }
+  }, [completedStorageKey]);
+
+  // Fetch từ backend nếu có
+  useEffect(() => {
     fetch(`/api/reference-exams?subjectId=${activeSectId}&gradeTier=${activeGradeTier}`)
       .then(res => res.json())
       .then(data => {
@@ -87,26 +115,46 @@ export const ReferenceExamsPage: React.FC = () => {
           });
         }
       })
-      .catch(() => {
-        // im lặng nếu backend offline
-      });
+      .catch(() => {});
   }, [activeSectId, activeGradeTier]);
 
-  // Đánh dấu một đề đã được tải về
+  // Đánh dấu đề đã tải về
   const markAsDownloaded = (examId: string) => {
     setDownloadedIds(prev => {
       const next = new Set(prev);
       next.add(examId);
       try {
         localStorage.setItem(LOCAL_STORAGE_DOWNLOADED_KEY, JSON.stringify(Array.from(next)));
-      } catch {
-        // ignore
-      }
+      } catch {}
       return next;
     });
 
-    // Báo backend tăng download counter
     void fetch(`/api/reference-exams/${examId}/download`, { method: 'POST' }).catch(() => {});
+  };
+
+  // Toggle xác nhận HỌC SINH ĐÃ LÀM XONG
+  const toggleCompleted = (exam: ReferenceExam) => {
+    const isNowDone = !completedIds.has(exam.id);
+
+    setCompletedIds(prev => {
+      const next = new Set(prev);
+      if (isNowDone) {
+        next.add(exam.id);
+      } else {
+        next.delete(exam.id);
+      }
+      try {
+        localStorage.setItem(completedStorageKey, JSON.stringify(Array.from(next)));
+      } catch {}
+      return next;
+    });
+
+    if (isNowDone) {
+      toast.success(`Tuyệt vời! Đã ghi nhận hoàn thành "${exam.title}" (+5 Ruby & +20 XP) 🎉`);
+      void awardRubyAndXp?.(5, 20, 'Làm Đề Tham Khảo', exam.title);
+    } else {
+      toast.info(`Đã hủy trạng thái hoàn thành của đề thi.`);
+    }
   };
 
   // Mở popup xem trước PDF
@@ -141,19 +189,15 @@ export const ReferenceExamsPage: React.FC = () => {
       description: formData.description,
     };
 
-    // Cập nhật state
     setExams(prev => {
       const filtered = prev.filter(e => e.id !== examId);
       const updated = [newExam, ...filtered];
       try {
         localStorage.setItem(LOCAL_STORAGE_CUSTOM_EXAMS_KEY, JSON.stringify(updated));
-      } catch {
-        // ignore
-      }
+      } catch {}
       return updated;
     });
 
-    // Sync lên backend
     await fetch('/api/reference-exams', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -171,24 +215,43 @@ export const ReferenceExamsPage: React.FC = () => {
       const updated = prev.filter(e => e.id !== exam.id);
       try {
         localStorage.setItem(LOCAL_STORAGE_CUSTOM_EXAMS_KEY, JSON.stringify(updated));
-      } catch {
-        // ignore
-      }
+      } catch {}
       return updated;
     });
 
     await fetch(`/api/reference-exams/${exam.id}`, { method: 'DELETE' }).catch(() => {});
   };
 
-  // Lọc danh sách đề thi theo môn, lớp, category, search
+  // Lọc danh sách đề thi theo môn, lớp, category, completion status, search
   const filteredExams = useMemo(() => {
-    return filterReferenceExams(exams, {
+    let result = filterReferenceExams(exams, {
       subjectId: activeSectId,
       gradeTier: String(activeGradeTier),
       category: selectedCategory,
       searchQuery,
     });
-  }, [exams, activeSectId, activeGradeTier, selectedCategory, searchQuery]);
+
+    if (completionFilter === 'completed') {
+      result = result.filter(e => completedIds.has(e.id));
+    } else if (completionFilter === 'pending') {
+      result = result.filter(e => !completedIds.has(e.id));
+    }
+
+    return result;
+  }, [exams, activeSectId, activeGradeTier, selectedCategory, completionFilter, searchQuery, completedIds]);
+
+  // Đếm tổng số đề & số đề đã làm trong môn + lớp hiện tại
+  const currentContextTotal = useMemo(() => {
+    return exams.filter(e => e.subjectId === activeSectId && e.gradeTier === String(activeGradeTier)).length;
+  }, [exams, activeSectId, activeGradeTier]);
+
+  const currentContextCompleted = useMemo(() => {
+    return exams.filter(
+      e => e.subjectId === activeSectId && e.gradeTier === String(activeGradeTier) && completedIds.has(e.id)
+    ).length;
+  }, [exams, activeSectId, activeGradeTier, completedIds]);
+
+  const progressPercent = currentContextTotal > 0 ? Math.round((currentContextCompleted / currentContextTotal) * 100) : 0;
 
   // Đếm số lượng theo từng category
   const categoryCounts = useMemo(() => {
@@ -208,7 +271,7 @@ export const ReferenceExamsPage: React.FC = () => {
 
   return (
     <div className="w-full max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-4 space-y-4 animate-fade-in">
-      {/* ── Minimalist Header & Filter Bar ── */}
+      {/* ── Minimalist Header & Progress Banner ── */}
       <div
         className={`flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-5 rounded-2xl border transition-all ${
           isLight
@@ -239,34 +302,57 @@ export const ReferenceExamsPage: React.FC = () => {
               </button>
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
-              Học sinh có thể xem trực tiếp hoặc tải file PDF về máy. Item đã tải sẽ được <strong className="text-cyan-400">in đậm</strong> và đánh dấu.
+              Học sinh tải đề về làm và bấm <strong>"Xác nhận đã làm"</strong> để theo dõi tiến độ hoàn thành.
             </p>
           </div>
         </div>
 
-        {/* Nút Viện Trưởng/Viện Phó Thêm Đề Mới */}
-        {isStaff && (
-          <button
-            onClick={() => {
-              setExamToEdit(null);
-              setIsEditModalOpen(true);
-            }}
-            className={`flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold border transition-all self-start md:self-auto cursor-pointer ${
-              isLight
-                ? 'bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white border-transparent shadow-sm'
-                : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 border-transparent shadow-md shadow-cyan-500/20'
+        {/* Cụm Tiến Độ Học Tập & Nút Thêm Đề */}
+        <div className="flex items-center gap-3 self-stretch md:self-auto justify-between md:justify-end">
+          {/* Progress Tracker Widget */}
+          <div
+            className={`flex-1 md:flex-initial px-4 py-2 rounded-xl border flex flex-col justify-center min-w-[170px] ${
+              isLight ? 'bg-violet-50/60 border-violet-100' : 'bg-slate-950/60 border-slate-800'
             }`}
           >
-            <span>➕</span>
-            <span>Thêm Đề Mới</span>
-          </button>
-        )}
+            <div className="flex items-center justify-between text-[11px] font-bold mb-1">
+              <span className="text-slate-400">Tiến Độ Ôn Luyện:</span>
+              <span className={progressPercent === 100 ? 'text-emerald-400' : 'text-cyan-400'}>
+                {currentContextCompleted}/{currentContextTotal} ({progressPercent}%)
+              </span>
+            </div>
+            <div className="w-full h-1.5 rounded-full bg-slate-700/30 overflow-hidden">
+              <div
+                className="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-500 rounded-full"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Nút Viện Trưởng/Viện Phó Thêm Đề Mới */}
+          {isStaff && (
+            <button
+              onClick={() => {
+                setExamToEdit(null);
+                setIsEditModalOpen(true);
+              }}
+              className={`flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer whitespace-nowrap ${
+                isLight
+                  ? 'bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700 text-white border-transparent shadow-sm'
+                  : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 border-transparent shadow-md shadow-cyan-500/20'
+              }`}
+            >
+              <span>➕</span>
+              <span>Thêm Đề</span>
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* ── Category Tabs & Search Controls ── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      {/* ── Category Tabs, Completion Filter & Search ── */}
+      <div className="space-y-2">
         {/* Category Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin flex-1">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-thin">
           {EXAM_CATEGORIES.map(cat => {
             const count = categoryCounts[cat.id] || 0;
             const isSelected = selectedCategory === cat.id;
@@ -301,30 +387,68 @@ export const ReferenceExamsPage: React.FC = () => {
           })}
         </div>
 
-        {/* Search Bar */}
-        <div className="relative sm:w-80 flex-shrink-0">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-            placeholder="Tìm tên trường, quận hoặc từ khóa..."
-            className={`w-full pl-8 pr-8 py-1.5 rounded-xl border text-xs outline-none transition-all ${
-              isLight
-                ? 'bg-white border-violet-200 text-slate-800 focus:border-violet-400'
-                : 'bg-slate-900 border-slate-800 text-white focus:border-cyan-500'
-            }`}
-          />
-          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
-            🔍
-          </span>
-          {searchQuery && (
+        {/* Sub Filter: Trạng thái Đã Làm + Ô Tìm Kiếm */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
+          {/* Filter Đã Làm / Chưa Làm */}
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-900/40 border border-slate-800 self-start">
             <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 text-xs"
+              onClick={() => setCompletionFilter('all')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                completionFilter === 'all'
+                  ? isLight ? 'bg-white text-violet-800 shadow-sm' : 'bg-cyan-950 text-cyan-300 border border-cyan-500/30'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
             >
-              ✕
+              Tất Cả ({currentContextTotal})
             </button>
-          )}
+            <button
+              onClick={() => setCompletionFilter('completed')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 ${
+                completionFilter === 'completed'
+                  ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 shadow-sm'
+                  : 'text-slate-400 hover:text-emerald-400'
+              }`}
+            >
+              <span>✅ Đã Làm</span>
+              <span>({currentContextCompleted})</span>
+            </button>
+            <button
+              onClick={() => setCompletionFilter('pending')}
+              className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                completionFilter === 'pending'
+                  ? isLight ? 'bg-white text-amber-800 shadow-sm' : 'bg-amber-950/80 text-amber-300 border border-amber-500/40'
+                  : 'text-slate-400 hover:text-amber-400'
+              }`}
+            >
+              Chưa Làm ({Math.max(0, currentContextTotal - currentContextCompleted)})
+            </button>
+          </div>
+
+          {/* Search Bar */}
+          <div className="relative sm:w-80 flex-shrink-0">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              placeholder="Tìm tên trường, quận hoặc từ khóa..."
+              className={`w-full pl-8 pr-8 py-1.5 rounded-xl border text-xs outline-none transition-all ${
+                isLight
+                  ? 'bg-white border-violet-200 text-slate-800 focus:border-violet-400'
+                  : 'bg-slate-900 border-slate-800 text-white focus:border-cyan-500'
+              }`}
+            />
+            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none">
+              🔍
+            </span>
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 text-xs"
+              >
+                ✕
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
@@ -347,43 +471,58 @@ export const ReferenceExamsPage: React.FC = () => {
                       : 'bg-slate-950/60 text-slate-400 border-slate-800'
                   }`}
                 >
-                  <th className="py-3 px-4 w-12 text-center">STT</th>
+                  <th className="py-3 px-3 w-12 text-center">STT</th>
+                  <th className="py-3 px-3 w-28 text-center">Xác Nhận Đã Làm</th>
                   <th className="py-3 px-4">Tên Đề Thi & Trường</th>
-                  <th className="py-3 px-4 hidden sm:table-cell">Kỳ Thi</th>
-                  <th className="py-3 px-4 hidden md:table-cell text-center">Đáp Án</th>
+                  <th className="py-3 px-3 hidden sm:table-cell">Kỳ Thi</th>
+                  <th className="py-3 px-3 hidden md:table-cell text-center">Đáp Án</th>
                   <th className="py-3 px-4 text-center">Tài Liệu & Tải Về</th>
-                  {isStaff && <th className="py-3 px-4 text-center w-24">Quản Trị</th>}
+                  {isStaff && <th className="py-3 px-3 text-center w-20">Quản Trị</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-500/10">
                 {filteredExams.map((exam, idx) => {
                   const isDownloaded = downloadedIds.has(exam.id);
+                  const isDone = completedIds.has(exam.id);
 
                   return (
                     <tr
                       key={exam.id}
                       className={`transition-colors group ${
-                        isDownloaded
+                        isDone
                           ? isLight
-                            ? 'bg-violet-50/40 hover:bg-violet-50/70 font-semibold'
-                            : 'bg-cyan-950/20 hover:bg-cyan-950/40 font-semibold'
+                            ? 'bg-emerald-50/40 hover:bg-emerald-50/70'
+                            : 'bg-emerald-950/20 hover:bg-emerald-950/30'
+                          : isDownloaded
+                          ? isLight
+                            ? 'bg-violet-50/30 hover:bg-violet-50/60'
+                            : 'bg-cyan-950/15 hover:bg-cyan-950/30'
                           : isLight
                           ? 'hover:bg-slate-50'
                           : 'hover:bg-slate-800/40'
                       }`}
                     >
-                      {/* STT + Badge Đã Tải */}
-                      <td className="py-3 px-4 text-center text-slate-400 font-mono">
-                        {isDownloaded ? (
-                          <span
-                            className="inline-block text-emerald-400 font-bold"
-                            title="Bạn đã tải đề này về máy"
-                          >
-                            ✓
-                          </span>
-                        ) : (
-                          idx + 1
-                        )}
+                      {/* STT */}
+                      <td className="py-3 px-3 text-center text-slate-400 font-mono text-[11px]">
+                        {idx + 1}
+                      </td>
+
+                      {/* Nút Xác Nhận Đã Làm */}
+                      <td className="py-3 px-3 text-center whitespace-nowrap">
+                        <button
+                          onClick={() => toggleCompleted(exam)}
+                          className={`px-2.5 py-1 rounded-lg border text-[11px] font-bold flex items-center justify-center gap-1 mx-auto transition-all cursor-pointer ${
+                            isDone
+                              ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-sm scale-105'
+                              : isLight
+                              ? 'bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 border-slate-200'
+                              : 'bg-slate-800/60 hover:bg-emerald-950/60 text-slate-400 hover:text-emerald-300 border-slate-700'
+                          }`}
+                          title={isDone ? 'Bấm để hủy đánh dấu hoàn thành' : 'Bấm để xác nhận bạn đã làm xong đề này'}
+                        >
+                          <span>{isDone ? '✅' : '⚪'}</span>
+                          <span>{isDone ? 'Đã Làm' : 'Chưa Làm'}</span>
+                        </button>
                       </td>
 
                       {/* Tên Đề Thi & Trường */}
@@ -391,7 +530,9 @@ export const ReferenceExamsPage: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <span
                             className={`transition-colors ${
-                              isDownloaded
+                              isDone
+                                ? 'font-black text-emerald-400 text-sm'
+                                : isDownloaded
                                 ? isLight
                                   ? 'font-black text-violet-900 text-sm'
                                   : 'font-black text-cyan-300 text-sm'
@@ -403,8 +544,14 @@ export const ReferenceExamsPage: React.FC = () => {
                             {exam.title}
                           </span>
 
-                          {isDownloaded && (
-                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 whitespace-nowrap">
+                          {isDone && (
+                            <span className="text-[9px] font-extrabold px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 whitespace-nowrap">
+                              🏆 HOÀN THÀNH
+                            </span>
+                          )}
+
+                          {!isDone && isDownloaded && (
+                            <span className="text-[9px] font-bold px-1.5 py-0.2 rounded bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 whitespace-nowrap">
                               ĐÃ TẢI
                             </span>
                           )}
@@ -419,7 +566,7 @@ export const ReferenceExamsPage: React.FC = () => {
                       </td>
 
                       {/* Phân Loại Kỳ Thi */}
-                      <td className="py-3 px-4 hidden sm:table-cell whitespace-nowrap">
+                      <td className="py-3 px-3 hidden sm:table-cell whitespace-nowrap">
                         <span
                           className={`text-[10px] font-bold px-2 py-0.5 rounded-md border ${
                             isLight
@@ -432,7 +579,7 @@ export const ReferenceExamsPage: React.FC = () => {
                       </td>
 
                       {/* Trạng Thái Lời Giải */}
-                      <td className="py-3 px-4 hidden md:table-cell text-center whitespace-nowrap">
+                      <td className="py-3 px-3 hidden md:table-cell text-center whitespace-nowrap">
                         {exam.hasSolution ? (
                           <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
                             Có Lời Giải
@@ -450,7 +597,7 @@ export const ReferenceExamsPage: React.FC = () => {
                           {/* Xem Đề */}
                           <button
                             onClick={() => handleOpenPreview(exam, 'exam')}
-                            className={`px-2.5 py-1 rounded-lg border text-xs font-bold flex items-center gap-1 transition-all ${
+                            className={`px-2.5 py-1 rounded-lg border text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
                               isLight
                                 ? 'bg-violet-50 hover:bg-violet-100 text-violet-700 border-violet-200'
                                 : 'bg-cyan-950/40 hover:bg-cyan-900/60 text-cyan-300 border-cyan-500/30'
@@ -486,7 +633,7 @@ export const ReferenceExamsPage: React.FC = () => {
                             <>
                               <button
                                 onClick={() => handleOpenPreview(exam, 'solution')}
-                                className={`px-2.5 py-1 rounded-lg border text-xs font-bold flex items-center gap-1 transition-all ${
+                                className={`px-2.5 py-1 rounded-lg border text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
                                   isLight
                                     ? 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border-emerald-200'
                                     : 'bg-emerald-950/40 hover:bg-emerald-900/60 text-emerald-300 border-emerald-500/30'
@@ -517,21 +664,21 @@ export const ReferenceExamsPage: React.FC = () => {
 
                       {/* Cột Quản Trị (Viện Trưởng & Viện Phó) */}
                       {isStaff && (
-                        <td className="py-3 px-4 text-center whitespace-nowrap">
+                        <td className="py-3 px-3 text-center whitespace-nowrap">
                           <div className="flex items-center justify-center gap-1">
                             <button
                               onClick={() => {
                                 setExamToEdit(exam);
                                 setIsEditModalOpen(true);
                               }}
-                              className="p-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 text-cyan-400 transition-all"
+                              className="p-1.5 rounded-lg border border-slate-700 hover:bg-slate-800 text-cyan-400 transition-all cursor-pointer"
                               title="Sửa đề thi"
                             >
                               ✏️
                             </button>
                             <button
                               onClick={() => handleDeleteExam(exam)}
-                              className="p-1.5 rounded-lg border border-slate-700 hover:bg-rose-950/50 text-rose-400 transition-all"
+                              className="p-1.5 rounded-lg border border-slate-700 hover:bg-rose-950/50 text-rose-400 transition-all cursor-pointer"
                               title="Xóa đề thi"
                             >
                               🗑️
@@ -551,7 +698,7 @@ export const ReferenceExamsPage: React.FC = () => {
             <div className="text-4xl">🔍</div>
             <h4 className="font-bold text-sm text-slate-300">Không tìm thấy đề thi phù hợp</h4>
             <p className="text-xs text-slate-500">
-              Hãy thử tìm kiếm từ khóa khác hoặc chuyển sang danh mục khác.
+              Hãy thử tìm kiếm từ khóa khác hoặc chuyển sang bộ lọc khác.
             </p>
           </div>
         )}
