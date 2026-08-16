@@ -10,8 +10,9 @@ import { FunzoneTab } from './FunzoneTab';
 const PracticeHall = lazy(() => import('./PracticeHall').then(m => ({ default: m.PracticeHall })));
 const Arena = lazy(() => import('./Arena').then(m => ({ default: m.Arena })));
 const RelaxationZone = lazy(() => import('./RelaxationZone').then(m => ({ default: m.RelaxationZone })));
+const ReferenceExamsPage = lazy(() => import('./ReferenceExams/ReferenceExamsPage').then(m => ({ default: m.ReferenceExamsPage })));
 
-export type AcademyTabId = 'academy' | 'knowledge' | 'challenge' | 'adventure' | 'funzone';
+export type AcademyTabId = 'academy' | 'knowledge' | 'challenge' | 'reference-exams' | 'adventure' | 'funzone';
 
 interface AcademyHubProps {
   activeTab: AcademyTabId;
@@ -55,11 +56,12 @@ export const AcademyHub: React.FC<AcademyHubProps> = ({
   const subjectLessons = filterLessonsInScope(lessons, activeSectId as any, activeGradeTier);
 
   const TABS: { id: AcademyTabId; icon: string; label: string; labelEn: string }[] = [
-    { id: 'academy',   icon: '🏫', label: 'Học Viện',      labelEn: 'Academy' },
-    { id: 'knowledge', icon: '📚', label: 'Phòng Luyện Tập',    labelEn: 'Practice Hall' },
-    { id: 'challenge', icon: '⚔️', label: 'Trường Thi',    labelEn: 'Challenge Hall' },
-    { id: 'adventure', icon: '🧭', label: 'Khu Thám Hiểm', labelEn: 'Adventure Zone' },
-    { id: 'funzone',   icon: '🎮', label: 'Funzone',       labelEn: 'Funzone' },
+    { id: 'academy',         icon: '🏫', label: 'Học Viện',          labelEn: 'Academy' },
+    { id: 'knowledge',       icon: '📚', label: 'Phòng Luyện Tập',   labelEn: 'Practice Hall' },
+    { id: 'challenge',       icon: '⚔️', label: 'Trường Thi',        labelEn: 'Challenge Hall' },
+    { id: 'reference-exams', icon: '📑', label: 'Đề Tham Khảo',      labelEn: 'Exam Vault' },
+    { id: 'adventure',       icon: '🧭', label: 'Khu Thám Hiểm',     labelEn: 'Adventure Zone' },
+    { id: 'funzone',         icon: '🎮', label: 'Funzone',           labelEn: 'Funzone' },
   ];
 
   const handleStartPractice = () => {
@@ -142,6 +144,12 @@ export const AcademyHub: React.FC<AcademyHubProps> = ({
               key={learningContextKey}
               onStartPlay={onStartPlay}
             />
+          </Suspense>
+        )}
+
+        {activeTab === 'reference-exams' && (
+          <Suspense fallback={<TabLoadingFallback />}>
+            <ReferenceExamsPage key={learningContextKey} />
           </Suspense>
         )}
 

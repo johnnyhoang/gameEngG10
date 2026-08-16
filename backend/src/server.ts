@@ -17,6 +17,7 @@ import learningContextRouter from './routes/learningContext.js';
 import missionLedgerRouter from './routes/missionLedger.js';
 import textbookMappingsRouter from './routes/textbookMappings.js';
 import tutorQuestsRouter from './routes/tutorQuests.js';
+import referenceExamsRouter from './routes/referenceExams.js';
 
 dotenv.config();
 
@@ -66,6 +67,7 @@ app.use('/api', gameRouter);
 app.use('/api', classRewardsRouter);
 app.use('/api', schoolRewardsRouter);
 app.use('/api', tutorQuestsRouter);
+app.use('/api', referenceExamsRouter);
 app.use('/api/learning-content', learningContextRouter);
 app.use('/api', textbookMappingsRouter);
 app.use('/api', (req, res, next) => {

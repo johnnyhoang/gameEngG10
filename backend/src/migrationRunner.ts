@@ -89,6 +89,7 @@ const MIGRATION_FILES = [
   '20260814_format_math_latex.sql',
   '20260815_reward_unlimited_and_class_ownership.sql',
   '20260815_terminology_wording_fix.sql',
+  '20260816_reference_exams.sql',
 ];
 
 async function ensureMigrationsTable() {

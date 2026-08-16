@@ -51,19 +51,21 @@ const APP_PUSH_TIME = typeof __BUILD_TIME__ !== 'undefined' ? __BUILD_TIME__ : '
 // Constants outside component to avoid re-creation on every render
 const TOP_HUD_TAB_TO_SCREEN: Record<string, 'map' | 'arena' | 'practice' | 'shop' | 'pet' | 'profile'> = {
   academy: 'map', knowledge: 'practice', challenge: 'arena',
+  'reference-exams': 'practice',
   adventure: 'map', funzone: 'shop'
 };
 
-const NAV_TABS: { id: string; icon: string; label: string }[] = [
+const NAV_TABS: { id: AcademyTabId; icon: string; label: string }[] = [
   { id: 'academy', icon: '🏫', label: 'Học Viện' },
   { id: 'knowledge', icon: '📚', label: 'Hang Luyện' },
   { id: 'challenge', icon: '⚔️', label: 'Thi' },
+  { id: 'reference-exams', icon: '📑', label: 'Đề Thi' },
   { id: 'adventure', icon: '🧭', label: 'Thám Hiểm' },
   { id: 'funzone', icon: '🎮', label: 'Funzone' },
 ];
 
 const LEGACY_SCREENS = ['map', 'arena', 'shop', 'pet', 'practice', 'relax', 'logs'];
-const VALID_TABS = ['academy', 'knowledge', 'challenge', 'adventure', 'funzone'];
+const VALID_TABS: AcademyTabId[] = ['academy', 'knowledge', 'challenge', 'reference-exams', 'adventure', 'funzone'];
 const LEGACY_TAB_MAP: Record<string, string> = {
   map: 'academy', profile: 'academy', arena: 'challenge',
   practice: 'knowledge', relax: 'adventure', pet: 'funzone', shop: 'funzone'
