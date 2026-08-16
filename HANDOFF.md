@@ -18,13 +18,13 @@
 
 ## 1. Trạng thái hiện tại (Current Status)
 - **Đã hoàn thành**:
-  1. **Đồng bộ toàn diện kho Đề Thi Tham Khảo 3 Môn (Lớp 9)**:
-     - **Toán 9**: 201 files PDF / 101 bộ đề hoàn chỉnh.
-     - **Ngữ Văn 9**: 75 files PDF / 38 bộ đề hoàn chỉnh.
-     - **Tiếng Anh 9**: 32 files PDF / 16 bộ đề hoàn chỉnh.
-     - **Tổng cộng**: 308 files PDF / 155 bộ đề từ 20 trường THCS TP.HCM (Trần Đại Nghĩa, Lê Quý Đôn, Colette, Hoa Lư, Nguyễn Du, Hồng Bàng...) và các bộ đề mẫu.
+  1. **Đồng bộ toàn diện kho Đề Thi Tham Khảo 3 Môn (Lớp 9) với 596 file PDF / 299 bộ đề**:
+     - **📐 Toán 9**: 201 files PDF / **101 bộ đề** hoàn chỉnh (Giữa HK1, Cuối HK1, Giữa HK2, Cuối HK2 của 20 trường THCS TP.HCM & Trí Đức).
+     - **📜 Ngữ Văn 9**: 195 files PDF / **98 bộ đề** hoàn chỉnh (Giữa HK1, Cuối HK1, Giữa HK2, Cuối HK2 kèm Lời Giải Chi Tiết).
+     - **🌍 Tiếng Anh 9**: 200 files PDF / **100 bộ đề** hoàn chỉnh (Giữa HK1, Cuối HK1, Giữa HK2, Cuối HK2 kèm Đáp Án Chi Tiết).
+     - **TỔNG CỘNG**: **596 files PDF / 299 bộ đề** phủ khắp 20 trường THCS trọng điểm TP.HCM.
   2. **Tính năng Xác Nhận Đã Làm cho Học Sinh (Completion Tracker)**:
-     - Nút toggle `[⚪ Chưa Làm]` ➜ `[✅ Đã Làm]` lưu cô lập theo Profile.
+     - Nút toggle `[⚪ Chưa Làm]` ➜ `[✅ Đã Làm]` lưu cô lập theo Profile học sinh.
      - Thưởng khích lệ +5 Ruby & +20 XP khi hoàn thành.
      - Highlight huy hiệu `🏆 HOÀN THÀNH` trên bảng danh sách.
      - Bộ lọc 3 trạng thái (`Tất Cả` | `✅ Đã Làm` | `Chưa Làm`).

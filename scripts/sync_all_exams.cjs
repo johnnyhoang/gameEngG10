@@ -26,6 +26,13 @@ const SUBJECT_CONFIGS = [
     icon: '🌍',
     destSubdir: 'english/grade-9',
   },
+  {
+    folderName: 'Đề KHTN',
+    subjectId: 'science',
+    subjectName: 'Khoa Học Tự Nhiên',
+    icon: '🧪',
+    destSubdir: 'science/grade-9',
+  },
 ];
 
 // Map 20 trường THCS TP.HCM
@@ -111,7 +118,7 @@ SUBJECT_CONFIGS.forEach(sub => {
   }
 
   const pdfFiles = getAllPdfFiles(srcDir);
-  console.log(`[${sub.subjectName}] Found ${pdfFiles.length} PDF files in ${srcDir}`);
+  console.log(`\n[${sub.subjectName}] Found ${pdfFiles.length} PDF files in source: ${srcDir}`);
 
   // Copy và chuẩn hóa tên file
   pdfFiles.forEach(f => {
@@ -162,7 +169,9 @@ SUBJECT_CONFIGS.forEach(sub => {
       } else if (name.includes('De_4') || name.includes('Đề_4')) {
         title = `Bộ Đề Ôn Thi ${catInfo.categoryName} ${sub.subjectName} 9 — Đề Mẫu Số 4`;
       } else {
-        title = `Đề Thi ${catInfo.categoryName} ${sub.subjectName} 9 — ${key.replace(/_/g, ' ')}`;
+        // Tách tên trường từ key nếu có
+        let cleanName = key.replace(/_/g, ' ');
+        title = `Đề Thi ${catInfo.categoryName} ${sub.subjectName} 9 — ${cleanName}`;
       }
 
       examMap.set(key, {
@@ -204,11 +213,13 @@ SUBJECT_CONFIGS.forEach(sub => {
     return e;
   });
 
-  console.log(`[${sub.subjectName}] Created ${subExams.length} complete exam entries.`);
+  console.log(`[${sub.subjectName}] Created ${subExams.length} complete exam sets.`);
   allExamEntries.push(...subExams);
 });
 
-console.log(`\n==== TOTAL: ${allExamEntries.length} EXAM SETS ACROSS ALL SUBJECTS ====`);
+console.log(`\n======================================================`);
+console.log(`==== TOTAL: ${allExamEntries.length} EXAM SETS ACROSS ALL SUBJECTS ====`);
+console.log(`======================================================`);
 
 // Ghi file referenceExamsData.ts
 const codeContent = `import type { ReferenceExam, ExamCategoryMeta } from '../types/referenceExam';
